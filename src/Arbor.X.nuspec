@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<package >
+	<metadata>
+		<id>Arbor.X</id>
+		<version>0.0.1</version>
+		<title>Arbor.X</title>
+		<authors>Niklas Lundberg</authors>
+		<owners></owners>
+		<description>
+			Arbor.X - Built with $configuration$ configuration
+		</description>
+		<releaseNotes>
+		</releaseNotes>
+		<summary>
+			Arbor.X
+		</summary>
+		<language>en-US</language>
+		<projectUrl>http://github.com/niklaslundberg</projectUrl>
+		<iconUrl>https://nuget.org/Content/Images/packageDefaultIcon-50x50.png</iconUrl>
+		<requireLicenseAcceptance>false</requireLicenseAcceptance>
+		<licenseUrl>http://github.com/niklaslundberg</licenseUrl>
+		<copyright>Copyright Niklas Lundberg 2014</copyright>
+		<dependencies>
+
+		</dependencies>
+		<references></references>
+		<tags></tags>
+	</metadata>
+	<files>
+		<file src="Arbor.X.Build\bin\$configuration$\**\*.*" target="." exclude="*.vshost*;**\*.vshost*;*.trx" />
+		<file src="..\tools\external\**.*" exclude="*.vshost*;**\*.vshost*;*.trx" target="tools\external" />
+	</files>
+</package>
