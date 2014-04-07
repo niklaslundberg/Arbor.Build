@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.X.Core;
 using Arbor.X.Core.BuildVariables;
+using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;
 
@@ -35,7 +36,12 @@ namespace Arbor.X.Bootstrapper
 
             const string buildToolPackageName = "Arbor.X";
 
-            var outputDirectory = Path.Combine(baseDir, buildToolPackageName);
+            string outputDirectoryPath = Path.Combine(baseDir, buildToolPackageName);
+
+            var outputDirectory = new DirectoryInfo(outputDirectoryPath);
+
+            outputDirectory.DeleteIfExists();
+            outputDirectory.EnsureExists();
 
             var nugetArguments = new List<string>
                                  {
@@ -63,7 +69,7 @@ namespace Arbor.X.Bootstrapper
                 return exitCode;
             }
 
-            var buildToolsResult = await RunBuildToolsAsync(baseDir, outputDirectory);
+            var buildToolsResult = await RunBuildToolsAsync(baseDir, outputDirectoryPath);
 
             if (!buildToolsResult.IsSuccess)
             {

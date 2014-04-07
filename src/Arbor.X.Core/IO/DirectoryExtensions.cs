@@ -22,7 +22,7 @@ namespace Arbor.X.Core.IO
             return directoryInfo;
         }
 
-        public static void DeleteIfExists(this DirectoryInfo directoryInfo)
+        public static void DeleteIfExists(this DirectoryInfo directoryInfo, bool recursive = true)
         {
             if (directoryInfo != null)
             {
@@ -30,7 +30,7 @@ namespace Arbor.X.Core.IO
 
                 if (directoryInfo.Exists)
                 {
-                    directoryInfo.Delete(recursive: true);
+                    directoryInfo.Delete(recursive);
                 }
 
             }
