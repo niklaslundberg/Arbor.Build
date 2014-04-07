@@ -67,6 +67,8 @@ namespace Arbor.X.Core.BuildVariables
 
         public static readonly string ExternalTools_Kudu_DeploymentBranchName = "deployment_branch";
 
+        public static readonly string ExternalTools_Kudu_DeploymentBranchNameOverride = "Arbor.X.Tools.External.Kudu.DeploymentBranchNameOverride";
+
         // ReSharper restore ConvertToConstant.Global
         // ReSharper restore InconsistentNaming
 

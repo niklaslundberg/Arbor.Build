@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
+using Arbor.X.Core.Tools.Git;
 
 namespace Arbor.X.Core.Tools.Kudu
 {
@@ -13,7 +14,7 @@ namespace Arbor.X.Core.Tools.Kudu
     public class KuduDeploy : ITool
     {
         string _artifacts;
-        string _deployBranchName;
+        BranchName _deployBranch;
         string _deploymentTargetDirectory;
         bool _kuduEnabled;
         string _platform;
@@ -27,10 +28,17 @@ namespace Arbor.X.Core.Tools.Kudu
             }
             _artifacts = buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue().Value;
             _platform = buildVariables.Require(WellKnownVariables.ExternalTools_Kudu_Platform).ThrowIfEmptyValue().Value;
-            _deployBranchName = buildVariables.Require(WellKnownVariables.ExternalTools_Kudu_DeploymentBranchName).Value;
+            _deployBranch = new BranchName(buildVariables.Require(WellKnownVariables.ExternalTools_Kudu_DeploymentBranchName).Value);
             _deploymentTargetDirectory =
                 buildVariables.Require(WellKnownVariables.ExternalTools_Kudu_DeploymentTarget).Value;
 
+            var branchNameOverride = buildVariables.SingleOrDefault(bv => bv.Key.Equals(WellKnownVariables.ExternalTools_Kudu_DeploymentBranchNameOverride, StringComparison.InvariantCultureIgnoreCase));
+
+            if (branchNameOverride != null)
+            {
+                logger.Write(string.Format("Using branch name override '{0}' instead of branch name '{1}'", branchNameOverride.Value, _deployBranch));
+                _deployBranch = new BranchName(branchNameOverride.Value);
+            }
 
             var websitesDirectory = new DirectoryInfo(Path.Combine(_artifacts, "Websites"));
 
@@ -98,7 +106,7 @@ namespace Arbor.X.Core.Tools.Kudu
 
         DirectoryInfo GetConfiguration(DirectoryInfo platformDirectory, ILogger logger)
         {
-            var directoryInfos = platformDirectory.GetDirectories();
+            DirectoryInfo[] directoryInfos = platformDirectory.GetDirectories();
 
             if (directoryInfos.Count() == 1)
             {
@@ -107,12 +115,11 @@ namespace Arbor.X.Core.Tools.Kudu
                 return directoryInfo;
             }
 
-            if (_deployBranchName.Equals("master", StringComparison.InvariantCultureIgnoreCase) ||
-                _deployBranchName.IndexOf("release", StringComparison.InvariantCultureIgnoreCase) >= 0)
+            if (_deployBranch.IsProductionBranch())
             {
-                logger.Write(string.Format("Using deployment branch name {0}", _deployBranchName));
+                logger.Write(string.Format("Using deployment branch name {0}", _deployBranch));
 
-                var productionConfig =
+                DirectoryInfo productionConfig =
                     directoryInfos.SingleOrDefault(
                         di => di.Name.Equals("production", StringComparison.InvariantCultureIgnoreCase));
 
@@ -123,7 +130,7 @@ namespace Arbor.X.Core.Tools.Kudu
                     return productionConfig;
                 }
 
-                var releaseConfig =
+                DirectoryInfo releaseConfig =
                     directoryInfos.SingleOrDefault(
                         di => di.Name.Equals("release", StringComparison.InvariantCultureIgnoreCase));
 
@@ -132,6 +139,30 @@ namespace Arbor.X.Core.Tools.Kudu
                     logger.Write(string.Format("On master or release branch, using {0} configuration",
                         releaseConfig.Name));
                     return releaseConfig;
+                }
+            }
+            else if (_deployBranch.IsDevelopBranch())
+            {
+                DirectoryInfo developConfig =
+                    directoryInfos.SingleOrDefault(
+                        di => di.Name.Equals("develop", StringComparison.InvariantCultureIgnoreCase) || di.Name.Equals("dev", StringComparison.InvariantCultureIgnoreCase));
+
+                if (developConfig != null)
+                {
+                    logger.Write(string.Format("On develop branch, using {0} configuration",
+                        developConfig.Name));
+                    return developConfig;
+                }
+
+                DirectoryInfo debugConfig =
+                    directoryInfos.SingleOrDefault(
+                        di => di.Name.Equals("debug", StringComparison.InvariantCultureIgnoreCase));
+
+                if (debugConfig != null)
+                {
+                    logger.Write(string.Format("On develop branch, using {0} configuration",
+                        debugConfig.Name));
+                    return debugConfig;
                 }
             }
 
