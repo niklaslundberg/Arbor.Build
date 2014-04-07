@@ -18,7 +18,7 @@ namespace Arbor.X.Core.BuildVariables
                 throw new ArgumentNullException("variableName");
             }
 
-            var variable = variables.SingleOrDefault(@var => @var.Key == variableName);
+            var variable = variables.SingleOrDefault(@var => @var.Key.Equals(variableName, StringComparison.InvariantCultureIgnoreCase));
 
             if (variable == null)
             {
