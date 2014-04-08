@@ -34,5 +34,10 @@ namespace Arbor.X.Core.Tools.Git
 
             return removedFeatureInName;
         }
+
+        public override string ToString()
+        {
+            return Name;
+        }
     }
 }
