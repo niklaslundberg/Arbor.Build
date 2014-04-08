@@ -74,7 +74,7 @@ namespace Arbor.X.Core.Tools.NuGet
 
         static string PackageDirectory()
         {
-            var packageDirectory = Path.DirectorySeparatorChar + "packages" + Path.DirectorySeparatorChar;
+            var packageDirectory = string.Format("{0}packages{0}", Path.DirectorySeparatorChar);
             return packageDirectory;
         }
 
