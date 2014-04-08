@@ -2,7 +2,7 @@
 {
     public static class EnvironmentExtension
     {
-        public static bool TryParseBool(this string value, bool defaultValue)
+        public static bool TryParseBool(this string value, bool defaultValue = false)
         {
             if (string.IsNullOrWhiteSpace(value))
             {
