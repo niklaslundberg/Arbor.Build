@@ -89,7 +89,7 @@ namespace Arbor.X.Core.ProcessUtils
             process.Exited += (sender, args) =>
             {
                 var proc = (Process) sender;
-                standardAction(string.Format("Process '{0}' exited with code {1}", processWithArgs, new ExitCode(proc.ExitCode)));
+                toolAction(string.Format("Process '{0}' exited with code {1}", processWithArgs, new ExitCode(proc.ExitCode)));
                 taskCompletionSource.SetResult(new ExitCode(proc.ExitCode));
             };
 
