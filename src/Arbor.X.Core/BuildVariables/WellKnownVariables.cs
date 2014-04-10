@@ -69,6 +69,8 @@ namespace Arbor.X.Core.BuildVariables
 
         public static readonly string ExternalTools_Kudu_DeploymentBranchNameOverride = "Arbor.X.Tools.External.Kudu.DeploymentBranchNameOverride";
 
+        public static readonly string ExternalTools_Kudu_ProcessorCount = "NUMBER_OF_PROCESSORS";
+
         // ReSharper restore ConvertToConstant.Global
         // ReSharper restore InconsistentNaming
 

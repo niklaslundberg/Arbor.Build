@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -33,6 +34,8 @@ namespace Arbor.X.Core.Tools.MSBuild
         string _artifactsPath;
         string _branchName;
         string _msBuildExe;
+        int _processorCount;
+        string _verbosity;
 
         public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables)
         {
@@ -42,6 +45,24 @@ namespace Arbor.X.Core.Tools.MSBuild
                 buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue().Value;
             _branchName =
                 buildVariables.Require(WellKnownVariables.BranchName).ThrowIfEmptyValue().Value;
+
+            int processorCount = 1;
+
+            if (buildVariables.HasKey(WellKnownVariables.ExternalTools_Kudu_ProcessorCount))
+            {
+                var value = buildVariables.Require(WellKnownVariables.ExternalTools_Kudu_ProcessorCount).Value;
+
+                int parsedCount;
+
+                if (!string.IsNullOrWhiteSpace(value) && int.TryParse(value, out parsedCount) && parsedCount >= 1)
+                {
+                    processorCount = parsedCount;
+                }
+            }
+
+            _processorCount = processorCount;
+
+            _verbosity = "normal";
 
             try
             {
@@ -230,14 +251,16 @@ namespace Arbor.X.Core.Tools.MSBuild
                 return ExitCode.Failure;
             }
 
+
             var argList = new List<string>
                           {
                               solutionFile.FullName,
                               string.Format("/property:configuration={0}", configuration),
                               string.Format("/property:platform={0}", platform),
-                              "/verbosity:normal",
+                              string.Format("/verbosity:{0}", _verbosity),
                               "/target:rebuild",
-                              "/detailedsummary"
+                              "/detailedsummary",
+                              string.Format("/maxcpucount:{0}", _processorCount.ToString(CultureInfo.InvariantCulture))
                           };
 
             var exitCode =
@@ -283,10 +306,12 @@ namespace Arbor.X.Core.Tools.MSBuild
                                   string.Format("/property:platform={0}", platformName),
                                   string.Format("/property:_PackageTempDir={0}", siteArtifactDirectory),
                                   string.Format("/property:SolutionDir={0}", solutionFile.Directory.FullName),
-                                  "/verbosity:normal",
+                                  string.Format("/verbosity:{0}", _verbosity),
                                   "/target:pipelinePreDeployCopyAllFilesToOneFolder",
                                   "/property:AutoParameterizationWebConfigConnectionStrings=false",
-                                  "/detailedsummary"
+                                  "/detailedsummary",
+                                  string.Format("/maxcpucount:{0}",
+                                      _processorCount.ToString(CultureInfo.InvariantCulture))
                               };
 
                 var exitCode =
