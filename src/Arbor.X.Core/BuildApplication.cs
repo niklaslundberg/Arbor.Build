@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -13,6 +12,7 @@ using Arbor.X.Core.ProcessUtils;
 using Arbor.X.Core.Tools;
 using Arbor.X.Core.Tools.Artifacts;
 using Arbor.X.Core.Tools.Environments;
+using Arbor.X.Core.Tools.Git;
 using Arbor.X.Core.Tools.ILMerge;
 using Arbor.X.Core.Tools.Kudu;
 using Arbor.X.Core.Tools.MSBuild;
@@ -26,47 +26,59 @@ namespace Arbor.X.Core
 {
     public class BuildApplication
     {
-        const string Prefix = "[BuildApplication] ";
-        static readonly object ConsoleLock = new object();
+        readonly ILogger _logger;
 
-        public async Task<int> RunAsync()
+        public BuildApplication(ILogger logger)
         {
+            _logger = logger;
+        }
 
+        public async Task<ExitCode> RunAsync()
+        {
+            ExitCode exitCode;
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
             try
             {
-                int systemToolsResult = await RunSystemToolsAsync();
+                ExitCode systemToolsResult = await RunSystemToolsAsync();
 
-                if (systemToolsResult != 0)
+                if (!systemToolsResult.IsSuccess)
                 {
                     const string toolsMessage = "All system tools did not succeed";
-                    WriteError(toolsMessage);
+                    _logger.WriteError(toolsMessage);
 
-                    return systemToolsResult;
+                    exitCode = systemToolsResult;
                 }
-
-                WriteNormal("All tools succeeded");
-                
+                else
+                {
+                    exitCode = ExitCode.Success;
+                    _logger.Write("All tools succeeded");
+                }
             }
             catch (Exception ex)
             {
-                WriteError(ex.ToString());
-                return 1;
+                _logger.WriteError(ex.ToString());
+                exitCode = ExitCode.Failure;
             }
-            return 0;
+
+            stopwatch.Stop();
+
+            Console.WriteLine("Arbor.X.Build total elapsed time in seconds: {0}",
+                stopwatch.Elapsed.TotalSeconds.ToString("F"));
+
+            return exitCode;
         }
 
-        async Task<int> RunSystemToolsAsync()
+        async Task<ExitCode> RunSystemToolsAsync()
         {
-            var logger = new DelegateLogger(WriteNormal, WriteWarning, WriteError);
+            var buildVariables = (await GetBuildVariablesAsync()).ToList();
 
-            var buildVariables = (await GetBuildVariablesAsync(logger)).ToList();
-            
-            logger.Write(string.Format("Build variables: [{0}] {1}{2}", buildVariables.Count, Environment.NewLine,
-                                       buildVariables.Print()));
+            _logger.Write(string.Format("Build variables: [{0}] {1}{2}", buildVariables.Count, Environment.NewLine,
+                buildVariables.Print()));
 
-            IReadOnlyCollection<ToolWithPriority> toolWithPriorities = ToolFinder.GetTools(logger);
+            IReadOnlyCollection<ToolWithPriority> toolWithPriorities = ToolFinder.GetTools(_logger);
 
-            LogTools(toolWithPriorities, logger);
+            LogTools(toolWithPriorities);
 
             int result = 0;
 
@@ -83,23 +95,23 @@ namespace Arbor.X.Core
                     }
                 }
 
-                logger.Write(string.Format("Running tool {0}", toolWithPriority));
+                _logger.Write(string.Format("Running tool {0}", toolWithPriority));
 
                 try
                 {
-                    var toolResult = await toolWithPriority.Tool.ExecuteAsync(logger, buildVariables);
+                    var toolResult = await toolWithPriority.Tool.ExecuteAsync(_logger, buildVariables);
 
                     if (toolResult.IsSuccess)
                     {
-                        logger.Write(string.Format("The tool {0} succeeded with exit code {1}", toolWithPriority,
-                                                   toolResult));
+                        _logger.Write(string.Format("The tool {0} succeeded with exit code {1}", toolWithPriority,
+                            toolResult));
 
                         toolResults.Add(toolWithPriority + " succeeded ");
                     }
                     else
                     {
-                        logger.WriteError(string.Format("The tool {0} failed with exit code {1}", toolWithPriority,
-                                                        toolResult));
+                        _logger.WriteError(string.Format("The tool {0} failed with exit code {1}", toolWithPriority,
+                            toolResult));
                         result = toolResult.Result;
 
                         toolResults.Add(toolWithPriority + " failed with exit code " + toolResult);
@@ -108,24 +120,24 @@ namespace Arbor.X.Core
                 catch (Exception ex)
                 {
                     toolResults.Add(string.Format("{0} threw {1}", toolWithPriority, ex.GetType().Name));
-                    WriteError(string.Format("The tool {0} failed with exception {1}", toolWithPriority, ex));
+                    _logger.WriteError(string.Format("The tool {0} failed with exception {1}", toolWithPriority, ex));
                     result = 1;
                 }
             }
 
-            logger.Write("Tool results:" + Environment.NewLine + string.Join(Environment.NewLine, toolResults));
+            _logger.Write("Tool results:" + Environment.NewLine + string.Join(Environment.NewLine, toolResults));
 
             if (result != 0)
             {
-                return result;
+                return ExitCode.Failure;
             }
 
-            logger.Write("All tools succeeded");
+            _logger.Write("All tools succeeded");
 
-            return 0;
+            return ExitCode.Success;
         }
 
-        void LogTools(IReadOnlyCollection<ToolWithPriority> toolWithPriorities, DelegateLogger logger)
+        void LogTools(IReadOnlyCollection<ToolWithPriority> toolWithPriorities)
         {
             var sb = new StringBuilder();
 
@@ -135,53 +147,48 @@ namespace Arbor.X.Core
                 sb.AppendLine(toolWithPriority.ToString());
             }
 
-            logger.Write(sb.ToString());
+            _logger.Write(sb.ToString());
         }
 
-        async Task<IReadOnlyCollection<IVariable>> GetBuildVariablesAsync(ILogger logger)
+        async Task<IReadOnlyCollection<IVariable>> GetBuildVariablesAsync()
         {
             var buildVariables = new List<IVariable>();
-            
+
             var result = await RunOnceAsync();
 
             buildVariables.AddRange(result);
-            
-            var environmentVariables = Environment.GetEnvironmentVariables();
 
-            var variables = environmentVariables
-                .OfType<DictionaryEntry>()
-                .Select(entry => new EnvironmentVariable(entry.Key.ToString(),
-                                                         entry.Value.ToString()));
-
-            buildVariables.AddRange(variables);
+            buildVariables.AddRange(EnvironmentVariableHelper.GetBuildVariablesFromEnvironmentVariables());
 
             var providers = new List<IVariableProvider>
                             {
                                 new SourcePathVariableProvider(),
                                 new ArtifactsVariableProvider(),
-                                new MSBuildVariableProvider(), 
-                                new NugetVariableProvider(), 
-                                new VisualStudioVariableProvider(), 
-                                new VSTestVariableProvider(), 
-                                new BuildVersionProvider(), 
+                                new MSBuildVariableProvider(),
+                                new NugetVariableProvider(),
+                                new VisualStudioVariableProvider(),
+                                new VSTestVariableProvider(),
+                                new BuildVersionProvider(),
                                 new ILMergeVariableProvider(),
                                 new SymbolsVariableProvider(),
                                 new BuildServerVariableProvider(),
                                 new KuduEnvironmentVariableProvider()
                             }; //TODO use Autofac
 
-            logger.Write(string.Format("Available variable providers: [{0}]{1}{2}", providers.Count, Environment.NewLine, string.Join(Environment.NewLine, providers.Select(item => item.GetType().Name))));
+            _logger.Write(string.Format("Available variable providers: [{0}]{1}{2}", providers.Count,
+                Environment.NewLine,
+                string.Join(Environment.NewLine, providers.Select(item => item.GetType().Name))));
 
             foreach (var provider in providers)
             {
-                var newVariables = await provider.GetEnvironmentVariablesAsync(logger, buildVariables);
+                var newVariables = await provider.GetEnvironmentVariablesAsync(_logger, buildVariables);
 
                 foreach (var @var in newVariables)
                 {
                     if (buildVariables.Any(
-                            item => item.Key.Equals(@var.Key, StringComparison.InvariantCultureIgnoreCase)))
+                        item => item.Key.Equals(@var.Key, StringComparison.InvariantCultureIgnoreCase)))
                     {
-                        logger.WriteWarning(string.Format("The build variable {0} already exists", @var.Key));
+                        _logger.WriteWarning(string.Format("The build variable {0} already exists", @var.Key));
                         continue;
                     }
 
@@ -201,7 +208,7 @@ namespace Arbor.X.Core
             if (string.IsNullOrWhiteSpace(branchName))
             {
                 var branchNameResult = await GetBranchNameByAskingGitExeAsync();
-                
+
                 if (branchNameResult.Item1 != 0)
                 {
                     throw new InvalidOperationException("Could not find the branch name");
@@ -231,7 +238,7 @@ namespace Arbor.X.Core
                     variablesWithNewLinesBuilder.AppendLine(string.Format("'{0}'", keyValuePair.Value));
                 }
 
-                WriteError(variablesWithNewLinesBuilder.ToString());
+                _logger.WriteError(variablesWithNewLinesBuilder.ToString());
 
                 throw new InvalidOperationException(variablesWithNewLinesBuilder.ToString());
             }
@@ -259,18 +266,17 @@ namespace Arbor.X.Core
             return "debug";
         }
 
-        static async Task<Tuple<int, string>> GetBranchNameByAskingGitExeAsync()
+        async Task<Tuple<int, string>> GetBranchNameByAskingGitExeAsync()
         {
-            WriteNormal(string.Format("Environment variable '{0}' is not defined or has empty value",
-                                      WellKnownVariables.BranchName));
+            _logger.Write(string.Format("Environment variable '{0}' is not defined or has empty value",
+                WellKnownVariables.BranchName));
 
-            var gitExePath =
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Git", "bin",
-                             "git.exe");
+            string gitExePath = GitHelper.GetGitExePath();
 
             if (!File.Exists(gitExePath))
             {
-                var githubForWindowsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"GitHub");
+                var githubForWindowsPath =
+                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "GitHub");
 
                 if (Directory.Exists(githubForWindowsPath))
                 {
@@ -299,7 +305,7 @@ namespace Arbor.X.Core
 
                 if (!File.Exists(gitExePath))
                 {
-                    WriteError(string.Format("Could not find Git. '{0}' does not exist", gitExePath));
+                    _logger.WriteError(string.Format("Could not find Git. '{0}' does not exist", gitExePath));
                     return Tuple.Create(-1, string.Empty);
                 }
             }
@@ -311,7 +317,7 @@ namespace Arbor.X.Core
 
             if (currentDirectory == null)
             {
-                WriteError("Could not find source root");
+                _logger.WriteError("Could not find source root");
                 return Tuple.Create(-1, string.Empty);
             }
 
@@ -319,13 +325,14 @@ namespace Arbor.X.Core
 
             if (string.IsNullOrWhiteSpace(branchName))
             {
-                WriteError("Git branch name was null or empty");
+                _logger.WriteError("Git branch name was null or empty");
                 return Tuple.Create(-1, string.Empty);
             }
             return Tuple.Create(0, branchName);
         }
 
-        static async Task<string> GetGitBranchNameAsync(string currentDirectory, string gitExePath, IEnumerable<string> arguments)
+        async Task<string> GetGitBranchNameAsync(string currentDirectory, string gitExePath,
+            IEnumerable<string> arguments)
         {
             string branchName;
             var gitBranchBuilder = new StringBuilder();
@@ -337,13 +344,14 @@ namespace Arbor.X.Core
 
                 var result =
                     await
-                    ProcessRunner.ExecuteAsync(gitExePath, arguments: arguments, standardErrorAction: WriteError,
-                                               standardOutLog: message => gitBranchBuilder.AppendLine(message));
+                        ProcessRunner.ExecuteAsync(gitExePath, arguments: arguments,
+                            standardErrorAction: _logger.WriteError,
+                            standardOutLog: message => gitBranchBuilder.AppendLine(message));
 
                 if (!result.IsSuccess)
                 {
-                    WriteError(string.Format("Could not get Git branch name. Git process exit code: {0}", result));
-                    return null;
+                    _logger.WriteError(string.Format("Could not get Git branch name. Git process exit code: {0}", result));
+                    return string.Empty;
                 }
                 else
                 {
@@ -355,126 +363,6 @@ namespace Arbor.X.Core
                 Directory.SetCurrentDirectory(oldCurrentDirectory);
             }
             return branchName;
-        }
-
-        static DirectoryInfo EnsureScriptDirectoryExists()
-        {
-            var systemScriptsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "scripts");
-
-            var systemScriptsDir = new DirectoryInfo(systemScriptsPath);
-
-            if (!systemScriptsDir.Exists)
-            {
-                systemScriptsDir.Create();
-            }
-            return systemScriptsDir;
-        }
-
-        static void WriteSuccess(string message, params object[] items)
-        {
-            lock (ConsoleLock)
-            {
-                Console.ForegroundColor = ConsoleColor.DarkGreen;
-                Console.WriteLine(Prefix + message, items);
-                Console.ResetColor();
-                Debug.WriteLine(Prefix + message, items);
-            }
-        }
-
-        static void WriteNormal(string message)
-        {
-            lock (ConsoleLock)
-            {
-                Console.ResetColor();
-
-                if (string.IsNullOrWhiteSpace(message))
-                {
-                    Console.WriteLine();
-                    Debug.WriteLine("");
-                }
-                else
-                {
-                    Console.WriteLine(Prefix + message);
-                    Debug.WriteLine(Prefix + message);
-                }
-            }
-        }
-
-        static void WriteWarning(string message)
-        {
-            lock (ConsoleLock)
-            {
-                Console.ForegroundColor = ConsoleColor.Yellow;
-
-                if (string.IsNullOrWhiteSpace(message))
-                {
-                    Console.WriteLine();
-                    Debug.WriteLine("");
-                }
-                else
-                {
-                    Console.WriteLine(Prefix + message);
-                    Debug.WriteLine(Prefix + message);
-                }
-                Console.ResetColor();
-            }
-        }
-
-        static void WriteWarning(string message, params object[] items)
-        {
-            lock (ConsoleLock)
-            {
-                Console.ForegroundColor = ConsoleColor.Yellow;
-
-                if (string.IsNullOrWhiteSpace(message))
-                {
-                    Console.WriteLine();
-                    Debug.WriteLine("");
-                }
-                else
-                {
-                    Console.WriteLine(Prefix + message, items);
-                    Debug.WriteLine(Prefix + message, items);
-                }
-
-                Console.ResetColor();
-            }
-        }
-
-        static void WriteError(string message)
-        {
-            lock (ConsoleLock)
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                if (string.IsNullOrWhiteSpace(message))
-                {
-                    Console.Error.WriteLine();
-                    Debug.WriteLine("");
-                }
-                else
-                {
-                    Console.Error.WriteLine(Prefix + message);
-                    Debug.WriteLine(Prefix + message);
-                }
-                Console.ResetColor();
-            }
-        }
-
-        static void WriteError(string message, params object[] items)
-        {
-            lock (ConsoleLock)
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                if (string.IsNullOrWhiteSpace(message))
-                {
-                    Console.WriteLine();
-                }
-                else
-                {
-                    Console.WriteLine(Prefix + message, items);
-                }
-                Console.ResetColor();
-            }
         }
     }
 }

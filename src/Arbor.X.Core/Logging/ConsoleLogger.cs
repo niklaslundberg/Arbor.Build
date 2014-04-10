@@ -31,5 +31,12 @@ namespace Arbor.X.Core.Logging
             Console.WriteLine(message);
             Console.ResetColor();
         }
+
+        public void WriteVerbose(string message)
+        {
+            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.WriteLine(message);
+            Console.ResetColor();
+        }
     }
 }

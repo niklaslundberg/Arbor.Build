@@ -5,5 +5,6 @@
         void WriteError(string message);
         void Write(string message);
         void WriteWarning(string message);
+        void WriteVerbose(string message);
     }
 }

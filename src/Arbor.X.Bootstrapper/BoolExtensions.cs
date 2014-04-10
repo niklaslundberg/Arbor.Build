@@ -1,6 +1,6 @@
 ﻿namespace Arbor.X.Bootstrapper
 {
-    public static class EnvironmentExtension
+    public static class BoolExtensions
     {
         public static bool TryParseBool(this string value, bool defaultValue = false)
         {

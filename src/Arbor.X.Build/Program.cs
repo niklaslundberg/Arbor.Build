@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using Arbor.X.Core;
+using Arbor.X.Core.Logging;
 
 namespace Arbor.X.Build
 {
@@ -9,7 +10,7 @@ namespace Arbor.X.Build
     {
         static BuildApplication _app;
 
-        static string GetFormat(int exitCode, IEnumerable<string> args)
+        static string GetFormat(ExitCode exitCode, IEnumerable<string> args)
         {
             const string prefix = "[Arbor.X.Build] ";
             var format = prefix + string.Format("Exit code={0}, instance hash code ({1}), arguments: {2}", exitCode,
@@ -22,33 +23,31 @@ namespace Arbor.X.Build
         {
             try
             {
-                _app = new BuildApplication();
-                int exitCode = _app.RunAsync().Result;
+                _app = new BuildApplication(new ConsoleLogger());
+                ExitCode exitCode = _app.RunAsync().Result;
 
                 var format = GetFormat(exitCode, args);
                 Console.WriteLine(format);
                 Debug.WriteLine(format);
-                return exitCode;
+                return exitCode.Result;
             }
             catch (AggregateException ex)
             {
-                const int exitCode = 1;
                 Console.Error.WriteLine(ex);
 
                 foreach (var innerException in ex.InnerExceptions)
                 {
-                    var format = GetFormat(exitCode, args);
-                    Console.Error.WriteLine(format + Environment.NewLine + innerException.InnerException);
+                    var format = GetFormat(ExitCode.Failure, args);
+                    Console.Error.WriteLine("{0}{1}{2}", format, Environment.NewLine, innerException.InnerException);
                 }
 
-                return exitCode;
+                return ExitCode.Failure.Result;
             }
             catch (Exception ex)
             {
-                const int exitCode = 1;
-                var format = GetFormat(exitCode, args);
-                Console.Error.WriteLine(format + Environment.NewLine + ex.InnerException);
-                return exitCode;
+                var format = GetFormat(ExitCode.Failure, args);
+                Console.Error.WriteLine("{0}{1}{2}", format, Environment.NewLine, ex);
+                return ExitCode.Failure.Result;
             }
         }
     }

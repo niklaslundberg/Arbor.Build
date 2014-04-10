@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Diagnostics;
+using Arbor.X.Core;
 
 namespace Arbor.X.Bootstrapper
 {
@@ -6,13 +8,16 @@ namespace Arbor.X.Bootstrapper
     {
         static int Main(string[] args)
         {
+            ExitCode exitCode;
+
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             try
             {
                 var startTask = new Bootstrapper().StartAsync(args);
 
-                var exitCode = startTask.Result.Result;
-
-                return exitCode;
+                exitCode = startTask.Result;
             }
             catch (AggregateException ex)
             {
@@ -22,8 +27,13 @@ namespace Arbor.X.Bootstrapper
                 {
                     Console.Error.WriteLine(innerEx);
                 }
-                return 1;
+                exitCode = ExitCode.Failure;
             }
+            stopwatch.Stop();
+
+            Console.WriteLine("Arbor.X.Bootstrapper total inclusive Arbor.X.Build elapsed time in seconds: {0}", stopwatch.Elapsed.TotalSeconds.ToString("F"));
+
+            return exitCode.Result;
         }
     }
 }

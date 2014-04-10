@@ -72,14 +72,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BuildVariables\EnvironmentVariableHelper.cs" />
     <Compile Include="ExitCode.cs" />
+    <Compile Include="Tools\Git\GitHelper.cs" />
     <Compile Include="Tools\ILMerge\ILMergeData.cs" />
     <Compile Include="Tools\ILMerge\ILMergeVariableProvider.cs" />
     <Compile Include="Tools\Artifacts\ArtifactsVariableProvider.cs" />
     <Compile Include="Tools\Environments\BuildServerVariableProvider.cs" />
     <Compile Include="Tools\Environments\SourcePathVariableProvider.cs" />
+    <Compile Include="BuildVariables\BuildVariableExtensions.cs" />
     <Compile Include="Tools\Kudu\KuduDeploy.cs" />
     <Compile Include="Tools\Kudu\KuduEnvironmentVariableProvider.cs" />
+    <Compile Include="Tools\Kudu\KuduHelper.cs" />
     <Compile Include="Tools\Symbols\SymbolsVariableProvider.cs" />
     <Compile Include="Tools\Versioning\AssemblyInfoUnpatcher.cs" />
     <Compile Include="Tools\Versioning\BuildVersionProvider.cs" />
