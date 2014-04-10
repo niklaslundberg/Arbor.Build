@@ -26,11 +26,13 @@ namespace Arbor.X.Bootstrapper
         {
             var baseDir = await GetBaseDirectoryAsync();
 
+            var buildDir = new DirectoryInfo(Path.Combine(baseDir, "build"));
+
             _consoleLogger.Write(string.Format("Using base directory '{0}'", baseDir));
 
-            string nugetExePath = Path.Combine(baseDir, "nuget.exe");
+            string nugetExePath = Path.Combine(buildDir.FullName, "nuget.exe");
 
-            var nuGetExists = await TryDownloadNuGetAsync(baseDir, nugetExePath);
+            var nuGetExists = await TryDownloadNuGetAsync(buildDir.FullName, nugetExePath);
 
             if (!nuGetExists)
             {
@@ -40,14 +42,14 @@ namespace Arbor.X.Bootstrapper
                 return ExitCode.Failure;
             }
 
-            var outputDirectoryPath = await DownloadNuGetPackageAsync(baseDir, nugetExePath);
+            var outputDirectoryPath = await DownloadNuGetPackageAsync(buildDir.FullName, nugetExePath);
 
             if (string.IsNullOrWhiteSpace(outputDirectoryPath))
             {
                 return ExitCode.Failure;
             }
 
-            var buildToolsResult = await RunBuildToolsAsync(baseDir, outputDirectoryPath);
+            var buildToolsResult = await RunBuildToolsAsync(buildDir.FullName, outputDirectoryPath);
 
             if (!buildToolsResult.IsSuccess)
             {
@@ -61,11 +63,11 @@ namespace Arbor.X.Bootstrapper
             return buildToolsResult;
         }
 
-        async Task<string> DownloadNuGetPackageAsync(string baseDir, string nugetExePath)
+        async Task<string> DownloadNuGetPackageAsync(string buildDir, string nugetExePath)
         {
             const string buildToolPackageName = "Arbor.X";
 
-            string outputDirectoryPath = Path.Combine(baseDir, buildToolPackageName);
+            string outputDirectoryPath = Path.Combine(buildDir, buildToolPackageName);
 
             var outputDirectory = new DirectoryInfo(outputDirectoryPath);
 
@@ -78,7 +80,7 @@ namespace Arbor.X.Bootstrapper
                                      buildToolPackageName,
                                      "-ExcludeVersion",
                                      "-OutputDirectory",
-                                     baseDir.TrimEnd('\\'),
+                                     buildDir.TrimEnd('\\'),
                                      "-Verbosity",
                                      "detailed"
                                  };
@@ -121,7 +123,7 @@ namespace Arbor.X.Bootstrapper
             }
             else
             {
-                baseDir = AppDomain.CurrentDomain.BaseDirectory;
+                baseDir = VcsPathHelper.FindVcsRootPath();
             }
 
             return baseDir;
@@ -188,14 +190,21 @@ namespace Arbor.X.Bootstrapper
 
             if (!string.IsNullOrWhiteSpace(gitExePath))
             {
-                string sourceRootGitDir = Path.Combine(sourceRoot, ".git");
-                var statusArguments = new[] { string.Format("--git-dir={0}", sourceRootGitDir), string.Format("--work-tree={0}", sourceRoot), "status" };
+                string gitDir = Path.Combine(sourceRoot, ".git");
 
-                ExitCode statusExitCode = await ProcessRunner.ExecuteAsync(gitExePath, arguments: statusArguments, standardOutLog: _consoleLogger.Write, standardErrorAction: _consoleLogger.WriteError, toolAction: _consoleLogger.Write);
+                var statusAllArguments = new[] { string.Format("--git-dir={0}", gitDir), string.Format("--work-tree={0}", sourceRoot), "status" };
 
-                if (statusExitCode.IsSuccess)
+                var argumentVariants = new List<string[]> { new[]{"status"}, statusAllArguments };
+
+                foreach (var argumentVariant in argumentVariants)
                 {
-                    isClonable = true;
+                    ExitCode statusExitCode = await ProcessRunner.ExecuteAsync(gitExePath, arguments: argumentVariant, standardOutLog: _consoleLogger.Write, standardErrorAction: _consoleLogger.WriteError, toolAction: _consoleLogger.Write);
+
+                    if (statusExitCode.IsSuccess)
+                    {
+                        isClonable = true;
+                        break;
+                    }
                 }
             }
 
@@ -204,9 +213,9 @@ namespace Arbor.X.Bootstrapper
             return isClonable;
         }
 
-        async Task<ExitCode> RunBuildToolsAsync(string baseDir, string buildToolDirectoryName)
+        async Task<ExitCode> RunBuildToolsAsync(string buildDir, string buildToolDirectoryName)
         {
-            var buildToolDirectoryPath = Path.Combine(baseDir, buildToolDirectoryName);
+            var buildToolDirectoryPath = Path.Combine(buildDir, buildToolDirectoryName);
 
             var buildToolDirectory = new DirectoryInfo(buildToolDirectoryPath);
 
