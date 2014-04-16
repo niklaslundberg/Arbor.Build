@@ -89,7 +89,8 @@ namespace Arbor.X.Core.ProcessUtils
             process.Exited += (sender, args) =>
             {
                 var proc = (Process) sender;
-                toolAction(string.Format("Process '{0}' exited with code {1}", processWithArgs, new ExitCode(proc.ExitCode)));
+                toolAction(string.Format("Process '{0}' exited with code {1}", processWithArgs,
+                    new ExitCode(proc.ExitCode)));
                 taskCompletionSource.SetResult(new ExitCode(proc.ExitCode));
             };
 
@@ -114,7 +115,7 @@ namespace Arbor.X.Core.ProcessUtils
                 }
 
                 var bits = process.IsWin64() ? 64 : 32;
-                
+
                 var temp = process.HasExited ? "was" : "is";
 
                 verbose(string.Format("The process '{0}' {1} running in {2}-bit mode", processWithArgs, temp, bits));
@@ -123,13 +124,77 @@ namespace Arbor.X.Core.ProcessUtils
             {
                 taskCompletionSource.SetException(ex);
             }
-            var exitCode = await taskCompletionSource.Task;
+            bool done = false;
+
+            var exitCode = new ExitCode(-1);
+
+            while (IsAlive(process, taskCompletionSource.Task, cancellationToken, done))
+            {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    try
+                    {
+                        process.Kill();
+                        errorAction(string.Format("Killed process {0} because cancellation was requested", processWithArgs));
+                        return ExitCode.Failure;
+                    }
+                    catch (Exception ex)
+                    {
+                        errorAction(string.Format("Could not kill process {0} when cancellation was requested", processWithArgs));
+                        errorAction(ex.ToString());
+                        return ExitCode.Failure;
+                    }
+                }
+
+                var delay = Task.Delay(TimeSpan.FromMilliseconds(50), cancellationToken);
+                
+                await delay;
+                
+                if (taskCompletionSource.Task.IsCompleted)
+                {
+                    done = true;
+                    exitCode = await taskCompletionSource.Task;
+                }
+                else if (taskCompletionSource.Task.IsCanceled)
+                {
+                    exitCode = ExitCode.Failure;
+                }
+                else if (taskCompletionSource.Task.IsFaulted)
+                {
+                    exitCode = ExitCode.Failure;
+                }
+            }
 
             using (process)
             {
             }
 
             return exitCode;
+        }
+
+        static bool IsAlive(Process process, Task<ExitCode> token, CancellationToken cancellationToken, bool done)
+        {
+            if (process == null)
+            {
+                return false;
+            }
+
+            if (token.IsCompleted || token.IsFaulted || token.IsCanceled)
+            {
+                return false;
+            }
+
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return false;
+            }
+
+            if (done)
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }
