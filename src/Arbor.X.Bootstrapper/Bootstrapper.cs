@@ -18,7 +18,7 @@ namespace Arbor.X.Bootstrapper
 {
     public class Bootstrapper
     {
-        const int MaxBuildTimeInMinutes = 15;
+        const int MaxBuildTimeInSeconds = 600;
         static readonly string Prefix = string.Format("[{0}] ", typeof (Bootstrapper).Name);
         readonly ConsoleLogger _consoleLogger = new ConsoleLogger();
 
@@ -93,7 +93,7 @@ namespace Arbor.X.Bootstrapper
             {
                 nugetArguments.Add("-Prerelease");
             }
-            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(MaxBuildTimeInMinutes));
+            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(MaxBuildTimeInSeconds));
 
             var exitCode =
                 await
@@ -232,9 +232,8 @@ namespace Arbor.X.Bootstrapper
 
             var buildToolExe = exeFiles.Single();
 
-            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(MaxBuildTimeInMinutes));
-
-
+            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(MaxBuildTimeInSeconds));
+            
             IEnumerable<string> arguments = Enumerable.Empty<string>();
             var result =
                 await
