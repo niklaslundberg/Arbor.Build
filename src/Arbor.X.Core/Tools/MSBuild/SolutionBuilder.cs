@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Aesculus.Core;
 using Arbor.X.Core.BuildVariables;
@@ -33,19 +34,65 @@ namespace Arbor.X.Core.Tools.MSBuild
         readonly List<string> _knownPlatforms = new List<string> {"x86", "Any CPU"};
         string _artifactsPath;
         string _branchName;
+        CancellationToken _cancellationToken;
         string _msBuildExe;
         int _processorCount;
         string _verbosity;
 
-        public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables)
+        public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
+            CancellationToken cancellationToken)
         {
+            _cancellationToken = cancellationToken;
             _msBuildExe =
                 buildVariables.Require(WellKnownVariables.ExternalTools_MSBuild_ExePath).ThrowIfEmptyValue().Value;
             _artifactsPath =
                 buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue().Value;
             _branchName =
                 buildVariables.Require(WellKnownVariables.BranchName).ThrowIfEmptyValue().Value;
+            
+            var maxProcessorCount = ProcessorCount(buildVariables);
 
+            int cpus = 1;
+
+            if (buildVariables.HasKey(WellKnownVariables.CpuLimit))
+            {
+                int maxCpuLimit;
+                if (int.TryParse(buildVariables.GetVariable(WellKnownVariables.CpuLimit).Value, out maxCpuLimit) &&
+                    maxCpuLimit > 0)
+                {
+                    if (maxCpuLimit <= maxProcessorCount)
+                    {
+                        logger.Write(string.Format("Using CPU limit: {0}", maxCpuLimit));
+                        cpus = maxCpuLimit;
+                    }
+                    else
+                    {
+                        logger.WriteWarning(string.Format("Invalid CPU limit: {0}", maxCpuLimit));
+                    }
+                }
+            }
+            else
+            {
+                cpus = maxProcessorCount;
+            }
+
+            _processorCount = cpus;
+
+            _verbosity = "normal";
+
+            try
+            {
+                return await BuildAsync(logger, buildVariables);
+            }
+            catch (Exception ex)
+            {
+                logger.WriteError(ex.ToString());
+                return ExitCode.Failure;
+            }
+        }
+
+        static int ProcessorCount(IReadOnlyCollection<IVariable> buildVariables)
+        {
             int processorCount = 1;
 
             if (buildVariables.HasKey(WellKnownVariables.ExternalTools_Kudu_ProcessorCount))
@@ -59,20 +106,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                     processorCount = parsedCount;
                 }
             }
-
-            _processorCount = processorCount;
-
-            _verbosity = "normal";
-
-            try
-            {
-                return await BuildAsync(logger, buildVariables);
-            }
-            catch (Exception ex)
-            {
-                logger.WriteError(ex.ToString());
-                return ExitCode.Failure;
-            }
+            return processorCount;
         }
 
         async Task<ExitCode> BuildAsync(ILogger logger, IReadOnlyCollection<IVariable> variables)
@@ -265,11 +299,14 @@ namespace Arbor.X.Core.Tools.MSBuild
 
             var exitCode =
                 await ProcessRunner.ExecuteAsync(_msBuildExe, arguments: argList, standardOutLog: logger.Write,
-                    standardErrorAction: logger.WriteError, toolAction: logger.Write);
+                    standardErrorAction: logger.WriteError, toolAction: logger.Write,
+                    cancellationToken: _cancellationToken);
 
             if (exitCode.IsSuccess)
             {
-                await BuildWebApplicationsAsync(solutionFile, configuration, platform, logger);
+                var webAppsExiteCode = await BuildWebApplicationsAsync(solutionFile, configuration, platform, logger);
+
+                exitCode = webAppsExiteCode;
             }
             else
             {
@@ -316,7 +353,8 @@ namespace Arbor.X.Core.Tools.MSBuild
 
                 var exitCode =
                     await ProcessRunner.ExecuteAsync(_msBuildExe, arguments: argList, standardOutLog: logger.Write,
-                        standardErrorAction: logger.WriteError, toolAction: logger.Write);
+                        standardErrorAction: logger.WriteError, toolAction: logger.Write,
+                        cancellationToken: _cancellationToken);
 
                 if (!exitCode.IsSuccess)
                 {

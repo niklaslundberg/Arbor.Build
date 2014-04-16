@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Sorbus.Core;
 using Arbor.X.Core.BuildVariables;
@@ -10,7 +11,7 @@ namespace Arbor.X.Core.Tools.Versioning
     [Priority(1000, runAlways: true)]
     public class AssemblyInfoUnpatcher : ITool
     {
-        public Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables)
+        public Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {
             var app = new AssemblyPatcherApp();
 

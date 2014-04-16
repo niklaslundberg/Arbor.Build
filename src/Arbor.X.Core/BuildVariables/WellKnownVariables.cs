@@ -18,6 +18,8 @@ namespace Arbor.X.Core.BuildVariables
         public static readonly string Artifacts = "Arbor.X.Artifacts";
 
         public static readonly string Version = "Arbor.X.Build.Version";
+        
+        public static readonly string CpuLimit = "Arbor.X.CpuLimit";
 
         public static readonly string NetAssemblyVersion = "Arbor.X.Build.NetAssembly.Version";
 

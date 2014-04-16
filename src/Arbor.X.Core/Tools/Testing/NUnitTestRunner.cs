@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Aesculus.Core;
 using Arbor.X.Core.BuildVariables;
@@ -15,7 +16,7 @@ namespace Arbor.X.Core.Tools.Testing
     [Priority(400)]
     public class NUnitTestRunner : ITool
     {
-        public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables)
+        public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {
             var externalTools = buildVariables.Require(WellKnownVariables.ExternalTools).ThrowIfEmptyValue();
             var reportPath = buildVariables.Require(WellKnownVariables.ReportPath).ThrowIfEmptyValue();

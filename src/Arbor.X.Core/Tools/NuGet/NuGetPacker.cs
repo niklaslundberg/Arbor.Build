@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Aesculus.Core;
 using Arbor.X.Core.BuildVariables;
@@ -13,8 +14,11 @@ namespace Arbor.X.Core.Tools.NuGet
     [Priority(650)]
     public class NuGetPacker : ITool
     {
-        public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables)
+        CancellationToken _cancellationToken;
+
+        public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {
+            _cancellationToken = cancellationToken;
             var artifacts = buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue();
             var version = buildVariables.Require(WellKnownVariables.Version).ThrowIfEmptyValue();
             var releaseBuild = buildVariables.Require(WellKnownVariables.ReleaseBuild).ThrowIfEmptyValue();
@@ -109,7 +113,7 @@ namespace Arbor.X.Core.Tools.NuGet
             return ExitCode.Success;
         }
 
-        static async Task<ExitCode> CreatePackageAsync(string nuGetExePath, string nuspecFilePath, string packagesDirectory,
+        async Task<ExitCode> CreatePackageAsync(string nuGetExePath, string nuspecFilePath, string packagesDirectory,
                                                   IVariable version, bool isReleaseBuild, string configuration,
                                                   IVariable branchName, ILogger logger, IVariable tempDirectory)
         {
@@ -147,7 +151,7 @@ namespace Arbor.X.Core.Tools.NuGet
             return result;
         }
         
-        static async Task<ExitCode> ExecuteNuGetPackAsync(string nuGetExePath, string packagesDirectory, ILogger logger,
+        async Task<ExitCode> ExecuteNuGetPackAsync(string nuGetExePath, string packagesDirectory, ILogger logger,
                                                 string nuSpecFileCopyPath, string properties, NuSpec nuSpecCopy)
         {
             ExitCode result;
@@ -171,7 +175,7 @@ namespace Arbor.X.Core.Tools.NuGet
                 var processResult =
                     await
                     ProcessRunner.ExecuteAsync(nuGetExePath, arguments: arguments, standardOutLog: logger.Write,
-                                               standardErrorAction: logger.WriteError, toolAction: logger.Write);
+                                               standardErrorAction: logger.WriteError, toolAction: logger.Write, cancellationToken: _cancellationToken);
 
                 result = processResult;
             }

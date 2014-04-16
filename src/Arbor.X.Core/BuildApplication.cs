@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Aesculus.Core;
 using Arbor.X.Core.BuildVariables;
@@ -26,7 +27,9 @@ namespace Arbor.X.Core
 {
     public class BuildApplication
     {
+        const int MaxBuildTime = 600;
         readonly ILogger _logger;
+        CancellationToken _cancellationToken;
 
         public BuildApplication(ILogger logger)
         {
@@ -35,6 +38,8 @@ namespace Arbor.X.Core
 
         public async Task<ExitCode> RunAsync()
         {
+            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(MaxBuildTime));
+            _cancellationToken = cancellationTokenSource.Token;
             ExitCode exitCode;
             var stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -99,7 +104,7 @@ namespace Arbor.X.Core
 
                 try
                 {
-                    var toolResult = await toolWithPriority.Tool.ExecuteAsync(_logger, buildVariables);
+                    var toolResult = await toolWithPriority.Tool.ExecuteAsync(_logger, buildVariables, _cancellationToken);
 
                     if (toolResult.IsSuccess)
                     {
@@ -346,7 +351,7 @@ namespace Arbor.X.Core
                     await
                         ProcessRunner.ExecuteAsync(gitExePath, arguments: arguments,
                             standardErrorAction: _logger.WriteError,
-                            standardOutLog: message => gitBranchBuilder.AppendLine(message));
+                            standardOutLog: message => gitBranchBuilder.AppendLine(message), cancellationToken: _cancellationToken);
 
                 if (!result.IsSuccess)
                 {

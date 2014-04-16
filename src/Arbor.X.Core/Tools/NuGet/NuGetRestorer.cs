@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Aesculus.Core;
 using Arbor.Castanea;
@@ -12,8 +13,11 @@ namespace Arbor.X.Core.Tools.NuGet
     [Priority(100)]
     public class NuGetRestorer : ITool
     {
-        public Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables)
+        CancellationToken _cancellationToken;
+
+        public Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {
+            _cancellationToken = cancellationToken;
             var app = new CastaneaApplication();
 
             var vcsRoot = VcsPathHelper.TryFindVcsRootPath();
