@@ -84,6 +84,9 @@
     <Compile Include="Tools\Kudu\KuduDeploy.cs" />
     <Compile Include="Tools\Kudu\KuduEnvironmentVariableProvider.cs" />
     <Compile Include="Tools\Kudu\KuduHelper.cs" />
+    <Compile Include="Tools\Kudu\KuduWebJob.cs" />
+    <Compile Include="Tools\Kudu\KuduWebJobType.cs" />
+    <Compile Include="Tools\Kudu\KuduWebProjectDetails.cs" />
     <Compile Include="Tools\Symbols\SymbolsVariableProvider.cs" />
     <Compile Include="Tools\Versioning\AssemblyInfoUnpatcher.cs" />
     <Compile Include="Tools\Versioning\BuildVersionProvider.cs" />
