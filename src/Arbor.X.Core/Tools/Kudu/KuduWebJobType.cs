@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Arbor.X.Core.Tools.Kudu
 {
-    internal class KuduWebJobType : IEquatable<KuduWebJobType>
+    public class KuduWebJobType : IEquatable<KuduWebJobType>
     {
         readonly string _invariantName;
 
@@ -20,7 +20,7 @@ namespace Arbor.X.Core.Tools.Kudu
 
         public static KuduWebJobType Triggered
         {
-            get { return new KuduWebJobType("Continuous"); }
+            get { return new KuduWebJobType("Triggered"); }
         }
 
         public static IEnumerable<KuduWebJobType> All
@@ -52,6 +52,16 @@ namespace Arbor.X.Core.Tools.Kudu
             return (_invariantName != null ? _invariantName.GetHashCode() : 0);
         }
 
+        public override string ToString()
+        {
+            return DisplayName;
+        }
+
+        public string DisplayName
+        {
+            get { return _invariantName; }
+        }
+
         public static bool operator ==(KuduWebJobType left, KuduWebJobType right)
         {
             return Equals(left, right);
@@ -69,14 +79,31 @@ namespace Arbor.X.Core.Tools.Kudu
                 throw new ArgumentNullException("type");
             }
 
+            var message = string.Format("Could not parse {0} from value '{1}'",
+                typeof(KuduWebJobType).Name, type);
+
+            const StringComparison comparisonType = StringComparison.InvariantCultureIgnoreCase;
+
+            string valueToParse;
+
+            var exception = new FormatException(message);
+
+            if (type.Trim().StartsWith("<"))
+            {
+                valueToParse = type.ExtractFromTag(typeof (KuduWebJobType).Name);
+            }
+            else
+            {
+                valueToParse = type;
+            }
+
             KuduWebJobType foundItem =
                 All.SingleOrDefault(
-                    item => item._invariantName.Equals(type, StringComparison.InvariantCultureIgnoreCase));
+                    item => item._invariantName.Equals(valueToParse, comparisonType));
 
             if (foundItem == null)
             {
-                throw new InvalidOperationException(string.Format("Could not parse {0} from value '{1}'",
-                    typeof (KuduWebJobType).Name, type));
+                throw exception;
             }
 
             return foundItem;

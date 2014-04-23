@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.Tools.Git;
 
@@ -71,14 +70,14 @@ namespace Arbor.X.Core.Tools.Kudu
 
             if (!websiteToDeploy.GetDirectories().Any())
             {
-                logger.WriteError("Could not find any platform for website " + websiteToDeploy.Name);
+                logger.WriteError(string.Format("Could not find any platform for website {0}", websiteToDeploy.Name));
                 return ExitCode.Failure;
             }
 
 
             if (websiteToDeploy.GetDirectories().Count() > 1)
             {
-                logger.WriteError("Could not find exactly one platform for website " + websiteToDeploy.Name);
+                logger.WriteError(string.Format("Could not find exactly one platform for website {0}", websiteToDeploy.Name));
                 return ExitCode.Failure;
             }
 
@@ -86,11 +85,11 @@ namespace Arbor.X.Core.Tools.Kudu
 
             if (!platform.GetDirectories().Any())
             {
-                logger.WriteError("Could not find any configuration for website " + websiteToDeploy.Name);
+                logger.WriteError(string.Format("Could not find any configuration for website {0}", websiteToDeploy.Name));
                 return ExitCode.Failure;
             }
 
-            var configuration = GetConfiguration(platform, logger);
+            DirectoryInfo configuration = GetConfigurationDirectory(platform, logger);
 
             if (configuration == null)
             {
@@ -100,14 +99,14 @@ namespace Arbor.X.Core.Tools.Kudu
             logger.Write(string.Format("___________________ Kudu deploy ___________________ \r\nDeploying website {0}, platform {1}, configuration {2}", websiteToDeploy.Name, platform.Name, configuration.Name));
 
             logger.Write(string.Format("Copying files and directories from '{0}' to '{1}'", configuration.FullName, _deploymentTargetDirectory));
-            Copy(configuration.FullName, _deploymentTargetDirectory);
+            DirectoryCopy.Copy(configuration.FullName, _deploymentTargetDirectory);
 
             await Task.Delay(TimeSpan.FromMilliseconds(20), cancellationToken); //TODO temp to avoid compiler warning
 
             return ExitCode.Success;
         }
 
-        DirectoryInfo GetConfiguration(DirectoryInfo platformDirectory, ILogger logger)
+        DirectoryInfo GetConfigurationDirectory(DirectoryInfo platformDirectory, ILogger logger)
         {
             DirectoryInfo[] directoryInfos = platformDirectory.GetDirectories();
 
@@ -179,16 +178,5 @@ namespace Arbor.X.Core.Tools.Kudu
             return websiteToDeploy.GetDirectories().Single();
         }
 
-        void Copy(string sourceDir, string targetDir)
-        {
-            var sourceDirectory = new DirectoryInfo(sourceDir);
-            new DirectoryInfo(targetDir).EnsureExists();
-
-            foreach (var file in sourceDirectory.GetFiles())
-                file.CopyTo(Path.Combine(targetDir, file.Name), overwrite: true);
-
-            foreach (var directory in sourceDirectory.GetDirectories())
-                Copy(directory.FullName, Path.Combine(targetDir, directory.Name));
-        }
     }
 }

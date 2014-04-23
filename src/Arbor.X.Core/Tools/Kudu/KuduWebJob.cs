@@ -25,13 +25,19 @@ namespace Arbor.X.Core.Tools.Kudu
                 .Where(project => project.IsKuduWebJobProject)
                 .ToList();
 
-            logger.Write(string.Join(Environment.NewLine,
-                kuduWebJobProjects.Select(
-                    webProject => string.Format("Found kudu web job project: '{0}'", webProject.ProjectFilePath))));
+            if (kuduWebJobProjects.Any())
+            {
+                logger.Write(string.Join(Environment.NewLine,
+                    kuduWebJobProjects.Select(
+                        webProject => string.Format("Found Kudu web job project: {0}", webProject))));
+            }
+            else
+            {
+                logger.Write("No Kudu web job projects were found");
+            }
 
             return Task.FromResult(ExitCode.Success);
         }
-
 
         KuduWebProjectDetails IsKuduWebJobProject(FileInfo file)
         {
@@ -54,16 +60,14 @@ namespace Arbor.X.Core.Tools.Kudu
 
                         if (line != null)
                         {
-                            expectedKeys
-                                .ForEach(key =>
+                            expectedKeys.ForEach(key =>
+                            {
+                                if (line.IndexOf(key,
+                                    StringComparison.InvariantCultureIgnoreCase) >= 0)
                                 {
-                                    if (line.IndexOf(key,
-                                        StringComparison.InvariantCultureIgnoreCase) >= 0)
-                                    {
-                                        foundItems.Add(key, line);
-                                    }
-                                });
-
+                                    foundItems.Add(key, line);
+                                }
+                            });
 
                             if (foundItems.Count == expectedKeys.Count)
                             {

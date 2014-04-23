@@ -10,6 +10,7 @@ using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;
+using Arbor.X.Core.Tools.Kudu;
 using FubuCsProjFile;
 
 namespace Arbor.X.Core.Tools.MSBuild
@@ -350,7 +351,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                                   string.Format("/maxcpucount:{0}",
                                       _processorCount.ToString(CultureInfo.InvariantCulture))
                               };
-
+                
                 var exitCode =
                     await ProcessRunner.ExecuteAsync(_msBuildExe, arguments: argList, standardOutLog: logger.Write,
                         standardErrorAction: logger.WriteError, toolAction: logger.Write,
@@ -359,6 +360,32 @@ namespace Arbor.X.Core.Tools.MSBuild
                 if (!exitCode.IsSuccess)
                 {
                     return exitCode;
+                }
+
+                var appDataPath = Path.Combine(solutionProject.Project.ProjectDirectory, "App_Data");
+
+                var appDataDirectory = new DirectoryInfo(appDataPath);
+
+                if (appDataDirectory.Exists)
+                {
+                    logger.WriteVerbose(string.Format("Site has App_Data directory: '{0}'", appDataDirectory.FullName));
+
+                    var kuduWebJobs =
+                        appDataDirectory.EnumerateDirectories()
+                            .SingleOrDefault(
+                                directory => directory.Name.Equals("jobs", StringComparison.InvariantCultureIgnoreCase));
+
+                    if (kuduWebJobs != null && kuduWebJobs.Exists)
+                    {
+                        logger.WriteVerbose(string.Format("Site has App_Data jobs directory: '{0}'", kuduWebJobs.FullName));
+                        var artifactJobAppDataPath = Path.Combine(siteArtifactDirectory.FullName, "App_Data", "jobs");
+
+                        var artifactJobAppDataDirectory = new DirectoryInfo(artifactJobAppDataPath).EnsureExists();
+
+                        logger.WriteVerbose(string.Format("Copying directory '{0}' to '{1}'", kuduWebJobs.FullName, artifactJobAppDataDirectory.FullName));
+
+                        DirectoryCopy.Copy(kuduWebJobs.FullName, artifactJobAppDataDirectory.FullName);
+                    }
                 }
             }
 
