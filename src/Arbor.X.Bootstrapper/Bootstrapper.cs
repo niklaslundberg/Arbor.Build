@@ -20,19 +20,29 @@ namespace Arbor.X.Bootstrapper
     {
         const int MaxBuildTimeInSeconds = 600;
         static readonly string Prefix = string.Format("[{0}] ", typeof (Bootstrapper).Name);
-        readonly ConsoleLogger _consoleLogger = new ConsoleLogger();
+        readonly ConsoleLogger _consoleLogger = new ConsoleLogger(Prefix);
         bool _directoryCloneEnabled;
 
         public async Task<ExitCode> StartAsync(string[] args)
         {
+            _consoleLogger.Write("Starting Arbor.X Bootstrapper");
+
+            var directoryCloneValue = Environment.GetEnvironmentVariable(WellKnownVariables.DirectoryCloneEnabled);
+
+            _directoryCloneEnabled = directoryCloneValue
+                .TryParseBool(defaultValue: true);
+
+            if (!_directoryCloneEnabled)
+            {
+                _consoleLogger.WriteVerbose(string.Format("Environment variable '{0}' has value '{1}'", WellKnownVariables.DirectoryCloneEnabled, directoryCloneValue));
+            }
+
             var baseDir = await GetBaseDirectoryAsync();
 
             var buildDir = new DirectoryInfo(Path.Combine(baseDir, "build"));
 
             _consoleLogger.Write(string.Format("Using base directory '{0}'", baseDir));
 
-            _directoryCloneEnabled = Environment.GetEnvironmentVariable(WellKnownVariables.DirectoryCloneEnabled)
-                .TryParseBool(defaultValue: true);
 
             string nugetExePath = Path.Combine(buildDir.FullName, "nuget.exe");
 
@@ -40,8 +50,7 @@ namespace Arbor.X.Bootstrapper
 
             if (!nuGetExists)
             {
-                _consoleLogger.WriteError(string.Format(Prefix +
-                                        "NuGet.exe could not be downloaded and it does not already exist at path '{0}'",
+                _consoleLogger.WriteError(string.Format("NuGet.exe could not be downloaded and it does not already exist at path '{0}'",
                     nugetExePath));
                 return ExitCode.Failure;
             }
@@ -60,12 +69,12 @@ namespace Arbor.X.Bootstrapper
 
                 if (buildToolsResult.IsSuccess)
                 {
-                    _consoleLogger.Write(Prefix + "The build tools succeeded");
+                    _consoleLogger.Write("The build tools succeeded");
                 }
                 else
                 {
                     _consoleLogger.WriteError(
-                        string.Format(Prefix + "The build tools process was not successful, exit code {0}",
+                        string.Format("The build tools process was not successful, exit code {0}",
                             buildToolsResult));
                 }
                 exitCode = buildToolsResult;
@@ -292,8 +301,7 @@ namespace Arbor.X.Bootstrapper
             const string single = ". Found no such files";
             var found = exeFiles.Any() ? single : multiple;
 
-            _consoleLogger.WriteError(string.Format(Prefix +
-                                    "Expected directory {0} to contain exactly one executable file with extensions .exe. {1}",
+            _consoleLogger.WriteError(string.Format("Expected directory {0} to contain exactly one executable file with extensions .exe. {1}",
                 buildToolDirectoryPath, found));
         }
 
@@ -310,7 +318,7 @@ namespace Arbor.X.Bootstrapper
                     return false;
                 }
 
-                _consoleLogger.Write(string.Format(Prefix + "NuGet.exe could not be downloaded, using existing nuget.exe. {0}", ex));
+                _consoleLogger.Write(string.Format("NuGet.exe could not be downloaded, using existing nuget.exe. {0}", ex));
             }
 
             return true;
@@ -322,7 +330,7 @@ namespace Arbor.X.Bootstrapper
 
             const string nugetExeUri = "https://nuget.org/nuget.exe";
 
-            _consoleLogger.Write(string.Format(Prefix + "Downloading {0} to {1}", nugetExeUri, tempFile));
+            _consoleLogger.Write(string.Format("Downloading {0} to {1}", nugetExeUri, tempFile));
 
             using (var client = new HttpClient())
             {
@@ -337,9 +345,9 @@ namespace Arbor.X.Bootstrapper
                 if (File.Exists(tempFile))
                 {
                     File.Copy(tempFile, targetFile, overwrite: true);
-                    _consoleLogger.Write(string.Format(Prefix + "Copied {0} to {1}", tempFile, targetFile));
+                    _consoleLogger.Write(string.Format("Copied {0} to {1}", tempFile, targetFile));
                     File.Delete(tempFile);
-                    _consoleLogger.Write(string.Format(Prefix + "Deleted temp file {0}", tempFile));
+                    _consoleLogger.Write(string.Format("Deleted temp file {0}", tempFile));
                 }
             }
         }

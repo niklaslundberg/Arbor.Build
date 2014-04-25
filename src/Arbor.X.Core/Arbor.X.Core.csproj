@@ -72,6 +72,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BoolExtensions.cs" />
     <Compile Include="BuildVariables\EnvironmentVariableHelper.cs" />
     <Compile Include="ExitCode.cs" />
     <Compile Include="Tools\Git\GitHelper.cs" />

@@ -1,4 +1,4 @@
-﻿namespace Arbor.X.Bootstrapper
+﻿namespace Arbor.X.Core
 {
     public static class BoolExtensions
     {
