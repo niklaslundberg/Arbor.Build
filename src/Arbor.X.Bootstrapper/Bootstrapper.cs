@@ -21,6 +21,7 @@ namespace Arbor.X.Bootstrapper
         const int MaxBuildTimeInSeconds = 600;
         static readonly string Prefix = string.Format("[{0}] ", typeof (Bootstrapper).Name);
         readonly ConsoleLogger _consoleLogger = new ConsoleLogger();
+        bool _directoryCloneEnabled;
 
         public async Task<ExitCode> StartAsync(string[] args)
         {
@@ -30,15 +31,18 @@ namespace Arbor.X.Bootstrapper
 
             _consoleLogger.Write(string.Format("Using base directory '{0}'", baseDir));
 
+            _directoryCloneEnabled = Environment.GetEnvironmentVariable(WellKnownVariables.DirectoryCloneEnabled)
+                .TryParseBool(defaultValue: true);
+
             string nugetExePath = Path.Combine(buildDir.FullName, "nuget.exe");
 
             var nuGetExists = await TryDownloadNuGetAsync(buildDir.FullName, nugetExePath);
 
             if (!nuGetExists)
             {
-                Console.Error.WriteLine(Prefix +
+                _consoleLogger.WriteError(string.Format(Prefix +
                                         "NuGet.exe could not be downloaded and it does not already exist at path '{0}'",
-                    nugetExePath);
+                    nugetExePath));
                 return ExitCode.Failure;
             }
 
@@ -49,18 +53,30 @@ namespace Arbor.X.Bootstrapper
                 return ExitCode.Failure;
             }
 
-            var buildToolsResult = await RunBuildToolsAsync(buildDir.FullName, outputDirectoryPath);
-
-            if (!buildToolsResult.IsSuccess)
+            ExitCode exitCode;
+            try
             {
-                Console.Error.WriteLine(Prefix + "The build tools process was not successful, exit code {0}",
-                    buildToolsResult);
-                return buildToolsResult;
+                ExitCode buildToolsResult = await RunBuildToolsAsync(buildDir.FullName, outputDirectoryPath);
+
+                if (buildToolsResult.IsSuccess)
+                {
+                    _consoleLogger.Write(Prefix + "The build tools succeeded");
+                }
+                else
+                {
+                    _consoleLogger.WriteError(
+                        string.Format(Prefix + "The build tools process was not successful, exit code {0}",
+                            buildToolsResult));
+                }
+                exitCode = buildToolsResult;
+            }
+            catch (TaskCanceledException)
+            {
+                _consoleLogger.WriteError("The build timed out");
+                exitCode = ExitCode.Failure;
             }
 
-            Console.WriteLine(Prefix + "The build tools succeeded");
-
-            return buildToolsResult;
+            return exitCode;
         }
 
         async Task<string> DownloadNuGetPackageAsync(string buildDir, string nugetExePath)
@@ -142,8 +158,8 @@ namespace Arbor.X.Bootstrapper
 
         async Task<string> CloneDirectoryAsync()
         {
-            string targetDirectoryPath = Path.Combine(Path.GetTempPath(), "Arbor.X.Kudu.Temp", "repository",
-                Guid.NewGuid().ToString());
+            string targetDirectoryPath = Path.Combine(Path.GetTempPath(), "AX", "R",
+                Guid.NewGuid().ToString().Substring(0,8));
 
             var targetDirectory = new DirectoryInfo(targetDirectoryPath);
 
@@ -176,6 +192,14 @@ namespace Arbor.X.Bootstrapper
 
         async Task<bool> IsCurrentDirectoryClonableAsync()
         {
+            if (!_directoryCloneEnabled)
+            {
+                _consoleLogger.Write("Directory clone is disabled");
+                return false;
+            }
+
+            _consoleLogger.Write("Directory clone is enabled");
+
             var sourceRoot = VcsPathHelper.TryFindVcsRootPath();
 
             if (string.IsNullOrWhiteSpace(sourceRoot))
@@ -232,7 +256,23 @@ namespace Arbor.X.Bootstrapper
 
             var buildToolExe = exeFiles.Single();
 
-            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(MaxBuildTimeInSeconds));
+            int usedTimeoutInSeconds = MaxBuildTimeInSeconds;
+            var timeoutKey = WellKnownVariables.BuildToolTimeoutInSeconds;
+            var timeoutInSecondsFromEnvironment = Environment.GetEnvironmentVariable(timeoutKey);
+
+            if (!string.IsNullOrWhiteSpace(timeoutInSecondsFromEnvironment))
+            {
+                int timeoutInSeconds;
+                if (int.TryParse(timeoutInSecondsFromEnvironment, out timeoutInSeconds) && timeoutInSeconds > 0)
+                {
+                    usedTimeoutInSeconds = timeoutInSeconds;
+                    _consoleLogger.Write(string.Format("Using timeout from environment variable {0}", timeoutKey));
+                }
+            }
+
+            _consoleLogger.Write(string.Format("Using build timeout {0} seconds", usedTimeoutInSeconds));
+
+            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(usedTimeoutInSeconds));
             
             IEnumerable<string> arguments = Enumerable.Empty<string>();
             var result =
@@ -245,19 +285,19 @@ namespace Arbor.X.Bootstrapper
             return result;
         }
 
-        static void PrintInvalidExeFileCount(List<FileInfo> exeFiles, string buildToolDirectoryPath)
+        void PrintInvalidExeFileCount(List<FileInfo> exeFiles, string buildToolDirectoryPath)
         {
             string multiple = string.Format("Found {0} such files: {1}", exeFiles.Count,
                 string.Join(", ", exeFiles.Select(file => file.Name)));
             const string single = ". Found no such files";
             var found = exeFiles.Any() ? single : multiple;
 
-            Console.Error.WriteLine(Prefix +
+            _consoleLogger.WriteError(string.Format(Prefix +
                                     "Expected directory {0} to contain exactly one executable file with extensions .exe. {1}",
-                buildToolDirectoryPath, found);
+                buildToolDirectoryPath, found));
         }
 
-        static async Task<bool> TryDownloadNuGetAsync(string baseDir, string targetFile)
+        async Task<bool> TryDownloadNuGetAsync(string baseDir, string targetFile)
         {
             try
             {
@@ -270,19 +310,19 @@ namespace Arbor.X.Bootstrapper
                     return false;
                 }
 
-                Console.WriteLine(Prefix + "NuGet.exe could not be downloaded, using existing nuget.exe. {0}", ex);
+                _consoleLogger.Write(string.Format(Prefix + "NuGet.exe could not be downloaded, using existing nuget.exe. {0}", ex));
             }
 
             return true;
         }
 
-        static async Task DownloadNuGetExeAsync(string baseDir, string targetFile)
+        async Task DownloadNuGetExeAsync(string baseDir, string targetFile)
         {
             var tempFile = Path.Combine(baseDir, "nuget.exe.tmp");
 
             const string nugetExeUri = "https://nuget.org/nuget.exe";
 
-            Console.WriteLine(Prefix + "Downloading {0} to {1}", nugetExeUri, tempFile);
+            _consoleLogger.Write(string.Format(Prefix + "Downloading {0} to {1}", nugetExeUri, tempFile));
 
             using (var client = new HttpClient())
             {
@@ -297,9 +337,9 @@ namespace Arbor.X.Bootstrapper
                 if (File.Exists(tempFile))
                 {
                     File.Copy(tempFile, targetFile, overwrite: true);
-                    Console.WriteLine(Prefix + "Copied {0} to {1}", tempFile, targetFile);
+                    _consoleLogger.Write(string.Format(Prefix + "Copied {0} to {1}", tempFile, targetFile));
                     File.Delete(tempFile);
-                    Console.WriteLine(Prefix + "Deleted temp file {0}", tempFile);
+                    _consoleLogger.Write(string.Format(Prefix + "Deleted temp file {0}", tempFile));
                 }
             }
         }
