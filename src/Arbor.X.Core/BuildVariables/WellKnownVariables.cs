@@ -18,6 +18,8 @@ namespace Arbor.X.Core.BuildVariables
         public static readonly string Artifacts = "Arbor.X.Artifacts";
 
         public static readonly string Version = "Arbor.X.Build.Version";
+
+        public static readonly string DirectoryCloneEnabled = "Arbor.X.Vcs.DirectoryCloneEnabled";
         
         public static readonly string CpuLimit = "Arbor.X.CpuLimit";
 
@@ -73,6 +75,12 @@ namespace Arbor.X.Core.BuildVariables
 
         public static readonly string ExternalTools_Kudu_ProcessorCount = "NUMBER_OF_PROCESSORS";
 
+        public static readonly string AppDataJobsEnabled = "Arbor.X.Tools.External.Kudu.WebJobs.AppData.Enabled";
+
+        public static readonly string KuduJobsEnabled = "Arbor.X.Tools.External.Kudu.WebJobs.Enabled";
+
+        public static readonly string BuildToolTimeoutInSeconds = "Arbor.X.Build.TimeoutInSeconds";
+
         // ReSharper restore ConvertToConstant.Global
         // ReSharper restore InconsistentNaming
 
@@ -89,5 +97,6 @@ namespace Arbor.X.Core.BuildVariables
                 }
             }
         }
+        
     }
 }

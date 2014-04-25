@@ -39,6 +39,7 @@ namespace Arbor.X.Core.Tools.MSBuild
         string _msBuildExe;
         int _processorCount;
         string _verbosity;
+        bool _appDataJobsEnabled;
 
         public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
@@ -50,6 +51,9 @@ namespace Arbor.X.Core.Tools.MSBuild
                 buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue().Value;
             _branchName =
                 buildVariables.Require(WellKnownVariables.BranchName).ThrowIfEmptyValue().Value;
+
+            bool enabled;
+            _appDataJobsEnabled = !buildVariables.HasKey(WellKnownVariables.AppDataJobsEnabled) || !bool.TryParse(buildVariables.Require(WellKnownVariables.AppDataJobsEnabled).Value, out enabled) || enabled;
             
             var maxProcessorCount = ProcessorCount(buildVariables);
 
@@ -362,30 +366,53 @@ namespace Arbor.X.Core.Tools.MSBuild
                     return exitCode;
                 }
 
-                var appDataPath = Path.Combine(solutionProject.Project.ProjectDirectory, "App_Data");
-
-                var appDataDirectory = new DirectoryInfo(appDataPath);
-
-                if (appDataDirectory.Exists)
+                if (_appDataJobsEnabled)
                 {
-                    logger.WriteVerbose(string.Format("Site has App_Data directory: '{0}'", appDataDirectory.FullName));
+                    logger.Write("AppData Web Jobs are enabled");
 
-                    var kuduWebJobs =
-                        appDataDirectory.EnumerateDirectories()
-                            .SingleOrDefault(
-                                directory => directory.Name.Equals("jobs", StringComparison.InvariantCultureIgnoreCase));
+                    var appDataPath = Path.Combine(solutionProject.Project.ProjectDirectory, "App_Data");
 
-                    if (kuduWebJobs != null && kuduWebJobs.Exists)
+                    var appDataDirectory = new DirectoryInfo(appDataPath);
+
+                    if (appDataDirectory.Exists)
                     {
-                        logger.WriteVerbose(string.Format("Site has App_Data jobs directory: '{0}'", kuduWebJobs.FullName));
-                        var artifactJobAppDataPath = Path.Combine(siteArtifactDirectory.FullName, "App_Data", "jobs");
+                        logger.WriteVerbose(string.Format("Site has App_Data directory: '{0}'",
+                            appDataDirectory.FullName));
 
-                        var artifactJobAppDataDirectory = new DirectoryInfo(artifactJobAppDataPath).EnsureExists();
+                        var kuduWebJobs =
+                            appDataDirectory.EnumerateDirectories()
+                                .SingleOrDefault(
+                                    directory =>
+                                        directory.Name.Equals("jobs", StringComparison.InvariantCultureIgnoreCase));
 
-                        logger.WriteVerbose(string.Format("Copying directory '{0}' to '{1}'", kuduWebJobs.FullName, artifactJobAppDataDirectory.FullName));
+                        if (kuduWebJobs != null && kuduWebJobs.Exists)
+                        {
+                            logger.WriteVerbose(string.Format("Site has App_Data jobs directory: '{0}'",
+                                kuduWebJobs.FullName));
+                            var artifactJobAppDataPath = Path.Combine(siteArtifactDirectory.FullName, "App_Data", "jobs");
 
-                        DirectoryCopy.Copy(kuduWebJobs.FullName, artifactJobAppDataDirectory.FullName);
+                            var artifactJobAppDataDirectory = new DirectoryInfo(artifactJobAppDataPath).EnsureExists();
+
+                            logger.WriteVerbose(string.Format("Copying directory '{0}' to '{1}'", kuduWebJobs.FullName,
+                                artifactJobAppDataDirectory.FullName));
+
+                            DirectoryCopy.Copy(kuduWebJobs.FullName, artifactJobAppDataDirectory.FullName);
+                        }
+                        else
+                        {
+                            logger.WriteVerbose(string.Format(
+                                "Site has no jobs directory in App_Data directory: '{0}'", appDataDirectory.FullName));
+                        }
                     }
+                    else
+                    {
+                        logger.WriteVerbose(string.Format("Site has no App_Data directory: '{0}'",
+                            appDataDirectory.FullName));
+                    }
+                }
+                else
+                {
+                    logger.Write("AppData Web Jobs are disabled");
                 }
             }
 

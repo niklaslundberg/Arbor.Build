@@ -17,21 +17,36 @@ namespace Arbor.X.Core.Tools
             {
                 throw new ArgumentNullException("targetDir");
             }
-            
+
             var sourceDirectory = new DirectoryInfo(sourceDir);
 
             if (!sourceDirectory.Exists)
             {
                 throw new ArgumentException(string.Format("Source directory '{0}' does not exist", sourceDir));
             }
-            
+
             new DirectoryInfo(targetDir).EnsureExists();
 
-            foreach (var file in sourceDirectory.GetFiles())
-                file.CopyTo(Path.Combine(targetDir, file.Name), overwrite: true);
+            foreach (FileInfo file in sourceDirectory.GetFiles())
+            {
+                string destFileName = Path.Combine(targetDir, file.Name);
 
-            foreach (var directory in sourceDirectory.GetDirectories())
+                try
+                {
+                    file.CopyTo(destFileName, overwrite: true);
+                }
+                catch (PathTooLongException ex)
+                {
+                    throw new PathTooLongException(
+                        string.Format("Could not copy file to '{0}', path length {1}", destFileName, destFileName.Length),
+                        ex);
+                }
+            }
+
+            foreach (DirectoryInfo directory in sourceDirectory.GetDirectories())
+            {
                 Copy(directory.FullName, Path.Combine(targetDir, directory.Name));
+            }
         }
     }
 }

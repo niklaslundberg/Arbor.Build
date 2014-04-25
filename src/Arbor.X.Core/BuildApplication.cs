@@ -87,31 +87,33 @@ namespace Arbor.X.Core
 
             int result = 0;
 
-            var toolResults = new List<string>();
+            var toolResults = new List<Tuple<ToolWithPriority, bool?, string>>();
 
-            foreach (var toolWithPriority in toolWithPriorities)
+            foreach (ToolWithPriority toolWithPriority in toolWithPriorities)
             {
                 if (result != 0)
                 {
                     if (!toolWithPriority.RunAlways)
                     {
-                        toolResults.Add(toolWithPriority + " not run");
+                        toolResults.Add(Tuple.Create(toolWithPriority, (bool?) null, "not run"));
                         continue;
                     }
                 }
 
-                _logger.Write(string.Format("Running tool {0}", toolWithPriority));
+                _logger.Write(Environment.NewLine +
+                              string.Format("######## Running tool {0} ########", toolWithPriority));
 
                 try
                 {
-                    var toolResult = await toolWithPriority.Tool.ExecuteAsync(_logger, buildVariables, _cancellationToken);
+                    var toolResult =
+                        await toolWithPriority.Tool.ExecuteAsync(_logger, buildVariables, _cancellationToken);
 
                     if (toolResult.IsSuccess)
                     {
                         _logger.Write(string.Format("The tool {0} succeeded with exit code {1}", toolWithPriority,
                             toolResult));
 
-                        toolResults.Add(toolWithPriority + " succeeded ");
+                        toolResults.Add(Tuple.Create(toolWithPriority, (bool?) true, ""));
                     }
                     else
                     {
@@ -119,27 +121,69 @@ namespace Arbor.X.Core
                             toolResult));
                         result = toolResult.Result;
 
-                        toolResults.Add(toolWithPriority + " failed with exit code " + toolResult);
+                        toolResults.Add(Tuple.Create(toolWithPriority, (bool?) false,
+                            "failed with exit code " + toolResult));
                     }
                 }
                 catch (Exception ex)
                 {
-                    toolResults.Add(string.Format("{0} threw {1}", toolWithPriority, ex.GetType().Name));
+                    toolResults.Add(Tuple.Create(toolWithPriority, (bool?) false,
+                        string.Format("threw {0}", ex.GetType().Name)));
                     _logger.WriteError(string.Format("The tool {0} failed with exception {1}", toolWithPriority, ex));
                     result = 1;
                 }
             }
 
-            _logger.Write("Tool results:" + Environment.NewLine + string.Join(Environment.NewLine, toolResults));
+            StringBuilder builder = BuildResults(toolResults);
+
+            _logger.Write(Environment.NewLine + new string('.', 100) + Environment.NewLine + "Tool results:" +
+                          Environment.NewLine + builder);
 
             if (result != 0)
             {
                 return ExitCode.Failure;
             }
 
-            _logger.Write("All tools succeeded");
-
             return ExitCode.Success;
+        }
+
+        static StringBuilder BuildResults(List<Tuple<ToolWithPriority, bool?, string>> toolResults)
+        {
+            var maxToolLength = toolResults.Select(i => i.Item1.Tool.GetType().Name.Length).Max();
+
+            const string notRun = "Not run";
+            const string succeeded = "Succeeded";
+            const string failed = "Failed";
+
+            var maxResultLength =
+                toolResults.Select(i => i.Item2.HasValue ? (i.Item2.Value ? succeeded : failed) : notRun)
+                    .Select(j => j.Length)
+                    .Max();
+
+            var builder = new StringBuilder();
+
+            foreach (var toolResult in toolResults)
+            {
+                var toolName = toolResult.Item1.Tool.GetType().Name;
+                var namePadding = maxToolLength + 1 - toolName.Length;
+
+                var resultString = toolResult.Item2.HasValue
+                    ? (toolResult.Item2.Value ? succeeded : failed)
+                    : notRun;
+                builder.Append(toolResult.Item1.Tool.GetType().Name);
+
+                const char padChar = '.';
+                builder.Append(new string(padChar, namePadding));
+
+                builder.Append(resultString);
+
+                var resultPadding = maxResultLength + 1 - resultString.Length;
+
+                builder.Append(new string(' ', resultPadding));
+                builder.Append(toolResult.Item3);
+                builder.AppendLine();
+            }
+            return builder;
         }
 
         void LogTools(IReadOnlyCollection<ToolWithPriority> toolWithPriorities)
@@ -201,7 +245,64 @@ namespace Arbor.X.Core
                 }
             }
 
+            AddCompatibilityVariables(buildVariables);
+
             return buildVariables;
+        }
+
+        void AddCompatibilityVariables(List<IVariable> buildVariables)
+        {
+            var buildVariableArray = buildVariables.ToArray();
+
+            foreach (IVariable buildVariable in buildVariableArray)
+            {
+                if (!buildVariable.Key.StartsWith("Arbor.X", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    continue;
+                }
+
+                var compatibilityName = buildVariable.Key.Replace(".", "_");
+
+                if (buildVariables.Any(bv => bv.Key.Equals(compatibilityName, StringComparison.InvariantCultureIgnoreCase)))
+                {
+                    _logger.Write(string.Format("Compatibility variable name '{0}' --> '{1}' is already defined",
+                        buildVariable.Key, compatibilityName));
+                }
+                else
+                {
+                    _logger.Write(string.Format("Adding compatibility variable name '{0}' --> '{1}' with value '{2}'",
+                        buildVariable.Key, compatibilityName, buildVariable.Value));
+                    buildVariables.Add(new EnvironmentVariable(compatibilityName, buildVariable.Value));
+                }
+            }
+
+            var arborXBranchName =
+                buildVariables.SingleOrDefault(
+                    @var => @var.Key.Equals(WellKnownVariables.BranchName, StringComparison.InvariantCultureIgnoreCase));
+
+            if (arborXBranchName != null && !string.IsNullOrWhiteSpace(arborXBranchName.Value))
+            {
+                const string branchKey = "branch";
+                const string branchNameKey = "branchName";
+
+                if (!buildVariables.Any(@var => @var.Key.Equals(branchKey, StringComparison.InvariantCultureIgnoreCase)))
+                {
+                    _logger.Write(
+                        string.Format(
+                            "Build variable with key '{0}' was not defined, using value from variable key {1} ('{2}')",
+                            branchKey, arborXBranchName.Key, arborXBranchName.Value));
+                    buildVariables.Add(new EnvironmentVariable(branchKey, arborXBranchName.Value));
+                }
+
+                if (!buildVariables.Any(@var => @var.Key.Equals(branchNameKey, StringComparison.InvariantCultureIgnoreCase)))
+                {
+                    _logger.Write(
+                        string.Format(
+                            "Build variable with key '{0}' was not defined, using value from variable key {1} ('{2}')",
+                            branchNameKey, arborXBranchName.Key, arborXBranchName.Value));
+                    buildVariables.Add(new EnvironmentVariable(branchNameKey, arborXBranchName.Value));
+                }
+            }
         }
 
         async Task<IEnumerable<IVariable>> RunOnceAsync()

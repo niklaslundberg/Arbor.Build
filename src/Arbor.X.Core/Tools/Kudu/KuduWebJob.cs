@@ -12,9 +12,27 @@ namespace Arbor.X.Core.Tools.Kudu
     [Priority(1050)]
     public class KuduWebJob : ITool
     {
+        ILogger _logger;
+
         public Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
+            _logger = logger;
+
+            bool enabled;
+            bool kuduWebJobsEnabled = !buildVariables.HasKey(WellKnownVariables.KuduJobsEnabled) ||
+                                      !bool.TryParse(
+                                          buildVariables.GetVariable(WellKnownVariables.KuduJobsEnabled).Value,
+                                          out enabled) || enabled;
+
+            if (!kuduWebJobsEnabled)
+            {
+                _logger.Write("Kudu web jobs are disabled");
+                return Task.FromResult(ExitCode.Success);
+            }
+
+            _logger.Write("Kudu web jobs are enabled");
+
             string sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
 
             var sourceRootDirectory = new DirectoryInfo(sourceRoot);
@@ -24,7 +42,7 @@ namespace Arbor.X.Core.Tools.Kudu
                 .Select(IsKuduWebJobProject)
                 .Where(project => project.IsKuduWebJobProject)
                 .ToList();
-
+            
             if (kuduWebJobProjects.Any())
             {
                 logger.Write(string.Join(Environment.NewLine,
@@ -65,7 +83,19 @@ namespace Arbor.X.Core.Tools.Kudu
                                 if (line.IndexOf(key,
                                     StringComparison.InvariantCultureIgnoreCase) >= 0)
                                 {
-                                    foundItems.Add(key, line);
+                                    if (!foundItems.ContainsKey(key))
+                                    {
+                                        foundItems.Add(key, line);
+                                    }
+                                    else
+                                    {
+                                        var existingValue = foundItems[key];
+
+                                        if (!existingValue.Equals(line, StringComparison.InvariantCultureIgnoreCase))
+                                        {
+                                            _logger.WriteWarning(string.Format("A Kudu web job key '{0}' has already been found with value '{1}', new value is different '{2}', using first value", key, existingValue, line));
+                                        }
+                                    }
                                 }
                             });
 

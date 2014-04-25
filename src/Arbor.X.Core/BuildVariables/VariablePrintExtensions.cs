@@ -30,7 +30,7 @@ namespace Arbor.X.Core.BuildVariables
             {
                 throw new ArgumentNullException("variable");
             }
-            return string.Format("{0}: {1}", variable.Key, variable.Value);
+            return string.Format("\t{0}: {1}", variable.Key, variable.Value);
         }
     }
 }
