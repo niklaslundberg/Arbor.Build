@@ -12,11 +12,20 @@ namespace Arbor.X.Core.IO
                 throw new ArgumentNullException("directoryInfo");
             }
 
-            directoryInfo.Refresh();
-
-            if (!directoryInfo.Exists)
+            try
             {
-                directoryInfo.Create();
+                directoryInfo.Refresh();
+
+                if (!directoryInfo.Exists)
+                {
+                    directoryInfo.Create();
+                }
+            }
+            catch (PathTooLongException ex)
+            {
+                throw new PathTooLongException(
+                    string.Format("Could not create directory '{0}', path length {1}", directoryInfo.FullName,
+                        directoryInfo.FullName.Length), ex);
             }
 
             return directoryInfo;
@@ -32,7 +41,6 @@ namespace Arbor.X.Core.IO
                 {
                     directoryInfo.Delete(recursive);
                 }
-
             }
         }
     }
