@@ -48,7 +48,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="when_listing_all_wellknown_variables.cs" />
     <Compile Include="when_creating_details.cs" />
+    <Compile Include="when_listing_all_wellknown_variables_as_a_table.cs" />
     <Compile Include="when_parsing_continuous.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="when_parsing_empty_value.cs" />

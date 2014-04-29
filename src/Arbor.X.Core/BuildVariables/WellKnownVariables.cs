@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
 
 namespace Arbor.X.Core.BuildVariables
 {
@@ -8,95 +10,146 @@ namespace Arbor.X.Core.BuildVariables
 // ReSharper disable InconsistentNaming
 
 // ReSharper disable ConvertToConstant.Global
+        [VariableDescriptionAttribute("External tools path")]
         public static readonly string ExternalTools = "Arbor.X.Tools.External";
 
+        [VariableDescriptionAttribute("Test framework report path")]
         public static readonly string ReportPath = "Arbor.X.Artifacts.TestReports";
 
+        [VariableDescriptionAttribute("Visual Studio version")]
         public static readonly string ExternalTools_VisualStudio_Version =
             "Arbor.X.Tools.External.VisualStudio.Version";
 
+        [VariableDescriptionAttribute("Build arftifacts path")]
         public static readonly string Artifacts = "Arbor.X.Artifacts";
 
+        [VariableDescriptionAttribute("Full build version number")]
         public static readonly string Version = "Arbor.X.Build.Version";
-
-        public static readonly string DirectoryCloneEnabled = "Arbor.X.Vcs.DirectoryCloneEnabled";
         
+        [VariableDescriptionAttribute("External tools path")]
+        public static readonly string DirectoryCloneEnabled = "Arbor.X.Vcs.DirectoryCloneEnabled";
+
+        [VariableDescriptionAttribute("Max number of CPUs for MSBuild to use")]
         public static readonly string CpuLimit = "Arbor.X.CpuLimit";
 
+        [VariableDescriptionAttribute(".NET assembly version")]
         public static readonly string NetAssemblyVersion = "Arbor.X.Build.NetAssembly.Version";
 
+        [VariableDescriptionAttribute(".NET assembly file version")]
         public static readonly string NetAssemblyFileVersion = "Arbor.X.Build.NetAssembly.FileVersion";
 
+        [VariableDescriptionAttribute("Flag to indicate if the build is consider a release build")]
         public static readonly string ReleaseBuild = "Arbor.X.Build.IsReleaseBuild";
 
+        [VariableDescriptionAttribute("MSBuild configuration (eg. Debug/Release)")]
         public static readonly string Configuration = "Arbor.X.Build.Configuration";
 
+        [VariableDescriptionAttribute("Current branch name for the version control system")]
         public static readonly string BranchName = "Arbor.X.Vcs.Branch.Name";
 
+        [VariableDescriptionAttribute("Temporary directory path")]
         public static readonly string TempDirectory = "Arbor.X.Build.TempDirectory";
 
+        [VariableDescriptionAttribute("NuGet executable path (eg. C:\\nuget.exe")]
         public static readonly string ExternalTools_NuGet_ExePath = "Arbor.X.Tools.External.NuGet.ExePath";
 
+        [VariableDescriptionAttribute("Symbol server URI for NuGet source package upload")]
         public static readonly string ExternalTools_SymbolServer_Uri = "Arbor.X.Tools.External.SymbolServer.Uri";
 
+        [VariableDescriptionAttribute("Symbol server API key for NuGet source package upload")]
         public static readonly string ExternalTools_SymbolServer_ApiKey = "Arbor.X.Tools.External.SymbolServer.ApiKey";
 
+        [VariableDescriptionAttribute("Flag to indicate if the build is running on a build agent")]
         public static readonly string IsRunningOnBuildAgent = "Arbor.X.Build.IsRunningOnBuildAgent";
 
+        [VariableDescriptionAttribute("Flag to indicate if the bootstrapper is allowed to download pre-release versions of Arbor.X NuGet package", "false")]
         public static readonly string AllowPrerelease = "Arbor.X.Build.Bootstrapper.AllowPrerelease";
-
+                
+        [VariableDescriptionAttribute("MSBuild executable path (eg. C:\\MSbuild.exe")]
         public static readonly string ExternalTools_MSBuild_ExePath = "Arbor.X.Tools.External.MSBuild.ExePath";
 
+        [VariableDescriptionAttribute("Directory path for the current version control system repository")]
         public static readonly string SourceRoot = "SourceRoot";
 
+        [VariableDescriptionAttribute("Flag to indicate if build platform AnyCPU is disabled","false", AnyCpuEnabled)]
         public static readonly string IgnoreAnyCpu = "Arbor.X.Build.Platform.AnyCPU.Disabled";
 
+        [VariableDescriptionAttribute("Flag to indicate if build platform AnyCPU is enabled")]
+        public const string AnyCpuEnabled = "Arbor.X.Build.Platform.AnyCPU.Disabled";
+
+        [VariableDescriptionAttribute("Flag to indicate if build configuration Release is disabled", "false")]
         public static readonly string IgnoreRelease = "Arbor.X.Build.Configuration.Release.Disabled";
 
+        [VariableDescriptionAttribute("Flag to indicate if build platform configuration Debug is disabled", "false")]
         public static readonly string IgnoreDebug = "Arbor.X.Build.Configuration.Debug.Disabled";
 
+        [VariableDescriptionAttribute("Flag to indicate if test runner error results are ignored", "false")]
         public static readonly string IgnoreTestFailures = "Arbor.X.Build.Tests.IgnoreTestFailures";
 
+        [VariableDescriptionAttribute("Visual Studio Test Framework console application path, (eg. C:\\VSTestConsole.exe)", "false")]
         public static readonly string ExternalTools_VSTest_ExePath = "Arbor.X.Tools.External.VSTest.ExePath";
 
+        [VariableDescriptionAttribute("Visual Studio Test Framework test reports directory path")]
         public static readonly string ExternalTools_VSTest_ReportPath = "Arbor.X.Artifacts.TestReports.VSTest";
 
+        [VariableDescriptionAttribute("ILMerge executable path (eg. C:\\IlMerge.exe)")]
         public static readonly string ExternalTools_ILMerge_ExePath = "Arbor.X.Tools.External.ILMerge.ExePath";
 
+        [VariableDescriptionAttribute("Flag to indicate if Kudu deployment is enabled", "true")]
         public static readonly string ExternalTools_Kudu_Enabled = "Arbor.X.Tools.External.Kudu.Enabled";
 
+        [VariableDescriptionAttribute("External, Kudu: deployment target directory path (website public directory)")]
         public static readonly string ExternalTools_Kudu_DeploymentTarget = "DEPLOYMENT_TARGET";
 
+        [VariableDescriptionAttribute("External, Kudu: site running as x86 or x64 process")]
         public static readonly string ExternalTools_Kudu_Platform = "REMOTEDEBUGGINGBITVERSION";
 
-        public static readonly string ExternalTools_Kudu_DeploymentBranchName = "deployment_branch";
+        [VariableDescriptionAttribute("External, Kudu: deployment version control branch")]
+        public const string ExternalTools_Kudu_DeploymentBranchName = "deployment_branch";
 
+        [VariableDescriptionAttribute("Deployment branch to be used in Kudu, overrides value defined in " + ExternalTools_Kudu_DeploymentBranchName)]
         public static readonly string ExternalTools_Kudu_DeploymentBranchNameOverride = "Arbor.X.Tools.External.Kudu.DeploymentBranchNameOverride";
 
+        [VariableDescriptionAttribute("External, Kudu: number of processors available on the current system")]
         public static readonly string ExternalTools_Kudu_ProcessorCount = "NUMBER_OF_PROCESSORS";
-
+        
+        [VariableDescriptionAttribute("Flag to indicate if Kudu WebJobs defined in App_Data directory is to be handled by the Kudu WebJobs aware tools")]
         public static readonly string AppDataJobsEnabled = "Arbor.X.Tools.External.Kudu.WebJobs.AppData.Enabled";
 
+        [VariableDescriptionAttribute("MSBuild configuration to be used to locate web application artifacts to be deployed, if not found by the tools")]
         public static readonly string KuduConfigurationFallback = "Arbor.X.Tools.External.Kudu.ConfigurationFallback";
 
+        [VariableDescriptionAttribute("Flag to indicate if Kudu WebJobs is to be handles by the Kudu WebJobs aware tools")]
         public static readonly string KuduJobsEnabled = "Arbor.X.Tools.External.Kudu.WebJobs.Enabled";
 
+        [VariableDescriptionAttribute("Time out in seconds for total build process")]
         public static readonly string BuildToolTimeoutInSeconds = "Arbor.X.Build.TimeoutInSeconds";
 
         // ReSharper restore ConvertToConstant.Global
         // ReSharper restore InconsistentNaming
 
-        public static IEnumerable<KeyValuePair<string, string>> Keys
+        public static IReadOnlyCollection<VariableDescription> AllVariables
         {
             get
             {
-                var fields = typeof (WellKnownVariables).GetFields(BindingFlags.Public | BindingFlags.Static);
+                var allVariables = new List<VariableDescription>();
+
+                var fields = typeof (WellKnownVariables).GetTypeInfo().GetFields().Where(field => (field.IsLiteral  || field.IsStatic) && field.IsPublic).ToList();
 
                 foreach (var field in fields)
                 {
-                    var value = (string) field.GetValue(null);
-                    yield return new KeyValuePair<string, string>(field.Name, value);
+                    var invariantName = (string) field.GetValue(null);
+
+                    VariableDescriptionAttribute attribute = field.GetCustomAttribute<VariableDescriptionAttribute>();
+
+                    VariableDescription description = attribute != null
+                        ? VariableDescription.Create(invariantName, attribute.Description, field.Name, attribute.DefaultValue)
+                        : VariableDescription.Create(field.Name);
+
+                    allVariables.Add(description);
                 }
+
+                return allVariables.OrderBy(name => name.InvariantName).ToList();
             }
         }
         

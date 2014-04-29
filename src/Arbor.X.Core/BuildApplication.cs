@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -76,9 +77,21 @@ namespace Arbor.X.Core
 
         async Task<ExitCode> RunSystemToolsAsync()
         {
-            var buildVariables = (await GetBuildVariablesAsync()).ToList();
+            List<IVariable> buildVariables = (await GetBuildVariablesAsync()).ToList();
 
-            _logger.Write(string.Format("Build variables: [{0}] {1}{2}", buildVariables.Count, Environment.NewLine,
+            string variableAsTable = WellKnownVariables.AllVariables
+                .Select(variable => new Dictionary<string, string>
+                                    {
+                                        {"Name", variable.InvariantName},
+                                        {"Description", variable.Description},
+                                        {"Default value", variable.DefaultValue}
+                                    })
+                .DisplayAsTable();
+
+            _logger.Write(string.Format("Available wellknown variables: {0}{1}", Environment.NewLine, variableAsTable));
+
+            _logger.Write(string.Format("Defined build variables: [{0}] {1}{2}", buildVariables.Count,
+                Environment.NewLine,
                 buildVariables.Print()));
 
             IReadOnlyCollection<ToolWithPriority> toolWithPriorities = ToolFinder.GetTools(_logger);
@@ -105,7 +118,7 @@ namespace Arbor.X.Core
 
                 try
                 {
-                    var toolResult =
+                    ExitCode toolResult =
                         await toolWithPriority.Tool.ExecuteAsync(_logger, buildVariables, _cancellationToken);
 
                     if (toolResult.IsSuccess)
@@ -134,10 +147,10 @@ namespace Arbor.X.Core
                 }
             }
 
-            StringBuilder builder = BuildResults(toolResults);
+            string resultTable = BuildResults(toolResults);
 
             _logger.Write(Environment.NewLine + new string('.', 100) + Environment.NewLine + "Tool results:" +
-                          Environment.NewLine + builder);
+                          Environment.NewLine + resultTable);
 
             if (result != 0)
             {
@@ -147,43 +160,33 @@ namespace Arbor.X.Core
             return ExitCode.Success;
         }
 
-        static StringBuilder BuildResults(List<Tuple<ToolWithPriority, bool?, string>> toolResults)
+        static string BuildResults(IEnumerable<Tuple<ToolWithPriority, bool?, string>> toolResults)
         {
-            var maxToolLength = toolResults.Select(i => i.Item1.Tool.GetType().Name.Length).Max();
-
             const string notRun = "Not run";
             const string succeeded = "Succeeded";
             const string failed = "Failed";
 
-            var maxResultLength =
-                toolResults.Select(i => i.Item2.HasValue ? (i.Item2.Value ? succeeded : failed) : notRun)
-                    .Select(j => j.Length)
-                    .Max();
+            string displayTable = toolResults.Select(
+                result =>
+                    new Dictionary<string, string>
+                    {
+                        {
+                            "Tool",
+                            result.Item1.Tool.Name()
+                        },
+                        {
+                            "Result",
+                            result.Item2.HasValue
+                                ? (result.Item2.Value ? succeeded : failed)
+                                : notRun
+                        },
+                        {
+                            "Message",
+                            result.Item3
+                        }
+                    }).DisplayAsTable();
 
-            var builder = new StringBuilder();
-
-            foreach (var toolResult in toolResults)
-            {
-                var toolName = toolResult.Item1.Tool.GetType().Name;
-                var namePadding = maxToolLength + 1 - toolName.Length;
-
-                var resultString = toolResult.Item2.HasValue
-                    ? (toolResult.Item2.Value ? succeeded : failed)
-                    : notRun;
-                builder.Append(toolResult.Item1.Tool.GetType().Name);
-
-                const char padChar = '.';
-                builder.Append(new string(padChar, namePadding));
-
-                builder.Append(resultString);
-
-                var resultPadding = maxResultLength + 1 - resultString.Length;
-
-                builder.Append(new string(' ', resultPadding));
-                builder.Append(toolResult.Item3);
-                builder.AppendLine();
-            }
-            return builder;
+            return displayTable;
         }
 
         void LogTools(IReadOnlyCollection<ToolWithPriority> toolWithPriorities)
@@ -191,10 +194,21 @@ namespace Arbor.X.Core
             var sb = new StringBuilder();
 
             sb.AppendLine(string.Format("Running tools: [{0}]", toolWithPriorities.Count));
-            foreach (var toolWithPriority in toolWithPriorities)
-            {
-                sb.AppendLine(toolWithPriority.ToString());
-            }
+
+            sb.AppendLine(toolWithPriorities.Select(tool =>
+                new Dictionary<string, string>
+                {
+                    {
+                        "Tool", tool.Tool.Name()
+                    },
+                    {
+                        "Priority", tool.Priority.ToString(CultureInfo.InvariantCulture)
+                    },
+                    {
+                        "Run always", tool.RunAlways ? "Run always" : ""
+                    }
+                })
+                .DisplayAsTable());
 
             _logger.Write(sb.ToString());
         }
@@ -203,7 +217,7 @@ namespace Arbor.X.Core
         {
             var buildVariables = new List<IVariable>();
 
-            var result = await RunOnceAsync();
+            IEnumerable<IVariable> result = await RunOnceAsync();
 
             buildVariables.AddRange(result);
 
@@ -224,15 +238,20 @@ namespace Arbor.X.Core
                                 new KuduEnvironmentVariableProvider()
                             }; //TODO use Autofac
 
+            string displayAsTable =
+                providers.Select(item => new Dictionary<string, string> {{"Provider", item.GetType().Name}})
+                    .DisplayAsTable();
+
             _logger.Write(string.Format("Available variable providers: [{0}]{1}{2}", providers.Count,
                 Environment.NewLine,
-                string.Join(Environment.NewLine, providers.Select(item => item.GetType().Name))));
+                displayAsTable));
 
-            foreach (var provider in providers)
+            foreach (IVariableProvider provider in providers)
             {
-                var newVariables = await provider.GetEnvironmentVariablesAsync(_logger, buildVariables);
+                IEnumerable<IVariable> newVariables =
+                    await provider.GetEnvironmentVariablesAsync(_logger, buildVariables);
 
-                foreach (var @var in newVariables)
+                foreach (IVariable @var in newVariables)
                 {
                     if (buildVariables.Any(
                         item => item.Key.Equals(@var.Key, StringComparison.InvariantCultureIgnoreCase)))
@@ -252,7 +271,10 @@ namespace Arbor.X.Core
 
         void AddCompatibilityVariables(List<IVariable> buildVariables)
         {
-            var buildVariableArray = buildVariables.ToArray();
+            IVariable[] buildVariableArray = buildVariables.ToArray();
+
+            var alreadyDefined = new List<Dictionary<string, string>>();
+            var compatibilities = new List<Dictionary<string, string>>();
 
             foreach (IVariable buildVariable in buildVariableArray)
             {
@@ -261,22 +283,44 @@ namespace Arbor.X.Core
                     continue;
                 }
 
-                var compatibilityName = buildVariable.Key.Replace(".", "_");
+                string compatibilityName = buildVariable.Key.Replace(".", "_");
 
-                if (buildVariables.Any(bv => bv.Key.Equals(compatibilityName, StringComparison.InvariantCultureIgnoreCase)))
+                if (
+                    buildVariables.Any(
+                        bv => bv.Key.Equals(compatibilityName, StringComparison.InvariantCultureIgnoreCase)))
                 {
-                    _logger.Write(string.Format("Compatibility variable name '{0}' --> '{1}' is already defined",
-                        buildVariable.Key, compatibilityName));
+                    alreadyDefined.Add(new Dictionary<string, string>
+                                       {
+                                           {"Name", buildVariable.Key},
+                                           {"Value", buildVariable.Value}
+                                       });
                 }
                 else
                 {
-                    _logger.Write(string.Format("Adding compatibility variable name '{0}' --> '{1}' with value '{2}'",
-                        buildVariable.Key, compatibilityName, buildVariable.Value));
+                    compatibilities.Add(new Dictionary<string, string>
+                                        {
+                                            {"Name", buildVariable.Key},
+                                            {"Compatibility name", compatibilityName},
+                                            {"Value", buildVariable.Value}
+                                        });
+
                     buildVariables.Add(new EnvironmentVariable(compatibilityName, buildVariable.Value));
                 }
             }
 
-            var arborXBranchName =
+            if (alreadyDefined.Any())
+            {
+                _logger.Write(string.Format("Compatibility build variables alread defined {0}{1}", Environment.NewLine,
+                    alreadyDefined.DisplayAsTable()));
+            }
+
+            if (compatibilities.Any())
+            {
+                _logger.Write(string.Format("Compatibility build variables added {0}{1}", Environment.NewLine,
+                    compatibilities.DisplayAsTable()));
+            }
+
+            IVariable arborXBranchName =
                 buildVariables.SingleOrDefault(
                     @var => @var.Key.Equals(WellKnownVariables.BranchName, StringComparison.InvariantCultureIgnoreCase));
 
@@ -294,7 +338,9 @@ namespace Arbor.X.Core
                     buildVariables.Add(new EnvironmentVariable(branchKey, arborXBranchName.Value));
                 }
 
-                if (!buildVariables.Any(@var => @var.Key.Equals(branchNameKey, StringComparison.InvariantCultureIgnoreCase)))
+                if (
+                    !buildVariables.Any(
+                        @var => @var.Key.Equals(branchNameKey, StringComparison.InvariantCultureIgnoreCase)))
                 {
                     _logger.Write(
                         string.Format(
@@ -313,7 +359,7 @@ namespace Arbor.X.Core
 
             if (string.IsNullOrWhiteSpace(branchName))
             {
-                var branchNameResult = await GetBranchNameByAskingGitExeAsync();
+                Tuple<int, string> branchNameResult = await GetBranchNameByAskingGitExeAsync();
 
                 if (branchNameResult.Item1 != 0)
                 {
@@ -325,12 +371,13 @@ namespace Arbor.X.Core
                 variables.Add(WellKnownVariables.BranchName, branchName);
             }
 
-            var configuration = GetConfiguration(branchName);
+            string configuration = GetConfiguration(branchName);
             variables.Add(WellKnownVariables.Configuration, configuration);
-            var isReleaseBuild = IsReleaseBuild(branchName);
+            bool isReleaseBuild = IsReleaseBuild(branchName);
             variables.Add(WellKnownVariables.ReleaseBuild, isReleaseBuild.ToString());
 
-            var newLines = variables.Where(item => item.Value.Contains(Environment.NewLine)).ToList();
+            List<KeyValuePair<string, string>> newLines =
+                variables.Where(item => item.Value.Contains(Environment.NewLine)).ToList();
 
             if (newLines.Any())
             {
@@ -338,7 +385,7 @@ namespace Arbor.X.Core
 
                 variablesWithNewLinesBuilder.AppendLine("Variables containing new lines: ");
 
-                foreach (var keyValuePair in newLines)
+                foreach (KeyValuePair<string, string> keyValuePair in newLines)
                 {
                     variablesWithNewLinesBuilder.AppendLine(string.Format("Key {0}: ", keyValuePair.Key));
                     variablesWithNewLinesBuilder.AppendLine(string.Format("'{0}'", keyValuePair.Value));
@@ -381,25 +428,25 @@ namespace Arbor.X.Core
 
             if (!File.Exists(gitExePath))
             {
-                var githubForWindowsPath =
+                string githubForWindowsPath =
                     Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "GitHub");
 
                 if (Directory.Exists(githubForWindowsPath))
                 {
-                    var shellFile = Path.Combine(githubForWindowsPath, "shell.ps1");
+                    string shellFile = Path.Combine(githubForWindowsPath, "shell.ps1");
 
                     if (File.Exists(shellFile))
                     {
-                        var lines = File.ReadAllLines(shellFile);
+                        string[] lines = File.ReadAllLines(shellFile);
 
-                        var pathLine = lines.SingleOrDefault(
+                        string pathLine = lines.SingleOrDefault(
                             line => line.IndexOf("$env:github_git = ", StringComparison.InvariantCultureIgnoreCase) >= 0);
 
                         if (!string.IsNullOrWhiteSpace(pathLine))
                         {
-                            var directory = pathLine.Split('=').Last().Replace("\"", "");
+                            string directory = pathLine.Split('=').Last().Replace("\"", "");
 
-                            var githPath = Path.Combine(directory, "bin", "git.exe");
+                            string githPath = Path.Combine(directory, "bin", "git.exe");
 
                             if (File.Exists(githPath))
                             {
@@ -419,7 +466,7 @@ namespace Arbor.X.Core
             var arguments = new List<string> {"rev-parse", "--abbrev-ref", "HEAD"};
 
 
-            var currentDirectory = VcsPathHelper.FindVcsRootPath();
+            string currentDirectory = VcsPathHelper.FindVcsRootPath();
 
             if (currentDirectory == null)
             {
@@ -427,7 +474,7 @@ namespace Arbor.X.Core
                 return Tuple.Create(-1, string.Empty);
             }
 
-            var branchName = await GetGitBranchNameAsync(currentDirectory, gitExePath, arguments);
+            string branchName = await GetGitBranchNameAsync(currentDirectory, gitExePath, arguments);
 
             if (string.IsNullOrWhiteSpace(branchName))
             {
@@ -443,16 +490,17 @@ namespace Arbor.X.Core
             string branchName;
             var gitBranchBuilder = new StringBuilder();
 
-            var oldCurrentDirectory = Directory.GetCurrentDirectory();
+            string oldCurrentDirectory = Directory.GetCurrentDirectory();
             try
             {
                 Directory.SetCurrentDirectory(currentDirectory);
 
-                var result =
+                ExitCode result =
                     await
                         ProcessRunner.ExecuteAsync(gitExePath, arguments: arguments,
                             standardErrorAction: _logger.WriteError,
-                            standardOutLog: message => gitBranchBuilder.AppendLine(message), cancellationToken: _cancellationToken);
+                            standardOutLog: message => gitBranchBuilder.AppendLine(message),
+                            cancellationToken: _cancellationToken);
 
                 if (!result.IsSuccess)
                 {

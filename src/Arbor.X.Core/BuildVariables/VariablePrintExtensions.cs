@@ -14,14 +14,11 @@ namespace Arbor.X.Core.BuildVariables
                 throw new ArgumentNullException("variables");
             }
 
-            var sb = new StringBuilder();
+            var dictionaries =
+                variables.Select(
+                    variable => new Dictionary<string, string> {{"Name", variable.Key}, {"Value", variable.Value}});
 
-            foreach (var variable in variables.OrderBy(@var => @var.Key))
-            {
-                sb.AppendLine(variable.DisplayValue());
-            }
-
-            return sb.ToString();
+            return dictionaries.DisplayAsTable();
         }
 
         public static string DisplayValue(this IVariable variable)
