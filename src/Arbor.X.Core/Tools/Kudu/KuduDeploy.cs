@@ -18,6 +18,7 @@ namespace Arbor.X.Core.Tools.Kudu
         string _deploymentTargetDirectory;
         bool _kuduEnabled;
         string _platform;
+        string _kuduConfigurationFallback;
 
         public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {
@@ -31,6 +32,10 @@ namespace Arbor.X.Core.Tools.Kudu
             _deployBranch = new BranchName(buildVariables.Require(WellKnownVariables.ExternalTools_Kudu_DeploymentBranchName).Value);
             _deploymentTargetDirectory =
                 buildVariables.Require(WellKnownVariables.ExternalTools_Kudu_DeploymentTarget).Value;
+
+            _kuduConfigurationFallback = buildVariables.HasKey(WellKnownVariables.KuduConfigurationFallback)
+                ? buildVariables.Require(WellKnownVariables.KuduConfigurationFallback).Value
+                : "";
 
             var branchNameOverride = buildVariables.SingleOrDefault(bv => bv.Key.Equals(WellKnownVariables.ExternalTools_Kudu_DeploymentBranchNameOverride, StringComparison.InvariantCultureIgnoreCase));
 
@@ -167,8 +172,24 @@ namespace Arbor.X.Core.Tools.Kudu
                     return debugConfig;
                 }
             }
+            else if (!string.IsNullOrWhiteSpace(_kuduConfigurationFallback))
+            {
+                var configDir = directoryInfos.SingleOrDefault(
+                    dir => dir.Name.Equals(_kuduConfigurationFallback, StringComparison.InvariantCultureIgnoreCase));
 
-            logger.WriteError(string.Format("Could not determine configuration: [{0}]",
+                logger.Write(string.Format("Kudu fallback is '{0}'", _kuduConfigurationFallback));
+
+                if (configDir != null)
+                {
+                    logger.Write(string.Format("Using Kudu fallback configuration {0}",
+                        configDir.Name));
+
+                    return configDir;
+                }
+                logger.WriteWarning(string.Format("Kudu fallback configuration '{0}' was not found", _kuduConfigurationFallback));
+            }
+
+            logger.WriteError(string.Format("Could not determine Kudu deployment configuration: [{0}]",
                 string.Join(", ", directoryInfos.Select(di => di.Name))));
             return null;
         }

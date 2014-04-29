@@ -77,6 +77,8 @@ namespace Arbor.X.Core.BuildVariables
 
         public static readonly string AppDataJobsEnabled = "Arbor.X.Tools.External.Kudu.WebJobs.AppData.Enabled";
 
+        public static readonly string KuduConfigurationFallback = "Arbor.X.Tools.External.Kudu.ConfigurationFallback";
+
         public static readonly string KuduJobsEnabled = "Arbor.X.Tools.External.Kudu.WebJobs.Enabled";
 
         public static readonly string BuildToolTimeoutInSeconds = "Arbor.X.Build.TimeoutInSeconds";
