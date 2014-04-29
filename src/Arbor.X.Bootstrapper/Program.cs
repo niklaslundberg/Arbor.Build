@@ -29,7 +29,15 @@ namespace Arbor.X.Bootstrapper
                 }
                 exitCode = ExitCode.Failure;
             }
-            stopwatch.Stop();
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine(ex);
+                exitCode = ExitCode.Failure;
+            }
+            finally
+            {
+                stopwatch.Stop();
+            }
 
             Console.WriteLine("Arbor.X.Bootstrapper total inclusive Arbor.X.Build elapsed time in seconds: {0}", stopwatch.Elapsed.TotalSeconds.ToString("F"));
 
