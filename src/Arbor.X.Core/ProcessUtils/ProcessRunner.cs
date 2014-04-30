@@ -75,7 +75,16 @@ namespace Arbor.X.Core.ProcessUtils
                               EnableRaisingEvents = true
                           };
 
-            process.Disposed += (sender, args) => verbose(string.Format("Disposed process '{0}'", processWithArgs), null);
+            process.Disposed += (sender, args) =>
+            {
+                if (!taskCompletionSource.Task.IsCompleted || !taskCompletionSource.Task.IsFaulted ||
+                    !taskCompletionSource.Task.IsCanceled)
+                {
+                    toolAction("Task was not completed, but is disposed",null);
+                    taskCompletionSource.TrySetResult(ExitCode.Failure);
+                }
+                verbose(string.Format("Disposed process '{0}'", processWithArgs), null);
+            };
 
             if (redirectStandardError)
             {
@@ -172,14 +181,14 @@ namespace Arbor.X.Core.ProcessUtils
             return exitCode;
         }
 
-        static bool IsAlive(Process process, Task<ExitCode> token, CancellationToken cancellationToken, bool done)
+        static bool IsAlive(Process process, Task<ExitCode> task, CancellationToken cancellationToken, bool done)
         {
             if (process == null)
             {
                 return false;
             }
 
-            if (token.IsCompleted || token.IsFaulted || token.IsCanceled)
+            if (task.IsCompleted || task.IsFaulted || task.IsCanceled)
             {
                 return false;
             }

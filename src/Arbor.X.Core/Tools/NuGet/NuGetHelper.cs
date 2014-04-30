@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Arbor.X.Core.Logging;
 
@@ -15,7 +16,7 @@ namespace Arbor.X.Core.Tools.NuGet
             _logger = logger;
         }
 
-        public async Task<string> EnsureNuGetExeExistsAsync()
+        public async Task<string> EnsureNuGetExeExistsAsync(CancellationToken cancellationToken)
         {
             var baseDir = AppDomain.CurrentDomain.BaseDirectory;
             var targetFile = Path.Combine(baseDir, "nuget.exe");
@@ -28,7 +29,7 @@ namespace Arbor.X.Core.Tools.NuGet
                 {
                     try
                     {
-                        await DownloadNuGetExeAsync(baseDir, targetFile);
+                        await DownloadNuGetExeAsync(baseDir, targetFile, cancellationToken);
 
                         return targetFile;
                     }
@@ -41,14 +42,14 @@ namespace Arbor.X.Core.Tools.NuGet
                     
                     _logger.Write(string.Format("Waiting {0} seconds to try again", waitTimeInSeconds));
 
-                    await Task.Delay(TimeSpan.FromSeconds(waitTimeInSeconds));
+                    await Task.Delay(TimeSpan.FromSeconds(waitTimeInSeconds), cancellationToken);
                 }
             }
 
             return targetFile;
         }
 
-        async Task DownloadNuGetExeAsync(string baseDir, string targetFile)
+        async Task DownloadNuGetExeAsync(string baseDir, string targetFile, CancellationToken cancellationToken)
         {
             var tempFile = Path.Combine(baseDir, string.Format("nuget.exe.{0}.tmp", Guid.NewGuid()));
 
@@ -63,7 +64,7 @@ namespace Arbor.X.Core.Tools.NuGet
                     {
                         using (var fs = new FileStream(tempFile, FileMode.Create))
                         {
-                            await stream.CopyToAsync(fs);
+                            await stream.CopyToAsync(fs,4096,cancellationToken);
                         }
                     }
 

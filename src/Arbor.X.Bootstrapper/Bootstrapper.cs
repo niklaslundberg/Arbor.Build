@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -24,6 +25,39 @@ namespace Arbor.X.Bootstrapper
         bool _directoryCloneEnabled;
 
         public async Task<ExitCode> StartAsync(string[] args)
+        {
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+            ExitCode exitCode;
+            try
+            {
+                exitCode = await TryStartAsync(args);
+                stopwatch.Stop();
+            }
+            catch (AggregateException ex)
+            {
+                stopwatch.Stop();
+                exitCode = ExitCode.Failure;
+                _consoleLogger.WriteError(ex.ToString());
+
+                foreach (var innerEx in ex.InnerExceptions)
+                {
+                    _consoleLogger.WriteError(innerEx.ToString());
+                }
+            }
+            catch (Exception ex)
+            {
+                stopwatch.Stop();
+                exitCode = ExitCode.Failure;
+                _consoleLogger.WriteError(ex.ToString());
+            }
+
+            _consoleLogger.Write("Arbor.X.Bootstrapper total inclusive Arbor.X.Build elapsed time in seconds: {0}", stopwatch.Elapsed.TotalSeconds.ToString("F"));
+
+            return exitCode;
+        }
+
+        public async Task<ExitCode> TryStartAsync(string[] args)
         {
             _consoleLogger.Write("Starting Arbor.X Bootstrapper");
 

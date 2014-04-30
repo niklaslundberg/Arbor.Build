@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Aesculus.Core;
 using Arbor.X.Core.BuildVariables;
@@ -10,7 +11,7 @@ namespace Arbor.X.Core.Tools.Environments
 {
     public class SourcePathVariableProvider : IVariableProvider
     {
-        public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables)
+        public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {
             var sourceRoot = VcsPathHelper.FindVcsRootPath();
 

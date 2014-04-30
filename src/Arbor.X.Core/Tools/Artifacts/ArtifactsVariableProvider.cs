@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
@@ -9,7 +10,7 @@ namespace Arbor.X.Core.Tools.Artifacts
 {
     public class ArtifactsVariableProvider : IVariableProvider
     {
-        public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables)
+        public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {
             var sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
 

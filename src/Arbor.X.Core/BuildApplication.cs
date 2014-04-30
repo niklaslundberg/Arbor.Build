@@ -28,7 +28,6 @@ namespace Arbor.X.Core
 {
     public class BuildApplication
     {
-        const int MaxBuildTime = 600;
         readonly ILogger _logger;
         CancellationToken _cancellationToken;
 
@@ -39,8 +38,7 @@ namespace Arbor.X.Core
 
         public async Task<ExitCode> RunAsync()
         {
-            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(MaxBuildTime));
-            _cancellationToken = cancellationTokenSource.Token;
+            _cancellationToken = CancellationToken.None;
             ExitCode exitCode;
             var stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -87,6 +85,15 @@ namespace Arbor.X.Core
                                         {"Default value", variable.DefaultValue}
                                     })
                 .DisplayAsTable();
+            var environmentVariables = Environment.GetEnvironmentVariables();
+
+            buildVariables.ForEach(variable =>
+            {
+                if (!environmentVariables.Contains(variable.Key))
+                {
+                    Environment.SetEnvironmentVariable(variable.Key, variable.Value);
+                }
+            });
 
             _logger.Write(string.Format("{0}Available wellknown variables: {0}{0}{1}", Environment.NewLine, variableAsTable));
 
@@ -260,7 +267,7 @@ namespace Arbor.X.Core
             foreach (IVariableProvider provider in providers)
             {
                 IEnumerable<IVariable> newVariables =
-                    await provider.GetEnvironmentVariablesAsync(_logger, buildVariables);
+                    await provider.GetEnvironmentVariablesAsync(_logger, buildVariables, _cancellationToken);
 
                 foreach (IVariable @var in newVariables)
                 {

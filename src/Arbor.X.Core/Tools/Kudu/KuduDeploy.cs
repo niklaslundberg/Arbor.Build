@@ -79,7 +79,6 @@ namespace Arbor.X.Core.Tools.Kudu
                 return ExitCode.Failure;
             }
 
-
             if (websiteToDeploy.GetDirectories().Count() > 1)
             {
                 logger.WriteError(string.Format("Could not find exactly one platform for website {0}", websiteToDeploy.Name));
@@ -98,13 +97,22 @@ namespace Arbor.X.Core.Tools.Kudu
 
             if (configuration == null)
             {
+                logger.WriteError("No configuration for Kudu");
                 return ExitCode.Failure;
             }
 
             logger.Write(string.Format("___________________ Kudu deploy ___________________ \r\nDeploying website {0}, platform {1}, configuration {2}", websiteToDeploy.Name, platform.Name, configuration.Name));
 
             logger.Write(string.Format("Copying files and directories from '{0}' to '{1}'", configuration.FullName, _deploymentTargetDirectory));
-            DirectoryCopy.Copy(configuration.FullName, _deploymentTargetDirectory);
+            try
+            {
+                DirectoryCopy.Copy(configuration.FullName, _deploymentTargetDirectory);
+            }
+            catch (Exception ex)
+            {
+                logger.WriteError("Kudu deploy could not copy files " + ex.ToString());
+                return ExitCode.Failure;
+            }
 
             await Task.Delay(TimeSpan.FromMilliseconds(20), cancellationToken); //TODO temp to avoid compiler warning
 

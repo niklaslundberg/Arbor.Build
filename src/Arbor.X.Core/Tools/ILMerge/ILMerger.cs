@@ -55,7 +55,7 @@ namespace Arbor.X.Core.Tools.ILMerge
                 var result =
                     await
                         ProcessRunner.ExecuteAsync(_ilMergeExePath, arguments: arguments, standardOutLog: logger.Write,
-                            toolAction: logger.Write, standardErrorAction: logger.WriteError);
+                            toolAction: logger.Write, standardErrorAction: logger.WriteError, cancellationToken: cancellationToken);
 
                 if (!result.IsSuccess)
                 {
