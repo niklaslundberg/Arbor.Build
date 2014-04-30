@@ -126,7 +126,7 @@ namespace Arbor.X.Bootstrapper
                         cancellationToken: cancellationTokenSource.Token,
                         standardOutLog: _consoleLogger.Write,
                         standardErrorAction: _consoleLogger.Write,
-                        toolAction: message => _consoleLogger.Write(message, ConsoleColor.DarkMagenta));
+                        toolAction: (message, prefix) => _consoleLogger.Write(message, ConsoleColor.DarkMagenta));
 
             if (!exitCode.IsSuccess)
             {
@@ -282,14 +282,16 @@ namespace Arbor.X.Bootstrapper
             _consoleLogger.Write(string.Format("Using build timeout {0} seconds", usedTimeoutInSeconds));
 
             var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(usedTimeoutInSeconds));
-            
+
+            const string buildApplicationPrefix = "[Arbor.X] ";
+
             IEnumerable<string> arguments = Enumerable.Empty<string>();
             var result =
                 await
                     ProcessRunner.ExecuteAsync(buildToolExe.FullName, cancellationToken: cancellationTokenSource.Token,
-                        arguments: arguments, standardOutLog: _consoleLogger.Write,
-                        standardErrorAction: _consoleLogger.WriteError,
-                        toolAction: message => _consoleLogger.Write(message, ConsoleColor.DarkMagenta));
+                    arguments: arguments, standardOutLog: (message, prefix) => _consoleLogger.Write(message, prefix: buildApplicationPrefix),
+                        standardErrorAction: (message, prefix) => _consoleLogger.WriteError(message, prefix: buildApplicationPrefix),
+                        toolAction: (message, prefix) => _consoleLogger.Write(message, ConsoleColor.DarkMagenta));
 
             return result;
         }

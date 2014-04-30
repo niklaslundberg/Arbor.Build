@@ -32,7 +32,8 @@ namespace Arbor.X.Core
                                Key = key,
                                MaxLength = Math.Max(key.Length, Math.Max(
                                    dicts.Where(dictionary => dictionary.ContainsKey(key))
-                                       .Select(dictionary => dictionary[key].Length)
+                                       .Select(dictionary => dictionary[key])
+                                       .Select(value => (value ?? "").Length)
                                        .Max(), noValue.Length))
                            })
                     .ToArray();

@@ -50,7 +50,7 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescriptionAttribute("Temporary directory path")]
         public static readonly string TempDirectory = "Arbor.X.Build.TempDirectory";
 
-        [VariableDescriptionAttribute("NuGet executable path (eg. C:\\nuget.exe")]
+        [VariableDescriptionAttribute("NuGet executable path (eg. C:\\nuget.exe)")]
         public static readonly string ExternalTools_NuGet_ExePath = "Arbor.X.Tools.External.NuGet.ExePath";
 
         [VariableDescriptionAttribute("Symbol server URI for NuGet source package upload")]
@@ -65,7 +65,7 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescriptionAttribute("Flag to indicate if the bootstrapper is allowed to download pre-release versions of Arbor.X NuGet package", "false")]
         public static readonly string AllowPrerelease = "Arbor.X.Build.Bootstrapper.AllowPrerelease";
                 
-        [VariableDescriptionAttribute("MSBuild executable path (eg. C:\\MSbuild.exe")]
+        [VariableDescriptionAttribute("MSBuild executable path (eg. C:\\MSbuild.exe)")]
         public static readonly string ExternalTools_MSBuild_ExePath = "Arbor.X.Tools.External.MSBuild.ExePath";
 
         [VariableDescriptionAttribute("Directory path for the current version control system repository")]
@@ -75,7 +75,7 @@ namespace Arbor.X.Core.BuildVariables
         public static readonly string IgnoreAnyCpu = "Arbor.X.Build.Platform.AnyCPU.Disabled";
 
         [VariableDescriptionAttribute("Flag to indicate if build platform AnyCPU is enabled")]
-        public const string AnyCpuEnabled = "Arbor.X.Build.Platform.AnyCPU.Disabled";
+        public const string AnyCpuEnabled = "Arbor.X.Build.Platform.AnyCPU.Enabled";
 
         [VariableDescriptionAttribute("Flag to indicate if build configuration Release is disabled", "false")]
         public static readonly string IgnoreRelease = "Arbor.X.Build.Configuration.Release.Disabled";

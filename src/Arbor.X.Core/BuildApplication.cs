@@ -88,9 +88,9 @@ namespace Arbor.X.Core
                                     })
                 .DisplayAsTable();
 
-            _logger.Write(string.Format("Available wellknown variables: {0}{1}", Environment.NewLine, variableAsTable));
+            _logger.Write(string.Format("{0}Available wellknown variables: {0}{0}{1}", Environment.NewLine, variableAsTable));
 
-            _logger.Write(string.Format("Defined build variables: [{0}] {1}{2}", buildVariables.Count,
+            _logger.Write(string.Format("{1}Defined build variables: [{0}] {1}{1}{2}", buildVariables.Count,
                 Environment.NewLine,
                 buildVariables.Print()));
 
@@ -100,7 +100,7 @@ namespace Arbor.X.Core
 
             int result = 0;
 
-            var toolResults = new List<Tuple<ToolWithPriority, bool?, string>>();
+            var toolResults = new List<ToolResult>();
 
             foreach (ToolWithPriority toolWithPriority in toolWithPriorities)
             {
@@ -108,7 +108,7 @@ namespace Arbor.X.Core
                 {
                     if (!toolWithPriority.RunAlways)
                     {
-                        toolResults.Add(Tuple.Create(toolWithPriority, (bool?) null, "not run"));
+                        toolResults.Add(new ToolResult(toolWithPriority, ToolResultType.NotRun));
                         continue;
                     }
                 }
@@ -116,17 +116,21 @@ namespace Arbor.X.Core
                 _logger.Write(Environment.NewLine +
                               string.Format("######## Running tool {0} ########", toolWithPriority));
 
+                Stopwatch stopwatch = Stopwatch.StartNew();
+
                 try
                 {
                     ExitCode toolResult =
                         await toolWithPriority.Tool.ExecuteAsync(_logger, buildVariables, _cancellationToken);
+
+                    stopwatch.Stop();
 
                     if (toolResult.IsSuccess)
                     {
                         _logger.Write(string.Format("The tool {0} succeeded with exit code {1}", toolWithPriority,
                             toolResult));
 
-                        toolResults.Add(Tuple.Create(toolWithPriority, (bool?) true, ""));
+                        toolResults.Add(new ToolResult(toolWithPriority, ToolResultType.Succeeded, executionTime: stopwatch.Elapsed));
                     }
                     else
                     {
@@ -134,14 +138,15 @@ namespace Arbor.X.Core
                             toolResult));
                         result = toolResult.Result;
 
-                        toolResults.Add(Tuple.Create(toolWithPriority, (bool?) false,
-                            "failed with exit code " + toolResult));
+                        toolResults.Add(new ToolResult(toolWithPriority, ToolResultType.Failed,
+                            "failed with exit code " + toolResult, executionTime: stopwatch.Elapsed));
                     }
                 }
                 catch (Exception ex)
                 {
-                    toolResults.Add(Tuple.Create(toolWithPriority, (bool?) false,
-                        string.Format("threw {0}", ex.GetType().Name)));
+                    stopwatch.Stop();
+                    toolResults.Add(new ToolResult(toolWithPriority, ToolResultType.Failed,
+                        string.Format("threw {0}", ex.GetType().Name), executionTime: stopwatch.Elapsed));
                     _logger.WriteError(string.Format("The tool {0} failed with exception {1}", toolWithPriority, ex));
                     result = 1;
                 }
@@ -160,7 +165,7 @@ namespace Arbor.X.Core
             return ExitCode.Success;
         }
 
-        static string BuildResults(IEnumerable<Tuple<ToolWithPriority, bool?, string>> toolResults)
+        static string BuildResults(IEnumerable<ToolResult> toolResults)
         {
             const string notRun = "Not run";
             const string succeeded = "Succeeded";
@@ -172,17 +177,21 @@ namespace Arbor.X.Core
                     {
                         {
                             "Tool",
-                            result.Item1.Tool.Name()
+                            result.ToolWithPriority.Tool.Name()
                         },
                         {
                             "Result",
-                            result.Item2.HasValue
-                                ? (result.Item2.Value ? succeeded : failed)
+                            result.ResultType.WasRun
+                                ? (result.ResultType.IsSuccess ? succeeded : failed)
                                 : notRun
                         },
                         {
+                            "Execution time",
+                            result.ExecutionTime == default(TimeSpan) ? "N/A" : ((int)result.ExecutionTime.TotalMilliseconds).ToString("D") + " ms"
+                        },
+                        {
                             "Message",
-                            result.Item3
+                            result.Message
                         }
                     }).DisplayAsTable();
 
@@ -193,7 +202,9 @@ namespace Arbor.X.Core
         {
             var sb = new StringBuilder();
 
+            sb.AppendLine();
             sb.AppendLine(string.Format("Running tools: [{0}]", toolWithPriorities.Count));
+            sb.AppendLine();
 
             sb.AppendLine(toolWithPriorities.Select(tool =>
                 new Dictionary<string, string>
@@ -242,7 +253,7 @@ namespace Arbor.X.Core
                 providers.Select(item => new Dictionary<string, string> {{"Provider", item.GetType().Name}})
                     .DisplayAsTable();
 
-            _logger.Write(string.Format("Available variable providers: [{0}]{1}{2}", providers.Count,
+            _logger.Write(string.Format("{1}Available variable providers: [{0}]{1}{1}{2}{1}", providers.Count,
                 Environment.NewLine,
                 displayAsTable));
 
@@ -266,7 +277,11 @@ namespace Arbor.X.Core
 
             AddCompatibilityVariables(buildVariables);
 
-            return buildVariables;
+            var sorted = buildVariables
+                .OrderBy(variable => variable.Key)
+                .ToList();
+
+            return sorted;
         }
 
         void AddCompatibilityVariables(List<IVariable> buildVariables)
@@ -310,13 +325,13 @@ namespace Arbor.X.Core
 
             if (alreadyDefined.Any())
             {
-                _logger.Write(string.Format("Compatibility build variables alread defined {0}{1}", Environment.NewLine,
+                _logger.Write(string.Format("{0}Compatibility build variables alread defined {0}{0}{1}{0}", Environment.NewLine,
                     alreadyDefined.DisplayAsTable()));
             }
 
             if (compatibilities.Any())
             {
-                _logger.Write(string.Format("Compatibility build variables added {0}{1}", Environment.NewLine,
+                _logger.Write(string.Format("{0}Compatibility build variables added {0}{0}{1}{0}", Environment.NewLine,
                     compatibilities.DisplayAsTable()));
             }
 
@@ -499,7 +514,7 @@ namespace Arbor.X.Core
                     await
                         ProcessRunner.ExecuteAsync(gitExePath, arguments: arguments,
                             standardErrorAction: _logger.WriteError,
-                            standardOutLog: message => gitBranchBuilder.AppendLine(message),
+                            standardOutLog: (message, prefix) => gitBranchBuilder.AppendLine(message),
                             cancellationToken: _cancellationToken);
 
                 if (!result.IsSuccess)

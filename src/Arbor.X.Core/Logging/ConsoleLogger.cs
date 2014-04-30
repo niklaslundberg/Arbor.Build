@@ -11,43 +11,65 @@ namespace Arbor.X.Core.Logging
             _prefix = prefix;
         }
 
-        public void WriteError(string message)
+        public void WriteError(string message, string prefix = null)
         {
             if (string.IsNullOrWhiteSpace(message))
             {
                 return;
             }
-
+            
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.Error.WriteLine(_prefix + message);
+            Console.Error.WriteLine(GetPrefix(prefix) + message);
             Console.ResetColor();
         }
 
-        public void Write(string message)
+        object GetPrefix(string prefix)
+        {
+            string value;
+
+            if (!string.IsNullOrWhiteSpace(prefix))
+            {
+                if (prefix.EndsWith(" "))
+                {
+                    value = prefix;
+                }
+                else
+                {
+                    value = prefix + " ";
+                }
+            }
+            else
+            {
+                value = _prefix;
+            }
+            return value;
+        }
+
+        public void Write(string message, string prefix = null)
         {
             Console.ResetColor();
-            Console.WriteLine(_prefix + message);
+            Console.WriteLine(GetPrefix(prefix) + message);
         }
 
 
-        public void Write(string message, ConsoleColor color)
+        public void Write(string message, ConsoleColor color, string prefix = null)
         {
             Console.ForegroundColor = color;
-            Console.WriteLine(_prefix + message);
+            Console.WriteLine(GetPrefix(prefix) + message);
             Console.ResetColor();
         }
 
-        public void WriteWarning(string message)
+        public void WriteWarning(string message, string prefix = null)
         {
             Console.ForegroundColor = ConsoleColor.DarkYellow;
-            Console.WriteLine(_prefix + message);
+            Console.WriteLine(GetPrefix(prefix) + message);
             Console.ResetColor();
         }
 
-        public void WriteVerbose(string message)
+        public void WriteVerbose(string message, string prefix = null)
         {
             Console.ForegroundColor = ConsoleColor.Gray;
-            Console.WriteLine(_prefix + message);
+            Console.WriteLine(GetPrefix(prefix) + message);
             Console.ResetColor();
         }
     }

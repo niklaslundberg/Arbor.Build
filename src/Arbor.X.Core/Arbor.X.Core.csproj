@@ -79,6 +79,8 @@
     <Compile Include="DisplayExtensions.cs" />
     <Compile Include="ExitCode.cs" />
     <Compile Include="ToolExtensions.cs" />
+    <Compile Include="ToolResult.cs" />
+    <Compile Include="ToolResultType.cs" />
     <Compile Include="Tools\Git\GitHelper.cs" />
     <Compile Include="Tools\ILMerge\ILMergeData.cs" />
     <Compile Include="Tools\ILMerge\ILMergeVariableProvider.cs" />
