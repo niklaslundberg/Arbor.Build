@@ -5,7 +5,7 @@ using Arbor.X.Core;
 using Arbor.X.Core.BuildVariables;
 using Machine.Specifications;
 
-namespace Arbor.X.Tests.Integration
+namespace Arbor.X.Tests.Integration.WellknownVariables
 {
     public class when_listing_all_wellknown_variables_as_a_table
     {

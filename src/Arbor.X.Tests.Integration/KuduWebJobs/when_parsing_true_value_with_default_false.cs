@@ -1,7 +1,7 @@
 using Arbor.X.Core;
 using Machine.Specifications;
 
-namespace Arbor.X.Tests.Integration
+namespace Arbor.X.Tests.Integration.KuduWebJobs
 {
     [Subject(typeof(BoolExtensions))]
     public class when_parsing_true_value_with_default_false

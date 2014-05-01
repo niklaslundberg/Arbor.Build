@@ -2,7 +2,7 @@
 using Arbor.X.Core.Tools.Kudu;
 using Machine.Specifications;
 
-namespace Arbor.X.Tests.Integration
+namespace Arbor.X.Tests.Integration.KuduWebJobs
 {
     [Subject(typeof(KuduWebProjectDetails))]
     public class when_creating_details

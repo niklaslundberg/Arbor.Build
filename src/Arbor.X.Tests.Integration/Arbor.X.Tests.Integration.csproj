@@ -48,24 +48,24 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="when_listing_all_wellknown_variables.cs" />
-    <Compile Include="when_creating_details.cs" />
-    <Compile Include="when_listing_all_wellknown_variables_as_a_table.cs" />
-    <Compile Include="when_parsing_continuous.cs" />
+    <Compile Include="WellknownVariables\when_listing_all_wellknown_variables.cs" />
+    <Compile Include="KuduWebJobs\when_creating_details.cs" />
+    <Compile Include="WellknownVariables\when_listing_all_wellknown_variables_as_a_table.cs" />
+    <Compile Include="KuduWebJobs\when_parsing_continuous.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="when_parsing_empty_value.cs" />
-    <Compile Include="when_parsing_empty_value_with_default_true.cs" />
-    <Compile Include="when_parsing_false_value_with_default_true.cs" />
-    <Compile Include="when_parsing_invalid_value.cs" />
-    <Compile Include="when_parsing_null_value.cs" />
-    <Compile Include="when_parsing_null_value_with_default_true.cs" />
-    <Compile Include="when_parsing_triggered.cs" />
-    <Compile Include="when_parsing_true_value_with_default_false.cs" />
-    <Compile Include="when_parsing_valid_in_xml.cs" />
-    <Compile Include="when_parsing_valid_lowercase.cs" />
-    <Compile Include="when_parsing_valid_mixed_case.cs" />
-    <Compile Include="when_parsing_valid_uppercase.cs" />
-    <Compile Include="when_parsing_whitespace_value.cs" />
+    <Compile Include="KuduWebJobs\when_parsing_empty_value.cs" />
+    <Compile Include="KuduWebJobs\when_parsing_empty_value_with_default_true.cs" />
+    <Compile Include="KuduWebJobs\when_parsing_false_value_with_default_true.cs" />
+    <Compile Include="KuduWebJobs\when_parsing_invalid_value.cs" />
+    <Compile Include="KuduWebJobs\when_parsing_null_value.cs" />
+    <Compile Include="KuduWebJobs\when_parsing_null_value_with_default_true.cs" />
+    <Compile Include="KuduWebJobs\when_parsing_triggered.cs" />
+    <Compile Include="KuduWebJobs\when_parsing_true_value_with_default_false.cs" />
+    <Compile Include="KuduWebJobs\when_parsing_valid_in_xml.cs" />
+    <Compile Include="KuduWebJobs\when_parsing_valid_lowercase.cs" />
+    <Compile Include="KuduWebJobs\when_parsing_valid_mixed_case.cs" />
+    <Compile Include="KuduWebJobs\when_parsing_valid_uppercase.cs" />
+    <Compile Include="KuduWebJobs\when_parsing_whitespace_value.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
