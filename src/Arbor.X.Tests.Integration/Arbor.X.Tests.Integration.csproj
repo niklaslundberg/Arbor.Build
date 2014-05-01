@@ -48,6 +48,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ProcessRunner\when_running_a_failing_process.cs" />
+    <Compile Include="ProcessRunner\when_running_a_process_longer_than_timeout.cs" />
     <Compile Include="WellknownVariables\when_listing_all_wellknown_variables.cs" />
     <Compile Include="KuduWebJobs\when_creating_details.cs" />
     <Compile Include="WellknownVariables\when_listing_all_wellknown_variables_as_a_table.cs" />

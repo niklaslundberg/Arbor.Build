@@ -15,7 +15,8 @@ namespace Arbor.X.Core.ProcessUtils
             IEnumerable<string> arguments = null,
             Action<string, string> standardOutLog = null,
             Action<string, string> standardErrorAction = null,
-            Action<string, string> toolAction = null)
+            Action<string, string> toolAction = null,
+            Action<string, string> verboseAction = null)
         {
             if (string.IsNullOrWhiteSpace(executePath))
             {
@@ -33,7 +34,7 @@ namespace Arbor.X.Core.ProcessUtils
             string formattedArguments = string.Join(" ", usedArguments.Select(arg => string.Format("\"{0}\"", arg)));
 
             Task<ExitCode> task = RunProcessAsync(executePath, formattedArguments, standardErrorAction, standardOutLog,
-                cancellationToken, toolAction);
+                cancellationToken, toolAction,verboseAction);
 
             var exitCode = await task;
 
@@ -51,7 +52,7 @@ namespace Arbor.X.Core.ProcessUtils
 
             var taskCompletionSource = new TaskCompletionSource<ExitCode>();
 
-            var processWithArgs = string.Format("\"{0}\" {1}", executePath, formattedArguments);
+            var processWithArgs = string.Format("\"{0}\" {1}", executePath, formattedArguments).Trim();
 
             toolAction(string.Format("[{0}] Executing: {1}", typeof (ProcessRunner).Name, processWithArgs), null);
 
@@ -69,6 +70,8 @@ namespace Arbor.X.Core.ProcessUtils
                                        UseShellExecute = useShellExecute
                                    };
 
+            var exitCode = new ExitCode(-1);
+
             var process = new Process
                           {
                               StartInfo = processStartInfo,
@@ -77,10 +80,9 @@ namespace Arbor.X.Core.ProcessUtils
 
             process.Disposed += (sender, args) =>
             {
-                if (!taskCompletionSource.Task.IsCompleted || !taskCompletionSource.Task.IsFaulted ||
-                    !taskCompletionSource.Task.IsCanceled)
+                if (!taskCompletionSource.Task.IsCompleted)
                 {
-                    toolAction("Task was not completed, but is disposed",null);
+                    toolAction("Task was not completed, but process was disposed", null);
                     taskCompletionSource.TrySetResult(ExitCode.Failure);
                 }
                 verbose(string.Format("Disposed process '{0}'", processWithArgs), null);
@@ -131,75 +133,115 @@ namespace Arbor.X.Core.ProcessUtils
             }
             catch (Exception ex)
             {
+                toolAction(string.Format("An error occured while running process {0}: {1}", processWithArgs, ex), null);
                 taskCompletionSource.SetException(ex);
             }
             bool done = false;
-
-            var exitCode = new ExitCode(-1);
-
-            while (IsAlive(process, taskCompletionSource.Task, cancellationToken, done))
+            try
             {
-                if (cancellationToken.IsCancellationRequested)
+                while (IsAlive(process, taskCompletionSource.Task, cancellationToken, done, processWithArgs, toolAction,
+                    standardAction, errorAction, verboseAction))
                 {
-                    try
+                    if (cancellationToken.IsCancellationRequested)
                     {
-                        process.Kill();
-                        errorAction(string.Format("Killed process {0} because cancellation was requested", processWithArgs), null);
-                        return ExitCode.Failure;
+                        break;
                     }
-                    catch (Exception ex)
+                    var delay = Task.Delay(TimeSpan.FromMilliseconds(50), cancellationToken);
+
+                    await delay;
+
+                    if (taskCompletionSource.Task.IsCompleted)
                     {
-                        errorAction(string.Format("Could not kill process {0} when cancellation was requested", processWithArgs), null);
-                        errorAction(ex.ToString(), null);
-                        return ExitCode.Failure;
+                        done = true;
+                        exitCode = await taskCompletionSource.Task;
+                    }
+                    else if (taskCompletionSource.Task.IsCanceled)
+                    {
+                        exitCode = ExitCode.Failure;
+                    }
+                    else if (taskCompletionSource.Task.IsFaulted)
+                    {
+                        exitCode = ExitCode.Failure;
                     }
                 }
 
-                var delay = Task.Delay(TimeSpan.FromMilliseconds(50), cancellationToken);
-                
-                await delay;
-                
-                if (taskCompletionSource.Task.IsCompleted)
+            }
+            finally
+            {
+                if (!exitCode.IsSuccess)
                 {
-                    done = true;
-                    exitCode = await taskCompletionSource.Task;
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        if (process != null && !process.HasExited)
+                        {
+                            try
+                            {
+                                toolAction(
+                                    string.Format("Cancellation is requested, trying to kill process {0}",
+                                        processWithArgs), null);
+
+                                var processId = process.Id;
+                                
+                                string args = "/PID " + processId;
+                                string killProcessPath =
+                                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System),"taskkill.exe");
+                                toolAction(string.Format("Running {0} {1}", killProcessPath, args), null);
+                                Process.Start(killProcessPath, args);
+
+                                errorAction(
+                                    string.Format("Killed process {0} because cancellation was requested",
+                                        processWithArgs), null);
+                            }
+                            catch (Exception ex)
+                            {
+                                toolAction(
+                                    string.Format(
+                                        "ProcessRunner could not kill process {0} when cancellation was requested",
+                                        processWithArgs), null);
+                                errorAction(
+                                    string.Format("Could not kill process {0} when cancellation was requested",
+                                        processWithArgs), null);
+                                errorAction(ex.ToString(), null);
+                            }
+                        }
+                    }
                 }
-                else if (taskCompletionSource.Task.IsCanceled)
+                using (process)
                 {
-                    exitCode = ExitCode.Failure;
-                }
-                else if (taskCompletionSource.Task.IsFaulted)
-                {
-                    exitCode = ExitCode.Failure;
+                    toolAction("Task status: " + taskCompletionSource.Task.Status + ", " + taskCompletionSource.Task.IsCompleted, null);
+                    toolAction(string.Format("Disposing process {0}", processWithArgs), null);
                 }
             }
-
-            using (process)
-            {
-            }
+            
+            toolAction(string.Format("Process runner exit code {0} for process {1}", exitCode, processWithArgs), null);
 
             return exitCode;
         }
 
-        static bool IsAlive(Process process, Task<ExitCode> task, CancellationToken cancellationToken, bool done)
+        static bool IsAlive(Process process, Task<ExitCode> task, CancellationToken cancellationToken, bool done, string processWithArgs, Action<string, string> toolAction, Action<string, string> standardAction, Action<string, string> errorAction, Action<string, string> verboseAction)
         {
             if (process == null)
             {
+                toolAction(string.Format("Process {0} does no longer exist", processWithArgs), null);
                 return false;
             }
 
             if (task.IsCompleted || task.IsFaulted || task.IsCanceled)
             {
+                var status = task.Status;
+                toolAction(string.Format("Task status for process {0} is {1}", processWithArgs, status), null);
                 return false;
             }
 
             if (cancellationToken.IsCancellationRequested)
             {
+                toolAction(string.Format("Cancellation is requested for process {0}", processWithArgs), null);
                 return false;
             }
 
             if (done)
             {
+                toolAction(string.Format("Process {0} is flagged as done", processWithArgs), null);
                 return false;
             }
 

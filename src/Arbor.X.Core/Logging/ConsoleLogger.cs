@@ -29,18 +29,16 @@ namespace Arbor.X.Core.Logging
 
             if (!string.IsNullOrWhiteSpace(prefix))
             {
-                if (prefix.EndsWith(" "))
-                {
-                    value = prefix;
-                }
-                else
-                {
-                    value = prefix + " ";
-                }
+                value = prefix;
             }
             else
             {
                 value = _prefix;
+            }
+
+            if (!value.EndsWith(" "))
+            {
+                value = value + " ";
             }
             return value;
         }
