@@ -70,6 +70,15 @@ namespace Arbor.X.Core
             Console.WriteLine("Arbor.X.Build total elapsed time in seconds: {0}",
                 stopwatch.Elapsed.TotalSeconds.ToString("F"));
 
+            var exitDelayInMilliseconds =
+                Environment.GetEnvironmentVariable(WellKnownVariables.BuildApplicationExitDelayInMilliseconds).TryParseInt32(0);
+
+            if (exitDelayInMilliseconds > 0)
+            {
+                _logger.Write(string.Format("Delaying build application exit with {0} milliseconds specified in '{1}'", exitDelayInMilliseconds, WellKnownVariables.BuildApplicationExitDelayInMilliseconds));
+                await Task.Delay(TimeSpan.FromMilliseconds(exitDelayInMilliseconds), _cancellationToken);
+            }
+
             return exitCode;
         }
 
@@ -260,7 +269,7 @@ namespace Arbor.X.Core
                 providers.Select(item => new Dictionary<string, string> {{"Provider", item.GetType().Name}})
                     .DisplayAsTable();
 
-            _logger.Write(string.Format("{1}Available variable providers: [{0}]{1}{1}{2}{1}", providers.Count,
+            _logger.WriteVerbose(string.Format("{1}Available variable providers: [{0}]{1}{1}{2}{1}", providers.Count,
                 Environment.NewLine,
                 displayAsTable));
 
@@ -271,11 +280,45 @@ namespace Arbor.X.Core
 
                 foreach (IVariable @var in newVariables)
                 {
-                    if (buildVariables.Any(
-                        item => item.Key.Equals(@var.Key, StringComparison.InvariantCultureIgnoreCase)))
+                    if (buildVariables.HasKey(@var.Key))
                     {
-                        _logger.WriteWarning(string.Format("The build variable {0} already exists", @var.Key));
-                        continue;
+                        var existing = buildVariables.Single(bv => bv.Key.Equals(@var.Key));
+
+                        if (string.IsNullOrWhiteSpace(buildVariables.GetVariableValueOrDefault(@var.Key, "")))
+                        {
+                            if (string.IsNullOrWhiteSpace(@var.Value))
+                            {
+                                _logger.WriteWarning(string.Format("The build variable {0} already exists with empty value, new value is also empty", @var.Key));
+                                continue;
+                            }
+
+                            _logger.WriteWarning(string.Format("The build variable {0} already exists with empty value, using new value '{1}'", @var.Key, @var.Value));
+
+
+                            buildVariables.Remove(existing);
+                        }
+                        else
+                        {
+                            if (existing.Value.Equals(@var.Value))
+                            {
+                                continue;
+                            }
+
+                            var variableOverrideEnabled = buildVariables.GetBooleanByKey(WellKnownVariables.VariableOverrideEnabled,
+                                defaultValue: false);
+
+                            if (variableOverrideEnabled)
+                            {
+                                buildVariables.Remove(existing);
+
+                                _logger.Write(string.Format("Flag '{0}' is set to true, existing variable with key '{1}' and value '{2}', replacing the value with '{3}'", WellKnownVariables.VariableOverrideEnabled, existing.Key, @existing.Value, @var.Value));
+                            }
+                            else
+                            {
+                                _logger.WriteWarning(string.Format("The build variable '{0}' already exists with value '{1}'. To override variables, set flag '{2}' to true", @var.Key, @var.Value, WellKnownVariables.VariableOverrideEnabled));
+                                continue;
+                            }
+                        }
                     }
 
                     buildVariables.Add(@var);
@@ -332,13 +375,13 @@ namespace Arbor.X.Core
 
             if (alreadyDefined.Any())
             {
-                _logger.Write(string.Format("{0}Compatibility build variables alread defined {0}{0}{1}{0}", Environment.NewLine,
+                _logger.WriteWarning(string.Format("{0}Compatibility build variables alread defined {0}{0}{1}{0}", Environment.NewLine,
                     alreadyDefined.DisplayAsTable()));
             }
 
             if (compatibilities.Any())
             {
-                _logger.Write(string.Format("{0}Compatibility build variables added {0}{0}{1}{0}", Environment.NewLine,
+                _logger.WriteVerbose(string.Format("{0}Compatibility build variables added {0}{0}{1}{0}", Environment.NewLine,
                     compatibilities.DisplayAsTable()));
             }
 
@@ -353,7 +396,7 @@ namespace Arbor.X.Core
 
                 if (!buildVariables.Any(@var => @var.Key.Equals(branchKey, StringComparison.InvariantCultureIgnoreCase)))
                 {
-                    _logger.Write(
+                    _logger.WriteVerbose(
                         string.Format(
                             "Build variable with key '{0}' was not defined, using value from variable key {1} ('{2}')",
                             branchKey, arborXBranchName.Key, arborXBranchName.Value));
@@ -364,7 +407,7 @@ namespace Arbor.X.Core
                     !buildVariables.Any(
                         @var => @var.Key.Equals(branchNameKey, StringComparison.InvariantCultureIgnoreCase)))
                 {
-                    _logger.Write(
+                    _logger.WriteVerbose(
                         string.Format(
                             "Build variable with key '{0}' was not defined, using value from variable key {1} ('{2}')",
                             branchNameKey, arborXBranchName.Key, arborXBranchName.Value));

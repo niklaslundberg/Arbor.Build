@@ -15,7 +15,7 @@ namespace Arbor.X.Core.Tools.MSBuild
         {
             var currentProcessBits = Environment.Is64BitProcess ? 64 : 32;
             const int registryLookupBits = 32;
-            logger.Write(string.Format("Running current process [id {0}] as a {1}-bit process",
+            logger.WriteVerbose(string.Format("Running current process [id {0}] as a {1}-bit process",
                 Process.GetCurrentProcess().Id, currentProcessBits));
 
             var possibleVersions = new List<string> {"12.0", "4.0"};
@@ -28,7 +28,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                 object msBuildPathRegistryKeyValue = null;
                 const string valueKey = "MSBuildOverrideTasksPath";
 
-                logger.Write(string.Format("Looking for MSBuild exe path in {0}-bit registry key '{1}\\{2}",
+                logger.WriteVerbose(string.Format("Looking for MSBuild exe path in {0}-bit registry key '{1}\\{2}",
                     registryLookupBits,
                     registryKeyName, valueKey));
 
@@ -49,9 +49,9 @@ namespace Arbor.X.Core.Tools.MSBuild
 
                 if (!string.IsNullOrWhiteSpace(msBuildPath))
                 {
-                    logger.Write(string.Format("Using MSBuild exe path '{0}' defined in {1}-bit registry key {2}\\{3}",
-                        foundPath, registryLookupBits, registryKeyName, valueKey));
                     foundPath = msBuildPath;
+                    logger.WriteVerbose(string.Format("Using MSBuild exe path '{0}' defined in {1}-bit registry key {2}\\{3}",
+                        foundPath, registryLookupBits, registryKeyName, valueKey));
                     break;
                 }
             }

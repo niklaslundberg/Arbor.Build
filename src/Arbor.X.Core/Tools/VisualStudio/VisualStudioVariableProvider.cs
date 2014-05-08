@@ -17,12 +17,12 @@ namespace Arbor.X.Core.Tools.VisualStudio
         {
             var currentProcessBits = Environment.Is64BitProcess ? 64 : 32;
             const int registryLookupBits = 32;
-            logger.Write(string.Format("Running current process [id {0}] as a {1}-bit process",
+            logger.WriteVerbose(string.Format("Running current process [id {0}] as a {1}-bit process",
                 Process.GetCurrentProcess().Id, currentProcessBits));
 
             const string registryKeyName = @"SOFTWARE\Microsoft\VisualStudio";
 
-            logger.Write(string.Format(@"Looking for Visual Studio versions in {0}-bit registry key 'HKEY_LOCAL_MACHINE\{1}'", registryLookupBits,
+            logger.WriteVerbose(string.Format(@"Looking for Visual Studio versions in {0}-bit registry key 'HKEY_LOCAL_MACHINE\{1}'", registryLookupBits,
                 registryKeyName));
 
             var visualStudioVersion = GetVisualStudioVersion(logger, registryKeyName);
@@ -31,7 +31,7 @@ namespace Arbor.X.Core.Tools.VisualStudio
 
             if (!string.IsNullOrWhiteSpace(visualStudioVersion))
             {
-                logger.Write(string.Format("Found Visual Studio version {0}", visualStudioVersion));
+                logger.WriteVerbose(string.Format("Found Visual Studio version {0}", visualStudioVersion));
 
                 vsTestExePath = GetVSTestExePath(logger, registryKeyName, visualStudioVersion);
             }
@@ -72,7 +72,7 @@ namespace Arbor.X.Core.Tools.VisualStudio
                                                    .OrderByDescending(name => name)
                                                    .ToList();
 
-                        logger.WriteWarning(string.Format("Found {0} Visual Studio versions: {1}", names.Count,
+                        logger.WriteVerbose(string.Format("Found {0} Visual Studio versions: {1}", names.Count,
                                                           string.Join(", ", names.Select(name => name.ToString(2)))));
 
                         if (names.Any(name => name == new Version(12, 0)))

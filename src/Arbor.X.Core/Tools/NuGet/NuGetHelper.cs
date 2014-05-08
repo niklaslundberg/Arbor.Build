@@ -55,7 +55,7 @@ namespace Arbor.X.Core.Tools.NuGet
 
             const string nugetExeUri = "https://nuget.org/nuget.exe";
 
-            _logger.Write(string.Format("Downloading {0} to {1}", nugetExeUri, tempFile));
+            _logger.WriteVerbose(string.Format("Downloading {0} to {1}", nugetExeUri, tempFile));
             try
             {
                 using (var client = new HttpClient())
@@ -75,9 +75,9 @@ namespace Arbor.X.Core.Tools.NuGet
                 if (File.Exists(tempFile) && new FileInfo(tempFile).Length > 0)
                 {
                     File.Copy(tempFile, targetFile, overwrite: true);
-                    _logger.Write(string.Format("Copied {0} to {1}", tempFile, targetFile));
+                    _logger.WriteVerbose(string.Format("Copied {0} to {1}", tempFile, targetFile));
                     File.Delete(tempFile);
-                    _logger.Write(string.Format("Deleted temp file {0}", tempFile));
+                    _logger.WriteVerbose(string.Format("Deleted temp file {0}", tempFile));
                 }
             }
         }

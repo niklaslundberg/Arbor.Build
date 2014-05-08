@@ -37,12 +37,12 @@ namespace Arbor.X.Core.Tools.Kudu
                 ? buildVariables.Require(WellKnownVariables.KuduConfigurationFallback).Value
                 : "";
 
-            var branchNameOverride = buildVariables.SingleOrDefault(bv => bv.Key.Equals(WellKnownVariables.ExternalTools_Kudu_DeploymentBranchNameOverride, StringComparison.InvariantCultureIgnoreCase));
+            var branchNameOverride = buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_Kudu_DeploymentBranchNameOverride, defaultValue: "");
 
-            if (branchNameOverride != null)
+            if (!string.IsNullOrWhiteSpace(branchNameOverride))
             {
-                logger.Write(string.Format("Using branch name override '{0}' instead of branch name '{1}'", branchNameOverride.Value, _deployBranch));
-                _deployBranch = new BranchName(branchNameOverride.Value);
+                logger.Write(string.Format("Using branch name override '{0}' instead of branch name '{1}'", branchNameOverride, _deployBranch));
+                _deployBranch = new BranchName(branchNameOverride);
             }
 
             var websitesDirectory = new DirectoryInfo(Path.Combine(_artifacts, "Websites"));

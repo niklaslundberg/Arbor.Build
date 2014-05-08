@@ -64,9 +64,24 @@ namespace Arbor.X.Core.BuildVariables
 
         [VariableDescriptionAttribute("Flag to indicate if the bootstrapper is allowed to download pre-release versions of Arbor.X NuGet package", "false")]
         public static readonly string AllowPrerelease = "Arbor.X.Build.Bootstrapper.AllowPrerelease";
+
+        [VariableDescriptionAttribute("Arbor.X NuGet package version for bootstrapper to downlonad", "false")]
+        public static readonly string ArborXNuGetPackageVersion = "Arbor.X.NuGetPackageVersion";
                 
         [VariableDescriptionAttribute("MSBuild executable path (eg. C:\\MSbuild.exe)")]
         public static readonly string ExternalTools_MSBuild_ExePath = "Arbor.X.Tools.External.MSBuild.ExePath";
+
+        [VariableDescriptionAttribute("MSBuild verbosity level","normal")]
+        public static readonly string ExternalTools_MSBuild_Verbosity = "Arbor.X.Tools.External.MSBuild.Verbosity";
+
+        [VariableDescriptionAttribute("Flag to indicate if MSBuild should display a build summary","false")]
+        public static readonly string ExternalTools_MSBuild_SummaryEnabled = "Arbor.X.Tools.External.MSBuild.SummaryEnabled";
+
+        [VariableDescriptionAttribute("MSBuild build configuration, if not specified, all wellknown configurations will be built")]
+        public static readonly string ExternalTools_MSBuild_BuildConfiguration = "Arbor.X.Tools.External.MSBuild.BuildConfiguration";
+        
+        [VariableDescriptionAttribute("MSBuild build platform, if not specified, all wellknown platforms will be built")]
+        public static readonly string ExternalTools_MSBuild_BuildPlatform = "Arbor.X.Tools.External.MSBuild.BuildPlatform";
 
         [VariableDescriptionAttribute("Directory path for the current version control system repository")]
         public static readonly string SourceRoot = "SourceRoot";
@@ -85,6 +100,9 @@ namespace Arbor.X.Core.BuildVariables
 
         [VariableDescriptionAttribute("Flag to indicate if test runner error results are ignored", "false")]
         public static readonly string IgnoreTestFailures = "Arbor.X.Build.Tests.IgnoreTestFailures";
+
+        [VariableDescriptionAttribute("Flag to indicate if tests are enabled", "false")]
+        public static readonly string TestsEnabled = "Arbor.X.Build.Tests.Enabled";
 
         [VariableDescriptionAttribute("Visual Studio Test Framework console application path, (eg. C:\\VSTestConsole.exe)", "false")]
         public static readonly string ExternalTools_VSTest_ExePath = "Arbor.X.Tools.External.VSTest.ExePath";
@@ -124,6 +142,18 @@ namespace Arbor.X.Core.BuildVariables
 
         [VariableDescriptionAttribute("Time out in seconds for total build process")]
         public static readonly string BuildToolTimeoutInSeconds = "Arbor.X.Build.TimeoutInSeconds";
+
+        [VariableDescriptionAttribute("Bootstrapper exit delay in milliseconds")]
+        public static readonly string BootstrapperExitDelayInMilliseconds = "Arbor.X.Boostrapper.ExitDelayInMilliseconds";
+
+        [VariableDescriptionAttribute("Build application exit delay in milliseconds")]
+        public static readonly string BuildApplicationExitDelayInMilliseconds = "Arbor.X.Build.ExitDelayInMilliseconds";
+
+        [VariableDescriptionAttribute("Flag to indicate if defined variables can be overriden")]
+        public static readonly string VariableOverrideEnabled = "Arbor.X.Build.VariableOverrideEnabled";
+
+        [VariableDescriptionAttribute("Log level")]
+        public static readonly string LogLevel = "Arbor.X.Log.Level";
 
         // ReSharper restore ConvertToConstant.Global
         // ReSharper restore InconsistentNaming

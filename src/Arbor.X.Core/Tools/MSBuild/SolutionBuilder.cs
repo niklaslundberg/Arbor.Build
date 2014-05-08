@@ -10,7 +10,6 @@ using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;
-using Arbor.X.Core.Tools.Kudu;
 using FubuCsProjFile;
 
 namespace Arbor.X.Core.Tools.MSBuild
@@ -31,15 +30,17 @@ namespace Arbor.X.Core.Tools.MSBuild
         readonly List<string> _blackListedByName = new List<string> {"bin", "obj", ".git", "packages", "TestResults"};
         readonly List<string> _blackListedByStartName = new List<string> {"_", "."};
 
-        readonly List<string> _knownConfiguration = new List<string> {"debug", "release"};
         readonly List<string> _knownPlatforms = new List<string> {"x86", "Any CPU"};
         string _artifactsPath;
         string _branchName;
         CancellationToken _cancellationToken;
         string _msBuildExe;
         int _processorCount;
-        string _verbosity;
+        MSBuildVerbositoyLevel _verbosity;
         bool _appDataJobsEnabled;
+        bool _showSummary;
+        readonly List<string> _buildConfigurations = new List<string>();
+        readonly List<string> _platforms = new List<string>();
 
         public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
@@ -52,38 +53,21 @@ namespace Arbor.X.Core.Tools.MSBuild
             _branchName =
                 buildVariables.Require(WellKnownVariables.BranchName).ThrowIfEmptyValue().Value;
 
-            bool enabled;
-            _appDataJobsEnabled = !buildVariables.HasKey(WellKnownVariables.AppDataJobsEnabled) || !bool.TryParse(buildVariables.Require(WellKnownVariables.AppDataJobsEnabled).Value, out enabled) || enabled;
+            _appDataJobsEnabled = buildVariables.GetBooleanByKey(WellKnownVariables.AppDataJobsEnabled, defaultValue: false);
             
             var maxProcessorCount = ProcessorCount(buildVariables);
 
-            int cpus = 1;
+            int maxCpuLimit = buildVariables.GetInt32ByKey(WellKnownVariables.CpuLimit, defaultValue: maxProcessorCount, minValue:1);
 
-            if (buildVariables.HasKey(WellKnownVariables.CpuLimit))
-            {
-                int maxCpuLimit;
-                if (int.TryParse(buildVariables.GetVariable(WellKnownVariables.CpuLimit).Value, out maxCpuLimit) &&
-                    maxCpuLimit > 0)
-                {
-                    if (maxCpuLimit <= maxProcessorCount)
-                    {
-                        logger.Write(string.Format("Using CPU limit: {0}", maxCpuLimit));
-                        cpus = maxCpuLimit;
-                    }
-                    else
-                    {
-                        logger.WriteWarning(string.Format("Invalid CPU limit: {0}", maxCpuLimit));
-                    }
-                }
-            }
-            else
-            {
-                cpus = maxProcessorCount;
-            }
+            logger.WriteVerbose(string.Format("Using CPU limit: {0}", maxCpuLimit));
 
-            _processorCount = cpus;
+            _processorCount = maxCpuLimit;
+            
+            _verbosity = MSBuildVerbositoyLevel.TryParse(buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_MSBuild_Verbosity, "normal"));
+            
+            _showSummary = buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_MSBuild_SummaryEnabled, defaultValue: false);
 
-            _verbosity = "normal";
+            logger.WriteVerbose(string.Format("Using MSBuild verbosity {0}", _verbosity));
 
             try
             {
@@ -100,17 +84,15 @@ namespace Arbor.X.Core.Tools.MSBuild
         {
             int processorCount = 1;
 
-            if (buildVariables.HasKey(WellKnownVariables.ExternalTools_Kudu_ProcessorCount))
+            var key = WellKnownVariables.ExternalTools_Kudu_ProcessorCount;
+
+            var setting = buildVariables.GetInt32ByKey(key, 1);
+
+            if (setting > 0)
             {
-                var value = buildVariables.Require(WellKnownVariables.ExternalTools_Kudu_ProcessorCount).Value;
-
-                int parsedCount;
-
-                if (!string.IsNullOrWhiteSpace(value) && int.TryParse(value, out parsedCount) && parsedCount >= 1)
-                {
-                    processorCount = parsedCount;
-                }
+                processorCount = setting;
             }
+
             return processorCount;
         }
 
@@ -124,30 +106,77 @@ namespace Arbor.X.Core.Tools.MSBuild
                 return ExitCode.Failure;
             }
 
-            bool buildAnyCpu = BuildPlatformOrConfiguration(variables, WellKnownVariables.IgnoreAnyCpu);
+            var buildConfiguration =
+                variables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_MSBuild_BuildConfiguration,
+                    defaultValue: "");
 
-            if (!buildAnyCpu)
+            if (!string.IsNullOrWhiteSpace(buildConfiguration))
             {
-                _knownPlatforms.Remove("Any CPU");
-                logger.Write(string.Format("Flag {0} is set, ignoring AnyCPU builds", WellKnownVariables.IgnoreAnyCpu));
+                _buildConfigurations.Add(buildConfiguration);
+            }
+            else
+            {
+                bool buildRelease = BuildPlatformOrConfiguration(variables, WellKnownVariables.IgnoreRelease);
+
+                if (buildRelease)
+                {
+                    _buildConfigurations.Add("release");
+                }
+                else
+                {
+                    logger.Write(string.Format("Flag {0} is set, ignoring release builds",
+                        WellKnownVariables.IgnoreRelease));
+                }
+
+                bool buildDebug = BuildPlatformOrConfiguration(variables, WellKnownVariables.IgnoreDebug);
+
+                if (buildDebug)
+                {
+                    _buildConfigurations.Add("debug");
+                }
+                else
+                {
+                    logger.Write(string.Format("Flag {0} is set, ignoring debug builds", WellKnownVariables.IgnoreDebug));
+                }
             }
 
-            bool buildRelease = BuildPlatformOrConfiguration(variables, WellKnownVariables.IgnoreRelease);
-
-            if (!buildRelease)
+            if (!_buildConfigurations.Any())
             {
-                _knownConfiguration.Remove("release");
-                logger.Write(string.Format("Flag {0} is set, ignoring release builds", WellKnownVariables.IgnoreRelease));
+                logger.WriteError("No build configurations are defined");
+                return ExitCode.Failure;
             }
 
-            bool buildDebug = BuildPlatformOrConfiguration(variables, WellKnownVariables.IgnoreDebug);
 
-            if (!buildDebug)
+            var buildPlatform =
+                variables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_MSBuild_BuildPlatform,
+                    defaultValue: "");
+
+            if (!string.IsNullOrWhiteSpace(buildPlatform))
             {
-                _knownConfiguration.Remove("debug");
-                logger.Write(string.Format("Flag {0} is set, ignoring debug builds", WellKnownVariables.IgnoreDebug));
+                _platforms.Add(buildPlatform);
+            }
+            else
+            {
+                foreach (var knownPlatform in _knownPlatforms)
+                {
+                    _platforms.Add(knownPlatform);
+                }
+
+                bool buildAnyCpu = BuildPlatformOrConfiguration(variables, WellKnownVariables.IgnoreAnyCpu);
+
+                if (!buildAnyCpu)
+                {
+                    logger.Write(string.Format("Flag {0} is set, ignoring AnyCPU builds",
+                        WellKnownVariables.IgnoreAnyCpu));
+                    _platforms.Remove("Any CPU");
+                }
             }
 
+            if (!_platforms.Any())
+            {
+                logger.WriteError("No build platforms are defined");
+                return ExitCode.Failure;
+            }
 
             IEnumerable<FileInfo> solutionFiles = FindSolutionFiles(new DirectoryInfo(vcsRoot));
 
@@ -161,7 +190,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                 solutionPlatforms.Add(solutionFile, platforms);
             }
 
-            logger.Write(string.Format("Found solutions and platforms: {0}{1}",
+            logger.WriteVerbose(string.Format("Found solutions and platforms: {0}{1}",
                 Environment.NewLine,
                 string.Join(Environment.NewLine,
                     solutionPlatforms.Select(
@@ -180,23 +209,12 @@ namespace Arbor.X.Core.Tools.MSBuild
             return ExitCode.Success;
         }
 
-        bool BuildPlatformOrConfiguration(IEnumerable<IVariable> variables, string key)
+        bool BuildPlatformOrConfiguration(IReadOnlyCollection<IVariable> variables, string key)
         {
             var ignoreVariable =
-                variables.SingleOrDefault(@var => @var.Key.Equals(key, StringComparison.InvariantCultureIgnoreCase));
-
-            if (ignoreVariable != null)
-            {
-                if (!string.IsNullOrWhiteSpace(ignoreVariable.Value))
-                {
-                    bool ignore;
-                    if (bool.TryParse(ignoreVariable.Value, out ignore) && ignore)
-                    {
-                        return false;
-                    }
-                }
-            }
-            return true;
+                variables.GetBooleanByKey(key, defaultValue: true);
+            
+            return ignoreVariable;
         }
 
         async Task<List<string>> GetSolutionPlatformsAsync(FileInfo solutionFile)
@@ -229,7 +247,7 @@ namespace Arbor.X.Core.Tools.MSBuild
 
                         if (isInGlobalSection)
                         {
-                            platforms.AddRange(_knownPlatforms.Where(knownPlatform =>
+                            platforms.AddRange(_platforms.Where(knownPlatform =>
                                 line.IndexOf(knownPlatform, StringComparison.InvariantCulture) >= 0));
                         }
                     }
@@ -241,8 +259,27 @@ namespace Arbor.X.Core.Tools.MSBuild
 
         async Task<ExitCode> BuildSolutionAsync(FileInfo solutionFile, IReadOnlyList<string> platforms, ILogger logger)
         {
-            foreach (var configuration in _knownConfiguration)
+            var combinations = platforms
+                .SelectMany(item => _buildConfigurations.Select(config => new  {Platform=item, Configuration=config}))
+                .ToList();
+
+            if (combinations.Count() > 1)
             {
+                var dictionaries = combinations.Select(combination => new Dictionary<string, string>
+                                                                      {
+                                                                          {"Configuration", combination.Configuration}, {"Platform", combination.Platform}
+                                                                      });
+
+                logger.WriteVerbose(string.Format("{0}{0}Configuration/platforms combinations to build: {0}{0}{1}",
+                    Environment.NewLine, dictionaries.DisplayAsTable()));
+
+            }
+
+            foreach (var configuration in _buildConfigurations)
+            {
+                string currentConfiguration = configuration;
+
+                
                 var result = await BuildSolutionWithConfigurationAsync(solutionFile, configuration, logger, platforms);
 
                 if (!result.IsSuccess)
@@ -250,6 +287,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                     return result;
                 }
             }
+
             return ExitCode.Success;
         }
 
@@ -289,23 +327,29 @@ namespace Arbor.X.Core.Tools.MSBuild
                 logger.WriteError(string.Format("The MSBuild path '{0}' does not exist", _msBuildExe));
                 return ExitCode.Failure;
             }
-
-
+            
             var argList = new List<string>
                           {
                               solutionFile.FullName,
                               string.Format("/property:configuration={0}", configuration),
                               string.Format("/property:platform={0}", platform),
-                              string.Format("/verbosity:{0}", _verbosity),
+                              string.Format("/verbosity:{0}", _verbosity.Level),
                               "/target:rebuild",
-                              "/detailedsummary",
                               string.Format("/maxcpucount:{0}", _processorCount.ToString(CultureInfo.InvariantCulture))
                           };
+
+            if (_showSummary)
+            {
+                argList.Add("/detailedsummary");
+            }
+
+            logger.Write(string.Format("Building solution file {0} ({1}|{2})", solutionFile.Name, configuration, platform));
+            logger.WriteVerbose(string.Format("{0}MSBuild arguments: {0}{0}{1}", Environment.NewLine, argList.Select(arg => new Dictionary<string, string> { { "Value", arg } }).DisplayAsTable()));
 
             var exitCode =
                 await ProcessRunner.ExecuteAsync(_msBuildExe, arguments: argList, standardOutLog: logger.Write,
                     standardErrorAction: logger.WriteError, toolAction: logger.Write,
-                    cancellationToken: _cancellationToken);
+                    cancellationToken: _cancellationToken, verboseAction: logger.WriteVerbose);
 
             if (exitCode.IsSuccess)
             {
@@ -348,13 +392,17 @@ namespace Arbor.X.Core.Tools.MSBuild
                                   string.Format("/property:platform={0}", platformName),
                                   string.Format("/property:_PackageTempDir={0}", siteArtifactDirectory),
                                   string.Format("/property:SolutionDir={0}", solutionFile.Directory.FullName),
-                                  string.Format("/verbosity:{0}", _verbosity),
+                                  string.Format("/verbosity:{0}", _verbosity.Level),
                                   "/target:pipelinePreDeployCopyAllFilesToOneFolder",
                                   "/property:AutoParameterizationWebConfigConnectionStrings=false",
-                                  "/detailedsummary",
                                   string.Format("/maxcpucount:{0}",
                                       _processorCount.ToString(CultureInfo.InvariantCulture))
                               };
+
+                if (_showSummary)
+                {
+                    argList.Add("/detailedsummary");
+                }
                 
                 var exitCode =
                     await ProcessRunner.ExecuteAsync(_msBuildExe, arguments: argList, standardOutLog: logger.Write,

@@ -25,9 +25,9 @@ namespace Arbor.X.Core.Tools.Symbols
             var isRunningOnBuildAgentVariable =
                 buildVariables.Require(WellKnownVariables.IsRunningOnBuildAgent).ThrowIfEmptyValue();
 
-            bool isRunningOnBuildAgent;
+            bool isRunningOnBuildAgent = isRunningOnBuildAgentVariable.GetValueOrDefault(defaultValue:false);
 
-            if (bool.TryParse(isRunningOnBuildAgentVariable.Value, out isRunningOnBuildAgent) && isRunningOnBuildAgent)
+            if (isRunningOnBuildAgent)
             {
                 return UploadNuGetPackages(logger, artifacts.Value, nugetExe.Value, symbolServer.Value,
                                            symbolServerApiKey.Value);

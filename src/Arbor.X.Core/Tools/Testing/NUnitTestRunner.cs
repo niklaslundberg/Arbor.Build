@@ -24,12 +24,20 @@ namespace Arbor.X.Core.Tools.Testing
             var ignoreTestFailuresVariable =
                 buildVariables.SingleOrDefault(key => key.Key == WellKnownVariables.IgnoreTestFailures);
 
-            bool ignoreTestFailures;
+            bool testsEnabled = buildVariables.GetBooleanByKey(WellKnownVariables.TestsEnabled, defaultValue: true);
 
-            if (ignoreTestFailuresVariable != null &&
-                bool.TryParse(ignoreTestFailuresVariable.Value, out ignoreTestFailures))
+            if (!testsEnabled)
+            {
+                logger.WriteWarning(string.Format("Tests are disabled (build variable '{0}' is false)", WellKnownVariables.TestsEnabled));
+                return ExitCode.Success;
+            }
+
+            bool ignoreTestFailures = ignoreTestFailuresVariable.GetValueOrDefault(defaultValue: false);
+
+            if (!ignoreTestFailures)
             {
                 var message = string.Format("The exit code from NUnit test was not successful, but the environment variable {0} is set to true, thus returning success", WellKnownVariables.IgnoreTestFailures);
+                
                 try
                 {
                     var exitCode = await RunNUnitAsync(externalTools, logger, reportPath);

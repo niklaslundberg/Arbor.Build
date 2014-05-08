@@ -30,11 +30,13 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Machine.Specifications">
-      <HintPath>..\packages\Machine.Specifications.0.8.1\lib\net45\Machine.Specifications.dll</HintPath>
+    <Reference Include="Machine.Specifications, Version=0.8.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Machine.Specifications.0.8.2\lib\net45\Machine.Specifications.dll</HintPath>
     </Reference>
-    <Reference Include="Machine.Specifications.Clr4">
-      <HintPath>..\packages\Machine.Specifications.0.8.1\lib\net45\Machine.Specifications.Clr4.dll</HintPath>
+    <Reference Include="Machine.Specifications.Clr4, Version=0.8.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Machine.Specifications.0.8.2\lib\net45\Machine.Specifications.Clr4.dll</HintPath>
     </Reference>
     <Reference Include="Machine.Specifications.Should">
       <HintPath>..\packages\Machine.Specifications.Should.0.7.2\lib\net45\Machine.Specifications.Should.dll</HintPath>
@@ -48,6 +50,24 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Logging\when_parsing_empty_string.cs" />
+    <Compile Include="Logging\when_parsing_information_level_8.cs" />
+    <Compile Include="Logging\when_parsing_information_string.cs" />
+    <Compile Include="Logging\when_parsing_information_string_mixed_case.cs" />
+    <Compile Include="Logging\when_parsing_information_string_uppercase.cs" />
+    <Compile Include="Logging\when_parsing_level_int_max.cs" />
+    <Compile Include="Logging\when_parsing_level_int_min.cs" />
+    <Compile Include="Logging\when_parsing_level_minus_1.cs" />
+    <Compile Include="Logging\when_parsing_null_string.cs" />
+    <Compile Include="Logging\when_parsing_verbose_level_16.cs" />
+    <Compile Include="Logging\when_parsing_verbose_string.cs" />
+    <Compile Include="Logging\when_parsing_whitespace_string.cs" />
+    <Compile Include="Logging\when_Specification.cs" />
+    <Compile Include="Logging\when_comparing_log_level_information_and_default.cs" />
+    <Compile Include="Logging\when_comparing_log_level_information_and_information.cs" />
+    <Compile Include="Logging\when_comparing_uninitialized_log_level_with_information.cs" />
+    <Compile Include="Logging\when_getting_default_value_for_log_level.cs" />
+    <Compile Include="Logging\when_listing_all_log_levels.cs" />
     <Compile Include="ProcessRunner\when_running_a_failing_process.cs" />
     <Compile Include="ProcessRunner\when_running_a_process_longer_than_timeout.cs" />
     <Compile Include="WellknownVariables\when_listing_all_wellknown_variables.cs" />

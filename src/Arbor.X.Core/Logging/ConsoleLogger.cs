@@ -4,71 +4,80 @@ namespace Arbor.X.Core.Logging
 {
     public class ConsoleLogger : ILogger
     {
+        public LogLevel LogLevel
+        {
+            get { return _maxLogLevel; }
+            set { _maxLogLevel = value; }
+        }
+
+        LogLevel _maxLogLevel;
         readonly string _prefix;
 
-        public ConsoleLogger(string prefix = "")
+        public ConsoleLogger(string prefix = "", LogLevel maxLogLevel = default(LogLevel))
         {
-            _prefix = prefix;
+            _maxLogLevel = maxLogLevel;
+            _prefix = prefix ?? "";
         }
 
         public void WriteError(string message, string prefix = null)
         {
-            if (string.IsNullOrWhiteSpace(message))
+            if (LogLevel.Error.Level <= _maxLogLevel.Level)
             {
-                return;
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.Error.WriteLine(GetTotalMessage(GetPrefix(prefix), message));
+                Console.ResetColor();
             }
-            
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.Error.WriteLine(GetPrefix(prefix) + message);
-            Console.ResetColor();
-        }
-
-        object GetPrefix(string prefix)
-        {
-            string value;
-
-            if (!string.IsNullOrWhiteSpace(prefix))
-            {
-                value = prefix;
-            }
-            else
-            {
-                value = _prefix;
-            }
-
-            if (!value.EndsWith(" "))
-            {
-                value = value + " ";
-            }
-            return value;
         }
 
         public void Write(string message, string prefix = null)
         {
-            Console.ResetColor();
-            Console.WriteLine(GetPrefix(prefix) + message);
-        }
-
-
-        public void Write(string message, ConsoleColor color, string prefix = null)
-        {
-            Console.ForegroundColor = color;
-            Console.WriteLine(GetPrefix(prefix) + message);
-            Console.ResetColor();
+            if (LogLevel.Information.Level <= _maxLogLevel.Level)
+            {
+                Console.ResetColor();
+                Console.WriteLine(GetTotalMessage(GetPrefix(prefix), message));
+            }
         }
 
         public void WriteWarning(string message, string prefix = null)
         {
-            Console.ForegroundColor = ConsoleColor.DarkYellow;
-            Console.WriteLine(GetPrefix(prefix) + message);
-            Console.ResetColor();
+            if (LogLevel.Warning.Level <= _maxLogLevel.Level)
+            {
+                Console.ForegroundColor = ConsoleColor.DarkYellow;
+                Console.WriteLine(GetTotalMessage(GetPrefix(prefix), message));
+                Console.ResetColor();
+            }
         }
 
         public void WriteVerbose(string message, string prefix = null)
         {
-            Console.ForegroundColor = ConsoleColor.Gray;
-            Console.WriteLine(GetPrefix(prefix) + message);
-            Console.ResetColor();
+            if (LogLevel.Verbose.Level <= _maxLogLevel.Level)
+            {
+                Console.ForegroundColor = ConsoleColor.Gray;
+                Console.WriteLine(GetTotalMessage(GetPrefix(prefix), message));
+                Console.ResetColor();
+            }
+        }
+
+        string GetPrefix(string prefix)
+        {
+            string value = !string.IsNullOrWhiteSpace(prefix) ? prefix : _prefix;
+
+            return value;
+        }
+
+        string GetTotalMessage(string prefix, string message)
+        {
+            return (prefix ?? "").Trim(' ') + " " + (message ?? "").Trim(' ');
+        }
+
+        public void Write(string message, ConsoleColor color, string prefix = null)
+        {
+            if (LogLevel.Information.Level <= _maxLogLevel.Level)
+            {
+                Console.ForegroundColor = color;
+                Console.WriteLine(GetTotalMessage(GetPrefix(prefix), message));
+                Console.ResetColor();
+            }
         }
     }
 }

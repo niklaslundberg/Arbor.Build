@@ -20,38 +20,34 @@ namespace Arbor.X.Core.Tools.Testing
             var reportPath =
                 buildVariables.Require(WellKnownVariables.ExternalTools_VSTest_ReportPath).ThrowIfEmptyValue().Value;
 
-            if (!buildVariables.Any(bv => bv.Key == WellKnownVariables.ExternalTools_VSTest_ExePath) || string.IsNullOrWhiteSpace(buildVariables.Single(key => key.Key == WellKnownVariables.ExternalTools_VSTest_ExePath).Value))
+            var vsTestExePath = buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_VSTest_ExePath, defaultValue: "");
+
+            if (string.IsNullOrWhiteSpace(vsTestExePath))
             {
                 logger.WriteWarning(WellKnownVariables.ExternalTools_VSTest_ExePath + " is not defined, cannot run any VSTests");
                 return ExitCode.Success;
             }
 
-            var vsTestExePath =
-                buildVariables.Require(WellKnownVariables.ExternalTools_VSTest_ExePath).ThrowIfEmptyValue().Value;
+            var ignoreTestFailures =
+                buildVariables.GetBooleanByKey(WellKnownVariables.IgnoreTestFailures, defaultValue: false);
 
-            var ignoreTestFailuresVariable =
-                buildVariables.SingleOrDefault(key => key.Key == WellKnownVariables.IgnoreTestFailures);
-
-            bool ignoreTestFailures;
-
-            if (ignoreTestFailuresVariable != null &&
-                bool.TryParse(ignoreTestFailuresVariable.Value, out ignoreTestFailures))
+            if (ignoreTestFailures)
             {
                 try
                 {
-                    return await RunVSTestAsync(logger, reportPath, vsTestExePath);
+                    return await RunVsTestAsync(logger, reportPath, vsTestExePath);
                 }
                 catch (Exception ex)
                 {
-                    logger.WriteWarning("Ignoring test exception: " + ex.ToString());
+                    logger.WriteWarning("Ignoring test exception: " + ex);
                 }
                 return ExitCode.Success;
             }
 
-            return await RunVSTestAsync(logger, reportPath, vsTestExePath);
+            return await RunVsTestAsync(logger, reportPath, vsTestExePath);
         }
 
-        async Task<ExitCode> RunVSTestAsync(ILogger logger, string msTestReportDirectoryPath, string msTestExePath)
+        async Task<ExitCode> RunVsTestAsync(ILogger logger, string vsTestReportDirectoryPath, string vsTestExePath)
         {
             Type testClassAttribute = typeof (TestClassAttribute);
             Type testMethodAttribute = typeof (TestMethodAttribute);
@@ -60,10 +56,10 @@ namespace Arbor.X.Core.Tools.Testing
 
             var typesToFind = new List<Type> {testClassAttribute, testMethodAttribute};
 
-            List<string> msTestConsoleArguments =
+            List<string> vsTestConsoleArguments =
                 new UnitTestFinder(typesToFind).GetUnitTestFixtureDlls(directory).ToList();
 
-            if (!msTestConsoleArguments.Any())
+            if (!vsTestConsoleArguments.Any())
             {
                 logger.WriteWarning(
                     string.Format("Could not find any VSTest tests in directory '{0}' or any sub-directory",
@@ -71,21 +67,21 @@ namespace Arbor.X.Core.Tools.Testing
                 return ExitCode.Success;
             }
 
-            IEnumerable<string> options = GetMSTestConsoleOptions();
+            IEnumerable<string> options = GetVsTestConsoleOptions();
 
-            msTestConsoleArguments.AddRange(options);
+            vsTestConsoleArguments.AddRange(options);
 
-            EnsureTestReportDirectoryExists(msTestReportDirectoryPath);
+            EnsureTestReportDirectoryExists(vsTestReportDirectoryPath);
 
             var oldCurrentDirectory = SaveCurrentDirectory();
 
-            SetCurrentDirectory(msTestReportDirectoryPath);
+            SetCurrentDirectory(vsTestReportDirectoryPath);
 
-            LogExecution(logger, msTestConsoleArguments, msTestExePath);
+            LogExecution(logger, vsTestConsoleArguments, vsTestExePath);
 
             try
             {
-                Task<ExitCode> execute = ProcessRunner.ExecuteAsync(msTestExePath, arguments: msTestConsoleArguments,
+                Task<ExitCode> execute = ProcessRunner.ExecuteAsync(vsTestExePath, arguments: vsTestConsoleArguments,
                     standardOutLog: logger.Write,
                     standardErrorAction: logger.WriteError,
                     toolAction: logger.Write);
@@ -129,7 +125,7 @@ namespace Arbor.X.Core.Tools.Testing
             logger.Write(string.Format("Running VSTest {0} {1}", exePath, args));
         }
 
-        static IEnumerable<string> GetMSTestConsoleOptions()
+        static IEnumerable<string> GetVsTestConsoleOptions()
         {
             var options = new List<string> {"/Logger:trx"};
             return options;

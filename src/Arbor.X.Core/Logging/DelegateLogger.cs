@@ -36,5 +36,7 @@ namespace Arbor.X.Core.Logging
         {
             _verbose(message, prefix);
         }
+
+        public LogLevel LogLevel { get; set; }
     }
 }

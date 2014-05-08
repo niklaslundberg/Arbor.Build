@@ -30,7 +30,7 @@ namespace Arbor.X.Core.Tools.NuGet
 
             if (branchName.Value.Equals("master", StringComparison.InvariantCultureIgnoreCase))
             {
-                logger.Write("NuGet package creation is not supported on 'master' branch");
+                logger.WriteWarning("NuGet package creation is not supported on 'master' branch");
                 return ExitCode.Success;
             }
 
@@ -52,13 +52,13 @@ namespace Arbor.X.Core.Tools.NuGet
 
             var vcsRootDir = VcsPathHelper.FindVcsRootPath();
 
-            logger.Write(string.Format("Scanning directory '{0}' for .nuspec files", vcsRootDir));
+            logger.WriteVerbose(string.Format("Scanning directory '{0}' for .nuspec files", vcsRootDir));
 
             var packageDirectory = PackageDirectory();
 
             var packageSpecifications = GetPackageSpecifications(logger, vcsRootDir, packageDirectory);
             
-            var result = await ProcessPackages(packageSpecifications, nuGetExePath,packagesDirectory,version,isReleaseBuild,configuration,branchName,logger,tempDirectory);
+            var result = await ProcessPackagesAsync(packageSpecifications, nuGetExePath,packagesDirectory,version,isReleaseBuild,configuration,branchName,logger,tempDirectory);
 
             return result;
         }
@@ -71,7 +71,7 @@ namespace Arbor.X.Core.Tools.NuGet
                                                      file.IndexOf(packageDirectory, StringComparison.Ordinal) < 0)
                                                  .ToList();
 
-            logger.Write(string.Format("Found nuspec files [{0}]: {1}{2}", packageSpecifications.Count,
+            logger.WriteVerbose(string.Format("Found nuspec files [{0}]: {1}{2}", packageSpecifications.Count,
                                        Environment.NewLine, string.Join(Environment.NewLine, packageSpecifications)));
             return packageSpecifications;
         }
@@ -84,28 +84,33 @@ namespace Arbor.X.Core.Tools.NuGet
 
         static bool IsReleaseBuild(IVariable releaseBuild)
         {
-            bool isReleaseBuild;
+            bool isReleaseBuild = releaseBuild.Value.TryParseBool(defaultValue:false);
 
-            if (!bool.TryParse(releaseBuild.Value, out isReleaseBuild))
-            {
-                throw new ArgumentException(string.Format("The build variable {0} is not a boolean", releaseBuild.Value));
-            }
             return isReleaseBuild;
         }
 
-        async Task<ExitCode> ProcessPackages(IEnumerable<string> packageSpecifications, string nuGetExePath, string packagesDirectory, IVariable version, bool isReleaseBuild, string configuration, IVariable branchName, ILogger logger, IVariable tempDirectory)
+        async Task<ExitCode> ProcessPackagesAsync(IEnumerable<string> packageSpecifications,
+            string nuGetExePath,
+            string packagesDirectory,
+            IVariable version,
+            bool isReleaseBuild,
+            string configuration,
+            IVariable branchName,
+            ILogger logger,
+            IVariable tempDirectory)
         {
             foreach (var packageSpecification in packageSpecifications)
             {
                 var packageResult =
                     await
-                    CreatePackageAsync(nuGetExePath, packageSpecification, packagesDirectory, version, isReleaseBuild,
-                                       configuration, branchName, logger, tempDirectory);
+                        CreatePackageAsync(nuGetExePath, packageSpecification, packagesDirectory, version,
+                            isReleaseBuild,
+                            configuration, branchName, logger, tempDirectory);
 
                 if (!packageResult.IsSuccess)
                 {
                     logger.WriteError(string.Format("Could not create NuGet package from specification '{0}'",
-                                                    packageSpecification));
+                        packageSpecification));
                     return packageResult;
                 }
             }
@@ -141,10 +146,10 @@ namespace Arbor.X.Core.Tools.NuGet
                 Directory.CreateDirectory(nuSpecTempDirectory);
             }
 
-            logger.Write(string.Format("Saving new nuspec {0}", nuSpecFileCopyPath));
+            logger.WriteVerbose(string.Format("Saving new nuspec {0}", nuSpecFileCopyPath));
             nuSpecCopy.Save(nuSpecFileCopyPath);
 
-            logger.Write(string.Format("Created nuspec content: {0}{1}", Environment.NewLine, File.ReadAllText(nuSpecFileCopyPath)));
+            logger.WriteVerbose(string.Format("Created nuspec content: {0}{1}", Environment.NewLine, File.ReadAllText(nuSpecFileCopyPath)));
 
             var result = await ExecuteNuGetPackAsync(nuGetExePath, packagesDirectory, logger, nuSpecFileCopyPath, properties, nuSpecCopy);
 
@@ -167,15 +172,19 @@ namespace Arbor.X.Core.Tools.NuGet
                                         packagesDirectory,
                                         "-Version",
                                         nuSpecCopy.Version,
-                                        "-Verbosity",
-                                        "Detailed",
                                         "-Symbols"
                                     };
+
+                if (LogLevel.Verbose.Level <= logger.LogLevel.Level)
+                {
+                    arguments.Add("-Verbosity");
+                    arguments.Add("Detailed");
+                }
 
                 var processResult =
                     await
                     ProcessRunner.ExecuteAsync(nuGetExePath, arguments: arguments, standardOutLog: logger.Write,
-                                               standardErrorAction: logger.WriteError, toolAction: logger.Write, cancellationToken: _cancellationToken);
+                                               standardErrorAction: logger.WriteError, toolAction: logger.Write, cancellationToken: _cancellationToken, verboseAction: logger.WriteVerbose);
 
                 result = processResult;
             }
