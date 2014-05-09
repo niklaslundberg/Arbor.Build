@@ -257,11 +257,11 @@ namespace Arbor.X.Core
                                 new MSBuildVariableProvider(),
                                 new NugetVariableProvider(),
                                 new VisualStudioVariableProvider(),
-                                new VSTestVariableProvider(),
+                                new VsTestVariableProvider(),
                                 new BuildVersionProvider(),
                                 new ILMergeVariableProvider(),
                                 new SymbolsVariableProvider(),
-                                new BuildServerVariableProvider(),
+                                new BuildAgentVariableProvider(),
                                 new KuduEnvironmentVariableProvider()
                             }; //TODO use Autofac
 

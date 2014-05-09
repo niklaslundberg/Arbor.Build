@@ -8,7 +8,7 @@ using Arbor.X.Core.Logging;
 
 namespace Arbor.X.Core.Tools.Testing
 {
-    public class VSTestVariableProvider : IVariableProvider
+    public class VsTestVariableProvider : IVariableProvider
     {
         public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {

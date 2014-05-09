@@ -1,25 +1,24 @@
 using System.Collections.Generic;
-using Arbor.X.Core.Logging;
 using Machine.Specifications;
 
-namespace Arbor.X.Tests.Integration.Logging
+namespace Arbor.X.Tests.Integration.Logging.LogLevel
 {
-    [Subject(typeof (LogLevel))]
+    [Subject(typeof (Core.Logging.LogLevel))]
     public class when_listing_all_log_levels
     {
-        static IEnumerable<LogLevel> allValues;
-        Because of = () => { allValues = LogLevel.AllValues; };
+        static IEnumerable<Core.Logging.LogLevel> allValues;
+        Because of = () => { allValues = Core.Logging.LogLevel.AllValues; };
 
         It should_contains_critical_error_warning_information_verbose = () => allValues.ShouldContain(new[]
                                                                                                       {
-                                                                                                          LogLevel
+                                                                                                          Core.Logging.LogLevel
                                                                                                               .Critical,
-                                                                                                          LogLevel.Error,
-                                                                                                          LogLevel
+                                                                                                          Core.Logging.LogLevel.Error,
+                                                                                                          Core.Logging.LogLevel
                                                                                                               .Warning,
-                                                                                                          LogLevel
+                                                                                                          Core.Logging.LogLevel
                                                                                                               .Information,
-                                                                                                          LogLevel
+                                                                                                          Core.Logging.LogLevel
                                                                                                               .Verbose,
                                                                                                       });
     }

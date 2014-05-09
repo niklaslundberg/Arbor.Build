@@ -29,18 +29,17 @@ namespace Arbor.X.Core.Tools.MSBuild
 
         readonly List<string> _blackListedByName = new List<string> {"bin", "obj", ".git", "packages", "TestResults"};
         readonly List<string> _blackListedByStartName = new List<string> {"_", "."};
+        readonly List<string> _buildConfigurations = new List<string>();
 
         readonly List<string> _knownPlatforms = new List<string> {"x86", "Any CPU"};
+        readonly List<string> _platforms = new List<string>();
+        bool _appDataJobsEnabled;
         string _artifactsPath;
-        string _branchName;
         CancellationToken _cancellationToken;
         string _msBuildExe;
         int _processorCount;
-        MSBuildVerbositoyLevel _verbosity;
-        bool _appDataJobsEnabled;
         bool _showSummary;
-        readonly List<string> _buildConfigurations = new List<string>();
-        readonly List<string> _platforms = new List<string>();
+        MSBuildVerbositoyLevel _verbosity;
 
         public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
@@ -50,22 +49,26 @@ namespace Arbor.X.Core.Tools.MSBuild
                 buildVariables.Require(WellKnownVariables.ExternalTools_MSBuild_ExePath).ThrowIfEmptyValue().Value;
             _artifactsPath =
                 buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue().Value;
-            _branchName =
-                buildVariables.Require(WellKnownVariables.BranchName).ThrowIfEmptyValue().Value;
 
-            _appDataJobsEnabled = buildVariables.GetBooleanByKey(WellKnownVariables.AppDataJobsEnabled, defaultValue: false);
-            
-            var maxProcessorCount = ProcessorCount(buildVariables);
+            _appDataJobsEnabled = buildVariables.GetBooleanByKey(WellKnownVariables.AppDataJobsEnabled,
+                defaultValue: false);
 
-            int maxCpuLimit = buildVariables.GetInt32ByKey(WellKnownVariables.CpuLimit, defaultValue: maxProcessorCount, minValue:1);
+            int maxProcessorCount = ProcessorCount(buildVariables);
+
+            int maxCpuLimit = buildVariables.GetInt32ByKey(WellKnownVariables.CpuLimit, defaultValue: maxProcessorCount,
+                minValue: 1);
 
             logger.WriteVerbose(string.Format("Using CPU limit: {0}", maxCpuLimit));
 
             _processorCount = maxCpuLimit;
-            
-            _verbosity = MSBuildVerbositoyLevel.TryParse(buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_MSBuild_Verbosity, "normal"));
-            
-            _showSummary = buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_MSBuild_SummaryEnabled, defaultValue: false);
+
+            _verbosity =
+                MSBuildVerbositoyLevel.TryParse(
+                    buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_MSBuild_Verbosity,
+                        "normal"));
+
+            _showSummary = buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_MSBuild_SummaryEnabled,
+                defaultValue: false);
 
             logger.WriteVerbose(string.Format("Using MSBuild verbosity {0}", _verbosity));
 
@@ -84,9 +87,9 @@ namespace Arbor.X.Core.Tools.MSBuild
         {
             int processorCount = 1;
 
-            var key = WellKnownVariables.ExternalTools_Kudu_ProcessorCount;
+            string key = WellKnownVariables.ExternalTools_Kudu_ProcessorCount;
 
-            var setting = buildVariables.GetInt32ByKey(key, 1);
+            int setting = buildVariables.GetInt32ByKey(key, 1);
 
             if (setting > 0)
             {
@@ -98,7 +101,7 @@ namespace Arbor.X.Core.Tools.MSBuild
 
         async Task<ExitCode> BuildAsync(ILogger logger, IReadOnlyCollection<IVariable> variables)
         {
-            var vcsRoot = VcsPathHelper.TryFindVcsRootPath();
+            string vcsRoot = VcsPathHelper.TryFindVcsRootPath();
 
             if (vcsRoot == null)
             {
@@ -106,7 +109,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                 return ExitCode.Failure;
             }
 
-            var buildConfiguration =
+            string buildConfiguration =
                 variables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_MSBuild_BuildConfiguration,
                     defaultValue: "");
 
@@ -147,7 +150,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             }
 
 
-            var buildPlatform =
+            string buildPlatform =
                 variables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_MSBuild_BuildPlatform,
                     defaultValue: "");
 
@@ -157,7 +160,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             }
             else
             {
-                foreach (var knownPlatform in _knownPlatforms)
+                foreach (string knownPlatform in _knownPlatforms)
                 {
                     _platforms.Add(knownPlatform);
                 }
@@ -183,9 +186,9 @@ namespace Arbor.X.Core.Tools.MSBuild
             IDictionary<FileInfo, IReadOnlyList<string>> solutionPlatforms =
                 new Dictionary<FileInfo, IReadOnlyList<string>>();
 
-            foreach (var solutionFile in solutionFiles)
+            foreach (FileInfo solutionFile in solutionFiles)
             {
-                var platforms = await GetSolutionPlatformsAsync(solutionFile);
+                List<string> platforms = await GetSolutionPlatformsAsync(solutionFile);
 
                 solutionPlatforms.Add(solutionFile, platforms);
             }
@@ -196,9 +199,9 @@ namespace Arbor.X.Core.Tools.MSBuild
                     solutionPlatforms.Select(
                         item => string.Format("{0}: [{1}]", item.Key, string.Join(", ", item.Value))))));
 
-            foreach (var solutionPlatform in solutionPlatforms)
+            foreach (KeyValuePair<FileInfo, IReadOnlyList<string>> solutionPlatform in solutionPlatforms)
             {
-                var result = await BuildSolutionAsync(solutionPlatform.Key, solutionPlatform.Value, logger);
+                ExitCode result = await BuildSolutionAsync(solutionPlatform.Key, solutionPlatform.Value, logger);
 
                 if (!result.IsSuccess)
                 {
@@ -211,9 +214,9 @@ namespace Arbor.X.Core.Tools.MSBuild
 
         bool BuildPlatformOrConfiguration(IReadOnlyCollection<IVariable> variables, string key)
         {
-            var ignoreVariable =
+            bool ignoreVariable =
                 variables.GetBooleanByKey(key, defaultValue: true);
-            
+
             return ignoreVariable;
         }
 
@@ -229,7 +232,7 @@ namespace Arbor.X.Core.Tools.MSBuild
 
                     while (streamReader.Peek() >= 0)
                     {
-                        var line = await streamReader.ReadLineAsync();
+                        string line = await streamReader.ReadLineAsync();
 
                         if (line.IndexOf("GlobalSection(SolutionConfigurationPlatforms)",
                             StringComparison.InvariantCultureIgnoreCase) >= 0)
@@ -260,27 +263,26 @@ namespace Arbor.X.Core.Tools.MSBuild
         async Task<ExitCode> BuildSolutionAsync(FileInfo solutionFile, IReadOnlyList<string> platforms, ILogger logger)
         {
             var combinations = platforms
-                .SelectMany(item => _buildConfigurations.Select(config => new  {Platform=item, Configuration=config}))
+                .SelectMany(item => _buildConfigurations.Select(config => new {Platform = item, Configuration = config}))
                 .ToList();
 
             if (combinations.Count() > 1)
             {
-                var dictionaries = combinations.Select(combination => new Dictionary<string, string>
-                                                                      {
-                                                                          {"Configuration", combination.Configuration}, {"Platform", combination.Platform}
-                                                                      });
+                IEnumerable<Dictionary<string, string>> dictionaries =
+                    combinations.Select(combination => new Dictionary<string, string>
+                                                       {
+                                                           {"Configuration", combination.Configuration},
+                                                           {"Platform", combination.Platform}
+                                                       });
 
                 logger.WriteVerbose(string.Format("{0}{0}Configuration/platforms combinations to build: {0}{0}{1}",
                     Environment.NewLine, dictionaries.DisplayAsTable()));
-
             }
 
-            foreach (var configuration in _buildConfigurations)
+            foreach (string configuration in _buildConfigurations)
             {
-                string currentConfiguration = configuration;
-
-                
-                var result = await BuildSolutionWithConfigurationAsync(solutionFile, configuration, logger, platforms);
+                ExitCode result =
+                    await BuildSolutionWithConfigurationAsync(solutionFile, configuration, logger, platforms);
 
                 if (!result.IsSuccess)
                 {
@@ -294,9 +296,9 @@ namespace Arbor.X.Core.Tools.MSBuild
         async Task<ExitCode> BuildSolutionWithConfigurationAsync(FileInfo solutionFile, string configuration,
             ILogger logger, IEnumerable<string> platforms)
         {
-            foreach (var knownPlatform in platforms)
+            foreach (string knownPlatform in platforms)
             {
-                var result =
+                ExitCode result =
                     await BuildSolutionWithConfigurationAndPlatformAsync(solutionFile, configuration, knownPlatform,
                         logger);
 
@@ -327,7 +329,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                 logger.WriteError(string.Format("The MSBuild path '{0}' does not exist", _msBuildExe));
                 return ExitCode.Failure;
             }
-            
+
             var argList = new List<string>
                           {
                               solutionFile.FullName,
@@ -343,17 +345,20 @@ namespace Arbor.X.Core.Tools.MSBuild
                 argList.Add("/detailedsummary");
             }
 
-            logger.Write(string.Format("Building solution file {0} ({1}|{2})", solutionFile.Name, configuration, platform));
-            logger.WriteVerbose(string.Format("{0}MSBuild arguments: {0}{0}{1}", Environment.NewLine, argList.Select(arg => new Dictionary<string, string> { { "Value", arg } }).DisplayAsTable()));
+            logger.Write(string.Format("Building solution file {0} ({1}|{2})", solutionFile.Name, configuration,
+                platform));
+            logger.WriteVerbose(string.Format("{0}MSBuild arguments: {0}{0}{1}", Environment.NewLine,
+                argList.Select(arg => new Dictionary<string, string> {{"Value", arg}}).DisplayAsTable()));
 
-            var exitCode =
+            ExitCode exitCode =
                 await ProcessRunner.ExecuteAsync(_msBuildExe, arguments: argList, standardOutLog: logger.Write,
                     standardErrorAction: logger.WriteError, toolAction: logger.Write,
                     cancellationToken: _cancellationToken, verboseAction: logger.WriteVerbose);
 
             if (exitCode.IsSuccess)
             {
-                var webAppsExiteCode = await BuildWebApplicationsAsync(solutionFile, configuration, platform, logger);
+                ExitCode webAppsExiteCode =
+                    await BuildWebApplicationsAsync(solutionFile, configuration, platform, logger);
 
                 exitCode = webAppsExiteCode;
             }
@@ -368,22 +373,22 @@ namespace Arbor.X.Core.Tools.MSBuild
         async Task<ExitCode> BuildWebApplicationsAsync(FileInfo solutionFile, string configuration, string platform,
             ILogger logger)
         {
-            var solution = Solution.LoadFrom(solutionFile.FullName);
+            Solution solution = Solution.LoadFrom(solutionFile.FullName);
 
-            var webProjects =
+            List<SolutionProject> webProjects =
                 solution.Projects.Where(
                     project => project.Project.ProjectTypes().Any(type => type == WebApplicationProjectTypeId)).ToList();
 
             logger.Write(string.Format("WebApplication projects to build [{0}]: {1}", webProjects.Count,
                 string.Join(", ", webProjects.Select(wp => wp.Project.FileName))));
 
-            foreach (var solutionProject in webProjects)
+            foreach (SolutionProject solutionProject in webProjects)
             {
-                var siteArtifactDirectory =
+                DirectoryInfo siteArtifactDirectory =
                     new DirectoryInfo(Path.Combine(_artifactsPath, "Websites", solutionProject.ProjectName, platform,
                         configuration)).EnsureExists();
 
-                var platformName = platform == "Any CPU" ? "AnyCPU" : platform;
+                string platformName = platform == "Any CPU" ? "AnyCPU" : platform;
 
                 var argList = new List<string>
                               {
@@ -391,6 +396,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                                   string.Format("/property:configuration={0}", configuration),
                                   string.Format("/property:platform={0}", platformName),
                                   string.Format("/property:_PackageTempDir={0}", siteArtifactDirectory),
+// ReSharper disable once PossibleNullReferenceException
                                   string.Format("/property:SolutionDir={0}", solutionFile.Directory.FullName),
                                   string.Format("/verbosity:{0}", _verbosity.Level),
                                   "/target:pipelinePreDeployCopyAllFilesToOneFolder",
@@ -403,8 +409,8 @@ namespace Arbor.X.Core.Tools.MSBuild
                 {
                     argList.Add("/detailedsummary");
                 }
-                
-                var exitCode =
+
+                ExitCode exitCode =
                     await ProcessRunner.ExecuteAsync(_msBuildExe, arguments: argList, standardOutLog: logger.Write,
                         standardErrorAction: logger.WriteError, toolAction: logger.Write,
                         cancellationToken: _cancellationToken);
@@ -418,7 +424,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                 {
                     logger.Write("AppData Web Jobs are enabled");
 
-                    var appDataPath = Path.Combine(solutionProject.Project.ProjectDirectory, "App_Data");
+                    string appDataPath = Path.Combine(solutionProject.Project.ProjectDirectory, "App_Data");
 
                     var appDataDirectory = new DirectoryInfo(appDataPath);
 
@@ -427,7 +433,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                         logger.WriteVerbose(string.Format("Site has App_Data directory: '{0}'",
                             appDataDirectory.FullName));
 
-                        var kuduWebJobs =
+                        DirectoryInfo kuduWebJobs =
                             appDataDirectory.EnumerateDirectories()
                                 .SingleOrDefault(
                                     directory =>
@@ -437,9 +443,11 @@ namespace Arbor.X.Core.Tools.MSBuild
                         {
                             logger.WriteVerbose(string.Format("Site has App_Data jobs directory: '{0}'",
                                 kuduWebJobs.FullName));
-                            var artifactJobAppDataPath = Path.Combine(siteArtifactDirectory.FullName, "App_Data", "jobs");
+                            string artifactJobAppDataPath = Path.Combine(siteArtifactDirectory.FullName, "App_Data",
+                                "jobs");
 
-                            var artifactJobAppDataDirectory = new DirectoryInfo(artifactJobAppDataPath).EnsureExists();
+                            DirectoryInfo artifactJobAppDataDirectory =
+                                new DirectoryInfo(artifactJobAppDataPath).EnsureExists();
 
                             logger.WriteVerbose(string.Format("Copying directory '{0}' to '{1}'", kuduWebJobs.FullName,
                                 artifactJobAppDataDirectory.FullName));
@@ -475,9 +483,9 @@ namespace Arbor.X.Core.Tools.MSBuild
                 return Enumerable.Empty<FileInfo>();
             }
 
-            var solutionFiles = directoryInfo.EnumerateFiles("*.sln").ToList();
+            List<FileInfo> solutionFiles = directoryInfo.EnumerateFiles("*.sln").ToList();
 
-            foreach (var subDir in directoryInfo.EnumerateDirectories())
+            foreach (DirectoryInfo subDir in directoryInfo.EnumerateDirectories())
             {
                 solutionFiles.AddRange(FindSolutionFiles(subDir));
             }
@@ -487,13 +495,13 @@ namespace Arbor.X.Core.Tools.MSBuild
 
         bool IsBlacklisted(DirectoryInfo directoryInfo)
         {
-            var isBlacklistedByFullName = _blackListedByName.Any(
+            bool isBlacklistedByFullName = _blackListedByName.Any(
                 blackListed => directoryInfo.Name.Equals(blackListed, StringComparison.InvariantCultureIgnoreCase));
 
-            var blackListedByStartName = _blackListedByStartName.Any(
+            bool blackListedByStartName = _blackListedByStartName.Any(
                 blackListed => directoryInfo.Name.StartsWith(blackListed, StringComparison.InvariantCultureIgnoreCase));
 
-            var isBlackListedByAttributes = _blackListedByAttributes.Any(
+            bool isBlackListedByAttributes = _blackListedByAttributes.Any(
                 blackListed => directoryInfo.Attributes.HasFlag(blackListed));
 
             return isBlacklistedByFullName || blackListedByStartName || isBlackListedByAttributes;

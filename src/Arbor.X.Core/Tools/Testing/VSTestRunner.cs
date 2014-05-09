@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Aesculus.Core;
+using Arbor.X.Core.Annotations;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;
@@ -12,8 +13,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Arbor.X.Core.Tools.Testing
 {
-    [Priority(450)]
-    public class VSTestRunner : ITool
+    [Priority(450), UsedImplicitly]
+    public class VsTestRunner : ITool
     {
         public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {

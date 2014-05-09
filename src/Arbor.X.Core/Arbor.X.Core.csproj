@@ -82,6 +82,7 @@
     <Compile Include="DisplayExtensions.cs" />
     <Compile Include="ExitCode.cs" />
     <Compile Include="Logging\LogLevel.cs" />
+    <Compile Include="Properties\Annotations.cs" />
     <Compile Include="ToolExtensions.cs" />
     <Compile Include="ToolResult.cs" />
     <Compile Include="ToolResultType.cs" />
@@ -89,7 +90,7 @@
     <Compile Include="Tools\ILMerge\ILMergeData.cs" />
     <Compile Include="Tools\ILMerge\ILMergeVariableProvider.cs" />
     <Compile Include="Tools\Artifacts\ArtifactsVariableProvider.cs" />
-    <Compile Include="Tools\Environments\BuildServerVariableProvider.cs" />
+    <Compile Include="Tools\Environments\BuildAgentVariableProvider.cs" />
     <Compile Include="Tools\Environments\SourcePathVariableProvider.cs" />
     <Compile Include="BuildVariables\BuildVariableExtensions.cs" />
     <Compile Include="Tools\DirectoryCopy.cs" />
