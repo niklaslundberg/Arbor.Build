@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.X.Core.BuildVariables;
@@ -19,6 +20,12 @@ namespace Arbor.X.Core.Tools.Kudu
         bool _kuduEnabled;
         string _platform;
         string _kuduConfigurationFallback;
+        bool _clearTarget;
+        bool _useAppOfflineFile;
+        bool _excludeAppData;
+        bool _deleteExistingAppOfflineHtm;
+        string _ignoreDeleteFiles;
+        string _ignoreDeleteDirectories;
 
         public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {
@@ -36,6 +43,13 @@ namespace Arbor.X.Core.Tools.Kudu
             _kuduConfigurationFallback = buildVariables.HasKey(WellKnownVariables.KuduConfigurationFallback)
                 ? buildVariables.Require(WellKnownVariables.KuduConfigurationFallback).Value
                 : "";
+
+            _clearTarget = buildVariables.GetBooleanByKey(WellKnownVariables.KuduClearFilesAndDirectories, false);
+            _useAppOfflineFile = buildVariables.GetBooleanByKey(WellKnownVariables.KuduUseAppOfflineHtmFile, false);
+            _excludeAppData = buildVariables.GetBooleanByKey(WellKnownVariables.KuduExcludeDeleteAppData, true);
+            _deleteExistingAppOfflineHtm = buildVariables.GetBooleanByKey(WellKnownVariables.KuduDeleteExistingAppOfflineHtmFile, true);
+            _ignoreDeleteFiles = buildVariables.GetVariableValueOrDefault(WellKnownVariables.KuduIgnoreDeleteFiles, "");
+            _ignoreDeleteDirectories = buildVariables.GetVariableValueOrDefault(WellKnownVariables.KuduIgnoreDeleteDirectories, "");
 
             var branchNameOverride = buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_Kudu_DeploymentBranchNameOverride, defaultValue: "");
 
@@ -101,22 +115,143 @@ namespace Arbor.X.Core.Tools.Kudu
                 return ExitCode.Failure;
             }
 
-            logger.Write(string.Format("___________________ Kudu deploy ___________________ \r\nDeploying website {0}, platform {1}, configuration {2}", websiteToDeploy.Name, platform.Name, configuration.Name));
+            var appOfflinePath = Path.Combine(_deploymentTargetDirectory, "app_offline.htm");
 
-            logger.Write(string.Format("Copying files and directories from '{0}' to '{1}'", configuration.FullName, _deploymentTargetDirectory));
+            logger.Write(string.Format("___________________ Kudu deploy ___________________ \r\nDeploying website {0}, platform {1}, configuration {2}", websiteToDeploy.Name, platform.Name, configuration.Name));
             try
             {
-                DirectoryCopy.Copy(configuration.FullName, _deploymentTargetDirectory);
+                if (_useAppOfflineFile)
+                {
+                    logger.WriteVerbose(string.Format("Flag '{0}' is set", WellKnownVariables.KuduUseAppOfflineHtmFile));
+                    try
+                    {
+                        using (var fs = new FileStream(appOfflinePath, FileMode.Create, FileAccess.Write))
+                        {
+                            using (var streamWriter = new StreamWriter(fs, Encoding.UTF8))
+                            {
+                                streamWriter.WriteLine("File created by Arbor.X Kudu at {0} (UTC)",
+                                    DateTime.UtcNow.ToString("O"));
+                            }
+                        }
+                    }
+                    catch (UnauthorizedAccessException ex)
+                    {
+                        logger.WriteWarning(string.Format("Could not create app_offline.htm file in '{0}', {1}",
+                            _deploymentTargetDirectory, ex));
+                    }
+                    catch (IOException ex)
+                    {
+                        logger.WriteWarning(string.Format("Could not create app_offline.htm file in '{0}', {1}",
+                            _deploymentTargetDirectory, ex));
+                    }
+                }
+                else
+                {
+                    logger.WriteVerbose(string.Format("Flag '{0}' is not set", WellKnownVariables.KuduUseAppOfflineHtmFile));
+                }
+
+                if (_clearTarget)
+                {
+                    logger.WriteVerbose(string.Format("Flag '{0}' is set", WellKnownVariables.KuduClearFilesAndDirectories));
+                    logger.Write(string.Format("Removing files and directories from target '{0}'",
+                        _deploymentTargetDirectory));
+                    try
+                    {
+                        var directoryFilters = new List<string>();
+
+                        if (_excludeAppData)
+                        {
+                            directoryFilters.Add("App_Data");
+                        }
+
+                        var customFileExcludes = GetExcludes(_ignoreDeleteFiles).ToArray();
+                        var customDirectoryExcludes = GetExcludes(_ignoreDeleteDirectories).ToArray();
+                        
+                        var fileFilters = new List<string>();
+
+                        if (_useAppOfflineFile || !_deleteExistingAppOfflineHtm)
+                        {
+                            fileFilters.Add("app_offline.htm");
+                        }
+
+                        if (customDirectoryExcludes.Any())
+                        {
+                            logger.WriteVerbose("Adding directory ignore patterns " + string.Join("|", string.Format("'{0}'", customDirectoryExcludes.Select(item => (object)item))));
+                        }
+
+                        if (customFileExcludes.Any())
+                        {
+                            logger.WriteVerbose("Adding file ignore patterns " + string.Join("|", string.Format("'{0}'", customFileExcludes.Select(item => (object)item))));
+                        }
+
+                        directoryFilters.AddRange(customDirectoryExcludes);
+                        fileFilters.AddRange(customFileExcludes);
+
+                        var deleter = new DirectoryDelete(directoryFilters, fileFilters, logger);
+
+                        deleter.Delete(_deploymentTargetDirectory, deleteSelf: false, deleteSelfFiles: true);
+                    }
+                    catch (IOException ex)
+                    {
+                        logger.WriteWarning(
+                            string.Format("Could not clear all files and directories from target '{0}', {1}",
+                                _deploymentTargetDirectory, ex));
+                    }
+                }
+                else
+                {
+                    logger.WriteVerbose(string.Format("Flag '{0}' is not set, skipping deleting files and directories from target '{1}'", WellKnownVariables.KuduClearFilesAndDirectories, _deploymentTargetDirectory));
+                }
+
+                logger.Write(string.Format("Copying files and directories from '{0}' to '{1}'", configuration.FullName,
+                    _deploymentTargetDirectory));
+                try
+                {
+                    DirectoryCopy.Copy(configuration.FullName, _deploymentTargetDirectory);
+                }
+                catch (Exception ex)
+                {
+                    logger.WriteError(string.Format("Kudu deploy could not copy files {0}", ex));
+                    return ExitCode.Failure;
+                }
             }
-            catch (Exception ex)
+            finally
             {
-                logger.WriteError("Kudu deploy could not copy files " + ex.ToString());
-                return ExitCode.Failure;
+                if (_useAppOfflineFile || _deleteExistingAppOfflineHtm)
+                {
+                    if (File.Exists(appOfflinePath))
+                    {
+                        try
+                        {
+                            File.Delete(appOfflinePath);
+                        }
+                        catch (IOException ex)
+                        {
+                            logger.WriteWarning(string.Format("Could not delete app_offline.htm file in '{0}', {1}",
+                                _deploymentTargetDirectory, ex));
+                        }
+                    }
+                }
             }
 
             await Task.Delay(TimeSpan.FromMilliseconds(20), cancellationToken); //TODO temp to avoid compiler warning
 
             return ExitCode.Success;
+        }
+
+        IEnumerable<string> GetExcludes(string ignores)
+        {
+            if (string.IsNullOrWhiteSpace(ignores))
+            {
+               yield break;
+            }
+
+            var splitted = ignores.Split(new[] {'|'});
+
+            foreach (var item in splitted)
+            {
+                yield return item;
+            }
         }
 
         DirectoryInfo GetConfigurationDirectory(DirectoryInfo platformDirectory, ILogger logger)

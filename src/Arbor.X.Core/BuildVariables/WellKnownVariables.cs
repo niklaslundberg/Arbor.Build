@@ -144,13 +144,31 @@ namespace Arbor.X.Core.BuildVariables
         public static readonly string BuildToolTimeoutInSeconds = "Arbor.X.Build.TimeoutInSeconds";
 
         [VariableDescriptionAttribute("Bootstrapper exit delay in milliseconds")]
-        public static readonly string BootstrapperExitDelayInMilliseconds = "Arbor.X.Boostrapper.ExitDelayInMilliseconds";
+        public static readonly string BootstrapperExitDelayInMilliseconds = "Arbor.X.Bootstrapper.ExitDelayInMilliseconds";
 
         [VariableDescriptionAttribute("Build application exit delay in milliseconds")]
         public static readonly string BuildApplicationExitDelayInMilliseconds = "Arbor.X.Build.ExitDelayInMilliseconds";
 
         [VariableDescriptionAttribute("Flag to indicate if defined variables can be overriden")]
         public static readonly string VariableOverrideEnabled = "Arbor.X.Build.VariableOverrideEnabled";
+
+        [VariableDescriptionAttribute("Flag to indicate if Kudu target path files and directories should be deleted before deploy")]
+        public static readonly string KuduClearFilesAndDirectories = "Arbor.X.Tools.External.Kudu.ClearEnabled";
+  
+        [VariableDescriptionAttribute("Flag to indicate if Kudu should use app_offline.htm file when deploying")]
+        public static readonly string KuduUseAppOfflineHtmFile = "Arbor.X.Tools.External.Kudu.UseAppOfflineHtmFile";
+
+        [VariableDescriptionAttribute("Flag to indicate if Kudu should exclude App_Data directory when deploying")]
+        public static readonly string KuduExcludeDeleteAppData = "Arbor.X.Tools.External.Kudu.ExcludeDeleteApp_Data";
+
+        [VariableDescriptionAttribute("'|' (bar) separated list of file names to not delete when deploying")]
+        public static readonly string KuduIgnoreDeleteFiles = "Arbor.X.Tools.External.Kudu.IgnoreDeleteFilesBarSeparatedList";
+
+        [VariableDescriptionAttribute("'|' (bar) separated list of directory names to not delete when deploying")]
+        public static readonly string KuduIgnoreDeleteDirectories = "Arbor.X.Tools.External.Kudu.IgnoreDeleteDirectoriesBarSeparatedList";
+
+        [VariableDescriptionAttribute("Flag to indicate if Kudu should delete any existing app_offline.htm file when deploying")]
+        public static readonly string KuduDeleteExistingAppOfflineHtmFile = "Arbor.X.Tools.External.Kudu.DeleteExistingAppOfflineHtmFile";
 
         [VariableDescriptionAttribute("Log level")]
         public static readonly string LogLevel = "Arbor.X.Log.Level";
