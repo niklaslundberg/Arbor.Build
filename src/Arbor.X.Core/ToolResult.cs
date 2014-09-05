@@ -5,6 +5,20 @@ namespace Arbor.X.Core
 {
     public class ToolResult
     {
+        readonly TimeSpan _executionTime;
+        readonly string _message;
+        readonly ToolResultType _resultType;
+        readonly ToolWithPriority _toolWithPriority;
+
+        public ToolResult(ToolWithPriority toolWithPriority, ToolResultType resultType, string message = null,
+            TimeSpan executionTime = default(TimeSpan))
+        {
+            _toolWithPriority = toolWithPriority;
+            _resultType = resultType;
+            _message = message;
+            _executionTime = executionTime;
+        }
+
         public ToolWithPriority ToolWithPriority
         {
             get { return _toolWithPriority; }
@@ -23,19 +37,6 @@ namespace Arbor.X.Core
         public TimeSpan ExecutionTime
         {
             get { return _executionTime; }
-        }
-
-        readonly ToolWithPriority _toolWithPriority;
-        readonly ToolResultType _resultType;
-        readonly string _message;
-        readonly TimeSpan _executionTime;
-
-        public ToolResult(ToolWithPriority toolWithPriority, ToolResultType resultType, string message = null, TimeSpan executionTime = default(TimeSpan))
-        {
-            _toolWithPriority = toolWithPriority;
-            _resultType = resultType;
-            _message = message;
-            _executionTime = executionTime;
         }
     }
 }

@@ -74,7 +74,7 @@ namespace Arbor.X.Core
                     }
 
                     builder.Append(value);
-                    var isNotLast = indexedKey.Index < indexedKeys.Length - 1;
+                    bool isNotLast = indexedKey.Index < indexedKeys.Length - 1;
 
                     if (isNotLast && padLength > 0)
                     {

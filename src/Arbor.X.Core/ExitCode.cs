@@ -1,6 +1,6 @@
 ﻿namespace Arbor.X.Core
 {
-    public class ExitCode
+    public sealed class ExitCode
     {
         readonly int _result;
 
@@ -31,7 +31,7 @@
 
         public override string ToString()
         {
-            var successOrFailure = IsSuccess ? "Success" : "Failure";
+            string successOrFailure = IsSuccess ? "Success" : "Failure";
 
             return string.Format("[{0}, {1}]", Result, successOrFailure);
         }

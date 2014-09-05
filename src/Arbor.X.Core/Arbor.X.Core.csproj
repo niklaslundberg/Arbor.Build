@@ -69,7 +69,6 @@
     </Reference>
     <Reference Include="System.Net.Http.WebRequest" />
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
@@ -81,9 +80,10 @@
     <Compile Include="BuildVariables\VariableDescriptionAttribute.cs" />
     <Compile Include="DisplayExtensions.cs" />
     <Compile Include="ExitCode.cs" />
+    <Compile Include="IntExtensions.cs" />
     <Compile Include="Logging\LogLevel.cs" />
     <Compile Include="Logging\NullLogger.cs" />
-    <Compile Include="Properties\Annotations.cs" />
+    <Compile Include="ParseResult.cs" />
     <Compile Include="ToolExtensions.cs" />
     <Compile Include="ToolResult.cs" />
     <Compile Include="ToolResultType.cs" />
@@ -151,12 +151,6 @@
     <Compile Include="Tools\VisualStudio\VisualStudioEnvironmentVerification.cs" />
     <Compile Include="Tools\Testing\VSTestVariableProvider.cs" />
     <Compile Include="BuildVariables\WellKnownVariables.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Mono.Options\Mono.Options.csproj">
-      <Project>{D0FB426A-0AF9-42D6-B11F-9721AFA1F18A}</Project>
-      <Name>Mono.Options</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

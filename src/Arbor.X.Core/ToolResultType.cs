@@ -2,13 +2,8 @@ namespace Arbor.X.Core
 {
     public class ToolResultType
     {
-        public string Type
-        {
-            get { return _type; }
-        }
-
-        readonly string _type;
         readonly bool? _succeeded;
+        readonly string _type;
 
         ToolResultType(string type, bool? succeeded)
         {
@@ -16,9 +11,20 @@ namespace Arbor.X.Core
             _succeeded = succeeded;
         }
 
-        public bool IsSuccess {get { return _succeeded.HasValue && _succeeded.Value; }}
+        public string Type
+        {
+            get { return _type; }
+        }
 
-        public bool WasRun {get { return _succeeded.HasValue; }}
+        public bool IsSuccess
+        {
+            get { return _succeeded.HasValue && _succeeded.Value; }
+        }
+
+        public bool WasRun
+        {
+            get { return _succeeded.HasValue; }
+        }
 
         public static ToolResultType Succeeded
         {
