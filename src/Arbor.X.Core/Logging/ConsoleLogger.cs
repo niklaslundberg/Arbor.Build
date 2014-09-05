@@ -10,6 +10,13 @@ namespace Arbor.X.Core.Logging
             set { _maxLogLevel = value; }
         }
 
+        public void WriteDebug(string message, string prefix = null)
+        {
+            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.WriteLine(GetTotalMessage(GetPrefix(prefix), message));
+            Console.ResetColor();
+        }
+
         LogLevel _maxLogLevel;
         readonly string _prefix;
 

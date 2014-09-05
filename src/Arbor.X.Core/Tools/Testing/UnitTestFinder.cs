@@ -1,20 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using Arbor.Aesculus.Core;
+using Arbor.X.Core.Logging;
+using ILogger = Arbor.X.Core.Logging.ILogger;
 
 namespace Arbor.X.Core.Tools.Testing
 {
     public class UnitTestFinder
     {
         readonly IEnumerable<Type> _typesToFind;
+        readonly ILogger _logger;
 
-        public UnitTestFinder(IEnumerable<Type> typesesToFind, bool debugEnabled = false)
+        public UnitTestFinder(IEnumerable<Type> typesesToFind, bool debugEnabled = false, ILogger logger = null)
         {
+            _logger = logger ?? new NullLogger();
             _typesToFind = typesesToFind;
             DebugEnabled = debugEnabled;
         }
@@ -24,6 +27,8 @@ namespace Arbor.X.Core.Tools.Testing
         public IReadOnlyCollection<string> GetUnitTestFixtureDlls(DirectoryInfo currentDirectory = null)
         {
             currentDirectory = currentDirectory ?? new DirectoryInfo(VcsPathHelper.FindVcsRootPath());
+
+            string fullName = currentDirectory.FullName;
 
             if (!currentDirectory.Exists)
             {
@@ -39,6 +44,7 @@ namespace Arbor.X.Core.Tools.Testing
             
             if (isBlacklisted)
             {
+                _logger.WriteDebug(string.Format("Directory '{0}' is blacklisted", fullName));
                 return new ReadOnlyCollection<string>(new List<string>());
             }
 
@@ -47,7 +53,8 @@ namespace Arbor.X.Core.Tools.Testing
             var assemblies = dllFiles
                 .Select(GetAssembly)
                 .Where(assembly => assembly != null)
-                .Distinct();
+                .Distinct()
+                .ToList();
 
             var testFixtureAssemblies = UnitTestFixtureAssemblies(assemblies);
 
@@ -80,6 +87,7 @@ namespace Arbor.X.Core.Tools.Testing
             bool result;
             try
             {
+                _logger.WriteVerbose(string.Format("Testing assembly '{0}'", assembly));
                 Type[] types = assembly.GetExportedTypes();
                 var anyType = types.Any(TryIsTypeTestFixture);
 
@@ -87,31 +95,39 @@ namespace Arbor.X.Core.Tools.Testing
             }
             catch (Exception)
             {
+                _logger.WriteVerbose(string.Format("Could not get types from assembly '{0}'", assembly.FullName));
                 result = false;
             }
 
             if (DebugEnabled || result)
             {
-                Debug.WriteLine("Assembly {0}, found any class with {1}: {2}", assembly.FullName,
-                    string.Join(" | ", _typesToFind.Select(type => type.FullName)), result);
+                _logger.WriteVerbose(string.Format("Assembly {0}, found any class with {1}: {2}", assembly.FullName,
+                    string.Join(" | ", _typesToFind.Select(type => type.FullName)), result));
             }
 
             return result;
         }
 
-        bool TryIsTypeTestFixture(Type typeToInvestigate)
+        public bool TryIsTypeTestFixture(Type typeToInvestigate)
         {
+            if (typeToInvestigate == null)
+            {
+                throw new ArgumentNullException("typeToInvestigate");
+            }
+
             try
             {
+                var toInvestigate = typeToInvestigate.FullName;
+                _logger.WriteDebug(string.Format("Testing type '{0}'", toInvestigate));
                 var any = IsTypeUnitTestFixture(typeToInvestigate);
 
                 return any;
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine("Failed to determine if type {0} is {1} {2}",
+                _logger.WriteDebug(string.Format("Failed to determine if type {0} is {1} {2}",
                     typeToInvestigate.AssemblyQualifiedName,
-                    string.Join(" | ", _typesToFind.Select(type => type.FullName)), ex.Message);
+                    string.Join(" | ", _typesToFind.Select(type => type.FullName)), ex.Message));
                 return false;
             }
         }
@@ -147,8 +163,44 @@ namespace Arbor.X.Core.Tools.Testing
             var publicInstanceMethods =
                 typeToInvestigate.GetTypeInfo().GetMethods().Where(method => method.IsPublic && !method.IsStatic);
 
-            var hasTestMethod =
+            var hasPublicInstanceTestMethod =
                 publicInstanceMethods.Any(method => IsCustomAttributeOfExpectedType(method.CustomAttributes));
+
+            var declaredFields = typeToInvestigate.GetTypeInfo().DeclaredFields.ToArray();
+
+            bool hasPrivateFieldMethod = declaredFields
+                .Where(field => field.IsPrivate)
+                .Any(
+                    field =>
+                    {
+                        var any = _typesToFind.Any(
+                            type =>
+                                field.FieldType.FullName != null && type.FullName == field.FieldType.FullName);
+
+                        if (field.FieldType.IsGenericType)
+                        {
+                            const string genericPartSeparator = "`";
+                            var fieldIndex = field.FieldType.FullName.IndexOf(genericPartSeparator,
+                                StringComparison.InvariantCultureIgnoreCase);
+
+                            var fieldName = field.FieldType.FullName.Substring(0, fieldIndex);
+
+                            return _typesToFind.Any(
+                                type =>
+                                {
+                                    var typePosition = type.FullName.IndexOf(genericPartSeparator,
+                                        StringComparison.InvariantCultureIgnoreCase);
+
+                                    var typeName = type.FullName.Substring(0, typePosition);
+
+                                    return typeName.Equals(fieldName);
+                                });
+                        }
+
+                        return any;
+                    });
+
+            bool hasTestMethod = hasPublicInstanceTestMethod || hasPrivateFieldMethod;
 
             return hasTestMethod;
         }
@@ -174,7 +226,7 @@ namespace Arbor.X.Core.Tools.Testing
 
                 if (DebugEnabled)
                 {
-                    Debug.WriteLine("Found {0} types in assembly '{1}'", count, assembly.Location);
+                    _logger.WriteVerbose(string.Format("Found {0} types in assembly '{1}'", count, assembly.Location));
                 }
 
                 return assembly;

@@ -30,6 +30,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Arbor.Aesculus.Core, Version=0.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Arbor.Aesculus.0.1.7\lib\net45\Arbor.Aesculus.Core.dll</HintPath>
+    </Reference>
     <Reference Include="Machine.Specifications, Version=0.8.2.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Machine.Specifications.0.8.2\lib\net45\Machine.Specifications.dll</HintPath>
@@ -70,6 +74,13 @@
     <Compile Include="Logging\LogLevel\when_listing_all_log_levels.cs" />
     <Compile Include="ProcessRunner\when_running_a_failing_process.cs" />
     <Compile Include="ProcessRunner\when_running_a_process_longer_than_timeout.cs" />
+    <Compile Include="Tests\MSpec\Class1.cs" />
+    <Compile Include="Tests\MSpec\SampleBehaviors.cs" />
+    <Compile Include="Tests\MSpec\when_finding_mspec_assemblies_with_behaviors.cs" />
+    <Compile Include="Tests\MSpec\when_finding_mspec_assemblies_with_it.cs" />
+    <Compile Include="Tests\MSpec\when_testing_this_test_type_for_it.cs" />
+    <Compile Include="Tests\MSpec\when_testing_this_test_type_for_behaves_like.cs" />
+    <Compile Include="Tests\MSpec\when_testing_this_test_type_for_subject.cs" />
     <Compile Include="WellknownVariables\when_listing_all_wellknown_variables.cs" />
     <Compile Include="KuduWebProjectDetails\when_creating_kudu_web_project_details.cs" />
     <Compile Include="WellknownVariables\when_listing_all_wellknown_variables_as_a_table.cs" />

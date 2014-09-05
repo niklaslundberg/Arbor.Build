@@ -11,7 +11,10 @@ namespace Arbor.X.Core.BuildVariables
 
 // ReSharper disable ConvertToConstant.Global
         [VariableDescriptionAttribute("External tools path")]
-        public static readonly string ExternalTools = "Arbor.X.Tools.External";
+        public static readonly string ExternalTools = "Arbor.X.Build.External";
+
+        [VariableDescriptionAttribute("Source root override")]
+        public static readonly string SourceRootOverride = "Arbor.X.Build.Source.Override";
 
         [VariableDescriptionAttribute("Test framework report path")]
         public static readonly string ReportPath = "Arbor.X.Artifacts.TestReports";
