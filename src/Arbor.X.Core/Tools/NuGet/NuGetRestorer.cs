@@ -20,7 +20,7 @@ namespace Arbor.X.Core.Tools.NuGet
             _cancellationToken = cancellationToken;
             var app = new CastaneaApplication();
 
-            var vcsRoot = VcsPathHelper.TryFindVcsRootPath();
+            var vcsRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
 
             var files = Directory.GetFiles(vcsRoot, "repositories.config", SearchOption.AllDirectories);
 

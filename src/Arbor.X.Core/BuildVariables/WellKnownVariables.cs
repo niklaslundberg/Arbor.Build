@@ -113,6 +113,9 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescriptionAttribute("Visual Studio Test Framework test reports directory path")]
         public static readonly string ExternalTools_VSTest_ReportPath = "Arbor.X.Artifacts.TestReports.VSTest";
 
+        [VariableDescriptionAttribute("Machine.Specifications reports directory path")]
+        public static readonly string ExternalTools_MSpec_ReportPath = "Arbor.X.Artifacts.TestReports.MSpec";
+
         [VariableDescriptionAttribute("ILMerge executable path (eg. C:\\IlMerge.exe)")]
         public static readonly string ExternalTools_ILMerge_ExePath = "Arbor.X.Tools.External.ILMerge.ExePath";
 

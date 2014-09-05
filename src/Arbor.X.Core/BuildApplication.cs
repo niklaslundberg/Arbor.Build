@@ -258,6 +258,7 @@ namespace Arbor.X.Core
                                 new NugetVariableProvider(),
                                 new VisualStudioVariableProvider(),
                                 new VsTestVariableProvider(),
+                                new MSpecVariableProvider(),
                                 new BuildVersionProvider(),
                                 new ILMergeVariableProvider(),
                                 new SymbolsVariableProvider(),

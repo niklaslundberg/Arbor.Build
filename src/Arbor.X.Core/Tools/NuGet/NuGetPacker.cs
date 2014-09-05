@@ -50,7 +50,7 @@ namespace Arbor.X.Core.Tools.NuGet
                 return ExitCode.Failure;
             }
 
-            var vcsRootDir = VcsPathHelper.FindVcsRootPath();
+            var vcsRootDir = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
 
             logger.WriteVerbose(string.Format("Scanning directory '{0}' for .nuspec files", vcsRootDir));
 

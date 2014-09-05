@@ -16,6 +16,8 @@ namespace Arbor.X.Core.Tools.Testing
     [Priority(400)]
     public class NUnitTestRunner : ITool
     {
+        string _sourceRoot;
+
         public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {
             var externalTools = buildVariables.Require(WellKnownVariables.ExternalTools).ThrowIfEmptyValue();
@@ -25,6 +27,8 @@ namespace Arbor.X.Core.Tools.Testing
                 buildVariables.SingleOrDefault(key => key.Key == WellKnownVariables.IgnoreTestFailures);
 
             bool testsEnabled = buildVariables.GetBooleanByKey(WellKnownVariables.TestsEnabled, defaultValue: true);
+
+            _sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
 
             if (!testsEnabled)
             {
@@ -66,7 +70,7 @@ namespace Arbor.X.Core.Tools.Testing
             Type fixtureAttribute = typeof (TestFixtureAttribute);
             Type testMethodAttribute = typeof (TestAttribute);
 
-            var directory = new DirectoryInfo(VcsPathHelper.FindVcsRootPath());
+            var directory = new DirectoryInfo(_sourceRoot);
 
             var typesToFind = new List<Type> { fixtureAttribute, testMethodAttribute };
 

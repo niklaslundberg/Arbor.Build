@@ -101,7 +101,7 @@ namespace Arbor.X.Core.Tools.MSBuild
 
         async Task<ExitCode> BuildAsync(ILogger logger, IReadOnlyCollection<IVariable> variables)
         {
-            string vcsRoot = VcsPathHelper.TryFindVcsRootPath();
+            string vcsRoot = variables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
 
             if (vcsRoot == null)
             {

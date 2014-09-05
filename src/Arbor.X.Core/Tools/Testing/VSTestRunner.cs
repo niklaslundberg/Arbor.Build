@@ -15,10 +15,14 @@ namespace Arbor.X.Core.Tools.Testing
     [Priority(450)]
     public class VsTestRunner : ITool
     {
+        string _sourceRoot;
+
         public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {
             var reportPath =
                 buildVariables.Require(WellKnownVariables.ExternalTools_VSTest_ReportPath).ThrowIfEmptyValue().Value;
+            _sourceRoot =
+                buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
 
             var vsTestExePath = buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_VSTest_ExePath, defaultValue: "");
 
@@ -52,7 +56,7 @@ namespace Arbor.X.Core.Tools.Testing
             Type testClassAttribute = typeof (TestClassAttribute);
             Type testMethodAttribute = typeof (TestMethodAttribute);
 
-            var directory = new DirectoryInfo(VcsPathHelper.FindVcsRootPath());
+            var directory = new DirectoryInfo(_sourceRoot);
 
             var typesToFind = new List<Type> {testClassAttribute, testMethodAttribute};
 

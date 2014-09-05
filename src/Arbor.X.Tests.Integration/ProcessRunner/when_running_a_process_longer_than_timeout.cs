@@ -9,7 +9,8 @@ using Machine.Specifications;
 
 namespace Arbor.X.Tests.Integration.ProcessRunner
 {
-    [Subject(typeof (Core.ProcessUtils.ProcessRunner))]
+    [Subject(typeof(Core.ProcessUtils.ProcessRunner))]
+    [Tags("Arbor_X_Recursive")]
     public class when_running_a_process_longer_than_timeout
     {
         static string testPath;

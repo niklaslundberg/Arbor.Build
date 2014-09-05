@@ -24,9 +24,12 @@ namespace Arbor.X.Core.Tools.Testing
 
         bool DebugEnabled { get; set; }
 
-        public IReadOnlyCollection<string> GetUnitTestFixtureDlls(DirectoryInfo currentDirectory = null)
+        public IReadOnlyCollection<string> GetUnitTestFixtureDlls(DirectoryInfo currentDirectory)
         {
-            currentDirectory = currentDirectory ?? new DirectoryInfo(VcsPathHelper.FindVcsRootPath());
+            if (currentDirectory == null)
+            {
+                throw new ArgumentNullException("currentDirectory");
+            }
 
             string fullName = currentDirectory.FullName;
 

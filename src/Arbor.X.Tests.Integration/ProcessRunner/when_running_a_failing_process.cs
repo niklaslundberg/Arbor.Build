@@ -8,7 +8,8 @@ using Machine.Specifications;
 
 namespace Arbor.X.Tests.Integration.ProcessRunner
 {
-    [Subject(typeof (Core.ProcessUtils.ProcessRunner))]
+    [Subject(typeof(Core.ProcessUtils.ProcessRunner))]
+    [Tags("Arbor_X_Recursive")]
     public class when_running_a_failing_process
     {
         static string testPath;

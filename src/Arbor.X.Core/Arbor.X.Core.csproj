@@ -112,6 +112,7 @@
     <Compile Include="Tools\MSBuild\MSBuildVerbositoyLevel.cs" />
     <Compile Include="Tools\Symbols\SymbolsVariableProvider.cs" />
     <Compile Include="Tools\Testing\MSpecTestRunner.cs" />
+    <Compile Include="Tools\Testing\MSpecVariableProvider.cs" />
     <Compile Include="Tools\Versioning\AssemblyInfoUnpatcher.cs" />
     <Compile Include="Tools\Versioning\BuildVersionProvider.cs" />
     <Compile Include="Tools\Git\BranchHelper.cs" />

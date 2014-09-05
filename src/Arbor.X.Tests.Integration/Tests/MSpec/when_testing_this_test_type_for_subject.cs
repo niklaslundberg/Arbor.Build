@@ -7,6 +7,7 @@ using Machine.Specifications;
 namespace Arbor.X.Tests.Integration.Tests.MSpec
 {
     [Subject(typeof(UnitTestFinder))]
+    [Tags("Arbor_X_Recursive")]
     public class when_testing_this_test_type_for_subject
     {
         static UnitTestFinder finder;

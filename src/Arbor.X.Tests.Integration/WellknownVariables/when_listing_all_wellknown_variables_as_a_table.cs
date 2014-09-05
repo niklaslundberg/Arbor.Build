@@ -7,6 +7,7 @@ using Machine.Specifications;
 
 namespace Arbor.X.Tests.Integration.WellknownVariables
 {
+    [Tags("Arbor_X_Recursive")]
     public class when_listing_all_wellknown_variables_as_a_table
     {
         static IReadOnlyCollection<VariableDescription> readOnlyCollection;
@@ -29,7 +30,18 @@ namespace Arbor.X.Tests.Integration.WellknownVariables
                                                                                                           }
                                                                                                       }).ToList();
 
-            Console.WriteLine(dicts.DisplayAsTable());
+            try
+            {
+                var displayAsTable = dicts.DisplayAsTable();
+                Console.WriteLine(displayAsTable);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine(ex);
+                throw;
+            }
+
+
         };
     }
 }

@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Aesculus.Core;
 using Arbor.X.Core.BuildVariables;
+using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;
 using Machine.Specifications;
@@ -21,13 +22,24 @@ namespace Arbor.X.Core.Tools.Testing
             string externalToolsPath =
                 buildVariables.Require(WellKnownVariables.ExternalTools).ThrowIfEmptyValue().Value;
 
+            string sourceRoot =
+                buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
+
+            string testReportDirectoryPath =
+                buildVariables.Require(WellKnownVariables.ExternalTools_MSpec_ReportPath).ThrowIfEmptyValue().Value;
+
             var sourceRootOverride = buildVariables.GetVariableValueOrDefault(WellKnownVariables.SourceRootOverride, "");
 
             string sourceDirectoryPath;
 
             if (string.IsNullOrWhiteSpace(sourceRootOverride) || !Directory.Exists(sourceRootOverride))
             {
-                sourceDirectoryPath = VcsPathHelper.FindVcsRootPath();
+                if (sourceRoot == null)
+                {
+                    throw new InvalidOperationException("Source root cannot be null");
+                }
+
+                sourceDirectoryPath = sourceRoot;
 
             }
             else
@@ -52,11 +64,34 @@ namespace Arbor.X.Core.Tools.Testing
 
             arguments.AddRange(testDlls);
 
-            await
-                ProcessRunner.ExecuteAsync(mspecExePath, arguments: arguments, cancellationToken: cancellationToken,
-                    standardOutLog: logger.Write, standardErrorAction: logger.WriteError);
+            if (testDlls.Any(dll => dll.IndexOf("arbor", StringComparison.InvariantCultureIgnoreCase) >= 0))
+            {
+                arguments.Add("--exclude");
+                arguments.Add("Arbor_X_Recursive");
+            }
 
-            return ExitCode.Success;
+            arguments.Add("--xml");
+            var timestamp = DateTime.UtcNow.ToString("O").Replace(":",".");
+            var fileName = "MSpec_" + timestamp + ".xml";
+            var xmlReportPath = Path.Combine(testReportDirectoryPath, "Xml", fileName);
+
+            new FileInfo(xmlReportPath).Directory.EnsureExists();
+
+            arguments.Add(xmlReportPath);
+            var htmlPath = Path.Combine(testReportDirectoryPath, "Html", "MSpec_" + timestamp);
+
+            new DirectoryInfo(htmlPath).EnsureExists();
+
+            arguments.Add("--html");
+            arguments.Add(htmlPath);
+
+            var environmentVariables = new Dictionary<string, string>();
+            
+            var exitCode = await
+                ProcessRunner.ExecuteAsync(mspecExePath, arguments: arguments, cancellationToken: cancellationToken,
+                    standardOutLog: logger.Write, standardErrorAction: logger.WriteError, toolAction: logger.Write, verboseAction: logger.WriteVerbose, environmentVariables: environmentVariables);
+
+            return exitCode;
         }
     }
 }
