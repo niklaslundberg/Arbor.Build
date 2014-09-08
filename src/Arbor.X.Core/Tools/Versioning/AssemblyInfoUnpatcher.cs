@@ -20,12 +20,13 @@ namespace Arbor.X.Core.Tools.Versioning
                 logger.WriteWarning("Assembly version pathcing is disabled");
                 return Task.FromResult(ExitCode.Success);
             }
+            var sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
 
             var app = new AssemblyPatcherApp();
 
             try
             {
-                app.Unpatch();
+                app.Unpatch(sourceRoot);
             }
             catch (Exception ex)
             {

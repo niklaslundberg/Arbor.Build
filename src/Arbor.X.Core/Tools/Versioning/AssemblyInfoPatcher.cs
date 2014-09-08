@@ -15,7 +15,7 @@ namespace Arbor.X.Core.Tools.Versioning
         public Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {
             var app = new AssemblyPatcherApp();
-
+            
             var assemblyVersionPatchingEnabled = buildVariables.GetBooleanByKey(WellKnownVariables.AssemblyFilePatchingEnabled, defaultValue: true);
 
             if (!assemblyVersionPatchingEnabled)
@@ -23,6 +23,8 @@ namespace Arbor.X.Core.Tools.Versioning
                 logger.WriteWarning("Assembly version pathcing is disabled");
                 return Task.FromResult(ExitCode.Success);
             }
+
+            var sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
 
             var netAssemblyVersionVar = buildVariables.SingleOrDefault(@var => @var.Key == WellKnownVariables.NetAssemblyVersion);
             string netAssemblyVersion;
@@ -63,7 +65,7 @@ namespace Arbor.X.Core.Tools.Versioning
 
             try
             {
-                app.Patch(new AssemblyVersion(assemblyVersion), new AssemblyFileVersion(assemblyFileVersion));
+                app.Patch(new AssemblyVersion(assemblyVersion), new AssemblyFileVersion(assemblyFileVersion), sourceRoot);
             }
             catch (Exception ex)
             {
