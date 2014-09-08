@@ -5,11 +5,27 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Arbor.X.Core.Logging;
 
 namespace Arbor.X.Core.ProcessUtils
 {
     public static class ProcessRunner
     {
+        public static Task<ExitCode> ExecuteAsync(string executePath,
+            IEnumerable<string> arguments = null, ILogger logger = null,
+            IEnumerable<KeyValuePair<string, string>> environmentVariables = null,
+            CancellationToken cancellationToken = default(CancellationToken))
+        {
+
+            var usedLogger = logger ?? new NullLogger();
+
+
+            return ExecuteAsync(executePath, cancellationToken, arguments, standardOutLog: usedLogger.Write,
+                standardErrorAction: usedLogger.WriteError,
+                verboseAction: usedLogger.WriteVerbose, toolAction: usedLogger.Write,
+                environmentVariables: environmentVariables);
+        }
+
         public static async Task<ExitCode> ExecuteAsync(string executePath,
             CancellationToken cancellationToken = default(CancellationToken),
             IEnumerable<string> arguments = null,

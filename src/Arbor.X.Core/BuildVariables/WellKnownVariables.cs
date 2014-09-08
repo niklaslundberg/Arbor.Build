@@ -41,6 +41,9 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescriptionAttribute(".NET assembly file version")]
         public static readonly string NetAssemblyFileVersion = "Arbor.X.Build.NetAssembly.FileVersion";
 
+        [VariableDescriptionAttribute("Enable assembly version patching")]
+        public static readonly string AssemblyFilePatchingEnabled = "Arbor.X.Build.NetAssembly.PatchingEnabled";
+
         [VariableDescriptionAttribute("Flag to indicate if the build is consider a release build")]
         public static readonly string ReleaseBuild = "Arbor.X.Build.IsReleaseBuild";
 
@@ -115,7 +118,7 @@ namespace Arbor.X.Core.BuildVariables
 
         [VariableDescriptionAttribute("Machine.Specifications reports directory path")]
         public static readonly string ExternalTools_MSpec_ReportPath = "Arbor.X.Artifacts.TestReports.MSpec";
-
+        
         [VariableDescriptionAttribute("ILMerge executable path (eg. C:\\IlMerge.exe)")]
         public static readonly string ExternalTools_ILMerge_ExePath = "Arbor.X.Tools.External.ILMerge.ExePath";
 
@@ -166,6 +169,15 @@ namespace Arbor.X.Core.BuildVariables
 
         [VariableDescriptionAttribute("Flag to indicate if Kudu should exclude App_Data directory when deploying")]
         public static readonly string KuduExcludeDeleteAppData = "Arbor.X.Tools.External.Kudu.ExcludeDeleteApp_Data";
+        
+        [VariableDescriptionAttribute("Enable Machine.Specifications")]
+        public static readonly string MSpecEnabled = "Arbor.X.Tools.External.MSpec.Enabled";
+        
+        [VariableDescriptionAttribute("Enable NUnit")]
+        public static readonly string NUnitEnabled = "Arbor.X.Tools.External.NUnit.Enabled";
+
+        [VariableDescriptionAttribute("Enable VSTest")]
+        public static readonly string VSTestEnabled = "Arbor.X.Tools.External.VSTest.Enabled";
 
         [VariableDescriptionAttribute("'|' (bar) separated list of file names to not delete when deploying")]
         public static readonly string KuduIgnoreDeleteFiles = "Arbor.X.Tools.External.Kudu.IgnoreDeleteFilesBarSeparatedList";

@@ -13,6 +13,14 @@ namespace Arbor.X.Core.Tools.Versioning
     {
         public Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {
+            var assemblyVersionPatchingEnabled = buildVariables.GetBooleanByKey(WellKnownVariables.AssemblyFilePatchingEnabled, defaultValue: true);
+
+            if (!assemblyVersionPatchingEnabled)
+            {
+                logger.WriteWarning("Assembly version pathcing is disabled");
+                return Task.FromResult(ExitCode.Success);
+            }
+
             var app = new AssemblyPatcherApp();
 
             try

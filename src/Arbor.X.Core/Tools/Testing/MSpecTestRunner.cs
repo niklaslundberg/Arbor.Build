@@ -19,6 +19,14 @@ namespace Arbor.X.Core.Tools.Testing
         public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
+            var enabled = buildVariables.GetBooleanByKey(WellKnownVariables.MSpecEnabled, defaultValue: true);
+
+            if (!enabled)
+            {
+                logger.WriteWarning("Machine.Specifications not enabled");
+                return ExitCode.Success;
+            }
+
             string externalToolsPath =
                 buildVariables.Require(WellKnownVariables.ExternalTools).ThrowIfEmptyValue().Value;
 

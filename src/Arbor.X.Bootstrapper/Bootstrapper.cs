@@ -19,24 +19,37 @@ namespace Arbor.X.Bootstrapper
 {
     public class Bootstrapper
     {
+        const int MaxBuildTimeInSeconds = 600;
+        static readonly string Prefix = string.Format("[{0}] ", typeof (Bootstrapper).Name);
+        readonly ConsoleLogger _consoleLogger;
+        bool _directoryCloneEnabled;
+        BootstrapStartOptions _startOptions;
+
         public Bootstrapper(LogLevel logLevel)
         {
             _consoleLogger = new ConsoleLogger(Prefix, logLevel);
             _consoleLogger.Write(string.Format("LogLevel is {0}", logLevel));
         }
-        const int MaxBuildTimeInSeconds = 600;
-        static readonly string Prefix = string.Format("[{0}] ", typeof (Bootstrapper).Name);
-        readonly ConsoleLogger _consoleLogger;
-        bool _directoryCloneEnabled;
 
         public async Task<ExitCode> StartAsync(string[] args)
         {
+            BootstrapStartOptions startOptions = BootstrapStartOptions.Parse(args);
+
+            return await StartAsync(startOptions);
+        }
+
+        public async Task<ExitCode> StartAsync(BootstrapStartOptions startOptions)
+        {
+            _startOptions = startOptions ?? new BootstrapStartOptions();
+
+            SetEnvironmentVariables();
+
             var stopwatch = new Stopwatch();
             stopwatch.Start();
             ExitCode exitCode;
             try
             {
-                exitCode = await TryStartAsync(args);
+                exitCode = await TryStartAsync();
                 stopwatch.Stop();
             }
             catch (AggregateException ex)
@@ -45,7 +58,7 @@ namespace Arbor.X.Bootstrapper
                 exitCode = ExitCode.Failure;
                 _consoleLogger.WriteError(ex.ToString());
 
-                foreach (var innerEx in ex.InnerExceptions)
+                foreach (Exception innerEx in ex.InnerExceptions)
                 {
                     _consoleLogger.WriteError(innerEx.ToString());
                 }
@@ -57,53 +70,78 @@ namespace Arbor.X.Bootstrapper
                 _consoleLogger.WriteError(ex.ToString());
             }
 
-            var exitDelayInMilliseconds =
-                Environment.GetEnvironmentVariable(WellKnownVariables.BootstrapperExitDelayInMilliseconds).TryParseInt32(0);
+            ParseResult<int> exitDelayInMilliseconds =
+                Environment.GetEnvironmentVariable(WellKnownVariables.BootstrapperExitDelayInMilliseconds)
+                    .TryParseInt32(0);
 
             if (exitDelayInMilliseconds > 0)
             {
-                _consoleLogger.Write(string.Format("Delaying bootstrapper exit with {0} milliseconds as specified in '{1}'", exitDelayInMilliseconds, WellKnownVariables.BootstrapperExitDelayInMilliseconds));
+                _consoleLogger.Write(
+                    string.Format("Delaying bootstrapper exit with {0} milliseconds as specified in '{1}'",
+                        exitDelayInMilliseconds, WellKnownVariables.BootstrapperExitDelayInMilliseconds));
                 await Task.Delay(TimeSpan.FromMilliseconds(exitDelayInMilliseconds));
             }
 
-            _consoleLogger.Write("Arbor.X.Bootstrapper total inclusive Arbor.X.Build elapsed time in seconds: {0}", stopwatch.Elapsed.TotalSeconds.ToString("F"));
+            _consoleLogger.Write("Arbor.X.Bootstrapper total inclusive Arbor.X.Build elapsed time in seconds: {0}",
+                stopwatch.Elapsed.TotalSeconds.ToString("F"));
 
             return exitCode;
         }
 
-        public async Task<ExitCode> TryStartAsync(string[] args)
+        void SetEnvironmentVariables()
+        {
+            if (!string.IsNullOrWhiteSpace(_startOptions.BaseDir) && Directory.Exists(_startOptions.BaseDir))
+            {
+                Environment.SetEnvironmentVariable(WellKnownVariables.SourceRoot, _startOptions.BaseDir);
+            }
+
+            if (_startOptions.PrereleaseEnabled.HasValue)
+            {
+                Environment.SetEnvironmentVariable(WellKnownVariables.AllowPrerelease, _startOptions.PrereleaseEnabled.Value.ToString().ToLowerInvariant());
+                
+            }
+
+            if (!string.IsNullOrWhiteSpace(_startOptions.BranchName))
+            {
+                Environment.SetEnvironmentVariable(WellKnownVariables.BranchName, _startOptions.BranchName);
+            }
+        }
+
+        async Task<ExitCode> TryStartAsync()
         {
             _consoleLogger.Write("Starting Arbor.X Bootstrapper");
 
-            var directoryCloneValue = Environment.GetEnvironmentVariable(WellKnownVariables.DirectoryCloneEnabled);
+            string directoryCloneValue = Environment.GetEnvironmentVariable(WellKnownVariables.DirectoryCloneEnabled);
 
             _directoryCloneEnabled = directoryCloneValue
                 .TryParseBool(defaultValue: true);
 
             if (!_directoryCloneEnabled)
             {
-                _consoleLogger.WriteVerbose(string.Format("Environment variable '{0}' has value '{1}'", WellKnownVariables.DirectoryCloneEnabled, directoryCloneValue));
+                _consoleLogger.WriteVerbose(string.Format("Environment variable '{0}' has value '{1}'",
+                    WellKnownVariables.DirectoryCloneEnabled, directoryCloneValue));
             }
 
-            var baseDir = await GetBaseDirectoryAsync();
+            string baseDir = await GetBaseDirectoryAsync(_startOptions);
 
-            var buildDir = new DirectoryInfo(Path.Combine(baseDir, "build"));
+            DirectoryInfo buildDir = new DirectoryInfo(Path.Combine(baseDir, "build")).EnsureExists();
 
             _consoleLogger.WriteVerbose(string.Format("Using base directory '{0}'", baseDir));
 
 
             string nugetExePath = Path.Combine(buildDir.FullName, "nuget.exe");
 
-            var nuGetExists = await TryDownloadNuGetAsync(buildDir.FullName, nugetExePath);
+            bool nuGetExists = await TryDownloadNuGetAsync(buildDir.FullName, nugetExePath);
 
             if (!nuGetExists)
             {
-                _consoleLogger.WriteError(string.Format("NuGet.exe could not be downloaded and it does not already exist at path '{0}'",
-                    nugetExePath));
+                _consoleLogger.WriteError(
+                    string.Format("NuGet.exe could not be downloaded and it does not already exist at path '{0}'",
+                        nugetExePath));
                 return ExitCode.Failure;
             }
 
-            var outputDirectoryPath = await DownloadNuGetPackageAsync(buildDir.FullName, nugetExePath);
+            string outputDirectoryPath = await DownloadNuGetPackageAsync(buildDir.FullName, nugetExePath);
 
             if (string.IsNullOrWhiteSpace(outputDirectoryPath))
             {
@@ -147,7 +185,7 @@ namespace Arbor.X.Bootstrapper
             outputDirectory.DeleteIfExists();
             outputDirectory.EnsureExists();
 
-            var version = Environment.GetEnvironmentVariable(WellKnownVariables.ArborXNuGetPackageVersion);
+            string version = Environment.GetEnvironmentVariable(WellKnownVariables.ArborXNuGetPackageVersion);
 
             var nugetArguments = new List<string>
                                  {
@@ -169,27 +207,51 @@ namespace Arbor.X.Bootstrapper
                 nugetArguments.Add("-Version");
                 nugetArguments.Add(version);
 
-                _consoleLogger.WriteVerbose(string.Format("'{0}' flag is set, using specific version of Arbor.X: {1}", WellKnownVariables.ArborXNuGetPackageVersion, version));
+                _consoleLogger.WriteVerbose(string.Format("'{0}' flag is set, using specific version of Arbor.X: {1}",
+                    WellKnownVariables.ArborXNuGetPackageVersion, version));
             }
             else
             {
-                var allowPrerelease =
-                    Environment.GetEnvironmentVariable(WellKnownVariables.AllowPrerelease)
-                        .TryParseBool(defaultValue: false);
-
-                if (allowPrerelease)
+                bool allowPrerelease;
+                if (_startOptions.PrereleaseEnabled.HasValue)
                 {
-                    _consoleLogger.WriteVerbose(string.Format("'{0}' flag is set, using latest version of Arbor.X allowing prerelease versions", WellKnownVariables.AllowPrerelease));
-                    nugetArguments.Add("-Prerelease");
+                    allowPrerelease = _startOptions.PrereleaseEnabled.Value;
+
+                    if (allowPrerelease)
+                    {
+                        _consoleLogger.WriteVerbose(
+                            "Prerelease option is set via start options, using latest version of Arbor.X allowing prerelease versions");
+                    }
                 }
                 else
                 {
-                    _consoleLogger.WriteVerbose(string.Format("'{0}' flag is not set, using latest stable version of Arbor.X", WellKnownVariables.AllowPrerelease));
+                    allowPrerelease =
+                        Environment.GetEnvironmentVariable(WellKnownVariables.AllowPrerelease)
+                            .TryParseBool(defaultValue: false);
+
+                    if (allowPrerelease)
+                    {
+                        _consoleLogger.WriteVerbose(
+                            string.Format(
+                                "'{0}' flag is set, using latest version of Arbor.X allowing prerelease versions",
+                                WellKnownVariables.AllowPrerelease));
+                    }
+                    else
+                    {
+                        _consoleLogger.WriteVerbose(
+                            string.Format("'{0}' flag is not set, using latest stable version of Arbor.X",
+                                WellKnownVariables.AllowPrerelease));
+                    }
+                }
+
+                if (allowPrerelease)
+                {
+                    nugetArguments.Add("-Prerelease");
                 }
             }
             var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(MaxBuildTimeInSeconds));
 
-            var exitCode =
+            ExitCode exitCode =
                 await
                     ProcessRunner.ExecuteAsync(nugetExePath, arguments: nugetArguments,
                         cancellationToken: cancellationTokenSource.Token,
@@ -206,19 +268,28 @@ namespace Arbor.X.Bootstrapper
             return outputDirectoryPath;
         }
 
-        async Task<string> GetBaseDirectoryAsync()
+        async Task<string> GetBaseDirectoryAsync(BootstrapStartOptions startOptions)
         {
             string baseDir;
 
-            if (IsBetterRunOnLocalTempStorage() && await IsCurrentDirectoryClonableAsync())
+            if (!string.IsNullOrWhiteSpace(startOptions.BaseDir) && Directory.Exists(startOptions.BaseDir))
             {
-                var clonedDirectory = await CloneDirectoryAsync();
+                _consoleLogger.Write(string.Format("Using base directory '{0}' from start options", startOptions.BaseDir));
 
-                baseDir = clonedDirectory;
+                baseDir = startOptions.BaseDir;
             }
             else
             {
-                baseDir = VcsPathHelper.FindVcsRootPath();
+                if (IsBetterRunOnLocalTempStorage() && await IsCurrentDirectoryClonableAsync())
+                {
+                    string clonedDirectory = await CloneDirectoryAsync();
+
+                    baseDir = clonedDirectory;
+                }
+                else
+                {
+                    baseDir = VcsPathHelper.FindVcsRootPath();
+                }
             }
 
             return baseDir;
@@ -226,27 +297,29 @@ namespace Arbor.X.Bootstrapper
 
         bool IsBetterRunOnLocalTempStorage()
         {
-            var isKuduAware = KuduHelper.IsKuduAware(EnvironmentVariableHelper.GetBuildVariablesFromEnvironmentVariables(), _consoleLogger);
+            bool isKuduAware =
+                KuduHelper.IsKuduAware(EnvironmentVariableHelper.GetBuildVariablesFromEnvironmentVariables(),
+                    _consoleLogger);
 
             bool isBetterRunOnLocalTempStorage = isKuduAware;
-            
+
             _consoleLogger.WriteVerbose("Is Kudu-aware: " + isKuduAware);
-           
+
             return isBetterRunOnLocalTempStorage;
         }
 
         async Task<string> CloneDirectoryAsync()
         {
             string targetDirectoryPath = Path.Combine(Path.GetTempPath(), "AX", "R",
-                Guid.NewGuid().ToString().Substring(0,8));
+                Guid.NewGuid().ToString().Substring(0, 8));
 
             var targetDirectory = new DirectoryInfo(targetDirectoryPath);
 
             targetDirectory.EnsureExists();
 
-            var gitExePath = GitHelper.GetGitExePath();
+            string gitExePath = GitHelper.GetGitExePath();
 
-            var sourceRoot = VcsPathHelper.TryFindVcsRootPath();
+            string sourceRoot = VcsPathHelper.TryFindVcsRootPath();
 
             IEnumerable<string> cloneArguments = new List<string>
                                                  {
@@ -258,7 +331,8 @@ namespace Arbor.X.Bootstrapper
 
             _consoleLogger.WriteVerbose(string.Format("Using temp storage to clone: '{0}'", targetDirectory.FullName));
 
-            ExitCode cloneExitCode = await ProcessRunner.ExecuteAsync(gitExePath, arguments: cloneArguments);
+            ExitCode cloneExitCode =
+                await ProcessRunner.ExecuteAsync(gitExePath, arguments: cloneArguments, logger: _consoleLogger);
 
             if (!cloneExitCode.IsSuccess)
             {
@@ -279,7 +353,7 @@ namespace Arbor.X.Bootstrapper
 
             _consoleLogger.WriteVerbose("Directory clone is enabled");
 
-            var sourceRoot = VcsPathHelper.TryFindVcsRootPath();
+            string sourceRoot = VcsPathHelper.TryFindVcsRootPath();
 
             if (string.IsNullOrWhiteSpace(sourceRoot))
             {
@@ -289,22 +363,26 @@ namespace Arbor.X.Bootstrapper
 
             bool isClonable = false;
 
-            var gitExePath = GitHelper.GetGitExePath();
+            string gitExePath = GitHelper.GetGitExePath();
 
             if (!string.IsNullOrWhiteSpace(gitExePath))
             {
                 string gitDir = Path.Combine(sourceRoot, ".git");
 
-                var statusAllArguments = new[] { string.Format("--git-dir={0}", gitDir), string.Format("--work-tree={0}", sourceRoot), "status" };
+                var statusAllArguments = new[]
+                                         {
+                                             string.Format("--git-dir={0}", gitDir),
+                                             string.Format("--work-tree={0}", sourceRoot), "status"
+                                         };
 
-                var argumentVariants = new List<string[]> { new[]{"status"}, statusAllArguments };
+                var argumentVariants = new List<string[]> {new[] {"status"}, statusAllArguments};
 
-                foreach (var argumentVariant in argumentVariants)
+                foreach (string[] argumentVariant in argumentVariants)
                 {
-                    ExitCode statusExitCode = await ProcessRunner.ExecuteAsync(gitExePath, 
-                        arguments: argumentVariant, 
-                        standardOutLog: _consoleLogger.WriteVerbose, 
-                        standardErrorAction: _consoleLogger.WriteVerbose, 
+                    ExitCode statusExitCode = await ProcessRunner.ExecuteAsync(gitExePath,
+                        arguments: argumentVariant,
+                        standardOutLog: _consoleLogger.WriteVerbose,
+                        standardErrorAction: _consoleLogger.WriteVerbose,
                         toolAction: _consoleLogger.Write,
                         verboseAction: _consoleLogger.WriteVerbose);
 
@@ -323,11 +401,11 @@ namespace Arbor.X.Bootstrapper
 
         async Task<ExitCode> RunBuildToolsAsync(string buildDir, string buildToolDirectoryName)
         {
-            var buildToolDirectoryPath = Path.Combine(buildDir, buildToolDirectoryName);
+            string buildToolDirectoryPath = Path.Combine(buildDir, buildToolDirectoryName);
 
             var buildToolDirectory = new DirectoryInfo(buildToolDirectoryPath);
 
-            var exeFiles =
+            List<FileInfo> exeFiles =
                 buildToolDirectory.GetFiles("*.exe", SearchOption.TopDirectoryOnly)
                     .Where(file => file.Name != "nuget.exe")
                     .ToList();
@@ -338,12 +416,13 @@ namespace Arbor.X.Bootstrapper
                 return ExitCode.Failure;
             }
 
-            var buildToolExe = exeFiles.Single();
+            FileInfo buildToolExe = exeFiles.Single();
 
-            var timeoutKey = WellKnownVariables.BuildToolTimeoutInSeconds;
-            var timeoutInSecondsFromEnvironment = Environment.GetEnvironmentVariable(timeoutKey);
+            string timeoutKey = WellKnownVariables.BuildToolTimeoutInSeconds;
+            string timeoutInSecondsFromEnvironment = Environment.GetEnvironmentVariable(timeoutKey);
 
-            var parseResult = timeoutInSecondsFromEnvironment.TryParseInt32(defaultValue:MaxBuildTimeInSeconds);
+            ParseResult<int> parseResult =
+                timeoutInSecondsFromEnvironment.TryParseInt32(defaultValue: MaxBuildTimeInSeconds);
 
             if (parseResult.Parsed)
             {
@@ -359,7 +438,7 @@ namespace Arbor.X.Bootstrapper
             const string buildApplicationPrefix = "[Arbor.X] ";
 
             IEnumerable<string> arguments = Enumerable.Empty<string>();
-            var result =
+            ExitCode result =
                 await
                     ProcessRunner.ExecuteAsync(buildToolExe.FullName,
                         cancellationToken: cancellationTokenSource.Token,
@@ -379,17 +458,26 @@ namespace Arbor.X.Bootstrapper
             string multiple = string.Format("Found {0} such files: {1}", exeFiles.Count,
                 string.Join(", ", exeFiles.Select(file => file.Name)));
             const string single = ". Found no such files";
-            var found = exeFiles.Any() ? single : multiple;
+            string found = exeFiles.Any() ? single : multiple;
 
-            _consoleLogger.WriteError(string.Format("Expected directory {0} to contain exactly one executable file with extensions .exe. {1}",
-                buildToolDirectoryPath, found));
+            _consoleLogger.WriteError(
+                string.Format("Expected directory {0} to contain exactly one executable file with extensions .exe. {1}",
+                    buildToolDirectoryPath, found));
         }
 
         async Task<bool> TryDownloadNuGetAsync(string baseDir, string targetFile)
         {
+            bool update = true;
+
+            bool hasNugetExe = File.Exists(targetFile);
+
             try
             {
-                await DownloadNuGetExeAsync(baseDir, targetFile);
+                if (!hasNugetExe)
+                {
+                    await DownloadNuGetExeAsync(baseDir, targetFile);
+                    update = false;
+                }
             }
             catch (HttpRequestException ex)
             {
@@ -397,16 +485,32 @@ namespace Arbor.X.Bootstrapper
                 {
                     return false;
                 }
-
-                _consoleLogger.WriteWarning(string.Format("NuGet.exe could not be downloaded, using existing nuget.exe. {0}", ex));
+                update = true;
+                _consoleLogger.WriteWarning(
+                    string.Format("NuGet.exe could not be downloaded, using existing nuget.exe. {0}", ex));
             }
 
-            return true;
+            if (update)
+            {
+                try
+                {
+                    var arguments = new List<string> {"update", "-self"};
+                    await ProcessRunner.ExecuteAsync(targetFile, arguments: arguments, logger: _consoleLogger);
+                }
+                catch (Exception ex)
+                {
+                    _consoleLogger.WriteError(ex.ToString());
+                }
+            }
+
+            bool exists = File.Exists(targetFile);
+
+            return exists;
         }
 
         async Task DownloadNuGetExeAsync(string baseDir, string targetFile)
         {
-            var tempFile = Path.Combine(baseDir, "nuget.exe.tmp");
+            string tempFile = Path.Combine(baseDir, "nuget.exe.tmp");
 
             const string nugetExeUri = "https://nuget.org/nuget.exe";
 
@@ -414,7 +518,7 @@ namespace Arbor.X.Bootstrapper
 
             using (var client = new HttpClient())
             {
-                using (var stream = await client.GetStreamAsync(nugetExeUri))
+                using (Stream stream = await client.GetStreamAsync(nugetExeUri))
                 {
                     using (var fs = new FileStream(tempFile, FileMode.Create))
                     {

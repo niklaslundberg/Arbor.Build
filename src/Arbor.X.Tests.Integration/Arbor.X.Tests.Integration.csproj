@@ -54,6 +54,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Bootstrapper\Class1.cs" />
     <Compile Include="DirectoryDelete\When2.cs" />
     <Compile Include="Logging\LogLevel\when_parsing_empty_string.cs" />
     <Compile Include="Logging\LogLevel\when_parsing_information_level_8.cs" />
@@ -104,6 +105,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Arbor.X.Bootstrapper\Arbor.X.Bootstrapper.csproj">
+      <Project>{9aa52382-a7b1-407b-ae0e-9b04efdfac43}</Project>
+      <Name>Arbor.X.Bootstrapper</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Arbor.X.Core\Arbor.X.Core.csproj">
       <Project>{CC76C4CD-364D-4E48-9147-CBDECCD3A6F2}</Project>
       <Name>Arbor.X.Core</Name>

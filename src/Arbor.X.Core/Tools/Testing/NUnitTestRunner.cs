@@ -20,6 +20,14 @@ namespace Arbor.X.Core.Tools.Testing
 
         public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {
+            var enabled = buildVariables.GetBooleanByKey(WellKnownVariables.NUnitEnabled, defaultValue: true);
+
+            if (!enabled)
+            {
+                logger.WriteWarning("NUnit not enabled");
+                return ExitCode.Success;
+            }
+
             var externalTools = buildVariables.Require(WellKnownVariables.ExternalTools).ThrowIfEmptyValue();
             var reportPath = buildVariables.Require(WellKnownVariables.ReportPath).ThrowIfEmptyValue();
 

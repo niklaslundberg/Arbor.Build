@@ -16,6 +16,14 @@ namespace Arbor.X.Core.Tools.Versioning
         {
             var app = new AssemblyPatcherApp();
 
+            var assemblyVersionPatchingEnabled = buildVariables.GetBooleanByKey(WellKnownVariables.AssemblyFilePatchingEnabled, defaultValue: true);
+
+            if (!assemblyVersionPatchingEnabled)
+            {
+                logger.WriteWarning("Assembly version pathcing is disabled");
+                return Task.FromResult(ExitCode.Success);
+            }
+
             var netAssemblyVersionVar = buildVariables.SingleOrDefault(@var => @var.Key == WellKnownVariables.NetAssemblyVersion);
             string netAssemblyVersion;
 

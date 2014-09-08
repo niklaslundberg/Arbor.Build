@@ -19,6 +19,14 @@ namespace Arbor.X.Core.Tools.Testing
 
         public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {
+            var enabled = buildVariables.GetBooleanByKey(WellKnownVariables.VSTestEnabled, defaultValue: true);
+
+            if (!enabled)
+            {
+                logger.WriteWarning("VSTest not enabled");
+                return ExitCode.Success;
+            }
+
             var reportPath =
                 buildVariables.Require(WellKnownVariables.ExternalTools_VSTest_ReportPath).ThrowIfEmptyValue().Value;
             _sourceRoot =
