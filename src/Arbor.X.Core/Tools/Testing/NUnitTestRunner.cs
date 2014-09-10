@@ -46,7 +46,7 @@ namespace Arbor.X.Core.Tools.Testing
 
             bool ignoreTestFailures = ignoreTestFailuresVariable.GetValueOrDefault(defaultValue: false);
 
-            if (!ignoreTestFailures)
+            if (ignoreTestFailures)
             {
                 var message = string.Format("The exit code from NUnit test was not successful, but the environment variable {0} is set to true, thus returning success", WellKnownVariables.IgnoreTestFailures);
                 
@@ -158,7 +158,7 @@ namespace Arbor.X.Core.Tools.Testing
 
         static IEnumerable<string> GetNUnitConsoleOptions(string reportFile)
         {
-            var options = new List<string> {string.Format("/xml:{0}", reportFile), "/framework:net-4.0"};
+            var options = new List<string> { string.Format("/xml:{0}", reportFile), "/framework:net-4.0", "/noshadow" };
             return options;
         }
 
