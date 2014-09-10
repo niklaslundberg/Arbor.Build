@@ -68,6 +68,12 @@ namespace Arbor.X.Core.Tools.Testing
                                             };
             List<string> testDlls = new UnitTestFinder(typesToFind).GetUnitTestFixtureDlls(directory).ToList();
 
+            if (!testDlls.Any())
+            {
+                logger.WriteWarning("No DLL files with Machine.Specifications specifications was found");
+                return ExitCode.Success;
+            }
+
             var arguments = new List<string>();
 
             arguments.AddRange(testDlls);
