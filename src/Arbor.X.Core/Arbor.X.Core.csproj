@@ -82,6 +82,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BoolExtensions.cs" />
+    <Compile Include="BuildVariables\Arbor.cs" />
+    <Compile Include="BuildVariables\ArborX.cs" />
     <Compile Include="BuildVariables\EnvironmentVariableHelper.cs" />
     <Compile Include="BuildVariables\VariableDescription.cs" />
     <Compile Include="BuildVariables\VariableDescriptionAttribute.cs" />
