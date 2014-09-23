@@ -45,7 +45,7 @@ namespace Arbor.X.Core.BuildVariables
         public static readonly string NuGetPackageArtifactsSuffix = Arbor.X + ".NuGet.Package.Artifacts.Suffix";
 
         [VariableDescriptionAttribute("Flag to indicate if the build number is included in the NuGet package artifacts")]
-        public static readonly string BuildNumberInNuGetPackageArtifactsEnabled = Arbor.X + "NuGet.Package.Artifacts.BuildNumber.Enabled";
+        public static readonly string BuildNumberInNuGetPackageArtifactsEnabled = Arbor.X + ".NuGet.Package.Artifacts.BuildNumber.Enabled";
 
         [VariableDescriptionAttribute("Enable assembly version patching")]
         public static readonly string AssemblyFilePatchingEnabled = Arbor.X.Build + ".NetAssembly.PatchingEnabled";
