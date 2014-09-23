@@ -33,7 +33,7 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
 
             DirectoryInfo tempDirectory = new DirectoryInfo(tempPath).EnsureExists();
 
-            DirectoryCopy.Copy(combine, tempDirectory.FullName);
+            exitCode = DirectoryCopy.CopyAsync(combine, tempDirectory.FullName).Result;
 
             testRunner = new MSpecTestRunner();
             variables.Add(new EnvironmentVariable(WellKnownVariables.ExternalTools,
@@ -86,5 +86,6 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
         };
 
         It should_Behaviour = () => ExitCode.IsSuccess.ShouldBeTrue();
+        static ExitCode exitCode;
     }
 }

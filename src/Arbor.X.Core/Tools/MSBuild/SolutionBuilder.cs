@@ -452,7 +452,12 @@ namespace Arbor.X.Core.Tools.MSBuild
                             logger.WriteVerbose(string.Format("Copying directory '{0}' to '{1}'", kuduWebJobs.FullName,
                                 artifactJobAppDataDirectory.FullName));
 
-                            DirectoryCopy.Copy(kuduWebJobs.FullName, artifactJobAppDataDirectory.FullName);
+                            var code = await DirectoryCopy.CopyAsync(kuduWebJobs.FullName, artifactJobAppDataDirectory.FullName, logger);
+
+                            if (!code.IsSuccess)
+                            {
+                                return code;
+                            }
                         }
                         else
                         {

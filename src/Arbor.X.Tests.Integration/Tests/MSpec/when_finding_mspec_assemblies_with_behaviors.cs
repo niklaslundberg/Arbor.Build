@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using Arbor.Aesculus.Core;
+using Arbor.X.Core;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.Tools;
@@ -33,7 +34,7 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
 
             tempDirectory = new DirectoryInfo(tempPath).EnsureExists();
 
-            DirectoryCopy.Copy(combine, tempDirectory.FullName);
+            exitCode = DirectoryCopy.CopyAsync(combine, tempDirectory.FullName).Result;
         };
 
         Because of = () => { dlls = finder.GetUnitTestFixtureDlls(tempDirectory); };
@@ -47,5 +48,6 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
         };
 
         static DirectoryInfo tempDirectory;
+        static ExitCode exitCode;
     }
 }

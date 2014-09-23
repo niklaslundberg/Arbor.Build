@@ -205,9 +205,15 @@ namespace Arbor.X.Core.Tools.Kudu
 
                 logger.Write(string.Format("Copying files and directories from '{0}' to '{1}'", configuration.FullName,
                     _deploymentTargetDirectory));
+                
                 try
                 {
-                    DirectoryCopy.Copy(configuration.FullName, _deploymentTargetDirectory);
+                    var exitCode = await DirectoryCopy.CopyAsync(configuration.FullName, _deploymentTargetDirectory, logger);
+
+                    if (!exitCode.IsSuccess)
+                    {
+                        return exitCode;
+                    }
                 }
                 catch (Exception ex)
                 {

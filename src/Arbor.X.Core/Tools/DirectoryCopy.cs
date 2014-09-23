@@ -1,14 +1,17 @@
 using System;
-using System.Collections;
 using System.IO;
+using System.Threading.Tasks;
 using Arbor.X.Core.IO;
+using Arbor.X.Core.Logging;
 
 namespace Arbor.X.Core.Tools
 {
     public static class DirectoryCopy
     {
-        public static void Copy(string sourceDir, string targetDir)
+        public static async Task<ExitCode> CopyAsync(string sourceDir, string targetDir, ILogger optionalLogger = null)
         {
+            ILogger logger = optionalLogger ?? new NullLogger();
+
             if (string.IsNullOrWhiteSpace(sourceDir))
             {
                 throw new ArgumentNullException("sourceDir");
@@ -32,22 +35,32 @@ namespace Arbor.X.Core.Tools
             {
                 string destFileName = Path.Combine(targetDir, file.Name);
 
+                logger.WriteVerbose(string.Format("Copying file '{0}' to destination '{1}'", file.FullName, destFileName));
+
                 try
                 {
                     file.CopyTo(destFileName, overwrite: true);
                 }
                 catch (PathTooLongException ex)
                 {
-                    throw new PathTooLongException(
-                        string.Format("Could not copy file to '{0}', path length {1}", destFileName, destFileName.Length),
-                        ex);
+                    logger.WriteError(
+                        string.Format("Could not copy file to '{0}', path length is too long ({1})", destFileName,
+                            destFileName.Length) + " " + ex);
+                }
+                catch (Exception ex)
+                {
+                    logger.WriteError(
+                        string.Format("Could not copy file '{0}' to destination '{1}'", file.FullName, destFileName) +
+                        " " + ex);
                 }
             }
 
             foreach (DirectoryInfo directory in sourceDirectory.GetDirectories())
             {
-                Copy(directory.FullName, Path.Combine(targetDir, directory.Name));
+                await CopyAsync(directory.FullName, Path.Combine(targetDir, directory.Name));
             }
+
+            return ExitCode.Success;
         }
     }
 }
