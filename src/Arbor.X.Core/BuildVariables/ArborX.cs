@@ -13,6 +13,11 @@ namespace Arbor.X.Core.BuildVariables
             return Namespace;
         }
 
+        public override string ToString()
+        {
+            return Namespace;
+        }
+
         public string Build
         {
             get { return Namespace + ".Build"; }

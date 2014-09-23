@@ -4,7 +4,7 @@ namespace Arbor.X.Core.Tools.NuGet
 {
     public static class NuGetVersionHelper
     {
-        public static string GetVersion(string version, bool isReleaseBuild)
+        public static string GetVersion(string version, bool isReleaseBuild, string suffix, bool enableBuildNumber)
         {
             Version parsedVersion;
             if (!Version.TryParse(version, out parsedVersion))
@@ -16,9 +16,34 @@ namespace Arbor.X.Core.Tools.NuGet
             {
                 return parsedVersion.ToString(fieldCount: 3);
             }
+            string buildVersion;
 
-            string buildVersion = string.Format("{0}.{1}.{2}-build{3}", parsedVersion.Major, parsedVersion.Minor, parsedVersion.Build, parsedVersion.Revision);
-
+            if (!string.IsNullOrWhiteSpace(suffix))
+            {
+                if (enableBuildNumber)
+                {
+                    buildVersion = string.Format("{0}.{1}.{2}-{3}{4}", parsedVersion.Major, parsedVersion.Minor,
+                        parsedVersion.Build, suffix, parsedVersion.Revision);
+                }
+                else
+                {
+                    buildVersion = string.Format("{0}.{1}.{2}-{3}", parsedVersion.Major, parsedVersion.Minor,
+                        parsedVersion.Build, suffix);
+                }
+            }
+            else
+            {
+                if (enableBuildNumber)
+                {
+                    buildVersion = string.Format("{0}.{1}.{2}-{3}", parsedVersion.Major, parsedVersion.Minor,
+                        parsedVersion.Build, parsedVersion.Revision);
+                }
+                else
+                {
+                    buildVersion = string.Format("{0}.{1}.{2}", parsedVersion.Major, parsedVersion.Minor,
+                        parsedVersion.Build);
+                }
+            }
             return buildVersion;
         }
     }

@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Arbor.Aesculus.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;
@@ -27,6 +26,9 @@ namespace Arbor.X.Core.Tools.NuGet
             var tempDirectory = buildVariables.Require(WellKnownVariables.TempDirectory).ThrowIfEmptyValue();
             var nuGetExePath =
                 buildVariables.Require(WellKnownVariables.ExternalTools_NuGet_ExePath).ThrowIfEmptyValue().Value;
+
+            var suffix = buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageArtifactsSuffix, "build");
+            var enableBuildNumber = buildVariables.GetBooleanByKey(WellKnownVariables.BuildNumberInNuGetPackageArtifactsEnabled, true);
 
             if (branchName.Value.Equals("master", StringComparison.InvariantCultureIgnoreCase))
             {
@@ -57,8 +59,8 @@ namespace Arbor.X.Core.Tools.NuGet
             var packageDirectory = PackageDirectory();
 
             var packageSpecifications = GetPackageSpecifications(logger, vcsRootDir, packageDirectory);
-            
-            var result = await ProcessPackagesAsync(packageSpecifications, nuGetExePath,packagesDirectory,version,isReleaseBuild,configuration,branchName,logger,tempDirectory);
+
+            var result = await ProcessPackagesAsync(packageSpecifications, nuGetExePath, packagesDirectory, version, isReleaseBuild, configuration, branchName, logger, tempDirectory, suffix, enableBuildNumber);
 
             return result;
         }
@@ -89,15 +91,7 @@ namespace Arbor.X.Core.Tools.NuGet
             return isReleaseBuild;
         }
 
-        async Task<ExitCode> ProcessPackagesAsync(IEnumerable<string> packageSpecifications,
-            string nuGetExePath,
-            string packagesDirectory,
-            IVariable version,
-            bool isReleaseBuild,
-            string configuration,
-            IVariable branchName,
-            ILogger logger,
-            IVariable tempDirectory)
+        async Task<ExitCode> ProcessPackagesAsync(IEnumerable<string> packageSpecifications, string nuGetExePath, string packagesDirectory, IVariable version, bool isReleaseBuild, string configuration, IVariable branchName, ILogger logger, IVariable tempDirectory, string suffix, bool enableBuildNumber)
         {
             foreach (var packageSpecification in packageSpecifications)
             {
@@ -105,7 +99,7 @@ namespace Arbor.X.Core.Tools.NuGet
                     await
                         CreatePackageAsync(nuGetExePath, packageSpecification, packagesDirectory, version,
                             isReleaseBuild,
-                            configuration, branchName, logger, tempDirectory);
+                            configuration, branchName, logger, tempDirectory, suffix, enableBuildNumber);
 
                 if (!packageResult.IsSuccess)
                 {
@@ -118,9 +112,7 @@ namespace Arbor.X.Core.Tools.NuGet
             return ExitCode.Success;
         }
 
-        async Task<ExitCode> CreatePackageAsync(string nuGetExePath, string nuspecFilePath, string packagesDirectory,
-                                                  IVariable version, bool isReleaseBuild, string configuration,
-                                                  IVariable branchName, ILogger logger, IVariable tempDirectory)
+        async Task<ExitCode> CreatePackageAsync(string nuGetExePath, string nuspecFilePath, string packagesDirectory, IVariable version, bool isReleaseBuild, string configuration, IVariable branchName, ILogger logger, IVariable tempDirectory, string suffix, bool enableBuildNumber)
         {
             NuSpec nuSpec = NuSpec.Parse(nuspecFilePath);
 
@@ -129,7 +121,7 @@ namespace Arbor.X.Core.Tools.NuGet
             string packageId = NuGetPackageIdHelper.CreateNugetPackageId(nuSpec.PackageId, isReleaseBuild,
                                                                          branchName.Value);
 
-            string nuGetPackageVersion = NuGetVersionHelper.GetVersion(version.Value, isReleaseBuild);
+            string nuGetPackageVersion = NuGetVersionHelper.GetVersion(version.Value, isReleaseBuild, suffix, enableBuildNumber);
             
             var nuSpecInfo = new FileInfo(nuspecFilePath);
 // ReSharper disable AssignNullToNotNullAttribute

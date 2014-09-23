@@ -41,6 +41,12 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescriptionAttribute(".NET assembly file version")]
         public static readonly string NetAssemblyFileVersion = Arbor.X.Build + "NetAssembly.FileVersion";
 
+        [VariableDescriptionAttribute("NuGet package artifacts suffix")]
+        public static readonly string NuGetPackageArtifactsSuffix = Arbor.X + "NuGet.Package.Artifacts.Suffix";
+
+        [VariableDescriptionAttribute("Flag to indicate if the build number is included in the NuGet package artifacts")]
+        public static readonly string BuildNumberInNuGetPackageArtifactsEnabled = Arbor.X + "NuGet.Package.Artifacts.BuildNumber.Enabled";
+
         [VariableDescriptionAttribute("Enable assembly version patching")]
         public static readonly string AssemblyFilePatchingEnabled = Arbor.X.Build + "NetAssembly.PatchingEnabled";
 
@@ -71,7 +77,7 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescriptionAttribute("Flag to indicate if the bootstrapper is allowed to download pre-release versions of Arbor.X NuGet package", "false")]
         public static readonly string AllowPrerelease = Arbor.X.Build + "Bootstrapper.AllowPrerelease";
 
-        [VariableDescriptionAttribute("Arbor.X NuGet package version for bootstrapper to downlonad", "false")]
+        [VariableDescriptionAttribute("Arbor.X NuGet package version for bootstrapper to download", "false")]
         public static readonly string ArborXNuGetPackageVersion = "Arbor.X.NuGetPackageVersion";
                 
         [VariableDescriptionAttribute("MSBuild executable path (eg. C:\\MSbuild.exe)")]
