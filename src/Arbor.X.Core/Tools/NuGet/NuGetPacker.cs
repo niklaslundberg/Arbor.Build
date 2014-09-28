@@ -18,6 +18,15 @@ namespace Arbor.X.Core.Tools.NuGet
         public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {
             _cancellationToken = cancellationToken;
+
+            var enabled = buildVariables.GetBooleanByKey(WellKnownVariables.NuGetPackageEnabled, defaultValue: true);
+
+            if (!enabled)
+            {
+                logger.WriteWarning(string.Format("NuGet Packer is disabled (build variable '{0}' is set to false", WellKnownVariables.NuGetPackageEnabled));
+                return ExitCode.Success;
+            }
+
             var artifacts = buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue();
             var version = buildVariables.Require(WellKnownVariables.Version).ThrowIfEmptyValue();
             var releaseBuild = buildVariables.Require(WellKnownVariables.ReleaseBuild).ThrowIfEmptyValue();

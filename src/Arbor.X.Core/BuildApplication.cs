@@ -425,6 +425,7 @@ namespace Arbor.X.Core
 
             if (string.IsNullOrWhiteSpace(branchName))
             {
+                _logger.WriteVerbose("There is no branch name defined in the environment variables, asking Git");
                 Tuple<int, string> branchNameResult = await GetBranchNameByAskingGitExeAsync();
 
                 if (branchNameResult.Item1 != 0)

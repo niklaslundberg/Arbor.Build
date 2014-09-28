@@ -41,6 +41,10 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescriptionAttribute(".NET assembly file version")]
         public static readonly string NetAssemblyFileVersion = Arbor.X.Build + ".NetAssembly.FileVersion";
 
+
+        [VariableDescriptionAttribute("Flag to indicate if NuGet package creation is enabled")]
+        public static readonly string NuGetPackageEnabled = Arbor.X + ".NuGet.Package.Enabled";
+
         [VariableDescriptionAttribute("NuGet package artifacts suffix")]
         public static readonly string NuGetPackageArtifactsSuffix = Arbor.X + ".NuGet.Package.Artifacts.Suffix";
 
