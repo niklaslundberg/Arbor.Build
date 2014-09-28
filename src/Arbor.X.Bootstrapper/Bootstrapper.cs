@@ -98,7 +98,6 @@ namespace Arbor.X.Bootstrapper
             if (_startOptions.PrereleaseEnabled.HasValue)
             {
                 Environment.SetEnvironmentVariable(WellKnownVariables.AllowPrerelease, _startOptions.PrereleaseEnabled.Value.ToString().ToLowerInvariant());
-                
             }
 
             if (!string.IsNullOrWhiteSpace(_startOptions.BranchName))

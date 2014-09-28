@@ -23,7 +23,7 @@ namespace Arbor.X.Core.BuildVariables
                 .ToList();
 
             var nonExisting = variables
-                .Where(bv => existing.Any(ebv => ebv.Key.Equals(bv.Key, StringComparison.InvariantCultureIgnoreCase)))
+                .Where(bv => !existing.Any(ebv => ebv.Key.Equals(bv.Key, StringComparison.InvariantCultureIgnoreCase)))
                 .ToList();
 
             var existingVariables = variables.Except(nonExisting).ToList();
