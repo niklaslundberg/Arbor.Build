@@ -248,7 +248,7 @@ namespace Arbor.X.Core
 
             buildVariables.AddRange(result);
 
-            buildVariables.AddRange(EnvironmentVariableHelper.GetBuildVariablesFromEnvironmentVariables());
+            buildVariables.AddRange(EnvironmentVariableHelper.GetBuildVariablesFromEnvironmentVariables(_logger, buildVariables));
 
             var providers = new List<IVariableProvider>
                             {
@@ -437,8 +437,22 @@ namespace Arbor.X.Core
                 variables.Add(WellKnownVariables.BranchName, branchName);
             }
 
-            string configuration = GetConfiguration(branchName);
-            variables.Add(WellKnownVariables.Configuration, configuration);
+            var configurationFromEnvironment = Environment.GetEnvironmentVariable(WellKnownVariables.Configuration);
+
+            if (string.IsNullOrWhiteSpace(configurationFromEnvironment))
+            {
+                string configuration = GetConfiguration(branchName);
+                
+                _logger.WriteVerbose(string.Format("Using configuration '{0}' based on branch name '{1}'", configuration, branchName));
+
+                variables.Add(WellKnownVariables.Configuration, configuration);
+            }
+            else
+            {
+                _logger.WriteVerbose(string.Format("Using configuration from environment variable '{0}' with value '{1}'", WellKnownVariables.Configuration, configurationFromEnvironment));
+                variables.Add(WellKnownVariables.Configuration, configurationFromEnvironment);
+            }
+
             bool isReleaseBuild = IsReleaseBuild(branchName);
             variables.Add(WellKnownVariables.ReleaseBuild, isReleaseBuild.ToString());
 

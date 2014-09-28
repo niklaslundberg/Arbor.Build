@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using FubuCore.Logging;
 
 namespace Arbor.X.Core.BuildVariables
 {
@@ -18,7 +19,14 @@ namespace Arbor.X.Core.BuildVariables
                 throw new ArgumentNullException("variableName");
             }
 
-            var variable = variables.SingleOrDefault(@var => @var.Key.Equals(variableName, StringComparison.InvariantCultureIgnoreCase));
+            var foundVariables = variables.Where(@var => @var.Key.Equals(variableName, StringComparison.InvariantCultureIgnoreCase)).ToList();
+
+            if (foundVariables.Count() > 1)
+            {
+                throw new InvalidOperationException(string.Format("The are multiple variables with key '{0}'", variableName));
+            }
+
+            var variable = foundVariables.SingleOrDefault();
 
             if (variable == null)
             {

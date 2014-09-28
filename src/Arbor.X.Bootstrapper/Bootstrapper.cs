@@ -298,7 +298,7 @@ namespace Arbor.X.Bootstrapper
         bool IsBetterRunOnLocalTempStorage()
         {
             bool isKuduAware =
-                KuduHelper.IsKuduAware(EnvironmentVariableHelper.GetBuildVariablesFromEnvironmentVariables(),
+                KuduHelper.IsKuduAware(EnvironmentVariableHelper.GetBuildVariablesFromEnvironmentVariables(_consoleLogger),
                     _consoleLogger);
 
             bool isBetterRunOnLocalTempStorage = isKuduAware;
