@@ -7,6 +7,6 @@ SET Arbor.X.NuGet.Package.Artifacts.BuildNumber.Enabled=
 SET Version.Major=0
 SET Version.Minor=1
 SET Version.Patch=21
-SET Version.Build=2
+SET Version.Build=4
 
 CALL "%~dp0\Build.exe"

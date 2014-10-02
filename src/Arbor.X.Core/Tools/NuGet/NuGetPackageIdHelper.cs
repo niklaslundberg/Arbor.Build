@@ -26,7 +26,7 @@ namespace Arbor.X.Core.Tools.NuGet
 
             var nugetPackageId = string.Format("{0}-{1}", basePackageId, normalizedBranchName);
 
-            var invalidCharacters = new List<string> {"<", "@"};
+            var invalidCharacters = new List<string> {"<", "@", ">", "|", "?", ":"};
 
             var trimmedName = invalidCharacters.Aggregate(nugetPackageId, (current, invalidCharacter) => current.Replace(invalidCharacter, ""));
 
