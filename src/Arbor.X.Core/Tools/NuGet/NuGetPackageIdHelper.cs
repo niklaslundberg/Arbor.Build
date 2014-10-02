@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Arbor.X.Core.Tools.Git;
+using NUnit.Framework;
 
 namespace Arbor.X.Core.Tools.NuGet
 {
@@ -22,8 +25,12 @@ namespace Arbor.X.Core.Tools.NuGet
             var normalizedBranchName = branch.Normalize();
 
             var nugetPackageId = string.Format("{0}-{1}", basePackageId, normalizedBranchName);
-            
-            return nugetPackageId;
+
+            var invalidCharacters = new List<string> {"<", "@"};
+
+            var trimmedName = invalidCharacters.Aggregate(nugetPackageId, (current, invalidCharacter) => current.Replace(invalidCharacter, ""));
+
+            return trimmedName;
         }
     }
 }
