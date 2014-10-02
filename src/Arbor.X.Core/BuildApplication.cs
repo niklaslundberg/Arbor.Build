@@ -20,6 +20,7 @@ using Arbor.X.Core.Tools.Kudu;
 using Arbor.X.Core.Tools.MSBuild;
 using Arbor.X.Core.Tools.NuGet;
 using Arbor.X.Core.Tools.Symbols;
+using Arbor.X.Core.Tools.TeamCity;
 using Arbor.X.Core.Tools.Testing;
 using Arbor.X.Core.Tools.Versioning;
 using Arbor.X.Core.Tools.VisualStudio;
@@ -252,6 +253,7 @@ namespace Arbor.X.Core
 
             var providers = new List<IVariableProvider>
                             {
+                                new TeamCityVariableProvider(),
                                 new SourcePathVariableProvider(),
                                 new ArtifactsVariableProvider(),
                                 new MSBuildVariableProvider(),

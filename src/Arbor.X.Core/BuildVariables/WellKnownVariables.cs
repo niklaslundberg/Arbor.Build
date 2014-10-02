@@ -5,19 +5,12 @@ using System.Security.Cryptography;
 
 namespace Arbor.X.Core.BuildVariables
 {
-    public static class WellKnownVariables
+    public static partial class WellKnownVariables
     {
 // ReSharper disable InconsistentNaming
 
 // ReSharper disable ConvertToConstant.Global
-        [VariableDescriptionAttribute("External tools path")]
-        public static readonly string ExternalTools = Arbor.X.Build + ".Tools.External";
-
-        [VariableDescriptionAttribute("Source root override")]
-        public static readonly string SourceRootOverride = Arbor.X.Build + ".Source.Override";
-
-        [VariableDescriptionAttribute("Test framework report path")]
-        public static readonly string ReportPath = "Arbor.X.Artifacts.TestReports";
+        
 
         [VariableDescriptionAttribute("Visual Studio version")]
         public static readonly string ExternalTools_VisualStudio_Version =

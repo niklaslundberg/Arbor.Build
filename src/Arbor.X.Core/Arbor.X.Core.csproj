@@ -84,6 +84,12 @@
     <Compile Include="BoolExtensions.cs" />
     <Compile Include="BuildVariables\Arbor.cs" />
     <Compile Include="BuildVariables\ArborX.cs" />
+    <Compile Include="BuildVariables\WellKnownVariables.TeamCity.cs">
+      <DependentUpon>WellKnownVariables.cs</DependentUpon>
+    </Compile>
+    <Compile Include="BuildVariables\WellKnownVariables.ArborX.cs">
+      <DependentUpon>WellKnownVariables.cs</DependentUpon>
+    </Compile>
     <Compile Include="BuildVariables\EnvironmentVariableHelper.cs" />
     <Compile Include="BuildVariables\VariableDescription.cs" />
     <Compile Include="BuildVariables\VariableDescriptionAttribute.cs" />
@@ -114,6 +120,7 @@
     <Compile Include="Tools\Kudu\StringExtensions.cs" />
     <Compile Include="Tools\MSBuild\MSBuildVerbositoyLevel.cs" />
     <Compile Include="Tools\Symbols\SymbolsVariableProvider.cs" />
+    <Compile Include="Tools\TeamCity\TeamCityVariableProvider.cs" />
     <Compile Include="Tools\Testing\MSpecTestRunner.cs" />
     <Compile Include="Tools\Testing\MSpecVariableProvider.cs" />
     <Compile Include="Tools\Versioning\AssemblyInfoUnpatcher.cs" />
