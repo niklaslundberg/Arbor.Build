@@ -102,6 +102,7 @@
     <Compile Include="KuduWebJobs\when_parsing_whitespace_value.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
