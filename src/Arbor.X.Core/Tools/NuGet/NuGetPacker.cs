@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.X.Core.BuildVariables;
+using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;
 
@@ -14,6 +15,7 @@ namespace Arbor.X.Core.Tools.NuGet
     public class NuGetPacker : ITool
     {
         CancellationToken _cancellationToken;
+        bool _keepBinaryAndSourcePackagesTogetherEnabled;
 
         public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {
@@ -38,6 +40,8 @@ namespace Arbor.X.Core.Tools.NuGet
 
             var suffix = buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageArtifactsSuffix, "build");
             var enableBuildNumber = buildVariables.GetBooleanByKey(WellKnownVariables.BuildNumberInNuGetPackageArtifactsEnabled, true);
+
+            _keepBinaryAndSourcePackagesTogetherEnabled = buildVariables.GetBooleanByKey(WellKnownVariables.NuGetKeepBinaryAndSymbolPackagesTogetherEnabled, true);
 
             if (branchName.Value.Equals("master", StringComparison.InvariantCultureIgnoreCase))
             {
@@ -157,7 +161,7 @@ namespace Arbor.X.Core.Tools.NuGet
             return result;
         }
         
-        async Task<ExitCode> ExecuteNuGetPackAsync(string nuGetExePath, string packagesDirectory, ILogger logger,
+        async Task<ExitCode> ExecuteNuGetPackAsync(string nuGetExePath, string packagesDirectoryPath, ILogger logger,
                                                 string nuSpecFileCopyPath, string properties, NuSpec nuSpecCopy)
         {
             ExitCode result;
@@ -170,7 +174,7 @@ namespace Arbor.X.Core.Tools.NuGet
                                         "-Properties",
                                         properties,
                                         "-OutputDirectory",
-                                        packagesDirectory,
+                                        packagesDirectoryPath,
                                         "-Version",
                                         nuSpecCopy.Version,
                                         "-Symbols"
@@ -186,6 +190,40 @@ namespace Arbor.X.Core.Tools.NuGet
                     await
                     ProcessRunner.ExecuteAsync(nuGetExePath, arguments: arguments, standardOutLog: logger.Write,
                                                standardErrorAction: logger.WriteError, toolAction: logger.Write, cancellationToken: _cancellationToken, verboseAction: logger.WriteVerbose);
+
+                var packagesDirectory = new DirectoryInfo(packagesDirectoryPath);
+
+                if (!_keepBinaryAndSourcePackagesTogetherEnabled)
+                {
+                    logger.Write(string.Format("The flag {0} is set to false, separating binary packages from symbol packages", WellKnownVariables.NuGetKeepBinaryAndSymbolPackagesTogetherEnabled));
+                    var nugetPackages = packagesDirectory.GetFiles("*.nupkg", SearchOption.TopDirectoryOnly).Select(file => file.FullName).ToList();
+                    var nugetSymbolPackages = packagesDirectory.GetFiles("*.symbols.nupkg", SearchOption.TopDirectoryOnly).Select(file => file.FullName).ToList();
+
+                    var binaryPackages = nugetPackages.Except(nugetSymbolPackages).ToList();
+
+                    var binaryPackagesDirectory =
+                        new DirectoryInfo(Path.Combine(packagesDirectory.FullName, "binary")).EnsureExists();
+
+                    var symbolPackagesDirectory = new DirectoryInfo(Path.Combine(packagesDirectory.FullName, "symbol")).EnsureExists();
+
+                    foreach (var binaryPackage in binaryPackages)
+                    {
+                        var sourceFile = new FileInfo(binaryPackage);
+                        var targetBinaryFile = Path.Combine(binaryPackagesDirectory.FullName, sourceFile.Name);
+
+                        logger.WriteDebug(string.Format("Copying NuGet binary package '{0}' to '{1}'", binaryPackage, targetBinaryFile));
+                        sourceFile.MoveTo(targetBinaryFile);
+                    }
+
+                    foreach (var sourcePackage in nugetSymbolPackages)
+                    {
+                        var sourceFile = new FileInfo(sourcePackage);
+                        var targetSymbolFile = Path.Combine(symbolPackagesDirectory.FullName, sourceFile.Name);
+                        logger.WriteDebug(string.Format("Copying NuGet symbol package '{0}' to '{1}'", sourcePackage, targetSymbolFile));
+                        sourceFile.MoveTo(targetSymbolFile);
+                    }
+                }
+
 
                 result = processResult;
             }

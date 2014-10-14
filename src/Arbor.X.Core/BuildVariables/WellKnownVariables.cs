@@ -33,16 +33,6 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescription(".NET assembly file version")]
         public static readonly string NetAssemblyFileVersion = Arbor.X.Build + ".NetAssembly.FileVersion";
 
-
-        [VariableDescription("Flag to indicate if NuGet package creation is enabled")]
-        public static readonly string NuGetPackageEnabled = Arbor.X + ".NuGet.Package.Enabled";
-
-        [VariableDescription("NuGet package artifacts suffix")]
-        public static readonly string NuGetPackageArtifactsSuffix = Arbor.X + ".NuGet.Package.Artifacts.Suffix";
-
-        [VariableDescription("Flag to indicate if the build number is included in the NuGet package artifacts")]
-        public static readonly string BuildNumberInNuGetPackageArtifactsEnabled = Arbor.X + ".NuGet.Package.Artifacts.BuildNumber.Enabled";
-
         [VariableDescription("Enable assembly version patching")]
         public static readonly string AssemblyFilePatchingEnabled = Arbor.X.Build + ".NetAssembly.PatchingEnabled";
 
@@ -58,9 +48,6 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescription("Temporary directory path")]
         public static readonly string TempDirectory = Arbor.X.Build + ".TempDirectory";
 
-        [VariableDescription("NuGet executable path (eg. C:\\nuget.exe)")]
-        public static readonly string ExternalTools_NuGet_ExePath = "Arbor.X.Tools.External.NuGet.ExePath";
-
         [VariableDescription("Symbol server URI for NuGet source package upload")]
         public static readonly string ExternalTools_SymbolServer_Uri = "Arbor.X.Tools.External.SymbolServer.Uri";
 
@@ -73,7 +60,7 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescription("Flag to indicate if the bootstrapper is allowed to download pre-release versions of Arbor.X NuGet package", "false")]
         public static readonly string AllowPrerelease = Arbor.X.Build + ".Bootstrapper.AllowPrerelease";
 
-        [VariableDescription("Arbor.X NuGet package version for bootstrapper to download", "false")]
+        [VariableDescription("Arbor.X NuGet package version for bootstrapper to download")]
         public static readonly string ArborXNuGetPackageVersion = "Arbor.X.NuGetPackageVersion";
                 
         [VariableDescription("MSBuild executable path (eg. C:\\MSbuild.exe)")]

@@ -88,6 +88,9 @@
     <Compile Include="BoolExtensions.cs" />
     <Compile Include="BuildVariables\Arbor.cs" />
     <Compile Include="BuildVariables\ArborX.cs" />
+    <Compile Include="BuildVariables\WellKnownVariables.NuGet.cs">
+      <DependentUpon>WellKnownVariables.cs</DependentUpon>
+    </Compile>
     <Compile Include="BuildVariables\WellKnownVariables.TeamCity.cs">
       <DependentUpon>WellKnownVariables.cs</DependentUpon>
     </Compile>
