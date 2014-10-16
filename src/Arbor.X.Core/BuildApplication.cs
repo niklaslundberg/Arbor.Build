@@ -39,6 +39,7 @@ namespace Arbor.X.Core
 
         public async Task<ExitCode> RunAsync()
         {
+            _logger.Write("Using logger '" + _logger.GetType() + "' with log level " + _logger.LogLevel);
             _cancellationToken = CancellationToken.None;
             ExitCode exitCode;
             var stopwatch = new Stopwatch();
