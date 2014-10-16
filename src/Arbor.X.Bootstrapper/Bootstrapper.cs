@@ -82,8 +82,8 @@ namespace Arbor.X.Bootstrapper
                 await Task.Delay(TimeSpan.FromMilliseconds(exitDelayInMilliseconds));
             }
 
-            _consoleLogger.Write("Arbor.X.Bootstrapper total inclusive Arbor.X.Build elapsed time in seconds: {0}",
-                stopwatch.Elapsed.TotalSeconds.ToString("F"));
+            _consoleLogger.Write(string.Format("Arbor.X.Bootstrapper total inclusive Arbor.X.Build elapsed time in seconds: {0}",
+                stopwatch.Elapsed.TotalSeconds.ToString("F")));
 
             return exitCode;
         }

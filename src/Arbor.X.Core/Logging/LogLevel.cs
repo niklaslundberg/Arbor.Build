@@ -37,6 +37,7 @@ namespace Arbor.X.Core.Logging
         static readonly LogLevel _warning = new LogLevel("warning", "Warning", 4);
         static readonly LogLevel _information = new LogLevel("information", "Information", 8);
         static readonly LogLevel _verbose = new LogLevel("verbose", "Verbose", 16);
+        public static readonly LogLevel Debug = new LogLevel("debug", "Debug", 32);
         readonly string _displayName;
         readonly string _invariantName;
         readonly int _level;
@@ -72,6 +73,7 @@ namespace Arbor.X.Core.Logging
                 yield return Warning;
                 yield return Information;
                 yield return Verbose;
+                yield return Debug;
             }
         }
 
