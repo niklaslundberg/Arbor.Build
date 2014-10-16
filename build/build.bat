@@ -8,6 +8,6 @@ SET Arbor.X.Log.Level=Debug
 SET Version.Major=0
 SET Version.Minor=1
 SET Version.Patch=22
-SET Version.Build=12
+SET Version.Build=14
 
 CALL "%~dp0\Build.exe"

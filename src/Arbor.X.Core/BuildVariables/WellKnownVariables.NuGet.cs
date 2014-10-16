@@ -16,5 +16,8 @@
 
         [VariableDescription("Flag to indicate if created NuGet (binary+symbol) packages should be kept in the same folder", "true")]
         public static readonly string NuGetKeepBinaryAndSymbolPackagesTogetherEnabled = "Arbor.X.NuGet.Package.Artifacts.KeepBinaryAndSymbolTogetherEnabled";
+        
+        [VariableDescription("Flag to indicate if NuGet packages should be created regardless of the branch convention", "false")]
+        public static readonly string NuGetCreatePackagesOnAnyBranchEnabled = "Arbor.X.NuGet.Package.Artifacts.CreateOnAnyBranchEnabled";
     }
 }

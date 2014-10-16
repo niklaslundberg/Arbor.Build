@@ -43,10 +43,20 @@ namespace Arbor.X.Core.Tools.NuGet
 
             _keepBinaryAndSourcePackagesTogetherEnabled = buildVariables.GetBooleanByKey(WellKnownVariables.NuGetKeepBinaryAndSymbolPackagesTogetherEnabled, true);
 
-            if (branchName.Value.Equals("master", StringComparison.InvariantCultureIgnoreCase))
+            var buildPackagesOnAnyBranch =
+                buildVariables.GetBooleanByKey(WellKnownVariables.NuGetCreatePackagesOnAnyBranchEnabled, false);
+
+            if (!buildPackagesOnAnyBranch)
             {
-                logger.WriteWarning("NuGet package creation is not supported on 'master' branch");
-                return ExitCode.Success;
+                if (branchName.Value.Equals("master", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    logger.WriteWarning("NuGet package creation is not supported on 'master' branch");
+                    return ExitCode.Success;
+                }
+            }
+            else
+            {
+                logger.WriteVerbose(string.Format("Flag '{0}' is set to true, creating NuGet packages", WellKnownVariables.NuGetCreatePackagesOnAnyBranchEnabled));
             }
 
             var isReleaseBuild = IsReleaseBuild(releaseBuild);
