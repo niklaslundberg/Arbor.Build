@@ -5,18 +5,22 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Sorbus.Core;
 using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.Logging;
+using DelegateLogger = Arbor.Sorbus.Core.DelegateLogger;
+using ILogger = Arbor.X.Core.Logging.ILogger;
 
 namespace Arbor.X.Core.Tools.Versioning
 {
     [Priority(200)]
     public class AssemblyInfoPatcher : ITool
     {
-        public Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
+        public Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
+            CancellationToken cancellationToken)
         {
-            var app = new AssemblyPatcherApp();
-            
-            var assemblyVersionPatchingEnabled = buildVariables.GetBooleanByKey(WellKnownVariables.AssemblyFilePatchingEnabled, defaultValue: true);
+            var app = new AssemblyPatcherApp(new DelegateLogger(error: logger.WriteError, warning: logger.WriteWarning,
+                info: logger.Write, verbose: logger.WriteVerbose, debug: logger.WriteDebug) {LogLevel = LogLevel.TryParse(logger.LogLevel.Level)});
+
+            bool assemblyVersionPatchingEnabled =
+                buildVariables.GetBooleanByKey(WellKnownVariables.AssemblyFilePatchingEnabled, defaultValue: true);
 
             if (!assemblyVersionPatchingEnabled)
             {
@@ -24,9 +28,10 @@ namespace Arbor.X.Core.Tools.Versioning
                 return Task.FromResult(ExitCode.Success);
             }
 
-            var sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
+            string sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
 
-            var netAssemblyVersionVar = buildVariables.SingleOrDefault(@var => @var.Key == WellKnownVariables.NetAssemblyVersion);
+            IVariable netAssemblyVersionVar =
+                buildVariables.SingleOrDefault(@var => @var.Key == WellKnownVariables.NetAssemblyVersion);
             string netAssemblyVersion;
 
             if (netAssemblyVersionVar == null || string.IsNullOrWhiteSpace(netAssemblyVersionVar.Value))
@@ -45,7 +50,8 @@ namespace Arbor.X.Core.Tools.Versioning
             var assemblyVersion = new Version(netAssemblyVersion);
 
 
-            var netAssemblyFileVersionVar = buildVariables.SingleOrDefault(@var => @var.Key == WellKnownVariables.NetAssemblyFileVersion);
+            IVariable netAssemblyFileVersionVar =
+                buildVariables.SingleOrDefault(@var => @var.Key == WellKnownVariables.NetAssemblyFileVersion);
             string netAssemblyFileVersion;
 
             if (netAssemblyFileVersionVar == null || string.IsNullOrWhiteSpace(netAssemblyFileVersionVar.Value))
@@ -65,7 +71,10 @@ namespace Arbor.X.Core.Tools.Versioning
 
             try
             {
-                logger.WriteVerbose(string.Format("Patching assembly info files with assembly version {0}, assembly file version {1} for directory source root directory '{2}'", assemblyVersion, assemblyFileVersion, sourceRoot));
+                logger.WriteVerbose(
+                    string.Format(
+                        "Patching assembly info files with assembly version {0}, assembly file version {1} for directory source root directory '{2}'",
+                        assemblyVersion, assemblyFileVersion, sourceRoot));
 
                 app.Patch(new AssemblyVersion(assemblyVersion), new AssemblyFileVersion(assemblyFileVersion), sourceRoot);
             }

@@ -8,7 +8,17 @@ SET Arbor.X.NuGetPackageVersion=
 
 SET Version.Major=0
 SET Version.Minor=1
-SET Version.Patch=23
-SET Version.Build=2
+SET Version.Patch=24
+SET Version.Build=92
 
 CALL "%~dp0\Build.exe"
+
+REM Restore variables to default
+
+SET Arbor.X.Build.Bootstrapper.AllowPrerelease=
+SET Arbor.X.Vcs.Branch.Name=
+SET Arbor.X.Tools.External.MSpec.Enabled=
+SET Arbor.X.NuGet.Package.Artifacts.Suffix=
+SET Arbor.X.NuGet.Package.Artifacts.BuildNumber.Enabled=
+SET Arbor.X.Log.Level=
+SET Arbor.X.NuGetPackageVersion=

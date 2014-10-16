@@ -45,7 +45,7 @@
     </Reference>
     <Reference Include="Arbor.Sorbus.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Arbor.Sorbus.0.1.23-build1\lib\net45\Arbor.Sorbus.Core.dll</HintPath>
+      <HintPath>..\packages\Arbor.Sorbus.0.1.24-build3\lib\net45\Arbor.Sorbus.Core.dll</HintPath>
     </Reference>
     <Reference Include="FubuCore">
       <HintPath>..\packages\FubuCore.1.3.0.278\lib\FubuCore.dll</HintPath>
