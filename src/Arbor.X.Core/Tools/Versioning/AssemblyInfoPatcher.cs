@@ -65,6 +65,8 @@ namespace Arbor.X.Core.Tools.Versioning
 
             try
             {
+                logger.WriteVerbose(string.Format("Patching assembly info files with assembly version {0}, assembly file version {1} for directory source root directory '{2}'", assemblyVersion, assemblyFileVersion, sourceRoot));
+
                 app.Patch(new AssemblyVersion(assemblyVersion), new AssemblyFileVersion(assemblyFileVersion), sourceRoot);
             }
             catch (Exception ex)
