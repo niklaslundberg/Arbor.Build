@@ -33,14 +33,21 @@ namespace Arbor.X.Core.IO
 
         public static void DeleteIfExists(this DirectoryInfo directoryInfo, bool recursive = true)
         {
-            if (directoryInfo != null)
+            try
             {
-                directoryInfo.Refresh();
-
-                if (directoryInfo.Exists)
+                if (directoryInfo != null)
                 {
-                    directoryInfo.Delete(recursive);
+                    directoryInfo.Refresh();
+
+                    if (directoryInfo.Exists)
+                    {
+                        directoryInfo.Delete(recursive);
+                    }
                 }
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                throw new InvalidOperationException(string.Format("Could not delete directory '{0}'", directoryInfo), ex);
             }
         }
     }
