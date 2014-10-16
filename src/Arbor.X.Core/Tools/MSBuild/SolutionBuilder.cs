@@ -337,7 +337,8 @@ namespace Arbor.X.Core.Tools.MSBuild
                               string.Format("/property:platform={0}", platform),
                               string.Format("/verbosity:{0}", _verbosity.Level),
                               "/target:rebuild",
-                              string.Format("/maxcpucount:{0}", _processorCount.ToString(CultureInfo.InvariantCulture))
+                              string.Format("/maxcpucount:{0}", _processorCount.ToString(CultureInfo.InvariantCulture)),
+                              "/nodeReuse:false"
                           };
 
             if (_showSummary)
@@ -402,7 +403,9 @@ namespace Arbor.X.Core.Tools.MSBuild
                                   "/target:pipelinePreDeployCopyAllFilesToOneFolder",
                                   "/property:AutoParameterizationWebConfigConnectionStrings=false",
                                   string.Format("/maxcpucount:{0}",
-                                      _processorCount.ToString(CultureInfo.InvariantCulture))
+                                      _processorCount.ToString(CultureInfo.InvariantCulture)),
+
+                                  "/nodeReuse:false"
                               };
 
                 if (_showSummary)
