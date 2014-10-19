@@ -33,11 +33,11 @@ namespace Arbor.X.Core.Tools.NuGet
                                                                         RepositoriesConfig = repositoriesConfig
                                                                     });
 
-                    Console.WriteLine("Restored {0} package configurations defined in {1}", result, repositoriesConfig);
+                    logger.Write(string.Format("Restored {0} package configurations defined in {1}", result, repositoriesConfig));
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine("Cloud not restore packages defined in '{0}'. {1}", repositoriesConfig, ex);
+                    logger.WriteError(string.Format("Cloud not restore packages defined in '{0}'. {1}", repositoriesConfig, ex));
                 }
             }
 

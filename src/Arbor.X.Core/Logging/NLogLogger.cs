@@ -8,29 +8,26 @@ namespace Arbor.X.Core.Logging
 {
     public class NLogLogger : ILogger
     {
-        static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+        readonly Logger _logger;
         readonly string _prefix;
 
         public NLogLogger(string prefix = "")
         {
-            var config = LogManager.Configuration;
-
-            if (config == null)
-            {
-                config = new LoggingConfiguration();
-                LogManager.Configuration = config;
-            }
-
+            var config = new LoggingConfiguration();
             var consoleTarget = new ColoredConsoleTarget();
             config.AddTarget("console", consoleTarget);
-            consoleTarget.Layout = "NLOG: ${message}";
+            consoleTarget.Layout = "${message}";
 
             var logLevel = GetLogLevel();
 
             var rule1 = new LoggingRule("*", logLevel, consoleTarget);
             config.LoggingRules.Add(rule1);
 
-            Logger.Info(string.Format("Initialized NLog logger with level {0}", logLevel.Name));
+            LogManager.Configuration = config;
+
+            _logger = LogManager.GetCurrentClassLogger();
+
+            _logger.Info(string.Format("Initialized NLog logger with level {0}", logLevel.Name));
 
             _prefix = prefix ?? "";
         }
@@ -59,29 +56,29 @@ namespace Arbor.X.Core.Logging
 
         public void WriteError(string message, string prefix = null)
         {
-            Logger.Error(GetTotalMessage(GetPrefix(prefix), message));
+            _logger.Error(GetTotalMessage(GetPrefix(prefix), message));
         }
 
         public void Write(string message, string prefix = null)
         {
-            Logger.Info(GetTotalMessage(GetPrefix(prefix), message));
+            _logger.Info(GetTotalMessage(GetPrefix(prefix), message));
         }
 
         public void WriteWarning(string message, string prefix = null)
         {
-            Logger.Warn(GetTotalMessage(GetPrefix(prefix), message));
+            _logger.Warn(GetTotalMessage(GetPrefix(prefix), message));
         }
 
         public void WriteVerbose(string message, string prefix = null)
         {
-            Logger.Trace(GetTotalMessage(GetPrefix(prefix), message));
+            _logger.Trace(GetTotalMessage(GetPrefix(prefix), message));
         }
 
         public LogLevel LogLevel { get; set; }
 
         public void WriteDebug(string message, string prefix = null)
         {
-            Logger.Debug(GetTotalMessage(GetPrefix(prefix), message));
+            _logger.Debug(GetTotalMessage(GetPrefix(prefix), message));
         }
 
         string GetPrefix(string prefix)
