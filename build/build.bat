@@ -9,7 +9,7 @@ SET Arbor.X.NuGetPackageVersion=
 SET Version.Major=0
 SET Version.Minor=1
 SET Version.Patch=25
-SET Version.Build=1
+SET Version.Build=3
 
 CALL "%~dp0\Build.exe"
 

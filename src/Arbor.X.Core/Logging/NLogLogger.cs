@@ -14,6 +14,13 @@ namespace Arbor.X.Core.Logging
         public NLogLogger(string prefix = "")
         {
             var config = LogManager.Configuration;
+
+            if (config == null)
+            {
+                config = new LoggingConfiguration();
+                LogManager.Configuration = config;
+            }
+
             var consoleTarget = new ColoredConsoleTarget();
             config.AddTarget("console", consoleTarget);
             consoleTarget.Layout = "NLOG: ${message}";
@@ -22,6 +29,8 @@ namespace Arbor.X.Core.Logging
 
             var rule1 = new LoggingRule("*", logLevel, consoleTarget);
             config.LoggingRules.Add(rule1);
+
+            Logger.Info(string.Format("Initialized NLog logger with level {0}", logLevel.Name));
 
             _prefix = prefix ?? "";
         }
