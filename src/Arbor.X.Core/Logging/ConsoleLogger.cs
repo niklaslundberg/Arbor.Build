@@ -4,6 +4,15 @@ namespace Arbor.X.Core.Logging
 {
     public class ConsoleLogger : ILogger
     {
+        readonly string _prefix;
+        LogLevel _maxLogLevel;
+
+        public ConsoleLogger(string prefix = "", LogLevel maxLogLevel = default(LogLevel))
+        {
+            _maxLogLevel = maxLogLevel;
+            _prefix = prefix ?? "";
+        }
+
         public LogLevel LogLevel
         {
             get { return _maxLogLevel; }
@@ -15,15 +24,6 @@ namespace Arbor.X.Core.Logging
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.WriteLine(GetTotalMessage(GetPrefix(prefix), message));
             Console.ResetColor();
-        }
-
-        LogLevel _maxLogLevel;
-        readonly string _prefix;
-
-        public ConsoleLogger(string prefix = "", LogLevel maxLogLevel = default(LogLevel))
-        {
-            _maxLogLevel = maxLogLevel;
-            _prefix = prefix ?? "";
         }
 
         public void WriteError(string message, string prefix = null)

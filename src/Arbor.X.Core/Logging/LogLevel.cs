@@ -32,11 +32,11 @@ namespace Arbor.X.Core.Logging
             return !left.Equals(right);
         }
 
-        static readonly LogLevel _critical = new LogLevel("critical", "Critical", 1);
-        static readonly LogLevel _error = new LogLevel("error", "Error", 2);
-        static readonly LogLevel _warning = new LogLevel("warning", "Warning", 4);
-        static readonly LogLevel _information = new LogLevel("information", "Information", 8);
-        static readonly LogLevel _verbose = new LogLevel("verbose", "Verbose", 16);
+        public static readonly LogLevel Critical = new LogLevel("critical", "Critical", 1);
+        public static readonly LogLevel Error = new LogLevel("error", "Error", 2);
+        public static readonly LogLevel Warning = new LogLevel("warning", "Warning", 4);
+        public static readonly LogLevel Information = new LogLevel("information", "Information", 8);
+        public static readonly LogLevel Verbose = new LogLevel("verbose", "Verbose", 16);
         public static readonly LogLevel Debug = new LogLevel("debug", "Debug", 32);
         readonly string _displayName;
         readonly string _invariantName;
@@ -64,6 +64,11 @@ namespace Arbor.X.Core.Logging
             get { return _invariantName ?? Default.InvariantName; }
         }
 
+        public static LogLevel Default
+        {
+            get { return Information; }
+        }
+
         public static IEnumerable<LogLevel> AllValues
         {
             get
@@ -75,36 +80,6 @@ namespace Arbor.X.Core.Logging
                 yield return Verbose;
                 yield return Debug;
             }
-        }
-
-        public static LogLevel Information
-        {
-            get { return _information; }
-        }
-
-        public static LogLevel Default
-        {
-            get { return Information; }
-        }
-
-        public static LogLevel Verbose
-        {
-            get { return _verbose; }
-        }
-
-        public static LogLevel Error
-        {
-            get { return _error; }
-        }
-
-        public static LogLevel Critical
-        {
-            get { return _critical; }
-        }
-
-        public static LogLevel Warning
-        {
-            get { return _warning; }
         }
         
         public static LogLevel TryParse(string value)

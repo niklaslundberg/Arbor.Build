@@ -61,6 +61,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Microsoft.VisualStudio.QualityTools.UnitTestFramework.11.0.50727.1\Microsoft.VisualStudio.QualityTools.UnitTestFramework.dll</HintPath>
     </Reference>
+    <Reference Include="NLog">
+      <HintPath>..\packages\NLog.3.1.0.0\lib\net45\NLog.dll</HintPath>
+    </Reference>
     <Reference Include="nunit.framework">
       <HintPath>..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
     </Reference>
@@ -104,6 +107,7 @@
     <Compile Include="ExitCode.cs" />
     <Compile Include="IntExtensions.cs" />
     <Compile Include="Logging\LogLevel.cs" />
+    <Compile Include="Logging\NLogLogger.cs" />
     <Compile Include="Logging\NullLogger.cs" />
     <Compile Include="ParseResult.cs" />
     <Compile Include="ToolExtensions.cs" />
