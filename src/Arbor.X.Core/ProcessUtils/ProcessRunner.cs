@@ -122,7 +122,13 @@ namespace Arbor.X.Core.ProcessUtils
 
             if (redirectStandardError)
             {
-                process.ErrorDataReceived += (sender, args) => errorAction(args.Data, null);
+                process.ErrorDataReceived += (sender, args) =>
+                {
+                    if (args.Data != null)
+                    {
+                        errorAction(args.Data, null);
+                    }
+                };
             }
             if (redirectStandardOutput)
             {
