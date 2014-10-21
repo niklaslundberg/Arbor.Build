@@ -115,6 +115,7 @@
     <Compile Include="DisplayExtensions.cs" />
     <Compile Include="ExitCode.cs" />
     <Compile Include="IntExtensions.cs" />
+    <Compile Include="Logging\DebugLogger.cs" />
     <Compile Include="Logging\LogLevel.cs" />
     <Compile Include="Logging\NLogLogger.cs" />
     <Compile Include="Logging\NullLogger.cs" />
@@ -140,6 +141,7 @@
     <Compile Include="Tools\Kudu\KuduWebProjectDetails.cs" />
     <Compile Include="Tools\Kudu\StringExtensions.cs" />
     <Compile Include="Tools\MSBuild\MSBuildVerbositoyLevel.cs" />
+    <Compile Include="Tools\PathLookupSpecification.cs" />
     <Compile Include="Tools\Symbols\SymbolsVariableProvider.cs" />
     <Compile Include="Tools\TeamCity\TeamCityVariableProvider.cs" />
     <Compile Include="Tools\Testing\MSpecTestRunner.cs" />
