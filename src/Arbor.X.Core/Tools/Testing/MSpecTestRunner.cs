@@ -66,7 +66,7 @@ namespace Arbor.X.Core.Tools.Testing
                                                 typeof (SubjectAttribute),
                                                 typeof (Behaves_like<>),
                                             };
-            List<string> testDlls = new UnitTestFinder(typesToFind).GetUnitTestFixtureDlls(directory).ToList();
+            List<string> testDlls = new UnitTestFinder(typesToFind, logger:logger).GetUnitTestFixtureDlls(directory).ToList();
 
             if (!testDlls.Any())
             {
