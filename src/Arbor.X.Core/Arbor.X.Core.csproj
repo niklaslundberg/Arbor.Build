@@ -42,7 +42,7 @@
     </Reference>
     <Reference Include="Arbor.Sorbus.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Arbor.Sorbus.0.1.25-build4\lib\net45\Arbor.Sorbus.Core.dll</HintPath>
+      <HintPath>..\packages\Arbor.Sorbus.0.1.26-build7\lib\net45\Arbor.Sorbus.Core.dll</HintPath>
     </Reference>
     <Reference Include="FubuCore">
       <HintPath>..\packages\FubuCore.1.3.0.278\lib\FubuCore.dll</HintPath>
@@ -94,6 +94,9 @@
     <Compile Include="BoolExtensions.cs" />
     <Compile Include="BuildVariables\Arbor.cs" />
     <Compile Include="BuildVariables\ArborX.cs" />
+    <Compile Include="BuildVariables\WellKnownVariables.Patching.cs">
+      <DependentUpon>WellKnownVariables.cs</DependentUpon>
+    </Compile>
     <Compile Include="BuildVariables\WellKnownVariables.Version.cs">
       <DependentUpon>WellKnownVariables.cs</DependentUpon>
     </Compile>

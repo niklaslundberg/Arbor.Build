@@ -13,11 +13,15 @@ namespace Arbor.X.Core.Tools.Versioning
     [Priority(200)]
     public class AssemblyInfoPatcher : ITool
     {
+        string _filePattern;
+
         public Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            var app = new AssemblyPatcherApp(new DelegateLogger(error: logger.WriteError, warning: logger.WriteWarning,
-                info: logger.Write, verbose: logger.WriteVerbose, debug: logger.WriteDebug) {LogLevel = LogLevel.TryParse(logger.LogLevel.Level)});
+            var delegateLogger = new DelegateLogger(error: logger.WriteError, warning: logger.WriteWarning,
+                info: logger.Write, verbose: logger.WriteVerbose, debug: logger.WriteDebug) { LogLevel = LogLevel.TryParse(logger.LogLevel.Level) };
+
+            var app = new AssemblyPatcherApp(delegateLogger);
 
             bool assemblyVersionPatchingEnabled =
                 buildVariables.GetBooleanByKey(WellKnownVariables.AssemblyFilePatchingEnabled, defaultValue: true);
@@ -27,6 +31,11 @@ namespace Arbor.X.Core.Tools.Versioning
                 logger.WriteWarning("Assembly version pathcing is disabled");
                 return Task.FromResult(ExitCode.Success);
             }
+
+            _filePattern = buildVariables.GetVariableValueOrDefault(WellKnownVariables.AssemblyFilePatchingFilePattern,
+                "AssemblyInfo.cs");
+
+            logger.WriteVerbose(string.Format("Using assembly version file pattern '{0}' to lookup files to patch", _filePattern));
 
             string sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
 
@@ -75,8 +84,8 @@ namespace Arbor.X.Core.Tools.Versioning
                     string.Format(
                         "Patching assembly info files with assembly version {0}, assembly file version {1} for directory source root directory '{2}'",
                         assemblyVersion, assemblyFileVersion, sourceRoot));
-
-                app.Patch(new AssemblyVersion(assemblyVersion), new AssemblyFileVersion(assemblyFileVersion), sourceRoot);
+                
+                app.Patch(new AssemblyVersion(assemblyVersion), new AssemblyFileVersion(assemblyFileVersion), sourceRoot, assemblyfilePattern: _filePattern);
             }
             catch (Exception ex)
             {

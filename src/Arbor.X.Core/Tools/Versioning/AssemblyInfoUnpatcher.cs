@@ -25,9 +25,9 @@ namespace Arbor.X.Core.Tools.Versioning
             }
             string sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
 
-            var app =
-                new AssemblyPatcherApp(new DelegateLogger(error: logger.WriteError, warning: logger.WriteWarning,
-                    info: logger.Write, verbose: logger.WriteVerbose, debug: logger.WriteDebug) { LogLevel = LogLevel.TryParse(logger.LogLevel.Level) });
+            var delegateLogger = new DelegateLogger(error: logger.WriteError, warning: logger.WriteWarning,
+                info: logger.Write, verbose: logger.WriteVerbose, debug: logger.WriteDebug) { LogLevel = LogLevel.TryParse(logger.LogLevel.Level) };
+            var app = new AssemblyPatcherApp(delegateLogger);
 
             try
             {
