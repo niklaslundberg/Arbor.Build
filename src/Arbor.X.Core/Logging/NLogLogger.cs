@@ -11,23 +11,24 @@ namespace Arbor.X.Core.Logging
         readonly Logger _logger;
         readonly string _prefix;
 
-        public NLogLogger(string prefix = "")
+        public NLogLogger(LogLevel logLevel, string prefix = "")
         {
+            LogLevel = logLevel;
             var config = new LoggingConfiguration();
             var consoleTarget = new ColoredConsoleTarget();
             config.AddTarget("console", consoleTarget);
             consoleTarget.Layout = "${message}";
 
-            var logLevel = GetLogLevel();
+            var nlogLogLevel = GetLogLevel();
 
-            var rule1 = new LoggingRule("*", logLevel, consoleTarget);
+            var rule1 = new LoggingRule("*", nlogLogLevel, consoleTarget);
             config.LoggingRules.Add(rule1);
 
             LogManager.Configuration = config;
 
             _logger = LogManager.GetCurrentClassLogger();
 
-            _logger.Info(string.Format("Initialized NLog logger with level {0}", logLevel.Name));
+            _logger.Info(string.Format("Initialized NLog logger with level {0}", nlogLogLevel.Name));
 
             _prefix = prefix ?? "";
         }
@@ -44,7 +45,7 @@ namespace Arbor.X.Core.Logging
                 {LogLevel.Debug,NLog.LogLevel.Trace}
             };
 
-            var nlogLevel = mapping.Where(item => item.Key == LogLevel).Select(item => item.Value).SingleOrDefault();
+            var nlogLevel = mapping.Where(item => item.Key.Level == LogLevel.Level).Select(item => item.Value).SingleOrDefault();
 
             if (nlogLevel == null)
             {

@@ -27,7 +27,7 @@ namespace Arbor.X.Bootstrapper
 
         public Bootstrapper(LogLevel logLevel)
         {
-            _logger = new NLogLogger(Prefix) {LogLevel = logLevel};
+            _logger = new NLogLogger(logLevel, Prefix);
             _logger.Write(string.Format("LogLevel is {0}", logLevel));
         }
 
