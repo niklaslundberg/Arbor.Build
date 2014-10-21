@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Arbor.Aesculus.Core;
 using Arbor.X.Core.Logging;
 using ILogger = Arbor.X.Core.Logging.ILogger;
 
@@ -38,12 +37,12 @@ namespace Arbor.X.Core.Tools.Testing
                 return new ReadOnlyCollection<string>(new List<string>());
             }
 
-            var blacklisted = new List<string> {".git", ".hg", "obj", "packages"};
+            var blacklisted = new List<string> {".git", ".hg", "obj", "packages", "_ReSharper", "external"};
 
             bool isBlacklisted =
                 blacklisted.Any(
                     blackListedItem =>
-                        currentDirectory.Name.Equals(blackListedItem, StringComparison.InvariantCultureIgnoreCase));
+                        currentDirectory.Name.StartsWith(blackListedItem, StringComparison.InvariantCultureIgnoreCase));
             
             if (isBlacklisted)
             {
@@ -53,7 +52,11 @@ namespace Arbor.X.Core.Tools.Testing
 
             var dllFiles = currentDirectory.EnumerateFiles("*.dll");
 
+            var ignoredNames = new List<string> {"ReSharper", "dotCover"};
+
             var assemblies = dllFiles
+                .Where(file => !file.Name.StartsWith("System", StringComparison.InvariantCultureIgnoreCase))
+                .Where(file => !ignoredNames.Any(name => file.Name.IndexOf(name, StringComparison.InvariantCultureIgnoreCase) >= 0))
                 .Select(GetAssembly)
                 .Where(assembly => assembly != null)
                 .Distinct()
@@ -121,8 +124,12 @@ namespace Arbor.X.Core.Tools.Testing
             try
             {
                 var toInvestigate = typeToInvestigate.FullName;
-                _logger.WriteDebug(string.Format("Testing type '{0}'", toInvestigate));
                 var any = IsTypeUnitTestFixture(typeToInvestigate);
+
+                if (any)
+                {
+                    _logger.WriteDebug(string.Format("Testing type '{0}': is unit test fixture", toInvestigate));
+                }
 
                 return any;
             }
@@ -176,23 +183,30 @@ namespace Arbor.X.Core.Tools.Testing
                 .Any(
                     field =>
                     {
+                        string fullName = field.FieldType.FullName;
+
                         var any = _typesToFind.Any(
                             type =>
-                                field.FieldType.FullName != null && type.FullName == field.FieldType.FullName);
+                                !string.IsNullOrWhiteSpace(fullName) && type.FullName == fullName);
 
-                        if (field.FieldType.IsGenericType)
+                        if (field.FieldType.IsGenericType && !string.IsNullOrWhiteSpace(fullName))
                         {
                             const string genericPartSeparator = "`";
-                            var fieldIndex = field.FieldType.FullName.IndexOf(genericPartSeparator,
+                            var fieldIndex = fullName.IndexOf(genericPartSeparator,
                                 StringComparison.InvariantCultureIgnoreCase);
 
-                            var fieldName = field.FieldType.FullName.Substring(0, fieldIndex);
+                            var fieldName = fullName.Substring(0, fieldIndex);
 
                             return _typesToFind.Any(
                                 type =>
                                 {
                                     var typePosition = type.FullName.IndexOf(genericPartSeparator,
                                         StringComparison.InvariantCultureIgnoreCase);
+
+                                    if (typePosition < 0)
+                                    {
+                                        return false;
+                                    }
 
                                     var typeName = type.FullName.Substring(0, typePosition);
 
@@ -234,8 +248,10 @@ namespace Arbor.X.Core.Tools.Testing
 
                 return assembly;
             }
-            catch
+// ReSharper disable once UnusedVariable
+            catch (ReflectionTypeLoadException ex)
             {
+                _logger.WriteDebug(string.Format("Could not load assembly '{0}'. Ignoring.", dllFile.FullName));
                 return null;
             }
         }
