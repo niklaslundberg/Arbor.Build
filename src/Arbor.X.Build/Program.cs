@@ -13,7 +13,7 @@ namespace Arbor.X.Build
         {
             var logLevel = LogLevel.TryParse(Environment.GetEnvironmentVariable(WellKnownVariables.LogLevel));
             _app = new BuildApplication(new NLogLogger(logLevel));
-            ExitCode exitCode = _app.RunAsync().Result;
+            ExitCode exitCode = _app.RunAsync(args).Result;
 
             return exitCode.Result;
         }

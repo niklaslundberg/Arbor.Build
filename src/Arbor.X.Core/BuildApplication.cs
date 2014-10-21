@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Aesculus.Core;
 using Arbor.X.Core.BuildVariables;
+using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;
 using Arbor.X.Core.Tools;
@@ -29,17 +30,52 @@ namespace Arbor.X.Core
 {
     public class BuildApplication
     {
-        readonly ILogger _logger;
+        ILogger _logger;
         CancellationToken _cancellationToken;
 
         public BuildApplication(ILogger logger)
         {
             _logger = logger;
         }
-
-        public async Task<ExitCode> RunAsync()
+        async Task StartWithDebuggerAsync(string[] args)
         {
-            _logger.Write("Using logger '" + _logger.GetType() + "' with log level " + _logger.LogLevel);
+            var baseDir = VcsPathHelper.FindVcsRootPath(AppDomain.CurrentDomain.BaseDirectory);
+
+            var tempDirectory = new DirectoryInfo(Path.Combine(Path.GetTempPath(), "Arbor.X_Build_Debug", Guid.NewGuid().ToString()));
+
+            tempDirectory.EnsureExists();
+
+            WriteDebug(string.Format("Using temp directory '{0}'", tempDirectory));
+
+            await DirectoryCopy.CopyAsync(baseDir, tempDirectory.FullName, pathLookupSpecificationOption: new PathLookupSpecification(ignoredDirectorySegmentParts: new[] { "_ReSharper" }));
+
+            Environment.SetEnvironmentVariable(WellKnownVariables.BranchNameVersionOverrideEnabled, "true");
+            Environment.SetEnvironmentVariable(WellKnownVariables.VariableOverrideEnabled, "true");
+            Environment.SetEnvironmentVariable(WellKnownVariables.SourceRoot, tempDirectory.FullName);
+            string branchName = "refs/heads/develop-23.45.67";
+            Environment.SetEnvironmentVariable(WellKnownVariables.BranchName, branchName);
+
+            _logger.LogLevel = LogLevel.Debug;
+            
+            WriteDebug("Starting with debugger attached");
+        }
+
+        void WriteDebug(string message)
+        {
+            Debug.WriteLine(message);
+            _logger.WriteDebug(message);
+        }
+
+        public async Task<ExitCode> RunAsync(string[] args)
+        {
+            if (Debugger.IsAttached)
+            {
+                await StartWithDebuggerAsync(args);
+            }
+
+            _logger = new DebugLogger(_logger);
+
+            _logger.Write(string.Format("Using logger '{0}' with log level {1}", _logger.GetType(), _logger.LogLevel));
             _cancellationToken = CancellationToken.None;
             ExitCode exitCode;
             var stopwatch = new Stopwatch();
@@ -79,6 +115,11 @@ namespace Arbor.X.Core
             {
                 _logger.Write(string.Format("Delaying build application exit with {0} milliseconds specified in '{1}'", exitDelayInMilliseconds, WellKnownVariables.BuildApplicationExitDelayInMilliseconds));
                 await Task.Delay(TimeSpan.FromMilliseconds(exitDelayInMilliseconds), _cancellationToken);
+            }
+
+            if (Debugger.IsAttached)
+            {
+                WriteDebug(string.Format("Exiting build application with exit code {0}", exitCode));
             }
 
             return exitCode;

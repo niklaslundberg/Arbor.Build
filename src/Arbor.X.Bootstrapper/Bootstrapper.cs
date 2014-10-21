@@ -12,6 +12,7 @@ using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;
+using Arbor.X.Core.Tools;
 using Arbor.X.Core.Tools.Git;
 using Arbor.X.Core.Tools.Kudu;
 
@@ -33,9 +34,46 @@ namespace Arbor.X.Bootstrapper
 
         public async Task<ExitCode> StartAsync(string[] args)
         {
-            BootstrapStartOptions startOptions = BootstrapStartOptions.Parse(args);
+            BootstrapStartOptions startOptions;
+            if (Debugger.IsAttached)
+            {
+                startOptions = await StartWithDebuggerAsync(args);
+            }
+            else
+            {
+                startOptions = BootstrapStartOptions.Parse(args);
+            }
 
             return await StartAsync(startOptions);
+        }
+
+        async Task<BootstrapStartOptions> StartWithDebuggerAsync(string[] args)
+        {
+            var baseDir = VcsPathHelper.FindVcsRootPath(AppDomain.CurrentDomain.BaseDirectory);
+
+            var tempDirectory = new DirectoryInfo(Path.Combine(Path.GetTempPath(), "Arbor.X_Boot_Debug", Guid.NewGuid().ToString()));
+
+            tempDirectory.EnsureExists();
+
+            WriteDebug("Using temp directory '" + tempDirectory + "'");
+
+            await DirectoryCopy.CopyAsync(baseDir, tempDirectory.FullName);
+
+            Environment.SetEnvironmentVariable(WellKnownVariables.BranchNameVersionOverrideEnabled, "true");
+            Environment.SetEnvironmentVariable(WellKnownVariables.VariableOverrideEnabled, "true");
+
+            var bootstrapStartOptions = new BootstrapStartOptions(baseDir = tempDirectory.FullName, prereleaseEnabled: true,
+                branchName: "refs/heads/develop/12.34.56");
+
+            WriteDebug("Starting with debugger attached");
+
+            return bootstrapStartOptions;
+        }
+
+        void WriteDebug(string message)
+        {
+            Debug.WriteLine(message);
+            _logger.WriteDebug(message);
         }
 
         public async Task<ExitCode> StartAsync(BootstrapStartOptions startOptions)
