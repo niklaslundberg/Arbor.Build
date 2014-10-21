@@ -16,6 +16,9 @@ namespace Arbor.X.Core.Tools.NuGet
     {
         CancellationToken _cancellationToken;
         bool _keepBinaryAndSourcePackagesTogetherEnabled;
+        bool _branchNameEnabled;
+        string _packageIdOverride;
+        string _nuGetPackageVersionOverride;
 
         public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {
@@ -32,7 +35,7 @@ namespace Arbor.X.Core.Tools.NuGet
             var artifacts = buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue();
             var version = buildVariables.Require(WellKnownVariables.Version).ThrowIfEmptyValue();
             var releaseBuild = buildVariables.Require(WellKnownVariables.ReleaseBuild).ThrowIfEmptyValue();
-            var branchName = buildVariables.Require(WellKnownVariables.BranchName).ThrowIfEmptyValue();
+            var branchName = buildVariables.Require(WellKnownVariables.BranchLogicalName).ThrowIfEmptyValue();
             var configuration = buildVariables.Require(WellKnownVariables.Configuration).ThrowIfEmptyValue().Value;
             var tempDirectory = buildVariables.Require(WellKnownVariables.TempDirectory).ThrowIfEmptyValue();
             var nuGetExePath =
@@ -42,6 +45,10 @@ namespace Arbor.X.Core.Tools.NuGet
             var enableBuildNumber = buildVariables.GetBooleanByKey(WellKnownVariables.BuildNumberInNuGetPackageArtifactsEnabled, true);
 
             _keepBinaryAndSourcePackagesTogetherEnabled = buildVariables.GetBooleanByKey(WellKnownVariables.NuGetKeepBinaryAndSymbolPackagesTogetherEnabled, true);
+            _branchNameEnabled = buildVariables.GetBooleanByKey(WellKnownVariables.NuGetPackageIdBranchNameEnabled,false);
+            _packageIdOverride = buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageIdOverride, null);
+            _nuGetPackageVersionOverride =
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageVersionOverride, null);
 
             var buildPackagesOnAnyBranch =
                 buildVariables.GetBooleanByKey(WellKnownVariables.NuGetCreatePackagesOnAnyBranchEnabled, false);
@@ -140,11 +147,20 @@ namespace Arbor.X.Core.Tools.NuGet
             NuSpec nuSpec = NuSpec.Parse(nuspecFilePath);
 
             var properties = GetProperties(configuration);
-            
-            string packageId = NuGetPackageIdHelper.CreateNugetPackageId(nuSpec.PackageId, isReleaseBuild,
-                                                                         branchName.Value);
 
-            string nuGetPackageVersion = NuGetVersionHelper.GetVersion(version.Value, isReleaseBuild, suffix, enableBuildNumber);
+            if (!string.IsNullOrWhiteSpace(_packageIdOverride))
+            {
+                logger.Write(string.Format("Using NuGet package id override '{0}'", _packageIdOverride));
+            }
+
+            string packageId = _packageIdOverride ?? NuGetPackageIdHelper.CreateNugetPackageId(nuSpec.PackageId, isReleaseBuild,
+                                                                         branchName.Value, _branchNameEnabled);
+            if (!string.IsNullOrWhiteSpace(_nuGetPackageVersionOverride))
+            {
+                logger.Write(string.Format("Using NuGet package version override '{0}'", _nuGetPackageVersionOverride));
+            }
+
+            string nuGetPackageVersion = _nuGetPackageVersionOverride ?? NuGetVersionHelper.GetVersion(version.Value, isReleaseBuild, suffix, enableBuildNumber);
             
             var nuSpecInfo = new FileInfo(nuspecFilePath);
 // ReSharper disable AssignNullToNotNullAttribute

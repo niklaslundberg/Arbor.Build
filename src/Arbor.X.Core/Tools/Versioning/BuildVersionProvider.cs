@@ -28,19 +28,19 @@ namespace Arbor.X.Core.Tools.Versioning
             IReadOnlyList<KeyValuePair<string, string>> environmentVariables)
         {
             var major =
-                environmentVariables.Where(item => item.Key == "Version.Major")
+                environmentVariables.Where(item => item.Key == WellKnownVariables.VersionMajor)
                     .Select(item => (int?) int.Parse(item.Value))
                     .SingleOrDefault() ?? 0;
             var minor =
-                environmentVariables.Where(item => item.Key == "Version.Minor")
+                environmentVariables.Where(item => item.Key == WellKnownVariables.VersionMinor)
                     .Select(item => (int?) int.Parse(item.Value))
                     .SingleOrDefault() ?? 1;
             var patch =
-                environmentVariables.Where(item => item.Key == "Version.Patch")
+                environmentVariables.Where(item => item.Key == WellKnownVariables.VersionPatch)
                     .Select(item => (int?) int.Parse(item.Value))
                     .SingleOrDefault() ?? 0;
             var build =
-                environmentVariables.Where(item => item.Key == "Version.Build")
+                environmentVariables.Where(item => item.Key == WellKnownVariables.VersionBuild)
                     .Select(item => (int?) int.Parse(item.Value))
                     .SingleOrDefault() ?? 0;
 
@@ -54,10 +54,10 @@ namespace Arbor.X.Core.Tools.Versioning
             yield return
                 new KeyValuePair<string, string>(WellKnownVariables.NetAssemblyFileVersion,
                     netAssemblyFileVersion.ToString(fieldCount: 4));
-            yield return new KeyValuePair<string, string>("Version.Major", major.ToString(CultureInfo.InvariantCulture));
-            yield return new KeyValuePair<string, string>("Version.Minor", minor.ToString(CultureInfo.InvariantCulture));
-            yield return new KeyValuePair<string, string>("Version.Patch", patch.ToString(CultureInfo.InvariantCulture));
-            yield return new KeyValuePair<string, string>("Version.Build", build.ToString(CultureInfo.InvariantCulture));
+            yield return new KeyValuePair<string, string>(WellKnownVariables.VersionMajor, major.ToString(CultureInfo.InvariantCulture));
+            yield return new KeyValuePair<string, string>(WellKnownVariables.VersionMinor, minor.ToString(CultureInfo.InvariantCulture));
+            yield return new KeyValuePair<string, string>(WellKnownVariables.VersionPatch, patch.ToString(CultureInfo.InvariantCulture));
+            yield return new KeyValuePair<string, string>(WellKnownVariables.VersionBuild, build.ToString(CultureInfo.InvariantCulture));
             yield return new KeyValuePair<string, string>("Version", fullVersionValue);
             yield return new KeyValuePair<string, string>("Arbor.X.Build.Version", fullVersionValue);
         }

@@ -21,9 +21,6 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescription("Full build version number")]
         public static readonly string Version = Arbor.X.Build + ".Version";
         
-        [VariableDescription("External tools path")]
-        public static readonly string DirectoryCloneEnabled = "Arbor.X.Vcs.DirectoryCloneEnabled";
-
         [VariableDescription("Max number of CPUs for MSBuild to use")]
         public static readonly string CpuLimit = "Arbor.X.CpuLimit";
 
@@ -41,9 +38,6 @@ namespace Arbor.X.Core.BuildVariables
 
         [VariableDescription("MSBuild configuration (eg. Debug/Release)")]
         public static readonly string Configuration = Arbor.X.Build + ".Configuration";
-
-        [VariableDescription("Current branch name for the version control system")]
-        public static readonly string BranchName = "Arbor.X.Vcs.Branch.Name";
 
         [VariableDescription("Temporary directory path")]
         public static readonly string TempDirectory = Arbor.X.Build + ".TempDirectory";

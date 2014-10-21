@@ -254,6 +254,7 @@ namespace Arbor.X.Core
 
             var providers = new List<IVariableProvider>
                             {
+                                new GitVariableProvider(),
                                 new TeamCityVariableProvider(),
                                 new SourcePathVariableProvider(),
                                 new ArtifactsVariableProvider(),

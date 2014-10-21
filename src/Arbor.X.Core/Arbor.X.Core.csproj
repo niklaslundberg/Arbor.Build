@@ -67,6 +67,9 @@
     <Reference Include="nunit.framework">
       <HintPath>..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
     </Reference>
+    <Reference Include="Semver">
+      <HintPath>..\packages\semver.1.1.2\lib\net451\Semver.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Configuration" />
@@ -91,6 +94,9 @@
     <Compile Include="BoolExtensions.cs" />
     <Compile Include="BuildVariables\Arbor.cs" />
     <Compile Include="BuildVariables\ArborX.cs" />
+    <Compile Include="BuildVariables\WellKnownVariables.Version.cs">
+      <DependentUpon>WellKnownVariables.cs</DependentUpon>
+    </Compile>
     <Compile Include="BuildVariables\WellKnownVariables.NuGet.cs">
       <DependentUpon>WellKnownVariables.cs</DependentUpon>
     </Compile>
@@ -103,6 +109,9 @@
     <Compile Include="BuildVariables\EnvironmentVariableHelper.cs" />
     <Compile Include="BuildVariables\VariableDescription.cs" />
     <Compile Include="BuildVariables\VariableDescriptionAttribute.cs" />
+    <Compile Include="BuildVariables\WellKnownVariables.Vcs.cs">
+      <DependentUpon>WellKnownVariables.cs</DependentUpon>
+    </Compile>
     <Compile Include="DisplayExtensions.cs" />
     <Compile Include="ExitCode.cs" />
     <Compile Include="IntExtensions.cs" />
@@ -115,6 +124,7 @@
     <Compile Include="ToolResultType.cs" />
     <Compile Include="Tools\DirectoryDelete.cs" />
     <Compile Include="Tools\Git\GitHelper.cs" />
+    <Compile Include="Tools\Git\GitVariableProvider.cs" />
     <Compile Include="Tools\ILMerge\ILMergeData.cs" />
     <Compile Include="Tools\ILMerge\ILMergeVariableProvider.cs" />
     <Compile Include="Tools\Artifacts\ArtifactsVariableProvider.cs" />

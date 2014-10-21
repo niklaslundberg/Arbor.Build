@@ -35,6 +35,16 @@ namespace Arbor.X.Core.Tools.Git
             return removedFeatureInName;
         }
 
+        public string LogicalName
+        {
+            get { return BranchHelper.GetLogicalName(Name).Name; }
+        }
+
+        public string FullName
+        {
+            get { return Name; }
+        }
+
         public override string ToString()
         {
             return Name;

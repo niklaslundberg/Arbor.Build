@@ -7,9 +7,18 @@
 
         [VariableDescription("NuGet package artifacts suffix")]
         public static readonly string NuGetPackageArtifactsSuffix = Arbor.X + ".NuGet.Package.Artifacts.Suffix";
+        
+        [VariableDescription("NuGet package id override")]
+        public static readonly string NuGetPackageIdOverride = Arbor.X + ".NuGet.Package.Artifacts.PackageId.Override";
+
+        [VariableDescription("NuGet package version override")]
+        public static readonly string NuGetPackageVersionOverride = Arbor.X + ".NuGet.Package.Artifacts.Version.Override";
 
         [VariableDescription("Flag to indicate if the build number is included in the NuGet package artifacts")]
         public static readonly string BuildNumberInNuGetPackageArtifactsEnabled = Arbor.X + ".NuGet.Package.Artifacts.BuildNumber.Enabled";
+
+        [VariableDescription("Flag to indicate if the NuGet package id has branch name", "false")]
+        public static readonly string NuGetPackageIdBranchNameEnabled = Arbor.X + ".NuGet.Package.Artifacts.PackageId.BranchNameEnabled";
 
         [VariableDescription("NuGet executable path (eg. C:\\nuget.exe)")]
         public static readonly string ExternalTools_NuGet_ExePath = "Arbor.X.Tools.External.NuGet.ExePath";
