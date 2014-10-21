@@ -8,6 +8,7 @@ namespace Arbor.X.Core.Logging
 
         public DebugLogger(ILogger logger)
         {
+            LogLevel = logger.LogLevel;
             _logger = logger;
         }
 
