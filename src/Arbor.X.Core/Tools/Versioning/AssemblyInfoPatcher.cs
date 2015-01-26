@@ -28,7 +28,7 @@ namespace Arbor.X.Core.Tools.Versioning
 
             if (!assemblyVersionPatchingEnabled)
             {
-                logger.WriteWarning("Assembly version pathcing is disabled");
+                logger.WriteWarning("Assembly version patching is disabled");
                 return Task.FromResult(ExitCode.Success);
             }
 
