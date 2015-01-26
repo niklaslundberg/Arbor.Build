@@ -126,6 +126,7 @@
     <Compile Include="ToolExtensions.cs" />
     <Compile Include="ToolResult.cs" />
     <Compile Include="ToolResultType.cs" />
+    <Compile Include="Tools\Artifacts\ArtifactCleanup.cs" />
     <Compile Include="Tools\DirectoryDelete.cs" />
     <Compile Include="Tools\Git\GitHelper.cs" />
     <Compile Include="Tools\Git\GitVariableProvider.cs" />

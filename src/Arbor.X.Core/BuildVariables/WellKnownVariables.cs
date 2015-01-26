@@ -17,6 +17,9 @@ namespace Arbor.X.Core.BuildVariables
 
         [VariableDescription("Build arftifacts path")]
         public static readonly string Artifacts = "Arbor.X.Artifacts";
+        
+        [VariableDescription("Flag to indicate if the build arftifacts should be cleaned up before the build starts")]
+        public static readonly string CleanupArtifactsBeforeBuildEnabled = "Arbor.X.Artifacts.CleanupBeforeBuildEnabled";
 
         [VariableDescription("Full build version number")]
         public static readonly string Version = Arbor.X.Build + ".Version";
