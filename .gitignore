@@ -5,6 +5,8 @@ src/*.ide
 build
 build/nuget.exe
 AppPackages
+.HistoryData
+LocalData
 
 #################
 ## Eclipse
