@@ -41,6 +41,21 @@ namespace Arbor.X.Core.IO
 
                     if (directoryInfo.Exists)
                     {
+                        foreach (var file in directoryInfo.EnumerateFiles())
+                        {
+                            file.Attributes = FileAttributes.Normal;
+                            file.Delete();
+                        }
+
+                        foreach (var subDirectory in directoryInfo.EnumerateDirectories())
+                        {
+                            subDirectory.DeleteIfExists(recursive);
+                        }
+                    }
+
+                    directoryInfo.Refresh();
+                    if (directoryInfo.Exists)
+                    {
                         directoryInfo.Delete(recursive);
                     }
                 }
