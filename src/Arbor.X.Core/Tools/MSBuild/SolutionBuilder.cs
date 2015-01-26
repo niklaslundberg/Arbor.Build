@@ -26,8 +26,8 @@ namespace Arbor.X.Core.Tools.MSBuild
                                                                      FileAttributes.Archive
                                                                  };
 
-        readonly List<string> _blackListedByName = new List<string> {"bin", "obj", ".git", "packages", "TestResults"};
-        readonly List<string> _blackListedByStartName = new List<string> {"_", "."};
+        readonly PathLookupSpecification _pathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification;
+            
         readonly List<string> _buildConfigurations = new List<string>();
 
         readonly List<string> _knownPlatforms = new List<string> {"x86", "Any CPU"};
@@ -502,16 +502,12 @@ namespace Arbor.X.Core.Tools.MSBuild
 
         bool IsBlacklisted(DirectoryInfo directoryInfo)
         {
-            bool isBlacklistedByFullName = _blackListedByName.Any(
-                blackListed => directoryInfo.Name.Equals(blackListed, StringComparison.InvariantCultureIgnoreCase));
-
-            bool blackListedByStartName = _blackListedByStartName.Any(
-                blackListed => directoryInfo.Name.StartsWith(blackListed, StringComparison.InvariantCultureIgnoreCase));
+            bool isBlacklistedByName = _pathLookupSpecification.IsBlackListed(directoryInfo.FullName);
 
             bool isBlackListedByAttributes = _blackListedByAttributes.Any(
                 blackListed => directoryInfo.Attributes.HasFlag(blackListed));
 
-            return isBlacklistedByFullName || blackListedByStartName || isBlackListedByAttributes;
+            return isBlacklistedByName || isBlackListedByAttributes;
         }
     }
 }

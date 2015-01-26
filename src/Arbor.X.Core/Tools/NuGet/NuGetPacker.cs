@@ -4,10 +4,12 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Arbor.Sorbus.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
-using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;
+using ILogger = Arbor.X.Core.Logging.ILogger;
+using LogLevel = Arbor.X.Core.Logging.LogLevel;
 
 namespace Arbor.X.Core.Tools.NuGet
 {
@@ -86,9 +88,9 @@ namespace Arbor.X.Core.Tools.NuGet
 
             logger.WriteVerbose(string.Format("Scanning directory '{0}' for .nuspec files", vcsRootDir));
 
-            var packageDirectory = PackageDirectory();
+            string packageDirectory = PackageDirectory();
 
-            var packageSpecifications = GetPackageSpecifications(logger, vcsRootDir, packageDirectory);
+            IEnumerable<string> packageSpecifications = GetPackageSpecifications(logger, vcsRootDir, packageDirectory);
 
             var result = await ProcessPackagesAsync(packageSpecifications, nuGetExePath, packagesDirectory, version, isReleaseBuild, configuration, branchName, logger, tempDirectory, suffix, enableBuildNumber);
 
@@ -103,9 +105,16 @@ namespace Arbor.X.Core.Tools.NuGet
                                                      file.IndexOf(packageDirectory, StringComparison.Ordinal) < 0)
                                                  .ToList();
 
-            logger.WriteVerbose(string.Format("Found nuspec files [{0}]: {1}{2}", packageSpecifications.Count,
-                                       Environment.NewLine, string.Join(Environment.NewLine, packageSpecifications)));
-            return packageSpecifications;
+            var pathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification;
+
+            IReadOnlyCollection<string> filtered =
+                packageSpecifications
+                .Where(packagePath => !pathLookupSpecification.IsFileBlackListed(packagePath))
+                .ToReadOnly();
+
+            logger.WriteVerbose(string.Format("Found nuspec files [{0}]: {1}{2}", filtered.Count,
+                                       Environment.NewLine, string.Join(Environment.NewLine, filtered)));
+            return filtered;
         }
 
         static string PackageDirectory()
@@ -235,18 +244,29 @@ namespace Arbor.X.Core.Tools.NuGet
                     foreach (var binaryPackage in binaryPackages)
                     {
                         var sourceFile = new FileInfo(binaryPackage);
-                        var targetBinaryFile = Path.Combine(binaryPackagesDirectory.FullName, sourceFile.Name);
+                        var targetBinaryFile = new FileInfo(Path.Combine(binaryPackagesDirectory.FullName, sourceFile.Name));
+
+                        if (targetBinaryFile.Exists)
+                        {
+                            targetBinaryFile.Delete();
+                        }
 
                         logger.WriteDebug(string.Format("Copying NuGet binary package '{0}' to '{1}'", binaryPackage, targetBinaryFile));
-                        sourceFile.MoveTo(targetBinaryFile);
+                        sourceFile.MoveTo(targetBinaryFile.FullName);
                     }
 
                     foreach (var sourcePackage in nugetSymbolPackages)
                     {
                         var sourceFile = new FileInfo(sourcePackage);
-                        var targetSymbolFile = Path.Combine(symbolPackagesDirectory.FullName, sourceFile.Name);
+                        var targetSymbolFile = new FileInfo(Path.Combine(symbolPackagesDirectory.FullName, sourceFile.Name));
+
+                        if (targetSymbolFile.Exists)
+                        {
+                            targetSymbolFile.Delete();
+                        }
+
                         logger.WriteDebug(string.Format("Copying NuGet symbol package '{0}' to '{1}'", sourcePackage, targetSymbolFile));
-                        sourceFile.MoveTo(targetSymbolFile);
+                        sourceFile.MoveTo(targetSymbolFile.FullName);
                     }
                 }
 
