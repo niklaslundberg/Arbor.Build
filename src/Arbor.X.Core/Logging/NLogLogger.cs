@@ -57,21 +57,38 @@ namespace Arbor.X.Core.Logging
 
         public void WriteError(string message, string prefix = null)
         {
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                return;
+            }
+
             _logger.Error(GetTotalMessage(GetPrefix(prefix), message));
         }
 
         public void Write(string message, string prefix = null)
         {
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                return;
+            }
             _logger.Info(GetTotalMessage(GetPrefix(prefix), message));
         }
 
         public void WriteWarning(string message, string prefix = null)
         {
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                return;
+            }
             _logger.Warn(GetTotalMessage(GetPrefix(prefix), message));
         }
 
         public void WriteVerbose(string message, string prefix = null)
         {
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                return;
+            }
             _logger.Trace(GetTotalMessage(GetPrefix(prefix), message));
         }
 
@@ -79,6 +96,10 @@ namespace Arbor.X.Core.Logging
 
         public void WriteDebug(string message, string prefix = null)
         {
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                return;
+            }
             _logger.Debug(GetTotalMessage(GetPrefix(prefix), message));
         }
 

@@ -21,6 +21,10 @@ namespace Arbor.X.Core.Logging
 
         public void WriteDebug(string message, string prefix = null)
         {
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                return;
+            }
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.WriteLine(GetTotalMessage(GetPrefix(prefix), message));
             Console.ResetColor();
@@ -28,6 +32,10 @@ namespace Arbor.X.Core.Logging
 
         public void WriteError(string message, string prefix = null)
         {
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                return;
+            }
             if (LogLevel.Error.Level <= _maxLogLevel.Level)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
@@ -38,6 +46,10 @@ namespace Arbor.X.Core.Logging
 
         public void Write(string message, string prefix = null)
         {
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                return;
+            }
             if (LogLevel.Information.Level <= _maxLogLevel.Level)
             {
                 Console.ResetColor();
@@ -47,6 +59,10 @@ namespace Arbor.X.Core.Logging
 
         public void WriteWarning(string message, string prefix = null)
         {
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                return;
+            }
             if (LogLevel.Warning.Level <= _maxLogLevel.Level)
             {
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
@@ -57,6 +73,10 @@ namespace Arbor.X.Core.Logging
 
         public void WriteVerbose(string message, string prefix = null)
         {
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                return;
+            }
             if (LogLevel.Verbose.Level <= _maxLogLevel.Level)
             {
                 Console.ForegroundColor = ConsoleColor.Gray;
@@ -75,16 +95,6 @@ namespace Arbor.X.Core.Logging
         string GetTotalMessage(string prefix, string message)
         {
             return (prefix ?? "").Trim(' ') + " " + (message ?? "").Trim(' ');
-        }
-
-        public void Write(string message, ConsoleColor color, string prefix = null)
-        {
-            if (LogLevel.Information.Level <= _maxLogLevel.Level)
-            {
-                Console.ForegroundColor = color;
-                Console.WriteLine(GetTotalMessage(GetPrefix(prefix), message));
-                Console.ResetColor();
-            }
         }
     }
 }
