@@ -48,6 +48,12 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescription("Symbol server API key for NuGet source package upload")]
         public static readonly string ExternalTools_SymbolServer_ApiKey = "Arbor.X.Tools.External.SymbolServer.ApiKey";
 
+        [VariableDescription("Flag to indicate that Symbol server package upload is enabled even if not running on a build server")]
+        public static readonly string ExternalTools_SymbolServer_ForceUploadEnabled = "Arbor.X.Tools.External.SymbolServer.ForceUploadEnabled";
+
+        [VariableDescription("Flag to indicate that Symbol server package upload is enabled")]
+        public static readonly string ExternalTools_SymbolServer_Enabled = "Arbor.X.Tools.External.SymbolServer.Enabled";
+
         [VariableDescription("Flag to indicate if the build is running on a build agent")]
         public static readonly string IsRunningOnBuildAgent = Arbor.X.Build + ".IsRunningOnBuildAgent";
 
