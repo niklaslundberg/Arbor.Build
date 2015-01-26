@@ -219,6 +219,15 @@ namespace Arbor.X.Bootstrapper
 
             var outputDirectory = new DirectoryInfo(outputDirectoryPath);
 
+            bool reinstall = !outputDirectory.Exists ||
+                             Environment.GetEnvironmentVariable(WellKnownVariables.NuGetReinstallArborPackageEnabled)
+                                 .TryParseBool(defaultValue: true);
+
+            if (!reinstall)
+            {
+                return outputDirectoryPath;
+            }
+
             outputDirectory.DeleteIfExists();
             outputDirectory.EnsureExists();
 

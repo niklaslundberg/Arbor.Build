@@ -28,7 +28,12 @@
         
         [VariableDescription("Flag to indicate if NuGet packages should be created regardless of the branch convention", "false")]
         public static readonly string NuGetCreatePackagesOnAnyBranchEnabled = "Arbor.X.NuGet.Package.Artifacts.CreateOnAnyBranchEnabled";
+
         [VariableDescription("Flag to indicate if NuGet should try to update itself during start", "false")]
         public static readonly string NuGetVersionUpdatedEnabled = "Arbor.X.NuGet.VersionUpdateEnabled";
+
+        [VariableDescription("Flag to indicate if NuGet packages should be created regardless of the branch convention", "false")]
+        public static readonly string NuGetReinstallArborPackageEnabled = "Arbor.X.NuGet.ReinstallArborPackageEnabled";
+
     }
 }
