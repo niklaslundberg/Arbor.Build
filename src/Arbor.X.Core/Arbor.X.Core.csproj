@@ -147,6 +147,7 @@
     <Compile Include="Tools\MSBuild\MSBuildVerbositoyLevel.cs" />
     <Compile Include="Tools\PathExtensions.cs" />
     <Compile Include="Tools\PathLookupSpecification.cs" />
+    <Compile Include="Tools\NuGet\NuGetPackageUploader.cs" />
     <Compile Include="Tools\Symbols\SymbolsVariableProvider.cs" />
     <Compile Include="Tools\TeamCity\TeamCityVariableProvider.cs" />
     <Compile Include="Tools\Testing\MSpecTestRunner.cs" />
