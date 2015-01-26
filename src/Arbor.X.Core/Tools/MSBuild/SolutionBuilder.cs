@@ -118,7 +118,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             }
             else
             {
-                bool buildRelease = BuildPlatformOrConfiguration(variables, WellKnownVariables.IgnoreRelease);
+                bool buildRelease = BuildPlatformOrConfiguration(variables, WellKnownVariables.ReleaseBuildEnabled);
 
                 if (buildRelease)
                 {
@@ -126,11 +126,11 @@ namespace Arbor.X.Core.Tools.MSBuild
                 }
                 else
                 {
-                    logger.Write(string.Format("Flag {0} is set, ignoring release builds",
-                        WellKnownVariables.IgnoreRelease));
+                    logger.Write(string.Format("Flag {0} is set to false, ignoring release builds",
+                        WellKnownVariables.ReleaseBuildEnabled));
                 }
 
-                bool buildDebug = BuildPlatformOrConfiguration(variables, WellKnownVariables.IgnoreDebug);
+                bool buildDebug = BuildPlatformOrConfiguration(variables, WellKnownVariables.DebugBuildEnabled);
 
                 if (buildDebug)
                 {
@@ -138,7 +138,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                 }
                 else
                 {
-                    logger.Write(string.Format("Flag {0} is set, ignoring debug builds", WellKnownVariables.IgnoreDebug));
+                    logger.Write(string.Format("Flag {0} is set to false, ignoring debug builds", WellKnownVariables.DebugBuildEnabled));
                 }
             }
 
@@ -213,10 +213,10 @@ namespace Arbor.X.Core.Tools.MSBuild
 
         bool BuildPlatformOrConfiguration(IReadOnlyCollection<IVariable> variables, string key)
         {
-            bool ignoreVariable =
+            bool enabled =
                 variables.GetBooleanByKey(key, defaultValue: true);
 
-            return ignoreVariable;
+            return enabled;
         }
 
         async Task<List<string>> GetSolutionPlatformsAsync(FileInfo solutionFile)

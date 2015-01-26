@@ -90,11 +90,11 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescription("Flag to indicate if build platform AnyCPU is enabled")]
         public const string AnyCpuEnabled = "Arbor.X.Build.Platform.AnyCPU.Enabled";
 
-        [VariableDescription("Flag to indicate if build configuration Release is disabled", "false")]
-        public static readonly string IgnoreRelease = Arbor.X.Build + ".Configuration.Release.Disabled";
+        [VariableDescription("Flag to indicate if build configuration Release is enabled", "true")]
+        public static readonly string ReleaseBuildEnabled = Arbor.X.Build + ".Configuration.Release.Enabled";
 
-        [VariableDescription("Flag to indicate if build platform configuration Debug is disabled", "false")]
-        public static readonly string IgnoreDebug = Arbor.X.Build + ".Configuration.Debug.Disabled";
+        [VariableDescription("Flag to indicate if build platform configuration Debug is enabled", "true")]
+        public static readonly string DebugBuildEnabled = Arbor.X.Build + ".Configuration.Debug.Enabled";
 
         [VariableDescription("Flag to indicate if test runner error results are ignored", "false")]
         public static readonly string IgnoreTestFailures = Arbor.X.Build + ".Tests.IgnoreTestFailures";
