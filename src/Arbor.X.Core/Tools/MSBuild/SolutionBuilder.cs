@@ -39,6 +39,7 @@ namespace Arbor.X.Core.Tools.MSBuild
         int _processorCount;
         bool _showSummary;
         MSBuildVerbositoyLevel _verbosity;
+        bool _createWebDeployPackages;
 
         public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
@@ -68,6 +69,9 @@ namespace Arbor.X.Core.Tools.MSBuild
 
             _showSummary = buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_MSBuild_SummaryEnabled,
                 defaultValue: false);
+
+            _createWebDeployPackages = buildVariables.GetBooleanByKey(WellKnownVariables.WebDeployBuildPackages,
+                defaultValue: true);
 
             logger.WriteVerbose(string.Format("Using MSBuild verbosity {0}", _verbosity));
 
@@ -384,13 +388,15 @@ namespace Arbor.X.Core.Tools.MSBuild
 
             foreach (SolutionProject solutionProject in webProjects)
             {
-                DirectoryInfo siteArtifactDirectory =
-                    new DirectoryInfo(Path.Combine(_artifactsPath, "Websites", solutionProject.ProjectName, platform,
-                        configuration)).EnsureExists();
+                var platformDirectoryPath = Path.Combine(_artifactsPath, "Websites", solutionProject.ProjectName, platform);
+
+                var platformDirectory = new DirectoryInfo(platformDirectoryPath).EnsureExists();
+
+                DirectoryInfo siteArtifactDirectory = platformDirectory.CreateSubdirectory(configuration);
 
                 string platformName = platform == "Any CPU" ? "AnyCPU" : platform;
 
-                var argList = new List<string>
+                var buildSiteArguments = new List<string>
                               {
                                   solutionProject.Project.FileName,
                                   string.Format("/property:configuration={0}", configuration),
@@ -409,17 +415,61 @@ namespace Arbor.X.Core.Tools.MSBuild
 
                 if (_showSummary)
                 {
-                    argList.Add("/detailedsummary");
+                    buildSiteArguments.Add("/detailedsummary");
                 }
 
-                ExitCode exitCode =
-                    await ProcessRunner.ExecuteAsync(_msBuildExe, arguments: argList, standardOutLog: logger.Write,
+                ExitCode buildSiteExitCode =
+                    await ProcessRunner.ExecuteAsync(_msBuildExe, arguments: buildSiteArguments, standardOutLog: logger.Write,
                         standardErrorAction: logger.WriteError, toolAction: logger.Write,
                         cancellationToken: _cancellationToken);
 
-                if (!exitCode.IsSuccess)
+                if (!buildSiteExitCode.IsSuccess)
                 {
-                    return exitCode;
+                    return buildSiteExitCode;
+                }
+
+                if (_createWebDeployPackages)
+                {
+                    string webDeployPackageDirectoryPath = Path.Combine(platformDirectoryPath, "WebDeploy");
+
+                    var webDeployPackageDirectory = new DirectoryInfo(webDeployPackageDirectoryPath).EnsureExists();
+
+                    string packagePath = Path.Combine(webDeployPackageDirectory.FullName,
+                        string.Format("{0}_{1}.zip", solutionProject.ProjectName, configuration));
+
+                    var buildSitePackageArguments = new List<string>
+                                                    {
+                                                        solutionProject.Project.FileName,
+                                                        string.Format("/property:configuration={0}", configuration),
+                                                        string.Format("/property:platform={0}", platformName),
+// ReSharper disable once PossibleNullReferenceException
+                                                        string.Format("/property:SolutionDir={0}",
+                                                            solutionFile.Directory.FullName),
+                                                        string.Format("/property:PackageLocation={0}", packagePath),
+                                                        string.Format("/verbosity:{0}", _verbosity.Level),
+                                                        "/target:Package",
+                                                        string.Format("/maxcpucount:{0}",
+                                                            _processorCount.ToString(CultureInfo.InvariantCulture)),
+
+                                                        "/nodeReuse:false"
+                                                    };
+
+                    if (_showSummary)
+                    {
+                        buildSitePackageArguments.Add("/detailedsummary");
+                    }
+
+                    ExitCode packageSiteExitCode =
+                        await
+                            ProcessRunner.ExecuteAsync(_msBuildExe, arguments: buildSitePackageArguments,
+                                standardOutLog: logger.Write,
+                                standardErrorAction: logger.WriteError, toolAction: logger.Write,
+                                cancellationToken: _cancellationToken);
+
+                    if (!packageSiteExitCode.IsSuccess)
+                    {
+                        return packageSiteExitCode;
+                    }
                 }
 
                 if (_appDataJobsEnabled)

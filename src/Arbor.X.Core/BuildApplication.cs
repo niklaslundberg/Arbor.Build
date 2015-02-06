@@ -537,7 +537,9 @@ namespace Arbor.X.Core
 
         string GetConfiguration(string branchName)
         {
-            if (branchName.StartsWith("release", StringComparison.InvariantCultureIgnoreCase))
+            var releaseBranches = new List<string> {"release", "master"};
+
+            if (releaseBranches.Any(releaseBranch => branchName.StartsWith(releaseBranch, StringComparison.InvariantCultureIgnoreCase)))
             {
                 return "release";
             }

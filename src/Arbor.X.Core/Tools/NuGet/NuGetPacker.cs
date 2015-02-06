@@ -68,7 +68,13 @@ namespace Arbor.X.Core.Tools.NuGet
                 logger.WriteVerbose(string.Format("Flag '{0}' is set to true, creating NuGet packages", WellKnownVariables.NuGetCreatePackagesOnAnyBranchEnabled));
             }
 
-            var isReleaseBuild = IsReleaseBuild(releaseBuild);
+            bool isReleaseBuild = IsReleaseBuild(releaseBuild, branchName);
+
+            if (configuration.Equals("debug", StringComparison.InvariantCultureIgnoreCase) && isReleaseBuild)
+            {
+                logger.Write("The current configuration is 'debug' but the build indicates that this is a release build, using 'release' configuration instead");
+                configuration = "release";
+            }
 
             var packagesDirectory = Path.Combine(artifacts.Value, "packages");
 
@@ -123,11 +129,11 @@ namespace Arbor.X.Core.Tools.NuGet
             return packageDirectory;
         }
 
-        static bool IsReleaseBuild(IVariable releaseBuild)
+        static bool IsReleaseBuild(IVariable releaseBuild, IVariable branchName)
         {
             bool isReleaseBuild = releaseBuild.Value.TryParseBool(defaultValue:false);
 
-            return isReleaseBuild;
+            return isReleaseBuild || branchName.Value.Equals("master", StringComparison.InvariantCultureIgnoreCase);
         }
 
         async Task<ExitCode> ProcessPackagesAsync(IEnumerable<string> packageSpecifications, string nuGetExePath, string packagesDirectory, IVariable version, bool isReleaseBuild, string configuration, IVariable branchName, ILogger logger, IVariable tempDirectory, string suffix, bool enableBuildNumber)

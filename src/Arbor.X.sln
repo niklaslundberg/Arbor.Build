@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30723.0
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arbor.X.Bootstrapper", "Arbor.X.Bootstrapper\Arbor.X.Bootstrapper.csproj", "{9AA52382-A7B1-407B-AE0E-9B04EFDFAC43}"
 EndProject
@@ -25,6 +25,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{FE8942
 		.nuget\packages.config = .nuget\packages.config
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arbor.X.Tests.DummyWebApplication", "Arbor.X.Tests.DummyWebApplication\Arbor.X.Tests.DummyWebApplication.csproj", "{C79E57E7-56AA-47A2-9D82-782058B8E565}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{BE5C46C6-ACDF-4620-8C7F-471281101E9B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -47,8 +51,16 @@ Global
 		{280704D5-C385-4F0A-AE3C-D6497A16C9EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{280704D5-C385-4F0A-AE3C-D6497A16C9EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{280704D5-C385-4F0A-AE3C-D6497A16C9EA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C79E57E7-56AA-47A2-9D82-782058B8E565}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C79E57E7-56AA-47A2-9D82-782058B8E565}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C79E57E7-56AA-47A2-9D82-782058B8E565}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C79E57E7-56AA-47A2-9D82-782058B8E565}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{280704D5-C385-4F0A-AE3C-D6497A16C9EA} = {BE5C46C6-ACDF-4620-8C7F-471281101E9B}
+		{C79E57E7-56AA-47A2-9D82-782058B8E565} = {BE5C46C6-ACDF-4620-8C7F-471281101E9B}
 	EndGlobalSection
 EndGlobal
