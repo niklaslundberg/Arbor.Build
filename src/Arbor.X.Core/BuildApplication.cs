@@ -308,7 +308,8 @@ namespace Arbor.X.Core
                                 new ILMergeVariableProvider(),
                                 new SymbolsVariableProvider(),
                                 new BuildAgentVariableProvider(),
-                                new KuduEnvironmentVariableProvider()
+                                new KuduEnvironmentVariableProvider(),
+                                new BuildConfigurationProvider()
                             }; //TODO use Autofac
 
             string displayAsTable =

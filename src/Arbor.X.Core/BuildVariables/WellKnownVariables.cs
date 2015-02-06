@@ -42,6 +42,9 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescription("MSBuild configuration (eg. Debug/Release)")]
         public static readonly string Configuration = Arbor.X.Build + ".Configuration";
 
+        [VariableDescription("Dynamic configuration property")]
+        public static readonly string CurrentBuildConfiguration = Arbor.X.Build + ".CurrentBuild.Configuration";
+
         [VariableDescription("Temporary directory path")]
         public static readonly string TempDirectory = Arbor.X.Build + ".TempDirectory";
 

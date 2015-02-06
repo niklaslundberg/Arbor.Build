@@ -284,6 +284,7 @@ namespace Arbor.X.Core.Tools.MSBuild
 
             foreach (string configuration in _buildConfigurations)
             {
+                Environment.SetEnvironmentVariable(WellKnownVariables.CurrentBuildConfiguration, configuration);
                 ExitCode result =
                     await BuildSolutionWithConfigurationAsync(solutionFile, configuration, logger, platforms);
 
@@ -291,6 +292,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                 {
                     return result;
                 }
+                Environment.SetEnvironmentVariable(WellKnownVariables.CurrentBuildConfiguration, "");
             }
 
             return ExitCode.Success;
