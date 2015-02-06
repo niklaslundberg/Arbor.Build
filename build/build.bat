@@ -12,7 +12,7 @@ SET Arbor.X.Artifacts.CleanupBeforeBuildEnabled=true
 SET Version.Major=1
 SET Version.Minor=0
 SET Version.Patch=7
-SET Version.Build=1
+SET Version.Build=2
 
 REM SET Arbor.X.Vcs.Branch.Name=refs/heads/develop-0.1.26
 SET Arbor.X.Vcs.Branch.Name=release-1.0
