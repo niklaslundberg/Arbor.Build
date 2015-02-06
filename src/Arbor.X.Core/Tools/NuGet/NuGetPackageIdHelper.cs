@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Arbor.X.Core.Tools.Git;
-using NUnit.Framework;
 
 namespace Arbor.X.Core.Tools.NuGet
 {
