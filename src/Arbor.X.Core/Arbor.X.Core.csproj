@@ -120,6 +120,9 @@
     <Compile Include="BuildVariables\WellKnownVariables.Vcs.cs">
       <DependentUpon>WellKnownVariables.cs</DependentUpon>
     </Compile>
+    <Compile Include="BuildVariables\WellKnownVariables.WebDeploy.cs">
+      <DependentUpon>WellKnownVariables.cs</DependentUpon>
+    </Compile>
     <Compile Include="DisplayExtensions.cs" />
     <Compile Include="ExitCode.cs" />
     <Compile Include="IntExtensions.cs" />
