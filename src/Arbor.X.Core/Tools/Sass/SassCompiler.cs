@@ -22,6 +22,7 @@ namespace Arbor.X.Core.Tools.Sass
         public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
+            return ExitCode.Success;
             //if (!buildVariables.GetBooleanByKey(WellKnownVariables.NodeJsExePath, false))
             //{
             //    return ExitCode.Success;
