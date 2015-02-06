@@ -38,6 +38,7 @@ namespace Arbor.X.Core.Tools.NuGet
                 catch (Exception ex)
                 {
                     logger.WriteError(string.Format("Cloud not restore packages defined in '{0}'. {1}", repositoriesConfig, ex));
+                    return Task.FromResult(ExitCode.Failure);
                 }
             }
 

@@ -25,12 +25,20 @@ namespace Arbor.X.Core.Logging
 
         public void Write(string message, string prefix = null)
         {
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                return;
+            }
             Debug.WriteLine(message, TraceEventType.Information.ToString());
             _logger.Write(message, prefix);
         }
 
         public void WriteWarning(string message, string prefix = null)
         {
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                return;
+            }
             if (Debugger.IsAttached && string.IsNullOrWhiteSpace(message))
             {
                 Debugger.Break();
@@ -42,6 +50,10 @@ namespace Arbor.X.Core.Logging
 
         public void WriteVerbose(string message, string prefix = null)
         {
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                return;
+            }
             Debug.WriteLine(message, TraceEventType.Verbose.ToString());
             _logger.WriteVerbose(message, prefix);
         }
@@ -49,6 +61,10 @@ namespace Arbor.X.Core.Logging
         public LogLevel LogLevel { get; set; }
         public void WriteDebug(string message, string prefix = null)
         {
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                return;
+            }
             Debug.WriteLine(message, "DEBUG");
             _logger.WriteDebug(message, prefix);
         }

@@ -219,6 +219,15 @@ namespace Arbor.X.Bootstrapper
 
             var outputDirectory = new DirectoryInfo(outputDirectoryPath);
 
+            bool reinstall = !outputDirectory.Exists ||
+                             Environment.GetEnvironmentVariable(WellKnownVariables.NuGetReinstallArborPackageEnabled)
+                                 .TryParseBool(defaultValue: true);
+
+            if (!reinstall)
+            {
+                return outputDirectoryPath;
+            }
+
             outputDirectory.DeleteIfExists();
             outputDirectory.EnsureExists();
 
@@ -504,7 +513,7 @@ namespace Arbor.X.Bootstrapper
 
         async Task<bool> TryDownloadNuGetAsync(string baseDir, string targetFile)
         {
-            bool update = true;
+            bool update = Environment.GetEnvironmentVariable(WellKnownVariables.NuGetVersionUpdatedEnabled).TryParseBool(defaultValue: false);
 
             bool hasNugetExe = File.Exists(targetFile);
 

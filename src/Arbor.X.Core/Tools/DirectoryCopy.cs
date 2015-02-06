@@ -13,7 +13,7 @@ namespace Arbor.X.Core.Tools
     {
         public static async Task<ExitCode> CopyAsync(string sourceDir, string targetDir, ILogger optionalLogger = null, PathLookupSpecification pathLookupSpecificationOption = null)
         {
-            var pathLookupSpecification = pathLookupSpecificationOption ?? new PathLookupSpecification();
+            var pathLookupSpecification = pathLookupSpecificationOption ?? DefaultPaths.DefaultPathLookupSpecification;
 
             ILogger logger = optionalLogger ?? new NullLogger();
 
@@ -34,7 +34,7 @@ namespace Arbor.X.Core.Tools
                 throw new ArgumentException(string.Format("Source directory '{0}' does not exist", sourceDir));
             }
 
-            if (IsBlackListed(sourceDir, pathLookupSpecification))
+            if (pathLookupSpecification.IsBlackListed(sourceDir))
             {
                 logger.WriteDebug(string.Format("Directory '{0}' is blacklisted from specification {1}", sourceDir, pathLookupSpecification.ToString()));
                 return ExitCode.Success;
@@ -81,49 +81,5 @@ namespace Arbor.X.Core.Tools
             return ExitCode.Success;
         }
 
-        static bool IsBlackListed(string sourceDir, PathLookupSpecification pathLookupSpecification)
-        {
-            var sourceDirSegments = sourceDir.Split(new[] {Path.DirectorySeparatorChar},
-                StringSplitOptions.RemoveEmptyEntries);
-
-            bool hasAnyPathSegment = HasAnyPathSegment(sourceDirSegments,
-                pathLookupSpecification.IgnoredDirectorySegments);
-
-
-            if (hasAnyPathSegment)
-            {
-                return true;
-            }
-
-            bool hasAnyPathSegmentPart = HasAnyPathSegmentPart(sourceDirSegments,
-                pathLookupSpecification.IgnoredDirectorySegmentParts);
-
-            if (hasAnyPathSegmentPart)
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        static bool HasAnyPathSegment(IEnumerable<string> segments, IEnumerable<string> patterns)
-        {
-            return segments.Any(segment => HasAnyPathSegment(segment, patterns));
-        }
-
-        static bool HasAnyPathSegment(string segment, IEnumerable<string> patterns)
-        {
-            return patterns.Any(pattern => pattern.Equals(segment));
-        }
-
-        static bool HasAnyPathSegmentPart(IEnumerable<string> segments, IEnumerable<string> patterns)
-        {
-            return segments.Any(segment => HasAnyPathSegmentPart(segment, patterns));
-        }
-
-        static bool HasAnyPathSegmentPart(string segment, IEnumerable<string> patterns)
-        {
-            return patterns.Any(pattern => segment.IndexOf(pattern, StringComparison.InvariantCultureIgnoreCase) >= 0);
-        }
     }
 }

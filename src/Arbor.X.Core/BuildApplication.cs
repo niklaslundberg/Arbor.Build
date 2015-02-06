@@ -47,7 +47,7 @@ namespace Arbor.X.Core
 
             WriteDebug(string.Format("Using temp directory '{0}'", tempDirectory));
 
-            await DirectoryCopy.CopyAsync(baseDir, tempDirectory.FullName, pathLookupSpecificationOption: new PathLookupSpecification(ignoredDirectorySegmentParts: new[] { "_ReSharper" }));
+            await DirectoryCopy.CopyAsync(baseDir, tempDirectory.FullName, pathLookupSpecificationOption: DefaultPaths.DefaultPathLookupSpecification);
 
             Environment.SetEnvironmentVariable(WellKnownVariables.BranchNameVersionOverrideEnabled, "true");
             Environment.SetEnvironmentVariable(WellKnownVariables.VariableOverrideEnabled, "true");

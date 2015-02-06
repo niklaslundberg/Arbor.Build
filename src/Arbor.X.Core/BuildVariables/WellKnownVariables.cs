@@ -17,6 +17,9 @@ namespace Arbor.X.Core.BuildVariables
 
         [VariableDescription("Build arftifacts path")]
         public static readonly string Artifacts = "Arbor.X.Artifacts";
+        
+        [VariableDescription("Flag to indicate if the build arftifacts should be cleaned up before the build starts")]
+        public static readonly string CleanupArtifactsBeforeBuildEnabled = "Arbor.X.Artifacts.CleanupBeforeBuildEnabled";
 
         [VariableDescription("Full build version number")]
         public static readonly string Version = Arbor.X.Build + ".Version";
@@ -47,6 +50,12 @@ namespace Arbor.X.Core.BuildVariables
 
         [VariableDescription("Symbol server API key for NuGet source package upload")]
         public static readonly string ExternalTools_SymbolServer_ApiKey = "Arbor.X.Tools.External.SymbolServer.ApiKey";
+
+        [VariableDescription("Flag to indicate that Symbol server package upload is enabled even if not running on a build server")]
+        public static readonly string ExternalTools_SymbolServer_ForceUploadEnabled = "Arbor.X.Tools.External.SymbolServer.ForceUploadEnabled";
+
+        [VariableDescription("Flag to indicate that Symbol server package upload is enabled")]
+        public static readonly string ExternalTools_SymbolServer_Enabled = "Arbor.X.Tools.External.SymbolServer.Enabled";
 
         [VariableDescription("Flag to indicate if the build is running on a build agent")]
         public static readonly string IsRunningOnBuildAgent = Arbor.X.Build + ".IsRunningOnBuildAgent";
@@ -81,11 +90,11 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescription("Flag to indicate if build platform AnyCPU is enabled")]
         public const string AnyCpuEnabled = "Arbor.X.Build.Platform.AnyCPU.Enabled";
 
-        [VariableDescription("Flag to indicate if build configuration Release is disabled", "false")]
-        public static readonly string IgnoreRelease = Arbor.X.Build + ".Configuration.Release.Disabled";
+        [VariableDescription("Flag to indicate if build configuration Release is enabled", "true")]
+        public static readonly string ReleaseBuildEnabled = Arbor.X.Build + ".Configuration.Release.Enabled";
 
-        [VariableDescription("Flag to indicate if build platform configuration Debug is disabled", "false")]
-        public static readonly string IgnoreDebug = Arbor.X.Build + ".Configuration.Debug.Disabled";
+        [VariableDescription("Flag to indicate if build platform configuration Debug is enabled", "true")]
+        public static readonly string DebugBuildEnabled = Arbor.X.Build + ".Configuration.Debug.Enabled";
 
         [VariableDescription("Flag to indicate if test runner error results are ignored", "false")]
         public static readonly string IgnoreTestFailures = Arbor.X.Build + ".Tests.IgnoreTestFailures";
