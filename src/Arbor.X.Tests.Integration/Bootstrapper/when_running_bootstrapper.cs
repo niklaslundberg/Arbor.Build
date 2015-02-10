@@ -5,13 +5,12 @@ using Arbor.X.Core;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 using Machine.Specifications;
-using Machine.Specifications.Model;
 
 namespace Arbor.X.Tests.Integration.Bootstrapper
 {
     [Ignore("Not complete")]
-    [Subject(typeof (Subject))]
-    public class when_Specification
+    [Subject(typeof (X.Bootstrapper.Bootstrapper))]
+    public class when_running_bootstrapper
     {
         static X.Bootstrapper.Bootstrapper bootstrapper;
 
@@ -40,11 +39,13 @@ namespace Arbor.X.Tests.Integration.Bootstrapper
             Console.WriteLine("Temp directory is " + baseDirectory.FullName);
 
 
-            startOptions = new BootstrapStartOptions(baseDirectory.FullName, prereleaseEnabled: true, branchName: "develop");
+            startOptions = new BootstrapStartOptions(baseDirectory.FullName, prereleaseEnabled: true,
+                branchName: "develop");
             bootstrapper = new X.Bootstrapper.Bootstrapper(LogLevel.Verbose);
         };
 
         Because of = () => { exitCode = bootstrapper.StartAsync(startOptions).Result; };
-        It should_Behaviour = () => exitCode.IsSuccess.ShouldBeTrue();
+
+        It should_return_success_exit_code = () => exitCode.IsSuccess.ShouldBeTrue();
     }
 }
