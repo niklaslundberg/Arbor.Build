@@ -102,6 +102,9 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescription("Flag to indicate if test runner error results are ignored", "false")]
         public static readonly string IgnoreTestFailures = Arbor.X.Build + ".Tests.IgnoreTestFailures";
 
+        [VariableDescription("Test categories and tags to ignore, comma separated")]
+        public static readonly string IgnoredTestCategories = Arbor.X.Build + ".Tests.IgnoredCategories";
+
         [VariableDescription("Flag to indicate if tests are enabled", "false")]
         public static readonly string TestsEnabled = Arbor.X.Build + ".Tests.Enabled";
 

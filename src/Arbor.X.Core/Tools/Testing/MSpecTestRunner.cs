@@ -8,11 +8,13 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Xsl;
 using Arbor.Aesculus.Core;
+using Arbor.Sorbus.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
-using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;
 using Machine.Specifications;
+using NUnit.Framework;
+using ILogger = Arbor.X.Core.Logging.ILogger;
 
 namespace Arbor.X.Core.Tools.Testing
 {
@@ -82,12 +84,6 @@ namespace Arbor.X.Core.Tools.Testing
 
             arguments.AddRange(testDlls);
 
-            if (testDlls.Any(dll => dll.IndexOf("arbor", StringComparison.InvariantCultureIgnoreCase) >= 0))
-            {
-                arguments.Add("--exclude");
-                arguments.Add("Arbor_X_Recursive");
-            }
-
             arguments.Add("--xml");
             var timestamp = DateTime.UtcNow.ToString("O").Replace(":", ".");
             var fileName = "MSpec_" + timestamp + ".xml";
@@ -100,11 +96,43 @@ namespace Arbor.X.Core.Tools.Testing
 
             new DirectoryInfo(htmlPath).EnsureExists();
 
+            var excludedTags = buildVariables.GetVariableValueOrDefault(WellKnownVariables.IgnoredTestCategories,
+                defaultValue: "")
+                .Split(new[]{","}, StringSplitOptions.RemoveEmptyEntries)
+                .Select(item => item.Trim())
+                .Where(item => !string.IsNullOrWhiteSpace(item))
+                .ToReadOnly();
+
             arguments.Add("--html");
             arguments.Add(htmlPath);
 
-            var environmentVariables = new Dictionary<string, string>();
+            bool hasArborTestDll = testDlls.Any(dll => dll.IndexOf("arbor", StringComparison.InvariantCultureIgnoreCase) >= 0);
 
+            if (hasArborTestDll || excludedTags.Any())
+            {
+                List<string> allExcludedTags = new List<string>();
+
+                arguments.Add("--exclude");
+
+                if (hasArborTestDll)
+                {
+                    allExcludedTags.Add("Arbor_X_Recursive");
+                }
+
+                if (excludedTags.Any())
+                {
+                    allExcludedTags.AddRange(excludedTags);
+                }
+
+                string excludedTagsParameter = string.Join(",", allExcludedTags);
+
+                logger.Write(string.Format("Running MSpec with excluded tags: {0}", excludedTagsParameter));
+
+                arguments.Add(excludedTagsParameter);
+            }
+
+            var environmentVariables = new Dictionary<string, string>();
+            
             var exitCode = await
                 ProcessRunner.ExecuteAsync(mspecExePath, arguments: arguments, cancellationToken: cancellationToken,
                     standardOutLog: logger.Write, standardErrorAction: logger.WriteError, toolAction: logger.Write,
