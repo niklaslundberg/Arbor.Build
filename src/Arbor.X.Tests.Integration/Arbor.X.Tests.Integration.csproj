@@ -34,13 +34,13 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Arbor.Aesculus.0.1.7\lib\net45\Arbor.Aesculus.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Machine.Specifications, Version=0.8.3.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Machine.Specifications, Version=0.9.1.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Machine.Specifications.0.8.3\lib\net45\Machine.Specifications.dll</HintPath>
+      <HintPath>..\packages\Machine.Specifications.0.9.1\lib\net45\Machine.Specifications.dll</HintPath>
     </Reference>
-    <Reference Include="Machine.Specifications.Clr4, Version=0.8.3.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Machine.Specifications.Clr4, Version=0.9.1.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Machine.Specifications.0.8.3\lib\net45\Machine.Specifications.Clr4.dll</HintPath>
+      <HintPath>..\packages\Machine.Specifications.0.9.1\lib\net45\Machine.Specifications.Clr4.dll</HintPath>
     </Reference>
     <Reference Include="Machine.Specifications.Should">
       <HintPath>..\packages\Machine.Specifications.Should.0.7.2\lib\net45\Machine.Specifications.Should.dll</HintPath>
@@ -84,6 +84,7 @@
     <Compile Include="Logging\LogLevel\when_listing_all_log_levels.cs" />
     <Compile Include="ProcessRunner\when_running_a_failing_process.cs" />
     <Compile Include="ProcessRunner\when_running_a_process_longer_than_timeout.cs" />
+    <Compile Include="Tests\MSpec\when_running_mspec_on_self_with_nunit_xml.cs" />
     <Compile Include="Tests\MSpec\when_running_mspec_on_self.cs" />
     <Compile Include="Tests\MSpec\SampleBehaviors.cs" />
     <Compile Include="Tests\MSpec\when_finding_mspec_assemblies_with_behaviors.cs" />

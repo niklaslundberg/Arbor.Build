@@ -50,11 +50,13 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\FubuCsProjFile.1.6.0.143\lib\net40\FubuCsProjFile.dll</HintPath>
     </Reference>
-    <Reference Include="Machine.Specifications">
-      <HintPath>..\packages\Machine.Specifications.0.8.3\lib\net45\Machine.Specifications.dll</HintPath>
+    <Reference Include="Machine.Specifications, Version=0.9.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Machine.Specifications.0.9.1\lib\net45\Machine.Specifications.dll</HintPath>
     </Reference>
-    <Reference Include="Machine.Specifications.Clr4">
-      <HintPath>..\packages\Machine.Specifications.0.8.3\lib\net45\Machine.Specifications.Clr4.dll</HintPath>
+    <Reference Include="Machine.Specifications.Clr4, Version=0.9.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Machine.Specifications.0.9.1\lib\net45\Machine.Specifications.Clr4.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -63,8 +65,9 @@
     <Reference Include="NLog">
       <HintPath>..\packages\NLog.3.1.0.0\lib\net45\NLog.dll</HintPath>
     </Reference>
-    <Reference Include="nunit.framework">
-      <HintPath>..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
+    <Reference Include="nunit.framework, Version=2.6.4.14350, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="Semver">
       <HintPath>..\packages\semver.1.1.2\lib\net451\Semver.dll</HintPath>
@@ -138,6 +141,7 @@
     <Compile Include="ToolResult.cs" />
     <Compile Include="ToolResultType.cs" />
     <Compile Include="Tools\Artifacts\ArtifactCleanup.cs" />
+    <Compile Include="Tools\DefaultPaths.cs" />
     <Compile Include="Tools\DirectoryDelete.cs" />
     <Compile Include="Tools\Git\GitHelper.cs" />
     <Compile Include="Tools\Git\GitVariableProvider.cs" />
@@ -164,6 +168,7 @@
     <Compile Include="Tools\TeamCity\TeamCityVariableProvider.cs" />
     <Compile Include="Tools\Testing\MSpecTestRunner.cs" />
     <Compile Include="Tools\Testing\MSpecVariableProvider.cs" />
+    <Compile Include="Tools\Testing\MSpecJUnitXsl.cs" />
     <Compile Include="Tools\Versioning\AssemblyInfoUnpatcher.cs" />
     <Compile Include="Tools\Versioning\BuildConfigurationProvider.cs" />
     <Compile Include="Tools\Versioning\BuildVersionProvider.cs" />

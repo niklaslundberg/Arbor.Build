@@ -16,7 +16,7 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
 {
     [Subject(typeof (MSpecTestRunner))]
     [Tags("Arbor_X_Recursive")]
-    public class when_running_mspec_on_self
+    public class when_running_mspec_on_self_with_nunit_xml
     {
         static MSpecTestRunner testRunner;
         static List<IVariable> variables = new List<IVariable>();
@@ -41,6 +41,7 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
 
             variables.Add(new EnvironmentVariable(WellKnownVariables.SourceRootOverride, tempDirectory.FullName));
             variables.Add(new EnvironmentVariable(WellKnownVariables.SourceRoot, tempDirectory.FullName));
+            variables.Add(new EnvironmentVariable(WellKnownVariables.MSpecJUnitXslTransformationEnabled,"true"));
 
 
             mspecReports = Path.Combine(tempDirectory.FullName, "MSpecReports");
@@ -53,7 +54,7 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
         Because of =
             () =>
                 ExitCode =
-                    testRunner.ExecuteAsync(new ConsoleLogger {LogLevel = LogLevel.Verbose}, variables,
+                    testRunner.ExecuteAsync(new ConsoleLogger {LogLevel = LogLevel.Information}, variables,
                         new CancellationToken()).Result;
 
         It shoud_have_created_html_report = () =>
@@ -79,7 +80,7 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
 
             foreach (var fileInfo in files)
             {
-                Console.WriteLine(fileInfo.FullName);
+                Console.WriteLine(fileInfo.Name);
             }
 
             files.Length.ShouldNotEqual(0);
