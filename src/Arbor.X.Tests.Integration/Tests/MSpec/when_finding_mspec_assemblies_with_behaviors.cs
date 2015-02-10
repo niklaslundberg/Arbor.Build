@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using Arbor.Aesculus.Core;
 using Arbor.X.Core;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
@@ -26,7 +25,8 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
                                             typeof (BehaviorsAttribute)
                                         }, logger: logger);
 
-            var root = Path.Combine(VcsPathHelper.FindVcsRootPath(), "src");
+           
+            var root = Path.Combine(VcsTestPathHelper.FindVcsRootPath(), "src");
 
             var combine = Path.Combine(root, "Arbor.X.Tests.Integration", "bin", "debug");
 

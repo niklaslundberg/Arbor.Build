@@ -2,8 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
+using System.Xml.Xsl;
 using Arbor.Aesculus.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
@@ -66,7 +69,8 @@ namespace Arbor.X.Core.Tools.Testing
                                                 typeof (SubjectAttribute),
                                                 typeof (Behaves_like<>),
                                             };
-            List<string> testDlls = new UnitTestFinder(typesToFind, logger:logger).GetUnitTestFixtureDlls(directory).ToList();
+            List<string> testDlls =
+                new UnitTestFinder(typesToFind, logger: logger).GetUnitTestFixtureDlls(directory).ToList();
 
             if (!testDlls.Any())
             {
@@ -85,7 +89,7 @@ namespace Arbor.X.Core.Tools.Testing
             }
 
             arguments.Add("--xml");
-            var timestamp = DateTime.UtcNow.ToString("O").Replace(":",".");
+            var timestamp = DateTime.UtcNow.ToString("O").Replace(":", ".");
             var fileName = "MSpec_" + timestamp + ".xml";
             var xmlReportPath = Path.Combine(testReportDirectoryPath, "Xml", fileName);
 
@@ -100,11 +104,65 @@ namespace Arbor.X.Core.Tools.Testing
             arguments.Add(htmlPath);
 
             var environmentVariables = new Dictionary<string, string>();
-            
+
             var exitCode = await
                 ProcessRunner.ExecuteAsync(mspecExePath, arguments: arguments, cancellationToken: cancellationToken,
-                    standardOutLog: logger.Write, standardErrorAction: logger.WriteError, toolAction: logger.Write, verboseAction: logger.WriteVerbose, environmentVariables: environmentVariables);
+                    standardOutLog: logger.Write, standardErrorAction: logger.WriteError, toolAction: logger.Write,
+                    verboseAction: logger.WriteVerbose, environmentVariables: environmentVariables);
 
+            if (buildVariables.GetBooleanByKey(WellKnownVariables.MSpecJUnitXslTransformationEnabled,
+                defaultValue: false))
+            {
+                logger.WriteVerbose("Transforming Machine.Specifications test reports to JUnit format");
+
+                var xmlReportDirectory = new FileInfo(xmlReportPath).Directory;
+// ReSharper disable once PossibleNullReferenceException
+                var xmlReports = xmlReportDirectory.GetFiles();
+                if (xmlReports.Any())
+                {
+                    using (Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(MSpecJUnitXsl.Xml)))
+                    {
+                        using (XmlReader xmlReader = new XmlTextReader(stream))
+                        {
+                            XslCompiledTransform myXslTransform = new XslCompiledTransform();
+                            myXslTransform.Load(xmlReader);
+
+                            foreach (var xmlReport in xmlReports)
+                            {
+// ReSharper disable once PossibleNullReferenceException
+                                string resultFile = Path.Combine(xmlReport.Directory.FullName,
+                                    Path.GetFileNameWithoutExtension(xmlReport.Name) + "_junit.xml");
+
+                                using (
+                                    FileStream fileStream = new FileStream(xmlReport.FullName, FileMode.Open,
+                                        FileAccess.Read))
+                                {
+                                    using (XmlReader reportReader = new XmlTextReader(fileStream))
+                                    {
+                                        using (
+                                            FileStream outStream = new FileStream(resultFile, FileMode.Create,
+                                                FileAccess.Write))
+                                        {
+                                            using (
+                                                XmlWriter reportWriter = new XmlTextWriter(outStream,
+                                                    Encoding.UTF8))
+                                            {
+                                                myXslTransform.Transform(reportReader, reportWriter);
+                                            }
+                                        }
+
+                                    }
+                                }
+
+                                File.Delete(xmlReport.FullName);
+                            }
+                        }
+
+                    }
+
+
+                }
+            }
             return exitCode;
         }
     }

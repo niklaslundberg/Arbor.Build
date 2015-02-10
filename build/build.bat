@@ -8,14 +8,22 @@ SET Arbor.X.NuGetPackageVersion=
 SET Arbor.X.Vcs.Branch.Name.Version.OverrideEnabled=false
 SET Arbor.X.Build.VariableOverrideEnabled=true
 SET Arbor.X.Artifacts.CleanupBeforeBuildEnabled=true
+SET Arbor.X.Build.NetAssembly.Configuration=
 
 SET Version.Major=1
 SET Version.Minor=0
-SET Version.Patch=7
-SET Version.Build=2
+SET Version.Patch=9
+SET Version.Build=105
+
+SET Arbor.X.Build.NetAssembly.MetadataEnabled=true
+SET Arbor.X.Build.NetAssembly.Description=A convention-based build tool
+SET Arbor.X.Build.NetAssembly.Company=Niklas Lundberg
+SET Arbor.X.Build.NetAssembly.Copyright=© Niklas Lundberg 2014-2015
+SET Arbor.X.Build.NetAssembly.Trademark=Arbor.X TM
+SET Arbor.X.Build.NetAssembly.Product=Arbor.X
 
 REM SET Arbor.X.Vcs.Branch.Name=refs/heads/develop-0.1.26
-SET Arbor.X.Vcs.Branch.Name=release-1.0
+SET Arbor.X.Vcs.Branch.Name=
 
 CALL "%~dp0\Build.exe"
 
@@ -31,6 +39,7 @@ SET Arbor.X.NuGetPackageVersion=
 SET Arbor.X.Vcs.Branch.Name.Version.OverrideEnabled
 SET Arbor.X.VariableOverrideEnabled=
 SET Arbor.X.Artifacts.CleanupBeforeBuildEnabled=
+SET Arbor.X.Build.NetAssembly.Configuration=
 
 SET Version.Major=
 SET Version.Minor=

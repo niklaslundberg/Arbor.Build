@@ -42,6 +42,9 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescription("MSBuild configuration (eg. Debug/Release)")]
         public static readonly string Configuration = Arbor.X.Build + ".Configuration";
 
+        [VariableDescription("Dynamic configuration property")]
+        public static readonly string CurrentBuildConfiguration = Arbor.X.Build + ".CurrentBuild.Configuration";
+
         [VariableDescription("Temporary directory path")]
         public static readonly string TempDirectory = Arbor.X.Build + ".TempDirectory";
 
@@ -164,6 +167,9 @@ namespace Arbor.X.Core.BuildVariables
         
         [VariableDescription("Enable Machine.Specifications")]
         public static readonly string MSpecEnabled = "Arbor.X.Tools.External.MSpec.Enabled";
+
+        [VariableDescription("Enable Machine.Specifications XSL transformation to NUnit")]
+        public static readonly string MSpecJUnitXslTransformationEnabled = "Arbor.X.Tools.External.MSpec.JUnitXslTransformation.Enabled";
         
         [VariableDescription("Enable NUnit")]
         public static readonly string NUnitEnabled = "Arbor.X.Tools.External.NUnit.Enabled";

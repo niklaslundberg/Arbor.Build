@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Sorbus.Core;
@@ -78,14 +79,29 @@ namespace Arbor.X.Core.Tools.Versioning
 
             var assemblyFileVersion = new Version(netAssemblyFileVersion);
 
+            AssemblyMetaData assemblyMetadata = null;
+
+            if (buildVariables.GetBooleanByKey(WellKnownVariables.NetAssemblyMetadataEnabled, defaultValue: false))
+            {
+                var company = buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyCompany, defaultValue: null);
+                var description = buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyDescription, defaultValue: null);
+                var configuration = buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyConfiguration, defaultValue: null);
+                var copyright = buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyCopyright, defaultValue: null);
+                var product = buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyProduct, defaultValue: null);
+                var trademark = buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyTrademark, defaultValue: null);
+
+                assemblyMetadata = new AssemblyMetaData(description, configuration, company, product, copyright,
+                    trademark);
+            }
+
             try
             {
                 logger.WriteVerbose(
                     string.Format(
                         "Patching assembly info files with assembly version {0}, assembly file version {1} for directory source root directory '{2}'",
                         assemblyVersion, assemblyFileVersion, sourceRoot));
-                
-                app.Patch(new AssemblyVersion(assemblyVersion), new AssemblyFileVersion(assemblyFileVersion), sourceRoot, assemblyfilePattern: _filePattern);
+
+                app.Patch(new AssemblyVersion(assemblyVersion), new AssemblyFileVersion(assemblyFileVersion), sourceRoot, assemblyfilePattern: _filePattern, assemblyMetaData: assemblyMetadata);
             }
             catch (Exception ex)
             {

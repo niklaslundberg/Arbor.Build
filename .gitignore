@@ -10,6 +10,7 @@ AppPackages
 .HistoryData
 LocalData
 *.orig
+_NCrunch_*
 
 #################
 ## Eclipse
