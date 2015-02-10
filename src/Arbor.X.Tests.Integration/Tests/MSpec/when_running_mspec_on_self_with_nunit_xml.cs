@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using Arbor.Aesculus.Core;
 using Arbor.X.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
@@ -22,10 +21,11 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
         static List<IVariable> variables = new List<IVariable>();
         static ExitCode ExitCode;
         static string mspecReports;
+        static ExitCode exitCode;
 
         Establish context = () =>
         {
-            string root = Path.Combine(VcsPathHelper.FindVcsRootPath(), "src");
+            string root = Path.Combine(VcsTestPathHelper.FindVcsRootPath(), "src");
 
             string combine = Path.Combine(root, "Arbor.X.Tests.Integration", "bin", "debug");
 
@@ -33,15 +33,17 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
 
             DirectoryInfo tempDirectory = new DirectoryInfo(tempPath).EnsureExists();
 
-            exitCode = DirectoryCopy.CopyAsync(combine, tempDirectory.FullName, pathLookupSpecificationOption: new PathLookupSpecification()).Result;
+            exitCode =
+                DirectoryCopy.CopyAsync(combine, tempDirectory.FullName,
+                    pathLookupSpecificationOption: new PathLookupSpecification()).Result;
 
             testRunner = new MSpecTestRunner();
             variables.Add(new EnvironmentVariable(WellKnownVariables.ExternalTools,
-                Path.Combine(VcsPathHelper.FindVcsRootPath(), "tools", "external")));
+                Path.Combine(VcsTestPathHelper.FindVcsRootPath(), "tools", "external")));
 
             variables.Add(new EnvironmentVariable(WellKnownVariables.SourceRootOverride, tempDirectory.FullName));
             variables.Add(new EnvironmentVariable(WellKnownVariables.SourceRoot, tempDirectory.FullName));
-            variables.Add(new EnvironmentVariable(WellKnownVariables.MSpecJUnitXslTransformationEnabled,"true"));
+            variables.Add(new EnvironmentVariable(WellKnownVariables.MSpecJUnitXslTransformationEnabled, "true"));
 
 
             mspecReports = Path.Combine(tempDirectory.FullName, "MSpecReports");
@@ -63,22 +65,23 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
             DirectoryInfo htmlDirectory = reports.GetDirectories()
                 .SingleOrDefault(dir => dir.Name.Equals("html", StringComparison.InvariantCultureIgnoreCase));
 
-            var files = reports.GetFiles("*.html", SearchOption.AllDirectories);
+            FileInfo[] files = reports.GetFiles("*.html", SearchOption.AllDirectories);
 
-            foreach (var fileInfo in files)
+            foreach (FileInfo fileInfo in files)
             {
                 Console.WriteLine(fileInfo.FullName);
             }
 
             htmlDirectory.ShouldNotBeNull();
         };
+
         It shoud_have_created_xml_report = () =>
         {
             DirectoryInfo reports = new DirectoryInfo(mspecReports);
 
-            var files = reports.GetFiles("*.xml", SearchOption.AllDirectories);
+            FileInfo[] files = reports.GetFiles("*.xml", SearchOption.AllDirectories);
 
-            foreach (var fileInfo in files)
+            foreach (FileInfo fileInfo in files)
             {
                 Console.WriteLine(fileInfo.Name);
             }
@@ -87,6 +90,5 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
         };
 
         It should_Behaviour = () => ExitCode.IsSuccess.ShouldBeTrue();
-        static ExitCode exitCode;
     }
 }

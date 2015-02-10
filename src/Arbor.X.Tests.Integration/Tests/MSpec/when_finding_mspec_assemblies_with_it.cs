@@ -27,7 +27,7 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
                                         }, logger: logger);
 
             var tempPath = Path.Combine(Path.GetTempPath(), "Arbor.X", "MSpec", Guid.NewGuid().ToString());
-            var root = Path.Combine(VcsPathHelper.FindVcsRootPath(), "src");
+            var root = Path.Combine(VcsTestPathHelper.FindVcsRootPath(), "src");
 
             var combine = Path.Combine(root, "Arbor.X.Tests.Integration", "bin", "debug");
 

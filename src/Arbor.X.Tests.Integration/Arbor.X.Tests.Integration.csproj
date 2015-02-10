@@ -84,6 +84,7 @@
     <Compile Include="Logging\LogLevel\when_listing_all_log_levels.cs" />
     <Compile Include="ProcessRunner\when_running_a_failing_process.cs" />
     <Compile Include="ProcessRunner\when_running_a_process_longer_than_timeout.cs" />
+    <Compile Include="Tests\MSpec\VcsTestPathHelper.cs" />
     <Compile Include="Tests\MSpec\when_running_mspec_on_self_with_nunit_xml.cs" />
     <Compile Include="Tests\MSpec\when_running_mspec_on_self.cs" />
     <Compile Include="Tests\MSpec\SampleBehaviors.cs" />

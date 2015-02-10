@@ -25,7 +25,7 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
 
         Establish context = () =>
         {
-            string root = Path.Combine(VcsPathHelper.FindVcsRootPath(), "src");
+            string root = Path.Combine(VcsTestPathHelper.FindVcsRootPath(), "src");
 
             string combine = Path.Combine(root, "Arbor.X.Tests.Integration", "bin", "debug");
 
@@ -37,7 +37,7 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
 
             testRunner = new MSpecTestRunner();
             variables.Add(new EnvironmentVariable(WellKnownVariables.ExternalTools,
-                Path.Combine(VcsPathHelper.FindVcsRootPath(), "tools", "external")));
+                Path.Combine(VcsTestPathHelper.FindVcsRootPath(), "tools", "external")));
 
             variables.Add(new EnvironmentVariable(WellKnownVariables.SourceRootOverride, tempDirectory.FullName));
             variables.Add(new EnvironmentVariable(WellKnownVariables.SourceRoot, tempDirectory.FullName));
