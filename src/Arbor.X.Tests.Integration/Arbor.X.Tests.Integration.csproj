@@ -58,7 +58,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Bootstrapper\Class1.cs" />
+    <Compile Include="Bootstrapper\when_running_bootstrapper.cs" />
     <Compile Include="DirectoryDelete\When2.cs" />
     <Compile Include="GitBranches\when_parsing_version_from_branch_name_with_dash.cs" />
     <Compile Include="GitBranches\when_parsing_version_from_branch_name_without_version.cs" />
