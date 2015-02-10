@@ -113,7 +113,7 @@ namespace Arbor.X.Core.Tools.Testing
             if (buildVariables.GetBooleanByKey(WellKnownVariables.MSpecJUnitXslTransformationEnabled,
                 defaultValue: false))
             {
-                logger.WriteVerbose("Transforming Machine.Specifications test reports to NUnit format");
+                logger.WriteVerbose("Transforming Machine.Specifications test reports to JUnit format");
 
                 var xmlReportDirectory = new FileInfo(xmlReportPath).Directory;
 // ReSharper disable once PossibleNullReferenceException
@@ -131,7 +131,7 @@ namespace Arbor.X.Core.Tools.Testing
                             {
 // ReSharper disable once PossibleNullReferenceException
                                 string resultFile = Path.Combine(xmlReport.Directory.FullName,
-                                    Path.GetFileNameWithoutExtension(xmlReport.Name) + "_nunit.xml");
+                                    Path.GetFileNameWithoutExtension(xmlReport.Name) + "_junit.xml");
 
                                 using (
                                     FileStream fileStream = new FileStream(xmlReport.FullName, FileMode.Open,
@@ -145,7 +145,7 @@ namespace Arbor.X.Core.Tools.Testing
                                         {
                                             using (
                                                 XmlWriter reportWriter = new XmlTextWriter(outStream,
-                                                    new UTF8Encoding(false)))
+                                                    Encoding.UTF8))
                                             {
                                                 myXslTransform.Transform(reportReader, reportWriter);
                                             }
