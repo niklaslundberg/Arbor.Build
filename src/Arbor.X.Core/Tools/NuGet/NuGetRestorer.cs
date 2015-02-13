@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Arbor.Aesculus.Core;
 using Arbor.Castanea;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Logging;
@@ -13,11 +12,8 @@ namespace Arbor.X.Core.Tools.NuGet
     [Priority(100)]
     public class NuGetRestorer : ITool
     {
-        CancellationToken _cancellationToken;
-
         public Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {
-            _cancellationToken = cancellationToken;
             var app = new CastaneaApplication();
 
             var vcsRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
@@ -28,10 +24,17 @@ namespace Arbor.X.Core.Tools.NuGet
             {
                 try
                 {
-                    var result = app.RestoreAllSolutionPackages(new NuGetConfig
+                    int result = app.RestoreAllSolutionPackages(new NuGetConfig
                                                                     {
                                                                         RepositoriesConfig = repositoriesConfig
                                                                     });
+
+
+                    if (result != 0)
+                    {
+                        logger.Write(string.Format("Failed to restore {0} package configurations defined in {1}", result, repositoriesConfig));
+                        return Task.FromResult(new ExitCode(result));
+                    }
 
                     logger.Write(string.Format("Restored {0} package configurations defined in {1}", result, repositoriesConfig));
                 }
