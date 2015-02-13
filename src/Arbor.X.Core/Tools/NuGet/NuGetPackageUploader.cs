@@ -109,15 +109,15 @@ namespace Arbor.X.Core.Tools.NuGet
                            nugetPackage
                        };
 
-            if (!string.IsNullOrWhiteSpace(apiKey))
-            {
-                args.Add(apiKey);
-            }
-
             if (!string.IsNullOrWhiteSpace(serverUri))
             {
                 args.Add("-s");
                 args.Add(serverUri);
+            }
+
+            if (!string.IsNullOrWhiteSpace(apiKey))
+            {
+                args.Add(apiKey);
             }
 
             args.Add("-verbosity");
