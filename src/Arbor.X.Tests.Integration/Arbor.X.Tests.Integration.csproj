@@ -30,9 +30,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Arbor.Aesculus.Core, Version=0.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Arbor.Aesculus.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Arbor.Aesculus.0.1.7\lib\net45\Arbor.Aesculus.Core.dll</HintPath>
+      <HintPath>..\packages\Arbor.Aesculus.1.0.0\lib\net45\Arbor.Aesculus.Core.dll</HintPath>
     </Reference>
     <Reference Include="Machine.Specifications, Version=0.9.1.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
