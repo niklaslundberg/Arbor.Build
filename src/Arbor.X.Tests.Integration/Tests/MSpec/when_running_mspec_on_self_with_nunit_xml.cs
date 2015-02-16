@@ -31,10 +31,16 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
 
             string tempPath = Path.Combine(Path.GetTempPath(), "Arbor.X", "MSpec", Guid.NewGuid().ToString());
 
-            DirectoryInfo tempDirectory = new DirectoryInfo(tempPath).EnsureExists();
+            tempDirectory = new DirectoryInfo(tempPath).EnsureExists();
+
+            DirectoryInfo binDirectory = tempDirectory.CreateSubdirectory("bin");
+
+            using (File.Create(Path.Combine(tempDirectory.FullName, ".gitattributes.")))
+            {
+            }
 
             exitCode =
-                DirectoryCopy.CopyAsync(combine, tempDirectory.FullName,
+                DirectoryCopy.CopyAsync(combine, binDirectory.FullName,
                     pathLookupSpecificationOption: new PathLookupSpecification()).Result;
 
             testRunner = new MSpecTestRunner();
@@ -83,12 +89,28 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
 
             foreach (FileInfo fileInfo in files)
             {
-                Console.WriteLine(fileInfo.Name);
+                Console.WriteLine(fileInfo.FullName);
             }
 
             files.Length.ShouldNotEqual(0);
         };
 
-        It should_Behaviour = () => ExitCode.IsSuccess.ShouldBeTrue();
+        It should_return_success = () => ExitCode.IsSuccess.ShouldBeTrue();
+
+        Cleanup after = () =>
+        {
+            Thread.Sleep(1000);
+
+            try
+            {
+                tempDirectory.DeleteIfExists(recursive: true);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Could not cleanup test directory, " + ex);
+            }
+        };
+
+        static DirectoryInfo tempDirectory;
     }
 }
