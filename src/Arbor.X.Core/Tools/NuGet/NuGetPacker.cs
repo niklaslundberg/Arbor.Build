@@ -230,7 +230,7 @@ namespace Arbor.X.Core.Tools.NuGet
                 var processResult =
                     await
                     ProcessRunner.ExecuteAsync(nuGetExePath, arguments: arguments, standardOutLog: logger.Write,
-                                               standardErrorAction: logger.WriteError, toolAction: logger.Write, cancellationToken: _cancellationToken, verboseAction: logger.WriteVerbose);
+                                               standardErrorAction: logger.WriteError, toolAction: logger.Write, cancellationToken: _cancellationToken, verboseAction: logger.WriteVerbose, debugAction: logger.WriteDebug);
 
                 var packagesDirectory = new DirectoryInfo(packagesDirectoryPath);
 
