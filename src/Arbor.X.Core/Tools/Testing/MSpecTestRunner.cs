@@ -143,12 +143,19 @@ namespace Arbor.X.Core.Tools.Testing
             {
                 logger.WriteVerbose("Transforming Machine.Specifications test reports to JUnit format");
 
+                const string junitSuffix = "_junit.xml";
+
                 var xmlReportDirectory = new FileInfo(xmlReportPath).Directory;
 // ReSharper disable once PossibleNullReferenceException
-                var xmlReports = xmlReportDirectory.GetFiles();
+                var xmlReports = xmlReportDirectory
+                    .GetFiles("*.xml")
+                    .Where(report => !report.Name.EndsWith(junitSuffix))
+                    .ToReadOnlyCollection();
+
                 if (xmlReports.Any())
                 {
-                    using (Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(MSpecJUnitXsl.Xml)))
+                    Encoding encoding = Encoding.UTF8;
+                    using (Stream stream = new MemoryStream(encoding.GetBytes(MSpecJUnitXsl.Xml)))
                     {
                         using (XmlReader xmlReader = new XmlTextReader(stream))
                         {
@@ -157,41 +164,56 @@ namespace Arbor.X.Core.Tools.Testing
 
                             foreach (var xmlReport in xmlReports)
                             {
-// ReSharper disable once PossibleNullReferenceException
-                                string resultFile = Path.Combine(xmlReport.Directory.FullName,
-                                    Path.GetFileNameWithoutExtension(xmlReport.Name) + "_junit.xml");
-
-                                using (
-                                    FileStream fileStream = new FileStream(xmlReport.FullName, FileMode.Open,
-                                        FileAccess.Read))
+                                logger.WriteDebug(string.Format("Transforming '{0}' to JUnit XML format", xmlReport.FullName));
+                                try
                                 {
-                                    using (XmlReader reportReader = new XmlTextReader(fileStream))
-                                    {
-                                        using (
-                                            FileStream outStream = new FileStream(resultFile, FileMode.Create,
-                                                FileAccess.Write))
-                                        {
-                                            using (
-                                                XmlWriter reportWriter = new XmlTextWriter(outStream,
-                                                    Encoding.UTF8))
-                                            {
-                                                myXslTransform.Transform(reportReader, reportWriter);
-                                            }
-                                        }
-
-                                    }
+                                    TransformReport(xmlReport, junitSuffix, encoding, myXslTransform, logger);
                                 }
-
-                                File.Delete(xmlReport.FullName);
+                                catch (Exception ex)
+                                {
+                                    logger.WriteError(string.Format("Could not transform '{0}', {1}", xmlReport.FullName, ex));
+                                    return ExitCode.Failure;
+                                }
+                                logger.WriteDebug(string.Format("Successfully transformed '{0}' to JUnit XML format", xmlReport.FullName));
                             }
                         }
 
                     }
-
-
                 }
             }
             return exitCode;
+        }
+
+        static void TransformReport(FileInfo xmlReport, string junitSuffix, Encoding encoding, XslCompiledTransform myXslTransform, ILogger logger)
+        {
+            // ReSharper disable once PossibleNullReferenceException
+            string resultFile = Path.Combine(xmlReport.Directory.FullName,
+                Path.GetFileNameWithoutExtension(xmlReport.Name) + junitSuffix);
+
+            if (File.Exists(resultFile))
+            {
+                logger.Write(string.Format("Skipping XML transformation for '{0}', the transformation result file '{1}' already exists", xmlReport.FullName, resultFile));
+                return;
+            }
+
+            using (FileStream fileStream = new FileStream(xmlReport.FullName, FileMode.Open, FileAccess.Read))
+            {
+                using (var streamReader = new StreamReader(fileStream, encoding))
+                {
+                    using (XmlReader reportReader = XmlReader.Create(streamReader))
+                    {
+                        using (FileStream outStream = new FileStream(resultFile, FileMode.Create, FileAccess.Write))
+                        {
+                            using (XmlWriter reportWriter = new XmlTextWriter(outStream, encoding))
+                            {
+                                myXslTransform.Transform(reportReader, reportWriter);
+                            }
+                        }
+                    }
+                }
+            }
+
+            File.Delete(xmlReport.FullName);
         }
     }
 }
