@@ -37,8 +37,8 @@ namespace Arbor.X.Core.Tools.Testing
                 return new ReadOnlyCollection<string>(new List<string>());
             }
 
-            var blacklisted = new List<string> {".git", ".hg", "obj", "packages", "_ReSharper", "external"};
-
+            var blacklisted = new List<string> {".git", ".hg", ".svn", "obj", "build", "packages", "_ReSharper", "external", "artifacts", "temp", ".HistoryData", "LocalHistory", "_", "."};
+            
             bool isBlacklisted =
                 blacklisted.Any(
                     blackListedItem =>
@@ -52,7 +52,7 @@ namespace Arbor.X.Core.Tools.Testing
 
             var dllFiles = currentDirectory.EnumerateFiles("*.dll");
 
-            var ignoredNames = new List<string> {"ReSharper", "dotCover"};
+            var ignoredNames = new List<string> {"ReSharper", "dotCover", "Microsoft"};
 
             var assemblies = dllFiles
                 .Where(file => !file.Name.StartsWith("System", StringComparison.InvariantCultureIgnoreCase))
