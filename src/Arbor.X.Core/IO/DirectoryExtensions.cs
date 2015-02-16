@@ -62,7 +62,7 @@ namespace Arbor.X.Core.IO
             }
             catch (UnauthorizedAccessException ex)
             {
-                throw new InvalidOperationException(string.Format("Could not delete directory '{0}'", directoryInfo), ex);
+                throw new InvalidOperationException(string.Format("Could not delete directory '{0}'", directoryInfo.FullName), ex);
             }
         }
     }
