@@ -9,6 +9,7 @@ using Machine.Specifications;
 
 namespace Arbor.X.Tests.Integration.Tests
 {
+    [Tags("Arbor_X_Recursive")]
     public class when_listing_nuget_package_configuration_files
     {
         static readonly PathLookupSpecification pathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification;
