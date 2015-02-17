@@ -12,7 +12,7 @@ SET Arbor.X.Build.NetAssembly.Configuration=
 
 SET Version.Major=1
 SET Version.Minor=0
-SET Version.Patch=16
+SET Version.Patch=17
 SET Version.Build=105
 
 SET Arbor.X.Build.NetAssembly.MetadataEnabled=true
