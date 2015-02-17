@@ -62,10 +62,19 @@ namespace Arbor.X.Core.Tools.NuGet
 
                 new DirectoryInfo(outputDirectoryPath).EnsureExists();
 
+                bool disableParallelProcessing =
+                    buildVariables.GetBooleanByKey(WellKnownVariables.NuGetRestoreDisableParallelProcessing,
+                        defaultValue: false);
+
+                bool noCache = buildVariables.GetBooleanByKey(WellKnownVariables.NuGetRestoreNoCache,
+                    defaultValue: false);
+
                 var nuGetConfig = new NuGetConfig
                                   {
                                       NuGetExePath = nuGetExetPath,
-                                      OutputDirectory = outputDirectoryPath
+                                      OutputDirectory = outputDirectoryPath,
+                                      DisableParallelProcessing = disableParallelProcessing,
+                                      NoCache = noCache
                                   };
 
                 nuGetConfig.PackageConfigFiles.AddRange(packagesConfigFiles);

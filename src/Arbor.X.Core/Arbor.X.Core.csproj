@@ -40,7 +40,7 @@
     </Reference>
     <Reference Include="Arbor.Castanea.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Arbor.Castanea.1.0.1\lib\net45\Arbor.Castanea.Core.dll</HintPath>
+      <HintPath>..\packages\Arbor.Castanea.1.0.2\lib\net45\Arbor.Castanea.Core.dll</HintPath>
     </Reference>
     <Reference Include="Arbor.Sorbus.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
