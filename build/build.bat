@@ -12,8 +12,8 @@ SET Arbor.X.Build.NetAssembly.Configuration=
 
 SET Version.Major=1
 SET Version.Minor=0
-SET Version.Patch=13
-SET Version.Build=103
+SET Version.Patch=16
+SET Version.Build=105
 
 SET Arbor.X.Build.NetAssembly.MetadataEnabled=true
 SET Arbor.X.Build.NetAssembly.Description=A convention-based build tool
