@@ -65,6 +65,8 @@
     <Compile Include="GitBranches\when_parsing_version_from_branch_name_with_slash.cs" />
     <Compile Include="GitBranches\when_parsing_version_from_short_branch_name_with_dash.cs" />
     <Compile Include="GitBranches\when_parsing_version_from_short_branch_name_with_slash.cs" />
+    <Compile Include="Logging\LogLevel\when_checking_is_critical_logging_verbose.cs" />
+    <Compile Include="Logging\LogLevel\when_checking_is_verbose_logging_critical.cs" />
     <Compile Include="Logging\LogLevel\when_parsing_empty_string.cs" />
     <Compile Include="Logging\LogLevel\when_parsing_information_level_8.cs" />
     <Compile Include="Logging\LogLevel\when_parsing_information_string.cs" />

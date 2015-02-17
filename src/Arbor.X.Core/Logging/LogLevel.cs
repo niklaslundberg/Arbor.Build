@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 
 namespace Arbor.X.Core.Logging
@@ -31,7 +32,7 @@ namespace Arbor.X.Core.Logging
         {
             return !left.Equals(right);
         }
-
+        
         public static readonly LogLevel Critical = new LogLevel("critical", "Critical", 1);
         public static readonly LogLevel Error = new LogLevel("error", "Error", 2);
         public static readonly LogLevel Warning = new LogLevel("warning", "Warning", 4);
@@ -111,6 +112,12 @@ namespace Arbor.X.Core.Logging
         public static implicit operator string(LogLevel logLevel)
         {
             return logLevel.DisplayName;
+        }
+
+        [Pure]
+        public bool IsLogging(LogLevel logLevel)
+        {
+            return Level >= logLevel.Level;
         }
     }
 }
