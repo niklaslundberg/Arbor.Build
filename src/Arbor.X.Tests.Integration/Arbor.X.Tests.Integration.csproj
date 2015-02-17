@@ -59,7 +59,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bootstrapper\when_running_bootstrapper.cs" />
-    <Compile Include="DirectoryDelete\When2.cs" />
+    <Compile Include="DirectoryDelete\when_deleting_a_directory_with_filters.cs" />
     <Compile Include="GitBranches\when_parsing_version_from_branch_name_with_dash.cs" />
     <Compile Include="GitBranches\when_parsing_version_from_branch_name_without_version.cs" />
     <Compile Include="GitBranches\when_parsing_version_from_branch_name_with_slash.cs" />
