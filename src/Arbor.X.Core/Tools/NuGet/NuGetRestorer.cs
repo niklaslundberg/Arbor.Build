@@ -70,7 +70,19 @@ namespace Arbor.X.Core.Tools.NuGet
 
                 nuGetConfig.PackageConfigFiles.AddRange(packagesConfigFiles);
 
-                int restoredPackages = app.RestoreAllSolutionPackages(nuGetConfig);
+                Action<string> debugAction = null;
+
+                string prefix = typeof(CastaneaApplication).Namespace;
+
+                if (logger.LogLevel.IsLogging(LogLevel.Verbose))
+                {
+                    debugAction = message => logger.WriteVerbose(message, prefix);
+                }
+
+                int restoredPackages = app.RestoreAllSolutionPackages(nuGetConfig, 
+                    logInfo: message => logger.Write(message, prefix),
+                    logError: message => logger.WriteError(message, prefix),
+                    logDebug: debugAction);
 
                 if (restoredPackages == 0)
                 {
