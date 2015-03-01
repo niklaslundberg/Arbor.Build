@@ -184,3 +184,4 @@ pip-log.txt
 .DS_Store
 *.nupkg
 _patchedAssemblyInfos
+*.userprefs
