@@ -35,6 +35,10 @@
         [VariableDescription("Flag to indicate if NuGet packages should be created regardless of the branch convention", "false")]
         public static readonly string NuGetReinstallArborPackageEnabled = "Arbor.X.NuGet.ReinstallArborPackageEnabled";
 
+        public const string NuGetRestoreDisableParallelProcessing = "Arbor.X.NuGet.Restore.DisableParallelProcessing";
+
+        public const string NuGetRestoreNoCache = "Arbor.X.NuGet.Restore.NoCache";
+
         public const string ExternalTools_NuGetServer_Enabled = "Arbor.X.NuGet.PackageUpload.Enabled";
 
         public const string ExternalTools_NuGetServer_Uri = "Arbor.X.NuGet.PackageUpload.Server.Uri";

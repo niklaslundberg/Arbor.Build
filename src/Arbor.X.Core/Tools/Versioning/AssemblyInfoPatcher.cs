@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -101,7 +102,19 @@ namespace Arbor.X.Core.Tools.Versioning
                         "Patching assembly info files with assembly version {0}, assembly file version {1} for directory source root directory '{2}'",
                         assemblyVersion, assemblyFileVersion, sourceRoot));
 
-                app.Patch(new AssemblyVersion(assemblyVersion), new AssemblyFileVersion(assemblyFileVersion), sourceRoot, assemblyfilePattern: _filePattern, assemblyMetaData: assemblyMetadata);
+                var sourceDirectory = new DirectoryInfo(sourceRoot);
+
+                PathLookupSpecification defaultPathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification;
+
+                IReadOnlyCollection<AssemblyInfoFile> assemblyFiles = sourceDirectory
+                    .EnumerateFiles(_filePattern, SearchOption.AllDirectories)
+                    .Where(file => !defaultPathLookupSpecification.IsFileBlackListed(file.FullName))
+                    .Select(file => new AssemblyInfoFile(file.FullName))
+                    .ToReadOnlyCollection();
+
+                logger.WriteDebug(string.Format("Using file pattern '{0}' to find assembly info files. Found these files: [{3}] {1}{2}", _filePattern, Environment.NewLine, string.Join(Environment.NewLine, assemblyFiles.Select(item => " * " + item.FullPath)), assemblyFiles.Count));
+
+                app.Patch(new AssemblyVersion(assemblyVersion), new AssemblyFileVersion(assemblyFileVersion), sourceRoot, assemblyFiles, assemblyMetaData: assemblyMetadata);
             }
             catch (Exception ex)
             {

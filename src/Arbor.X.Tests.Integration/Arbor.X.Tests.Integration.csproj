@@ -30,9 +30,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Arbor.Aesculus.Core, Version=0.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Arbor.Aesculus.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Arbor.Aesculus.0.1.7\lib\net45\Arbor.Aesculus.Core.dll</HintPath>
+      <HintPath>..\packages\Arbor.Aesculus.1.0.0\lib\net45\Arbor.Aesculus.Core.dll</HintPath>
     </Reference>
     <Reference Include="Machine.Specifications, Version=0.9.1.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -59,12 +59,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bootstrapper\when_running_bootstrapper.cs" />
-    <Compile Include="DirectoryDelete\When2.cs" />
+    <Compile Include="DirectoryDelete\when_deleting_a_directory_with_filters.cs" />
     <Compile Include="GitBranches\when_parsing_version_from_branch_name_with_dash.cs" />
     <Compile Include="GitBranches\when_parsing_version_from_branch_name_without_version.cs" />
     <Compile Include="GitBranches\when_parsing_version_from_branch_name_with_slash.cs" />
     <Compile Include="GitBranches\when_parsing_version_from_short_branch_name_with_dash.cs" />
     <Compile Include="GitBranches\when_parsing_version_from_short_branch_name_with_slash.cs" />
+    <Compile Include="Logging\LogLevel\when_checking_is_critical_logging_verbose.cs" />
+    <Compile Include="Logging\LogLevel\when_checking_is_verbose_logging_critical.cs" />
     <Compile Include="Logging\LogLevel\when_parsing_empty_string.cs" />
     <Compile Include="Logging\LogLevel\when_parsing_information_level_8.cs" />
     <Compile Include="Logging\LogLevel\when_parsing_information_string.cs" />
@@ -94,6 +96,7 @@
     <Compile Include="Tests\MSpec\when_testing_this_test_type_for_it.cs" />
     <Compile Include="Tests\MSpec\when_testing_this_test_type_for_behaves_like.cs" />
     <Compile Include="Tests\MSpec\when_testing_this_test_type_for_subject.cs" />
+    <Compile Include="Tests\when_listing_nuget_package_configuration_files.cs" />
     <Compile Include="WellknownVariables\when_listing_all_wellknown_variables.cs" />
     <Compile Include="KuduWebProjectDetails\when_creating_kudu_web_project_details.cs" />
     <Compile Include="WellknownVariables\when_listing_all_wellknown_variables_as_a_table.cs" />
@@ -120,6 +123,7 @@
       <DependentUpon>TestStyle.css</DependentUpon>
     </None>
     <None Include="TestStyle.scss" />
+    <None Include="_Dummy\packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Arbor.X.Bootstrapper\Arbor.X.Bootstrapper.csproj">

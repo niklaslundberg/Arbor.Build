@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using Arbor.Aesculus.Core;
 using Arbor.X.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
@@ -30,10 +29,16 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
             string combine = Path.Combine(root, "Arbor.X.Tests.Integration", "bin", "debug");
 
             string tempPath = Path.Combine(Path.GetTempPath(), "Arbor.X", "MSpec", Guid.NewGuid().ToString());
+            
+            tempDirectory = new DirectoryInfo(tempPath).EnsureExists();
 
-            DirectoryInfo tempDirectory = new DirectoryInfo(tempPath).EnsureExists();
+            DirectoryInfo binDirectory = tempDirectory.CreateSubdirectory("bin");
 
-            exitCode = DirectoryCopy.CopyAsync(combine, tempDirectory.FullName, pathLookupSpecificationOption: new PathLookupSpecification()).Result;
+            exitCode = DirectoryCopy.CopyAsync(combine, binDirectory.FullName, pathLookupSpecificationOption: new PathLookupSpecification()).Result;
+
+            using (File.Create(Path.Combine(tempDirectory.FullName, ".gitattributes.")))
+            {
+            }
 
             testRunner = new MSpecTestRunner();
             variables.Add(new EnvironmentVariable(WellKnownVariables.ExternalTools,
@@ -86,6 +91,21 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
         };
 
         It should_Behaviour = () => ExitCode.IsSuccess.ShouldBeTrue();
+
+        Cleanup after = () =>
+        {
+            Thread.Sleep(1000);
+            try
+            {
+                tempDirectory.DeleteIfExists(recursive: true);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Could not cleanup test directory, " + ex);
+            }
+        };
+
         static ExitCode exitCode;
+        static DirectoryInfo tempDirectory;
     }
 }

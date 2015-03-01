@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Arbor.Aesculus.Core;
 using Arbor.Castanea;
 using Arbor.X.Core.BuildVariables;
+using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 
 namespace Arbor.X.Core.Tools.NuGet
@@ -13,33 +14,97 @@ namespace Arbor.X.Core.Tools.NuGet
     [Priority(100)]
     public class NuGetRestorer : ITool
     {
-        CancellationToken _cancellationToken;
-
         public Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {
-            _cancellationToken = cancellationToken;
             var app = new CastaneaApplication();
 
+            PathLookupSpecification pathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification;
+
             var vcsRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
+            var nuGetExetPath = buildVariables.Require(WellKnownVariables.ExternalTools_NuGet_ExePath).ThrowIfEmptyValue().Value;
 
-            var files = Directory.GetFiles(vcsRoot, "repositories.config", SearchOption.AllDirectories);
+            var rootDirectory = new DirectoryInfo(vcsRoot);
 
-            foreach (var repositoriesConfig in files)
+            var packagesConfigFiles = rootDirectory.EnumerateFiles("packages.config", SearchOption.AllDirectories)
+                .Where(file => !pathLookupSpecification.IsFileBlackListed(file.FullName))
+                .Select(file => file.FullName)
+                .ToReadOnlyCollection();
+
+            var solutionFiles = rootDirectory.EnumerateFiles("*.sln", SearchOption.AllDirectories)
+                .Where(file => !pathLookupSpecification.IsFileBlackListed(file.FullName))
+                .ToReadOnlyCollection();
+
+            if (!packagesConfigFiles.Any())
             {
-                try
-                {
-                    var result = app.RestoreAllSolutionPackages(new NuGetConfig
-                                                                    {
-                                                                        RepositoriesConfig = repositoriesConfig
-                                                                    });
+                logger.WriteWarning("Could not find any packages.config files, skipping package restore");
+                return Task.FromResult(ExitCode.Success);
+            }
 
-                    logger.Write(string.Format("Restored {0} package configurations defined in {1}", result, repositoriesConfig));
-                }
-                catch (Exception ex)
+            if (!solutionFiles.Any())
+            {
+                logger.WriteError("Could not find any solution file, cannot determine package output directory");
+                return Task.FromResult(ExitCode.Failure);
+            }
+
+            if (solutionFiles.Count > 1)
+            {
+                logger.WriteError("Found more than one solution file, cannot determine package output directory"); ;
+                return Task.FromResult(ExitCode.Failure);
+            }
+
+            var solutionFile = solutionFiles.Single();
+
+            var allFiles = string.Join(Environment.NewLine, packagesConfigFiles);
+            try
+            {
+// ReSharper disable once PossibleNullReferenceException
+                string outputDirectoryPath = Path.Combine(solutionFile.Directory.FullName, "packages");
+
+                new DirectoryInfo(outputDirectoryPath).EnsureExists();
+
+                bool disableParallelProcessing =
+                    buildVariables.GetBooleanByKey(WellKnownVariables.NuGetRestoreDisableParallelProcessing,
+                        defaultValue: false);
+
+                bool noCache = buildVariables.GetBooleanByKey(WellKnownVariables.NuGetRestoreNoCache,
+                    defaultValue: false);
+
+                var nuGetConfig = new NuGetConfig
+                                  {
+                                      NuGetExePath = nuGetExetPath,
+                                      OutputDirectory = outputDirectoryPath,
+                                      DisableParallelProcessing = disableParallelProcessing,
+                                      NoCache = noCache
+                                  };
+
+                nuGetConfig.PackageConfigFiles.AddRange(packagesConfigFiles);
+
+                Action<string> debugAction = null;
+
+                string prefix = typeof(CastaneaApplication).Namespace;
+
+                if (logger.LogLevel.IsLogging(LogLevel.Verbose))
                 {
-                    logger.WriteError(string.Format("Cloud not restore packages defined in '{0}'. {1}", repositoriesConfig, ex));
-                    return Task.FromResult(ExitCode.Failure);
+                    debugAction = message => logger.WriteVerbose(message, prefix);
                 }
+
+                int restoredPackages = app.RestoreAllSolutionPackages(nuGetConfig, 
+                    logInfo: message => logger.Write(message, prefix),
+                    logError: message => logger.WriteError(message, prefix),
+                    logDebug: debugAction);
+
+                if (restoredPackages == 0)
+                {
+                    logger.WriteWarning(string.Format("No packages was restored as defined in {0}", allFiles));
+                    return Task.FromResult(ExitCode.Success);
+                }
+
+                logger.Write(string.Format("Restored {0} package configurations defined in {1}", restoredPackages, allFiles));
+            }
+            catch (Exception ex)
+            {
+                logger.WriteError(string.Format("Cloud not restore packages defined in '{0}'. {1}", allFiles, ex));
+                return Task.FromResult(ExitCode.Failure);
             }
 
             return Task.FromResult(ExitCode.Success);

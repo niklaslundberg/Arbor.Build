@@ -35,9 +35,9 @@ namespace Arbor.X.Core.Tools.NuGet
 
             var nugetExe = buildVariables.Require(WellKnownVariables.ExternalTools_NuGet_ExePath).ThrowIfEmptyValue();
             var nugetServer =
-                buildVariables.Require(WellKnownVariables.ExternalTools_NuGetServer_Uri).ThrowIfEmptyValue();
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_NuGetServer_Uri, "");
             var nuGetServerApiKey =
-                buildVariables.Require(WellKnownVariables.ExternalTools_NuGetServer_ApiKey).ThrowIfEmptyValue();
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_NuGetServer_ApiKey, "");
 
             var isRunningOnBuildAgentVariable =
                 buildVariables.Require(WellKnownVariables.IsRunningOnBuildAgent).ThrowIfEmptyValue();
@@ -56,8 +56,8 @@ namespace Arbor.X.Core.Tools.NuGet
 
             if (isRunningOnBuildAgent || forceUpload)
             {
-                return UploadNuGetPackages(logger, packagesFolder.FullName, nugetExe.Value, nugetServer.Value,
-                    nuGetServerApiKey.Value);
+                return UploadNuGetPackages(logger, packagesFolder.FullName, nugetExe.Value, nugetServer,
+                    nuGetServerApiKey);
             }
 
             logger.Write("Not running on build server. Skipped package upload");
@@ -76,14 +76,6 @@ namespace Arbor.X.Core.Tools.NuGet
             if (string.IsNullOrWhiteSpace(nugetExePath))
             {
                 throw new ArgumentNullException("nugetExePath");
-            }
-            if (string.IsNullOrWhiteSpace(serverUri))
-            {
-                throw new ArgumentNullException("serverUri");
-            }
-            if (string.IsNullOrWhiteSpace(apiKey))
-            {
-                throw new ArgumentNullException("apiKey");
             }
 
             var files = new DirectoryInfo(artifactPackagesFolder)
@@ -114,13 +106,23 @@ namespace Arbor.X.Core.Tools.NuGet
             var args = new List<string>
                        {
                            "push",
-                           nugetPackage,
-                           "-s",
-                           serverUri,
-                           apiKey,
-                           "-verbosity",
-                           "detailed"
+                           nugetPackage
                        };
+
+            if (!string.IsNullOrWhiteSpace(serverUri))
+            {
+                args.Add("-s");
+                args.Add(serverUri);
+            }
+
+            if (!string.IsNullOrWhiteSpace(apiKey))
+            {
+                args.Add(apiKey);
+            }
+
+            args.Add("-verbosity");
+            args.Add("detailed");
+
             var exitCode =
                 await
                     ProcessRunner.ExecuteAsync(nugetExePath, arguments: args, standardOutLog: logger.Write,
