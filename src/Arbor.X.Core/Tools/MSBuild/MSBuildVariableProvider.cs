@@ -18,7 +18,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             logger.WriteVerbose(string.Format("Running current process [id {0}] as a {1}-bit process",
                 Process.GetCurrentProcess().Id, currentProcessBits));
 
-            var possibleVersions = new List<string> {"12.0", "4.0"};
+            var possibleVersions = new List<string> {"14.0", "12.0", "4.0"};
 
             string foundPath = null;
 
