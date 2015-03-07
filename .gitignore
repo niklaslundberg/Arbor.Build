@@ -11,7 +11,7 @@ AppPackages
 LocalData
 *.orig
 _NCrunch_*
-_nCrunchtemp
+_nCrunchtemp*
 
 #################
 ## Eclipse
