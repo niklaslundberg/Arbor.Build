@@ -21,7 +21,10 @@ namespace Arbor.X.Core.Tools
                                                             "LocalHistory",
                                                             "packages", 
                                                             "temp",
-                                                            "artifacts"
+                                                            "artifacts",
+                                                            ".vs",
+                                                            ".user",
+                                                            ".userprefs"
                                                         };
                 List<string> ignoredFileStartsWithPatterns = new List<string>(10) {".", "_"};
                 List<string> ignoredDirectorySegmentParts = new List<string>(5);

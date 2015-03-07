@@ -39,7 +39,7 @@ namespace Arbor.X.Core.Tools.ILMerge
             logger.Write(string.Format("Found {0} projects marked for ILMerge:{1}{2}", ilMergeProjects.Count,
                 Environment.NewLine, merges));
 
-            IEnumerable<ILMergeData> mergeDatas = ilMergeProjects.SelectMany(GetIlMergeFiles);
+            IReadOnlyCollection<ILMergeData> mergeDatas = ilMergeProjects.SelectMany(GetIlMergeFiles).ToReadOnlyCollection();
 
             foreach (ILMergeData mergeData in mergeDatas)
             {

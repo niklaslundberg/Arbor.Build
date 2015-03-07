@@ -74,8 +74,11 @@ namespace Arbor.X.Core.Tools.VisualStudio
 
                         logger.WriteVerbose(string.Format("Found {0} Visual Studio versions: {1}", names.Count,
                                                           string.Join(", ", names.Select(name => name.ToString(2)))));
-
-                        if (names.Any(name => name == new Version(12, 0)))
+                        if (names.Any(name => name == new Version(14, 0)))
+                        {
+                            visualStudioVersion = "14.0";
+                        } 
+                        else if (names.Any(name => name == new Version(12, 0)))
                         {
                             visualStudioVersion = "12.0";
                         }

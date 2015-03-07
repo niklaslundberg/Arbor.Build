@@ -41,7 +41,9 @@ namespace Arbor.X.Core
         {
             var baseDir = VcsPathHelper.FindVcsRootPath(AppDomain.CurrentDomain.BaseDirectory);
 
-            var tempDirectory = new DirectoryInfo(Path.Combine(Path.GetTempPath(), "Arbor.X_Build_Debug", Guid.NewGuid().ToString()));
+            var tempPath = @"C:\arbor.x";
+
+            var tempDirectory = new DirectoryInfo(Path.Combine(tempPath, "Arbor.X_Build_Debug", DateTime.UtcNow.ToFileTimeUtc().ToString(), Guid.NewGuid().ToString()));
 
             tempDirectory.EnsureExists();
 
@@ -49,11 +51,23 @@ namespace Arbor.X.Core
 
             await DirectoryCopy.CopyAsync(baseDir, tempDirectory.FullName, pathLookupSpecificationOption: DefaultPaths.DefaultPathLookupSpecification);
 
-            Environment.SetEnvironmentVariable(WellKnownVariables.BranchNameVersionOverrideEnabled, "true");
-            Environment.SetEnvironmentVariable(WellKnownVariables.VariableOverrideEnabled, "true");
-            Environment.SetEnvironmentVariable(WellKnownVariables.SourceRoot, tempDirectory.FullName);
-            string branchName = "refs/heads/develop-23.45.67";
-            Environment.SetEnvironmentVariable(WellKnownVariables.BranchName, branchName);
+            Dictionary<string, string> environmentVariables = new Dictionary<string, string>
+            {
+                [WellKnownVariables.BranchNameVersionOverrideEnabled] = "false",
+                [WellKnownVariables.VariableOverrideEnabled] = "true",
+                [WellKnownVariables.SourceRoot] = tempDirectory.FullName,
+                [WellKnownVariables.BranchName] = "develop",
+                [WellKnownVariables.VersionMajor] = "1",
+                [WellKnownVariables.VersionMinor] = "0",
+                [WellKnownVariables.VersionPatch] = "18",
+                [WellKnownVariables.VersionBuild] = "106",
+                [WellKnownVariables.Configuration] = "release",
+            };
+
+            foreach (KeyValuePair<string, string> environmentVariable in environmentVariables)
+            {
+                Environment.SetEnvironmentVariable(environmentVariable.Key, environmentVariable.Value);
+            }
 
             _logger.LogLevel = LogLevel.Debug;
             
