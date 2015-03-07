@@ -81,9 +81,14 @@ namespace Arbor.X.Core
 
         public static bool operator !=(Maybe<T> left, T right)
         {
-            if (left.HasValue)
+            if (!left.HasValue)
             {
-                return false;
+                return true;
+            }
+
+            if (right == null)
+            {
+                return true;
             }
 
             return !left.Item.Equals(right);
@@ -105,14 +110,14 @@ namespace Arbor.X.Core
 
         public static bool operator !=(Maybe<T> left, Maybe<T> right)
         {
-            if (left.HasValue)
+            if (!left.HasValue)
             {
-                return false;
+                return true;
             }
 
-            if (right.HasValue)
+            if (!right.HasValue)
             {
-                return false;
+                return true;
             }
 
             return !left.Item.Equals(right.Item);

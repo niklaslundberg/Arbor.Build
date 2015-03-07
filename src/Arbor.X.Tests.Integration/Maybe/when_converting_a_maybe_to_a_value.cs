@@ -3,7 +3,7 @@ using Machine.Specifications;
 
 namespace Arbor.X.Tests.Integration.Maybe
 {
-    public class when_converting_a_may_to_a_value
+    public class when_converting_a_maybe_to_a_value
     {
         Because of = () => string_value = new Maybe<string>("a string");
 
