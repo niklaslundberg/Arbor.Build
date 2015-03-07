@@ -76,6 +76,7 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
 
             htmlDirectory.ShouldNotBeNull();
         };
+
         It shoud_have_created_xml_report = () =>
         {
             DirectoryInfo reports = new DirectoryInfo(mspecReports);
@@ -90,7 +91,7 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
             files.Length.ShouldNotEqual(0);
         };
 
-        It should_Behaviour = () => ExitCode.IsSuccess.ShouldBeTrue();
+        It should_return_a_successful_exit_code = () => ExitCode.IsSuccess.ShouldBeTrue();
 
         Cleanup after = () =>
         {

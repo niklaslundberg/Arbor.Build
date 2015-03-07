@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Remoting;
 using Arbor.X.Core.BuildVariables;
-using NUnit.Framework;
 using Semver;
 
 namespace Arbor.X.Core.Tools.Git
@@ -12,9 +10,14 @@ namespace Arbor.X.Core.Tools.Git
     {
         public static bool IsFeatureBranch(this BranchName branchName)
         {
+            if (branchName == null)
+            {
+                throw new ArgumentNullException(nameof(branchName));
+            }
+
             var nonFeatureBranchNames = new[] {"dev", "develop", "master"};
 
-            var isAStandardBranch =
+            bool isAStandardBranch =
                 nonFeatureBranchNames.Any(
                     name => branchName.LogicalName.StartsWith(name, StringComparison.InvariantCultureIgnoreCase));
 
@@ -23,6 +26,11 @@ namespace Arbor.X.Core.Tools.Git
 
         public static bool IsDevelopBranch(this BranchName branchName)
         {
+            if (branchName == null)
+            {
+                throw new ArgumentNullException(nameof(branchName));
+            }
+
             var developBranchNames = new[] {"dev", "develop"};
 
             bool isDevelopBranch =
@@ -33,9 +41,14 @@ namespace Arbor.X.Core.Tools.Git
 
         public static bool IsProductionBranch(this BranchName branchName)
         {
-            var isProductionBranch = branchName.Name.Equals("master", StringComparison.InvariantCultureIgnoreCase) ||
-                                     branchName.Name.IndexOf("release", StringComparison.InvariantCultureIgnoreCase) >=
-                                     0;
+            if (branchName == null)
+            {
+                throw new ArgumentNullException(nameof(branchName));
+            }
+
+            bool isProductionBranch = branchName.Name.Equals("master", StringComparison.InvariantCultureIgnoreCase) ||
+                                      branchName.Name.IndexOf("release", StringComparison.InvariantCultureIgnoreCase) >=
+                                      0;
 
             return isProductionBranch;
         }
@@ -44,16 +57,21 @@ namespace Arbor.X.Core.Tools.Git
         {
             if (string.IsNullOrWhiteSpace(branchName))
             {
-                throw new ArgumentNullException("branchName");
+                throw new ArgumentNullException(nameof(branchName));
             }
 
-            var logicalName = branchName.Replace("refs/heads/", "");
+            string logicalName = branchName.Replace("refs/heads/", "");
 
             return new BranchName(logicalName);
         }
 
         public static bool BranchNameHasVersion(string branchName)
         {
+            if (string.IsNullOrWhiteSpace(branchName))
+            {
+                throw new ArgumentNullException(nameof(branchName));
+            }
+
             SemVersion version = BranchSemVerMajorMinorPatch(branchName);
 
             return version != null && (version.Major > 0 || version.Minor > 0 || version.Patch > 0);
@@ -63,28 +81,36 @@ namespace Arbor.X.Core.Tools.Git
         {
             if (string.IsNullOrWhiteSpace(branchName))
             {
+                throw new ArgumentNullException(nameof(branchName));
+            }
+
+            if (string.IsNullOrWhiteSpace(branchName))
+            {
                 return new SemVersion(0);
             }
 
-            var splitCharactersVariable = Environment.GetEnvironmentVariable(WellKnownVariables.NameVersionCommanSeparatedSplitList);
+            string splitCharactersVariable =
+                Environment.GetEnvironmentVariable(WellKnownVariables.NameVersionCommanSeparatedSplitList);
 
             var splitCharacters = new List<string> {"/", "-", "_"};
 
             if (!string.IsNullOrWhiteSpace(splitCharactersVariable))
             {
-                var splitts = splitCharactersVariable.Split(new[]{","}, StringSplitOptions.RemoveEmptyEntries).ToList();
+                List<string> splitts =
+                    splitCharactersVariable.Split(new[] {","}, StringSplitOptions.RemoveEmptyEntries).ToList();
 
                 splitCharacters = splitts;
             }
-            
-            var version = branchName.Split(splitCharacters.ToArray(), StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
+
+            string version =
+                branchName.Split(splitCharacters.ToArray(), StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
 
             SemVersion semver;
             if (!SemVersion.TryParse(version, out semver))
             {
                 return new SemVersion(0);
             }
-            
+
             return new SemVersion(semver.Major, semver.Minor, semver.Patch);
         }
     }

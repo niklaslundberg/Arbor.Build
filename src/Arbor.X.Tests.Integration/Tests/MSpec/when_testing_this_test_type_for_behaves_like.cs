@@ -25,7 +25,9 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
         Because of =
             () => { Result = finder.TryIsTypeTestFixture(typeof(when_testing_this_test_type_for_behaves_like)); };
 
+#pragma warning disable 169
         Behaves_like<SampleBehaviors> sample_behaviors;
+#pragma warning restore 169
 
     }
 }

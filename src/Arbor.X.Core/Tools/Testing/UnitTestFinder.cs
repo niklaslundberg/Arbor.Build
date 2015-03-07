@@ -251,7 +251,12 @@ namespace Arbor.X.Core.Tools.Testing
 // ReSharper disable once UnusedVariable
             catch (ReflectionTypeLoadException ex)
             {
-                _logger.WriteDebug(string.Format("Could not load assembly '{0}'. Ignoring.", dllFile.FullName));
+                string message = string.Format("Could not load assembly '{0}'. Ignoring.", dllFile.FullName);
+
+                _logger.WriteDebug(message);
+#if DEBUG
+                Console.WriteLine( "{0}, {1}", message, ex);
+#endif
                 return null;
             }
         }

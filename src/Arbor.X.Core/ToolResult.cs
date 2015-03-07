@@ -13,30 +13,28 @@ namespace Arbor.X.Core
         public ToolResult(ToolWithPriority toolWithPriority, ToolResultType resultType, string message = null,
             TimeSpan executionTime = default(TimeSpan))
         {
+            if (toolWithPriority == null)
+            {
+                throw new ArgumentNullException(nameof(toolWithPriority));
+            }
+
+            if (resultType == null)
+            {
+                throw new ArgumentNullException(nameof(resultType));
+            }
+
             _toolWithPriority = toolWithPriority;
             _resultType = resultType;
             _message = message;
             _executionTime = executionTime;
         }
 
-        public ToolWithPriority ToolWithPriority
-        {
-            get { return _toolWithPriority; }
-        }
+        public ToolWithPriority ToolWithPriority => _toolWithPriority;
 
-        public ToolResultType ResultType
-        {
-            get { return _resultType; }
-        }
+        public ToolResultType ResultType => _resultType;
 
-        public string Message
-        {
-            get { return _message; }
-        }
+        public string Message => _message;
 
-        public TimeSpan ExecutionTime
-        {
-            get { return _executionTime; }
-        }
+        public TimeSpan ExecutionTime => _executionTime;
     }
 }
