@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <package >
 	<metadata>
-		<id>Arbor.X</id>
+		<id>Arbor.X.Bootstrapper</id>
 		<version>0.0.1</version>
-		<title>Arbor.X</title>
+		<title>Arbor.X.Bootstrapper</title>
 		<authors>Niklas Lundberg</authors>
 		<owners></owners>
 		<description>
@@ -12,7 +12,7 @@
 		<releaseNotes>
 		</releaseNotes>
 		<summary>
-			Arbor.X
+			Arbor.X Bootstrapper
 		</summary>
 		<language>en-US</language>
 		<projectUrl>https://github.com/niklaslundberg/Arbor.X</projectUrl>
@@ -27,7 +27,6 @@
 		<tags>build tools convention</tags>
 	</metadata>
 	<files>
-		<file src="Arbor.X.Build\bin\$configuration$\**\*.*" target="." exclude="*.vshost*;**\*.vshost*;*.trx" />
-		<file src="..\tools\external\**.*" exclude="*.vshost*;**\*.vshost*;*.trx" target="tools\external" />
+		<file src="..\Artifacts\ILMerged\x86\$configuration$\*.*" target="." exclude="*.vshost*;**\*.vshost*;*.trx" />
 	</files>
 </package>
