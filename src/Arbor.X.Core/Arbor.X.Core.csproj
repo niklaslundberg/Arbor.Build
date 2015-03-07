@@ -138,6 +138,7 @@
     </Compile>
     <Compile Include="DisplayExtensions.cs" />
     <Compile Include="EnumerableExtensions.cs" />
+    <Compile Include="Exceptions\ExceptionExtensions.cs" />
     <Compile Include="ExitCode.cs" />
     <Compile Include="IntExtensions.cs" />
     <Compile Include="Logging\DebugLogger.cs" />

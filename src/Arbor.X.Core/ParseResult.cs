@@ -13,20 +13,11 @@ namespace Arbor.X.Core
             _originalValue = originalValue;
         }
 
-        public bool Parsed
-        {
-            get { return _parsed; }
-        }
+        public bool Parsed => _parsed;
 
-        public T Value
-        {
-            get { return _value; }
-        }
+        public T Value => _value;
 
-        public string OriginalValue
-        {
-            get { return _originalValue; }
-        }
+        public string OriginalValue => _originalValue;
 
         public override string ToString()
         {

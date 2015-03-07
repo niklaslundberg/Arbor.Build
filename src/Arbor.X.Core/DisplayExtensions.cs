@@ -10,7 +10,7 @@ namespace Arbor.X.Core
         public static string DisplayAsTable(this IEnumerable<IDictionary<string, string>> dictionaries,
             char padChar = '.')
         {
-            if (dictionaries == null)
+            if (dictionaries == null || !dictionaries.Any())
             {
                 return string.Empty;
             }

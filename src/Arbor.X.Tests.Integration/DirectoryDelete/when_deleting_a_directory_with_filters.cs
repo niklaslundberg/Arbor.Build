@@ -87,15 +87,15 @@ namespace Arbor.X.Tests.Integration.DirectoryDelete
 
         It should_delete_non_filtered_files = () =>
         {
-            string[] enumerateFiles = Directory.EnumerateFiles(tempDir, "*.*", SearchOption.AllDirectories).ToArray();
+            string[] filesPaths = Directory.EnumerateFiles(tempDir, "*.*", SearchOption.AllDirectories).ToArray();
 
-            foreach (string enumerateFile in enumerateFiles)
+            foreach (string filePath in filesPaths)
             {
-                Console.WriteLine(enumerateFile);
+                Console.WriteLine(filePath);
             }
 
-            string[] existing = enumerateFiles.Select(file => new FileInfo(file).Name).ToArray();
-            existing.ShouldContain(expectedFiles);
+            string[] existingFilePaths = filesPaths.Select(file => new FileInfo(file).Name).ToArray();
+            existingFilePaths.ShouldContain(expectedFiles);
         };
     }
 }

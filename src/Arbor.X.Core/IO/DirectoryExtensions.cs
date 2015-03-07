@@ -9,7 +9,7 @@ namespace Arbor.X.Core.IO
         {
             if (directoryInfo == null)
             {
-                throw new ArgumentNullException("directoryInfo");
+                throw new ArgumentNullException(nameof(directoryInfo));
             }
 
             try
