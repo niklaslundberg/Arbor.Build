@@ -112,9 +112,9 @@
     <Compile Include="Maybe\when_comparing_two_maybyes_with_equal_non_null.cs" />
     <Compile Include="Maybe\when_comparing_two_maybyes_with_null.cs" />
     <Compile Include="Maybe\when_converting_a_maybe_to_a_value.cs" />
-    <Compile Include="Maybe\when_converting_a_non_empty_valye_toa_maybe.cs" />
+    <Compile Include="Maybe\when_converting_a_non_empty_value_to_a_maybe.cs" />
     <Compile Include="Maybe\when_explicitely_converting_an_empty_maybe_to_a_value.cs" />
-    <Compile Include="Maybe\when_gettimg_the_item_from__an_empty_maybe.cs" />
+    <Compile Include="Maybe\when_getting_the_item_from_an_empty_maybe.cs" />
     <Compile Include="Maybe\when_implicitely_converting_an_empty_maybe_to_a_value.cs" />
     <Compile Include="ProcessRunner\when_running_a_failing_process.cs" />
     <Compile Include="ProcessRunner\when_running_a_process_longer_than_timeout.cs" />
