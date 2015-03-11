@@ -13,7 +13,7 @@ using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;
 using Arbor.X.Core.Tools;
-using Arbor.X.Core.Tools.Artifacts;
+using Arbor.X.Core.Tools.Cleanup;
 using Arbor.X.Core.Tools.Environments;
 using Arbor.X.Core.Tools.Git;
 using Arbor.X.Core.Tools.ILMerge;

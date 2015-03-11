@@ -150,14 +150,14 @@
     <Compile Include="ToolExtensions.cs" />
     <Compile Include="ToolResult.cs" />
     <Compile Include="ToolResultType.cs" />
-    <Compile Include="Tools\Artifacts\ArtifactCleanup.cs" />
+    <Compile Include="Tools\Cleanup\ArtifactCleanup.cs" />
     <Compile Include="Tools\DefaultPaths.cs" />
     <Compile Include="Tools\DirectoryDelete.cs" />
     <Compile Include="Tools\Git\GitHelper.cs" />
     <Compile Include="Tools\Git\GitVariableProvider.cs" />
     <Compile Include="Tools\ILMerge\ILMergeData.cs" />
     <Compile Include="Tools\ILMerge\ILMergeVariableProvider.cs" />
-    <Compile Include="Tools\Artifacts\ArtifactsVariableProvider.cs" />
+    <Compile Include="Tools\Cleanup\ArtifactsVariableProvider.cs" />
     <Compile Include="Tools\Environments\BuildAgentVariableProvider.cs" />
     <Compile Include="Tools\Environments\SourcePathVariableProvider.cs" />
     <Compile Include="BuildVariables\BuildVariableExtensions.cs" />

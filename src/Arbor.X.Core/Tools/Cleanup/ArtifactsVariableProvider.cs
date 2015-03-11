@@ -6,7 +6,7 @@ using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 
-namespace Arbor.X.Core.Tools.Artifacts
+namespace Arbor.X.Core.Tools.Cleanup
 {
     public class ArtifactsVariableProvider : IVariableProvider
     {
