@@ -59,7 +59,7 @@ namespace Arbor.X.Core
                 [WellKnownVariables.BranchName] = "develop",
                 [WellKnownVariables.VersionMajor] = "1",
                 [WellKnownVariables.VersionMinor] = "0",
-                [WellKnownVariables.VersionPatch] = "18",
+                [WellKnownVariables.VersionPatch] = "19",
                 [WellKnownVariables.VersionBuild] = "106",
                 [WellKnownVariables.Configuration] = "release",
             };
