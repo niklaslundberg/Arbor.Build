@@ -254,6 +254,12 @@ namespace Arbor.X.Core.Tools.Testing
                 _logger.WriteDebug(string.Format("Could not load assembly '{0}'. Ignoring.", dllFile.FullName));
                 return null;
             }
+// ReSharper disable once UnusedVariable
+            catch (BadImageFormatException ex)
+            {
+                _logger.WriteDebug(string.Format("Could not load assembly '{0}'. Ignoring.", dllFile.FullName));
+                return null;
+            }
         }
     }
 }
