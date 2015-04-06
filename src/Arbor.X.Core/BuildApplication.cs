@@ -25,6 +25,7 @@ using Arbor.X.Core.Tools.TeamCity;
 using Arbor.X.Core.Tools.Testing;
 using Arbor.X.Core.Tools.Versioning;
 using Arbor.X.Core.Tools.VisualStudio;
+using Autofac;
 
 namespace Arbor.X.Core
 {
@@ -32,6 +33,7 @@ namespace Arbor.X.Core
     {
         ILogger _logger;
         CancellationToken _cancellationToken;
+        IContainer _container;
 
         public BuildApplication(ILogger logger)
         {
@@ -84,8 +86,10 @@ namespace Arbor.X.Core
         {
             if (Debugger.IsAttached)
             {
-                await StartWithDebuggerAsync(args);
+                await StartWithDebuggerAsync(args).ConfigureAwait(false);
             }
+
+            _container = await BuildBootstrapper.StartAsync();
 
             _logger = new DebugLogger(_logger);
 
@@ -301,30 +305,32 @@ namespace Arbor.X.Core
         {
             var buildVariables = new List<IVariable>();
 
-            IEnumerable<IVariable> result = await RunOnceAsync();
+            IEnumerable<IVariable> result = await RunOnceAsync().ConfigureAwait(false);
 
             buildVariables.AddRange(result);
 
             buildVariables.AddRange(EnvironmentVariableHelper.GetBuildVariablesFromEnvironmentVariables(_logger, buildVariables));
 
-            var providers = new List<IVariableProvider>
-                            {
-                                new GitVariableProvider(),
-                                new TeamCityVariableProvider(),
-                                new SourcePathVariableProvider(),
-                                new ArtifactsVariableProvider(),
-                                new MSBuildVariableProvider(),
-                                new NugetVariableProvider(),
-                                new VisualStudioVariableProvider(),
-                                new VsTestVariableProvider(),
-                                new MSpecVariableProvider(),
-                                new BuildVersionProvider(),
-                                new ILMergeVariableProvider(),
-                                new SymbolsVariableProvider(),
-                                new BuildAgentVariableProvider(),
-                                new KuduEnvironmentVariableProvider(),
-                                new BuildConfigurationProvider()
-                            }; //TODO use Autofac
+            //var providers = new List<IVariableProvider>
+            //                {
+            //                    new GitVariableProvider(),
+            //                    new TeamCityVariableProvider(),
+            //                    new SourcePathVariableProvider(),
+            //                    new ArtifactsVariableProvider(),
+            //                    new MSBuildVariableProvider(),
+            //                    new NugetVariableProvider(),
+            //                    new VisualStudioVariableProvider(),
+            //                    new VsTestVariableProvider(),
+            //                    new MSpecVariableProvider(),
+            //                    new BuildVersionProvider(),
+            //                    new ILMergeVariableProvider(),
+            //                    new SymbolsVariableProvider(),
+            //                    new BuildAgentVariableProvider(),
+            //                    new KuduEnvironmentVariableProvider(),
+            //                    new BuildConfigurationProvider()
+            //                }; //TODO use Autofac
+
+            var providers = _container.Resolve<IEnumerable<IVariableProvider>>().OrderBy(provider => provider.Order).ToReadOnlyCollection();
 
             string displayAsTable =
                 providers.Select(item => new Dictionary<string, string> {{"Provider", item.GetType().Name}})

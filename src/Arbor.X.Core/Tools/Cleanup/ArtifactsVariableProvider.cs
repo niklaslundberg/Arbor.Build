@@ -26,5 +26,7 @@ namespace Arbor.X.Core.Tools.Cleanup
 
             return Task.FromResult<IEnumerable<IVariable>>(variables);
         }
+
+        public int Order => 2;
     }
 }

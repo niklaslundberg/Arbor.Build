@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Logging;
+using Arbor.X.Core.Tools.Cleanup;
 
 namespace Arbor.X.Core.Tools.NuGet
 {
@@ -31,5 +32,7 @@ namespace Arbor.X.Core.Tools.NuGet
 
             return nuGetExePath;
         }
+
+        public int Order => 3;
     }
 }

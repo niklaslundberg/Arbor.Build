@@ -5,7 +5,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Logging;
+using Arbor.X.Core.Tools.Cleanup;
 using Microsoft.Win32;
+using Semver;
+using System.Linq;
 
 namespace Arbor.X.Core.Tools.MSBuild
 {
@@ -18,13 +21,23 @@ namespace Arbor.X.Core.Tools.MSBuild
             logger.WriteVerbose(string.Format("Running current process [id {0}] as a {1}-bit process",
                 Process.GetCurrentProcess().Id, currentProcessBits));
 
-            var possibleVersions = new List<string> {"14.0", "12.0", "4.0"};
+            var possibleVersions = new List<string> {"14.0", "12.0", "4.0"}.Select(version => SemVersion.Parse(version)).ToList();
+
+            var max = buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_MSBuild_MaxVersion,
+                "14.0");
+
+            var toRemove = possibleVersions.Where(version => version > SemVersion.Parse(max));
+
+            foreach (var semVersion in toRemove)
+            {
+                possibleVersions.Remove(semVersion);
+            }
 
             string foundPath = null;
 
             foreach (var possibleVersion in possibleVersions)
             {
-                string registryKeyName = @"SOFTWARE\Microsoft\MSBuild\" + possibleVersion;
+                string registryKeyName = @"SOFTWARE\Microsoft\MSBuild\" + possibleVersion.Major + "." + possibleVersion.Minor;
                 object msBuildPathRegistryKeyValue = null;
                 const string valueKey = "MSBuildOverrideTasksPath";
 
@@ -85,5 +98,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                                        };
             return Task.FromResult<IEnumerable<IVariable>>(environmentVariables);
         }
+
+        public int Order => VariableProviderOrder.Ignored;
     }
 }

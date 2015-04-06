@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Logging;
+using Arbor.X.Core.Tools.Cleanup;
 using Microsoft.Win32;
 
 namespace Arbor.X.Core.Tools.VisualStudio
@@ -138,5 +139,6 @@ namespace Arbor.X.Core.Tools.VisualStudio
             }
             return path;
         }
+        public int Order => VariableProviderOrder.Ignored;
     }
 }

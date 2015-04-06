@@ -7,6 +7,7 @@ using Arbor.Aesculus.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
+using Arbor.X.Core.Tools.Cleanup;
 
 namespace Arbor.X.Core.Tools.Environments
 {
@@ -47,5 +48,7 @@ namespace Arbor.X.Core.Tools.Environments
 
             return Task.FromResult<IEnumerable<IVariable>>(variables);
         }
+        
+        public int Order => 0;
     }
 }

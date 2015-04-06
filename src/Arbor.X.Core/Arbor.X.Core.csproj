@@ -46,6 +46,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Arbor.Sorbus.1.2.1\lib\net45\Arbor.Sorbus.Core.dll</HintPath>
     </Reference>
+    <Reference Include="Autofac, Version=3.5.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\packages\Autofac.3.5.2\lib\net40\Autofac.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="FubuCore">
       <HintPath>..\packages\FubuCore.1.3.0.278\lib\FubuCore.dll</HintPath>
     </Reference>
@@ -53,8 +57,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\FubuCsProjFile.1.6.0.143\lib\net40\FubuCsProjFile.dll</HintPath>
     </Reference>
-    <Reference Include="JetBrains.Annotations.PCL328">
-      <HintPath>..\packages\JetBrains.Annotations.8.0.5.0\lib\portable-net4+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1\JetBrains.Annotations.PCL328.dll</HintPath>
+    <Reference Include="JetBrains.Annotations, Version=8.0.5.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
+      <HintPath>..\packages\JetBrains.Annotations.8.0.5.0\lib\net20\JetBrains.Annotations.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Machine.Specifications, Version=0.9.1.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -101,7 +106,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AssemblyExtensions.cs" />
     <Compile Include="BoolExtensions.cs" />
+    <Compile Include="BuildBootstrapper.cs" />
     <Compile Include="BuildVariables\Arbor.cs" />
     <Compile Include="BuildVariables\ArborX.cs" />
     <Compile Include="BuildVariables\DynamicVariable.cs" />
@@ -146,10 +153,13 @@
     <Compile Include="Logging\NullLogger.cs" />
     <Compile Include="Maybe.cs" />
     <Compile Include="ParseResult.cs" />
+    <Compile Include="TaskExtensions.cs" />
     <Compile Include="ToolExtensions.cs" />
     <Compile Include="ToolResult.cs" />
     <Compile Include="ToolResultType.cs" />
+    <Compile Include="ToolsModule.cs" />
     <Compile Include="Tools\Cleanup\ArtifactCleanup.cs" />
+    <Compile Include="Tools\Cleanup\VariableProviderOrder.cs" />
     <Compile Include="Tools\DefaultPaths.cs" />
     <Compile Include="Tools\DirectoryDelete.cs" />
     <Compile Include="Tools\Git\GitHelper.cs" />
@@ -225,6 +235,7 @@
     <Compile Include="Tools\VisualStudio\VisualStudioEnvironmentVerification.cs" />
     <Compile Include="Tools\Testing\VSTestVariableProvider.cs" />
     <Compile Include="BuildVariables\WellKnownVariables.cs" />
+    <Compile Include="TypeExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config">

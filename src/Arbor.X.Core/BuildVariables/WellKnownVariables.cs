@@ -72,6 +72,9 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescription("MSBuild executable path (eg. C:\\MSbuild.exe)")]
         public static readonly string ExternalTools_MSBuild_ExePath = "Arbor.X.Tools.External.MSBuild.ExePath";
 
+        [VariableDescription("MSBuild max version")]
+        public static readonly string ExternalTools_MSBuild_MaxVersion = "Arbor.X.Tools.External.MSBuild.MaxVersion";
+
         [VariableDescription("MSBuild verbosity level","normal")]
         public static readonly string ExternalTools_MSBuild_Verbosity = "Arbor.X.Tools.External.MSBuild.Verbosity";
 
