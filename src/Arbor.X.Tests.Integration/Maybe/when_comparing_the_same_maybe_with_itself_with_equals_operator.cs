@@ -7,6 +7,7 @@ namespace Arbor.X.Tests.Integration.Maybe
     {
         Establish context = () => instance = new Core.Maybe<string>("a string");
 
+        // ReSharper disable once EqualExpressionComparison
         Because of = () => equal = instance == instance;
 
         It should_return_true = () => equal.ShouldBeTrue();
