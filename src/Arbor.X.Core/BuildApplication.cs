@@ -51,7 +51,7 @@ namespace Arbor.X.Core
 
             WriteDebug(string.Format("Using temp directory '{0}'", tempDirectory));
 
-            await DirectoryCopy.CopyAsync(baseDir, tempDirectory.FullName, pathLookupSpecificationOption: DefaultPaths.DefaultPathLookupSpecification);
+            await DirectoryCopy.CopyAsync(baseDir, tempDirectory.FullName, pathLookupSpecificationOption: DefaultPaths.DefaultPathLookupSpecification, rootDir: baseDir);
 
             Dictionary<string, string> environmentVariables = new Dictionary<string, string>
             {

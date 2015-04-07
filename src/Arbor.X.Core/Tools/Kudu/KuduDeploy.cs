@@ -26,6 +26,7 @@ namespace Arbor.X.Core.Tools.Kudu
         bool _deleteExistingAppOfflineHtm;
         string _ignoreDeleteFiles;
         string _ignoreDeleteDirectories;
+        private string _vcsRoot;
 
         public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {
@@ -34,6 +35,7 @@ namespace Arbor.X.Core.Tools.Kudu
             {
                 return ExitCode.Success;
             }
+            _vcsRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
             _artifacts = buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue().Value;
             _platform = buildVariables.Require(WellKnownVariables.ExternalTools_Kudu_Platform).ThrowIfEmptyValue().Value;
             _deployBranch = new BranchName(buildVariables.Require(WellKnownVariables.ExternalTools_Kudu_DeploymentBranchName).Value);
@@ -208,7 +210,7 @@ namespace Arbor.X.Core.Tools.Kudu
                 
                 try
                 {
-                    var exitCode = await DirectoryCopy.CopyAsync(configuration.FullName, _deploymentTargetDirectory, logger);
+                    var exitCode = await DirectoryCopy.CopyAsync(configuration.FullName, _deploymentTargetDirectory, logger, rootDir: _vcsRoot);
 
                     if (!exitCode.IsSuccess)
                     {

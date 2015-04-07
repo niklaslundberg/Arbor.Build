@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design.Serialization;
 using System.IO;
 using System.Linq;
 
@@ -35,7 +36,7 @@ namespace Arbor.X.Core.Tools
 
             return isBlackListed;
         }
-        public static bool IsBlackListed(this PathLookupSpecification pathLookupSpecification, string sourceDir)
+        public static bool IsBlackListed(this PathLookupSpecification pathLookupSpecification, string sourceDir, string rootDir = null)
         {
             if (pathLookupSpecification == null)
             {
@@ -51,9 +52,8 @@ namespace Arbor.X.Core.Tools
             {
                 return true;
             }
-
-            var sourceDirSegments = sourceDir.Split(new[] { Path.DirectorySeparatorChar },
-                StringSplitOptions.RemoveEmptyEntries);
+            
+            var sourceDirSegments = GetSourceDirSegments(sourceDir, rootDir);
 
             bool hasAnyPathSegment = HasAnyPathSegment(sourceDirSegments,
                 pathLookupSpecification.IgnoredDirectorySegments);
@@ -80,6 +80,17 @@ namespace Arbor.X.Core.Tools
             }
 
             return false;
+        }
+
+        private static string[] GetSourceDirSegments(string sourceDir, string rootDir)
+        {
+            var path = string.IsNullOrWhiteSpace(rootDir) ? 
+                sourceDir : 
+                sourceDir.Replace(rootDir, "");
+
+            var sourceDirSegments = path.Split(new[] {Path.DirectorySeparatorChar},
+                StringSplitOptions.RemoveEmptyEntries);
+            return sourceDirSegments;
         }
 
         static bool HasAnyPathSegment(IEnumerable<string> segments, IEnumerable<string> patterns)

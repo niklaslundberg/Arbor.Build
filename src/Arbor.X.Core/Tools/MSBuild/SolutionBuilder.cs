@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.X.Core.BuildVariables;
@@ -40,6 +41,7 @@ namespace Arbor.X.Core.Tools.MSBuild
         bool _showSummary;
         MSBuildVerbositoyLevel _verbosity;
         bool _createWebDeployPackages;
+        private string _vcsRoot;
 
         public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
@@ -75,6 +77,14 @@ namespace Arbor.X.Core.Tools.MSBuild
 
             logger.WriteVerbose(string.Format("Using MSBuild verbosity {0}", _verbosity));
 
+            _vcsRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
+
+            if (_vcsRoot == null)
+            {
+                logger.WriteError("Could not find version control root path");
+                return ExitCode.Failure;
+            }
+
             try
             {
                 return await BuildAsync(logger, buildVariables);
@@ -104,14 +114,6 @@ namespace Arbor.X.Core.Tools.MSBuild
 
         async Task<ExitCode> BuildAsync(ILogger logger, IReadOnlyCollection<IVariable> variables)
         {
-            string vcsRoot = variables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
-
-            if (vcsRoot == null)
-            {
-                logger.WriteError("Could not find version control root path");
-                return ExitCode.Failure;
-            }
-
             string buildConfiguration =
                 variables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_MSBuild_BuildConfiguration,
                     defaultValue: "");
@@ -184,7 +186,34 @@ namespace Arbor.X.Core.Tools.MSBuild
                 return ExitCode.Failure;
             }
 
-            IEnumerable<FileInfo> solutionFiles = FindSolutionFiles(new DirectoryInfo(vcsRoot));
+            IReadOnlyCollection<FileInfo> solutionFiles = FindSolutionFiles(new DirectoryInfo(_vcsRoot), logger).ToReadOnlyCollection();
+
+            if (!solutionFiles.Any())
+            {
+                StringBuilder messageBuilder = new StringBuilder();
+
+                messageBuilder.Append("Could not find any solution files.");
+
+                var sourceRootDirectories = new DirectoryInfo(_vcsRoot);
+
+                var files = sourceRootDirectories.GetFiles().Select(file => file.Name);
+                var directories = sourceRootDirectories.GetDirectories().Select(dir => dir.Name);
+
+                var all = files.Concat(directories);
+                messageBuilder.Append(". Root directory files and directories");
+                messageBuilder.AppendLine();
+
+                foreach (var item in all)
+                {
+                    messageBuilder.AppendLine(item);
+                }
+
+                var message = messageBuilder.ToString();
+
+                logger.WriteWarning(message);
+
+                return ExitCode.Success;
+            }
 
             IDictionary<FileInfo, IReadOnlyList<string>> solutionPlatforms =
                 new Dictionary<FileInfo, IReadOnlyList<string>>();
@@ -506,7 +535,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                             logger.WriteVerbose(string.Format("Copying directory '{0}' to '{1}'", kuduWebJobs.FullName,
                                 artifactJobAppDataDirectory.FullName));
 
-                            var code = await DirectoryCopy.CopyAsync(kuduWebJobs.FullName, artifactJobAppDataDirectory.FullName, logger);
+                            var code = await DirectoryCopy.CopyAsync(kuduWebJobs.FullName, artifactJobAppDataDirectory.FullName, logger, rootDir: _vcsRoot);
 
                             if (!code.IsSuccess)
                             {
@@ -535,10 +564,11 @@ namespace Arbor.X.Core.Tools.MSBuild
         }
 
 
-        IEnumerable<FileInfo> FindSolutionFiles(DirectoryInfo directoryInfo)
+        IEnumerable<FileInfo> FindSolutionFiles(DirectoryInfo directoryInfo, ILogger logger)
         {
             if (IsBlacklisted(directoryInfo))
             {
+                logger.WriteDebug(string.Format("Skipping directory '{0}' when searching for solution files because the directory is blacklisted", directoryInfo.FullName));
                 return Enumerable.Empty<FileInfo>();
             }
 
@@ -546,7 +576,7 @@ namespace Arbor.X.Core.Tools.MSBuild
 
             foreach (DirectoryInfo subDir in directoryInfo.EnumerateDirectories())
             {
-                solutionFiles.AddRange(FindSolutionFiles(subDir));
+                solutionFiles.AddRange(FindSolutionFiles(subDir, logger));
             }
 
             return solutionFiles;
@@ -554,7 +584,7 @@ namespace Arbor.X.Core.Tools.MSBuild
 
         bool IsBlacklisted(DirectoryInfo directoryInfo)
         {
-            bool isBlacklistedByName = _pathLookupSpecification.IsBlackListed(directoryInfo.FullName);
+            bool isBlacklistedByName = _pathLookupSpecification.IsBlackListed(directoryInfo.FullName, _vcsRoot);
 
             bool isBlackListedByAttributes = _blackListedByAttributes.Any(
                 blackListed => directoryInfo.Attributes.HasFlag(blackListed));
