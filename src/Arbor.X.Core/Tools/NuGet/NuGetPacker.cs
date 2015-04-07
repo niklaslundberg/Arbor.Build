@@ -119,7 +119,7 @@ namespace Arbor.X.Core.Tools.NuGet
 
             IReadOnlyCollection<FileInfo> filtered =
                 packageSpecifications
-                .Where(packagePath => !pathLookupSpecification.IsFileBlackListed(packagePath))
+                .Where(packagePath => !pathLookupSpecification.IsFileBlackListed(packagePath, rootDir:vcsRootDir))
                 .Select(file => new FileInfo(file))
                 .ToReadOnly();
 

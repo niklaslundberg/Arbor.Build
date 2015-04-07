@@ -35,12 +35,12 @@ namespace Arbor.X.Core.Tools.NuGet
             var rootDirectory = new DirectoryInfo(vcsRoot);
 
             var packagesConfigFiles = rootDirectory.EnumerateFiles("packages.config", SearchOption.AllDirectories)
-                .Where(file => !pathLookupSpecification.IsFileBlackListed(file.FullName))
+                .Where(file => !pathLookupSpecification.IsFileBlackListed(file.FullName, rootDir: vcsRoot))
                 .Select(file => file.FullName)
                 .ToReadOnlyCollection();
 
             var solutionFiles = rootDirectory.EnumerateFiles("*.sln", SearchOption.AllDirectories)
-                .Where(file => !pathLookupSpecification.IsFileBlackListed(file.FullName))
+                .Where(file => !pathLookupSpecification.IsFileBlackListed(file.FullName, rootDir: vcsRoot))
                 .ToReadOnlyCollection();
 
             if (!packagesConfigFiles.Any())

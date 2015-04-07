@@ -108,7 +108,7 @@ namespace Arbor.X.Core.Tools.Versioning
 
                 IReadOnlyCollection<AssemblyInfoFile> assemblyFiles = sourceDirectory
                     .EnumerateFiles(_filePattern, SearchOption.AllDirectories)
-                    .Where(file => !defaultPathLookupSpecification.IsFileBlackListed(file.FullName))
+                    .Where(file => !defaultPathLookupSpecification.IsFileBlackListed(file.FullName, rootDir: sourceRoot))
                     .Select(file => new AssemblyInfoFile(file.FullName))
                     .ToReadOnlyCollection();
 

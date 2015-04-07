@@ -8,7 +8,7 @@ namespace Arbor.X.Core.Tools
 {
     public static class PathExtensions
     {
-        public static bool IsFileBlackListed(this PathLookupSpecification pathLookupSpecification, string sourceFile)
+        public static bool IsFileBlackListed(this PathLookupSpecification pathLookupSpecification, string sourceFile, string rootDir = null)
         {
             if (pathLookupSpecification == null)
             {
@@ -27,7 +27,7 @@ namespace Arbor.X.Core.Tools
 
             var sourceFileInfo = new FileInfo(sourceFile);
 
-            if (pathLookupSpecification.IsBlackListed(sourceFileInfo.Directory.FullName))
+            if (pathLookupSpecification.IsBlackListed(sourceFileInfo.Directory.FullName, rootDir))
             {
                 return true;
             }

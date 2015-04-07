@@ -26,7 +26,7 @@ namespace Arbor.X.Tests.Integration.Tests
         Because of = () =>
         {
             packageConfigFiles = rootDirectory.EnumerateFiles("packages.config", SearchOption.AllDirectories)
-                .Where(file => !pathLookupSpecification.IsFileBlackListed(file.FullName))
+                .Where(file => !pathLookupSpecification.IsFileBlackListed(file.FullName, rootDir: rootDirectory.FullName))
                 .ToReadOnlyCollection();
 
             packageConfigFiles
