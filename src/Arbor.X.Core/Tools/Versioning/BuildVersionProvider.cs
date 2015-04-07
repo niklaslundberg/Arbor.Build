@@ -10,7 +10,7 @@ using Arbor.X.Core.Tools.Cleanup;
 
 namespace Arbor.X.Core.Tools.Versioning
 {
-    internal class BuildVersionProvider : IVariableProvider
+    public class BuildVersionProvider : IVariableProvider
     {
         public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {
