@@ -21,6 +21,7 @@ namespace Arbor.X.Core.Tools.NuGet
         bool _branchNameEnabled;
         string _packageIdOverride;
         string _nuGetPackageVersionOverride;
+        private IReadOnlyCollection<string> _excludedNuSpecFiles;
 
         public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {
@@ -51,6 +52,9 @@ namespace Arbor.X.Core.Tools.NuGet
             _packageIdOverride = buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageIdOverride, null);
             _nuGetPackageVersionOverride =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageVersionOverride, null);
+
+            _excludedNuSpecFiles =
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageExcludesCommaSeparated, "").Split(new string[] {","}, StringSplitOptions.RemoveEmptyEntries).SafeToReadOnlyCollection();
 
             var buildPackagesOnAnyBranch =
                 buildVariables.GetBooleanByKey(WellKnownVariables.NuGetCreatePackagesOnAnyBranchEnabled, false);
@@ -103,7 +107,7 @@ namespace Arbor.X.Core.Tools.NuGet
             return result;
         }
 
-        static IEnumerable<string> GetPackageSpecifications(ILogger logger, string vcsRootDir, string packageDirectory)
+        IEnumerable<string> GetPackageSpecifications(ILogger logger, string vcsRootDir, string packageDirectory)
         {
             var packageSpecifications = Directory.GetFiles(vcsRootDir, "*.nuspec", SearchOption.AllDirectories)
                                                  .Where(
@@ -113,14 +117,25 @@ namespace Arbor.X.Core.Tools.NuGet
 
             var pathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification;
 
-            IReadOnlyCollection<string> filtered =
+            IReadOnlyCollection<FileInfo> filtered =
                 packageSpecifications
                 .Where(packagePath => !pathLookupSpecification.IsFileBlackListed(packagePath))
+                .Select(file => new FileInfo(file))
                 .ToReadOnly();
+
+            var notExcluded =
+                filtered.Where(
+                    nuspec =>
+                        !_excludedNuSpecFiles.Any(
+                            exludedNuSpec =>
+                                exludedNuSpec.Equals(nuspec.Name, StringComparison.InvariantCultureIgnoreCase)))
+                                .SafeToReadOnlyCollection();
 
             logger.WriteVerbose(string.Format("Found nuspec files [{0}]: {1}{2}", filtered.Count,
                                        Environment.NewLine, string.Join(Environment.NewLine, filtered)));
-            return filtered;
+            var allIncluded = notExcluded.Select(file => file.FullName).SafeToReadOnlyCollection();
+
+            return allIncluded;
         }
 
         static string PackageDirectory()

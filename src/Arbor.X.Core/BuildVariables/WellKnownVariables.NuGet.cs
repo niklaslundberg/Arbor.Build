@@ -5,6 +5,9 @@
         [VariableDescription("Flag to indicate if NuGet package creation is enabled")]
         public static readonly string NuGetPackageEnabled = Arbor.X + ".NuGet.Package.Enabled";
 
+        [VariableDescription("Flag to indicate if NuGet package creation is enabled")]
+        public static readonly string NuGetPackageExcludesCommaSeparated = Arbor.X + ".NuGet.Package.ExcludesCommaSeparated";
+
         [VariableDescription("NuGet package artifacts suffix")]
         public static readonly string NuGetPackageArtifactsSuffix = Arbor.X + ".NuGet.Package.Artifacts.Suffix";
         

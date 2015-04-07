@@ -163,6 +163,7 @@
     <Compile Include="ToolResult.cs" />
     <Compile Include="ToolResultType.cs" />
     <Compile Include="ToolsModule.cs" />
+    <Compile Include="VariableProviderModule.cs" />
     <Compile Include="Tools\Cleanup\ArtifactCleanup.cs" />
     <Compile Include="Tools\Cleanup\VariableProviderOrder.cs" />
     <Compile Include="Tools\DefaultPaths.cs" />
@@ -184,6 +185,9 @@
     <Compile Include="Tools\Kudu\KuduWebProjectDetails.cs" />
     <Compile Include="Tools\Kudu\StringExtensions.cs" />
     <Compile Include="Tools\MSBuild\MSBuildVerbositoyLevel.cs" />
+    <Compile Include="Tools\NuGet\INuGetPackageRestoreFix.cs" />
+    <Compile Include="Tools\NuGet\NuGetPackageRestoreFix.cs" />
+    <Compile Include="Tools\NuGet\NuGetPackageRestoreFixModule.cs" />
     <Compile Include="Tools\PathExtensions.cs" />
     <Compile Include="Tools\PathLookupSpecification.cs" />
     <Compile Include="Tools\Sass\SassCompiler.cs" />

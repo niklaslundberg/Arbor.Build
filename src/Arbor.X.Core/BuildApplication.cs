@@ -64,6 +64,7 @@ namespace Arbor.X.Core
                 [WellKnownVariables.VersionPatch] = "19",
                 [WellKnownVariables.VersionBuild] = "106",
                 [WellKnownVariables.Configuration] = "release",
+                [WellKnownVariables.NuGetPackageExcludesCommaSeparated] = "Arbor.X.Bootstrapper.nuspec",
             };
 
             foreach (KeyValuePair<string, string> environmentVariable in environmentVariables)
@@ -171,7 +172,7 @@ namespace Arbor.X.Core
                 Environment.NewLine,
                 buildVariables.Print()));
 
-            IReadOnlyCollection<ToolWithPriority> toolWithPriorities = ToolFinder.GetTools(_logger);
+            IReadOnlyCollection<ToolWithPriority> toolWithPriorities = ToolFinder.GetTools(_container, _logger);
 
             LogTools(toolWithPriorities);
 

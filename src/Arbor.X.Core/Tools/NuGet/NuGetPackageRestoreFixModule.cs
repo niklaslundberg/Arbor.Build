@@ -1,19 +1,16 @@
-using System.Linq;
-using Arbor.X.Core.Tools;
+﻿using System.Linq;
 using Autofac;
-using JetBrains.Annotations;
 
-namespace Arbor.X.Core
+namespace Arbor.X.Core.Tools.NuGet
 {
-    [UsedImplicitly]
-    public class ToolsModule : Module
+    public class NuGetPackageRestoreFixModule : Module
     {
         protected override void Load(ContainerBuilder builder)
         {
             var assemblies = AssemblyExtensions.GetAssemblies().ToArray();
-
+            
             builder.RegisterAssemblyTypes(assemblies)
-                .Where(type => type.IsConcretePublicClassImplementing<ITool>())
+                .Where(type => type.IsConcretePublicClassImplementing<INuGetPackageRestoreFix>())
                 .AsImplementedInterfaces();
         }
     }
