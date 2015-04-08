@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -248,21 +249,24 @@ namespace Arbor.X.Core.Tools.Testing
 
                 return assembly;
             }
-// ReSharper disable once UnusedVariable
             catch (ReflectionTypeLoadException ex)
             {
-                string message = string.Format("Could not load assembly '{0}'. Ignoring.", dllFile.FullName);
+                string message = string.Format("Could not load assembly '{0}', type load exception. Ignoring.", dllFile.FullName);
 
                 _logger.WriteDebug(message);
 #if DEBUG
-                Console.WriteLine( "{0}, {1}", message, ex);
+                Debug.WriteLine( "{0}, {1}", message, ex);
 #endif
                 return null;
             }
-// ReSharper disable once UnusedVariable
             catch (BadImageFormatException ex)
             {
-                _logger.WriteDebug(string.Format("Could not load assembly '{0}'. Ignoring.", dllFile.FullName));
+                string message = string.Format("Could not load assembly '{0}', bad image format exception. Ignoring.", dllFile.FullName);
+
+                _logger.WriteDebug(message);
+#if DEBUG
+                Debug.WriteLine("{0}, {1}", message, ex);
+#endif
                 return null;
             }
         }
