@@ -26,7 +26,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             var max = buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_MSBuild_MaxVersion,
                 "14.0");
 
-            var toRemove = possibleVersions.Where(version => version > SemVersion.Parse(max));
+            var toRemove = possibleVersions.Where(version => version > SemVersion.Parse(max)).ToArray();
 
             foreach (var semVersion in toRemove)
             {
