@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -210,7 +211,7 @@ namespace Arbor.X.Core.Tools.Kudu
                 
                 try
                 {
-                    var exitCode = await DirectoryCopy.CopyAsync(configuration.FullName, _deploymentTargetDirectory, logger, rootDir: _vcsRoot);
+                    var exitCode = await DirectoryCopy.CopyAsync(configuration.FullName, _deploymentTargetDirectory, logger, rootDir: _vcsRoot, pathLookupSpecificationOption: new PathLookupSpecification());
 
                     if (!exitCode.IsSuccess)
                     {
