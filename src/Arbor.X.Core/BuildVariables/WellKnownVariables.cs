@@ -189,6 +189,9 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescription("'|' (bar) separated list of directory names to not delete when deploying")]
         public static readonly string KuduIgnoreDeleteDirectories = "Arbor.X.Tools.External.Kudu.IgnoreDeleteDirectoriesBarSeparatedList";
 
+        [VariableDescription("Site for Kudu to deploy, needs to be specified if there are multiple web projects. Name of the csproj file exception the extension.")]
+        public static readonly string KuduSiteToDeploy = "Arbor.X.Tools.External.Kudu.SiteToDeploy";
+
         [VariableDescription("Flag to indicate if Kudu should delete any existing app_offline.htm file when deploying")]
         public static readonly string KuduDeleteExistingAppOfflineHtmFile = "Arbor.X.Tools.External.Kudu.DeleteExistingAppOfflineHtmFile";
 

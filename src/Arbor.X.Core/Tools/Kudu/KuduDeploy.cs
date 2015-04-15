@@ -77,18 +77,42 @@ namespace Arbor.X.Core.Tools.Kudu
                 logger.Write("No websites found. Ignoring Kudu deployment.");
                 return ExitCode.Success;
             }
+            DirectoryInfo websiteToDeploy;
 
-            if (builtWebsites.Count() > 1)
+            if (builtWebsites.Length == 1)
             {
-                logger.WriteError(
-                    string.Format(
-                        "Found {0} websites. Kudu deployment is only supported with a single website. \r\nBuilt websites: {1}",
-                        builtWebsites.Count(), string.Join(Environment.NewLine, builtWebsites.Select(dir => dir.Name))));
-
-                return ExitCode.Failure;
+                websiteToDeploy = builtWebsites.Single();
             }
+            else
+            {
+                string siteToDeploy = buildVariables.GetVariableValueOrDefault(WellKnownVariables.KuduSiteToDeploy, "");
+                if (!string.IsNullOrWhiteSpace(siteToDeploy))
+                {
+                    var foundDir = builtWebsites.SingleOrDefault(
+                        dir => dir.Name.Equals(siteToDeploy, StringComparison.InvariantCultureIgnoreCase));
 
-            var websiteToDeploy = builtWebsites.Single();
+                    if (foundDir == null)
+                    {
+                        logger.WriteError(
+                            string.Format(
+                                "Found {0} websites. Kudu deployment is specified for site {1} but it was not found",
+                                builtWebsites.Count(), siteToDeploy));
+                        return ExitCode.Failure;
+                    }
+
+                    websiteToDeploy = foundDir;
+                }
+                else
+                {
+                    logger.WriteError(
+                        string.Format(
+                            "Found {0} websites. Kudu deployment is only supported with a single website. \r\nBuilt websites: {1}. You can use variable '{2}' to specify a single website to be built",
+                            builtWebsites.Count(),
+                            string.Join(Environment.NewLine, builtWebsites.Select(dir => dir.Name)),
+                            WellKnownVariables.KuduSiteToDeploy));
+                    return ExitCode.Failure;
+                }
+            }
 
             if (!websiteToDeploy.GetDirectories().Any())
             {
