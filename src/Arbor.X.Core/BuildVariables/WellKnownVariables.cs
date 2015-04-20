@@ -198,6 +198,9 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescription("Log level")]
         public static readonly string LogLevel = "Arbor.X.Log.Level";
 
+        [VariableDescription("Generic XML transformaions enabled")]
+        public static readonly string GenericXmlTransformsEnabled = "Arbor.X.Build.XmlTransformations.Enabled";
+
         // ReSharper restore ConvertToConstant.Global
         // ReSharper restore InconsistentNaming
 

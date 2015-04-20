@@ -64,6 +64,7 @@ namespace Arbor.X.Core
                 [WellKnownVariables.VersionPatch] = "19",
                 [WellKnownVariables.VersionBuild] = "106",
                 [WellKnownVariables.Configuration] = "release",
+                [WellKnownVariables.GenericXmlTransformsEnabled] = "true",
                 [WellKnownVariables.NuGetPackageExcludesCommaSeparated] = "Arbor.X.Bootstrapper.nuspec",
             };
 

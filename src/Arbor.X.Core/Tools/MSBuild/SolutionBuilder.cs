@@ -42,6 +42,7 @@ namespace Arbor.X.Core.Tools.MSBuild
         MSBuildVerbositoyLevel _verbosity;
         bool _createWebDeployPackages;
         private string _vcsRoot;
+        bool _configurationTransformsEnabled;
 
         public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
@@ -78,6 +79,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             logger.WriteVerbose(string.Format("Using MSBuild verbosity {0}", _verbosity));
 
             _vcsRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
+            _configurationTransformsEnabled = buildVariables.GetBooleanByKey(WellKnownVariables.GenericXmlTransformsEnabled, defaultValue:false);
 
             if (_vcsRoot == null)
             {
@@ -457,6 +459,39 @@ namespace Arbor.X.Core.Tools.MSBuild
                 if (!buildSiteExitCode.IsSuccess)
                 {
                     return buildSiteExitCode;
+                }
+
+                if (_configurationTransformsEnabled)
+                {
+                    string projectDirectoryPath = solutionProject.Project.ProjectDirectory;
+                    
+                    IReadOnlyCollection<FileInfo> files = new DirectoryInfo(projectDirectoryPath)
+                        .GetFiles("*.", SearchOption.AllDirectories)
+                        .Where(file => _pathLookupSpecification.IsFileBlackListed(file.FullName,_vcsRoot))
+                        .Where(file => !file.Name.Equals("web.config", StringComparison.InvariantCultureIgnoreCase))
+                        .ToReadOnlyCollection();
+
+                    Func<FileInfo, string> transformFile = (file) =>
+                    {
+                        string nameWithoutExtension = Path.GetFileNameWithoutExtension(file.Name);
+                        string extension = Path.GetExtension(file.Name);
+
+                        // ReSharper disable once PossibleNullReferenceException
+                        var transformFilePath = Path.Combine(file.Directory.FullName,
+                            nameWithoutExtension + "." + configuration + extension);
+
+                        return transformFilePath;
+                    };
+
+                    var configurationFiles = files.Select(file => new
+                                                                  {
+                                                                      Original = file,
+                                                                      TransformFile = transformFile(file)
+                                                                  })
+                        .Where(filePair => File.Exists(filePair.TransformFile))
+                        .ToReadOnlyCollection();
+
+                    logger.WriteDebug(string.Format("Found {0} files with transforms", configurationFiles.Count));
                 }
 
                 if (_createWebDeployPackages)
