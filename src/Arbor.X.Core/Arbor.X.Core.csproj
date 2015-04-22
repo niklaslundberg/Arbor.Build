@@ -95,6 +95,9 @@
     <Reference Include="Arbor.Castanea.Core">
       <HintPath>..\packages\Arbor.Castanea.1.0.3\lib\net45\Arbor.Castanea.Core.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.Web.XmlTransform">
+      <HintPath>..\packages\Microsoft.Web.Xdt.2.1.1\lib\net40\Microsoft.Web.XmlTransform.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyExtensions.cs" />

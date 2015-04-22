@@ -97,8 +97,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Global.asax" />
-    <Content Include="Test.debug.xml" />
-    <Content Include="Test.release.xml" />
+    <None Include="Test.debug.xml" />
+    <None Include="Test.release.xml" />
     <Content Include="Test.xml" />
     <Content Include="Web.config" />
   </ItemGroup>

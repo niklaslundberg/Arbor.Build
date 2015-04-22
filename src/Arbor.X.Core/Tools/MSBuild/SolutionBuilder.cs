@@ -11,6 +11,7 @@ using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;
 using FubuCsProjFile;
+using Microsoft.Web.XmlTransform;
 
 namespace Arbor.X.Core.Tools.MSBuild
 {
@@ -463,15 +464,19 @@ namespace Arbor.X.Core.Tools.MSBuild
 
                 if (_configurationTransformsEnabled)
                 {
+                    logger.WriteDebug("Transforms are enabled");
                     string projectDirectoryPath = solutionProject.Project.ProjectDirectory;
-                    
+
+                    string[] extensions = {".xml", ".config"};
+
                     IReadOnlyCollection<FileInfo> files = new DirectoryInfo(projectDirectoryPath)
-                        .GetFiles("*.", SearchOption.AllDirectories)
-                        .Where(file => _pathLookupSpecification.IsFileBlackListed(file.FullName,_vcsRoot))
+                        .GetFiles("*.*", SearchOption.AllDirectories)
+                        .Where(file => !_pathLookupSpecification.IsFileBlackListed(file.FullName, _vcsRoot))
+                        .Where(file => extensions.Any(extension =>  Path.GetExtension(file.Name).Equals(extension, StringComparison.InvariantCultureIgnoreCase)))
                         .Where(file => !file.Name.Equals("web.config", StringComparison.InvariantCultureIgnoreCase))
                         .ToReadOnlyCollection();
 
-                    Func<FileInfo, string> transformFile = (file) =>
+                    Func<FileInfo, string> transformFile = file =>
                     {
                         string nameWithoutExtension = Path.GetFileNameWithoutExtension(file.Name);
                         string extension = Path.GetExtension(file.Name);
@@ -483,15 +488,40 @@ namespace Arbor.X.Core.Tools.MSBuild
                         return transformFilePath;
                     };
 
-                    var configurationFiles = files.Select(file => new
-                                                                  {
-                                                                      Original = file,
-                                                                      TransformFile = transformFile(file)
-                                                                  })
+                    var transformationPairs = files
+                        .Select(file => new
+                                        {
+                                            Original = file,
+                                            TransformFile = transformFile(file)
+                                        })
                         .Where(filePair => File.Exists(filePair.TransformFile))
                         .ToReadOnlyCollection();
 
-                    logger.WriteDebug(string.Format("Found {0} files with transforms", configurationFiles.Count));
+                    logger.WriteDebug(string.Format("Found {0} files with transforms", transformationPairs.Count));
+                    
+                    foreach (var configurationFile in transformationPairs)
+                    {
+                        string relativeFilePath = configurationFile.Original.FullName.Replace(projectDirectoryPath, "");
+
+                        string targetTransformResultPath = string.Format("{0}{1}", siteArtifactDirectory.FullName, relativeFilePath);
+
+                        var transformable = new XmlTransformableDocument();
+
+                        transformable.Load(configurationFile.Original.FullName);
+
+                        var transformation = new XmlTransformation(configurationFile.TransformFile);
+
+                        logger.WriteDebug(string.Format("Transforming '{0}' with transformation file '{1} to target file '{2}'", configurationFile.Original.FullName, configurationFile.TransformFile, targetTransformResultPath));
+
+                        if (transformation.Apply(transformable))
+                        {
+                            transformable.Save(targetTransformResultPath);
+                        }
+                    }
+                }
+                else
+                {
+                    logger.WriteDebug("Transforms are disabled");
                 }
 
                 if (_createWebDeployPackages)
