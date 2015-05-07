@@ -13,35 +13,17 @@ namespace Arbor.X.Core.Tools.MSBuild
             _level = level;
         }
 
-        public static MSBuildVerbositoyLevel Normal
-        {
-            get { return new MSBuildVerbositoyLevel("normal"); }
-        }
+        public static MSBuildVerbositoyLevel Normal => new MSBuildVerbositoyLevel("normal");
 
-        public static MSBuildVerbositoyLevel Detailed
-        {
-            get { return new MSBuildVerbositoyLevel("detailed"); }
-        }
+        public static MSBuildVerbositoyLevel Detailed => new MSBuildVerbositoyLevel("detailed");
 
-        public static MSBuildVerbositoyLevel Minimal
-        {
-            get { return new MSBuildVerbositoyLevel("minimal"); }
-        }
+        public static MSBuildVerbositoyLevel Minimal => new MSBuildVerbositoyLevel("minimal");
 
-        public static MSBuildVerbositoyLevel Quiet
-        {
-            get { return new MSBuildVerbositoyLevel("quiet"); }
-        }
+        public static MSBuildVerbositoyLevel Quiet => new MSBuildVerbositoyLevel("quiet");
 
-        public static MSBuildVerbositoyLevel Default
-        {
-            get { return Normal; }
-        }
+        public static MSBuildVerbositoyLevel Default => Normal;
 
-        public string Level
-        {
-            get { return _level; }
-        }
+        public string Level => _level;
 
         public static IEnumerable<MSBuildVerbositoyLevel> AllValues
         {
