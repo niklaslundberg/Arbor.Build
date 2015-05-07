@@ -11,8 +11,6 @@ This code uses the MIT license http://opensource.org/licenses/MIT, see [License.
 # Supported Version Control Systems
 
 * Git
-* Mercurial
-* Subversion (version TODO)
 
 # Build variables
 
