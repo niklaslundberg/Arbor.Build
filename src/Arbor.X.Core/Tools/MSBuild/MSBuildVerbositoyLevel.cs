@@ -28,6 +28,11 @@ namespace Arbor.X.Core.Tools.MSBuild
             get { return new MSBuildVerbositoyLevel("minimal"); }
         }
 
+        public static MSBuildVerbositoyLevel Quiet
+        {
+            get { return new MSBuildVerbositoyLevel("quiet"); }
+        }
+
         public static MSBuildVerbositoyLevel Default
         {
             get { return Normal; }
@@ -45,6 +50,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                 yield return Normal;
                 yield return Detailed;
                 yield return Minimal;
+                yield return Quiet;
             }
         }
 
