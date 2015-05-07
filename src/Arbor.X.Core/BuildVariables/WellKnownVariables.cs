@@ -87,6 +87,9 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescription("MSBuild build platform, if not specified, all wellknown platforms will be built")]
         public static readonly string ExternalTools_MSBuild_BuildPlatform = "Arbor.X.Tools.External.MSBuild.BuildPlatform";
 
+        [VariableDescription("MSBuild detault target when building")]
+        public static readonly string ExternalTools_MSBuild_DefaultTarget = "Arbor.X.Tools.External.MSBuild.DefaultTarget";
+
         [VariableDescription("Directory path for the current version control system repository")]
         public static readonly string SourceRoot = "SourceRoot";
 

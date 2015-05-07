@@ -44,6 +44,7 @@ namespace Arbor.X.Core.Tools.MSBuild
         bool _createWebDeployPackages;
         private string _vcsRoot;
         bool _configurationTransformsEnabled;
+        string _defaultTarget;
 
         public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
@@ -81,6 +82,7 @@ namespace Arbor.X.Core.Tools.MSBuild
 
             _vcsRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
             _configurationTransformsEnabled = buildVariables.GetBooleanByKey(WellKnownVariables.GenericXmlTransformsEnabled, defaultValue:false);
+            _defaultTarget = buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_MSBuild_DefaultTarget, "rebuild");
 
             if (_vcsRoot == null)
             {
@@ -373,7 +375,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                               string.Format("/property:configuration={0}", configuration),
                               string.Format("/property:platform={0}", platform),
                               string.Format("/verbosity:{0}", _verbosity.Level),
-                              "/target:rebuild",
+                              string.Format("/target:{0}", _defaultTarget),
                               string.Format("/maxcpucount:{0}", _processorCount.ToString(CultureInfo.InvariantCulture)),
                               "/nodeReuse:false"
                           };
