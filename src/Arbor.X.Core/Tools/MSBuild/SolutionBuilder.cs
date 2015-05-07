@@ -32,7 +32,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             
         readonly List<string> _buildConfigurations = new List<string>();
 
-        readonly List<string> _knownPlatforms = new List<string> {"x86", "Any CPU"};
+        readonly List<string> _knownPlatforms = new List<string> {"x86", "x64", "Any CPU"};
         readonly List<string> _platforms = new List<string>();
         bool _appDataJobsEnabled;
         string _artifactsPath;
