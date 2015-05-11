@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -191,7 +192,15 @@ namespace Arbor.X.Core.Tools.MSBuild
                 return ExitCode.Failure;
             }
 
+            logger.WriteDebug("Starting finding solution files");
+
+            Stopwatch findSolutionFiles = Stopwatch.StartNew();
+
             IReadOnlyCollection<FileInfo> solutionFiles = FindSolutionFiles(new DirectoryInfo(_vcsRoot), logger).ToReadOnlyCollection();
+
+            findSolutionFiles.Stop();
+
+            logger.WriteDebug(string.Format("Finding solutions files took {0} seconds", findSolutionFiles.Elapsed.TotalSeconds.ToString("F")));
 
             if (!solutionFiles.Any())
             {
@@ -337,9 +346,17 @@ namespace Arbor.X.Core.Tools.MSBuild
         {
             foreach (string knownPlatform in platforms)
             {
+                Stopwatch buildStopwatch = Stopwatch.StartNew();
+
+                logger.WriteDebug(string.Format("Starting stopwatch for solution file {0} ({1}|{2})", solutionFile.Name, configuration, knownPlatform));
+
                 ExitCode result =
                     await BuildSolutionWithConfigurationAndPlatformAsync(solutionFile, configuration, knownPlatform,
                         logger);
+
+                buildStopwatch.Stop();
+                
+                logger.WriteDebug(string.Format("Stopping stopwatch for solution file {0} ({1}|{2}), total time in seconds {3} ({4})", solutionFile.Name, configuration, knownPlatform, buildStopwatch.Elapsed.TotalSeconds.ToString("F"), result.IsSuccess ? "success" : "failed"));
 
                 if (!result.IsSuccess)
                 {
@@ -419,6 +436,8 @@ namespace Arbor.X.Core.Tools.MSBuild
                 solution.Projects.Where(
                     project => project.Project.ProjectTypes().Any(type => type == WebApplicationProjectTypeId)).ToList();
 
+            logger.WriteDebug(string.Format("Finding WebApplications by looking at project type GUID {0}", WebApplicationProjectTypeId));
+
             logger.Write(string.Format("WebApplication projects to build [{0}]: {1}", webProjects.Count,
                 string.Join(", ", webProjects.Select(wp => wp.Project.FileName))));
 
@@ -432,7 +451,7 @@ namespace Arbor.X.Core.Tools.MSBuild
 
                 string platformName = platform == "Any CPU" ? "AnyCPU" : platform;
 
-                var buildSiteArguments = new List<string>
+                var buildSiteArguments = new List<string>(15)
                               {
                                   solutionProject.Project.FileName,
                                   string.Format("/property:configuration={0}", configuration),
@@ -467,6 +486,10 @@ namespace Arbor.X.Core.Tools.MSBuild
                 if (_configurationTransformsEnabled)
                 {
                     logger.WriteDebug("Transforms are enabled");
+
+                    logger.WriteDebug("Starting xml transformations");
+
+                    Stopwatch transformationStopwatch = Stopwatch.StartNew();
                     string projectDirectoryPath = solutionProject.Project.ProjectDirectory;
 
                     string[] extensions = {".xml", ".config"};
@@ -520,6 +543,10 @@ namespace Arbor.X.Core.Tools.MSBuild
                             transformable.Save(targetTransformResultPath);
                         }
                     }
+
+                    transformationStopwatch.Stop();
+
+                    logger.WriteDebug(string.Format("XML transformations took {0} seconds", transformationStopwatch.Elapsed.TotalSeconds.ToString("F")));
                 }
                 else
                 {
@@ -528,41 +555,7 @@ namespace Arbor.X.Core.Tools.MSBuild
 
                 if (_createWebDeployPackages)
                 {
-                    string webDeployPackageDirectoryPath = Path.Combine(platformDirectoryPath, "WebDeploy");
-
-                    var webDeployPackageDirectory = new DirectoryInfo(webDeployPackageDirectoryPath).EnsureExists();
-
-                    string packagePath = Path.Combine(webDeployPackageDirectory.FullName,
-                        string.Format("{0}_{1}.zip", solutionProject.ProjectName, configuration));
-
-                    var buildSitePackageArguments = new List<string>
-                                                    {
-                                                        solutionProject.Project.FileName,
-                                                        string.Format("/property:configuration={0}", configuration),
-                                                        string.Format("/property:platform={0}", platformName),
-// ReSharper disable once PossibleNullReferenceException
-                                                        string.Format("/property:SolutionDir={0}",
-                                                            solutionFile.Directory.FullName),
-                                                        string.Format("/property:PackageLocation={0}", packagePath),
-                                                        string.Format("/verbosity:{0}", _verbosity.Level),
-                                                        "/target:Package",
-                                                        string.Format("/maxcpucount:{0}",
-                                                            _processorCount.ToString(CultureInfo.InvariantCulture)),
-
-                                                        "/nodeReuse:false"
-                                                    };
-
-                    if (_showSummary)
-                    {
-                        buildSitePackageArguments.Add("/detailedsummary");
-                    }
-
-                    ExitCode packageSiteExitCode =
-                        await
-                            ProcessRunner.ExecuteAsync(_msBuildExe, arguments: buildSitePackageArguments,
-                                standardOutLog: logger.Write,
-                                standardErrorAction: logger.WriteError, toolAction: logger.Write,
-                                cancellationToken: _cancellationToken);
+                    ExitCode packageSiteExitCode = await CreateWebDeployPackagesAsync(solutionFile, configuration, logger, platformDirectoryPath, solutionProject, platformName);
 
                     if (!packageSiteExitCode.IsSuccess)
                     {
@@ -572,53 +565,11 @@ namespace Arbor.X.Core.Tools.MSBuild
 
                 if (_appDataJobsEnabled)
                 {
-                    logger.Write("AppData Web Jobs are enabled");
+                    ExitCode exitCode = await CopyKuduWebJobsAsync(logger, solutionProject, siteArtifactDirectory);
 
-                    string appDataPath = Path.Combine(solutionProject.Project.ProjectDirectory, "App_Data");
-
-                    var appDataDirectory = new DirectoryInfo(appDataPath);
-
-                    if (appDataDirectory.Exists)
+                    if (!exitCode.IsSuccess)
                     {
-                        logger.WriteVerbose(string.Format("Site has App_Data directory: '{0}'",
-                            appDataDirectory.FullName));
-
-                        DirectoryInfo kuduWebJobs =
-                            appDataDirectory.EnumerateDirectories()
-                                .SingleOrDefault(
-                                    directory =>
-                                        directory.Name.Equals("jobs", StringComparison.InvariantCultureIgnoreCase));
-
-                        if (kuduWebJobs != null && kuduWebJobs.Exists)
-                        {
-                            logger.WriteVerbose(string.Format("Site has App_Data jobs directory: '{0}'",
-                                kuduWebJobs.FullName));
-                            string artifactJobAppDataPath = Path.Combine(siteArtifactDirectory.FullName, "App_Data",
-                                "jobs");
-
-                            DirectoryInfo artifactJobAppDataDirectory =
-                                new DirectoryInfo(artifactJobAppDataPath).EnsureExists();
-
-                            logger.WriteVerbose(string.Format("Copying directory '{0}' to '{1}'", kuduWebJobs.FullName,
-                                artifactJobAppDataDirectory.FullName));
-
-                            var code = await DirectoryCopy.CopyAsync(kuduWebJobs.FullName, artifactJobAppDataDirectory.FullName, logger, rootDir: _vcsRoot);
-
-                            if (!code.IsSuccess)
-                            {
-                                return code;
-                            }
-                        }
-                        else
-                        {
-                            logger.WriteVerbose(string.Format(
-                                "Site has no jobs directory in App_Data directory: '{0}'", appDataDirectory.FullName));
-                        }
-                    }
-                    else
-                    {
-                        logger.WriteVerbose(string.Format("Site has no App_Data directory: '{0}'",
-                            appDataDirectory.FullName));
+                        return exitCode;
                     }
                 }
                 else
@@ -628,6 +579,118 @@ namespace Arbor.X.Core.Tools.MSBuild
             }
 
             return ExitCode.Success;
+        }
+
+        async Task<ExitCode> CopyKuduWebJobsAsync(ILogger logger, SolutionProject solutionProject, DirectoryInfo siteArtifactDirectory)
+        {
+            logger.Write("AppData Web Jobs are enabled");
+            logger.WriteDebug("Starting web deploy packaging");
+
+            Stopwatch webJobStopwatch = Stopwatch.StartNew();
+
+            ExitCode exitCode;
+
+            string appDataPath = Path.Combine(solutionProject.Project.ProjectDirectory, "App_Data");
+
+            var appDataDirectory = new DirectoryInfo(appDataPath);
+
+            if (appDataDirectory.Exists)
+            {
+                logger.WriteVerbose(string.Format("Site has App_Data directory: '{0}'",
+                    appDataDirectory.FullName));
+
+                DirectoryInfo kuduWebJobs =
+                    appDataDirectory.EnumerateDirectories()
+                        .SingleOrDefault(
+                            directory =>
+                                directory.Name.Equals("jobs", StringComparison.InvariantCultureIgnoreCase));
+
+                if (kuduWebJobs != null && kuduWebJobs.Exists)
+                {
+                    logger.WriteVerbose(string.Format("Site has App_Data jobs directory: '{0}'",
+                        kuduWebJobs.FullName));
+                    string artifactJobAppDataPath = Path.Combine(siteArtifactDirectory.FullName, "App_Data",
+                        "jobs");
+
+                    DirectoryInfo artifactJobAppDataDirectory =
+                        new DirectoryInfo(artifactJobAppDataPath).EnsureExists();
+
+                    logger.WriteVerbose(string.Format("Copying directory '{0}' to '{1}'", kuduWebJobs.FullName,
+                        artifactJobAppDataDirectory.FullName));
+
+                    exitCode =
+                        await
+                            DirectoryCopy.CopyAsync(kuduWebJobs.FullName, artifactJobAppDataDirectory.FullName, logger,
+                                rootDir: _vcsRoot);
+                }
+                else
+                {
+                    logger.WriteVerbose(string.Format(
+                        "Site has no jobs directory in App_Data directory: '{0}'", appDataDirectory.FullName));
+                    exitCode = ExitCode.Success;
+                }
+            }
+            else
+            {
+                logger.WriteVerbose(string.Format("Site has no App_Data directory: '{0}'",
+                    appDataDirectory.FullName));
+                exitCode = ExitCode.Success;
+            }
+
+            webJobStopwatch.Stop();
+
+            logger.WriteDebug(string.Format("Web jobs took {0} seconds", webJobStopwatch.Elapsed.TotalSeconds.ToString("F")));
+
+            return exitCode;
+        }
+
+        async Task<ExitCode> CreateWebDeployPackagesAsync(FileInfo solutionFile, string configuration, ILogger logger,
+            string platformDirectoryPath, SolutionProject solutionProject, string platformName)
+        {
+            logger.WriteDebug("Starting web deploy packaging");
+
+            Stopwatch webDeployStopwatch = Stopwatch.StartNew();
+
+            string webDeployPackageDirectoryPath = Path.Combine(platformDirectoryPath, "WebDeploy");
+
+            var webDeployPackageDirectory = new DirectoryInfo(webDeployPackageDirectoryPath).EnsureExists();
+
+            string packagePath = Path.Combine(webDeployPackageDirectory.FullName,
+                string.Format("{0}_{1}.zip", solutionProject.ProjectName, configuration));
+
+            var buildSitePackageArguments = new List<string>(15)
+                                            {
+                                                solutionProject.Project.FileName,
+                                                string.Format("/property:configuration={0}", configuration),
+                                                string.Format("/property:platform={0}", platformName),
+// ReSharper disable once PossibleNullReferenceException
+                                                string.Format("/property:SolutionDir={0}",
+                                                    solutionFile.Directory.FullName),
+                                                string.Format("/property:PackageLocation={0}", packagePath),
+                                                string.Format("/verbosity:{0}", _verbosity.Level),
+                                                "/target:Package",
+                                                string.Format("/maxcpucount:{0}",
+                                                    _processorCount.ToString(CultureInfo.InvariantCulture)),
+                                                "/nodeReuse:false"
+                                            };
+
+            if (_showSummary)
+            {
+                buildSitePackageArguments.Add("/detailedsummary");
+            }
+
+            ExitCode packageSiteExitCode =
+                await
+                    ProcessRunner.ExecuteAsync(_msBuildExe, arguments: buildSitePackageArguments,
+                        standardOutLog: logger.Write,
+                        standardErrorAction: logger.WriteError, toolAction: logger.Write,
+                        cancellationToken: _cancellationToken);
+
+            webDeployStopwatch.Stop();
+
+            logger.WriteDebug(string.Format("WebDeploy packaging took {0} seconds", webDeployStopwatch.Elapsed.TotalSeconds.ToString("F")));
+
+            return packageSiteExitCode;
         }
 
 

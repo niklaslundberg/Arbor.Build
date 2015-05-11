@@ -13,7 +13,11 @@ SET Arbor.X.Build.NetAssembly.Configuration=
 SET Version.Major=1
 SET Version.Minor=0
 SET Version.Patch=19
-SET Version.Build=127
+SET Version.Build=130
+
+IF "%Arbor.X.Vcs.Branch.Name%" == "" (
+	SET Arbor.X.Vcs.Branch.Name=develop
+)
 
 SET Arbor.X.Build.NetAssembly.MetadataEnabled=true
 SET Arbor.X.Build.NetAssembly.Description=A convention-based build tool
@@ -29,6 +33,8 @@ SET Arbor.X.Build.Tests.IgnoredCategories=dummyexcluded,dummyexcluded2,dummyexcl
 REM SET Arbor.X.Vcs.Branch.Name=refs/heads/develop-0.1.26
 REM SET Arbor.X.Vcs.Branch.Name=
 REM SET Arbor.X.Vcs.Branch.Name=develop
+
+SET Arbor.X.Tools.External.MSBuild.DefaultTarget=Rebuild
 
 CALL "%~dp0\Build.exe"
 

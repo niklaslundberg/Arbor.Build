@@ -8,7 +8,7 @@ using Machine.Specifications;
 namespace Arbor.X.Tests.Integration.DirectoryDelete
 {
     [Subject(typeof (Core.Tools.DirectoryDelete))]
-    [Tags("Arbor_X_Recursive")]
+    [Tags(Arbor.X.Core.Tools.Testing.MSpecInternalConstants.RecursiveArborXTest)]
     public class when_deleting_a_directory_with_filters
     {
         static string tempDir;

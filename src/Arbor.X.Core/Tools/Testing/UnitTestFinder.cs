@@ -38,7 +38,7 @@ namespace Arbor.X.Core.Tools.Testing
                 return new ReadOnlyCollection<string>(new List<string>());
             }
 
-            var blacklisted = new List<string> {".git", ".hg", ".svn", "obj", "build", "packages", "_ReSharper", "external", "artifacts", "temp", ".HistoryData", "LocalHistory", "_", "."};
+            var blacklisted = new List<string> {".git", ".hg", ".svn", "obj", "build", "packages", "_ReSharper", "external", "artifacts", "temp", ".HistoryData", "LocalHistory", "_", ".", "NCrunch"};
             
             bool isBlacklisted =
                 blacklisted.Any(
@@ -81,12 +81,12 @@ namespace Arbor.X.Core.Tools.Testing
         IReadOnlyCollection<string> UnitTestFixtureAssemblies(IEnumerable<Assembly> assemblies)
 // ReSharper restore ReturnTypeCanBeEnumerable.Local
         {
-            var nunitFixtureAssemblies =
+            var unitTestFixtureAssemblies =
                 assemblies.Where(TryFindAssembly)
                     .Select(a => a.Location)
                     .Distinct()
                     .ToList();
-            return nunitFixtureAssemblies;
+            return unitTestFixtureAssemblies;
         }
 
         bool TryFindAssembly(Assembly assembly)

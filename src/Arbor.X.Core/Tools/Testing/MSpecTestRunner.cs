@@ -114,7 +114,7 @@ namespace Arbor.X.Core.Tools.Testing
 
                 if (hasArborTestDll)
                 {
-                    allExcludedTags.Add("Arbor_X_Recursive");
+                    allExcludedTags.Add(MSpecInternalConstants.RecursiveArborXTest);
                 }
 
                 if (excludedTags.Any())

@@ -152,6 +152,7 @@
     <Compile Include="ToolResult.cs" />
     <Compile Include="ToolResultType.cs" />
     <Compile Include="ToolsModule.cs" />
+    <Compile Include="Tools\Testing\MSpecInternalConstants.cs" />
     <Compile Include="VariableProviderModule.cs" />
     <Compile Include="Tools\Cleanup\ArtifactCleanup.cs" />
     <Compile Include="Tools\Cleanup\VariableProviderOrder.cs" />
@@ -179,7 +180,6 @@
     <Compile Include="Tools\NuGet\NuGetPackageRestoreFixModule.cs" />
     <Compile Include="Tools\PathExtensions.cs" />
     <Compile Include="Tools\PathLookupSpecification.cs" />
-    <Compile Include="Tools\Sass\SassCompiler.cs" />
     <Compile Include="Tools\NuGet\NuGetPackageUploader.cs" />
     <Compile Include="Tools\Symbols\SymbolsVariableProvider.cs" />
     <Compile Include="Tools\TeamCity\TeamCityVariableProvider.cs" />
@@ -242,6 +242,9 @@
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Tools\Sass\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

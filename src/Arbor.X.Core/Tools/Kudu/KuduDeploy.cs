@@ -266,9 +266,7 @@ namespace Arbor.X.Core.Tools.Kudu
                     }
                 }
             }
-
-            await Task.Delay(TimeSpan.FromMilliseconds(20), cancellationToken); //TODO temp to avoid compiler warning
-
+            
             return ExitCode.Success;
         }
 
