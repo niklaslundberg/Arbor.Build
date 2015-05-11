@@ -10,5 +10,11 @@
 
         [VariableDescription("Test framework report path")]
         public static readonly string ReportPath = "Arbor.X.Artifacts.TestReports";
+
+        [VariableDescription("Show available variables")]
+        public static readonly string ShowAvailableVariablesEnabled = "Arbor.X.ShowAvailableVariablesEnabled";
+
+        [VariableDescription("Show defined variables")]
+        public static readonly string ShowDefinedVariablesEnabled = "Arbor.X.ShowDefinedVariablesEnabled";
     }
 }

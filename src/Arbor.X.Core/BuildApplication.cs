@@ -167,11 +167,18 @@ namespace Arbor.X.Core
                 }
             });
 
-            _logger.Write(string.Format("{0}Available wellknown variables: {0}{0}{1}", Environment.NewLine, variableAsTable));
+            if (buildVariables.GetBooleanByKey(WellKnownVariables.ShowAvailableVariablesEnabled, defaultValue: true))
+            {
+                _logger.Write(string.Format("{0}Available wellknown variables: {0}{0}{1}", Environment.NewLine,
+                    variableAsTable));
+            }
 
-            _logger.Write(string.Format("{1}Defined build variables: [{0}] {1}{1}{2}", buildVariables.Count,
-                Environment.NewLine,
-                buildVariables.Print()));
+            if (buildVariables.GetBooleanByKey(WellKnownVariables.ShowDefinedVariablesEnabled, defaultValue: true))
+            {
+                _logger.Write(string.Format("{1}Defined build variables: [{0}] {1}{1}{2}", buildVariables.Count,
+                    Environment.NewLine,
+                    buildVariables.Print()));
+            }
 
             IReadOnlyCollection<ToolWithPriority> toolWithPriorities = ToolFinder.GetTools(_container, _logger);
 
@@ -192,8 +199,14 @@ namespace Arbor.X.Core
                     }
                 }
 
-                _logger.Write(Environment.NewLine +
-                              string.Format("######## Running tool {0} ########", toolWithPriority));
+                var boxLength = 50;
+
+                var boxCharacter = '#';
+                var boxLine = new string(boxCharacter, boxLength);
+
+                var message = string.Format("{0}{1}{2}{1}{2} Running tool {3}{1}{2}{1}{0}", boxLine, Environment.NewLine, boxCharacter, toolWithPriority);
+
+                _logger.Write(message);
 
                 Stopwatch stopwatch = Stopwatch.StartNew();
 

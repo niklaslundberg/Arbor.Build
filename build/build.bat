@@ -13,7 +13,7 @@ SET Arbor.X.Build.NetAssembly.Configuration=
 SET Version.Major=1
 SET Version.Minor=0
 SET Version.Patch=19
-SET Version.Build=130
+SET Version.Build=138
 
 IF "%Arbor.X.Vcs.Branch.Name%" == "" (
 	SET Arbor.X.Vcs.Branch.Name=develop
@@ -25,6 +25,9 @@ SET Arbor.X.Build.NetAssembly.Company=Niklas Lundberg
 SET Arbor.X.Build.NetAssembly.Copyright=© Niklas Lundberg 2014-2015
 SET Arbor.X.Build.NetAssembly.Trademark=Arbor.X TM
 SET Arbor.X.Build.NetAssembly.Product=Arbor.X
+SET Arbor.X.ShowAvailableVariablesEnabled=false
+SET Arbor.X.ShowDefinedVariablesEnabled=false
+SET Arbor.X.Tools.External.MSBuild.Verbosity=minimal
 
 SET Arbor.X.NuGet.Package.ExcludesCommaSeparated=Arbor.X.Bootstrapper.nuspec
 
@@ -34,7 +37,7 @@ REM SET Arbor.X.Vcs.Branch.Name=refs/heads/develop-0.1.26
 REM SET Arbor.X.Vcs.Branch.Name=
 REM SET Arbor.X.Vcs.Branch.Name=develop
 
-SET Arbor.X.Tools.External.MSBuild.DefaultTarget=Rebuild
+REM SET Arbor.X.Tools.External.MSBuild.DefaultTarget=Build
 
 CALL "%~dp0\Build.exe"
 
