@@ -10,6 +10,9 @@ using Arbor.X.Core.Logging;
 using Arbor.X.Core.Tools;
 using Arbor.X.Core.Tools.Testing;
 using Machine.Specifications;
+using DirectoryInfo = Alphaleonis.Win32.Filesystem.DirectoryInfo;
+using File = Alphaleonis.Win32.Filesystem.File;
+using Path = Alphaleonis.Win32.Filesystem.Path;
 
 namespace Arbor.X.Tests.Integration.Tests.MSpec
 {
@@ -29,7 +32,7 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
             string combine = Path.Combine(root, "Arbor.X.Tests.Integration", "bin", "debug");
 
             string tempPath = Path.Combine(Path.GetTempPath(), "Arbor.X", "MSpec", Guid.NewGuid().ToString());
-            
+
             tempDirectory = new DirectoryInfo(tempPath).EnsureExists();
 
             DirectoryInfo binDirectory = tempDirectory.CreateSubdirectory("bin");

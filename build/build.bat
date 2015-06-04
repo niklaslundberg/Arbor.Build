@@ -13,7 +13,7 @@ SET Arbor.X.Build.NetAssembly.Configuration=
 SET Version.Major=1
 SET Version.Minor=0
 SET Version.Patch=19
-SET Version.Build=138
+SET Version.Build=148
 
 IF "%Arbor.X.Vcs.Branch.Name%" == "" (
 	SET Arbor.X.Vcs.Branch.Name=develop

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
+using Alphaleonis.Win32.Filesystem;
 
 namespace Arbor.X.Core.Tools.ILMerge
 {

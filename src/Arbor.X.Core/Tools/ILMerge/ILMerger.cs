@@ -9,6 +9,9 @@ using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;
+using DirectoryInfo = Alphaleonis.Win32.Filesystem.DirectoryInfo;
+using FileInfo = Alphaleonis.Win32.Filesystem.FileInfo;
+using Path = Alphaleonis.Win32.Filesystem.Path;
 
 namespace Arbor.X.Core.Tools.ILMerge
 {

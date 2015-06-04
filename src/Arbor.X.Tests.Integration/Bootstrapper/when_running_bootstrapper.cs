@@ -5,6 +5,8 @@ using Arbor.X.Core;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 using Machine.Specifications;
+using DirectoryInfo = Alphaleonis.Win32.Filesystem.DirectoryInfo;
+using Path = Alphaleonis.Win32.Filesystem.Path;
 
 namespace Arbor.X.Tests.Integration.Bootstrapper
 {

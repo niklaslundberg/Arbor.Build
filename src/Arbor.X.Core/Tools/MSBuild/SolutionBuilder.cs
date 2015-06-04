@@ -7,12 +7,17 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Alphaleonis.Win32.Filesystem;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;
 using FubuCsProjFile;
 using Microsoft.Web.XmlTransform;
+using DirectoryInfo = Alphaleonis.Win32.Filesystem.DirectoryInfo;
+using File = Alphaleonis.Win32.Filesystem.File;
+using FileInfo = Alphaleonis.Win32.Filesystem.FileInfo;
+using Path = Alphaleonis.Win32.Filesystem.Path;
 
 namespace Arbor.X.Core.Tools.MSBuild
 {
@@ -30,7 +35,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                                                                  };
 
         readonly PathLookupSpecification _pathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification;
-            
+
         readonly List<string> _buildConfigurations = new List<string>();
 
         readonly List<string> _knownPlatforms = new List<string> {"x86", "x64", "Any CPU"};
@@ -355,7 +360,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                         logger);
 
                 buildStopwatch.Stop();
-                
+
                 logger.WriteDebug(string.Format("Stopping stopwatch for solution file {0} ({1}|{2}), total time in seconds {3} ({4})", solutionFile.Name, configuration, knownPlatform, buildStopwatch.Elapsed.TotalSeconds.ToString("F"), result.IsSuccess ? "success" : "failed"));
 
                 if (!result.IsSuccess)
@@ -456,7 +461,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                                   solutionProject.Project.FileName,
                                   string.Format("/property:configuration={0}", configuration),
                                   string.Format("/property:platform={0}", platformName),
-                                  string.Format("/property:_PackageTempDir={0}", siteArtifactDirectory),
+                                  string.Format("/property:_PackageTempDir={0}", siteArtifactDirectory.FullName),
 // ReSharper disable once PossibleNullReferenceException
                                   string.Format("/property:SolutionDir={0}", solutionFile.Directory.FullName),
                                   string.Format("/verbosity:{0}", _verbosity.Level),
@@ -495,8 +500,8 @@ namespace Arbor.X.Core.Tools.MSBuild
                     string[] extensions = {".xml", ".config"};
 
                     IReadOnlyCollection<FileInfo> files = new DirectoryInfo(projectDirectoryPath)
-                        .GetFiles("*.*", SearchOption.AllDirectories)
-                        .Where(file => !_pathLookupSpecification.IsFileBlackListed(file.FullName, _vcsRoot))
+                        .GetFilesRecursive(extensions)
+                        .Where(file => !_pathLookupSpecification.IsBlackListed(file.DirectoryName) && !_pathLookupSpecification.IsFileBlackListed(file.FullName, _vcsRoot))
                         .Where(file => extensions.Any(extension =>  Path.GetExtension(file.Name).Equals(extension, StringComparison.InvariantCultureIgnoreCase)))
                         .Where(file => !file.Name.Equals("web.config", StringComparison.InvariantCultureIgnoreCase))
                         .ToReadOnlyCollection();
@@ -523,7 +528,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                         .ToReadOnlyCollection();
 
                     logger.WriteDebug(string.Format("Found {0} files with transforms", transformationPairs.Count));
-                    
+
                     foreach (var configurationFile in transformationPairs)
                     {
                         string relativeFilePath = configurationFile.Original.FullName.Replace(projectDirectoryPath, "");

@@ -1,18 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Xsl;
-using Arbor.Sorbus.Core;
+using Alphaleonis.Win32.Filesystem;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
+using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;
 using Machine.Specifications;
-using ILogger = Arbor.X.Core.Logging.ILogger;
+using FileAccess = System.IO.FileAccess;
+using FileMode = System.IO.FileMode;
+using FileStream = System.IO.FileStream;
+using MemoryStream = System.IO.MemoryStream;
+using Stream = System.IO.Stream;
+using StreamReader = System.IO.StreamReader;
 
 namespace Arbor.X.Core.Tools.Testing
 {
@@ -99,7 +104,7 @@ namespace Arbor.X.Core.Tools.Testing
                 .Split(new[]{","}, StringSplitOptions.RemoveEmptyEntries)
                 .Select(item => item.Trim())
                 .Where(item => !string.IsNullOrWhiteSpace(item))
-                .ToReadOnly();
+                .ToReadOnlyCollection();
 
             arguments.Add("--html");
             arguments.Add(htmlPath);

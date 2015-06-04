@@ -10,6 +10,10 @@ using Arbor.X.Core.Logging;
 using Arbor.X.Core.Tools;
 using Arbor.X.Core.Tools.Testing;
 using Machine.Specifications;
+using DirectoryInfo = Alphaleonis.Win32.Filesystem.DirectoryInfo;
+using File = Alphaleonis.Win32.Filesystem.File;
+using FileInfo = Alphaleonis.Win32.Filesystem.FileInfo;
+using Path = Alphaleonis.Win32.Filesystem.Path;
 
 namespace Arbor.X.Tests.Integration.Tests.MSpec
 {

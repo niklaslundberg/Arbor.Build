@@ -2,29 +2,18 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Alphaleonis.Win32.Filesystem;
 using Arbor.Aesculus.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;
 using Arbor.X.Core.Tools;
-using Arbor.X.Core.Tools.Cleanup;
-using Arbor.X.Core.Tools.Environments;
 using Arbor.X.Core.Tools.Git;
-using Arbor.X.Core.Tools.ILMerge;
-using Arbor.X.Core.Tools.Kudu;
-using Arbor.X.Core.Tools.MSBuild;
-using Arbor.X.Core.Tools.NuGet;
-using Arbor.X.Core.Tools.Symbols;
-using Arbor.X.Core.Tools.TeamCity;
-using Arbor.X.Core.Tools.Testing;
-using Arbor.X.Core.Tools.Versioning;
-using Arbor.X.Core.Tools.VisualStudio;
 using Autofac;
 
 namespace Arbor.X.Core
@@ -74,7 +63,7 @@ namespace Arbor.X.Core
             }
 
             _logger.LogLevel = LogLevel.Debug;
-            
+
             WriteDebug("Starting with debugger attached");
         }
 
@@ -524,7 +513,7 @@ namespace Arbor.X.Core
             if (string.IsNullOrWhiteSpace(configurationFromEnvironment))
             {
                 string configuration = GetConfiguration(branchName);
-                
+
                 _logger.WriteVerbose(string.Format("Using configuration '{0}' based on branch name '{1}'", configuration, branchName));
 
                 variables.Add(WellKnownVariables.Configuration, configuration);

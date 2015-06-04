@@ -10,21 +10,23 @@ namespace Arbor.X.Core.Tools
             {
                 List<string> ignoredDirectorySegments = new List<string>(20)
                                                         {
-                                                            "bin", 
-                                                            "obj", 
-                                                            ".git", 
-                                                            ".hg", 
-                                                            ".svn", 
-                                                            "TestResults", 
-                                                            "_ReSharper", 
-                                                            ".HistoryData", 
+                                                            "bin",
+                                                            "obj",
+                                                            ".git",
+                                                            ".hg",
+                                                            ".svn",
+                                                            "TestResults",
+                                                            "_ReSharper",
+                                                            ".HistoryData",
                                                             "LocalHistory",
-                                                            "packages", 
+                                                            "packages",
                                                             "temp",
                                                             "artifacts",
                                                             ".vs",
                                                             ".user",
-                                                            ".userprefs"
+                                                            ".userprefs",
+                                                            "node_modules",
+                                                            "bower_components"
                                                         };
                 List<string> ignoredFileStartsWithPatterns = new List<string>(10) {".", "_"};
                 List<string> ignoredDirectorySegmentParts = new List<string>(5);

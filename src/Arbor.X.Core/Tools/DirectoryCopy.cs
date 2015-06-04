@@ -4,8 +4,10 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Arbor.X.Core.IO;
-using ILogger = Arbor.X.Core.Logging.ILogger;
-using NullLogger = Arbor.X.Core.Logging.NullLogger;
+using Arbor.X.Core.Logging;
+using DirectoryInfo = Alphaleonis.Win32.Filesystem.DirectoryInfo;
+using FileInfo = Alphaleonis.Win32.Filesystem.FileInfo;
+using Path = Alphaleonis.Win32.Filesystem.Path;
 
 namespace Arbor.X.Core.Tools
 {
