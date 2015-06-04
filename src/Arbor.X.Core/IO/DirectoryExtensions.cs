@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Arbor.X.Core.Exceptions;
 using Arbor.X.Core.Tools;
 using DirectoryInfo = Alphaleonis.Win32.Filesystem.DirectoryInfo;
 using FileInfo = Alphaleonis.Win32.Filesystem.FileInfo;
@@ -28,9 +29,7 @@ namespace Arbor.X.Core.IO
             }
             catch (PathTooLongException ex)
             {
-                throw new PathTooLongException(
-                    string.Format("Could not create directory '{0}', path length {1}", directoryInfo.FullName,
-                        directoryInfo.FullName.Length), ex);
+                throw new PathTooLongException($"Could not create directory '{directoryInfo.FullName}', path length {directoryInfo.FullName.Length}", ex);
             }
 
             directoryInfo.Refresh();
@@ -48,13 +47,40 @@ namespace Arbor.X.Core.IO
 
                     if (directoryInfo.Exists)
                     {
-                        foreach (var file in directoryInfo.EnumerateFiles())
+                        FileInfo[] fileInfos;
+                        try
                         {
-                            file.Attributes = FileAttributes.Normal;
-                            file.Delete();
+                            fileInfos = directoryInfo.GetFiles();
+                        }
+                        catch (Exception ex)
+                        {
+                            if (ex.IsFatal())
+                            {
+                                throw;
+                            }
+
+                            throw new IOException($"Could not get files for directory '{directoryInfo.FullName}' for deletion", ex);
                         }
 
-                        foreach (var subDirectory in directoryInfo.EnumerateDirectories())
+                        foreach (var file in fileInfos)
+                        {
+                            file.Attributes = FileAttributes.Normal;
+                            try
+                            {
+                                file.Delete();
+                            }
+                            catch (Exception ex)
+                            {
+                                if (ex.IsFatal())
+                                {
+                                    throw;
+                                }
+
+                                throw new IOException($"Could not delete file '{file.FullName}'", ex);
+                            }
+                        }
+
+                        foreach (var subDirectory in directoryInfo.GetDirectories())
                         {
                             subDirectory.DeleteIfExists(recursive);
                         }
@@ -69,7 +95,11 @@ namespace Arbor.X.Core.IO
             }
             catch (UnauthorizedAccessException ex)
             {
-                throw new InvalidOperationException(string.Format("Could not delete directory '{0}'", directoryInfo.FullName), ex);
+                if (directoryInfo != null)
+                {
+                    throw new InvalidOperationException($"Could not delete directory '{directoryInfo.FullName}'", ex);
+                }
+                throw;
             }
         }
 

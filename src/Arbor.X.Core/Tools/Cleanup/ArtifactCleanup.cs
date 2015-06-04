@@ -47,7 +47,7 @@ namespace Arbor.X.Core.Tools.Cleanup
 
                 if (result)
                 {
-                    logger.WriteVerbose($"Cleanup succeed on attempt{attemptCount}");
+                    logger.WriteVerbose($"Cleanup succeeded on attempt {attemptCount}");
                     cleanupSucceeded = true;
                 }
                 else
