@@ -13,11 +13,14 @@ SET Arbor.X.Build.NetAssembly.Configuration=
 SET Version.Major=1
 SET Version.Minor=0
 SET Version.Patch=19
-SET Version.Build=149
+SET Version.Build=170
 
 IF "%Arbor.X.Vcs.Branch.Name%" == "" (
 	SET Arbor.X.Vcs.Branch.Name=develop
 )
+
+SET Arbor.X.NuGet.ReinstallArborPackageEnabled=true
+SET Arbor.X.NuGet.VersionUpdateEnabled=false
 
 SET Arbor.X.Build.NetAssembly.MetadataEnabled=true
 SET Arbor.X.Build.NetAssembly.Description=A convention-based build tool
