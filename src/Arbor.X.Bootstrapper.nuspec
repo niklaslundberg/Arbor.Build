@@ -27,6 +27,6 @@
 		<tags>build tools convention</tags>
 	</metadata>
 	<files>
-		<file src="..\Artifacts\ILMerged\x86\$configuration$\*.*" target="." exclude="*.vshost*;**\*.vshost*;*.trx" />
+		<file src="..\Artifacts\ILMerged\x86\release\*.*" target="." exclude="*.vshost*;**\*.vshost*;*.trx" />
 	</files>
 </package>
