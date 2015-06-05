@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Logging;
+using Arbor.X.Core.Tools.Cleanup;
 
 namespace Arbor.X.Core.Tools.Environments
 {
@@ -24,5 +25,7 @@ namespace Arbor.X.Core.Tools.Environments
 
             return Task.FromResult<IEnumerable<IVariable>>(variables);
         }
+
+        public int Order => VariableProviderOrder.Ignored;
     }
 }

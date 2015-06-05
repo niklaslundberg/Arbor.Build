@@ -1,15 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Alphaleonis.Win32.Filesystem;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;
 using FubuCsProjFile;
+using Microsoft.Web.XmlTransform;
+using DirectoryInfo = Alphaleonis.Win32.Filesystem.DirectoryInfo;
+using File = Alphaleonis.Win32.Filesystem.File;
+using FileInfo = Alphaleonis.Win32.Filesystem.FileInfo;
+using Path = Alphaleonis.Win32.Filesystem.Path;
 
 namespace Arbor.X.Core.Tools.MSBuild
 {
@@ -27,10 +35,10 @@ namespace Arbor.X.Core.Tools.MSBuild
                                                                  };
 
         readonly PathLookupSpecification _pathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification;
-            
+
         readonly List<string> _buildConfigurations = new List<string>();
 
-        readonly List<string> _knownPlatforms = new List<string> {"x86", "Any CPU"};
+        readonly List<string> _knownPlatforms = new List<string> {"x86", "x64", "Any CPU"};
         readonly List<string> _platforms = new List<string>();
         bool _appDataJobsEnabled;
         string _artifactsPath;
@@ -40,6 +48,9 @@ namespace Arbor.X.Core.Tools.MSBuild
         bool _showSummary;
         MSBuildVerbositoyLevel _verbosity;
         bool _createWebDeployPackages;
+        private string _vcsRoot;
+        bool _configurationTransformsEnabled;
+        string _defaultTarget;
 
         public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
@@ -75,6 +86,16 @@ namespace Arbor.X.Core.Tools.MSBuild
 
             logger.WriteVerbose(string.Format("Using MSBuild verbosity {0}", _verbosity));
 
+            _vcsRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
+            _configurationTransformsEnabled = buildVariables.GetBooleanByKey(WellKnownVariables.GenericXmlTransformsEnabled, defaultValue:false);
+            _defaultTarget = buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_MSBuild_DefaultTarget, "rebuild");
+
+            if (_vcsRoot == null)
+            {
+                logger.WriteError("Could not find version control root path");
+                return ExitCode.Failure;
+            }
+
             try
             {
                 return await BuildAsync(logger, buildVariables);
@@ -104,14 +125,6 @@ namespace Arbor.X.Core.Tools.MSBuild
 
         async Task<ExitCode> BuildAsync(ILogger logger, IReadOnlyCollection<IVariable> variables)
         {
-            string vcsRoot = variables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
-
-            if (vcsRoot == null)
-            {
-                logger.WriteError("Could not find version control root path");
-                return ExitCode.Failure;
-            }
-
             string buildConfiguration =
                 variables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_MSBuild_BuildConfiguration,
                     defaultValue: "");
@@ -184,7 +197,42 @@ namespace Arbor.X.Core.Tools.MSBuild
                 return ExitCode.Failure;
             }
 
-            IEnumerable<FileInfo> solutionFiles = FindSolutionFiles(new DirectoryInfo(vcsRoot));
+            logger.WriteDebug("Starting finding solution files");
+
+            Stopwatch findSolutionFiles = Stopwatch.StartNew();
+
+            IReadOnlyCollection<FileInfo> solutionFiles = FindSolutionFiles(new DirectoryInfo(_vcsRoot), logger).ToReadOnlyCollection();
+
+            findSolutionFiles.Stop();
+
+            logger.WriteDebug(string.Format("Finding solutions files took {0} seconds", findSolutionFiles.Elapsed.TotalSeconds.ToString("F")));
+
+            if (!solutionFiles.Any())
+            {
+                StringBuilder messageBuilder = new StringBuilder();
+
+                messageBuilder.Append("Could not find any solution files.");
+
+                var sourceRootDirectories = new DirectoryInfo(_vcsRoot);
+
+                var files = sourceRootDirectories.GetFiles().Select(file => file.Name);
+                var directories = sourceRootDirectories.GetDirectories().Select(dir => dir.Name);
+
+                var all = files.Concat(directories);
+                messageBuilder.Append(". Root directory files and directories");
+                messageBuilder.AppendLine();
+
+                foreach (var item in all)
+                {
+                    messageBuilder.AppendLine(item);
+                }
+
+                var message = messageBuilder.ToString();
+
+                logger.WriteWarning(message);
+
+                return ExitCode.Success;
+            }
 
             IDictionary<FileInfo, IReadOnlyList<string>> solutionPlatforms =
                 new Dictionary<FileInfo, IReadOnlyList<string>>();
@@ -303,9 +351,17 @@ namespace Arbor.X.Core.Tools.MSBuild
         {
             foreach (string knownPlatform in platforms)
             {
+                Stopwatch buildStopwatch = Stopwatch.StartNew();
+
+                logger.WriteDebug(string.Format("Starting stopwatch for solution file {0} ({1}|{2})", solutionFile.Name, configuration, knownPlatform));
+
                 ExitCode result =
                     await BuildSolutionWithConfigurationAndPlatformAsync(solutionFile, configuration, knownPlatform,
                         logger);
+
+                buildStopwatch.Stop();
+
+                logger.WriteDebug(string.Format("Stopping stopwatch for solution file {0} ({1}|{2}), total time in seconds {3} ({4})", solutionFile.Name, configuration, knownPlatform, buildStopwatch.Elapsed.TotalSeconds.ToString("F"), result.IsSuccess ? "success" : "failed"));
 
                 if (!result.IsSuccess)
                 {
@@ -341,7 +397,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                               string.Format("/property:configuration={0}", configuration),
                               string.Format("/property:platform={0}", platform),
                               string.Format("/verbosity:{0}", _verbosity.Level),
-                              "/target:rebuild",
+                              string.Format("/target:{0}", _defaultTarget),
                               string.Format("/maxcpucount:{0}", _processorCount.ToString(CultureInfo.InvariantCulture)),
                               "/nodeReuse:false"
                           };
@@ -385,6 +441,8 @@ namespace Arbor.X.Core.Tools.MSBuild
                 solution.Projects.Where(
                     project => project.Project.ProjectTypes().Any(type => type == WebApplicationProjectTypeId)).ToList();
 
+            logger.WriteDebug(string.Format("Finding WebApplications by looking at project type GUID {0}", WebApplicationProjectTypeId));
+
             logger.Write(string.Format("WebApplication projects to build [{0}]: {1}", webProjects.Count,
                 string.Join(", ", webProjects.Select(wp => wp.Project.FileName))));
 
@@ -398,12 +456,12 @@ namespace Arbor.X.Core.Tools.MSBuild
 
                 string platformName = platform == "Any CPU" ? "AnyCPU" : platform;
 
-                var buildSiteArguments = new List<string>
+                var buildSiteArguments = new List<string>(15)
                               {
                                   solutionProject.Project.FileName,
                                   string.Format("/property:configuration={0}", configuration),
                                   string.Format("/property:platform={0}", platformName),
-                                  string.Format("/property:_PackageTempDir={0}", siteArtifactDirectory),
+                                  string.Format("/property:_PackageTempDir={0}", siteArtifactDirectory.FullName),
 // ReSharper disable once PossibleNullReferenceException
                                   string.Format("/property:SolutionDir={0}", solutionFile.Directory.FullName),
                                   string.Format("/verbosity:{0}", _verbosity.Level),
@@ -430,43 +488,79 @@ namespace Arbor.X.Core.Tools.MSBuild
                     return buildSiteExitCode;
                 }
 
-                if (_createWebDeployPackages)
+                if (_configurationTransformsEnabled)
                 {
-                    string webDeployPackageDirectoryPath = Path.Combine(platformDirectoryPath, "WebDeploy");
+                    logger.WriteDebug("Transforms are enabled");
 
-                    var webDeployPackageDirectory = new DirectoryInfo(webDeployPackageDirectoryPath).EnsureExists();
+                    logger.WriteDebug("Starting xml transformations");
 
-                    string packagePath = Path.Combine(webDeployPackageDirectory.FullName,
-                        string.Format("{0}_{1}.zip", solutionProject.ProjectName, configuration));
+                    Stopwatch transformationStopwatch = Stopwatch.StartNew();
+                    string projectDirectoryPath = solutionProject.Project.ProjectDirectory;
 
-                    var buildSitePackageArguments = new List<string>
-                                                    {
-                                                        solutionProject.Project.FileName,
-                                                        string.Format("/property:configuration={0}", configuration),
-                                                        string.Format("/property:platform={0}", platformName),
-// ReSharper disable once PossibleNullReferenceException
-                                                        string.Format("/property:SolutionDir={0}",
-                                                            solutionFile.Directory.FullName),
-                                                        string.Format("/property:PackageLocation={0}", packagePath),
-                                                        string.Format("/verbosity:{0}", _verbosity.Level),
-                                                        "/target:Package",
-                                                        string.Format("/maxcpucount:{0}",
-                                                            _processorCount.ToString(CultureInfo.InvariantCulture)),
+                    string[] extensions = {".xml", ".config"};
 
-                                                        "/nodeReuse:false"
-                                                    };
+                    IReadOnlyCollection<FileInfo> files = new DirectoryInfo(projectDirectoryPath)
+                        .GetFilesRecursive(extensions)
+                        .Where(file => !_pathLookupSpecification.IsBlackListed(file.DirectoryName) && !_pathLookupSpecification.IsFileBlackListed(file.FullName, _vcsRoot))
+                        .Where(file => extensions.Any(extension =>  Path.GetExtension(file.Name).Equals(extension, StringComparison.InvariantCultureIgnoreCase)))
+                        .Where(file => !file.Name.Equals("web.config", StringComparison.InvariantCultureIgnoreCase))
+                        .ToReadOnlyCollection();
 
-                    if (_showSummary)
+                    Func<FileInfo, string> transformFile = file =>
                     {
-                        buildSitePackageArguments.Add("/detailedsummary");
+                        string nameWithoutExtension = Path.GetFileNameWithoutExtension(file.Name);
+                        string extension = Path.GetExtension(file.Name);
+
+                        // ReSharper disable once PossibleNullReferenceException
+                        var transformFilePath = Path.Combine(file.Directory.FullName,
+                            nameWithoutExtension + "." + configuration + extension);
+
+                        return transformFilePath;
+                    };
+
+                    var transformationPairs = files
+                        .Select(file => new
+                                        {
+                                            Original = file,
+                                            TransformFile = transformFile(file)
+                                        })
+                        .Where(filePair => File.Exists(filePair.TransformFile))
+                        .ToReadOnlyCollection();
+
+                    logger.WriteDebug(string.Format("Found {0} files with transforms", transformationPairs.Count));
+
+                    foreach (var configurationFile in transformationPairs)
+                    {
+                        string relativeFilePath = configurationFile.Original.FullName.Replace(projectDirectoryPath, "");
+
+                        string targetTransformResultPath = string.Format("{0}{1}", siteArtifactDirectory.FullName, relativeFilePath);
+
+                        var transformable = new XmlTransformableDocument();
+
+                        transformable.Load(configurationFile.Original.FullName);
+
+                        var transformation = new XmlTransformation(configurationFile.TransformFile);
+
+                        logger.WriteDebug(string.Format("Transforming '{0}' with transformation file '{1} to target file '{2}'", configurationFile.Original.FullName, configurationFile.TransformFile, targetTransformResultPath));
+
+                        if (transformation.Apply(transformable))
+                        {
+                            transformable.Save(targetTransformResultPath);
+                        }
                     }
 
-                    ExitCode packageSiteExitCode =
-                        await
-                            ProcessRunner.ExecuteAsync(_msBuildExe, arguments: buildSitePackageArguments,
-                                standardOutLog: logger.Write,
-                                standardErrorAction: logger.WriteError, toolAction: logger.Write,
-                                cancellationToken: _cancellationToken);
+                    transformationStopwatch.Stop();
+
+                    logger.WriteDebug(string.Format("XML transformations took {0} seconds", transformationStopwatch.Elapsed.TotalSeconds.ToString("F")));
+                }
+                else
+                {
+                    logger.WriteDebug("Transforms are disabled");
+                }
+
+                if (_createWebDeployPackages)
+                {
+                    ExitCode packageSiteExitCode = await CreateWebDeployPackagesAsync(solutionFile, configuration, logger, platformDirectoryPath, solutionProject, platformName);
 
                     if (!packageSiteExitCode.IsSuccess)
                     {
@@ -476,53 +570,11 @@ namespace Arbor.X.Core.Tools.MSBuild
 
                 if (_appDataJobsEnabled)
                 {
-                    logger.Write("AppData Web Jobs are enabled");
+                    ExitCode exitCode = await CopyKuduWebJobsAsync(logger, solutionProject, siteArtifactDirectory);
 
-                    string appDataPath = Path.Combine(solutionProject.Project.ProjectDirectory, "App_Data");
-
-                    var appDataDirectory = new DirectoryInfo(appDataPath);
-
-                    if (appDataDirectory.Exists)
+                    if (!exitCode.IsSuccess)
                     {
-                        logger.WriteVerbose(string.Format("Site has App_Data directory: '{0}'",
-                            appDataDirectory.FullName));
-
-                        DirectoryInfo kuduWebJobs =
-                            appDataDirectory.EnumerateDirectories()
-                                .SingleOrDefault(
-                                    directory =>
-                                        directory.Name.Equals("jobs", StringComparison.InvariantCultureIgnoreCase));
-
-                        if (kuduWebJobs != null && kuduWebJobs.Exists)
-                        {
-                            logger.WriteVerbose(string.Format("Site has App_Data jobs directory: '{0}'",
-                                kuduWebJobs.FullName));
-                            string artifactJobAppDataPath = Path.Combine(siteArtifactDirectory.FullName, "App_Data",
-                                "jobs");
-
-                            DirectoryInfo artifactJobAppDataDirectory =
-                                new DirectoryInfo(artifactJobAppDataPath).EnsureExists();
-
-                            logger.WriteVerbose(string.Format("Copying directory '{0}' to '{1}'", kuduWebJobs.FullName,
-                                artifactJobAppDataDirectory.FullName));
-
-                            var code = await DirectoryCopy.CopyAsync(kuduWebJobs.FullName, artifactJobAppDataDirectory.FullName, logger);
-
-                            if (!code.IsSuccess)
-                            {
-                                return code;
-                            }
-                        }
-                        else
-                        {
-                            logger.WriteVerbose(string.Format(
-                                "Site has no jobs directory in App_Data directory: '{0}'", appDataDirectory.FullName));
-                        }
-                    }
-                    else
-                    {
-                        logger.WriteVerbose(string.Format("Site has no App_Data directory: '{0}'",
-                            appDataDirectory.FullName));
+                        return exitCode;
                     }
                 }
                 else
@@ -534,11 +586,124 @@ namespace Arbor.X.Core.Tools.MSBuild
             return ExitCode.Success;
         }
 
+        async Task<ExitCode> CopyKuduWebJobsAsync(ILogger logger, SolutionProject solutionProject, DirectoryInfo siteArtifactDirectory)
+        {
+            logger.Write("AppData Web Jobs are enabled");
+            logger.WriteDebug("Starting web deploy packaging");
 
-        IEnumerable<FileInfo> FindSolutionFiles(DirectoryInfo directoryInfo)
+            Stopwatch webJobStopwatch = Stopwatch.StartNew();
+
+            ExitCode exitCode;
+
+            string appDataPath = Path.Combine(solutionProject.Project.ProjectDirectory, "App_Data");
+
+            var appDataDirectory = new DirectoryInfo(appDataPath);
+
+            if (appDataDirectory.Exists)
+            {
+                logger.WriteVerbose(string.Format("Site has App_Data directory: '{0}'",
+                    appDataDirectory.FullName));
+
+                DirectoryInfo kuduWebJobs =
+                    appDataDirectory.EnumerateDirectories()
+                        .SingleOrDefault(
+                            directory =>
+                                directory.Name.Equals("jobs", StringComparison.InvariantCultureIgnoreCase));
+
+                if (kuduWebJobs != null && kuduWebJobs.Exists)
+                {
+                    logger.WriteVerbose(string.Format("Site has App_Data jobs directory: '{0}'",
+                        kuduWebJobs.FullName));
+                    string artifactJobAppDataPath = Path.Combine(siteArtifactDirectory.FullName, "App_Data",
+                        "jobs");
+
+                    DirectoryInfo artifactJobAppDataDirectory =
+                        new DirectoryInfo(artifactJobAppDataPath).EnsureExists();
+
+                    logger.WriteVerbose(string.Format("Copying directory '{0}' to '{1}'", kuduWebJobs.FullName,
+                        artifactJobAppDataDirectory.FullName));
+
+                    exitCode =
+                        await
+                            DirectoryCopy.CopyAsync(kuduWebJobs.FullName, artifactJobAppDataDirectory.FullName, logger,
+                                rootDir: _vcsRoot);
+                }
+                else
+                {
+                    logger.WriteVerbose(string.Format(
+                        "Site has no jobs directory in App_Data directory: '{0}'", appDataDirectory.FullName));
+                    exitCode = ExitCode.Success;
+                }
+            }
+            else
+            {
+                logger.WriteVerbose(string.Format("Site has no App_Data directory: '{0}'",
+                    appDataDirectory.FullName));
+                exitCode = ExitCode.Success;
+            }
+
+            webJobStopwatch.Stop();
+
+            logger.WriteDebug(string.Format("Web jobs took {0} seconds", webJobStopwatch.Elapsed.TotalSeconds.ToString("F")));
+
+            return exitCode;
+        }
+
+        async Task<ExitCode> CreateWebDeployPackagesAsync(FileInfo solutionFile, string configuration, ILogger logger,
+            string platformDirectoryPath, SolutionProject solutionProject, string platformName)
+        {
+            logger.WriteDebug("Starting web deploy packaging");
+
+            Stopwatch webDeployStopwatch = Stopwatch.StartNew();
+
+            string webDeployPackageDirectoryPath = Path.Combine(platformDirectoryPath, "WebDeploy");
+
+            var webDeployPackageDirectory = new DirectoryInfo(webDeployPackageDirectoryPath).EnsureExists();
+
+            string packagePath = Path.Combine(webDeployPackageDirectory.FullName,
+                string.Format("{0}_{1}.zip", solutionProject.ProjectName, configuration));
+
+            var buildSitePackageArguments = new List<string>(15)
+                                            {
+                                                solutionProject.Project.FileName,
+                                                string.Format("/property:configuration={0}", configuration),
+                                                string.Format("/property:platform={0}", platformName),
+// ReSharper disable once PossibleNullReferenceException
+                                                string.Format("/property:SolutionDir={0}",
+                                                    solutionFile.Directory.FullName),
+                                                string.Format("/property:PackageLocation={0}", packagePath),
+                                                string.Format("/verbosity:{0}", _verbosity.Level),
+                                                "/target:Package",
+                                                string.Format("/maxcpucount:{0}",
+                                                    _processorCount.ToString(CultureInfo.InvariantCulture)),
+                                                "/nodeReuse:false"
+                                            };
+
+            if (_showSummary)
+            {
+                buildSitePackageArguments.Add("/detailedsummary");
+            }
+
+            ExitCode packageSiteExitCode =
+                await
+                    ProcessRunner.ExecuteAsync(_msBuildExe, arguments: buildSitePackageArguments,
+                        standardOutLog: logger.Write,
+                        standardErrorAction: logger.WriteError, toolAction: logger.Write,
+                        cancellationToken: _cancellationToken);
+
+            webDeployStopwatch.Stop();
+
+            logger.WriteDebug(string.Format("WebDeploy packaging took {0} seconds", webDeployStopwatch.Elapsed.TotalSeconds.ToString("F")));
+
+            return packageSiteExitCode;
+        }
+
+
+        IEnumerable<FileInfo> FindSolutionFiles(DirectoryInfo directoryInfo, ILogger logger)
         {
             if (IsBlacklisted(directoryInfo))
             {
+                logger.WriteDebug(string.Format("Skipping directory '{0}' when searching for solution files because the directory is blacklisted", directoryInfo.FullName));
                 return Enumerable.Empty<FileInfo>();
             }
 
@@ -546,7 +711,7 @@ namespace Arbor.X.Core.Tools.MSBuild
 
             foreach (DirectoryInfo subDir in directoryInfo.EnumerateDirectories())
             {
-                solutionFiles.AddRange(FindSolutionFiles(subDir));
+                solutionFiles.AddRange(FindSolutionFiles(subDir, logger));
             }
 
             return solutionFiles;
@@ -554,7 +719,7 @@ namespace Arbor.X.Core.Tools.MSBuild
 
         bool IsBlacklisted(DirectoryInfo directoryInfo)
         {
-            bool isBlacklistedByName = _pathLookupSpecification.IsBlackListed(directoryInfo.FullName);
+            bool isBlacklistedByName = _pathLookupSpecification.IsBlackListed(directoryInfo.FullName, _vcsRoot);
 
             bool isBlackListedByAttributes = _blackListedByAttributes.Any(
                 blackListed => directoryInfo.Attributes.HasFlag(blackListed));

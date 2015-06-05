@@ -9,7 +9,7 @@ using Machine.Specifications;
 
 namespace Arbor.X.Tests.Integration.Tests
 {
-    [Tags("Arbor_X_Recursive")]
+    [Tags(Arbor.X.Core.Tools.Testing.MSpecInternalConstants.RecursiveArborXTest)]
     public class when_listing_nuget_package_configuration_files
     {
         static readonly PathLookupSpecification pathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification;
@@ -26,7 +26,7 @@ namespace Arbor.X.Tests.Integration.Tests
         Because of = () =>
         {
             packageConfigFiles = rootDirectory.EnumerateFiles("packages.config", SearchOption.AllDirectories)
-                .Where(file => !pathLookupSpecification.IsFileBlackListed(file.FullName))
+                .Where(file => !pathLookupSpecification.IsFileBlackListed(file.FullName, rootDir: rootDirectory.FullName))
                 .ToReadOnlyCollection();
 
             packageConfigFiles

@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Alphaleonis.Win32.Filesystem;
 using Arbor.Sorbus.Core;
 using Arbor.X.Core.BuildVariables;
+using Arbor.X.Core.IO;
 using DelegateLogger = Arbor.Sorbus.Core.DelegateLogger;
 using ILogger = Arbor.X.Core.Logging.ILogger;
 
@@ -21,7 +21,7 @@ namespace Arbor.X.Core.Tools.Versioning
             CancellationToken cancellationToken)
         {
             var delegateLogger = new DelegateLogger(error: logger.WriteError, warning: logger.WriteWarning,
-                info: logger.Write, verbose: logger.WriteVerbose, debug: logger.WriteDebug) { LogLevel = LogLevel.TryParse(logger.LogLevel.Level) };
+                info: logger.Write, verbose: logger.WriteVerbose, debug: logger.WriteDebug) { LogLevel = Sorbus.Core.LogLevel.TryParse(logger.LogLevel.Level) };
 
             var app = new AssemblyPatcherApp(delegateLogger);
 
@@ -65,13 +65,13 @@ namespace Arbor.X.Core.Tools.Versioning
                 buildVariables.SingleOrDefault(@var => @var.Key == WellKnownVariables.NetAssemblyFileVersion);
             string netAssemblyFileVersion;
 
-            if (netAssemblyFileVersionVar == null || string.IsNullOrWhiteSpace(netAssemblyFileVersionVar.Value))
+            if (string.IsNullOrWhiteSpace(netAssemblyFileVersionVar?.Value))
             {
-                logger.WriteWarning(string.Format("The build variable {0} is not defined or empty",
-                    WellKnownVariables.NetAssemblyFileVersion));
+                logger.WriteWarning(
+                    $"The build variable {WellKnownVariables.NetAssemblyFileVersion} is not defined or empty");
                 netAssemblyFileVersion = "0.0.1.1";
 
-                logger.WriteWarning(string.Format("Using fall-back version {0}", netAssemblyFileVersion));
+                logger.WriteWarning($"Using fall-back version {netAssemblyFileVersion}");
             }
             else
             {
@@ -98,17 +98,15 @@ namespace Arbor.X.Core.Tools.Versioning
             try
             {
                 logger.WriteVerbose(
-                    string.Format(
-                        "Patching assembly info files with assembly version {0}, assembly file version {1} for directory source root directory '{2}'",
-                        assemblyVersion, assemblyFileVersion, sourceRoot));
+                    $"Patching assembly info files with assembly version {assemblyVersion}, assembly file version {assemblyFileVersion} for directory source root directory '{sourceRoot}'");
 
                 var sourceDirectory = new DirectoryInfo(sourceRoot);
 
                 PathLookupSpecification defaultPathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification;
 
                 IReadOnlyCollection<AssemblyInfoFile> assemblyFiles = sourceDirectory
-                    .EnumerateFiles(_filePattern, SearchOption.AllDirectories)
-                    .Where(file => !defaultPathLookupSpecification.IsFileBlackListed(file.FullName))
+                    .GetFilesRecursive(new[] { ".cs"}, defaultPathLookupSpecification, rootDir: sourceRoot)
+                    .Where(file => file.Name.Equals(_filePattern, StringComparison.InvariantCultureIgnoreCase))
                     .Select(file => new AssemblyInfoFile(file.FullName))
                     .ToReadOnlyCollection();
 

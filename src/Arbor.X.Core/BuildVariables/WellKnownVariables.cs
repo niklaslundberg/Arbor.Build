@@ -9,7 +9,6 @@ namespace Arbor.X.Core.BuildVariables
 // ReSharper disable InconsistentNaming
 
 // ReSharper disable ConvertToConstant.Global
-        
 
         [VariableDescription("Visual Studio version")]
         public static readonly string ExternalTools_VisualStudio_Version =
@@ -17,13 +16,13 @@ namespace Arbor.X.Core.BuildVariables
 
         [VariableDescription("Build arftifacts path")]
         public static readonly string Artifacts = "Arbor.X.Artifacts";
-        
+
         [VariableDescription("Flag to indicate if the build arftifacts should be cleaned up before the build starts")]
         public static readonly string CleanupArtifactsBeforeBuildEnabled = "Arbor.X.Artifacts.CleanupBeforeBuildEnabled";
 
         [VariableDescription("Full build version number")]
         public static readonly string Version = Arbor.X.Build + ".Version";
-        
+
         [VariableDescription("Max number of CPUs for MSBuild to use")]
         public static readonly string CpuLimit = "Arbor.X.CpuLimit";
 
@@ -68,9 +67,12 @@ namespace Arbor.X.Core.BuildVariables
 
         [VariableDescription("Arbor.X NuGet package version for bootstrapper to download")]
         public static readonly string ArborXNuGetPackageVersion = "Arbor.X.NuGetPackageVersion";
-                
+
         [VariableDescription("MSBuild executable path (eg. C:\\MSbuild.exe)")]
         public static readonly string ExternalTools_MSBuild_ExePath = "Arbor.X.Tools.External.MSBuild.ExePath";
+
+        [VariableDescription("MSBuild max version")]
+        public static readonly string ExternalTools_MSBuild_MaxVersion = "Arbor.X.Tools.External.MSBuild.MaxVersion";
 
         [VariableDescription("MSBuild verbosity level","normal")]
         public static readonly string ExternalTools_MSBuild_Verbosity = "Arbor.X.Tools.External.MSBuild.Verbosity";
@@ -80,9 +82,12 @@ namespace Arbor.X.Core.BuildVariables
 
         [VariableDescription("MSBuild build configuration, if not specified, all wellknown configurations will be built")]
         public static readonly string ExternalTools_MSBuild_BuildConfiguration = "Arbor.X.Tools.External.MSBuild.BuildConfiguration";
-        
+
         [VariableDescription("MSBuild build platform, if not specified, all wellknown platforms will be built")]
         public static readonly string ExternalTools_MSBuild_BuildPlatform = "Arbor.X.Tools.External.MSBuild.BuildPlatform";
+
+        [VariableDescription("MSBuild detault target when building")]
+        public static readonly string ExternalTools_MSBuild_DefaultTarget = "Arbor.X.Tools.External.MSBuild.DefaultTarget";
 
         [VariableDescription("Directory path for the current version control system repository")]
         public static readonly string SourceRoot = "SourceRoot";
@@ -116,7 +121,7 @@ namespace Arbor.X.Core.BuildVariables
 
         [VariableDescription("Machine.Specifications reports directory path")]
         public static readonly string ExternalTools_MSpec_ReportPath = "Arbor.X.Artifacts.TestReports.MSpec";
-        
+
         [VariableDescription("ILMerge executable path (eg. C:\\IlMerge.exe)")]
         public static readonly string ExternalTools_ILMerge_ExePath = "Arbor.X.Tools.External.ILMerge.ExePath";
 
@@ -137,7 +142,7 @@ namespace Arbor.X.Core.BuildVariables
 
         [VariableDescription("External, Kudu: number of processors available on the current system")]
         public static readonly string ExternalTools_Kudu_ProcessorCount = "NUMBER_OF_PROCESSORS";
-        
+
         [VariableDescription("Flag to indicate if Kudu WebJobs defined in App_Data directory is to be handled by the Kudu WebJobs aware tools")]
         public static readonly string AppDataJobsEnabled = "Arbor.X.Tools.External.Kudu.WebJobs.AppData.Enabled";
 
@@ -161,19 +166,19 @@ namespace Arbor.X.Core.BuildVariables
 
         [VariableDescription("Flag to indicate if Kudu target path files and directories should be deleted before deploy")]
         public static readonly string KuduClearFilesAndDirectories = "Arbor.X.Tools.External.Kudu.ClearEnabled";
-  
+
         [VariableDescription("Flag to indicate if Kudu should use app_offline.htm file when deploying")]
         public static readonly string KuduUseAppOfflineHtmFile = "Arbor.X.Tools.External.Kudu.UseAppOfflineHtmFile";
 
         [VariableDescription("Flag to indicate if Kudu should exclude App_Data directory when deploying")]
         public static readonly string KuduExcludeDeleteAppData = "Arbor.X.Tools.External.Kudu.ExcludeDeleteApp_Data";
-        
+
         [VariableDescription("Enable Machine.Specifications")]
         public static readonly string MSpecEnabled = "Arbor.X.Tools.External.MSpec.Enabled";
 
         [VariableDescription("Enable Machine.Specifications XSL transformation to NUnit")]
         public static readonly string MSpecJUnitXslTransformationEnabled = "Arbor.X.Tools.External.MSpec.JUnitXslTransformation.Enabled";
-        
+
         [VariableDescription("Enable NUnit")]
         public static readonly string NUnitEnabled = "Arbor.X.Tools.External.NUnit.Enabled";
 
@@ -186,11 +191,17 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescription("'|' (bar) separated list of directory names to not delete when deploying")]
         public static readonly string KuduIgnoreDeleteDirectories = "Arbor.X.Tools.External.Kudu.IgnoreDeleteDirectoriesBarSeparatedList";
 
+        [VariableDescription("Site for Kudu to deploy, needs to be specified if there are multiple web projects. Name of the csproj file exception the extension.")]
+        public static readonly string KuduSiteToDeploy = "Arbor.X.Tools.External.Kudu.SiteToDeploy";
+
         [VariableDescription("Flag to indicate if Kudu should delete any existing app_offline.htm file when deploying")]
         public static readonly string KuduDeleteExistingAppOfflineHtmFile = "Arbor.X.Tools.External.Kudu.DeleteExistingAppOfflineHtmFile";
 
         [VariableDescription("Log level")]
         public static readonly string LogLevel = "Arbor.X.Log.Level";
+
+        [VariableDescription("Generic XML transformaions enabled")]
+        public static readonly string GenericXmlTransformsEnabled = "Arbor.X.Build.XmlTransformations.Enabled";
 
         // ReSharper restore ConvertToConstant.Global
         // ReSharper restore InconsistentNaming
@@ -219,6 +230,5 @@ namespace Arbor.X.Core.BuildVariables
                 return allVariables.OrderBy(name => name.InvariantName).ToList();
             }
         }
-        
     }
 }

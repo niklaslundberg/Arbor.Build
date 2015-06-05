@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
+using Alphaleonis.Win32.Filesystem;
 using Arbor.X.Core;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
@@ -11,7 +11,7 @@ using Machine.Specifications;
 namespace Arbor.X.Tests.Integration.Tests.MSpec
 {
     [Subject(typeof(UnitTestFinder))]
-    [Tags("Arbor_X_Recursive")]
+    [Tags(Arbor.X.Core.Tools.Testing.MSpecInternalConstants.RecursiveArborXTest)]
     public class when_finding_mspec_assemblies_with_behaviors
     {
         static UnitTestFinder finder;

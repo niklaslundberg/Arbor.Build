@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using Alphaleonis.Win32.Filesystem;
 using Arbor.X.Core.Logging;
 using ILogger = Arbor.X.Core.Logging.ILogger;
 
@@ -37,7 +38,7 @@ namespace Arbor.X.Core.Tools.Testing
                 return new ReadOnlyCollection<string>(new List<string>());
             }
 
-            var blacklisted = new List<string> {".git", ".hg", ".svn", "obj", "build", "packages", "_ReSharper", "external", "artifacts", "temp", ".HistoryData", "LocalHistory", "_", "."};
+            var blacklisted = new List<string> {".git", ".hg", ".svn", "obj", "build", "packages", "_ReSharper", "external", "artifacts", "temp", ".HistoryData", "LocalHistory", "_", ".", "NCrunch"};
             
             bool isBlacklisted =
                 blacklisted.Any(
@@ -80,12 +81,12 @@ namespace Arbor.X.Core.Tools.Testing
         IReadOnlyCollection<string> UnitTestFixtureAssemblies(IEnumerable<Assembly> assemblies)
 // ReSharper restore ReturnTypeCanBeEnumerable.Local
         {
-            var nunitFixtureAssemblies =
+            var unitTestFixtureAssemblies =
                 assemblies.Where(TryFindAssembly)
                     .Select(a => a.Location)
                     .Distinct()
                     .ToList();
-            return nunitFixtureAssemblies;
+            return unitTestFixtureAssemblies;
         }
 
         bool TryFindAssembly(Assembly assembly)
@@ -248,16 +249,24 @@ namespace Arbor.X.Core.Tools.Testing
 
                 return assembly;
             }
-// ReSharper disable once UnusedVariable
             catch (ReflectionTypeLoadException ex)
             {
-                _logger.WriteDebug(string.Format("Could not load assembly '{0}'. Ignoring.", dllFile.FullName));
+                string message = string.Format("Could not load assembly '{0}', type load exception. Ignoring.", dllFile.FullName);
+
+                _logger.WriteDebug(message);
+#if DEBUG
+                Debug.WriteLine( "{0}, {1}", message, ex);
+#endif
                 return null;
             }
-// ReSharper disable once UnusedVariable
             catch (BadImageFormatException ex)
             {
-                _logger.WriteDebug(string.Format("Could not load assembly '{0}'. Ignoring.", dllFile.FullName));
+                string message = string.Format("Could not load assembly '{0}', bad image format exception. Ignoring.", dllFile.FullName);
+
+                _logger.WriteDebug(message);
+#if DEBUG
+                Debug.WriteLine("{0}, {1}", message, ex);
+#endif
                 return null;
             }
         }

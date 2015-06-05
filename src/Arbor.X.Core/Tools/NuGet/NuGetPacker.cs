@@ -4,12 +4,15 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Arbor.Sorbus.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
+using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;
-using ILogger = Arbor.X.Core.Logging.ILogger;
-using LogLevel = Arbor.X.Core.Logging.LogLevel;
+using Directory = Alphaleonis.Win32.Filesystem.Directory;
+using DirectoryInfo = Alphaleonis.Win32.Filesystem.DirectoryInfo;
+using File = Alphaleonis.Win32.Filesystem.File;
+using FileInfo = Alphaleonis.Win32.Filesystem.FileInfo;
+using Path = Alphaleonis.Win32.Filesystem.Path;
 
 namespace Arbor.X.Core.Tools.NuGet
 {
@@ -21,6 +24,8 @@ namespace Arbor.X.Core.Tools.NuGet
         bool _branchNameEnabled;
         string _packageIdOverride;
         string _nuGetPackageVersionOverride;
+        private IReadOnlyCollection<string> _excludedNuSpecFiles;
+        PathLookupSpecification _pathLookupSpecification;
 
         public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {
@@ -51,6 +56,11 @@ namespace Arbor.X.Core.Tools.NuGet
             _packageIdOverride = buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageIdOverride, null);
             _nuGetPackageVersionOverride =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageVersionOverride, null);
+
+            _excludedNuSpecFiles =
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageExcludesCommaSeparated, "").Split(new string[] {","}, StringSplitOptions.RemoveEmptyEntries).SafeToReadOnlyCollection();
+
+            _pathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification;
 
             var buildPackagesOnAnyBranch =
                 buildVariables.GetBooleanByKey(WellKnownVariables.NuGetCreatePackagesOnAnyBranchEnabled, false);
@@ -103,24 +113,36 @@ namespace Arbor.X.Core.Tools.NuGet
             return result;
         }
 
-        static IEnumerable<string> GetPackageSpecifications(ILogger logger, string vcsRootDir, string packageDirectory)
+        IEnumerable<string> GetPackageSpecifications(ILogger logger, string vcsRootDir, string packageDirectory)
         {
-            var packageSpecifications = Directory.GetFiles(vcsRootDir, "*.nuspec", SearchOption.AllDirectories)
-                                                 .Where(
-                                                     file =>
-                                                     file.IndexOf(packageDirectory, StringComparison.Ordinal) < 0)
-                                                 .ToList();
+            DirectoryInfo vcsRootDirectory = new DirectoryInfo(vcsRootDir);
+
+            var packageSpecifications = vcsRootDirectory.GetFilesRecursive(new List<string> { ".nuspec"}, _pathLookupSpecification, vcsRootDir).
+                Where(file => file.FullName.IndexOf(packageDirectory, StringComparison.Ordinal) < 0)
+                .Select(f => f.FullName)
+                .ToList();
 
             var pathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification;
 
-            IReadOnlyCollection<string> filtered =
+            IReadOnlyCollection<FileInfo> filtered =
                 packageSpecifications
-                .Where(packagePath => !pathLookupSpecification.IsFileBlackListed(packagePath))
-                .ToReadOnly();
+                .Where(packagePath => !pathLookupSpecification.IsFileBlackListed(packagePath, rootDir:vcsRootDir))
+                .Select(file => new FileInfo(file))
+                .ToReadOnlyCollection();
+
+            var notExcluded =
+                filtered.Where(
+                    nuspec =>
+                        !_excludedNuSpecFiles.Any(
+                            exludedNuSpec =>
+                                exludedNuSpec.Equals(nuspec.Name, StringComparison.InvariantCultureIgnoreCase)))
+                                .SafeToReadOnlyCollection();
 
             logger.WriteVerbose(string.Format("Found nuspec files [{0}]: {1}{2}", filtered.Count,
                                        Environment.NewLine, string.Join(Environment.NewLine, filtered)));
-            return filtered;
+            var allIncluded = notExcluded.Select(file => file.FullName).SafeToReadOnlyCollection();
+
+            return allIncluded;
         }
 
         static string PackageDirectory()
@@ -176,7 +198,7 @@ namespace Arbor.X.Core.Tools.NuGet
             }
 
             string nuGetPackageVersion = _nuGetPackageVersionOverride ?? NuGetVersionHelper.GetVersion(version.Value, isReleaseBuild, suffix, enableBuildNumber);
-            
+
             var nuSpecInfo = new FileInfo(nuspecFilePath);
 // ReSharper disable AssignNullToNotNullAttribute
             var nuSpecFileCopyPath = Path.Combine(nuSpecInfo.DirectoryName,
@@ -201,7 +223,7 @@ namespace Arbor.X.Core.Tools.NuGet
 
             return result;
         }
-        
+
         async Task<ExitCode> ExecuteNuGetPackAsync(string nuGetExePath, string packagesDirectoryPath, ILogger logger,
                                                 string nuSpecFileCopyPath, string properties, NuSpec nuSpecCopy)
         {

@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Alphaleonis.Win32.Filesystem;
 using Arbor.Aesculus.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
+using Arbor.X.Core.Tools.Cleanup;
 
 namespace Arbor.X.Core.Tools.Environments
 {
@@ -16,7 +17,7 @@ namespace Arbor.X.Core.Tools.Environments
         {
             var existingSourceRoot = buildVariables.GetVariableValueOrDefault(WellKnownVariables.SourceRoot, "");
             string sourceRoot;
-            
+
             if (!string.IsNullOrWhiteSpace(existingSourceRoot))
             {
                 if (!Directory.Exists(existingSourceRoot))
@@ -47,5 +48,7 @@ namespace Arbor.X.Core.Tools.Environments
 
             return Task.FromResult<IEnumerable<IVariable>>(variables);
         }
+
+        public int Order => 0;
     }
 }

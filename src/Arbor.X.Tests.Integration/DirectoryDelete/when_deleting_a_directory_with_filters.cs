@@ -8,7 +8,7 @@ using Machine.Specifications;
 namespace Arbor.X.Tests.Integration.DirectoryDelete
 {
     [Subject(typeof (Core.Tools.DirectoryDelete))]
-    [Tags("Arbor_X_Recursive")]
+    [Tags(Arbor.X.Core.Tools.Testing.MSpecInternalConstants.RecursiveArborXTest)]
     public class when_deleting_a_directory_with_filters
     {
         static string tempDir;
@@ -87,15 +87,15 @@ namespace Arbor.X.Tests.Integration.DirectoryDelete
 
         It should_delete_non_filtered_files = () =>
         {
-            string[] enumerateFiles = Directory.EnumerateFiles(tempDir, "*.*", SearchOption.AllDirectories).ToArray();
+            string[] filesPaths = Directory.EnumerateFiles(tempDir, "*.*", SearchOption.AllDirectories).ToArray();
 
-            foreach (string enumerateFile in enumerateFiles)
+            foreach (string filePath in filesPaths)
             {
-                Console.WriteLine(enumerateFile);
+                Console.WriteLine(filePath);
             }
 
-            string[] existing = enumerateFiles.Select(file => new FileInfo(file).Name).ToArray();
-            existing.ShouldContain(expectedFiles);
+            string[] existingFilePaths = filesPaths.Select(file => new FileInfo(file).Name).ToArray();
+            existingFilePaths.ShouldContain(expectedFiles);
         };
     }
 }

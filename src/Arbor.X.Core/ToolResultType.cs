@@ -11,34 +11,16 @@ namespace Arbor.X.Core
             _succeeded = succeeded;
         }
 
-        public string Type
-        {
-            get { return _type; }
-        }
+        public string Type => _type;
 
-        public bool IsSuccess
-        {
-            get { return _succeeded.HasValue && _succeeded.Value; }
-        }
+        public bool IsSuccess => _succeeded.HasValue && _succeeded.Value;
 
-        public bool WasRun
-        {
-            get { return _succeeded.HasValue; }
-        }
+        public bool WasRun => _succeeded.HasValue;
 
-        public static ToolResultType Succeeded
-        {
-            get { return new ToolResultType("Succeeded", true); }
-        }
+        public static ToolResultType Succeeded => new ToolResultType("Succeeded", true);
 
-        public static ToolResultType Failed
-        {
-            get { return new ToolResultType("Failed", false); }
-        }
+        public static ToolResultType Failed => new ToolResultType("Failed", false);
 
-        public static ToolResultType NotRun
-        {
-            get { return new ToolResultType("Not run", null); }
-        }
+        public static ToolResultType NotRun => new ToolResultType("Not run", null);
     }
 }

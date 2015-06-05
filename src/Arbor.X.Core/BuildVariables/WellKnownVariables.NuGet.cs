@@ -5,9 +5,12 @@
         [VariableDescription("Flag to indicate if NuGet package creation is enabled")]
         public static readonly string NuGetPackageEnabled = Arbor.X + ".NuGet.Package.Enabled";
 
+        [VariableDescription("Flag to indicate if NuGet package creation is enabled")]
+        public static readonly string NuGetPackageExcludesCommaSeparated = Arbor.X + ".NuGet.Package.ExcludesCommaSeparated";
+
         [VariableDescription("NuGet package artifacts suffix")]
         public static readonly string NuGetPackageArtifactsSuffix = Arbor.X + ".NuGet.Package.Artifacts.Suffix";
-        
+
         [VariableDescription("NuGet package id override")]
         public static readonly string NuGetPackageIdOverride = Arbor.X + ".NuGet.Package.Artifacts.PackageId.Override";
 
@@ -23,9 +26,12 @@
         [VariableDescription("NuGet executable path (eg. C:\\nuget.exe)")]
         public static readonly string ExternalTools_NuGet_ExePath = "Arbor.X.Tools.External.NuGet.ExePath";
 
+        [VariableDescription("NuGet executable path (eg. C:\\nuget.exe)")]
+        public static readonly string ExternalTools_NuGet_ExePath_Custom = "Arbor.X.Tools.External.NuGet.ExePath.Custom";
+
         [VariableDescription("Flag to indicate if created NuGet (binary+symbol) packages should be kept in the same folder", "true")]
         public static readonly string NuGetKeepBinaryAndSymbolPackagesTogetherEnabled = "Arbor.X.NuGet.Package.Artifacts.KeepBinaryAndSymbolTogetherEnabled";
-        
+
         [VariableDescription("Flag to indicate if NuGet packages should be created regardless of the branch convention", "false")]
         public static readonly string NuGetCreatePackagesOnAnyBranchEnabled = "Arbor.X.NuGet.Package.Artifacts.CreateOnAnyBranchEnabled";
 

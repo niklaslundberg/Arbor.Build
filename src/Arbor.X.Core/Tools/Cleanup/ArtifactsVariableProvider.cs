@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Alphaleonis.Win32.Filesystem;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 
-namespace Arbor.X.Core.Tools.Artifacts
+namespace Arbor.X.Core.Tools.Cleanup
 {
     public class ArtifactsVariableProvider : IVariableProvider
     {
@@ -26,5 +26,7 @@ namespace Arbor.X.Core.Tools.Artifacts
 
             return Task.FromResult<IEnumerable<IVariable>>(variables);
         }
+
+        public int Order => 2;
     }
 }

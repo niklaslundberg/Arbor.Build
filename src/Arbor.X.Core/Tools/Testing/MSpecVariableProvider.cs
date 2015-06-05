@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
-using System.IO;
+
 using System.Threading;
 using System.Threading.Tasks;
+using Alphaleonis.Win32.Filesystem;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
+using Arbor.X.Core.Tools.Cleanup;
 
 namespace Arbor.X.Core.Tools.Testing
 {
@@ -30,5 +32,6 @@ namespace Arbor.X.Core.Tools.Testing
             return Task.FromResult<
                 IEnumerable<IVariable>>(environmentVariables);
         }
+        public int Order => VariableProviderOrder.Ignored;
     }
 }

@@ -5,7 +5,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.X.Core.BuildVariables;
+using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
+using DirectoryInfo = Alphaleonis.Win32.Filesystem.DirectoryInfo;
+using FileInfo = Alphaleonis.Win32.Filesystem.FileInfo;
 
 namespace Arbor.X.Core.Tools.Kudu
 {
@@ -28,18 +31,22 @@ namespace Arbor.X.Core.Tools.Kudu
                 return Task.FromResult(ExitCode.Success);
             }
 
+            PathLookupSpecification pathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification;
+
+            string rootDir = buildVariables.GetVariable(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
+
             _logger.Write("Kudu web jobs are enabled");
 
             string sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
 
             var sourceRootDirectory = new DirectoryInfo(sourceRoot);
-            FileInfo[] csharpProjectFiles = sourceRootDirectory.GetFiles("*.csproj", SearchOption.AllDirectories);
+            IReadOnlyCollection<FileInfo> csharpProjectFiles = sourceRootDirectory.GetFilesRecursive(new List<string> { ".csproj"}, pathLookupSpecification, rootDir);
 
             List<KuduWebProjectDetails> kuduWebJobProjects = csharpProjectFiles
                 .Select(IsKuduWebJobProject)
                 .Where(project => project.IsKuduWebJobProject)
                 .ToList();
-            
+
             if (kuduWebJobProjects.Any())
             {
                 logger.Write(string.Join(Environment.NewLine,

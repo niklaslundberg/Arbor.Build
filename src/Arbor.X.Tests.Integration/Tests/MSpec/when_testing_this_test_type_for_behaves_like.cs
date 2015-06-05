@@ -7,7 +7,7 @@ using Machine.Specifications;
 namespace Arbor.X.Tests.Integration.Tests.MSpec
 {
     [Subject(typeof(UnitTestFinder))]
-    [Tags("Arbor_X_Recursive")]
+    [Tags(Arbor.X.Core.Tools.Testing.MSpecInternalConstants.RecursiveArborXTest)]
     public class when_testing_this_test_type_for_behaves_like
     {
         static UnitTestFinder finder;
@@ -25,7 +25,9 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
         Because of =
             () => { Result = finder.TryIsTypeTestFixture(typeof(when_testing_this_test_type_for_behaves_like)); };
 
+#pragma warning disable 169
         Behaves_like<SampleBehaviors> sample_behaviors;
+#pragma warning restore 169
 
     }
 }

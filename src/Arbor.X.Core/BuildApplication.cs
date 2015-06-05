@@ -2,29 +2,19 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Alphaleonis.Win32.Filesystem;
 using Arbor.Aesculus.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;
 using Arbor.X.Core.Tools;
-using Arbor.X.Core.Tools.Artifacts;
-using Arbor.X.Core.Tools.Environments;
 using Arbor.X.Core.Tools.Git;
-using Arbor.X.Core.Tools.ILMerge;
-using Arbor.X.Core.Tools.Kudu;
-using Arbor.X.Core.Tools.MSBuild;
-using Arbor.X.Core.Tools.NuGet;
-using Arbor.X.Core.Tools.Symbols;
-using Arbor.X.Core.Tools.TeamCity;
-using Arbor.X.Core.Tools.Testing;
-using Arbor.X.Core.Tools.Versioning;
-using Arbor.X.Core.Tools.VisualStudio;
+using Autofac;
 
 namespace Arbor.X.Core
 {
@@ -32,6 +22,7 @@ namespace Arbor.X.Core
     {
         ILogger _logger;
         CancellationToken _cancellationToken;
+        IContainer _container;
 
         public BuildApplication(ILogger logger)
         {
@@ -41,22 +32,38 @@ namespace Arbor.X.Core
         {
             var baseDir = VcsPathHelper.FindVcsRootPath(AppDomain.CurrentDomain.BaseDirectory);
 
-            var tempDirectory = new DirectoryInfo(Path.Combine(Path.GetTempPath(), "Arbor.X_Build_Debug", Guid.NewGuid().ToString()));
+            var tempPath = @"C:\arbor.x";
+
+            var tempDirectory = new DirectoryInfo(Path.Combine(tempPath, "Arbor.X_Build_Debug", DateTime.UtcNow.ToFileTimeUtc().ToString(), Guid.NewGuid().ToString()));
 
             tempDirectory.EnsureExists();
 
             WriteDebug(string.Format("Using temp directory '{0}'", tempDirectory));
 
-            await DirectoryCopy.CopyAsync(baseDir, tempDirectory.FullName, pathLookupSpecificationOption: DefaultPaths.DefaultPathLookupSpecification);
+            await DirectoryCopy.CopyAsync(baseDir, tempDirectory.FullName, pathLookupSpecificationOption: DefaultPaths.DefaultPathLookupSpecification, rootDir: baseDir);
 
-            Environment.SetEnvironmentVariable(WellKnownVariables.BranchNameVersionOverrideEnabled, "true");
-            Environment.SetEnvironmentVariable(WellKnownVariables.VariableOverrideEnabled, "true");
-            Environment.SetEnvironmentVariable(WellKnownVariables.SourceRoot, tempDirectory.FullName);
-            string branchName = "refs/heads/develop-23.45.67";
-            Environment.SetEnvironmentVariable(WellKnownVariables.BranchName, branchName);
+            Dictionary<string, string> environmentVariables = new Dictionary<string, string>
+            {
+                [WellKnownVariables.BranchNameVersionOverrideEnabled] = "false",
+                [WellKnownVariables.VariableOverrideEnabled] = "true",
+                [WellKnownVariables.SourceRoot] = tempDirectory.FullName,
+                [WellKnownVariables.BranchName] = "develop",
+                [WellKnownVariables.VersionMajor] = "1",
+                [WellKnownVariables.VersionMinor] = "0",
+                [WellKnownVariables.VersionPatch] = "19",
+                [WellKnownVariables.VersionBuild] = "106",
+                [WellKnownVariables.Configuration] = "release",
+                [WellKnownVariables.GenericXmlTransformsEnabled] = "true",
+                [WellKnownVariables.NuGetPackageExcludesCommaSeparated] = "Arbor.X.Bootstrapper.nuspec",
+            };
+
+            foreach (KeyValuePair<string, string> environmentVariable in environmentVariables)
+            {
+                Environment.SetEnvironmentVariable(environmentVariable.Key, environmentVariable.Value);
+            }
 
             _logger.LogLevel = LogLevel.Debug;
-            
+
             WriteDebug("Starting with debugger attached");
         }
 
@@ -70,8 +77,10 @@ namespace Arbor.X.Core
         {
             if (Debugger.IsAttached)
             {
-                await StartWithDebuggerAsync(args);
+                await StartWithDebuggerAsync(args).ConfigureAwait(false);
             }
+
+            _container = await BuildBootstrapper.StartAsync();
 
             _logger = new DebugLogger(_logger);
 
@@ -147,13 +156,20 @@ namespace Arbor.X.Core
                 }
             });
 
-            _logger.Write(string.Format("{0}Available wellknown variables: {0}{0}{1}", Environment.NewLine, variableAsTable));
+            if (buildVariables.GetBooleanByKey(WellKnownVariables.ShowAvailableVariablesEnabled, defaultValue: true))
+            {
+                _logger.Write(string.Format("{0}Available wellknown variables: {0}{0}{1}", Environment.NewLine,
+                    variableAsTable));
+            }
 
-            _logger.Write(string.Format("{1}Defined build variables: [{0}] {1}{1}{2}", buildVariables.Count,
-                Environment.NewLine,
-                buildVariables.Print()));
+            if (buildVariables.GetBooleanByKey(WellKnownVariables.ShowDefinedVariablesEnabled, defaultValue: true))
+            {
+                _logger.Write(string.Format("{1}Defined build variables: [{0}] {1}{1}{2}", buildVariables.Count,
+                    Environment.NewLine,
+                    buildVariables.Print()));
+            }
 
-            IReadOnlyCollection<ToolWithPriority> toolWithPriorities = ToolFinder.GetTools(_logger);
+            IReadOnlyCollection<ToolWithPriority> toolWithPriorities = ToolFinder.GetTools(_container, _logger);
 
             LogTools(toolWithPriorities);
 
@@ -172,8 +188,14 @@ namespace Arbor.X.Core
                     }
                 }
 
-                _logger.Write(Environment.NewLine +
-                              string.Format("######## Running tool {0} ########", toolWithPriority));
+                var boxLength = 50;
+
+                var boxCharacter = '#';
+                var boxLine = new string(boxCharacter, boxLength);
+
+                var message = string.Format("{0}{1}{2}{1}{2} Running tool {3}{1}{2}{1}{0}", boxLine, Environment.NewLine, boxCharacter, toolWithPriority);
+
+                _logger.Write(message);
 
                 Stopwatch stopwatch = Stopwatch.StartNew();
 
@@ -287,30 +309,32 @@ namespace Arbor.X.Core
         {
             var buildVariables = new List<IVariable>();
 
-            IEnumerable<IVariable> result = await RunOnceAsync();
+            IEnumerable<IVariable> result = await RunOnceAsync().ConfigureAwait(false);
 
             buildVariables.AddRange(result);
 
             buildVariables.AddRange(EnvironmentVariableHelper.GetBuildVariablesFromEnvironmentVariables(_logger, buildVariables));
 
-            var providers = new List<IVariableProvider>
-                            {
-                                new GitVariableProvider(),
-                                new TeamCityVariableProvider(),
-                                new SourcePathVariableProvider(),
-                                new ArtifactsVariableProvider(),
-                                new MSBuildVariableProvider(),
-                                new NugetVariableProvider(),
-                                new VisualStudioVariableProvider(),
-                                new VsTestVariableProvider(),
-                                new MSpecVariableProvider(),
-                                new BuildVersionProvider(),
-                                new ILMergeVariableProvider(),
-                                new SymbolsVariableProvider(),
-                                new BuildAgentVariableProvider(),
-                                new KuduEnvironmentVariableProvider(),
-                                new BuildConfigurationProvider()
-                            }; //TODO use Autofac
+            //var providers = new List<IVariableProvider>
+            //                {
+            //                    new GitVariableProvider(),
+            //                    new TeamCityVariableProvider(),
+            //                    new SourcePathVariableProvider(),
+            //                    new ArtifactsVariableProvider(),
+            //                    new MSBuildVariableProvider(),
+            //                    new NugetVariableProvider(),
+            //                    new VisualStudioVariableProvider(),
+            //                    new VsTestVariableProvider(),
+            //                    new MSpecVariableProvider(),
+            //                    new BuildVersionProvider(),
+            //                    new ILMergeVariableProvider(),
+            //                    new SymbolsVariableProvider(),
+            //                    new BuildAgentVariableProvider(),
+            //                    new KuduEnvironmentVariableProvider(),
+            //                    new BuildConfigurationProvider()
+            //                }; //TODO use Autofac
+
+            var providers = _container.Resolve<IEnumerable<IVariableProvider>>().OrderBy(provider => provider.Order).ToReadOnlyCollection();
 
             string displayAsTable =
                 providers.Select(item => new Dictionary<string, string> {{"Provider", item.GetType().Name}})
@@ -489,7 +513,7 @@ namespace Arbor.X.Core
             if (string.IsNullOrWhiteSpace(configurationFromEnvironment))
             {
                 string configuration = GetConfiguration(branchName);
-                
+
                 _logger.WriteVerbose(string.Format("Using configuration '{0}' based on branch name '{1}'", configuration, branchName));
 
                 variables.Add(WellKnownVariables.Configuration, configuration);

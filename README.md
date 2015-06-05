@@ -2,7 +2,7 @@
 
 # License
 
-MIT TODO
+This code uses the MIT license http://opensource.org/licenses/MIT, see [License.txt](License.txt)
 
 # System requirements
 
@@ -11,8 +11,6 @@ MIT TODO
 # Supported Version Control Systems
 
 * Git
-* Mercurial
-* Subversion (version TODO)
 
 # Build variables
 
@@ -57,8 +55,8 @@ Arbor.X will scan for Visual Studio solution files .sln and build the solution w
 
 # NuGet
 
-NuGet package creation from NuGet package specification files .nuspec.
-NuGet package restore
+* NuGet package creation from NuGet package specification files .nuspec.
+* NuGet package restore
 
 # Version Conntrol System file structure
 
@@ -76,6 +74,5 @@ Recommended file structure
 
 ## Recommended included files
 
-* packages/repositories.config
 * optional build/Build.exe 
 * optional build/build.bat

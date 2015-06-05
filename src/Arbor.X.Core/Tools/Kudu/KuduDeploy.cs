@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,6 +27,7 @@ namespace Arbor.X.Core.Tools.Kudu
         bool _deleteExistingAppOfflineHtm;
         string _ignoreDeleteFiles;
         string _ignoreDeleteDirectories;
+        private string _vcsRoot;
 
         public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {
@@ -34,6 +36,7 @@ namespace Arbor.X.Core.Tools.Kudu
             {
                 return ExitCode.Success;
             }
+            _vcsRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
             _artifacts = buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue().Value;
             _platform = buildVariables.Require(WellKnownVariables.ExternalTools_Kudu_Platform).ThrowIfEmptyValue().Value;
             _deployBranch = new BranchName(buildVariables.Require(WellKnownVariables.ExternalTools_Kudu_DeploymentBranchName).Value);
@@ -74,18 +77,42 @@ namespace Arbor.X.Core.Tools.Kudu
                 logger.Write("No websites found. Ignoring Kudu deployment.");
                 return ExitCode.Success;
             }
+            DirectoryInfo websiteToDeploy;
 
-            if (builtWebsites.Count() > 1)
+            if (builtWebsites.Length == 1)
             {
-                logger.WriteError(
-                    string.Format(
-                        "Found {0} websites. Kudu deployment is only supported with a single website. \r\nBuilt websites: {1}",
-                        builtWebsites.Count(), string.Join(Environment.NewLine, builtWebsites.Select(dir => dir.Name))));
-
-                return ExitCode.Failure;
+                websiteToDeploy = builtWebsites.Single();
             }
+            else
+            {
+                string siteToDeploy = buildVariables.GetVariableValueOrDefault(WellKnownVariables.KuduSiteToDeploy, "");
+                if (!string.IsNullOrWhiteSpace(siteToDeploy))
+                {
+                    var foundDir = builtWebsites.SingleOrDefault(
+                        dir => dir.Name.Equals(siteToDeploy, StringComparison.InvariantCultureIgnoreCase));
 
-            var websiteToDeploy = builtWebsites.Single();
+                    if (foundDir == null)
+                    {
+                        logger.WriteError(
+                            string.Format(
+                                "Found {0} websites. Kudu deployment is specified for site {1} but it was not found",
+                                builtWebsites.Count(), siteToDeploy));
+                        return ExitCode.Failure;
+                    }
+
+                    websiteToDeploy = foundDir;
+                }
+                else
+                {
+                    logger.WriteError(
+                        string.Format(
+                            "Found {0} websites. Kudu deployment is only supported with a single website. \r\nBuilt websites: {1}. You can use variable '{2}' to specify a single website to be built",
+                            builtWebsites.Count(),
+                            string.Join(Environment.NewLine, builtWebsites.Select(dir => dir.Name)),
+                            WellKnownVariables.KuduSiteToDeploy));
+                    return ExitCode.Failure;
+                }
+            }
 
             if (!websiteToDeploy.GetDirectories().Any())
             {
@@ -208,7 +235,7 @@ namespace Arbor.X.Core.Tools.Kudu
                 
                 try
                 {
-                    var exitCode = await DirectoryCopy.CopyAsync(configuration.FullName, _deploymentTargetDirectory, logger);
+                    var exitCode = await DirectoryCopy.CopyAsync(configuration.FullName, _deploymentTargetDirectory, logger, rootDir: _vcsRoot, pathLookupSpecificationOption: new PathLookupSpecification());
 
                     if (!exitCode.IsSuccess)
                     {
@@ -239,9 +266,7 @@ namespace Arbor.X.Core.Tools.Kudu
                     }
                 }
             }
-
-            await Task.Delay(TimeSpan.FromMilliseconds(20), cancellationToken); //TODO temp to avoid compiler warning
-
+            
             return ExitCode.Success;
         }
 

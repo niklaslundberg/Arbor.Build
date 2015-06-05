@@ -6,10 +6,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Logging;
+using Arbor.X.Core.Tools.Cleanup;
 
 namespace Arbor.X.Core.Tools.Versioning
 {
-    internal class BuildVersionProvider : IVariableProvider
+    public class BuildVersionProvider : IVariableProvider
     {
         public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {
@@ -59,7 +60,9 @@ namespace Arbor.X.Core.Tools.Versioning
             yield return new KeyValuePair<string, string>(WellKnownVariables.VersionPatch, patch.ToString(CultureInfo.InvariantCulture));
             yield return new KeyValuePair<string, string>(WellKnownVariables.VersionBuild, build.ToString(CultureInfo.InvariantCulture));
             yield return new KeyValuePair<string, string>("Version", fullVersionValue);
-            yield return new KeyValuePair<string, string>("Arbor.X.Build.Version", fullVersionValue);
+            yield return new KeyValuePair<string, string>(WellKnownVariables.Version, fullVersionValue);
         }
+
+        public int Order => VariableProviderOrder.Ignored;
     }
 }

@@ -4,14 +4,16 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Arbor.X.Core.IO;
-using ILogger = Arbor.X.Core.Logging.ILogger;
-using NullLogger = Arbor.X.Core.Logging.NullLogger;
+using Arbor.X.Core.Logging;
+using DirectoryInfo = Alphaleonis.Win32.Filesystem.DirectoryInfo;
+using FileInfo = Alphaleonis.Win32.Filesystem.FileInfo;
+using Path = Alphaleonis.Win32.Filesystem.Path;
 
 namespace Arbor.X.Core.Tools
 {
     public static class DirectoryCopy
     {
-        public static async Task<ExitCode> CopyAsync(string sourceDir, string targetDir, ILogger optionalLogger = null, PathLookupSpecification pathLookupSpecificationOption = null)
+        public static async Task<ExitCode> CopyAsync(string sourceDir, string targetDir, ILogger optionalLogger = null, PathLookupSpecification pathLookupSpecificationOption = null, string rootDir = null)
         {
             var pathLookupSpecification = pathLookupSpecificationOption ?? DefaultPaths.DefaultPathLookupSpecification;
 
@@ -34,7 +36,7 @@ namespace Arbor.X.Core.Tools
                 throw new ArgumentException(string.Format("Source directory '{0}' does not exist", sourceDir));
             }
 
-            if (pathLookupSpecification.IsBlackListed(sourceDir))
+            if (pathLookupSpecification.IsBlackListed(sourceDir, rootDir))
             {
                 logger.WriteDebug(string.Format("Directory '{0}' is blacklisted from specification {1}", sourceDir, pathLookupSpecification.ToString()));
                 return ExitCode.Success;

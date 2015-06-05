@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Arbor.X.Core.Exceptions;
 using Arbor.X.Core.Logging;
 
 namespace Arbor.X.Core.ProcessUtils
@@ -40,13 +41,13 @@ namespace Arbor.X.Core.ProcessUtils
         {
             if (string.IsNullOrWhiteSpace(executePath))
             {
-                throw new ArgumentNullException("executePath");
+                throw new ArgumentNullException(nameof(executePath));
             }
 
             if (!File.Exists(executePath))
             {
                 throw new ArgumentException(string.Format("The executable file '{0}' does not exist", executePath),
-                    "executePath");
+                    nameof(executePath));
             }
 
             IEnumerable<string> usedArguments = arguments ?? Enumerable.Empty<string>();
@@ -132,7 +133,13 @@ namespace Arbor.X.Core.ProcessUtils
             }
             if (redirectStandardOutput)
             {
-                process.OutputDataReceived += (sender, args) => standardAction(args.Data, null);
+                process.OutputDataReceived += (sender, args) =>
+                {
+                    if (args.Data != null)
+                    {
+                        standardAction(args.Data, null);
+                    }
+                };
             }
 
             process.Exited += (sender, args) =>
@@ -183,6 +190,10 @@ namespace Arbor.X.Core.ProcessUtils
             }
             catch (Exception ex)
             {
+                if (ex.IsFatal())
+                {
+                    throw;
+                }
                 errorAction(string.Format("An error occured while running process {0}: {1}", processWithArgs, ex), null);
                 taskCompletionSource.SetException(ex);
             }
@@ -231,7 +242,7 @@ namespace Arbor.X.Core.ProcessUtils
 
                                 if (processId > 0)
                                 {
-                                    string args = "/PID " + processId;
+                                    string args = string.Format("/PID {0}", processId);
                                     string killProcessPath =
                                         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System),
                                             "taskkill.exe");
@@ -250,6 +261,11 @@ namespace Arbor.X.Core.ProcessUtils
                             }
                             catch (Exception ex)
                             {
+                                if (ex.IsFatal())
+                                {
+                                    throw;
+                                }
+
                                 errorAction(
                                     string.Format(
                                         "ProcessRunner could not kill process {0} when cancellation was requested",
@@ -264,9 +280,7 @@ namespace Arbor.X.Core.ProcessUtils
                 }
                 using (process)
                 {
-                    verbose(
-                        "Task status: " + taskCompletionSource.Task.Status + ", " +
-                        taskCompletionSource.Task.IsCompleted, null);
+                    verbose(string.Format("Task status: {0}, {1}", taskCompletionSource.Task.Status, taskCompletionSource.Task.IsCompleted), null);
                     verbose(string.Format("Disposing process {0}", processWithArgs), null);
                 }
             }
@@ -293,6 +307,10 @@ namespace Arbor.X.Core.ProcessUtils
             }
             catch (Exception ex)
             {
+                if (ex.IsFatal())
+                {
+                    throw;
+                }
                 debugAction(string.Format("Could not check processes. {0}",  ex), null);
             }
 

@@ -10,11 +10,15 @@ using Arbor.X.Core.Logging;
 using Arbor.X.Core.Tools;
 using Arbor.X.Core.Tools.Testing;
 using Machine.Specifications;
+using DirectoryInfo = Alphaleonis.Win32.Filesystem.DirectoryInfo;
+using File = Alphaleonis.Win32.Filesystem.File;
+using FileInfo = Alphaleonis.Win32.Filesystem.FileInfo;
+using Path = Alphaleonis.Win32.Filesystem.Path;
 
 namespace Arbor.X.Tests.Integration.Tests.MSpec
 {
     [Subject(typeof (MSpecTestRunner))]
-    [Tags("Arbor_X_Recursive")]
+    [Tags(Arbor.X.Core.Tools.Testing.MSpecInternalConstants.RecursiveArborXTest)]
     public class when_running_mspec_on_self_with_nunit_xml
     {
         static MSpecTestRunner testRunner;

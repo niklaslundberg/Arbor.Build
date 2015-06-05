@@ -9,6 +9,10 @@ using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;
+using Directory = Alphaleonis.Win32.Filesystem.Directory;
+using DirectoryInfo = Alphaleonis.Win32.Filesystem.DirectoryInfo;
+using FileInfo = Alphaleonis.Win32.Filesystem.FileInfo;
+using Path = Alphaleonis.Win32.Filesystem.Path;
 
 namespace Arbor.X.Core.Tools.ILMerge
 {
@@ -39,7 +43,7 @@ namespace Arbor.X.Core.Tools.ILMerge
             logger.Write(string.Format("Found {0} projects marked for ILMerge:{1}{2}", ilMergeProjects.Count,
                 Environment.NewLine, merges));
 
-            IEnumerable<ILMergeData> mergeDatas = ilMergeProjects.SelectMany(GetIlMergeFiles);
+            IReadOnlyCollection<ILMergeData> mergeDatas = ilMergeProjects.SelectMany(GetIlMergeFiles).ToReadOnlyCollection();
 
             foreach (ILMergeData mergeData in mergeDatas)
             {
@@ -51,6 +55,24 @@ namespace Arbor.X.Core.Tools.ILMerge
                 var ilMergedPath = Path.Combine(ilMergedDirectory.FullName, fileInfo.Name);
                 var arguments = new List<string> {"/target:exe", "/out:" + ilMergedPath, fileInfo.FullName};
                 arguments.AddRange(mergeData.Dlls.Select(dll => dll.FullName));
+
+                string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+
+                string dotNetVersion = "4.5.1";
+
+                string referenceAssemblyDirectory =
+                    $@"{programFiles}\Reference Assemblies\Microsoft\Framework\.NETFramework\v" + dotNetVersion;
+
+                if (!Directory.Exists(referenceAssemblyDirectory))
+                {
+                    logger.WriteError(
+                        $"Could not ILMerge, the reference assembly directory {referenceAssemblyDirectory} does not exist, currently only .NET v{dotNetVersion} is supported");
+
+                    return ExitCode.Failure;
+                }
+
+                arguments.Add(
+                    $@"/targetplatform:v4,{referenceAssemblyDirectory}");
 
                 var result =
                     await

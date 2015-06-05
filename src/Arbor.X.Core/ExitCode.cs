@@ -9,25 +9,13 @@
             _result = result;
         }
 
-        public bool IsSuccess
-        {
-            get { return _result == 0; }
-        }
+        public bool IsSuccess => _result == 0;
 
-        public static ExitCode Success
-        {
-            get { return new ExitCode(0); }
-        }
+        public static ExitCode Success => new ExitCode(0);
 
-        public static ExitCode Failure
-        {
-            get { return new ExitCode(1); }
-        }
+        public static ExitCode Failure => new ExitCode(1);
 
-        public int Result
-        {
-            get { return _result; }
-        }
+        public int Result => _result;
 
         public override string ToString()
         {

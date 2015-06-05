@@ -10,11 +10,14 @@ using Arbor.X.Core.Logging;
 using Arbor.X.Core.Tools;
 using Arbor.X.Core.Tools.Testing;
 using Machine.Specifications;
+using DirectoryInfo = Alphaleonis.Win32.Filesystem.DirectoryInfo;
+using File = Alphaleonis.Win32.Filesystem.File;
+using Path = Alphaleonis.Win32.Filesystem.Path;
 
 namespace Arbor.X.Tests.Integration.Tests.MSpec
 {
     [Subject(typeof (MSpecTestRunner))]
-    [Tags("Arbor_X_Recursive")]
+    [Tags(Arbor.X.Core.Tools.Testing.MSpecInternalConstants.RecursiveArborXTest)]
     public class when_running_mspec_on_self
     {
         static MSpecTestRunner testRunner;
@@ -29,7 +32,7 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
             string combine = Path.Combine(root, "Arbor.X.Tests.Integration", "bin", "debug");
 
             string tempPath = Path.Combine(Path.GetTempPath(), "Arbor.X", "MSpec", Guid.NewGuid().ToString());
-            
+
             tempDirectory = new DirectoryInfo(tempPath).EnsureExists();
 
             DirectoryInfo binDirectory = tempDirectory.CreateSubdirectory("bin");
@@ -76,6 +79,7 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
 
             htmlDirectory.ShouldNotBeNull();
         };
+
         It shoud_have_created_xml_report = () =>
         {
             DirectoryInfo reports = new DirectoryInfo(mspecReports);
@@ -90,7 +94,7 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
             files.Length.ShouldNotEqual(0);
         };
 
-        It should_Behaviour = () => ExitCode.IsSuccess.ShouldBeTrue();
+        It should_return_a_successful_exit_code = () => ExitCode.IsSuccess.ShouldBeTrue();
 
         Cleanup after = () =>
         {

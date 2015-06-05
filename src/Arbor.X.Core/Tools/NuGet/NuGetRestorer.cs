@@ -6,15 +6,27 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Castanea;
 using Arbor.X.Core.BuildVariables;
+using Arbor.X.Core.Exceptions;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
+using JetBrains.Annotations;
+using Directory = Alphaleonis.Win32.Filesystem.Directory;
+using DirectoryInfo = Alphaleonis.Win32.Filesystem.DirectoryInfo;
+using Path = Alphaleonis.Win32.Filesystem.Path;
 
 namespace Arbor.X.Core.Tools.NuGet
 {
     [Priority(100)]
     public class NuGetRestorer : ITool
     {
-        public Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
+        private readonly IReadOnlyCollection<INuGetPackageRestoreFix> _fixes;
+
+        public NuGetRestorer(IEnumerable<INuGetPackageRestoreFix> fixes)
+        {
+            _fixes = fixes.SafeToReadOnlyCollection();
+        }
+
+        public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {
             var app = new CastaneaApplication();
 
@@ -26,30 +38,30 @@ namespace Arbor.X.Core.Tools.NuGet
             var rootDirectory = new DirectoryInfo(vcsRoot);
 
             var packagesConfigFiles = rootDirectory.EnumerateFiles("packages.config", SearchOption.AllDirectories)
-                .Where(file => !pathLookupSpecification.IsFileBlackListed(file.FullName))
+                .Where(file => !pathLookupSpecification.IsFileBlackListed(file.FullName, rootDir: vcsRoot))
                 .Select(file => file.FullName)
                 .ToReadOnlyCollection();
 
             var solutionFiles = rootDirectory.EnumerateFiles("*.sln", SearchOption.AllDirectories)
-                .Where(file => !pathLookupSpecification.IsFileBlackListed(file.FullName))
+                .Where(file => !pathLookupSpecification.IsFileBlackListed(file.FullName, rootDir: vcsRoot))
                 .ToReadOnlyCollection();
 
             if (!packagesConfigFiles.Any())
             {
                 logger.WriteWarning("Could not find any packages.config files, skipping package restore");
-                return Task.FromResult(ExitCode.Success);
+                return ExitCode.Success;
             }
 
             if (!solutionFiles.Any())
             {
                 logger.WriteError("Could not find any solution file, cannot determine package output directory");
-                return Task.FromResult(ExitCode.Failure);
+                return ExitCode.Failure;
             }
 
             if (solutionFiles.Count > 1)
             {
                 logger.WriteError("Found more than one solution file, cannot determine package output directory"); ;
-                return Task.FromResult(ExitCode.Failure);
+                return ExitCode.Failure;
             }
 
             var solutionFile = solutionFiles.Single();
@@ -96,7 +108,7 @@ namespace Arbor.X.Core.Tools.NuGet
                 if (restoredPackages == 0)
                 {
                     logger.WriteWarning(string.Format("No packages was restored as defined in {0}", allFiles));
-                    return Task.FromResult(ExitCode.Success);
+                    return ExitCode.Success;
                 }
 
                 logger.Write(string.Format("Restored {0} package configurations defined in {1}", restoredPackages, allFiles));
@@ -104,10 +116,35 @@ namespace Arbor.X.Core.Tools.NuGet
             catch (Exception ex)
             {
                 logger.WriteError(string.Format("Cloud not restore packages defined in '{0}'. {1}", allFiles, ex));
-                return Task.FromResult(ExitCode.Failure);
+                return ExitCode.Failure;
             }
 
-            return Task.FromResult(ExitCode.Success);
+            try
+            {
+                foreach (var fileInfo in solutionFiles)
+                {
+                    // ReSharper disable once PossibleNullReferenceException
+                    var packagesDirectory = Path.Combine(fileInfo.Directory.FullName, "packages");
+
+                    if (Directory.Exists(packagesDirectory))
+                    {
+                        foreach (var nuGetPackageRestoreFix in _fixes)
+                        {
+                           await nuGetPackageRestoreFix.FixAsync(packagesDirectory, logger);
+                        } 
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                if (ex.IsFatal())
+                {
+                    throw;
+                }
+                logger.WriteWarning(ex.ToString());
+            }
+
+            return ExitCode.Success;
         }
     }
 }

@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Logging;
+using Arbor.X.Core.Tools.Cleanup;
 using Microsoft.Win32;
 
 namespace Arbor.X.Core.Tools.VisualStudio
@@ -74,8 +75,11 @@ namespace Arbor.X.Core.Tools.VisualStudio
 
                         logger.WriteVerbose(string.Format("Found {0} Visual Studio versions: {1}", names.Count,
                                                           string.Join(", ", names.Select(name => name.ToString(2)))));
-
-                        if (names.Any(name => name == new Version(12, 0)))
+                        if (names.Any(name => name == new Version(14, 0)))
+                        {
+                            visualStudioVersion = "14.0";
+                        } 
+                        else if (names.Any(name => name == new Version(12, 0)))
                         {
                             visualStudioVersion = "12.0";
                         }
@@ -135,5 +139,6 @@ namespace Arbor.X.Core.Tools.VisualStudio
             }
             return path;
         }
+        public int Order => VariableProviderOrder.Ignored;
     }
 }

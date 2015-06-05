@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using Arbor.X.Core.Exceptions;
 
 namespace Arbor.X.Core.ProcessUtils
 {
@@ -17,8 +18,12 @@ namespace Arbor.X.Core.ProcessUtils
                 {
                     processHandle = Process.GetProcessById(process.Id).Handle;
                 }
-                catch
+                catch (Exception ex)
                 {
+                    if (ex.IsFatal())
+                    {
+                        throw;
+                    }
                     return false;
                 }
 
