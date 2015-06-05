@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Threading;
@@ -19,12 +20,12 @@ namespace Arbor.X.Core.Tools.NuGet
             _logger = logger;
         }
 
-        public async Task<string> EnsureNuGetExeExistsAsync(CancellationToken cancellationToken)
+        public async Task<string> EnsureNuGetExeExistsAsync(string exeUri, CancellationToken cancellationToken)
         {
             var baseDir = AppDomain.CurrentDomain.BaseDirectory;
             var targetFile = Path.Combine(baseDir, "nuget.exe");
 
-            const int maxRetries = 4;
+            const int maxRetries = 6;
 
             var currentExePath = new FileInfo(targetFile);
 
@@ -39,11 +40,22 @@ namespace Arbor.X.Core.Tools.NuGet
 
                 _logger.Write($"'{targetFile}' does not exist, will try to download from nuget.org");
 
+                List<string> uris = new List<string>();
+
+                Uri userUri;
+                if (!string.IsNullOrWhiteSpace(exeUri) && Uri.TryCreate(exeUri, UriKind.Absolute, out userUri))
+                {
+                    uris.Add(exeUri);
+                }
+
+                uris.Add("https://nuget.org/nuget.exe");
+                uris.Add("https://www.nuget.org/nuget.exe");
+
                 for (int i = 0; i < maxRetries; i++)
                 {
                     try
                     {
-                        string nugetExeUri = i < 2 ? "https://nuget.org/nuget.exe" : "https://www.nuget.org/nuget.exe";
+                        string nugetExeUri = uris[i % uris.Count];
 
                         await DownloadNuGetExeAsync(baseDir, targetFile, nugetExeUri, cancellationToken);
 
@@ -54,7 +66,7 @@ namespace Arbor.X.Core.Tools.NuGet
                         _logger.WriteError(string.Format("Attempt {1}. Could not download nuget.exe. {0}", ex, i + 1));
                     }
 
-                    const int waitTimeInSeconds = 2;
+                    const int waitTimeInSeconds = 1;
 
                     _logger.Write(string.Format("Waiting {0} seconds to try again", waitTimeInSeconds));
 
