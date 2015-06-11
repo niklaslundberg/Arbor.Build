@@ -98,6 +98,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Global.asax" />
+    <Content Include="Arbor.X.Tests.DummyWebApplication.nuspec" />
     <None Include="Test.debug.xml" />
     <None Include="Test.release.xml" />
     <Content Include="Test.xml" />

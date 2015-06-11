@@ -26,6 +26,8 @@ namespace Arbor.X.Core.Tools.NuGet
         string _nuGetPackageVersionOverride;
         private IReadOnlyCollection<string> _excludedNuSpecFiles;
         PathLookupSpecification _pathLookupSpecification;
+        bool _allowManifestReWrite;
+        bool _nuGetSymbolPackagesEnabled;
 
         public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {
@@ -54,8 +56,10 @@ namespace Arbor.X.Core.Tools.NuGet
             _keepBinaryAndSourcePackagesTogetherEnabled = buildVariables.GetBooleanByKey(WellKnownVariables.NuGetKeepBinaryAndSymbolPackagesTogetherEnabled, true);
             _branchNameEnabled = buildVariables.GetBooleanByKey(WellKnownVariables.NuGetPackageIdBranchNameEnabled,false);
             _packageIdOverride = buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageIdOverride, null);
+            _nuGetSymbolPackagesEnabled = buildVariables.GetBooleanByKey(WellKnownVariables.NuGetSymbolPackagesEnabled, true);
             _nuGetPackageVersionOverride =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageVersionOverride, null);
+            _allowManifestReWrite = buildVariables.GetBooleanByKey(WellKnownVariables.NuGetAllowManifestReWrite, false);
 
             _excludedNuSpecFiles =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageExcludesCommaSeparated, "").Split(new string[] {","}, StringSplitOptions.RemoveEmptyEntries).SafeToReadOnlyCollection();
@@ -214,19 +218,38 @@ namespace Arbor.X.Core.Tools.NuGet
                 Directory.CreateDirectory(nuSpecTempDirectory);
             }
 
-            logger.WriteVerbose(string.Format("Saving new nuspec {0}", nuSpecFileCopyPath));
+            logger.WriteVerbose($"Saving new nuspec '{nuSpecFileCopyPath}'");
             nuSpecCopy.Save(nuSpecFileCopyPath);
 
-            logger.WriteVerbose(string.Format("Created nuspec content: {0}{1}", Environment.NewLine, File.ReadAllText(nuSpecFileCopyPath)));
+            List<string> removedTags = new List<string>();
 
-            var result = await ExecuteNuGetPackAsync(nuGetExePath, packagesDirectory, logger, nuSpecFileCopyPath, properties, nuSpecCopy);
+            if (_allowManifestReWrite)
+            {
+                logger.WriteVerbose($"Rewriting manifest in NuSpec '{nuSpecFileCopyPath}'");
+
+                var manitestReWriter = new ManitestReWriter();
+                ManifestReWriteResult manifestReWriteResult = manitestReWriter.Rewrite(nuSpecFileCopyPath, logger: logger);
+
+                removedTags.AddRange(manifestReWriteResult.RemoveTags);
+            }
+            else
+            {
+                logger.WriteVerbose("Rewriting manifest disabled");
+            }
+
+            logger.WriteVerbose($"Created nuspec content: {Environment.NewLine}{File.ReadAllText(nuSpecFileCopyPath)}");
+
+            var result = await ExecuteNuGetPackAsync(nuGetExePath, packagesDirectory, logger, nuSpecFileCopyPath, properties, nuSpecCopy, removedTags);
 
             return result;
         }
 
-        async Task<ExitCode> ExecuteNuGetPackAsync(string nuGetExePath, string packagesDirectoryPath, ILogger logger,
-                                                string nuSpecFileCopyPath, string properties, NuSpec nuSpecCopy)
+        async Task<ExitCode> ExecuteNuGetPackAsync(string nuGetExePath, string packagesDirectoryPath, ILogger logger, string nuSpecFileCopyPath, string properties, NuSpec nuSpecCopy, List<string> removedTags)
         {
+            bool hasRemovedNoSourceTag =
+                removedTags.Any(
+                    tag => tag.Equals(WellKnownNuGetTags.NoSource, StringComparison.InvariantCultureIgnoreCase));
+
             ExitCode result;
             try
             {
@@ -239,9 +262,13 @@ namespace Arbor.X.Core.Tools.NuGet
                                         "-OutputDirectory",
                                         packagesDirectoryPath,
                                         "-Version",
-                                        nuSpecCopy.Version,
-                                        "-Symbols"
+                                        nuSpecCopy.Version
                                     };
+
+                if (!hasRemovedNoSourceTag && _nuGetSymbolPackagesEnabled)
+                {
+                    arguments.Add("-Symbols");
+                }
 
                 if (LogLevel.Verbose.Level <= logger.LogLevel.Level)
                 {

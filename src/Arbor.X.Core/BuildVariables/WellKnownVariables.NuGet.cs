@@ -17,6 +17,12 @@
         [VariableDescription("NuGet package version override")]
         public static readonly string NuGetPackageVersionOverride = Arbor.X + ".NuGet.Package.Artifacts.Version.Override";
 
+        [VariableDescription("Allow NuGet package manifest rewrite")]
+        public static readonly string NuGetAllowManifestReWrite = Arbor.X + ".NuGet.Package.AllowManifestReWriteEnabled";
+
+        [VariableDescription("Flag to indicate if creation of NuGet source packages is enabled")]
+        public static readonly string NuGetSymbolPackagesEnabled = Arbor.X + ".NuGet.Package.Symbols.Enabled";
+
         [VariableDescription("Flag to indicate if the build number is included in the NuGet package artifacts")]
         public static readonly string BuildNumberInNuGetPackageArtifactsEnabled = Arbor.X + ".NuGet.Package.Artifacts.BuildNumber.Enabled";
 

@@ -12,8 +12,8 @@ SET Arbor.X.Build.NetAssembly.Configuration=
 
 SET Version.Major=1
 SET Version.Minor=0
-SET Version.Patch=19
-SET Version.Build=170
+SET Version.Patch=21
+SET Version.Build=173
 
 IF "%Arbor.X.Vcs.Branch.Name%" == "" (
 	SET Arbor.X.Vcs.Branch.Name=develop
@@ -31,6 +31,7 @@ SET Arbor.X.Build.NetAssembly.Product=Arbor.X
 SET Arbor.X.ShowAvailableVariablesEnabled=false
 SET Arbor.X.ShowDefinedVariablesEnabled=false
 SET Arbor.X.Tools.External.MSBuild.Verbosity=minimal
+SET Arbor.X.NuGet.Package.AllowManifestReWriteEnabled=false
 
 SET Arbor.X.NuGet.Package.ExcludesCommaSeparated=Arbor.X.Bootstrapper.nuspec
 
