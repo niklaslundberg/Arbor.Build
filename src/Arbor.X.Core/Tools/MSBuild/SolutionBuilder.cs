@@ -490,68 +490,7 @@ namespace Arbor.X.Core.Tools.MSBuild
 
                 if (_configurationTransformsEnabled)
                 {
-                    logger.WriteDebug("Transforms are enabled");
-
-                    logger.WriteDebug("Starting xml transformations");
-
-                    Stopwatch transformationStopwatch = Stopwatch.StartNew();
-                    string projectDirectoryPath = solutionProject.Project.ProjectDirectory;
-
-                    string[] extensions = {".xml", ".config"};
-
-                    IReadOnlyCollection<FileInfo> files = new DirectoryInfo(projectDirectoryPath)
-                        .GetFilesRecursive(extensions)
-                        .Where(file => !_pathLookupSpecification.IsBlackListed(file.DirectoryName) && !_pathLookupSpecification.IsFileBlackListed(file.FullName, _vcsRoot))
-                        .Where(file => extensions.Any(extension =>  Path.GetExtension(file.Name).Equals(extension, StringComparison.InvariantCultureIgnoreCase)))
-                        .Where(file => !file.Name.Equals("web.config", StringComparison.InvariantCultureIgnoreCase))
-                        .ToReadOnlyCollection();
-
-                    Func<FileInfo, string> transformFile = file =>
-                    {
-                        string nameWithoutExtension = Path.GetFileNameWithoutExtension(file.Name);
-                        string extension = Path.GetExtension(file.Name);
-
-                        // ReSharper disable once PossibleNullReferenceException
-                        var transformFilePath = Path.Combine(file.Directory.FullName,
-                            nameWithoutExtension + "." + configuration + extension);
-
-                        return transformFilePath;
-                    };
-
-                    var transformationPairs = files
-                        .Select(file => new
-                                        {
-                                            Original = file,
-                                            TransformFile = transformFile(file)
-                                        })
-                        .Where(filePair => File.Exists(filePair.TransformFile))
-                        .ToReadOnlyCollection();
-
-                    logger.WriteDebug(string.Format("Found {0} files with transforms", transformationPairs.Count));
-
-                    foreach (var configurationFile in transformationPairs)
-                    {
-                        string relativeFilePath = configurationFile.Original.FullName.Replace(projectDirectoryPath, "");
-
-                        string targetTransformResultPath = string.Format("{0}{1}", siteArtifactDirectory.FullName, relativeFilePath);
-
-                        var transformable = new XmlTransformableDocument();
-
-                        transformable.Load(configurationFile.Original.FullName);
-
-                        var transformation = new XmlTransformation(configurationFile.TransformFile);
-
-                        logger.WriteDebug(string.Format("Transforming '{0}' with transformation file '{1} to target file '{2}'", configurationFile.Original.FullName, configurationFile.TransformFile, targetTransformResultPath));
-
-                        if (transformation.Apply(transformable))
-                        {
-                            transformable.Save(targetTransformResultPath);
-                        }
-                    }
-
-                    transformationStopwatch.Stop();
-
-                    logger.WriteDebug(string.Format("XML transformations took {0} seconds", transformationStopwatch.Elapsed.TotalSeconds.ToString("F")));
+                    TransformFiles(configuration, logger, solutionProject, siteArtifactDirectory);
                 }
                 else
                 {
@@ -584,6 +523,82 @@ namespace Arbor.X.Core.Tools.MSBuild
             }
 
             return ExitCode.Success;
+        }
+
+        void TransformFiles(string configuration, ILogger logger, SolutionProject solutionProject,
+            DirectoryInfo siteArtifactDirectory)
+        {
+            logger.WriteDebug("Transforms are enabled");
+
+            logger.WriteDebug("Starting xml transformations");
+
+            Stopwatch transformationStopwatch = Stopwatch.StartNew();
+            string projectDirectoryPath = solutionProject.Project.ProjectDirectory;
+
+            string[] extensions = {".xml", ".config"};
+
+            IReadOnlyCollection<FileInfo> files = new DirectoryInfo(projectDirectoryPath)
+                .GetFilesRecursive(extensions)
+                .Where(
+                    file =>
+                        !_pathLookupSpecification.IsBlackListed(file.DirectoryName) &&
+                        !_pathLookupSpecification.IsFileBlackListed(file.FullName, _vcsRoot))
+                .Where(
+                    file =>
+                        extensions.Any(
+                            extension =>
+                                Path.GetExtension(file.Name).Equals(extension, StringComparison.InvariantCultureIgnoreCase)))
+                .Where(file => !file.Name.Equals("web.config", StringComparison.InvariantCultureIgnoreCase))
+                .ToReadOnlyCollection();
+
+            Func<FileInfo, string> transformFile = file =>
+            {
+                string nameWithoutExtension = Path.GetFileNameWithoutExtension(file.Name);
+                string extension = Path.GetExtension(file.Name);
+
+                // ReSharper disable once PossibleNullReferenceException
+                var transformFilePath = Path.Combine(file.Directory.FullName,
+                    nameWithoutExtension + "." + configuration + extension);
+
+                return transformFilePath;
+            };
+
+            var transformationPairs = files
+                .Select(file => new
+                                {
+                                    Original = file,
+                                    TransformFile = transformFile(file)
+                                })
+                .Where(filePair => File.Exists(filePair.TransformFile))
+                .ToReadOnlyCollection();
+
+            logger.WriteDebug(string.Format("Found {0} files with transforms", transformationPairs.Count));
+
+            foreach (var configurationFile in transformationPairs)
+            {
+                string relativeFilePath = configurationFile.Original.FullName.Replace(projectDirectoryPath, "");
+
+                string targetTransformResultPath = string.Format("{0}{1}", siteArtifactDirectory.FullName, relativeFilePath);
+
+                var transformable = new XmlTransformableDocument();
+
+                transformable.Load(configurationFile.Original.FullName);
+
+                var transformation = new XmlTransformation(configurationFile.TransformFile);
+
+                logger.WriteDebug(string.Format("Transforming '{0}' with transformation file '{1} to target file '{2}'",
+                    configurationFile.Original.FullName, configurationFile.TransformFile, targetTransformResultPath));
+
+                if (transformation.Apply(transformable))
+                {
+                    transformable.Save(targetTransformResultPath);
+                }
+            }
+
+            transformationStopwatch.Stop();
+
+            logger.WriteDebug(string.Format("XML transformations took {0} seconds",
+                transformationStopwatch.Elapsed.TotalSeconds.ToString("F")));
         }
 
         async Task<ExitCode> CopyKuduWebJobsAsync(ILogger logger, SolutionProject solutionProject, DirectoryInfo siteArtifactDirectory)
