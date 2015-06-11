@@ -6,12 +6,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Castanea;
 using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.Exceptions;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 using JetBrains.Annotations;
 using Directory = Alphaleonis.Win32.Filesystem.Directory;
 using DirectoryInfo = Alphaleonis.Win32.Filesystem.DirectoryInfo;
+using ExceptionExtensions = Arbor.X.Core.Exceptions.ExceptionExtensions;
 using Path = Alphaleonis.Win32.Filesystem.Path;
 
 namespace Arbor.X.Core.Tools.NuGet
@@ -137,7 +137,7 @@ namespace Arbor.X.Core.Tools.NuGet
             }
             catch (Exception ex)
             {
-                if (ex.IsFatal())
+                if (ExceptionExtensions.IsFatal(ex))
                 {
                     throw;
                 }

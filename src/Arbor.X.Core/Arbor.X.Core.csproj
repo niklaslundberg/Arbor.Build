@@ -38,11 +38,19 @@
       <HintPath>..\packages\AlphaFS.2.0.1\lib\net451\AlphaFS.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Arbor.Castanea.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Arbor.Castanea.1.0.5\lib\net45\Arbor.Castanea.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="FubuCore">
       <HintPath>..\packages\FubuCore.1.3.0.278\lib\FubuCore.dll</HintPath>
     </Reference>
     <Reference Include="NLog, Version=3.2.1.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
       <HintPath>..\packages\NLog.3.2.1\lib\net45\NLog.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="NuGet.Core, Version=2.8.60318.667, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\NuGet.Core.2.8.5\lib\net40-Client\NuGet.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Semver">
@@ -97,9 +105,6 @@
     </Reference>
     <Reference Include="System.Net.Http.Primitives, Version=4.2.29.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <HintPath>..\packages\Microsoft.Net.Http.2.2.29\lib\net45\System.Net.Http.Primitives.dll</HintPath>
-    </Reference>
-    <Reference Include="Arbor.Castanea.Core">
-      <HintPath>..\packages\Arbor.Castanea.1.0.3\lib\net45\Arbor.Castanea.Core.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Web.XmlTransform">
       <HintPath>..\packages\Microsoft.Web.Xdt.2.1.1\lib\net40\Microsoft.Web.XmlTransform.dll</HintPath>
@@ -158,6 +163,9 @@
     <Compile Include="ToolResult.cs" />
     <Compile Include="ToolResultType.cs" />
     <Compile Include="ToolsModule.cs" />
+    <Compile Include="Tools\NuGet\ManifestReWriteResult.cs" />
+    <Compile Include="Tools\NuGet\ManitestReWriter.cs" />
+    <Compile Include="Tools\NuGet\WellKnownNuGetTags.cs" />
     <Compile Include="Tools\Testing\MSpecInternalConstants.cs" />
     <Compile Include="VariableProviderModule.cs" />
     <Compile Include="Tools\Cleanup\ArtifactCleanup.cs" />

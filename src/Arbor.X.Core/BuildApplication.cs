@@ -55,6 +55,8 @@ namespace Arbor.X.Core
                 [WellKnownVariables.Configuration] = "release",
                 [WellKnownVariables.GenericXmlTransformsEnabled] = "true",
                 [WellKnownVariables.NuGetPackageExcludesCommaSeparated] = "Arbor.X.Bootstrapper.nuspec",
+                [WellKnownVariables.NuGetAllowManifestReWrite] = "false",
+                [WellKnownVariables.NuGetSymbolPackagesEnabled] = "false",
             };
 
             foreach (KeyValuePair<string, string> environmentVariable in environmentVariables)
