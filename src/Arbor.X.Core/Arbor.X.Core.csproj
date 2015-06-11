@@ -117,6 +117,9 @@
     <Compile Include="BuildVariables\Arbor.cs" />
     <Compile Include="BuildVariables\ArborX.cs" />
     <Compile Include="BuildVariables\DynamicVariable.cs" />
+    <Compile Include="BuildVariables\WellKnownVariables.Hudson.cs">
+      <DependentUpon>WellKnownVariables.cs</DependentUpon>
+    </Compile>
     <Compile Include="BuildVariables\WellknownVariables.NodeJs.cs">
       <DependentUpon>WellKnownVariables.cs</DependentUpon>
     </Compile>
@@ -147,6 +150,9 @@
     <Compile Include="BuildVariables\WellKnownVariables.AssemblyPatching.cs">
       <DependentUpon>WellKnownVariables.cs</DependentUpon>
     </Compile>
+    <Compile Include="BuildVariables\WellKnownVariables.Jenkins.cs">
+      <DependentUpon>WellKnownVariables.cs</DependentUpon>
+    </Compile>
     <Compile Include="DisplayExtensions.cs" />
     <Compile Include="EnumerableExtensions.cs" />
     <Compile Include="Exceptions\ExceptionExtensions.cs" />
@@ -158,6 +164,7 @@
     <Compile Include="Logging\NullLogger.cs" />
     <Compile Include="Maybe.cs" />
     <Compile Include="ParseResult.cs" />
+    <Compile Include="StringExtensions.cs" />
     <Compile Include="TaskExtensions.cs" />
     <Compile Include="ToolExtensions.cs" />
     <Compile Include="ToolResult.cs" />
