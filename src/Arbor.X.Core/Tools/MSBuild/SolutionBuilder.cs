@@ -508,7 +508,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                     }
                     else
                     {
-                        _logger.WriteDebug($"Target file '{targetFilePath}' alread exists, skipping file");
+                        _logger.WriteDebug($"Target file '{targetFilePath}' already exists, skipping file");
                     }
                     if (pair.DllFile != null)
                     {
@@ -521,7 +521,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                         }
                         else
                         {
-                            _logger.WriteDebug($"Target DLL file '{targetDllFilePath}' alread exists, skipping file");
+                            _logger.WriteDebug($"Target DLL file '{targetDllFilePath}' already exists, skipping file");
                         }
                     }
                     else
