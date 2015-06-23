@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Alphaleonis.Win32.Filesystem;
 using Arbor.X.Core.BuildVariables;
+using Arbor.X.Core.Exceptions;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;
@@ -41,6 +42,8 @@ namespace Arbor.X.Core.Tools.MSBuild
         readonly List<string> _knownPlatforms = new List<string> {"x86", "x64", "Any CPU"};
         readonly List<string> _platforms = new List<string>();
         bool _appDataJobsEnabled;
+        bool _pdbArtifactsEnabled;
+
         string _artifactsPath;
         CancellationToken _cancellationToken;
         string _msBuildExe;
@@ -51,10 +54,12 @@ namespace Arbor.X.Core.Tools.MSBuild
         private string _vcsRoot;
         bool _configurationTransformsEnabled;
         string _defaultTarget;
+        ILogger _logger;
 
         public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
+            _logger = logger;
             _cancellationToken = cancellationToken;
             _msBuildExe =
                 buildVariables.Require(WellKnownVariables.ExternalTools_MSBuild_ExePath).ThrowIfEmptyValue().Value;
@@ -89,6 +94,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             _vcsRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
             _configurationTransformsEnabled = buildVariables.GetBooleanByKey(WellKnownVariables.GenericXmlTransformsEnabled, defaultValue:false);
             _defaultTarget = buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_MSBuild_DefaultTarget, "rebuild");
+            _pdbArtifactsEnabled = buildVariables.GetBooleanByKey(WellKnownVariables.PublishPdbFilesAsArtifacts, defaultValue: false);
 
             if (_vcsRoot == null)
             {
@@ -429,7 +435,108 @@ namespace Arbor.X.Core.Tools.MSBuild
                 logger.WriteError("Skipping web site build since solution build failed");
             }
 
+            if (exitCode.IsSuccess)
+            {
+                exitCode = await PublishPdbFilesAynsc(configuration, platform);
+            }
+            else
+            {
+                logger.WriteError("Skipping PDB publising since web site build failed");
+            }
+
             return exitCode;
+        }
+
+        Task<ExitCode> PublishPdbFilesAynsc(string configuration, string platform)
+        {
+            _logger.Write(_pdbArtifactsEnabled
+                ? $"Publishing PDB artificats for configuration {configuration} and platform {platform}"
+                : $"Skipping PDF artifact publising for configuration {configuration} and platform {platform} because PDB artifact publishing is disabled");
+
+            try
+            {
+                var defaultPathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification;
+                var ignoredDirectorySegments =
+                    defaultPathLookupSpecification.IgnoredDirectorySegments.Except(new[] {"bin"});
+
+                var pathLookupSpecification = new PathLookupSpecification(ignoredDirectorySegments,
+                    defaultPathLookupSpecification.IgnoredFileStartsWithPatterns,
+                    defaultPathLookupSpecification.IgnoredDirectorySegmentParts,
+                    defaultPathLookupSpecification.IgnoredDirectoryStartsWithPatterns);
+
+                var sourceRootDirectory = new DirectoryInfo(_vcsRoot);
+
+                IReadOnlyCollection<FileInfo> files = sourceRootDirectory.GetFilesRecursive(new[] {".pdb", ".dll"},
+                    pathLookupSpecification, _vcsRoot).OrderBy(file => file.FullName).ToReadOnlyCollection();
+
+                var pdbFiles =
+                    files.Where(file => file.Extension.Equals(".pdb", StringComparison.InvariantCultureIgnoreCase))
+                        .ToReadOnlyCollection();
+
+                var dllFiles =
+                    files.Where(file => file.Extension.Equals(".dll", StringComparison.InvariantCultureIgnoreCase))
+                        .ToReadOnlyCollection();
+
+                _logger.WriteDebug(
+                    $"Found files as PDB artifacts {string.Join(Environment.NewLine, pdbFiles.Select(file => "\tPDB: " + file.FullName))}");
+
+                var pairs = pdbFiles
+                    .Select(pdb => new
+                                   {
+                                       PdbFile = pdb,
+                                       DllFile = dllFiles
+                                           .SingleOrDefault(dll => dll.FullName
+                                               .Equals(Path.Combine(pdb.Directory.FullName,
+                                                   $"{Path.GetFileNameWithoutExtension(pdb.Name)}.dll"),
+                                                   StringComparison.InvariantCultureIgnoreCase))
+                                   })
+                    .ToReadOnlyCollection();
+
+                var targetDirectoryPath = Path.Combine(_artifactsPath, "PDB", configuration, platform);
+
+                var targetDiretory = new DirectoryInfo(targetDirectoryPath).EnsureExists();
+
+                foreach (var pair in pairs)
+                {
+                    var targetFilePath = Path.Combine(targetDiretory.FullName, pair.PdbFile.Name);
+
+                    if (!File.Exists(targetFilePath))
+                    {
+                        _logger.WriteDebug($"Copying PDB file '{pair.PdbFile.FullName}' to '{targetFilePath}'");
+
+                    pair.PdbFile.CopyTo(targetFilePath, CopyOptions.FailIfExists);
+                    }
+                    else
+                    {
+                        _logger.WriteDebug($"Target file '{targetFilePath}' alread exists, skipping file");
+                    }
+                    if (pair.DllFile != null)
+                    {
+                        var targetDllFilePath = Path.Combine(targetDiretory.FullName, pair.DllFile.Name);
+
+                        if (!File.Exists(targetDllFilePath))
+                        {
+                            _logger.WriteDebug($"Copying DLL file '{pair.DllFile.FullName}' to '{targetFilePath}'");
+                            pair.DllFile.CopyTo(targetDllFilePath, CopyOptions.FailIfExists);
+                        }
+                        else
+                        {
+                            _logger.WriteDebug($"Target DLL file '{targetDllFilePath}' alread exists, skipping file");
+                        }
+                    }
+                    else
+                    {
+                        _logger.WriteDebug($"DLL file for PDB '{pair.PdbFile.FullName}' was not found");
+                    }
+                }
+
+            }
+            catch (Exception ex) when (!ex.IsFatal())
+            {
+                _logger.WriteError($"Could not publish PDB artifacts. {ex}");
+                return Task.FromResult(ExitCode.Failure);
+            }
+            return Task.FromResult(ExitCode.Success);
         }
 
         async Task<ExitCode> BuildWebApplicationsAsync(FileInfo solutionFile, string configuration, string platform,

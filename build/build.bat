@@ -12,8 +12,8 @@ SET Arbor.X.Build.NetAssembly.Configuration=
 
 SET Version.Major=1
 SET Version.Minor=0
-SET Version.Patch=21
-SET Version.Build=173
+SET Version.Patch=23
+SET Version.Build=189
 
 IF "%Arbor.X.Vcs.Branch.Name%" == "" (
 	SET Arbor.X.Vcs.Branch.Name=develop
@@ -21,6 +21,7 @@ IF "%Arbor.X.Vcs.Branch.Name%" == "" (
 
 SET Arbor.X.NuGet.ReinstallArborPackageEnabled=true
 SET Arbor.X.NuGet.VersionUpdateEnabled=false
+SET Arbor.X.Artifacts.PdbArtifacts.Enabled=true
 
 SET Arbor.X.Build.NetAssembly.MetadataEnabled=true
 SET Arbor.X.Build.NetAssembly.Description=A convention-based build tool

@@ -122,6 +122,9 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescription("Machine.Specifications reports directory path")]
         public static readonly string ExternalTools_MSpec_ReportPath = "Arbor.X.Artifacts.TestReports.MSpec";
 
+        [VariableDescription("PDB artifacts enabled")]
+        public static readonly string PublishPdbFilesAsArtifacts = "Arbor.X.Artifacts.PdbArtifacts.Enabled";
+
         [VariableDescription("ILMerge executable path (eg. C:\\IlMerge.exe)")]
         public static readonly string ExternalTools_ILMerge_ExePath = "Arbor.X.Tools.External.ILMerge.ExePath";
 
