@@ -37,7 +37,8 @@ namespace Arbor.X.Core.Tools.NuGet
 
             if (!enabled)
             {
-                logger.WriteWarning(string.Format("NuGet Packer is disabled (build variable '{0}' is set to false", WellKnownVariables.NuGetPackageEnabled));
+                logger.WriteWarning(
+                    $"NuGet Packer is disabled (build variable '{WellKnownVariables.NuGetPackageEnabled}' is set to false");
                 return ExitCode.Success;
             }
 
@@ -62,7 +63,7 @@ namespace Arbor.X.Core.Tools.NuGet
             _allowManifestReWrite = buildVariables.GetBooleanByKey(WellKnownVariables.NuGetAllowManifestReWrite, false);
 
             _excludedNuSpecFiles =
-                buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageExcludesCommaSeparated, "").Split(new string[] {","}, StringSplitOptions.RemoveEmptyEntries).SafeToReadOnlyCollection();
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageExcludesCommaSeparated, "").Split(new[] {","}, StringSplitOptions.RemoveEmptyEntries).SafeToReadOnlyCollection();
 
             _pathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification;
 
@@ -73,13 +74,15 @@ namespace Arbor.X.Core.Tools.NuGet
             {
                 if (branchName.Value.Equals("master", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    logger.WriteWarning("NuGet package creation is not supported on 'master' branch");
+                    logger.WriteWarning(
+                        $"NuGet package creation is not supported on 'master' branch. To force NuGet package creation, set environment variable '{WellKnownVariables.NuGetCreatePackagesOnAnyBranchEnabled}' to value 'true'");
                     return ExitCode.Success;
                 }
             }
             else
             {
-                logger.WriteVerbose(string.Format("Flag '{0}' is set to true, creating NuGet packages", WellKnownVariables.NuGetCreatePackagesOnAnyBranchEnabled));
+                logger.WriteVerbose(
+                    $"Flag '{WellKnownVariables.NuGetCreatePackagesOnAnyBranchEnabled}' is set to true, creating NuGet packages");
             }
 
             bool isReleaseBuild = IsReleaseBuild(releaseBuild, branchName);
@@ -99,25 +102,32 @@ namespace Arbor.X.Core.Tools.NuGet
 
             if (!File.Exists(nuGetExePath))
             {
-                logger.WriteError(string.Format(
-                    "The NuGet.exe path {0} was not found or NuGet could not be downloaded", nuGetExePath));
+                logger.WriteError($"The NuGet.exe path {nuGetExePath} was not found or NuGet could not be downloaded");
                 return ExitCode.Failure;
             }
 
             var vcsRootDir = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
 
-            logger.WriteVerbose(string.Format("Scanning directory '{0}' for .nuspec files", vcsRootDir));
+            logger.WriteVerbose($"Scanning directory '{vcsRootDir}' for .nuspec files");
 
             string packageDirectory = PackageDirectory();
 
-            IEnumerable<string> packageSpecifications = GetPackageSpecifications(logger, vcsRootDir, packageDirectory);
+            IReadOnlyCollection<string> packageSpecifications = GetPackageSpecifications(logger, vcsRootDir, packageDirectory);
+
+            if (!packageSpecifications.Any())
+            {
+                logger.Write("Could not find any NuGet specifications to create NuGet packages from");
+                return ExitCode.Success;
+            }
+
+            logger.Write($"Found {packageSpecifications.Count} NuGet specifications to create NuGet packages from");
 
             var result = await ProcessPackagesAsync(packageSpecifications, nuGetExePath, packagesDirectory, version, isReleaseBuild, configuration, branchName, logger, tempDirectory, suffix, enableBuildNumber);
 
             return result;
         }
 
-        IEnumerable<string> GetPackageSpecifications(ILogger logger, string vcsRootDir, string packageDirectory)
+        IReadOnlyCollection<string> GetPackageSpecifications(ILogger logger, string vcsRootDir, string packageDirectory)
         {
             DirectoryInfo vcsRootDirectory = new DirectoryInfo(vcsRootDir);
 
@@ -142,8 +152,8 @@ namespace Arbor.X.Core.Tools.NuGet
                                 exludedNuSpec.Equals(nuspec.Name, StringComparison.InvariantCultureIgnoreCase)))
                                 .SafeToReadOnlyCollection();
 
-            logger.WriteVerbose(string.Format("Found nuspec files [{0}]: {1}{2}", filtered.Count,
-                                       Environment.NewLine, string.Join(Environment.NewLine, filtered)));
+            logger.WriteVerbose(
+                $"Found nuspec files [{filtered.Count}]: {Environment.NewLine}{string.Join(Environment.NewLine, filtered)}");
             var allIncluded = notExcluded.Select(file => file.FullName).SafeToReadOnlyCollection();
 
             return allIncluded;
@@ -174,8 +184,7 @@ namespace Arbor.X.Core.Tools.NuGet
 
                 if (!packageResult.IsSuccess)
                 {
-                    logger.WriteError(string.Format("Could not create NuGet package from specification '{0}'",
-                        packageSpecification));
+                    logger.WriteError($"Could not create NuGet package from specification '{packageSpecification}'");
                     return packageResult;
                 }
             }
@@ -191,22 +200,21 @@ namespace Arbor.X.Core.Tools.NuGet
 
             if (!string.IsNullOrWhiteSpace(_packageIdOverride))
             {
-                logger.Write(string.Format("Using NuGet package id override '{0}'", _packageIdOverride));
+                logger.Write($"Using NuGet package id override '{_packageIdOverride}'");
             }
 
             string packageId = _packageIdOverride ?? NuGetPackageIdHelper.CreateNugetPackageId(nuSpec.PackageId, isReleaseBuild,
                                                                          branchName.Value, _branchNameEnabled);
             if (!string.IsNullOrWhiteSpace(_nuGetPackageVersionOverride))
             {
-                logger.Write(string.Format("Using NuGet package version override '{0}'", _nuGetPackageVersionOverride));
+                logger.Write($"Using NuGet package version override '{_nuGetPackageVersionOverride}'");
             }
 
             string nuGetPackageVersion = _nuGetPackageVersionOverride ?? NuGetVersionHelper.GetVersion(version.Value, isReleaseBuild, suffix, enableBuildNumber);
 
             var nuSpecInfo = new FileInfo(nuspecFilePath);
 // ReSharper disable AssignNullToNotNullAttribute
-            var nuSpecFileCopyPath = Path.Combine(nuSpecInfo.DirectoryName,
-                                                  string.Format("{0}-{1}", Guid.NewGuid(), nuSpecInfo.Name));
+            var nuSpecFileCopyPath = Path.Combine(nuSpecInfo.DirectoryName, $"{Guid.NewGuid()}-{nuSpecInfo.Name}");
 // ReSharper restore AssignNullToNotNullAttribute
 
             var nuSpecCopy = new NuSpec(packageId, nuGetPackageVersion, nuSpecInfo.FullName);
@@ -285,7 +293,8 @@ namespace Arbor.X.Core.Tools.NuGet
 
                 if (!_keepBinaryAndSourcePackagesTogetherEnabled)
                 {
-                    logger.Write(string.Format("The flag {0} is set to false, separating binary packages from symbol packages", WellKnownVariables.NuGetKeepBinaryAndSymbolPackagesTogetherEnabled));
+                    logger.Write(
+                        $"The flag {WellKnownVariables.NuGetKeepBinaryAndSymbolPackagesTogetherEnabled} is set to false, separating binary packages from symbol packages");
                     var nugetPackages = packagesDirectory.GetFiles("*.nupkg", SearchOption.TopDirectoryOnly).Select(file => file.FullName).ToList();
                     var nugetSymbolPackages = packagesDirectory.GetFiles("*.symbols.nupkg", SearchOption.TopDirectoryOnly).Select(file => file.FullName).ToList();
 
@@ -306,7 +315,7 @@ namespace Arbor.X.Core.Tools.NuGet
                             targetBinaryFile.Delete();
                         }
 
-                        logger.WriteDebug(string.Format("Copying NuGet binary package '{0}' to '{1}'", binaryPackage, targetBinaryFile));
+                        logger.WriteDebug($"Copying NuGet binary package '{binaryPackage}' to '{targetBinaryFile}'");
                         sourceFile.MoveTo(targetBinaryFile.FullName);
                     }
 
@@ -320,7 +329,7 @@ namespace Arbor.X.Core.Tools.NuGet
                             targetSymbolFile.Delete();
                         }
 
-                        logger.WriteDebug(string.Format("Copying NuGet symbol package '{0}' to '{1}'", sourcePackage, targetSymbolFile));
+                        logger.WriteDebug($"Copying NuGet symbol package '{sourcePackage}' to '{targetSymbolFile}'");
                         sourceFile.MoveTo(targetSymbolFile.FullName);
                     }
                 }
@@ -346,7 +355,7 @@ namespace Arbor.X.Core.Tools.NuGet
                                              "configuration", configuration)
                                      };
 
-            var formattedValues = propertyValues.Select(item => string.Format("{0}={1}", item.Key, item.Value));
+            var formattedValues = propertyValues.Select(item => $"{item.Key}={item.Value}");
             string properties = string.Join(";", formattedValues);
             return properties;
         }

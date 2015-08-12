@@ -24,7 +24,7 @@ namespace Arbor.X.Core.Tools.NuGet
             }
 
             var artifacts = buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue();
-            
+
             var packagesFolder = new DirectoryInfo(Path.Combine(artifacts.Value, "packages"));
 
             if (!packagesFolder.Exists)
@@ -51,7 +51,8 @@ namespace Arbor.X.Core.Tools.NuGet
             }
             if (!isRunningOnBuildAgent && forceUpload)
             {
-                logger.Write(string.Format("NuGet package upload is enabled by the flag '{0}'", WellKnownVariables.ExternalTools_NuGetServer_ForceUploadEnabled));
+                logger.Write(
+                    $"NuGet package upload is enabled by the flag '{WellKnownVariables.ExternalTools_NuGetServer_ForceUploadEnabled}'");
             }
 
             if (isRunningOnBuildAgent || forceUpload)
@@ -60,7 +61,8 @@ namespace Arbor.X.Core.Tools.NuGet
                     nuGetServerApiKey);
             }
 
-            logger.Write("Not running on build server. Skipped package upload");
+            logger.Write(
+                $"Not running on build server. Skipped package upload. Set environment variable '{WellKnownVariables.ExternalTools_NuGetServer_ForceUploadEnabled}' to value 'true' to force package upload");
 
             return Task.FromResult(ExitCode.Success);
         }
@@ -71,17 +73,28 @@ namespace Arbor.X.Core.Tools.NuGet
         {
             if (string.IsNullOrWhiteSpace(artifactPackagesFolder))
             {
-                throw new ArgumentNullException("artifactPackagesFolder");
+                throw new ArgumentNullException(nameof(artifactPackagesFolder));
             }
+
             if (string.IsNullOrWhiteSpace(nugetExePath))
             {
-                throw new ArgumentNullException("nugetExePath");
+                throw new ArgumentNullException(nameof(nugetExePath));
             }
 
             var files = new DirectoryInfo(artifactPackagesFolder)
                 .EnumerateFiles("*.nupkg", SearchOption.AllDirectories)
                 .Where(file => file.Name.IndexOf("symbols", StringComparison.InvariantCultureIgnoreCase) < 0)
                 .ToList();
+
+            if (!files.Any())
+            {
+                logger.Write(
+                    $"Could not find any NuGet packages to upload in folder '{artifactPackagesFolder}' or any subfolder");
+
+                return ExitCode.Success;
+            }
+
+            logger.Write($"Found {files.Count} NuGet packages to upload");
 
             bool result = true;
 
