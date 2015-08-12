@@ -57,6 +57,8 @@ namespace Arbor.X.Core.Tools.MSBuild
         string _defaultTarget;
         ILogger _logger;
 
+        bool _createNuGetWebPackage;
+
         public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
@@ -96,6 +98,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             _configurationTransformsEnabled = buildVariables.GetBooleanByKey(WellKnownVariables.GenericXmlTransformsEnabled, defaultValue:false);
             _defaultTarget = buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_MSBuild_DefaultTarget, "rebuild");
             _pdbArtifactsEnabled = buildVariables.GetBooleanByKey(WellKnownVariables.PublishPdbFilesAsArtifacts, defaultValue: false);
+            _createNuGetWebPackage = buildVariables.GetBooleanByKey(WellKnownVariables.NugetCreateNuGetWebPackagesEnabled, defaultValue: false);
 
             if (_vcsRoot == null)
             {
@@ -611,6 +614,16 @@ namespace Arbor.X.Core.Tools.MSBuild
                     }
                 }
 
+                if (_createNuGetWebPackage)
+                {
+                    ExitCode packageSiteExitCode = await CreateNuGetWebPackagesAsync(solutionFile, configuration, logger, platformDirectoryPath, solutionProject, platformName);
+
+                    if (!packageSiteExitCode.IsSuccess)
+                    {
+                        return packageSiteExitCode;
+                    }
+                }
+
                 if (_appDataJobsEnabled)
                 {
                     ExitCode exitCode = await CopyKuduWebJobsAsync(logger, solutionProject, siteArtifactDirectory);
@@ -625,6 +638,88 @@ namespace Arbor.X.Core.Tools.MSBuild
                     logger.Write("AppData Web Jobs are disabled");
                 }
             }
+
+            return ExitCode.Success;
+        }
+
+        async Task<ExitCode> CreateNuGetWebPackagesAsync(FileInfo solutionFile, string configuration, ILogger logger, string platformDirectoryPath, SolutionProject solutionProject, string platformName)
+        {
+            if (!platformName.Equals("Any CPU", StringComparison.InvariantCultureIgnoreCase))
+            {
+                logger.WriteWarning("Only Any CPU platform is supported for NuGet web packages");
+                return ExitCode.Success;
+            }
+
+
+            logger.Write($"Creating NuGet web package for project {solutionProject.ProjectName}");
+
+            var xmlTemplate = @"<?xml version=""1.0""?>
+<package >
+    <metadata>
+        <id>{0}</id>
+        <version>{1}</version>
+        <title>{2}</title>
+        <authors>{3}</authors>
+        <owners>{4}</owners>
+        <description>
+            {5}
+        </description>
+        <releaseNotes>
+        </releaseNotes>
+        <summary>
+            {6}
+        </summary>
+        <language>{7}</language>
+        <projectUrl>{8}</projectUrl>
+        <iconUrl>{9}</iconUrl>
+        <requireLicenseAcceptance>{10}</requireLicenseAcceptance>
+        <licenseUrl>{11}</licenseUrl>
+        <copyright>{12}</copyright>
+        <dependencies>
+
+        </dependencies>
+        <references></references>
+        <tags>{13}</tags>
+    </metadata>
+    <files>
+        {14}
+    </files>
+</package>";
+
+            var name = solutionProject.ProjectName;
+
+            string version = "";
+            string authors = "";
+            string owners = "";
+            string description = "";
+            string summary = "";
+            string language = "";
+            string projectUrl = "";
+            string iconUrl = "";
+            string requireLicenseAcceptance = "";
+            string licenseUrl = "";
+            string copyright = "";
+            string tags = "";
+
+            var nuspec = string.Format(
+                xmlTemplate,
+                name,
+                version,
+                name,
+                authors,
+                owners,
+                description,
+                summary,
+                language,
+                projectUrl,
+                iconUrl,
+                requireLicenseAcceptance,
+                licenseUrl,
+                copyright,
+                tags);
+
+
+            logger.Write(nuspec);
 
             return ExitCode.Success;
         }
