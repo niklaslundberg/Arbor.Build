@@ -13,6 +13,8 @@ using Arbor.X.Core.Exceptions;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;
+using Arbor.X.Core.Tools.NuGet;
+
 using FubuCsProjFile;
 using JetBrains.Annotations;
 using Microsoft.Web.XmlTransform;
@@ -59,9 +61,12 @@ namespace Arbor.X.Core.Tools.MSBuild
 
         bool _createNuGetWebPackage;
 
+        IReadOnlyCollection<IVariable> _buildVariables;
+
         public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
+            _buildVariables = buildVariables;
             _logger = logger;
             _cancellationToken = cancellationToken;
             _msBuildExe =
@@ -606,26 +611,58 @@ namespace Arbor.X.Core.Tools.MSBuild
 
                 if (_createWebDeployPackages)
                 {
-                    ExitCode packageSiteExitCode = await CreateWebDeployPackagesAsync(solutionFile, configuration, logger, platformDirectoryPath, solutionProject, platformName);
+                    logger.Write(
+                        $"Web Deploy package creation is enabled, creating package for {solutionProject.ProjectName}");
+
+                    ExitCode packageSiteExitCode =
+                        await
+                        CreateWebDeployPackagesAsync(
+                            solutionFile,
+                            configuration,
+                            logger,
+                            platformDirectoryPath,
+                            solutionProject,
+                            platformName);
 
                     if (!packageSiteExitCode.IsSuccess)
                     {
                         return packageSiteExitCode;
                     }
+                }
+                else
+                {
+                    logger.Write("Web Deploy package creation is disabled");
                 }
 
                 if (_createNuGetWebPackage)
                 {
-                    ExitCode packageSiteExitCode = await CreateNuGetWebPackagesAsync(solutionFile, configuration, logger, platformDirectoryPath, solutionProject, platformName);
+                    logger.Write(
+                        $"NuGet web package creation is enabled, creating NuGet package for {solutionProject.ProjectName}");
+
+                    ExitCode packageSiteExitCode =
+                        await
+                        CreateNuGetWebPackagesAsync(
+                            solutionFile,
+                            configuration,
+                            logger,
+                            platformDirectoryPath,
+                            solutionProject,
+                            platformName, siteArtifactDirectory.FullName);
 
                     if (!packageSiteExitCode.IsSuccess)
                     {
                         return packageSiteExitCode;
                     }
                 }
+                else
+                {
+                    logger.Write("NuGet web package creation is disabled");
+                }
 
                 if (_appDataJobsEnabled)
                 {
+                    logger.Write("AppData Web Jobs are enabled");
+
                     ExitCode exitCode = await CopyKuduWebJobsAsync(logger, solutionProject, siteArtifactDirectory);
 
                     if (!exitCode.IsSuccess)
@@ -642,18 +679,18 @@ namespace Arbor.X.Core.Tools.MSBuild
             return ExitCode.Success;
         }
 
-        async Task<ExitCode> CreateNuGetWebPackagesAsync(FileInfo solutionFile, string configuration, ILogger logger, string platformDirectoryPath, SolutionProject solutionProject, string platformName)
+        async Task<ExitCode> CreateNuGetWebPackagesAsync(FileInfo solutionFile, string configuration, ILogger logger, string platformDirectoryPath, SolutionProject solutionProject, string platformName, string siteArtifactDirectory)
         {
-            if (!platformName.Equals("Any CPU", StringComparison.InvariantCultureIgnoreCase))
+            if (!platformName.Equals(Platforms.Normalize(WellKnownPlatforms.AnyCPU), StringComparison.InvariantCultureIgnoreCase))
             {
-                logger.WriteWarning("Only Any CPU platform is supported for NuGet web packages");
+                logger.WriteWarning(
+                    $"Only '{WellKnownPlatforms.AnyCPU}' platform is supported for NuGet web packages, skipping platform '{platformName}'");
                 return ExitCode.Success;
             }
 
-
             logger.Write($"Creating NuGet web package for project {solutionProject.ProjectName}");
 
-            var xmlTemplate = @"<?xml version=""1.0""?>
+            const string XmlTemplate = @"<?xml version=""1.0""?>
 <package >
     <metadata>
         <id>{0}</id>
@@ -686,23 +723,35 @@ namespace Arbor.X.Core.Tools.MSBuild
     </files>
 </package>";
 
+            var packageDirectory = Path.Combine(platformDirectoryPath, "NuGet");
+
+            var packageConfiguration = NuGetPackager.GetNuGetPackageConfiguration(
+                logger,
+                _buildVariables,
+                packageDirectory,
+                _vcsRoot);
+
+
             var name = solutionProject.ProjectName;
 
-            string version = "";
-            string authors = "";
-            string owners = "";
-            string description = "";
-            string summary = "";
-            string language = "";
-            string projectUrl = "";
-            string iconUrl = "";
-            string requireLicenseAcceptance = "";
-            string licenseUrl = "";
-            string copyright = "";
+            string version = packageConfiguration.Version;
+            string authors = _buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyCompany, "Undefined");
+            string owners = _buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyCompany, "Undefined");
+            string description = solutionProject.ProjectName;
+            string summary = solutionProject.ProjectName;
+            string language = "en-US";
+            string projectUrl = "http://nuget.org";
+            string iconUrl = "http://nuget.org";
+            string requireLicenseAcceptance = "false";
+            string licenseUrl = "http://nuget.org";
+            string copyright = _buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyCopyright, "Undefined");
             string tags = "";
 
-            var nuspec = string.Format(
-                xmlTemplate,
+            var files =
+                $@"<file src=""{siteArtifactDirectory}\**\*.*"" target=""Content"" exclude=""packages.config"" />";
+
+            var nuspecContent = string.Format(
+                XmlTemplate,
                 name,
                 version,
                 name,
@@ -716,10 +765,28 @@ namespace Arbor.X.Core.Tools.MSBuild
                 requireLicenseAcceptance,
                 licenseUrl,
                 copyright,
-                tags);
+                tags, files);
 
 
-            logger.Write(nuspec);
+            logger.Write(nuspecContent);
+
+            var tempDir = new DirectoryInfo(Path.Combine(
+                Path.GetTempPath(),
+                Guid.NewGuid().ToString())).EnsureExists();
+
+            var nuspecTempFile = Path.Combine(tempDir.FullName, $"{solutionProject.ProjectName}.nuspec");
+
+            File.WriteAllText(nuspecTempFile, nuspecContent, Encoding.UTF8);
+
+            ExitCode exitCode = await new NuGetPackager(_logger).CreatePackageAsync(nuspecTempFile, packageConfiguration, _cancellationToken);
+
+            if (!exitCode.IsSuccess)
+            {
+                logger.WriteError($"Failed to create NuGet web package for project {solutionProject.ProjectName}");
+                return exitCode;
+            }
+
+            logger.Write($"Successfully created NuGet web package for project {solutionProject.ProjectName}");
 
             return ExitCode.Success;
         }

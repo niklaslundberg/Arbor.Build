@@ -50,13 +50,14 @@ namespace Arbor.X.Core
                 [WellKnownVariables.BranchName] = "develop",
                 [WellKnownVariables.VersionMajor] = "1",
                 [WellKnownVariables.VersionMinor] = "0",
-                [WellKnownVariables.VersionPatch] = "19",
-                [WellKnownVariables.VersionBuild] = "106",
+                [WellKnownVariables.VersionPatch] = "23",
+                [WellKnownVariables.VersionBuild] = "201",
                 [WellKnownVariables.Configuration] = "release",
                 [WellKnownVariables.GenericXmlTransformsEnabled] = "true",
                 [WellKnownVariables.NuGetPackageExcludesCommaSeparated] = "Arbor.X.Bootstrapper.nuspec",
                 [WellKnownVariables.NuGetAllowManifestReWrite] = "false",
                 [WellKnownVariables.NuGetSymbolPackagesEnabled] = "false",
+                [WellKnownVariables.NugetCreateNuGetWebPackagesEnabled] = "true",
             };
 
             foreach (KeyValuePair<string, string> environmentVariable in environmentVariables)

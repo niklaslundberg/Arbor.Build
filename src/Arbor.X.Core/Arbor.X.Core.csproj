@@ -172,6 +172,8 @@
     <Compile Include="ToolsModule.cs" />
     <Compile Include="Tools\NuGet\ManifestReWriteResult.cs" />
     <Compile Include="Tools\NuGet\ManitestReWriter.cs" />
+    <Compile Include="Tools\NuGet\NuGetPackageConfiguration.cs" />
+    <Compile Include="Tools\NuGet\NuGetPackager.cs" />
     <Compile Include="Tools\NuGet\WellKnownNuGetTags.cs" />
     <Compile Include="Tools\Testing\MSpecInternalConstants.cs" />
     <Compile Include="VariableProviderModule.cs" />
@@ -255,6 +257,7 @@
     <Compile Include="Tools\Testing\VSTestVariableProvider.cs" />
     <Compile Include="BuildVariables\WellKnownVariables.cs" />
     <Compile Include="TypeExtensions.cs" />
+    <Compile Include="WellKnownPlatforms.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">
