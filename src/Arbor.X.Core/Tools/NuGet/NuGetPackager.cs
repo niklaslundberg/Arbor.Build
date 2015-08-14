@@ -49,6 +49,9 @@ namespace Arbor.X.Core.Tools.NuGet
 
         public async Task<ExitCode> CreatePackageAsync(string packageSpecificationPath, NuGetPackageConfiguration packageConfiguration, CancellationToken cancellationToken = default(CancellationToken))
         {
+            _logger.WriteDebug($"Using NuGet package configuration {packageConfiguration}");
+
+
             NuSpec nuSpec = NuSpec.Parse(packageSpecificationPath);
 
             var properties = GetProperties(packageConfiguration.Configuration);
@@ -262,6 +265,9 @@ namespace Arbor.X.Core.Tools.NuGet
             }
 
             bool isReleaseBuild = IsReleaseBuild(releaseBuild.Value, branchName.Value);
+
+            logger.WriteVerbose(
+                $"Based on branch {branchName.Value} and release build flags {releaseBuild.Value}, the build is considered {(isReleaseBuild ? "release" : "not  release")}");
 
             if (configuration.Equals("debug", StringComparison.InvariantCultureIgnoreCase) && isReleaseBuild)
             {
