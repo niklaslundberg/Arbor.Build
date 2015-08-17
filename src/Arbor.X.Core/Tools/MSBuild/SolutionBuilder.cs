@@ -723,12 +723,14 @@ namespace Arbor.X.Core.Tools.MSBuild
     </files>
 </package>";
 
-            var packageDirectory = Path.Combine(platformDirectoryPath, "NuGet");
+            string packageDirectoryPath = Path.Combine(platformDirectoryPath, "NuGet");
 
-            var packageConfiguration = NuGetPackager.GetNuGetPackageConfiguration(
+            DirectoryInfo packageDirectory = new DirectoryInfo(packageDirectoryPath).EnsureExists();
+
+            NuGetPackageConfiguration packageConfiguration = NuGetPackager.GetNuGetPackageConfiguration(
                 logger,
                 _buildVariables,
-                packageDirectory,
+                packageDirectory.FullName,
                 _vcsRoot);
 
 
