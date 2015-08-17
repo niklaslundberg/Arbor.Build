@@ -500,11 +500,11 @@ namespace Arbor.X.Core.Tools.MSBuild
 
                 var targetDirectoryPath = Path.Combine(_artifactsPath, "PDB", configuration, platform);
 
-                var targetDiretory = new DirectoryInfo(targetDirectoryPath).EnsureExists();
+                var targetDirectory = new DirectoryInfo(targetDirectoryPath).EnsureExists();
 
                 foreach (var pair in pairs)
                 {
-                    var targetFilePath = Path.Combine(targetDiretory.FullName, pair.PdbFile.Name);
+                    var targetFilePath = Path.Combine(targetDirectory.FullName, pair.PdbFile.Name);
 
                     if (!File.Exists(targetFilePath))
                     {
@@ -518,7 +518,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                     }
                     if (pair.DllFile != null)
                     {
-                        var targetDllFilePath = Path.Combine(targetDiretory.FullName, pair.DllFile.Name);
+                        var targetDllFilePath = Path.Combine(targetDirectory.FullName, pair.DllFile.Name);
 
                         if (!File.Exists(targetDllFilePath))
                         {
@@ -732,7 +732,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                 _vcsRoot);
 
 
-            var name = solutionProject.ProjectName;
+            string name = solutionProject.ProjectName;
 
             string version = packageConfiguration.Version;
             string authors = _buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyCompany, "Undefined");
@@ -747,10 +747,10 @@ namespace Arbor.X.Core.Tools.MSBuild
             string copyright = _buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyCopyright, "Undefined");
             string tags = "";
 
-            var files =
+            string files =
                 $@"<file src=""{siteArtifactDirectory}\**\*.*"" target=""Content"" exclude=""packages.config"" />";
 
-            var nuspecContent = string.Format(
+            string nuspecContent = string.Format(
                 XmlTemplate,
                 name,
                 version,
@@ -770,11 +770,11 @@ namespace Arbor.X.Core.Tools.MSBuild
 
             logger.Write(nuspecContent);
 
-            var tempDir = new DirectoryInfo(Path.Combine(
+            DirectoryInfo tempDir = new DirectoryInfo(Path.Combine(
                 Path.GetTempPath(),
                 Guid.NewGuid().ToString())).EnsureExists();
 
-            var nuspecTempFile = Path.Combine(tempDir.FullName, $"{solutionProject.ProjectName}.nuspec");
+            string nuspecTempFile = Path.Combine(tempDir.FullName, $"{solutionProject.ProjectName}.nuspec");
 
             File.WriteAllText(nuspecTempFile, nuspecContent, Encoding.UTF8);
 
