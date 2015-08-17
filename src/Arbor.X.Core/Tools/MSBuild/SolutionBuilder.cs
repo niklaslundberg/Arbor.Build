@@ -498,7 +498,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                                    })
                     .ToReadOnlyCollection();
 
-                var targetDirectoryPath = Path.Combine(_artifactsPath, "PDB", configuration, platform);
+                var targetDirectoryPath = Path.Combine(_artifactsPath, "PDB", configuration, Platforms.Normalize(platform));
 
                 var targetDirectory = new DirectoryInfo(targetDirectoryPath).EnsureExists();
 
@@ -561,13 +561,13 @@ namespace Arbor.X.Core.Tools.MSBuild
 
             foreach (SolutionProject solutionProject in webProjects)
             {
-                var platformDirectoryPath = Path.Combine(_artifactsPath, "Websites", solutionProject.ProjectName, platform);
+                var platformDirectoryPath = Path.Combine(_artifactsPath, "Websites", solutionProject.ProjectName, Platforms.Normalize(platform));
 
                 var platformDirectory = new DirectoryInfo(platformDirectoryPath).EnsureExists();
 
                 DirectoryInfo siteArtifactDirectory = platformDirectory.CreateSubdirectory(configuration);
 
-                string platformName = platform == "Any CPU" ? "AnyCPU" : platform;
+                string platformName = Platforms.Normalize(platform);
 
                 var buildSiteArguments = new List<string>(15)
                               {
