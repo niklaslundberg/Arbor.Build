@@ -63,6 +63,10 @@ namespace Arbor.X.Core.Tools.MSBuild
 
         IReadOnlyCollection<IVariable> _buildVariables;
 
+        string _ruleset;
+
+        bool _codeAnalysisEnabled;
+
         public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
@@ -76,6 +80,11 @@ namespace Arbor.X.Core.Tools.MSBuild
 
             _appDataJobsEnabled = buildVariables.GetBooleanByKey(WellKnownVariables.AppDataJobsEnabled,
                 defaultValue: false);
+
+            _codeAnalysisEnabled =
+                buildVariables.GetBooleanByKey(
+                    WellKnownVariables.ExternalTools_MSBuild_CodeAnalysisEnabled,
+                    defaultValue: false);
 
             int maxProcessorCount = ProcessorCount(buildVariables);
 
@@ -100,6 +109,16 @@ namespace Arbor.X.Core.Tools.MSBuild
             logger.WriteVerbose($"Using MSBuild verbosity {_verbosity}");
 
             _vcsRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
+
+            if (_codeAnalysisEnabled)
+            {
+                _ruleset = FindRuleSet();
+            }
+            else
+            {
+                _logger.WriteVerbose("Code analysis is disabled, skipping ruleset lookup.");
+            }
+
             _configurationTransformsEnabled = buildVariables.GetBooleanByKey(WellKnownVariables.GenericXmlTransformsEnabled, defaultValue:false);
             _defaultTarget = buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_MSBuild_DefaultTarget, "rebuild");
             _pdbArtifactsEnabled = buildVariables.GetBooleanByKey(WellKnownVariables.PublishPdbFilesAsArtifacts, defaultValue: false);
@@ -120,6 +139,34 @@ namespace Arbor.X.Core.Tools.MSBuild
                 logger.WriteError(ex.ToString());
                 return ExitCode.Failure;
             }
+        }
+
+        string FindRuleSet()
+        {
+            var fileInfos = new DirectoryInfo(_vcsRoot)
+                .GetFiles("*.ruleset", SearchOption.AllDirectories)
+                .Where(file => _pathLookupSpecification.IsFileBlackListed(file.FullName, _vcsRoot)).ToReadOnlyCollection();
+
+            if (fileInfos.Count != 1)
+            {
+                if (fileInfos.Count == 0)
+                {
+                    _logger.WriteVerbose("Could not find any ruleset file (.ruleset) in solution");
+                }
+                else
+                {
+                    _logger.WriteVerbose(
+                        $"Found {fileInfos.Count} ruleset files (.ruleset) in solution, only one is supported, skipping code analysis with rules");
+                }
+
+                return null;
+            }
+
+            string foundRuleSet = fileInfos.Single().FullName;
+
+            _logger.WriteVerbose($"Found one ruleset file '{foundRuleSet}'");
+
+            return foundRuleSet;
         }
 
         static int ProcessorCount(IReadOnlyCollection<IVariable> buildVariables)
@@ -388,7 +435,9 @@ namespace Arbor.X.Core.Tools.MSBuild
             return ExitCode.Success;
         }
 
-        async Task<ExitCode> BuildSolutionWithConfigurationAndPlatformAsync(FileInfo solutionFile, string configuration,
+        async Task<ExitCode> BuildSolutionWithConfigurationAndPlatformAsync(
+            FileInfo solutionFile,
+            string configuration,
             string platform,
             ILogger logger)
         {
@@ -405,15 +454,33 @@ namespace Arbor.X.Core.Tools.MSBuild
             }
 
             var argList = new List<string>
-                          {
-                              solutionFile.FullName,
-                              $"/property:configuration={configuration}",
-                              $"/property:platform={platform}",
-                              $"/verbosity:{_verbosity.Level}",
-                              $"/target:{_defaultTarget}",
-                              $"/maxcpucount:{_processorCount.ToString(CultureInfo.InvariantCulture)}",
-                              "/nodeReuse:false"
-                          };
+                              {
+                                  solutionFile.FullName,
+                                  $"/property:configuration={configuration}",
+                                  $"/property:platform={platform}",
+                                  $"/verbosity:{_verbosity.Level}",
+                                  $"/target:{_defaultTarget}",
+                                  $"/maxcpucount:{_processorCount.ToString(CultureInfo.InvariantCulture)}",
+                                  "/nodeReuse:false"
+                              };
+
+            if (_codeAnalysisEnabled)
+            {
+                logger.WriteVerbose("Code analysis is enabled");
+
+                argList.Add("/property:RunCodeAnalysis=true");
+
+                if (!string.IsNullOrWhiteSpace(_ruleset) && File.Exists(_ruleset))
+                {
+                    logger.Write($"Using code analysis ruleset '{_ruleset}'");
+
+                    argList.Add($"/property:CodeAnalysisRuleSet={_ruleset}");
+                }
+            }
+            else
+            {
+                logger.Write("Code analysis is disabled");
+            }
 
             if (_showSummary)
             {
@@ -421,13 +488,22 @@ namespace Arbor.X.Core.Tools.MSBuild
             }
 
             logger.Write($"Building solution file {solutionFile.Name} ({configuration}|{platform})");
-            logger.WriteVerbose(string.Format("{0}MSBuild arguments: {0}{0}{1}", Environment.NewLine,
-                argList.Select(arg => new Dictionary<string, string> {{"Value", arg}}).DisplayAsTable()));
+            logger.WriteVerbose(
+                string.Format(
+                    "{0}MSBuild arguments: {0}{0}{1}",
+                    Environment.NewLine,
+                    argList.Select(arg => new Dictionary<string, string> { { "Value", arg } }).DisplayAsTable()));
 
             ExitCode exitCode =
-                await ProcessRunner.ExecuteAsync(_msBuildExe, arguments: argList, standardOutLog: logger.Write,
-                    standardErrorAction: logger.WriteError, toolAction: logger.Write,
-                    cancellationToken: _cancellationToken, verboseAction: logger.WriteVerbose);
+                await
+                ProcessRunner.ExecuteAsync(
+                    _msBuildExe,
+                    arguments: argList,
+                    standardOutLog: logger.Write,
+                    standardErrorAction: logger.WriteError,
+                    toolAction: logger.Write,
+                    cancellationToken: _cancellationToken,
+                    verboseAction: logger.WriteVerbose);
 
             if (exitCode.IsSuccess)
             {
@@ -439,6 +515,27 @@ namespace Arbor.X.Core.Tools.MSBuild
             else
             {
                 logger.WriteError("Skipping web site build since solution build failed");
+            }
+
+            var analysisLogFiles =
+                new DirectoryInfo(_vcsRoot).GetFiles("*.AnalysisLog.xml", SearchOption.AllDirectories)
+                    .ToReadOnlyCollection();
+
+            var targetReportDirectory =
+                new DirectoryInfo(Path.Combine(_artifactsPath, "CodeAnalysis")).EnsureExists();
+
+            logger.WriteVerbose(
+                $"Found {analysisLogFiles.Count} code analysis log files: {string.Join(Environment.NewLine, analysisLogFiles.Select(file => file.FullName))}");
+
+            foreach (var analysisLogFile in analysisLogFiles)
+            {
+                var projectName= analysisLogFile.Name.Replace(".CodeAnalysisLog.xml", "");
+
+                var targetFilePath = Path.Combine(
+                    targetReportDirectory.FullName,
+                    $"{projectName}.{Platforms.Normalize(platform)}.{configuration}.xml");
+
+                analysisLogFile.CopyTo(targetFilePath, CopyOptions.None);
             }
 
             if (exitCode.IsSuccess)
