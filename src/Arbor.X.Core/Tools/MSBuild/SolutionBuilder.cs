@@ -197,6 +197,17 @@ namespace Arbor.X.Core.Tools.MSBuild
             }
             else
             {
+                bool buildDebug = BuildPlatformOrConfiguration(variables, WellKnownVariables.DebugBuildEnabled);
+
+                if (buildDebug)
+                {
+                    _buildConfigurations.Add("debug");
+                }
+                else
+                {
+                    logger.Write($"Flag {WellKnownVariables.DebugBuildEnabled} is set to false, ignoring debug builds");
+                }
+
                 bool buildRelease = BuildPlatformOrConfiguration(variables, WellKnownVariables.ReleaseBuildEnabled);
 
                 if (buildRelease)
@@ -207,17 +218,6 @@ namespace Arbor.X.Core.Tools.MSBuild
                 {
                     logger.Write(
                         $"Flag {WellKnownVariables.ReleaseBuildEnabled} is set to false, ignoring release builds");
-                }
-
-                bool buildDebug = BuildPlatformOrConfiguration(variables, WellKnownVariables.DebugBuildEnabled);
-
-                if (buildDebug)
-                {
-                    _buildConfigurations.Add("debug");
-                }
-                else
-                {
-                    logger.Write($"Flag {WellKnownVariables.DebugBuildEnabled} is set to false, ignoring debug builds");
                 }
             }
 
