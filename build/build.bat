@@ -13,7 +13,7 @@ SET Arbor.X.Build.NetAssembly.Configuration=
 SET Version.Major=1
 SET Version.Minor=0
 SET Version.Patch=23
-SET Version.Build=210
+SET Version.Build=219
 
 IF "%Arbor.X.Vcs.Branch.Name%" == "" (
 	SET Arbor.X.Vcs.Branch.Name=develop
@@ -36,6 +36,7 @@ SET Arbor.X.Tools.External.MSBuild.Verbosity=minimal
 SET Arbor.X.NuGet.Package.AllowManifestReWriteEnabled=false
 
 SET Arbor.X.NuGet.Package.ExcludesCommaSeparated=Arbor.X.Bootstrapper.nuspec
+SET Arbor.X.Tools.External.MSBuild.CodeAnalysis.Enabled=true
 
 SET Arbor.X.Build.Tests.IgnoredCategories=dummyexcluded,dummyexcluded2,dummyexclude3
 
