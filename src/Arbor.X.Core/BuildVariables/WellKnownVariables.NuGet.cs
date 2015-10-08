@@ -5,6 +5,9 @@
         [VariableDescription("Flag to indicate if NuGet package creation is enabled")]
         public static readonly string NuGetPackageEnabled = Arbor.X + ".NuGet.Package.Enabled";
 
+        [VariableDescription("Specific URI to download nuget.exe from")]
+        public static readonly string NuGetExeDownloadUri = Arbor.X + ".NuGet.DownloadUri";
+
         [VariableDescription("Flag to indicate if NuGet package creation is enabled")]
         public static readonly string NuGetPackageExcludesCommaSeparated = Arbor.X + ".NuGet.Package.ExcludesCommaSeparated";
 
