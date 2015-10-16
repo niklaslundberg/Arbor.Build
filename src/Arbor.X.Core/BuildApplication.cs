@@ -318,25 +318,6 @@ namespace Arbor.X.Core
 
             buildVariables.AddRange(EnvironmentVariableHelper.GetBuildVariablesFromEnvironmentVariables(_logger, buildVariables));
 
-            //var providers = new List<IVariableProvider>
-            //                {
-            //                    new GitVariableProvider(),
-            //                    new TeamCityVariableProvider(),
-            //                    new SourcePathVariableProvider(),
-            //                    new ArtifactsVariableProvider(),
-            //                    new MSBuildVariableProvider(),
-            //                    new NugetVariableProvider(),
-            //                    new VisualStudioVariableProvider(),
-            //                    new VsTestVariableProvider(),
-            //                    new MSpecVariableProvider(),
-            //                    new BuildVersionProvider(),
-            //                    new ILMergeVariableProvider(),
-            //                    new SymbolsVariableProvider(),
-            //                    new BuildAgentVariableProvider(),
-            //                    new KuduEnvironmentVariableProvider(),
-            //                    new BuildConfigurationProvider()
-            //                }; //TODO use Autofac
-
             var providers = _container.Resolve<IEnumerable<IVariableProvider>>().OrderBy(provider => provider.Order).ToReadOnlyCollection();
 
             string displayAsTable =
