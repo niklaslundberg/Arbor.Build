@@ -312,6 +312,26 @@ namespace Arbor.X.Core
         {
             var buildVariables = new List<IVariable>();
 
+            if (
+                Environment.GetEnvironmentVariable(WellKnownVariables.VariableFileSourceEnabled)
+                    .TryParseBool(defaultValue: false))
+            {
+                _logger.Write(
+                    $"The environment variable {WellKnownVariables.VariableFileSourceEnabled} is set to true, using file source to set environment variables");
+                ExitCode exitCode = EnvironmentVariableHelper.SetEnvironmentVariablesFromFile(_logger);
+
+                if (!exitCode.IsSuccess)
+                {
+                    throw new InvalidOperationException(
+                        $"Could not set environment variables from file, set variable '{WellKnownVariables.VariableFileSourceEnabled}' to false to disabled");
+                }
+            }
+            else
+            {
+                _logger.WriteDebug(
+                       $"The environment variable {WellKnownVariables.VariableFileSourceEnabled} is not set or false, skipping file source to set environment variables");
+            }
+
             IEnumerable<IVariable> result = await RunOnceAsync().ConfigureAwait(false);
 
             buildVariables.AddRange(result);

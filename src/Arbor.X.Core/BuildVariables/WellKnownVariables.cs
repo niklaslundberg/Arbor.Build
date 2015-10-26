@@ -170,6 +170,9 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescription("Flag to indicate if defined variables can be overriden")]
         public static readonly string VariableOverrideEnabled = Arbor.X.Build + ".VariableOverrideEnabled";
 
+        [VariableDescription("Flag to indicate if a file arborx_environmentvariables.json should be used as a source to set environment variables")]
+        public static readonly string VariableFileSourceEnabled = Arbor.X.Build + ".VariableFileSource.Enabled";
+
         [VariableDescription("Flag to indicate if Kudu target path files and directories should be deleted before deploy")]
         public static readonly string KuduClearFilesAndDirectories = "Arbor.X.Tools.External.Kudu.ClearEnabled";
 
