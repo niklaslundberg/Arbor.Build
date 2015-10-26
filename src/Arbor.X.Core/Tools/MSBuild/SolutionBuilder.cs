@@ -790,7 +790,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                     .Any(
                         msBuildProperty =>
                         msBuildProperty.Name.Equals(
-                            WellKnownVariables.NugetCreateNuGetWebPackageForProjectEnabled,
+                           string.Format(WellKnownVariables.NugetCreateNuGetWebPackageForProjectEnabledFormat, solutionProject.ProjectName.Replace(".", "_").Replace(" ", "_").Replace("-","_")),
                             StringComparison.InvariantCultureIgnoreCase)
                         && msBuildProperty.Value.TryParseBool(defaultValue: true));
 
