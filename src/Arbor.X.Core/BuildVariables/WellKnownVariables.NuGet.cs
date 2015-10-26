@@ -59,6 +59,8 @@
 
         public const string ExternalTools_NuGetServer_Enabled = "Arbor.X.NuGet.PackageUpload.Enabled";
 
+        public const string ExternalTools_NuGetServer_WebSitePackagesUploadEnabled = "Arbor.X.NuGet.WebsitePackages.PackageUpload.Enabled";
+
         public const string ExternalTools_NuGetServer_Uri = "Arbor.X.NuGet.PackageUpload.Server.Uri";
 
         public const string ExternalTools_NuGetServer_ApiKey = "Arbor.X.NuGet.PackageUpload.Server.ApiKey";

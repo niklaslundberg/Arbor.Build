@@ -16,6 +16,7 @@ namespace Arbor.X.Core.Tools.NuGet
         public Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {
             bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_NuGetServer_Enabled, defaultValue: false);
+            bool websitePackagesUploadEnabled = buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_NuGetServer_WebSitePackagesUploadEnabled, defaultValue: false);
 
             if (!enabled)
             {
@@ -26,12 +27,7 @@ namespace Arbor.X.Core.Tools.NuGet
             var artifacts = buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue();
 
             var packagesFolder = new DirectoryInfo(Path.Combine(artifacts.Value, "packages"));
-
-            if (!packagesFolder.Exists)
-            {
-                logger.WriteWarning("There is no packages folder, skipping package upload");
-                return Task.FromResult(ExitCode.Success);
-            }
+            var websitesDirectory = new DirectoryInfo(Path.Combine(artifacts.Value, "websites"));
 
             var nugetExe = buildVariables.Require(WellKnownVariables.ExternalTools_NuGet_ExePath).ThrowIfEmptyValue();
             var nugetServer =
@@ -57,8 +53,8 @@ namespace Arbor.X.Core.Tools.NuGet
 
             if (isRunningOnBuildAgent || forceUpload)
             {
-                return UploadNuGetPackages(logger, packagesFolder.FullName, nugetExe.Value, nugetServer,
-                    nuGetServerApiKey);
+                return UploadNuGetPackages(logger, packagesFolder, nugetExe.Value, nugetServer,
+                    nuGetServerApiKey, websitePackagesUploadEnabled, websitesDirectory);
             }
 
             logger.Write(
@@ -67,13 +63,13 @@ namespace Arbor.X.Core.Tools.NuGet
             return Task.FromResult(ExitCode.Success);
         }
 
-        async Task<ExitCode> UploadNuGetPackages(ILogger logger, string artifactPackagesFolder, string nugetExePath,
+        async Task<ExitCode> UploadNuGetPackages(ILogger logger, DirectoryInfo artifactPackagesDirectory, string nugetExePath,
             string serverUri,
-            string apiKey)
+            string apiKey, bool websitePackagesUploadEnabled, DirectoryInfo websitesDirectory)
         {
-            if (string.IsNullOrWhiteSpace(artifactPackagesFolder))
+            if (artifactPackagesDirectory == null)
             {
-                throw new ArgumentNullException(nameof(artifactPackagesFolder));
+                throw new ArgumentNullException(nameof(artifactPackagesDirectory));
             }
 
             if (string.IsNullOrWhiteSpace(nugetExePath))
@@ -81,24 +77,64 @@ namespace Arbor.X.Core.Tools.NuGet
                 throw new ArgumentNullException(nameof(nugetExePath));
             }
 
-            var files = new DirectoryInfo(artifactPackagesFolder)
-                .EnumerateFiles("*.nupkg", SearchOption.AllDirectories)
-                .Where(file => file.Name.IndexOf("symbols", StringComparison.InvariantCultureIgnoreCase) < 0)
-                .ToList();
-
-            if (!files.Any())
+            if (websitesDirectory == null)
             {
+                throw new ArgumentNullException(nameof(websitesDirectory));
+            }
+
+
+            var nuGetPackageFiles = new List<FileInfo>();
+
+            if (!artifactPackagesDirectory.Exists)
+            {
+                logger.WriteWarning("There is no packages folder, skipping standard package upload");
+            }
+            else
+            {
+                var standardPackages =
+                    artifactPackagesDirectory.EnumerateFiles("*.nupkg", SearchOption.AllDirectories)
+                        .Where(file => file.Name.IndexOf("symbols", StringComparison.InvariantCultureIgnoreCase) < 0)
+                        .ToList();
+
+                nuGetPackageFiles.AddRange(standardPackages);
+            }
+
+            if (!websitePackagesUploadEnabled)
+            {
+                logger.Write("Website package upload is disabled");
+
+            }
+            else if (!websitesDirectory.Exists)
+            {
+                logger.WriteWarning("There is no website package folder, skipping website package upload");
+            }
+            else
+            {
+                var websitePackages =
+                    websitesDirectory.EnumerateFiles("*.nupkg", SearchOption.AllDirectories)
+                        .Where(file => file.Name.IndexOf("symbols", StringComparison.InvariantCultureIgnoreCase) < 0)
+                        .ToList();
+
+                nuGetPackageFiles.AddRange(websitePackages);
+            }
+
+            if (!nuGetPackageFiles.Any())
+            {
+                var websiteUploadMissingMessage = websitePackagesUploadEnabled
+                                                      ? $" or in folder websites folder '{websitesDirectory.FullName}'"
+                                                      : "";
+
                 logger.Write(
-                    $"Could not find any NuGet packages to upload in folder '{artifactPackagesFolder}' or any subfolder");
+                    $"Could not find any NuGet packages to upload in folder '{artifactPackagesDirectory}' or any subfolder{websiteUploadMissingMessage}");
 
                 return ExitCode.Success;
             }
 
-            logger.Write($"Found {files.Count} NuGet packages to upload");
+            logger.Write($"Found {nuGetPackageFiles.Count} NuGet packages to upload");
 
             bool result = true;
 
-            foreach (var fileInfo in files)
+            foreach (var fileInfo in nuGetPackageFiles)
             {
                 string nugetPackage = fileInfo.FullName;
 
@@ -116,6 +152,8 @@ namespace Arbor.X.Core.Tools.NuGet
         static async Task<ExitCode> UploadNugetPackageAsync(string nugetExePath, string serverUri, string apiKey,
             string nugetPackage, ILogger logger)
         {
+            logger.WriteDebug($"Pushing NuGet package '{nugetPackage}'");
+
             var args = new List<string>
                        {
                            "push",
