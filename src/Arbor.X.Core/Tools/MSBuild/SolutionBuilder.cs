@@ -785,6 +785,21 @@ namespace Arbor.X.Core.Tools.MSBuild
                 return ExitCode.Success;
             }
 
+            bool buildNuGetWebPackageForProject =
+                solutionProject.Project.BuildProject.PropertyGroups.SelectMany(s => s.Properties)
+                    .Any(
+                        msBuildProperty =>
+                        msBuildProperty.Name.Equals(
+                            WellKnownVariables.NugetCreateNuGetWebPackageForProjectEnabled,
+                            StringComparison.InvariantCultureIgnoreCase)
+                        && msBuildProperty.Value.TryParseBool(defaultValue: true));
+
+            if (!buildNuGetWebPackageForProject)
+            {
+                logger.Write($"Creating NuGet web package for project {solutionProject.ProjectName} is disabled");
+                return ExitCode.Success;
+            }
+
             logger.Write($"Creating NuGet web package for project {solutionProject.ProjectName}");
 
             const string XmlTemplate = @"<?xml version=""1.0""?>

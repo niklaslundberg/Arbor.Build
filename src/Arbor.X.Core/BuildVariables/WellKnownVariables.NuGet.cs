@@ -29,6 +29,9 @@
         [VariableDescription("Flag to indicate if creation of NuGet web packages is enabled")]
         public static readonly string NugetCreateNuGetWebPackagesEnabled = Arbor.X + ".NuGet.Package.CreateNuGetWebPackages.Enabled";
 
+        [VariableDescription("Flag to indicate if creation of NuGet web package is enabled for a project")]
+        public static readonly string NugetCreateNuGetWebPackageForProjectEnabled = "Arbor_X_NuGet_Package_CreateNuGetWebPackageForProject_Enabled";
+
         [VariableDescription("Flag to indicate if the build number is included in the NuGet package artifacts")]
         public static readonly string BuildNumberInNuGetPackageArtifactsEnabled = Arbor.X + ".NuGet.Package.Artifacts.BuildNumber.Enabled";
 
