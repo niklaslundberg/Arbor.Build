@@ -104,11 +104,29 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="A\A1\Test.debug.xml" />
+    <Content Include="A\A1\Test.Environment.TestEnvironment.XdtTransform.xml" />
+    <Content Include="A\A1\Test.release.xml" />
+    <Content Include="A\A1\Test.xml" />
+    <Content Include="A\Test.debug.xml" />
+    <Content Include="A\Test.Environment.TestEnvironment.XdtTransform.xml" />
+    <Content Include="A\Test.release.xml" />
+    <Content Include="A\Test.xml" />
+    <Content Include="B\Test2.debug.xml" />
+    <Content Include="B\Test2.Environment.TestEnvironment.XdtTransform.xml" />
+    <Content Include="B\Test2.release.xml" />
+    <Content Include="B\Test2.xml" />
+    <Content Include="C\C.Environment.TestEnvironment.Replace.txt" />
+    <Content Include="C\C.txt" />
     <Content Include="Global.asax" />
+    <Content Include="Arbor.X.Tests.DummyWebApplication.Wpp.targets" />
+    <None Include="Properties\PublishProfiles\Local.pubxml" />
     <None Include="Test.debug.xml" />
     <None Include="Test.release.xml" />
+    <Content Include="Test.Environment.TestEnvironment.XdtTransform.xml" />
     <Content Include="Test.xml" />
     <Content Include="Web.config" />
+    <None Include="Web.Test.Environment.config" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\WebApiConfig.cs" />

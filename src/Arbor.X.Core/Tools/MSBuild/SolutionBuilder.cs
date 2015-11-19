@@ -785,14 +785,12 @@ namespace Arbor.X.Core.Tools.MSBuild
                 return ExitCode.Success;
             }
 
+            string expectedName = string.Format(WellKnownVariables.NugetCreateNuGetWebPackageForProjectEnabledFormat, solutionProject.ProjectName.Replace(".", "_").Replace(" ", "_").Replace("-","_"));
+
             bool buildNuGetWebPackageForProject =
                 solutionProject.Project.BuildProject.PropertyGroups.SelectMany(s => s.Properties)
-                    .Any(
-                        msBuildProperty =>
-                        msBuildProperty.Name.Equals(
-                           string.Format(WellKnownVariables.NugetCreateNuGetWebPackageForProjectEnabledFormat, solutionProject.ProjectName.Replace(".", "_").Replace(" ", "_").Replace("-","_")),
-                            StringComparison.InvariantCultureIgnoreCase)
-                        && msBuildProperty.Value.TryParseBool(defaultValue: true));
+                    .Any(msBuildProperty => msBuildProperty.Name.Equals(expectedName, StringComparison.InvariantCultureIgnoreCase)
+                                           && msBuildProperty.Value.TryParseBool(defaultValue: true)) || _buildVariables.GetBooleanByKey(expectedName, defaultValue: false);
 
             if (!buildNuGetWebPackageForProject)
             {
@@ -801,6 +799,75 @@ namespace Arbor.X.Core.Tools.MSBuild
             }
 
             logger.Write($"Creating NuGet web package for project {solutionProject.ProjectName}");
+
+            var packageId = solutionProject.ProjectName;
+
+            string files =
+                $@"<file src=""{siteArtifactDirectory}\**\*.*"" target=""Content"" exclude=""packages.config"" />";
+
+            ExitCode exitCode = await CreateNuGetPackageAsync(platformDirectoryPath, logger, packageId, files);
+
+            if (!exitCode.IsSuccess)
+            {
+                logger.WriteError($"Failed to create NuGet web package for project {solutionProject.ProjectName}");
+                return exitCode;
+            }
+
+            const string EnvironmentLiteral = "Environment";
+            const string Pattern = "{Name}." + EnvironmentLiteral + ".{EnvironmentName}.{action}.{extension}";
+            var separator = '.';
+            int fileNameMinPartCount = Pattern.Split(separator).Count();
+
+            var environmentFiles = new DirectoryInfo(solutionProject.Project.ProjectDirectory)
+                .GetFilesRecursive(rootDir:_vcsRoot)
+                .Select(file => new {File=file, Parts=file.Name.Split(separator)})
+                .Where(item => item.Parts.Length == fileNameMinPartCount)
+                .Where(item => item.Parts[1].Equals(EnvironmentLiteral, StringComparison.OrdinalIgnoreCase))
+                .Select(item => new {File=item.File, EnvironmentName=item.Parts[2]})
+                .SafeToReadOnlyCollection();
+
+            IReadOnlyCollection<string> environments = environmentFiles
+                .Select(group => new { Key = group.EnvironmentName, InvariantKey = group.EnvironmentName.ToLowerInvariant() })
+                .GroupBy(item => item.InvariantKey)
+                .Select(grouping => grouping.First().Key)
+                .Distinct()
+                .SafeToReadOnlyCollection();
+
+            string rootDirectory =
+                solutionProject.Project.ProjectDirectory.Trim(Path.DirectorySeparatorChar);
+
+            foreach (string environment in environments)
+            {
+                List<string> elements = environmentFiles
+                    .Select(
+                        file =>
+                            {
+                                string sourceFullPath = file.File.FullName.Trim(Path.DirectorySeparatorChar);
+                                var relativePath = sourceFullPath.Replace(rootDirectory, "").Trim(Path.DirectorySeparatorChar);
+                                return new { SourceFullPath = sourceFullPath, RelativePath = relativePath };
+                            })
+                    .Select(environmentFile => $@"<file src=""{environmentFile.SourceFullPath}"" target=""Content\{environmentFile.RelativePath}"" />").ToList();
+
+                string environmentPackageId = $"{packageId}.Environment.{environment}";
+
+                ExitCode environmentPackageExitCode
+                    = await CreateNuGetPackageAsync(platformDirectoryPath, logger, environmentPackageId, string.Join(Environment.NewLine, elements));
+
+                if (!environmentPackageExitCode.IsSuccess)
+                {
+                    logger.WriteError($"Failed to create NuGet environment web package for project {solutionProject.ProjectName}");
+                    return environmentPackageExitCode;
+                }
+            }
+
+
+            logger.Write($"Successfully created NuGet web package for project {solutionProject.ProjectName}");
+
+            return ExitCode.Success;
+        }
+
+        private async Task<ExitCode> CreateNuGetPackageAsync(string platformDirectoryPath, ILogger logger, string packageId, string filesList)
+        {
 
             const string XmlTemplate = @"<?xml version=""1.0""?>
 <package >
@@ -846,13 +913,13 @@ namespace Arbor.X.Core.Tools.MSBuild
                 _vcsRoot);
 
 
-            string name = solutionProject.ProjectName;
+            string name = packageId;
 
             string version = packageConfiguration.Version;
             string authors = _buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyCompany, "Undefined");
             string owners = _buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyCompany, "Undefined");
-            string description = solutionProject.ProjectName;
-            string summary = solutionProject.ProjectName;
+            string description = packageId;
+            string summary = packageId;
             string language = "en-US";
             string projectUrl = "http://nuget.org";
             string iconUrl = "http://nuget.org";
@@ -861,8 +928,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             string copyright = _buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyCopyright, "Undefined");
             string tags = "";
 
-            string files =
-                $@"<file src=""{siteArtifactDirectory}\**\*.*"" target=""Content"" exclude=""packages.config"" />";
+            var files = filesList;
 
             string nuspecContent = string.Format(
                 XmlTemplate,
@@ -888,21 +954,13 @@ namespace Arbor.X.Core.Tools.MSBuild
                 Path.GetTempPath(),
                 Guid.NewGuid().ToString())).EnsureExists();
 
-            string nuspecTempFile = Path.Combine(tempDir.FullName, $"{solutionProject.ProjectName}.nuspec");
+            string nuspecTempFile = Path.Combine(tempDir.FullName, $"{packageId}.nuspec");
 
             File.WriteAllText(nuspecTempFile, nuspecContent, Encoding.UTF8);
 
             ExitCode exitCode = await new NuGetPackager(_logger).CreatePackageAsync(nuspecTempFile, packageConfiguration, _cancellationToken);
 
-            if (!exitCode.IsSuccess)
-            {
-                logger.WriteError($"Failed to create NuGet web package for project {solutionProject.ProjectName}");
-                return exitCode;
-            }
-
-            logger.Write($"Successfully created NuGet web package for project {solutionProject.ProjectName}");
-
-            return ExitCode.Success;
+            return exitCode;
         }
 
         void TransformFiles(string configuration, ILogger logger, SolutionProject solutionProject,
