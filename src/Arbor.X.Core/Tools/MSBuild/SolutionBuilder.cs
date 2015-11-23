@@ -16,6 +16,8 @@ using Arbor.X.Core.ProcessUtils;
 using Arbor.X.Core.Tools.NuGet;
 
 using FubuCsProjFile;
+using FubuCsProjFile.MSBuild;
+
 using JetBrains.Annotations;
 using Microsoft.Web.XmlTransform;
 using DirectoryInfo = Alphaleonis.Win32.Filesystem.DirectoryInfo;
@@ -787,18 +789,83 @@ namespace Arbor.X.Core.Tools.MSBuild
 
             string expectedName = string.Format(WellKnownVariables.NugetCreateNuGetWebPackageForProjectEnabledFormat, solutionProject.ProjectName.Replace(".", "_").Replace(" ", "_").Replace("-","_"));
 
-            bool buildNuGetWebPackageForProject =
-                solutionProject.Project.BuildProject.PropertyGroups.SelectMany(s => s.Properties)
-                    .Any(msBuildProperty => msBuildProperty.Name.Equals(expectedName, StringComparison.InvariantCultureIgnoreCase)
-                                           && msBuildProperty.Value.TryParseBool(defaultValue: true)) || _buildVariables.GetBooleanByKey(expectedName, defaultValue: false);
+            List<MSBuildProperty> msbuildProperties = solutionProject.Project.BuildProject.PropertyGroups.SelectMany(s => s.Properties)
+                .Where(msBuildProperty => msBuildProperty.Name.Equals(expectedName, StringComparison.InvariantCultureIgnoreCase)).ToList();
+
+
+            bool buildNuGetWebPackageForProject = true;
+
+            if (msbuildProperties.Any())
+            {
+                List<ParseResult<bool>> parseResults = msbuildProperties.Select(
+                    msBuildProperty =>
+                        {
+                            ParseResult<bool> parseResult = msBuildProperty.Value.TryParseBool(defaultValue: true);
+                            return parseResult;
+                        }).Where(item => item.Parsed).ToList();
+
+
+                if (parseResults.Any())
+                {
+                    bool hasAnyPropertySetToFalse = parseResults.Any(item => !item.Value);
+
+                    if (hasAnyPropertySetToFalse)
+                    {
+                        _logger.WriteVerbose(
+                            $"Build NuGet web package is disabled in project file '{solutionProject.Project.FileName}'; property '{expectedName}'");
+                        buildNuGetWebPackageForProject = false;
+                    }
+                    else
+                    {
+                        _logger.WriteVerbose(
+                            $"Build NuGet web package is enabled via project file '{solutionProject.Project.FileName}'; property '{expectedName}'");
+                    }
+                }
+                else
+                {
+                    _logger.WriteDebug(
+                        $"Build NuGet web package is not configured in project file '{solutionProject.Project.FileName}'; property '{expectedName}', invalid value");
+
+                }
+            }
+            else
+            {
+                _logger.WriteDebug(
+                    $"Build NuGet web package is not configured in project file '{solutionProject.Project.FileName}'; property '{expectedName}'");
+            }
+
+            string buildVariable = _buildVariables.GetVariableValueOrDefault(expectedName, defaultValue: "");
+
+            if (!string.IsNullOrWhiteSpace(buildVariable))
+            {
+                ParseResult<bool> parseResult = buildVariable.TryParseBool(defaultValue: true);
+
+                if (parseResult.Parsed && !parseResult.Value)
+                {
+                    _logger.WriteVerbose($"Build NuGet web package is turned off in build variable '{expectedName}'");
+                    buildNuGetWebPackageForProject = false;
+                }
+                else if (parseResult.Parsed)
+                {
+                    _logger.WriteDebug($"Build NuGet web package is enabled in build variable '{expectedName}'");
+                }
+                else
+                {
+                    _logger.WriteDebug($"Build NuGet web package is not configured in build variable '{expectedName}'");
+                }
+            }
+            else
+            {
+                _logger.WriteDebug($"Build NuGet web package is not configured using build variable '{expectedName}', variable is not defined");
+            }
 
             if (!buildNuGetWebPackageForProject)
             {
-                logger.Write($"Creating NuGet web package for project {solutionProject.ProjectName} is disabled");
+                logger.Write($"Creating NuGet web package for project '{solutionProject.ProjectName}' is disabled");
                 return ExitCode.Success;
             }
 
-            logger.Write($"Creating NuGet web package for project {solutionProject.ProjectName}");
+            logger.Write($"Creating NuGet web package for project '{solutionProject.ProjectName}'");
 
             var packageId = solutionProject.ProjectName;
 
@@ -809,7 +876,7 @@ namespace Arbor.X.Core.Tools.MSBuild
 
             if (!exitCode.IsSuccess)
             {
-                logger.WriteError($"Failed to create NuGet web package for project {solutionProject.ProjectName}");
+                logger.WriteError($"Failed to create NuGet web package for project '{solutionProject.ProjectName}'");
                 return exitCode;
             }
 
@@ -826,7 +893,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                 .Select(item => new {File=item.File, EnvironmentName=item.Parts[2]})
                 .SafeToReadOnlyCollection();
 
-            IReadOnlyCollection<string> environments = environmentFiles
+            IReadOnlyCollection<string> environmentNames = environmentFiles
                 .Select(group => new { Key = group.EnvironmentName, InvariantKey = group.EnvironmentName.ToLowerInvariant() })
                 .GroupBy(item => item.InvariantKey)
                 .Select(grouping => grouping.First().Key)
@@ -836,8 +903,11 @@ namespace Arbor.X.Core.Tools.MSBuild
             string rootDirectory =
                 solutionProject.Project.ProjectDirectory.Trim(Path.DirectorySeparatorChar);
 
-            foreach (string environment in environments)
+            _logger.WriteVerbose($"Found [{environmentNames.Count}] environnent names in project '{solutionProject.ProjectName}'");
+
+            foreach (string environmentName in environmentNames)
             {
+                _logger.WriteVerbose($"Creating Environment package for project '{solutionProject.ProjectName}', environment name '{environmentName}'");
                 List<string> elements = environmentFiles
                     .Select(
                         file =>
@@ -846,9 +916,12 @@ namespace Arbor.X.Core.Tools.MSBuild
                                 var relativePath = sourceFullPath.Replace(rootDirectory, "").Trim(Path.DirectorySeparatorChar);
                                 return new { SourceFullPath = sourceFullPath, RelativePath = relativePath };
                             })
-                    .Select(environmentFile => $@"<file src=""{environmentFile.SourceFullPath}"" target=""Content\{environmentFile.RelativePath}"" />").ToList();
+                    .Select(environmentFile => $@"<file src=""{environmentFile.SourceFullPath}"" target=""Content\{environmentFile.RelativePath}"" />")
+                    .ToList();
 
-                string environmentPackageId = $"{packageId}.Environment.{environment}";
+                _logger.WriteVerbose($"Found '{elements.Count}' environment specific files in project directory '{solutionProject.Project.ProjectDirectory}' environment name '{environmentName}'");
+
+                string environmentPackageId = $"{packageId}.Environment.{environmentName}";
 
                 ExitCode environmentPackageExitCode
                     = await CreateNuGetPackageAsync(platformDirectoryPath, logger, environmentPackageId, string.Join(Environment.NewLine, elements));
