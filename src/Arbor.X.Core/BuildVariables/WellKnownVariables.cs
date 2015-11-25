@@ -86,6 +86,9 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescription("MSBuild build platform, if not specified, all wellknown platforms will be built")]
         public static readonly string ExternalTools_MSBuild_BuildPlatform = "Arbor.X.Tools.External.MSBuild.BuildPlatform";
 
+        [VariableDescription("Flag to indicate if code analysis should be run by MSBuild")]
+        public static readonly string ExternalTools_MSBuild_CodeAnalysisEnabled = "Arbor.X.Tools.External.MSBuild.CodeAnalysis.Enabled";
+
         [VariableDescription("MSBuild detault target when building")]
         public static readonly string ExternalTools_MSBuild_DefaultTarget = "Arbor.X.Tools.External.MSBuild.DefaultTarget";
 
@@ -121,6 +124,9 @@ namespace Arbor.X.Core.BuildVariables
 
         [VariableDescription("Machine.Specifications reports directory path")]
         public static readonly string ExternalTools_MSpec_ReportPath = "Arbor.X.Artifacts.TestReports.MSpec";
+
+        [VariableDescription("PDB artifacts enabled")]
+        public static readonly string PublishPdbFilesAsArtifacts = "Arbor.X.Artifacts.PdbArtifacts.Enabled";
 
         [VariableDescription("ILMerge executable path (eg. C:\\IlMerge.exe)")]
         public static readonly string ExternalTools_ILMerge_ExePath = "Arbor.X.Tools.External.ILMerge.ExePath";
@@ -163,6 +169,9 @@ namespace Arbor.X.Core.BuildVariables
 
         [VariableDescription("Flag to indicate if defined variables can be overriden")]
         public static readonly string VariableOverrideEnabled = Arbor.X.Build + ".VariableOverrideEnabled";
+
+        [VariableDescription("Flag to indicate if a file arborx_environmentvariables.json should be used as a source to set environment variables")]
+        public static readonly string VariableFileSourceEnabled = Arbor.X.Build + ".VariableFileSource.Enabled";
 
         [VariableDescription("Flag to indicate if Kudu target path files and directories should be deleted before deploy")]
         public static readonly string KuduClearFilesAndDirectories = "Arbor.X.Tools.External.Kudu.ClearEnabled";

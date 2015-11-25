@@ -12,6 +12,7 @@ using JetBrains.Annotations;
 using Directory = Alphaleonis.Win32.Filesystem.Directory;
 using DirectoryInfo = Alphaleonis.Win32.Filesystem.DirectoryInfo;
 using ExceptionExtensions = Arbor.X.Core.Exceptions.ExceptionExtensions;
+using FileInfo = Alphaleonis.Win32.Filesystem.FileInfo;
 using Path = Alphaleonis.Win32.Filesystem.Path;
 
 namespace Arbor.X.Core.Tools.NuGet
@@ -37,14 +38,44 @@ namespace Arbor.X.Core.Tools.NuGet
 
             var rootDirectory = new DirectoryInfo(vcsRoot);
 
-            var packagesConfigFiles = rootDirectory.EnumerateFiles("packages.config", SearchOption.AllDirectories)
-                .Where(file => !pathLookupSpecification.IsFileBlackListed(file.FullName, rootDir: vcsRoot))
-                .Select(file => file.FullName)
-                .ToReadOnlyCollection();
+            int listFilesAttempt = 1;
 
-            var solutionFiles = rootDirectory.EnumerateFiles("*.sln", SearchOption.AllDirectories)
-                .Where(file => !pathLookupSpecification.IsFileBlackListed(file.FullName, rootDir: vcsRoot))
-                .ToReadOnlyCollection();
+            int listFilesMaxAttempts = 5;
+
+            bool listFilesSucceeded = false;
+
+            IReadOnlyCollection<string> packagesConfigFiles = new List<string>();
+            IReadOnlyCollection<FileInfo> solutionFiles = new List<FileInfo>();
+
+            while (listFilesAttempt <= listFilesMaxAttempts && !listFilesSucceeded)
+            {
+                try
+                {
+                    packagesConfigFiles =
+                        rootDirectory.EnumerateFiles("packages.config", SearchOption.AllDirectories)
+                            .Where(file => !pathLookupSpecification.IsFileBlackListed(file.FullName, rootDir: vcsRoot))
+                            .Select(file => file.FullName)
+                            .ToReadOnlyCollection();
+
+                    solutionFiles =
+                        rootDirectory.EnumerateFiles("*.sln", SearchOption.AllDirectories)
+                            .Where(file => !pathLookupSpecification.IsFileBlackListed(file.FullName, rootDir: vcsRoot))
+                            .ToReadOnlyCollection();
+
+                    listFilesSucceeded = true;
+                }
+                catch (Exception ex)
+                {
+                    if (listFilesAttempt == listFilesMaxAttempts)
+                    {
+                        logger.WriteError($"Could not enumerable packages.config files or solutions files. {ex}");
+                        return ExitCode.Failure;
+                    }
+                    logger.WriteWarning(
+                        $"Attempt {listFilesAttempt} of {listFilesMaxAttempts} failed, retrying. {ex}");
+                    listFilesAttempt ++;
+                }
+            }
 
             if (!packagesConfigFiles.Any())
             {
@@ -99,23 +130,55 @@ namespace Arbor.X.Core.Tools.NuGet
                 {
                     debugAction = message => logger.WriteVerbose(message, prefix);
                 }
+                int restoredPackages = 0;
 
-                int restoredPackages = app.RestoreAllSolutionPackages(nuGetConfig, 
-                    logInfo: message => logger.Write(message, prefix),
-                    logError: message => logger.WriteError(message, prefix),
-                    logDebug: debugAction);
+                int attempt = 1;
 
-                if (restoredPackages == 0)
+                int maxAttempts = 5;
+
+                bool succeeded = false;
+
+                while (attempt <= maxAttempts && !succeeded)
                 {
-                    logger.WriteWarning(string.Format("No packages was restored as defined in {0}", allFiles));
-                    return ExitCode.Success;
+                    try
+                    {
+                        restoredPackages = app.RestoreAllSolutionPackages(
+                            nuGetConfig,
+                            logInfo: message => logger.Write(message, prefix),
+                            logError: message => logger.WriteError(message, prefix),
+                            logDebug: debugAction);
+
+                        if (restoredPackages == 0)
+                        {
+                            logger.WriteWarning($"No packages was restored as defined in {allFiles}");
+                            return ExitCode.Success;
+                        }
+
+                        succeeded = true;
+                    }
+
+                    catch (Exception ex)
+                    {
+                        if (attempt < maxAttempts)
+                        {
+                            logger.WriteWarning(
+                                $"Attempt {attempt} of {maxAttempts}: could not restore NuGet packages, trying againg. {ex.Message}");
+                        }
+                        else
+                        {
+                            logger.WriteError($"Could not restore NuGet packages.{ex}");
+                            return ExitCode.Failure;
+                        }
+
+                        attempt++;
+                    }
                 }
 
-                logger.Write(string.Format("Restored {0} package configurations defined in {1}", restoredPackages, allFiles));
+                logger.Write($"Restored {restoredPackages} package configurations defined in {allFiles}");
             }
             catch (Exception ex)
             {
-                logger.WriteError(string.Format("Cloud not restore packages defined in '{0}'. {1}", allFiles, ex));
+                logger.WriteError($"Could not restore packages defined in '{allFiles}'. {ex}");
                 return ExitCode.Failure;
             }
 
@@ -131,7 +194,7 @@ namespace Arbor.X.Core.Tools.NuGet
                         foreach (var nuGetPackageRestoreFix in _fixes)
                         {
                            await nuGetPackageRestoreFix.FixAsync(packagesDirectory, logger);
-                        } 
+                        }
                     }
                 }
             }

@@ -14,5 +14,5 @@
         xdt:Transform="SetAttributes" xdt:Locator="Match(name)"/>
     </connectionStrings>
   -->
-  <value xdt:Transform="Replace">Root-Release</value>
+  <value xdt:Transform="Replace">A1-Release TestEnvironment</value>
 </configuration>

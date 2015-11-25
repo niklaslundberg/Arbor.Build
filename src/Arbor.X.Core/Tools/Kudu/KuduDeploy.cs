@@ -58,7 +58,8 @@ namespace Arbor.X.Core.Tools.Kudu
 
             if (!string.IsNullOrWhiteSpace(branchNameOverride))
             {
-                logger.Write(string.Format("Using branch name override '{0}' instead of branch name '{1}'", branchNameOverride, _deployBranch));
+                logger.Write(
+                    $"Using branch name override '{branchNameOverride}' instead of branch name '{_deployBranch}'");
                 _deployBranch = new BranchName(branchNameOverride);
             }
 
@@ -94,9 +95,7 @@ namespace Arbor.X.Core.Tools.Kudu
                     if (foundDir == null)
                     {
                         logger.WriteError(
-                            string.Format(
-                                "Found {0} websites. Kudu deployment is specified for site {1} but it was not found",
-                                builtWebsites.Count(), siteToDeploy));
+                            $"Found {builtWebsites.Count()} websites. Kudu deployment is specified for site {siteToDeploy} but it was not found");
                         return ExitCode.Failure;
                     }
 
@@ -105,24 +104,20 @@ namespace Arbor.X.Core.Tools.Kudu
                 else
                 {
                     logger.WriteError(
-                        string.Format(
-                            "Found {0} websites. Kudu deployment is only supported with a single website. \r\nBuilt websites: {1}. You can use variable '{2}' to specify a single website to be built",
-                            builtWebsites.Count(),
-                            string.Join(Environment.NewLine, builtWebsites.Select(dir => dir.Name)),
-                            WellKnownVariables.KuduSiteToDeploy));
+                        $"Found {builtWebsites.Count()} websites. Kudu deployment is only supported with a single website. \r\nBuilt websites: {string.Join(Environment.NewLine, builtWebsites.Select(dir => dir.Name))}. You can use variable '{WellKnownVariables.KuduSiteToDeploy}' to specify a single website to be built");
                     return ExitCode.Failure;
                 }
             }
 
             if (!websiteToDeploy.GetDirectories().Any())
             {
-                logger.WriteError(string.Format("Could not find any platform for website {0}", websiteToDeploy.Name));
+                logger.WriteError($"Could not find any platform for website {websiteToDeploy.Name}");
                 return ExitCode.Failure;
             }
 
             if (websiteToDeploy.GetDirectories().Count() > 1)
             {
-                logger.WriteError(string.Format("Could not find exactly one platform for website {0}", websiteToDeploy.Name));
+                logger.WriteError($"Could not find exactly one platform for website {websiteToDeploy.Name}");
                 return ExitCode.Failure;
             }
 
@@ -130,7 +125,7 @@ namespace Arbor.X.Core.Tools.Kudu
 
             if (!platform.GetDirectories().Any())
             {
-                logger.WriteError(string.Format("Could not find any configuration for website {0}", websiteToDeploy.Name));
+                logger.WriteError($"Could not find any configuration for website {websiteToDeploy.Name}");
                 return ExitCode.Failure;
             }
 
@@ -144,12 +139,13 @@ namespace Arbor.X.Core.Tools.Kudu
 
             var appOfflinePath = Path.Combine(_deploymentTargetDirectory, "app_offline.htm");
 
-            logger.Write(string.Format("___________________ Kudu deploy ___________________ \r\nDeploying website {0}, platform {1}, configuration {2}", websiteToDeploy.Name, platform.Name, configuration.Name));
+            logger.Write(
+                $"___________________ Kudu deploy ___________________ \r\nDeploying website {websiteToDeploy.Name}, platform {platform.Name}, configuration {configuration.Name}");
             try
             {
                 if (_useAppOfflineFile)
                 {
-                    logger.WriteVerbose(string.Format("Flag '{0}' is set", WellKnownVariables.KuduUseAppOfflineHtmFile));
+                    logger.WriteVerbose($"Flag '{WellKnownVariables.KuduUseAppOfflineHtmFile}' is set");
                     try
                     {
                         using (var fs = new FileStream(appOfflinePath, FileMode.Create, FileAccess.Write))
@@ -163,25 +159,24 @@ namespace Arbor.X.Core.Tools.Kudu
                     }
                     catch (UnauthorizedAccessException ex)
                     {
-                        logger.WriteWarning(string.Format("Could not create app_offline.htm file in '{0}', {1}",
-                            _deploymentTargetDirectory, ex));
+                        logger.WriteWarning(
+                            $"Could not create app_offline.htm file in '{_deploymentTargetDirectory}', {ex}");
                     }
                     catch (IOException ex)
                     {
-                        logger.WriteWarning(string.Format("Could not create app_offline.htm file in '{0}', {1}",
-                            _deploymentTargetDirectory, ex));
+                        logger.WriteWarning(
+                            $"Could not create app_offline.htm file in '{_deploymentTargetDirectory}', {ex}");
                     }
                 }
                 else
                 {
-                    logger.WriteVerbose(string.Format("Flag '{0}' is not set", WellKnownVariables.KuduUseAppOfflineHtmFile));
+                    logger.WriteVerbose($"Flag '{WellKnownVariables.KuduUseAppOfflineHtmFile}' is not set");
                 }
 
                 if (_clearTarget)
                 {
-                    logger.WriteVerbose(string.Format("Flag '{0}' is set", WellKnownVariables.KuduClearFilesAndDirectories));
-                    logger.Write(string.Format("Removing files and directories from target '{0}'",
-                        _deploymentTargetDirectory));
+                    logger.WriteVerbose($"Flag '{WellKnownVariables.KuduClearFilesAndDirectories}' is set");
+                    logger.Write($"Removing files and directories from target '{_deploymentTargetDirectory}'");
                     try
                     {
                         var directoryFilters = new List<string>();
@@ -193,7 +188,7 @@ namespace Arbor.X.Core.Tools.Kudu
 
                         var customFileExcludes = GetExcludes(_ignoreDeleteFiles).ToArray();
                         var customDirectoryExcludes = GetExcludes(_ignoreDeleteDirectories).ToArray();
-                        
+
                         var fileFilters = new List<string>();
 
                         if (_useAppOfflineFile || !_deleteExistingAppOfflineHtm)
@@ -203,12 +198,14 @@ namespace Arbor.X.Core.Tools.Kudu
 
                         if (customDirectoryExcludes.Any())
                         {
-                            logger.WriteVerbose("Adding directory ignore patterns " + string.Join("|", string.Format("'{0}'", customDirectoryExcludes.Select(item => (object)item))));
+                            logger.WriteVerbose("Adding directory ignore patterns " + string.Join("|",
+                                $"'{customDirectoryExcludes.Select(item => (object)item)}'"));
                         }
 
                         if (customFileExcludes.Any())
                         {
-                            logger.WriteVerbose("Adding file ignore patterns " + string.Join("|", string.Format("'{0}'", customFileExcludes.Select(item => (object)item))));
+                            logger.WriteVerbose("Adding file ignore patterns " + string.Join("|",
+                                $"'{customFileExcludes.Select(item => (object)item)}'"));
                         }
 
                         directoryFilters.AddRange(customDirectoryExcludes);
@@ -221,18 +218,18 @@ namespace Arbor.X.Core.Tools.Kudu
                     catch (IOException ex)
                     {
                         logger.WriteWarning(
-                            string.Format("Could not clear all files and directories from target '{0}', {1}",
-                                _deploymentTargetDirectory, ex));
+                            $"Could not clear all files and directories from target '{_deploymentTargetDirectory}', {ex}");
                     }
                 }
                 else
                 {
-                    logger.WriteVerbose(string.Format("Flag '{0}' is not set, skipping deleting files and directories from target '{1}'", WellKnownVariables.KuduClearFilesAndDirectories, _deploymentTargetDirectory));
+                    logger.WriteVerbose(
+                        $"Flag '{WellKnownVariables.KuduClearFilesAndDirectories}' is not set, skipping deleting files and directories from target '{_deploymentTargetDirectory}'");
                 }
 
-                logger.Write(string.Format("Copying files and directories from '{0}' to '{1}'", configuration.FullName,
-                    _deploymentTargetDirectory));
-                
+                logger.Write(
+                    $"Copying files and directories from '{configuration.FullName}' to '{_deploymentTargetDirectory}'");
+
                 try
                 {
                     var exitCode = await DirectoryCopy.CopyAsync(configuration.FullName, _deploymentTargetDirectory, logger, rootDir: _vcsRoot, pathLookupSpecificationOption: new PathLookupSpecification());
@@ -244,7 +241,7 @@ namespace Arbor.X.Core.Tools.Kudu
                 }
                 catch (Exception ex)
                 {
-                    logger.WriteError(string.Format("Kudu deploy could not copy files {0}", ex));
+                    logger.WriteError($"Kudu deploy could not copy files {ex}");
                     return ExitCode.Failure;
                 }
             }
@@ -260,13 +257,13 @@ namespace Arbor.X.Core.Tools.Kudu
                         }
                         catch (IOException ex)
                         {
-                            logger.WriteWarning(string.Format("Could not delete app_offline.htm file in '{0}', {1}",
-                                _deploymentTargetDirectory, ex));
+                            logger.WriteWarning(
+                                $"Could not delete app_offline.htm file in '{_deploymentTargetDirectory}', {ex}");
                         }
                     }
                 }
             }
-            
+
             return ExitCode.Success;
         }
 
@@ -298,7 +295,7 @@ namespace Arbor.X.Core.Tools.Kudu
 
             if (_deployBranch.IsProductionBranch())
             {
-                logger.Write(string.Format("Using deployment branch name {0}", _deployBranch));
+                logger.Write($"Using deployment branch name {_deployBranch}");
 
                 DirectoryInfo productionConfig =
                     directoryInfos.SingleOrDefault(
@@ -306,8 +303,7 @@ namespace Arbor.X.Core.Tools.Kudu
 
                 if (productionConfig != null)
                 {
-                    logger.Write(string.Format("On master or release branch, using {0} configuration",
-                        productionConfig.Name));
+                    logger.Write($"On master or release branch, using {productionConfig.Name} configuration");
                     return productionConfig;
                 }
 
@@ -317,8 +313,7 @@ namespace Arbor.X.Core.Tools.Kudu
 
                 if (releaseConfig != null)
                 {
-                    logger.Write(string.Format("On master or release branch, using {0} configuration",
-                        releaseConfig.Name));
+                    logger.Write($"On master or release branch, using {releaseConfig.Name} configuration");
                     return releaseConfig;
                 }
             }
@@ -330,8 +325,7 @@ namespace Arbor.X.Core.Tools.Kudu
 
                 if (developConfig != null)
                 {
-                    logger.Write(string.Format("On develop branch, using {0} configuration",
-                        developConfig.Name));
+                    logger.Write($"On develop branch, using {developConfig.Name} configuration");
                     return developConfig;
                 }
 
@@ -341,8 +335,7 @@ namespace Arbor.X.Core.Tools.Kudu
 
                 if (debugConfig != null)
                 {
-                    logger.Write(string.Format("On develop branch, using {0} configuration",
-                        debugConfig.Name));
+                    logger.Write($"On develop branch, using {debugConfig.Name} configuration");
                     return debugConfig;
                 }
             }
@@ -351,20 +344,19 @@ namespace Arbor.X.Core.Tools.Kudu
                 var configDir = directoryInfos.SingleOrDefault(
                     dir => dir.Name.Equals(_kuduConfigurationFallback, StringComparison.InvariantCultureIgnoreCase));
 
-                logger.Write(string.Format("Kudu fallback is '{0}'", _kuduConfigurationFallback));
+                logger.Write($"Kudu fallback is '{_kuduConfigurationFallback}'");
 
                 if (configDir != null)
                 {
-                    logger.Write(string.Format("Using Kudu fallback configuration {0}",
-                        configDir.Name));
+                    logger.Write($"Using Kudu fallback configuration {configDir.Name}");
 
                     return configDir;
                 }
-                logger.WriteWarning(string.Format("Kudu fallback configuration '{0}' was not found", _kuduConfigurationFallback));
+                logger.WriteWarning($"Kudu fallback configuration '{_kuduConfigurationFallback}' was not found");
             }
 
-            logger.WriteError(string.Format("Could not determine Kudu deployment configuration: [{0}]",
-                string.Join(", ", directoryInfos.Select(di => di.Name))));
+            logger.WriteError(
+                $"Could not determine Kudu deployment configuration: [{string.Join(", ", directoryInfos.Select(di => di.Name))}]");
             return null;
         }
 

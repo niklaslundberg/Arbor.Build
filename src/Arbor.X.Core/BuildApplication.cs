@@ -50,13 +50,15 @@ namespace Arbor.X.Core
                 [WellKnownVariables.BranchName] = "develop",
                 [WellKnownVariables.VersionMajor] = "1",
                 [WellKnownVariables.VersionMinor] = "0",
-                [WellKnownVariables.VersionPatch] = "19",
-                [WellKnownVariables.VersionBuild] = "106",
+                [WellKnownVariables.VersionPatch] = "23",
+                [WellKnownVariables.VersionBuild] = "202",
                 [WellKnownVariables.Configuration] = "release",
                 [WellKnownVariables.GenericXmlTransformsEnabled] = "true",
                 [WellKnownVariables.NuGetPackageExcludesCommaSeparated] = "Arbor.X.Bootstrapper.nuspec",
                 [WellKnownVariables.NuGetAllowManifestReWrite] = "false",
                 [WellKnownVariables.NuGetSymbolPackagesEnabled] = "false",
+                [WellKnownVariables.NugetCreateNuGetWebPackagesEnabled] = "true",
+                ["Arbor_X_Tests_DummyWebApplication_Arbor_X_NuGet_Package_CreateNuGetWebPackageForProject_Enabled"] = "true",
             };
 
             foreach (KeyValuePair<string, string> environmentVariable in environmentVariables)
@@ -311,30 +313,31 @@ namespace Arbor.X.Core
         {
             var buildVariables = new List<IVariable>();
 
+            if (
+                Environment.GetEnvironmentVariable(WellKnownVariables.VariableFileSourceEnabled)
+                    .TryParseBool(defaultValue: false))
+            {
+                _logger.Write(
+                    $"The environment variable {WellKnownVariables.VariableFileSourceEnabled} is set to true, using file source to set environment variables");
+                ExitCode exitCode = EnvironmentVariableHelper.SetEnvironmentVariablesFromFile(_logger);
+
+                if (!exitCode.IsSuccess)
+                {
+                    throw new InvalidOperationException(
+                        $"Could not set environment variables from file, set variable '{WellKnownVariables.VariableFileSourceEnabled}' to false to disabled");
+                }
+            }
+            else
+            {
+                _logger.WriteDebug(
+                       $"The environment variable {WellKnownVariables.VariableFileSourceEnabled} is not set or false, skipping file source to set environment variables");
+            }
+
             IEnumerable<IVariable> result = await RunOnceAsync().ConfigureAwait(false);
 
             buildVariables.AddRange(result);
 
             buildVariables.AddRange(EnvironmentVariableHelper.GetBuildVariablesFromEnvironmentVariables(_logger, buildVariables));
-
-            //var providers = new List<IVariableProvider>
-            //                {
-            //                    new GitVariableProvider(),
-            //                    new TeamCityVariableProvider(),
-            //                    new SourcePathVariableProvider(),
-            //                    new ArtifactsVariableProvider(),
-            //                    new MSBuildVariableProvider(),
-            //                    new NugetVariableProvider(),
-            //                    new VisualStudioVariableProvider(),
-            //                    new VsTestVariableProvider(),
-            //                    new MSpecVariableProvider(),
-            //                    new BuildVersionProvider(),
-            //                    new ILMergeVariableProvider(),
-            //                    new SymbolsVariableProvider(),
-            //                    new BuildAgentVariableProvider(),
-            //                    new KuduEnvironmentVariableProvider(),
-            //                    new BuildConfigurationProvider()
-            //                }; //TODO use Autofac
 
             var providers = _container.Resolve<IEnumerable<IVariableProvider>>().OrderBy(provider => provider.Order).ToReadOnlyCollection();
 
