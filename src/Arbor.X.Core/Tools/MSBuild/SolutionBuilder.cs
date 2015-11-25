@@ -755,7 +755,8 @@ namespace Arbor.X.Core.Tools.MSBuild
                 }
                 else
                 {
-                    logger.Write("NuGet web package creation is disabled");
+                    logger.Write(
+                        $"NuGet web package creation is disabled, build variable '{WellKnownVariables.NugetCreateNuGetWebPackagesEnabled}' is not set or value is other than true");
                 }
 
                 if (_appDataJobsEnabled)
