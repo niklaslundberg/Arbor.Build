@@ -47,7 +47,7 @@ namespace Arbor.X.Core.Tools.NuGet
             return isReleaseBuild || branchName.Equals("master", StringComparison.InvariantCultureIgnoreCase);
         }
 
-        public async Task<ExitCode> CreatePackageAsync(string packageSpecificationPath, NuGetPackageConfiguration packageConfiguration, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<ExitCode> CreatePackageAsync(string packageSpecificationPath, NuGetPackageConfiguration packageConfiguration, bool ignoreWarnings = false, CancellationToken cancellationToken = default(CancellationToken))
         {
             _logger.WriteDebug($"Using NuGet package configuration {packageConfiguration}");
 
@@ -119,12 +119,12 @@ namespace Arbor.X.Core.Tools.NuGet
 
             _logger.WriteVerbose($"Created nuspec content: {Environment.NewLine}{File.ReadAllText(nuSpecFileCopyPath)}");
 
-            var result = await ExecuteNuGetPackAsync(packageConfiguration.NuGetExePath, packageConfiguration.PackagesDirectory, _logger, nuSpecFileCopyPath, properties, nuSpecCopy, removedTags, cancellationToken: cancellationToken);
+            var result = await ExecuteNuGetPackAsync(packageConfiguration.NuGetExePath, packageConfiguration.PackagesDirectory, _logger, nuSpecFileCopyPath, properties, nuSpecCopy, removedTags, cancellationToken: cancellationToken, ignoreWarnings: ignoreWarnings);
 
             return result;
         }
 
-        static async Task<ExitCode> ExecuteNuGetPackAsync(string nuGetExePath, string packagesDirectoryPath, ILogger _logger, string nuSpecFileCopyPath, string properties, NuSpec nuSpecCopy, List<string> removedTags, bool keepBinaryAndSourcePackagesTogetherEnabled = false, bool nugetSymbolPackageEnabled = false, CancellationToken cancellationToken = default (CancellationToken))
+        static async Task<ExitCode> ExecuteNuGetPackAsync(string nuGetExePath, string packagesDirectoryPath, ILogger _logger, string nuSpecFileCopyPath, string properties, NuSpec nuSpecCopy, List<string> removedTags, bool keepBinaryAndSourcePackagesTogetherEnabled = false, bool nugetSymbolPackageEnabled = false, bool ignoreWarnings = false, CancellationToken cancellationToken = default (CancellationToken))
         {
             bool hasRemovedNoSourceTag =
                 removedTags.Any(
@@ -156,10 +156,17 @@ namespace Arbor.X.Core.Tools.NuGet
                     arguments.Add("Detailed");
                 }
 
+                if (ignoreWarnings)
+                {
+                    arguments.Add("-NoPackageAnalysis");
+                }
+
                 var processResult =
                     await
                     ProcessRunner.ExecuteAsync(nuGetExePath, arguments: arguments, standardOutLog: _logger.Write,
-                        standardErrorAction: _logger.WriteError, toolAction: _logger.Write, cancellationToken: cancellationToken, verboseAction: _logger.WriteVerbose, debugAction: _logger.WriteDebug);
+                        standardErrorAction: _logger.WriteError, toolAction: _logger.Write, cancellationToken: cancellationToken, verboseAction: _logger.WriteVerbose, debugAction: _logger.WriteDebug,
+                    addProcessNameAsLogCategory: true,
+                    addProcessRunnerCategory: true);
 
                 var packagesDirectory = new DirectoryInfo(packagesDirectoryPath);
 

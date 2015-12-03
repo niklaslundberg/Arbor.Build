@@ -171,6 +171,7 @@
     <Compile Include="IntExtensions.cs" />
     <Compile Include="Logging\DebugLogger.cs" />
     <Compile Include="Logging\LogLevel.cs" />
+    <Compile Include="Logging\MultiplexLogger.cs" />
     <Compile Include="Logging\NLogLogger.cs" />
     <Compile Include="Logging\NullLogger.cs" />
     <Compile Include="Maybe.cs" />

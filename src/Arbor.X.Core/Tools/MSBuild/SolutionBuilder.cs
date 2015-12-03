@@ -505,7 +505,9 @@ namespace Arbor.X.Core.Tools.MSBuild
                     standardErrorAction: logger.WriteError,
                     toolAction: logger.Write,
                     cancellationToken: _cancellationToken,
-                    verboseAction: logger.WriteVerbose);
+                    verboseAction: logger.WriteVerbose,
+                    addProcessNameAsLogCategory:true,
+                    addProcessRunnerCategory: true);
 
             if (exitCode.IsSuccess)
             {
@@ -692,7 +694,9 @@ namespace Arbor.X.Core.Tools.MSBuild
                 ExitCode buildSiteExitCode =
                     await ProcessRunner.ExecuteAsync(_msBuildExe, arguments: buildSiteArguments, standardOutLog: logger.Write,
                         standardErrorAction: logger.WriteError, toolAction: logger.Write,
-                        cancellationToken: _cancellationToken);
+                        cancellationToken: _cancellationToken,
+                    addProcessNameAsLogCategory: true,
+                    addProcessRunnerCategory: true);
 
                 if (!buildSiteExitCode.IsSuccess)
                 {
@@ -1025,14 +1029,16 @@ namespace Arbor.X.Core.Tools.MSBuild
             logger.Write(nuspecContent);
 
             DirectoryInfo tempDir = new DirectoryInfo(Path.Combine(
-                Path.GetTempPath(),
-                Guid.NewGuid().ToString())).EnsureExists();
+                Path.GetTempPath(), "ARX_SB"+
+                Guid.NewGuid())).EnsureExists();
 
             string nuspecTempFile = Path.Combine(tempDir.FullName, $"{packageId}.nuspec");
 
             File.WriteAllText(nuspecTempFile, nuspecContent, Encoding.UTF8);
 
-            ExitCode exitCode = await new NuGetPackager(_logger).CreatePackageAsync(nuspecTempFile, packageConfiguration, _cancellationToken);
+            ExitCode exitCode = await new NuGetPackager(_logger).CreatePackageAsync(nuspecTempFile, packageConfiguration, ignoreWarnings:true, cancellationToken: _cancellationToken);
+
+            System.IO.File.Delete(nuspecTempFile);
 
             return exitCode;
         }
@@ -1212,7 +1218,9 @@ namespace Arbor.X.Core.Tools.MSBuild
                     ProcessRunner.ExecuteAsync(_msBuildExe, arguments: buildSitePackageArguments,
                         standardOutLog: logger.Write,
                         standardErrorAction: logger.WriteError, toolAction: logger.Write,
-                        cancellationToken: _cancellationToken);
+                        cancellationToken: _cancellationToken,
+                    addProcessNameAsLogCategory: true,
+                    addProcessRunnerCategory: true);
 
             webDeployStopwatch.Stop();
 

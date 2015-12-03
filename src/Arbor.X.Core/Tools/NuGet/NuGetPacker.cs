@@ -119,7 +119,7 @@ namespace Arbor.X.Core.Tools.NuGet
             foreach (var packageSpecification in packageSpecifications)
             {
                 var packageResult =
-                    await packager.CreatePackageAsync(packageSpecification, packageConfiguration, cancellationToken);
+                    await packager.CreatePackageAsync(packageSpecification, packageConfiguration, cancellationToken: cancellationToken);
 
                 if (!packageResult.IsSuccess)
                 {

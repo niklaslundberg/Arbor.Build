@@ -177,7 +177,9 @@ namespace Arbor.X.Core.Tools.NuGet
             var exitCode =
                 await
                     ProcessRunner.ExecuteAsync(nugetExePath, arguments: args, standardOutLog: logger.Write,
-                        standardErrorAction: logger.WriteError, toolAction: logger.Write);
+                        standardErrorAction: logger.WriteError, toolAction: logger.Write,
+                    addProcessNameAsLogCategory: true,
+                    addProcessRunnerCategory: true);
 
             return exitCode;
         }
