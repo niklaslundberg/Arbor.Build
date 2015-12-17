@@ -14,6 +14,11 @@ namespace Arbor.X.Core
                 throw new ArgumentNullException(nameof(enumerable));
             }
 
+            if (enumerable is ReadOnlyCollection<T>)
+            {
+                return (ReadOnlyCollection<T>) enumerable;
+            }
+
             if (enumerable is List<T>)
             {
                 return new ReadOnlyCollection<T>((List<T>)enumerable);
@@ -27,6 +32,11 @@ namespace Arbor.X.Core
             if (enumerable == null)
             {
                 return Enumerable.Empty<T>().ToReadOnlyCollection();
+            }
+
+            if (enumerable is ReadOnlyCollection<T>)
+            {
+                return (ReadOnlyCollection<T>)enumerable;
             }
 
             if (enumerable is List<T>)
@@ -49,9 +59,9 @@ namespace Arbor.X.Core
                 throw new ArgumentNullException(nameof(action));
             }
 
-            foreach (var item in enumerable)
+            foreach (T item in enumerable)
             {
-                var current = item;
+                T current = item;
 
                 action(current);
             }

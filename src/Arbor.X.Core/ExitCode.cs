@@ -21,7 +21,7 @@
         {
             string successOrFailure = IsSuccess ? "Success" : "Failure";
 
-            return string.Format("[{0}, {1}]", Result, successOrFailure);
+            return $"[{Result}, {successOrFailure}]";
         }
     }
 }

@@ -1,27 +1,25 @@
+using JetBrains.Annotations;
+
 namespace Arbor.X.Core
 {
     public sealed class ParseResult<T>
     {
-        readonly string _originalValue;
-        readonly bool _parsed;
-        readonly T _value;
-
-        ParseResult(bool parsed, T value, string originalValue)
+        ParseResult(bool parsed, [CanBeNull] T value, [CanBeNull] string originalValue)
         {
-            _parsed = parsed;
-            _value = value;
-            _originalValue = originalValue;
+            Parsed = parsed;
+            Value = value;
+            OriginalValue = originalValue;
         }
 
-        public bool Parsed => _parsed;
+        public bool Parsed { get; }
 
-        public T Value => _value;
+        public T Value { get; }
 
-        public string OriginalValue => _originalValue;
+        public string OriginalValue { get; }
 
         public override string ToString()
         {
-            if (!typeof (T).IsValueType && Equals(Value, default(T)))
+            if (!typeof(T).IsValueType && Equals(Value, default(T)))
             {
                 return string.Empty;
             }

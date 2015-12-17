@@ -10,18 +10,18 @@ namespace Arbor.X.Core
         public static string DisplayAsTable(this IEnumerable<IDictionary<string, string>> dictionaries,
             char padChar = '.')
         {
-            if (dictionaries == null || !dictionaries.Any())
+            var materialized = dictionaries.SafeToReadOnlyCollection();
+
+            if (dictionaries == null || !materialized.Any())
             {
                 return string.Empty;
             }
 
-            const char separator = ' ';
-            const string noValue = "-";
-
-            IDictionary<string, string>[] dicts = dictionaries.ToArray();
+            const char Separator = ' ';
+            const string NoValue = "-";
 
             string[] allKeys =
-                dicts.SelectMany(dictionary => dictionary.Keys)
+                materialized.SelectMany(dictionary => dictionary.Keys)
                     .Distinct(StringComparer.InvariantCultureIgnoreCase)
                     .ToArray();
 
@@ -31,10 +31,10 @@ namespace Arbor.X.Core
                            {
                                Key = key,
                                MaxLength = Math.Max(key.Length, Math.Max(
-                                   dicts.Where(dictionary => dictionary.ContainsKey(key))
+                                   materialized.Where(dictionary => dictionary.ContainsKey(key))
                                        .Select(dictionary => dictionary[key])
                                        .Select(value => (value ?? "").Length)
-                                       .Max(), noValue.Length))
+                                       .Max(), NoValue.Length))
                            })
                     .ToArray();
 
@@ -46,22 +46,23 @@ namespace Arbor.X.Core
 
                 if (padding > 0)
                 {
-                    builder.Append(title + new string(separator, padding));
+                    builder.Append(title + new string(Separator, padding));
                 }
             }
+
             builder.AppendLine();
 
-            foreach (IDictionary<string, string> dictionary in dicts)
+            foreach (IDictionary<string, string> dictionary in materialized)
             {
                 var indexedKeys = allKeys.Select((item, index) => new {Key = item, Index = index}).ToArray();
 
                 foreach (var indexedKey in indexedKeys)
                 {
-                    string value = dictionary.ContainsKey(indexedKey.Key) ? dictionary[indexedKey.Key] : noValue;
+                    string value = dictionary.ContainsKey(indexedKey.Key) ? dictionary[indexedKey.Key] : NoValue;
 
                     if (string.IsNullOrWhiteSpace(value))
                     {
-                        value = noValue;
+                        value = NoValue;
                     }
 
                     int maxLength = maxLengths.Single(max => max.Key == indexedKey.Key).MaxLength;
@@ -70,7 +71,7 @@ namespace Arbor.X.Core
 
                     if (indexedKey.Index >= 1)
                     {
-                        builder.Append(separator);
+                        builder.Append(Separator);
                     }
 
                     builder.Append(value);
