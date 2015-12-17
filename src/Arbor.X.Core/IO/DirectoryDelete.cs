@@ -2,9 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+
 using Arbor.X.Core.Logging;
 
-namespace Arbor.X.Core.Tools
+namespace Arbor.X.Core.IO
 {
     public class DirectoryDelete
     {

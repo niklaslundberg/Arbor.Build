@@ -1,4 +1,6 @@
-﻿namespace Arbor.X.Core.Extensions
+﻿using Arbor.X.Core.Parsing;
+
+namespace Arbor.X.Core.GenericExtensions
 {
     public static class BoolExtensions
     {

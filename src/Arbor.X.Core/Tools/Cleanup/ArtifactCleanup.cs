@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Alphaleonis.Win32.Filesystem;
 using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.Exceptions;
+using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 

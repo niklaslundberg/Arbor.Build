@@ -1,4 +1,4 @@
-namespace Arbor.X.Core
+namespace Arbor.X.Core.Tools
 {
     public class ToolResultType
     {

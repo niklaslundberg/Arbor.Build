@@ -1,8 +1,6 @@
 using System;
 
-using Arbor.X.Core.Tools;
-
-namespace Arbor.X.Core.Extensions
+namespace Arbor.X.Core.Tools
 {
     public static class ToolExtensions
     {

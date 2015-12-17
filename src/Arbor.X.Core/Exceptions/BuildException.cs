@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 using Arbor.X.Core.BuildVariables;
 
-namespace Arbor.X.Core
+namespace Arbor.X.Core.Exceptions
 {
     public class BuildException : Exception
     {

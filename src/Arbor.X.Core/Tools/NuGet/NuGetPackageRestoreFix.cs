@@ -1,5 +1,7 @@
 using System.IO;
 using System.Threading.Tasks;
+
+using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 
 namespace Arbor.X.Core.Tools.NuGet

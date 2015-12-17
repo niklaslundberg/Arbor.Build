@@ -7,14 +7,14 @@ using Machine.Specifications;
 
 namespace Arbor.X.Tests.Integration.DirectoryDelete
 {
-    [Subject(typeof (Core.Tools.DirectoryDelete))]
+    [Subject(typeof (Core.IO.DirectoryDelete))]
     [Tags(Arbor.X.Core.Tools.Testing.MSpecInternalConstants.RecursiveArborXTest)]
     public class when_deleting_a_directory_with_filters
     {
         static string tempDir;
         static string[] expectedDirectories;
         static string[] expectedFiles;
-        static Core.Tools.DirectoryDelete directoryDelete;
+        static Core.IO.DirectoryDelete directoryDelete;
 
         Cleanup after = () =>
         {
@@ -58,7 +58,7 @@ namespace Arbor.X.Tests.Integration.DirectoryDelete
             expectedDirectories = new List<string> {"A","B","A1","A12", "B2"}.ToArray();
             expectedFiles = new List<string> {"app_offline.htm"}.ToArray();
 
-            directoryDelete = new Core.Tools.DirectoryDelete(new[] {"A12"}, expectedFiles, new ConsoleLogger());
+            directoryDelete = new Core.IO.DirectoryDelete(new[] {"A12"}, expectedFiles, new ConsoleLogger());
         };
 
         Because of = () => directoryDelete.Delete(tempDir);

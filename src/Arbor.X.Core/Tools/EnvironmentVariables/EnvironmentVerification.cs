@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Logging;
 
-namespace Arbor.X.Core.Tools
+namespace Arbor.X.Core.Tools.EnvironmentVariables
 {
     public abstract class EnvironmentVerification : ITool
     {

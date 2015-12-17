@@ -1,6 +1,6 @@
 using JetBrains.Annotations;
 
-namespace Arbor.X.Core
+namespace Arbor.X.Core.Parsing
 {
     public sealed class ParseResult<T>
     {

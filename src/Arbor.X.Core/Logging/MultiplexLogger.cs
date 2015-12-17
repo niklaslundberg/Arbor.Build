@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-using Arbor.X.Core.Extensions;
+using Arbor.X.Core.GenericExtensions;
 
 namespace Arbor.X.Core.Logging
 {

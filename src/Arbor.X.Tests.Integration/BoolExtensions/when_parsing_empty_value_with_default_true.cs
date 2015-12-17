@@ -1,11 +1,11 @@
 using Arbor.X.Core;
-using Arbor.X.Core.Extensions;
+using Arbor.X.Core.GenericExtensions;
 
 using Machine.Specifications;
 
 namespace Arbor.X.Tests.Integration.BoolExtensions
 {
-    [Subject(typeof(Core.Extensions.BoolExtensions))]
+    [Subject(typeof(Core.GenericExtensions.BoolExtensions))]
     public class when_parsing_empty_value_with_default_true
     {
         static bool result;

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Arbor.X.Core.Extensions
+namespace Arbor.X.Core.GenericExtensions
 {
     public static class TypeExtensions
     {

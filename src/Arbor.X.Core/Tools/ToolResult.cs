@@ -1,7 +1,6 @@
 using System;
-using Arbor.X.Core.Tools;
 
-namespace Arbor.X.Core
+namespace Arbor.X.Core.Tools
 {
     public class ToolResult
     {

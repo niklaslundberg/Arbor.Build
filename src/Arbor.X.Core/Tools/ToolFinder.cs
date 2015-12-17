@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
-using Arbor.X.Core.Extensions;
+using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.Logging;
 using Autofac;
 

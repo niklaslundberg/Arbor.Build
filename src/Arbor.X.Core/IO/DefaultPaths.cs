@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Arbor.X.Core.Tools
+namespace Arbor.X.Core.IO
 {
     public static class DefaultPaths
     {

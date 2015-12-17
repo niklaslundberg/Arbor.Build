@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 
-using Arbor.X.Core.Extensions;
+using Arbor.X.Core.GenericExtensions;
 
 namespace Arbor.X.Core.Assemblies
 {

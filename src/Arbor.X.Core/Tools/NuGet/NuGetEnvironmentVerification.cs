@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Arbor.X.Core.BuildVariables;
+using Arbor.X.Core.Tools.EnvironmentVariables;
 
 namespace Arbor.X.Core.Tools.NuGet
 {

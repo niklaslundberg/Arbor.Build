@@ -184,14 +184,14 @@
     <Compile Include="Tools\ToolExtensions.cs" />
     <Compile Include="Tools\ToolResult.cs" />
     <Compile Include="Tools\ToolResultType.cs" />
-    <Compile Include="Configuration\ToolsModule.cs" />
+    <Compile Include="Configuration\AutofacModules\ToolsModule.cs" />
     <Compile Include="Tools\NuGet\ManifestReWriteResult.cs" />
     <Compile Include="Tools\NuGet\ManitestReWriter.cs" />
     <Compile Include="Tools\NuGet\NuGetPackageConfiguration.cs" />
     <Compile Include="Tools\NuGet\NuGetPackager.cs" />
     <Compile Include="Tools\NuGet\WellKnownNuGetTags.cs" />
     <Compile Include="Tools\Testing\MSpecInternalConstants.cs" />
-    <Compile Include="Configuration\VariableProviderModule.cs" />
+    <Compile Include="Configuration\AutofacModules\VariableProviderModule.cs" />
     <Compile Include="Tools\Cleanup\ArtifactCleanup.cs" />
     <Compile Include="Tools\Cleanup\VariableProviderOrder.cs" />
     <Compile Include="IO\DefaultPaths.cs" />

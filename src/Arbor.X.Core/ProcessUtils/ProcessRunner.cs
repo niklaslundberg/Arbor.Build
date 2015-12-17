@@ -6,7 +6,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Arbor.X.Core.Exceptions;
+
+using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.Logging;
 
 namespace Arbor.X.Core.ProcessUtils

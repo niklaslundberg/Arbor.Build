@@ -1,15 +1,14 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
-using Arbor.X.Core.IO;
+
 using Arbor.X.Core.Logging;
+
 using DirectoryInfo = Alphaleonis.Win32.Filesystem.DirectoryInfo;
 using FileInfo = Alphaleonis.Win32.Filesystem.FileInfo;
 using Path = Alphaleonis.Win32.Filesystem.Path;
 
-namespace Arbor.X.Core.Tools
+namespace Arbor.X.Core.IO
 {
     public static class DirectoryCopy
     {

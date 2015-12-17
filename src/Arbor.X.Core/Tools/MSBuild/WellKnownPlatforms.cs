@@ -2,7 +2,7 @@
 
 using JetBrains.Annotations;
 
-namespace Arbor.X.Core
+namespace Arbor.X.Core.Tools.MSBuild
 {
     public static class WellKnownPlatforms
     {

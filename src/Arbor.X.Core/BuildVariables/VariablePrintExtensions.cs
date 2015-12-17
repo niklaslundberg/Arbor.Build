@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using Arbor.X.Core.Extensions;
+using Arbor.X.Core.GenericExtensions;
 
 namespace Arbor.X.Core.BuildVariables
 {

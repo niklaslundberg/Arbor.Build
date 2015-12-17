@@ -2,7 +2,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Arbor.X.Core.Assemblies;
-using Arbor.X.Core.Extensions;
+using Arbor.X.Core.GenericExtensions;
 
 using Autofac;
 

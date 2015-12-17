@@ -5,7 +5,7 @@ using Machine.Specifications;
 
 namespace Arbor.X.Tests.Integration.PathExtensions
 {
-    [Subject(typeof (Core.Tools.PathExtensions))]
+    [Subject(typeof (Core.IO.PathExtensions))]
     public class when_checking_file_is_blacklisted_without_root_dir
     {
         static bool isBlackListed;

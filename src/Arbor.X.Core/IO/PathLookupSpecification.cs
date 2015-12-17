@@ -1,7 +1,8 @@
 using System.Collections.Generic;
+
 using Arbor.Sorbus.Core;
 
-namespace Arbor.X.Core.Tools
+namespace Arbor.X.Core.IO
 {
     public class PathLookupSpecification
     {

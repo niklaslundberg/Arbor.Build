@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+
+using Arbor.X.Core.Exceptions;
+
 using FubuCore.Logging;
 
 namespace Arbor.X.Core.BuildVariables

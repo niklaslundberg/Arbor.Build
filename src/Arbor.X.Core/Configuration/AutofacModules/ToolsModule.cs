@@ -1,12 +1,14 @@
 using System.Linq;
 
 using Arbor.X.Core.Assemblies;
-using Arbor.X.Core.Extensions;
+using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.Tools;
+
 using Autofac;
+
 using JetBrains.Annotations;
 
-namespace Arbor.X.Core
+namespace Arbor.X.Core.Configuration.AutofacModules
 {
     [UsedImplicitly]
     public class ToolsModule : Module
