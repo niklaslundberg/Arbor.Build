@@ -126,7 +126,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assemblies\AssemblyFetcher.cs" />
-    <Compile Include="Extensions\BoolExtensions.cs" />
+    <Compile Include="GenericExtensions\BoolExtensions.cs" />
     <Compile Include="BuildBootstrapper.cs" />
     <Compile Include="BuildVariables\Arbor.cs" />
     <Compile Include="BuildVariables\ArborX.cs" />
@@ -167,35 +167,35 @@
     <Compile Include="BuildVariables\WellKnownVariables.Jenkins.cs">
       <DependentUpon>WellKnownVariables.cs</DependentUpon>
     </Compile>
-    <Compile Include="Extensions\DisplayExtensions.cs" />
-    <Compile Include="Extensions\EnumerableExtensions.cs" />
-    <Compile Include="Exceptions\ExceptionExtensions.cs" />
+    <Compile Include="GenericExtensions\DisplayExtensions.cs" />
+    <Compile Include="GenericExtensions\EnumerableExtensions.cs" />
+    <Compile Include="GenericExtensions\ExceptionExtensions.cs" />
     <Compile Include="ExitCode.cs" />
-    <Compile Include="Extensions\IntExtensions.cs" />
+    <Compile Include="GenericExtensions\IntExtensions.cs" />
     <Compile Include="Logging\DebugLogger.cs" />
     <Compile Include="Logging\LogLevel.cs" />
     <Compile Include="Logging\MultiplexLogger.cs" />
     <Compile Include="Logging\NLogLogger.cs" />
     <Compile Include="Logging\NullLogger.cs" />
     <Compile Include="Maybe.cs" />
-    <Compile Include="ParseResult.cs" />
-    <Compile Include="Extensions\StringExtensions.cs" />
-    <Compile Include="Extensions\TaskExtensions.cs" />
-    <Compile Include="Extensions\ToolExtensions.cs" />
-    <Compile Include="ToolResult.cs" />
-    <Compile Include="ToolResultType.cs" />
-    <Compile Include="ToolsModule.cs" />
+    <Compile Include="Parsing\ParseResult.cs" />
+    <Compile Include="GenericExtensions\StringExtensions.cs" />
+    <Compile Include="GenericExtensions\TaskExtensions.cs" />
+    <Compile Include="Tools\ToolExtensions.cs" />
+    <Compile Include="Tools\ToolResult.cs" />
+    <Compile Include="Tools\ToolResultType.cs" />
+    <Compile Include="Configuration\ToolsModule.cs" />
     <Compile Include="Tools\NuGet\ManifestReWriteResult.cs" />
     <Compile Include="Tools\NuGet\ManitestReWriter.cs" />
     <Compile Include="Tools\NuGet\NuGetPackageConfiguration.cs" />
     <Compile Include="Tools\NuGet\NuGetPackager.cs" />
     <Compile Include="Tools\NuGet\WellKnownNuGetTags.cs" />
     <Compile Include="Tools\Testing\MSpecInternalConstants.cs" />
-    <Compile Include="VariableProviderModule.cs" />
+    <Compile Include="Configuration\VariableProviderModule.cs" />
     <Compile Include="Tools\Cleanup\ArtifactCleanup.cs" />
     <Compile Include="Tools\Cleanup\VariableProviderOrder.cs" />
-    <Compile Include="Tools\DefaultPaths.cs" />
-    <Compile Include="Tools\DirectoryDelete.cs" />
+    <Compile Include="IO\DefaultPaths.cs" />
+    <Compile Include="IO\DirectoryDelete.cs" />
     <Compile Include="Tools\Git\GitHelper.cs" />
     <Compile Include="Tools\Git\GitVariableProvider.cs" />
     <Compile Include="Tools\ILMerge\ILMergeData.cs" />
@@ -204,7 +204,7 @@
     <Compile Include="Tools\Environments\BuildAgentVariableProvider.cs" />
     <Compile Include="Tools\Environments\SourcePathVariableProvider.cs" />
     <Compile Include="BuildVariables\BuildVariableExtensions.cs" />
-    <Compile Include="Tools\DirectoryCopy.cs" />
+    <Compile Include="IO\DirectoryCopy.cs" />
     <Compile Include="Tools\Kudu\KuduDeploy.cs" />
     <Compile Include="Tools\Kudu\KuduEnvironmentVariableProvider.cs" />
     <Compile Include="Tools\Kudu\KuduHelper.cs" />
@@ -216,8 +216,8 @@
     <Compile Include="Tools\NuGet\INuGetPackageRestoreFix.cs" />
     <Compile Include="Tools\NuGet\NuGetPackageRestoreFix.cs" />
     <Compile Include="Tools\NuGet\NuGetPackageRestoreFixModule.cs" />
-    <Compile Include="Tools\PathExtensions.cs" />
-    <Compile Include="Tools\PathLookupSpecification.cs" />
+    <Compile Include="IO\PathExtensions.cs" />
+    <Compile Include="IO\PathLookupSpecification.cs" />
     <Compile Include="Tools\NuGet\NuGetPackageUploader.cs" />
     <Compile Include="Tools\Symbols\SymbolsVariableProvider.cs" />
     <Compile Include="Tools\TeamCity\TeamCityVariableProvider.cs" />
@@ -229,7 +229,7 @@
     <Compile Include="Tools\Versioning\BuildVersionProvider.cs" />
     <Compile Include="Tools\Git\BranchHelper.cs" />
     <Compile Include="Tools\Git\BranchName.cs" />
-    <Compile Include="BuildException.cs" />
+    <Compile Include="Exceptions\BuildException.cs" />
     <Compile Include="Logging\ConsoleLogger.cs" />
     <Compile Include="Logging\DelegateLogger.cs" />
     <Compile Include="IO\DirectoryExtensions.cs" />
@@ -238,14 +238,14 @@
     <Compile Include="Tools\ILMerge\ILMerger.cs" />
     <Compile Include="Tools\ITool.cs" />
     <Compile Include="BuildVariables\IVariable.cs" />
-    <Compile Include="NativeMethods.cs" />
+    <Compile Include="ProcessUtils\NativeMethods.cs" />
     <Compile Include="Tools\PriorityAttribute.cs" />
     <Compile Include="ProcessUtils\ProcessExtensions.cs" />
     <Compile Include="ProcessUtils\ProcessRunner.cs" />
     <Compile Include="BuildVariables\RequireVariableExtensions.cs" />
     <Compile Include="Tools\Versioning\AssemblyInfoPatcher.cs" />
     <Compile Include="BuildApplication.cs" />
-    <Compile Include="Tools\EnvironmentVerification.cs" />
+    <Compile Include="Tools\EnvironmentVariables\EnvironmentVerification.cs" />
     <Compile Include="BuildVariables\IVariableProvider.cs" />
     <Compile Include="Tools\MSBuild\MSBuildEnvironmentVerification.cs" />
     <Compile Include="Tools\NuGet\NuGetPackageIdHelper.cs" />
@@ -271,8 +271,8 @@
     <Compile Include="Tools\VisualStudio\VisualStudioEnvironmentVerification.cs" />
     <Compile Include="Tools\Testing\VSTestVariableProvider.cs" />
     <Compile Include="BuildVariables\WellKnownVariables.cs" />
-    <Compile Include="Extensions\TypeExtensions.cs" />
-    <Compile Include="WellKnownPlatforms.cs" />
+    <Compile Include="GenericExtensions\TypeExtensions.cs" />
+    <Compile Include="Tools\MSBuild\WellKnownPlatforms.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">
