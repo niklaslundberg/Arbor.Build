@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using Arbor.X.Core.Extensions;
+
 namespace Arbor.X.Core.Tools.NuGet
 {
     public class ManifestReWriteResult

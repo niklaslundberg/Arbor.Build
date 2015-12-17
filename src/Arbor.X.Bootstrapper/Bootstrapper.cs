@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Arbor.Aesculus.Core;
 using Arbor.X.Core;
 using Arbor.X.Core.BuildVariables;
+using Arbor.X.Core.Extensions;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;

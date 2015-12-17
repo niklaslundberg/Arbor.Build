@@ -1,4 +1,8 @@
 ﻿using System.Linq;
+
+using Arbor.X.Core.Assemblies;
+using Arbor.X.Core.Extensions;
+
 using Autofac;
 
 namespace Arbor.X.Core.Tools.NuGet
@@ -7,7 +11,7 @@ namespace Arbor.X.Core.Tools.NuGet
     {
         protected override void Load(ContainerBuilder builder)
         {
-            var assemblies = AssemblyExtensions.GetAssemblies().ToArray();
+            var assemblies = AssemblyFetcher.GetAssemblies().ToArray();
             
             builder.RegisterAssemblyTypes(assemblies)
                 .Where(type => type.IsConcretePublicClassImplementing<INuGetPackageRestoreFix>())

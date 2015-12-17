@@ -1,7 +1,8 @@
 using System;
+
 using Arbor.X.Core.Tools;
 
-namespace Arbor.X.Core
+namespace Arbor.X.Core.Extensions
 {
     public static class ToolExtensions
     {
@@ -9,7 +10,7 @@ namespace Arbor.X.Core
         {
             if (tool == null)
             {
-                throw new ArgumentNullException("tool");
+                throw new ArgumentNullException(nameof(tool));
             }
             return tool.GetType().Name;
         }

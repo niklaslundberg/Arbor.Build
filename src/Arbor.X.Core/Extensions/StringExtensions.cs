@@ -1,4 +1,4 @@
-﻿namespace Arbor.X.Core
+﻿namespace Arbor.X.Core.Extensions
 {
     public static class StringExtensions
     {

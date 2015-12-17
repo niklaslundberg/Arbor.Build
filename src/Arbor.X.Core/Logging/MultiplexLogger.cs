@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 
+using Arbor.X.Core.Extensions;
+
 namespace Arbor.X.Core.Logging
 {
     public class MultiplexLogger : ILogger

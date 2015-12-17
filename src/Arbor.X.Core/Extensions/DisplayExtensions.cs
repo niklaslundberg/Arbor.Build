@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Arbor.X.Core
+namespace Arbor.X.Core.Extensions
 {
     public static class DisplayExtensions
     {

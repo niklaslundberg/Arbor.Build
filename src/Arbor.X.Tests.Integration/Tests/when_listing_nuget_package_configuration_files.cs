@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Arbor.X.Core;
+using Arbor.X.Core.Extensions;
 using Arbor.X.Core.Tools;
 using Arbor.X.Tests.Integration.Tests.MSpec;
 using Machine.Specifications;

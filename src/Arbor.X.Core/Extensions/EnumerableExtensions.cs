@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
-namespace Arbor.X.Core
+namespace Arbor.X.Core.Extensions
 {
     public static class EnumerableExtensions
     {

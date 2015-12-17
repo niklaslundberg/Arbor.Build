@@ -125,8 +125,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AssemblyExtensions.cs" />
-    <Compile Include="BoolExtensions.cs" />
+    <Compile Include="Assemblies\AssemblyFetcher.cs" />
+    <Compile Include="Extensions\BoolExtensions.cs" />
     <Compile Include="BuildBootstrapper.cs" />
     <Compile Include="BuildVariables\Arbor.cs" />
     <Compile Include="BuildVariables\ArborX.cs" />
@@ -167,11 +167,11 @@
     <Compile Include="BuildVariables\WellKnownVariables.Jenkins.cs">
       <DependentUpon>WellKnownVariables.cs</DependentUpon>
     </Compile>
-    <Compile Include="DisplayExtensions.cs" />
-    <Compile Include="EnumerableExtensions.cs" />
+    <Compile Include="Extensions\DisplayExtensions.cs" />
+    <Compile Include="Extensions\EnumerableExtensions.cs" />
     <Compile Include="Exceptions\ExceptionExtensions.cs" />
     <Compile Include="ExitCode.cs" />
-    <Compile Include="IntExtensions.cs" />
+    <Compile Include="Extensions\IntExtensions.cs" />
     <Compile Include="Logging\DebugLogger.cs" />
     <Compile Include="Logging\LogLevel.cs" />
     <Compile Include="Logging\MultiplexLogger.cs" />
@@ -179,9 +179,9 @@
     <Compile Include="Logging\NullLogger.cs" />
     <Compile Include="Maybe.cs" />
     <Compile Include="ParseResult.cs" />
-    <Compile Include="StringExtensions.cs" />
-    <Compile Include="TaskExtensions.cs" />
-    <Compile Include="ToolExtensions.cs" />
+    <Compile Include="Extensions\StringExtensions.cs" />
+    <Compile Include="Extensions\TaskExtensions.cs" />
+    <Compile Include="Extensions\ToolExtensions.cs" />
     <Compile Include="ToolResult.cs" />
     <Compile Include="ToolResultType.cs" />
     <Compile Include="ToolsModule.cs" />
@@ -271,7 +271,7 @@
     <Compile Include="Tools\VisualStudio\VisualStudioEnvironmentVerification.cs" />
     <Compile Include="Tools\Testing\VSTestVariableProvider.cs" />
     <Compile Include="BuildVariables\WellKnownVariables.cs" />
-    <Compile Include="TypeExtensions.cs" />
+    <Compile Include="Extensions\TypeExtensions.cs" />
     <Compile Include="WellKnownPlatforms.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -1,6 +1,9 @@
 using System.Linq;
 using System.Threading.Tasks;
 
+using Arbor.X.Core.Assemblies;
+using Arbor.X.Core.Extensions;
+
 using Autofac;
 
 namespace Arbor.X.Core
@@ -11,7 +14,7 @@ namespace Arbor.X.Core
         {
             ContainerBuilder builder = new ContainerBuilder();
 
-            var assemblies = AssemblyExtensions.GetAssemblies().ToArray();
+            var assemblies = AssemblyFetcher.GetAssemblies().ToArray();
 
             builder.RegisterAssemblyModules(assemblies);
 

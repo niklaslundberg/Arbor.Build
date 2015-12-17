@@ -1,5 +1,8 @@
 using System.Linq;
+
+using Arbor.X.Core.Assemblies;
 using Arbor.X.Core.BuildVariables;
+using Arbor.X.Core.Extensions;
 using Arbor.X.Core.Tools.Environments;
 using Autofac;
 using JetBrains.Annotations;
@@ -11,7 +14,7 @@ namespace Arbor.X.Core
     {
         protected override void Load(ContainerBuilder builder)
         {
-            var assemblies = AssemblyExtensions.GetAssemblies().ToArray();
+            var assemblies = AssemblyFetcher.GetAssemblies().ToArray();
 
             builder.RegisterType<SourcePathVariableProvider>().AsImplementedInterfaces();
 

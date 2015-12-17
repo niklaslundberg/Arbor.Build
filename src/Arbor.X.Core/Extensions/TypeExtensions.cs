@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Arbor.X.Core
+namespace Arbor.X.Core.Extensions
 {
     public static class TypeExtensions
     {
@@ -11,7 +11,7 @@ namespace Arbor.X.Core
                 throw new ArgumentNullException(nameof(type));
             }
 
-            var isConcretePublicClassImplementing = type.IsClass && type.IsPublic && typeof (T).IsAssignableFrom(type);
+            var isConcretePublicClassImplementing = type.IsClass && type.IsPublic && typeof(T).IsAssignableFrom(type);
 
             return isConcretePublicClassImplementing;
         }

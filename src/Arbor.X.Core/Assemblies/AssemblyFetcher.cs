@@ -1,9 +1,11 @@
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace Arbor.X.Core
+using Arbor.X.Core.Extensions;
+
+namespace Arbor.X.Core.Assemblies
 {
-    public static class AssemblyExtensions
+    public static class AssemblyFetcher
     {
         public static IReadOnlyCollection<Assembly> GetAssemblies()
         {

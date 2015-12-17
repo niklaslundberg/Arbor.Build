@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using Arbor.X.Core.Extensions;
+
 namespace Arbor.X.Core.BuildVariables
 {
     public static class VariablePrintExtensions
