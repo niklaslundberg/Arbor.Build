@@ -181,6 +181,7 @@
     <Compile Include="Parsing\ParseResult.cs" />
     <Compile Include="GenericExtensions\StringExtensions.cs" />
     <Compile Include="GenericExtensions\TaskExtensions.cs" />
+    <Compile Include="Tools\MSBuild\Platforms.cs" />
     <Compile Include="Tools\ToolExtensions.cs" />
     <Compile Include="Tools\ToolResult.cs" />
     <Compile Include="Tools\ToolResultType.cs" />
