@@ -11,12 +11,12 @@ namespace Arbor.X.Core.IO
         {
             if (pathLookupSpecification == null)
             {
-                throw new ArgumentNullException("pathLookupSpecification");
+                throw new ArgumentNullException(nameof(pathLookupSpecification));
             }
 
             if (string.IsNullOrWhiteSpace(sourceFile))
             {
-                throw new ArgumentNullException("sourceFile");
+                throw new ArgumentNullException(nameof(sourceFile));
             }
             
             if (!File.Exists(sourceFile))
@@ -39,12 +39,12 @@ namespace Arbor.X.Core.IO
         {
             if (pathLookupSpecification == null)
             {
-                throw new ArgumentNullException("pathLookupSpecification");
+                throw new ArgumentNullException(nameof(pathLookupSpecification));
             }
 
             if (string.IsNullOrWhiteSpace(sourceDir))
             {
-                throw new ArgumentNullException("sourceDir");
+                throw new ArgumentNullException(nameof(sourceDir));
             }
 
             if (!Directory.Exists(sourceDir))

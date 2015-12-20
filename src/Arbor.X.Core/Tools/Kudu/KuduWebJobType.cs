@@ -13,15 +13,9 @@ namespace Arbor.X.Core.Tools.Kudu
             _invariantName = invariantName;
         }
 
-        public static KuduWebJobType Continuous
-        {
-            get { return new KuduWebJobType("Continuous"); }
-        }
+        public static KuduWebJobType Continuous => new KuduWebJobType("Continuous");
 
-        public static KuduWebJobType Triggered
-        {
-            get { return new KuduWebJobType("Triggered"); }
-        }
+        public static KuduWebJobType Triggered => new KuduWebJobType("Triggered");
 
         public static IEnumerable<KuduWebJobType> All
         {
@@ -49,7 +43,7 @@ namespace Arbor.X.Core.Tools.Kudu
 
         public override int GetHashCode()
         {
-            return (_invariantName != null ? _invariantName.GetHashCode() : 0);
+            return _invariantName?.GetHashCode() ?? 0;
         }
 
         public override string ToString()
@@ -57,10 +51,7 @@ namespace Arbor.X.Core.Tools.Kudu
             return DisplayName;
         }
 
-        public string DisplayName
-        {
-            get { return _invariantName; }
-        }
+        public string DisplayName => _invariantName;
 
         public static bool operator ==(KuduWebJobType left, KuduWebJobType right)
         {
@@ -76,30 +67,22 @@ namespace Arbor.X.Core.Tools.Kudu
         {
             if (string.IsNullOrWhiteSpace(type))
             {
-                throw new ArgumentNullException("type");
+                throw new ArgumentNullException(nameof(type));
             }
 
-            var message = string.Format("Could not parse {0} from value '{1}'",
-                typeof(KuduWebJobType).Name, type);
+            var message = $"Could not parse {typeof(KuduWebJobType).Name} from value '{type}'";
 
-            const StringComparison comparisonType = StringComparison.InvariantCultureIgnoreCase;
+            const StringComparison ComparisonType = StringComparison.InvariantCultureIgnoreCase;
 
             string valueToParse;
 
             var exception = new FormatException(message);
 
-            if (type.Trim().StartsWith("<"))
-            {
-                valueToParse = type.ExtractFromTag(typeof (KuduWebJobType).Name);
-            }
-            else
-            {
-                valueToParse = type;
-            }
+            valueToParse = type.Trim().StartsWith("<") ? type.ExtractFromTag(typeof (KuduWebJobType).Name) : type;
 
             KuduWebJobType foundItem =
                 All.SingleOrDefault(
-                    item => item._invariantName.Equals(valueToParse, comparisonType));
+                    item => item._invariantName.Equals(valueToParse, ComparisonType));
 
             if (foundItem == null)
             {

@@ -7,9 +7,12 @@ using System.Threading.Tasks;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Logging;
 
+using JetBrains.Annotations;
+
 namespace Arbor.X.Core.Tools.VisualStudio
 {
     [Priority(53)]
+    [UsedImplicitly]
     public class VisualStudioEnvironmentVerification : ITool
     {
         public Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
@@ -38,9 +41,7 @@ namespace Arbor.X.Core.Tools.VisualStudio
                     var projectFileNames = projectFiles81.Select(file => file.FullName);
 
                     logger.WriteError(
-                        string.Format(
-                            "Visual Studio version {0} is found on this machine. Visual Studio 12.0 (2013) must be installed in order to build these projects: {1}{2}",
-                            visualStudioVersion, Environment.NewLine, string.Join(Environment.NewLine, projectFileNames)));
+                        $"Visual Studio version {visualStudioVersion} is found on this machine. Visual Studio 12.0 (2013) must be installed in order to build these projects: {Environment.NewLine}{string.Join(Environment.NewLine, projectFileNames)}");
                     return Task.FromResult(ExitCode.Failure);
                 }
             }

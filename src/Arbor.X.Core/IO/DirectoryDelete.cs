@@ -57,7 +57,7 @@ namespace Arbor.X.Core.IO
         {
             if (string.IsNullOrWhiteSpace(baseDir))
             {
-                throw new ArgumentNullException("baseDir");
+                throw new ArgumentNullException(nameof(baseDir));
             }
 
             var baseDirectory = new DirectoryInfo(baseDir);

@@ -4,8 +4,11 @@ using System.Threading.Tasks;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 
+using JetBrains.Annotations;
+
 namespace Arbor.X.Core.Tools.NuGet
 {
+    [UsedImplicitly]
     public class NuGetPackageRestoreFix : INuGetPackageRestoreFix
     {
         public async Task FixAsync(string packagesDirectory, ILogger logger)
@@ -20,8 +23,7 @@ namespace Arbor.X.Core.Tools.NuGet
 
                 if (!targetDir.Exists)
                 {
-                    logger.WriteDebug(string.Format("Copying NLog from '{0}' to '{1}'",
-                        nlogDirectory.FullName, targetDir.FullName));
+                    logger.WriteDebug($"Copying NLog from '{nlogDirectory.FullName}' to '{targetDir.FullName}'");
                     var exitCode = await DirectoryCopy.CopyAsync(nlogDirectory.FullName, targetDir.FullName, logger, new PathLookupSpecification());
 
                     if (!exitCode.IsSuccess)

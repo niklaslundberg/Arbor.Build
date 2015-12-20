@@ -8,9 +8,12 @@ using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;
 
+using JetBrains.Annotations;
+
 namespace Arbor.X.Core.Tools.Symbols
 {
     [Priority(800)]
+    [UsedImplicitly]
     public class NuGetSymbolPackageUploader : ITool
     {
         public Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
@@ -56,13 +59,13 @@ namespace Arbor.X.Core.Tools.Symbols
             }
             if (!isRunningOnBuildAgent && forceUpload)
             {
-                logger.Write(string.Format("Symbol package upload is enabled by the flag '{0}'",
-                    WellKnownVariables.ExternalTools_SymbolServer_ForceUploadEnabled));
+                logger.Write(
+                    $"Symbol package upload is enabled by the flag '{WellKnownVariables.ExternalTools_SymbolServer_ForceUploadEnabled}'");
             }
 
             if (isRunningOnBuildAgent || forceUpload)
             {
-                return UploadNuGetPackages(logger, packagesFolder.FullName, nugetExe.Value, symbolServer.Value,
+                return UploadNuGetPackagesAsync(logger, packagesFolder.FullName, nugetExe.Value, symbolServer.Value,
                     symbolServerApiKey.Value);
             }
 
@@ -71,25 +74,25 @@ namespace Arbor.X.Core.Tools.Symbols
             return Task.FromResult(ExitCode.Success);
         }
 
-        async Task<ExitCode> UploadNuGetPackages(ILogger logger, string packagesFolder, string nugetExePath,
+        async Task<ExitCode> UploadNuGetPackagesAsync(ILogger logger, string packagesFolder, string nugetExePath,
             string symbolServerUrl,
             string apiKey)
         {
             if (string.IsNullOrWhiteSpace(packagesFolder))
             {
-                throw new ArgumentNullException("packagesFolder");
+                throw new ArgumentNullException(nameof(packagesFolder));
             }
             if (string.IsNullOrWhiteSpace(nugetExePath))
             {
-                throw new ArgumentNullException("nugetExePath");
+                throw new ArgumentNullException(nameof(nugetExePath));
             }
             if (string.IsNullOrWhiteSpace(symbolServerUrl))
             {
-                throw new ArgumentNullException("symbolServerUrl");
+                throw new ArgumentNullException(nameof(symbolServerUrl));
             }
             if (string.IsNullOrWhiteSpace(apiKey))
             {
-                throw new ArgumentNullException("apiKey");
+                throw new ArgumentNullException(nameof(apiKey));
             }
 
             List<FileInfo> files = new DirectoryInfo(packagesFolder)

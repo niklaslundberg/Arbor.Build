@@ -8,33 +8,38 @@ using System.Threading.Tasks;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.Tools.Cleanup;
+
+using JetBrains.Annotations;
+
 using Microsoft.Win32;
 
 namespace Arbor.X.Core.Tools.VisualStudio
 {
+    [UsedImplicitly]
     public class VisualStudioVariableProvider : IVariableProvider
     {
         public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {
             var currentProcessBits = Environment.Is64BitProcess ? 64 : 32;
-            const int registryLookupBits = 32;
-            logger.WriteVerbose(string.Format("Running current process [id {0}] as a {1}-bit process",
-                Process.GetCurrentProcess().Id, currentProcessBits));
+            const int RegistryLookupBits = 32;
+            logger.WriteVerbose(
+                $"Running current process [id {Process.GetCurrentProcess().Id}] as a {currentProcessBits}-bit process");
 
-            const string registryKeyName = @"SOFTWARE\Microsoft\VisualStudio";
+            const string RegistryKeyName = @"SOFTWARE\Microsoft\VisualStudio";
 
-            logger.WriteVerbose(string.Format(@"Looking for Visual Studio versions in {0}-bit registry key 'HKEY_LOCAL_MACHINE\{1}'", registryLookupBits,
-                registryKeyName));
+            logger.WriteVerbose(
+                $@"Looking for Visual Studio versions in {RegistryLookupBits}-bit registry key 'HKEY_LOCAL_MACHINE\{
+                    RegistryKeyName}'");
 
-            var visualStudioVersion = GetVisualStudioVersion(logger, registryKeyName);
+            var visualStudioVersion = GetVisualStudioVersion(logger, RegistryKeyName);
 
             string vsTestExePath = null;
 
             if (!string.IsNullOrWhiteSpace(visualStudioVersion))
             {
-                logger.WriteVerbose(string.Format("Found Visual Studio version {0}", visualStudioVersion));
+                logger.WriteVerbose($"Found Visual Studio version {visualStudioVersion}");
 
-                vsTestExePath = GetVSTestExePath(logger, registryKeyName, visualStudioVersion);
+                vsTestExePath = GetVSTestExePath(logger, RegistryKeyName, visualStudioVersion);
             }
             else
             {
@@ -47,7 +52,7 @@ namespace Arbor.X.Core.Tools.VisualStudio
                                            new EnvironmentVariable(
                                                WellKnownVariables.ExternalTools_VisualStudio_Version,
                                                visualStudioVersion),
-                                               new EnvironmentVariable(WellKnownVariables.ExternalTools_VSTest_ExePath, vsTestExePath) 
+                                               new EnvironmentVariable(WellKnownVariables.ExternalTools_VSTest_ExePath, vsTestExePath)
                                        };
 
             return Task.FromResult<IEnumerable<IVariable>>(environmentVariables);
@@ -73,12 +78,12 @@ namespace Arbor.X.Core.Tools.VisualStudio
                                                    .OrderByDescending(name => name)
                                                    .ToList();
 
-                        logger.WriteVerbose(string.Format("Found {0} Visual Studio versions: {1}", names.Count,
-                                                          string.Join(", ", names.Select(name => name.ToString(2)))));
+                        logger.WriteVerbose(
+                            $"Found {names.Count} Visual Studio versions: {string.Join(", ", names.Select(name => name.ToString(2)))}");
                         if (names.Any(name => name == new Version(14, 0)))
                         {
                             visualStudioVersion = "14.0";
-                        } 
+                        }
                         else if (names.Any(name => name == new Version(12, 0)))
                         {
                             visualStudioVersion = "12.0";
@@ -99,7 +104,7 @@ namespace Arbor.X.Core.Tools.VisualStudio
         static string GetVSTestExePath(ILogger logger, string registryKeyName, string visualStudioVersion)
         {
             string path = null;
-            
+
             using (var view32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
             {
                 using (var vsKey = view32.OpenSubKey(registryKeyName))
@@ -110,15 +115,17 @@ namespace Arbor.X.Core.Tools.VisualStudio
                         {
                             if (versionKey == null)
                             {
-                                throw new InvalidOperationException(string.Format("Expected key {0} to contain a subkey with name {1}", vsKey.Name, visualStudioVersion));
+                                throw new InvalidOperationException(
+                                    $"Expected key {vsKey.Name} to contain a subkey with name {visualStudioVersion}");
                             }
 
-                            const string installdir = "InstallDir";
-                            var installDir = versionKey.GetValue(installdir, null);
+                            const string Installdir = "InstallDir";
+                            var installDir = versionKey.GetValue(Installdir, null);
 
-                            if (installDir == null || string.IsNullOrWhiteSpace(installDir.ToString()))
+                            if (string.IsNullOrWhiteSpace(installDir?.ToString()))
                             {
-                                logger.WriteWarning(string.Format("Expected key {0} to contain a value with name {1} and a non-empty value", versionKey.Name, installdir));
+                                logger.WriteWarning(
+                                    $"Expected key {versionKey.Name} to contain a value with name {Installdir} and a non-empty value");
                                 return null;
                             }
 
@@ -128,7 +135,7 @@ namespace Arbor.X.Core.Tools.VisualStudio
 
                             if (!File.Exists(exePath))
                             {
-                                throw new InvalidOperationException(string.Format("The file '{0}' does not exist", exePath));
+                                throw new InvalidOperationException($"The file '{exePath}' does not exist");
                             }
 
                             path = exePath;

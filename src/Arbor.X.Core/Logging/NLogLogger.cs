@@ -28,7 +28,7 @@ namespace Arbor.X.Core.Logging
 
             _logger = LogManager.GetCurrentClassLogger();
 
-            _logger.Info(string.Format("Initialized NLog logger with level {0}", nlogLogLevel.Name));
+            _logger.Info($"Initialized NLog logger with level {nlogLogLevel.Name}");
 
             _prefix = prefix ?? "";
         }

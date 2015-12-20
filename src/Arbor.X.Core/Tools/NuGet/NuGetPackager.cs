@@ -76,14 +76,10 @@ namespace Arbor.X.Core.Tools.NuGet
 
             string nuGetPackageVersion = !string.IsNullOrWhiteSpace(packageConfiguration.NuGetPackageVersionOverride) ? packageConfiguration.NuGetPackageVersionOverride : NuGetVersionHelper.GetVersion(packageConfiguration.Version, packageConfiguration.IsReleaseBuild, packageConfiguration.Suffix, packageConfiguration.BuildNumberEnabled, _logger);
 
-            if (string.IsNullOrWhiteSpace(packageConfiguration.NuGetPackageVersionOverride))
-            {
-                _logger.Write($"Using NuGet package version {nuGetPackageVersion}");
-            }
-            else
-            {
-                _logger.Write($"Using NuGet package version override '{packageConfiguration.NuGetPackageVersionOverride}'");
-            }
+            _logger.Write(
+                string.IsNullOrWhiteSpace(packageConfiguration.NuGetPackageVersionOverride)
+                    ? $"Using NuGet package version {nuGetPackageVersion}"
+                    : $"Using NuGet package version override '{packageConfiguration.NuGetPackageVersionOverride}'");
 
             var nuSpecInfo = new FileInfo(packageSpecificationPath);
             // ReSharper disable AssignNullToNotNullAttribute
@@ -125,7 +121,7 @@ namespace Arbor.X.Core.Tools.NuGet
             return result;
         }
 
-        static async Task<ExitCode> ExecuteNuGetPackAsync(string nuGetExePath, string packagesDirectoryPath, ILogger _logger, string nuSpecFileCopyPath, string properties, NuSpec nuSpecCopy, List<string> removedTags, bool keepBinaryAndSourcePackagesTogetherEnabled = false, bool nugetSymbolPackageEnabled = false, bool ignoreWarnings = false, CancellationToken cancellationToken = default (CancellationToken))
+        static async Task<ExitCode> ExecuteNuGetPackAsync(string nuGetExePath, string packagesDirectoryPath, ILogger logger, string nuSpecFileCopyPath, string properties, NuSpec nuSpecCopy, List<string> removedTags, bool keepBinaryAndSourcePackagesTogetherEnabled = false, bool nugetSymbolPackageEnabled = false, bool ignoreWarnings = false, CancellationToken cancellationToken = default (CancellationToken))
         {
             bool hasRemovedNoSourceTag =
                 removedTags.Any(
@@ -151,7 +147,7 @@ namespace Arbor.X.Core.Tools.NuGet
                     arguments.Add("-Symbols");
                 }
 
-                if (LogLevel.Verbose.Level <= _logger.LogLevel.Level)
+                if (LogLevel.Verbose.Level <= logger.LogLevel.Level)
                 {
                     arguments.Add("-Verbosity");
                     arguments.Add("Detailed");
@@ -164,8 +160,8 @@ namespace Arbor.X.Core.Tools.NuGet
 
                 var processResult =
                     await
-                    ProcessRunner.ExecuteAsync(nuGetExePath, arguments: arguments, standardOutLog: _logger.Write,
-                        standardErrorAction: _logger.WriteError, toolAction: _logger.Write, cancellationToken: cancellationToken, verboseAction: _logger.WriteVerbose, debugAction: _logger.WriteDebug,
+                    ProcessRunner.ExecuteAsync(nuGetExePath, arguments: arguments, standardOutLog: logger.Write,
+                        standardErrorAction: logger.WriteError, toolAction: logger.Write, cancellationToken: cancellationToken, verboseAction: logger.WriteVerbose, debugAction: logger.WriteDebug,
                     addProcessNameAsLogCategory: true,
                     addProcessRunnerCategory: true);
 
@@ -173,7 +169,7 @@ namespace Arbor.X.Core.Tools.NuGet
 
                 if (!keepBinaryAndSourcePackagesTogetherEnabled)
                 {
-                    _logger.Write(
+                    logger.Write(
                         $"The flag {WellKnownVariables.NuGetKeepBinaryAndSymbolPackagesTogetherEnabled} is set to false, separating binary packages from symbol packages");
                     var nugetPackages = packagesDirectory.GetFiles("*.nupkg", SearchOption.TopDirectoryOnly).Select(file => file.FullName).ToList();
                     var nugetSymbolPackages = packagesDirectory.GetFiles("*.symbols.nupkg", SearchOption.TopDirectoryOnly).Select(file => file.FullName).ToList();
@@ -195,7 +191,7 @@ namespace Arbor.X.Core.Tools.NuGet
                             targetBinaryFile.Delete();
                         }
 
-                        _logger.WriteDebug($"Copying NuGet binary package '{binaryPackage}' to '{targetBinaryFile}'");
+                        logger.WriteDebug($"Copying NuGet binary package '{binaryPackage}' to '{targetBinaryFile}'");
                         sourceFile.MoveTo(targetBinaryFile.FullName);
                     }
 
@@ -209,7 +205,7 @@ namespace Arbor.X.Core.Tools.NuGet
                             targetSymbolFile.Delete();
                         }
 
-                        _logger.WriteDebug($"Copying NuGet symbol package '{sourcePackage}' to '{targetSymbolFile}'");
+                        logger.WriteDebug($"Copying NuGet symbol package '{sourcePackage}' to '{targetSymbolFile}'");
                         sourceFile.MoveTo(targetSymbolFile.FullName);
                     }
                 }

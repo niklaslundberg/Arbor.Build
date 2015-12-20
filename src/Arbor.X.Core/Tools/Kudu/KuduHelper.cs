@@ -16,9 +16,9 @@ namespace Arbor.X.Core.Tools.Kudu
 
             if (!buildVariables.HasKey(WellKnownVariables.ExternalTools_Kudu_Enabled))
             {
-                const string pattern = "kudu_";
+                const string Pattern = "kudu_";
 
-                if (buildVariables.Any(bv => bv.Key.StartsWith(pattern, StringComparison.InvariantCultureIgnoreCase)))
+                if (buildVariables.Any(bv => bv.Key.StartsWith(Pattern, StringComparison.InvariantCultureIgnoreCase)))
                 {
                     if (buildVariables.HasKey(WellKnownVariables.ExternalTools_Kudu_DeploymentTarget))
                     {
@@ -38,7 +38,7 @@ namespace Arbor.X.Core.Tools.Kudu
                 }
                 else
                 {
-                    logger.WriteVerbose(string.Format("No build variables starts with {0}", pattern));
+                    logger.WriteVerbose(string.Format("No build variables starts with {0}", Pattern));
                 }
             }
             else

@@ -14,12 +14,12 @@ namespace Arbor.X.Core.BuildVariables
         {
             if (variables == null)
             {
-                throw new ArgumentNullException("variables");
+                throw new ArgumentNullException(nameof(variables));
             }
 
             if (string.IsNullOrWhiteSpace(variableName))
             {
-                throw new ArgumentNullException("variableName");
+                throw new ArgumentNullException(nameof(variableName));
             }
 
             var foundVariables = variables.Where(@var => @var.Key.Equals(variableName, StringComparison.InvariantCultureIgnoreCase)).ToList();

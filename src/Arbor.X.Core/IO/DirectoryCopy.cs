@@ -20,12 +20,12 @@ namespace Arbor.X.Core.IO
 
             if (string.IsNullOrWhiteSpace(sourceDir))
             {
-                throw new ArgumentNullException("sourceDir");
+                throw new ArgumentNullException(nameof(sourceDir));
             }
 
             if (string.IsNullOrWhiteSpace(targetDir))
             {
-                throw new ArgumentNullException("targetDir");
+                throw new ArgumentNullException(nameof(targetDir));
             }
 
             var sourceDirectory = new DirectoryInfo(sourceDir);

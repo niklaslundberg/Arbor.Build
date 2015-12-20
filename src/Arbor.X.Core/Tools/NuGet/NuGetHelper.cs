@@ -25,14 +25,14 @@ namespace Arbor.X.Core.Tools.NuGet
             var baseDir = AppDomain.CurrentDomain.BaseDirectory;
             var targetFile = Path.Combine(baseDir, "nuget.exe");
 
-            const int maxRetries = 6;
+            const int MaxRetries = 6;
 
             var currentExePath = new FileInfo(targetFile);
 
             if (!File.Exists(targetFile))
             {
                 var parentExePath = Path.Combine(currentExePath.Directory.Parent.FullName, currentExePath.Name);
-                if (Alphaleonis.Win32.Filesystem.File.Exists(parentExePath))
+                if (File.Exists(parentExePath))
                 {
                     _logger.Write($"Found NuGet in path '{parentExePath}', skipping download");
                     return parentExePath;
@@ -51,7 +51,7 @@ namespace Arbor.X.Core.Tools.NuGet
                 uris.Add("https://nuget.org/nuget.exe");
                 uris.Add("https://www.nuget.org/nuget.exe");
 
-                for (int i = 0; i < maxRetries; i++)
+                for (int i = 0; i < MaxRetries; i++)
                 {
                     try
                     {
@@ -66,11 +66,11 @@ namespace Arbor.X.Core.Tools.NuGet
                         _logger.WriteError(string.Format("Attempt {1}. Could not download nuget.exe. {0}", ex, i + 1));
                     }
 
-                    const int waitTimeInSeconds = 1;
+                    const int WaitTimeInSeconds = 1;
 
-                    _logger.Write(string.Format("Waiting {0} seconds to try again", waitTimeInSeconds));
+                    _logger.Write($"Waiting {WaitTimeInSeconds} seconds to try again");
 
-                    await Task.Delay(TimeSpan.FromSeconds(waitTimeInSeconds), cancellationToken);
+                    await Task.Delay(TimeSpan.FromSeconds(WaitTimeInSeconds), cancellationToken);
                 }
             }
 
@@ -79,9 +79,9 @@ namespace Arbor.X.Core.Tools.NuGet
 
         async Task DownloadNuGetExeAsync(string baseDir, string targetFile, string nugetExeUri, CancellationToken cancellationToken)
         {
-            var tempFile = Path.Combine(baseDir, string.Format("nuget.exe.{0}.tmp", Guid.NewGuid()));
+            var tempFile = Path.Combine(baseDir, $"nuget.exe.{Guid.NewGuid()}.tmp");
 
-            _logger.WriteVerbose(string.Format("Downloading {0} to {1}", nugetExeUri, tempFile));
+            _logger.WriteVerbose($"Downloading {nugetExeUri} to {tempFile}");
             try
             {
                 using (var client = new HttpClient())
@@ -100,9 +100,9 @@ namespace Arbor.X.Core.Tools.NuGet
                 if (File.Exists(tempFile) && new FileInfo(tempFile).Length > 0)
                 {
                     File.Copy(tempFile, targetFile, overwrite: true);
-                    _logger.WriteVerbose(string.Format("Copied {0} to {1}", tempFile, targetFile));
+                    _logger.WriteVerbose($"Copied {tempFile} to {targetFile}");
                     File.Delete(tempFile);
-                    _logger.WriteVerbose(string.Format("Deleted temp file {0}", tempFile));
+                    _logger.WriteVerbose($"Deleted temp file {tempFile}");
                 }
             }
         }

@@ -1,70 +1,55 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Alphaleonis.Win32.Filesystem;
 
 namespace Arbor.X.Core.Tools.ILMerge
 {
+    // ReSharper disable once InconsistentNaming
     public class ILMergeData
     {
-        readonly string _configuration;
-        readonly IEnumerable<FileInfo> _dlls;
-        readonly string _exe;
-        readonly string _platform;
-
         public ILMergeData(string exe, IEnumerable<FileInfo> dlls, string configuration, string platform)
         {
             if (string.IsNullOrWhiteSpace(exe))
             {
-                throw new ArgumentNullException("exe");
+                throw new ArgumentNullException(nameof(exe));
             }
 
             if (dlls == null)
             {
-                throw new ArgumentNullException("dlls");
+                throw new ArgumentNullException(nameof(dlls));
             }
 
             if (string.IsNullOrWhiteSpace(configuration))
             {
-                throw new ArgumentNullException("configuration");
+                throw new ArgumentNullException(nameof(configuration));
             }
 
             if (string.IsNullOrWhiteSpace(platform))
             {
-                throw new ArgumentNullException("platform");
+                throw new ArgumentNullException(nameof(platform));
             }
 
             FileInfo[] dllArray = dlls.ToArray();
 
             if (!dllArray.Any())
             {
-                throw new ArgumentException("DLL list is empty", "dlls");
+                throw new ArgumentException("DLL list is empty", nameof(dlls));
             }
 
-            _exe = exe;
-            _dlls = dllArray;
-            _configuration = configuration;
-            _platform = platform;
+            Exe = exe;
+            Dlls = dllArray;
+            Configuration = configuration;
+            Platform = platform;
         }
 
-        public string Configuration
-        {
-            get { return _configuration; }
-        }
+        public string Configuration { get; }
 
-        public string Platform
-        {
-            get { return _platform; }
-        }
+        public string Platform { get; }
 
-        public string Exe
-        {
-            get { return _exe; }
-        }
+        public string Exe { get; }
 
-        public IEnumerable<FileInfo> Dlls
-        {
-            get { return _dlls; }
-        }
+        public IEnumerable<FileInfo> Dlls { get; }
     }
 }

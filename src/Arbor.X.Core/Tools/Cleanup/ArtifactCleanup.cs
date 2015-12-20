@@ -8,9 +8,12 @@ using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 
+using JetBrains.Annotations;
+
 namespace Arbor.X.Core.Tools.Cleanup
 {
     [Priority(41)]
+    [UsedImplicitly]
     public class ArtifactCleanup : ITool
     {
         public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,

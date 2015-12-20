@@ -11,9 +11,12 @@ using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 
+using JetBrains.Annotations;
+
 namespace Arbor.X.Core.Tools.NuGet
 {
     [Priority(650)]
+    [UsedImplicitly]
     public class NuGetPacker : ITool
     {
         IReadOnlyCollection<string> _excludedNuSpecFiles;

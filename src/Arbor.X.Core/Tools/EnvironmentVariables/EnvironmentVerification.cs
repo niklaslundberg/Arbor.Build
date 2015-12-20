@@ -36,7 +36,7 @@ namespace Arbor.X.Core.Tools.EnvironmentVariables
 
             if (missingKeys.Any())
             {
-                sb.AppendLine(string.Format("Missing variables: [{0}]", missingKeys.Count));
+                sb.AppendLine($"Missing variables: [{missingKeys.Count}]");
                 foreach (var missingKey in missingKeys)
                 {
                     sb.AppendLine(missingKey);
@@ -45,7 +45,7 @@ namespace Arbor.X.Core.Tools.EnvironmentVariables
 
             if (missingValues.Any())
             {
-                sb.AppendLine(string.Format("Variables with empty values: [{0}]", missingValues.Count));
+                sb.AppendLine($"Variables with empty values: [{missingValues.Count}]");
                 foreach (var missingValue in missingValues)
                 {
                     sb.AppendLine(missingValue);
@@ -55,7 +55,7 @@ namespace Arbor.X.Core.Tools.EnvironmentVariables
             bool succeeded = !missingKeys.Any() && !missingValues.Any();
 
             succeeded &= PostVariableVerification(sb, buildVariables);
-        
+
             if (!succeeded)
             {
                 logger.WriteError(sb.ToString());

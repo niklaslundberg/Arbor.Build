@@ -13,7 +13,7 @@ namespace Arbor.X.Core.BuildVariables
         {
             if (string.IsNullOrWhiteSpace(invariantName))
             {
-                throw new ArgumentNullException("invariantName");
+                throw new ArgumentNullException(nameof(invariantName));
             }
 
             _invariantName = invariantName;

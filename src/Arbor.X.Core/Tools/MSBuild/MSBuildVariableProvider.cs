@@ -10,16 +10,19 @@ using Microsoft.Win32;
 using Semver;
 using System.Linq;
 
+using JetBrains.Annotations;
+
 namespace Arbor.X.Core.Tools.MSBuild
 {
+    [UsedImplicitly]
     public class MSBuildVariableProvider : IVariableProvider
     {
         public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {
             var currentProcessBits = Environment.Is64BitProcess ? 64 : 32;
-            const int registryLookupBits = 32;
-            logger.WriteVerbose(string.Format("Running current process [id {0}] as a {1}-bit process",
-                Process.GetCurrentProcess().Id, currentProcessBits));
+            const int RegistryLookupBits = 32;
+            logger.WriteVerbose(
+                $"Running current process [id {Process.GetCurrentProcess().Id}] as a {currentProcessBits}-bit process");
 
             var possibleVersions = new List<string> {"14.0", "12.0", "4.0"}.Select(version => SemVersion.Parse(version)).ToList();
 
@@ -39,11 +42,10 @@ namespace Arbor.X.Core.Tools.MSBuild
             {
                 string registryKeyName = @"SOFTWARE\Microsoft\MSBuild\" + possibleVersion.Major + "." + possibleVersion.Minor;
                 object msBuildPathRegistryKeyValue = null;
-                const string valueKey = "MSBuildOverrideTasksPath";
+                const string ValueKey = "MSBuildOverrideTasksPath";
 
-                logger.WriteVerbose(string.Format("Looking for MSBuild exe path in {0}-bit registry key '{1}\\{2}",
-                    registryLookupBits,
-                    registryKeyName, valueKey));
+                logger.WriteVerbose(
+                    $"Looking for MSBuild exe path in {RegistryLookupBits}-bit registry key '{registryKeyName}\\{ValueKey}");
 
                 using (var view32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
                 {
@@ -51,44 +53,43 @@ namespace Arbor.X.Core.Tools.MSBuild
                     {
                         if (key != null)
                         {
-                            msBuildPathRegistryKeyValue = key.GetValue(valueKey, null);
+                            msBuildPathRegistryKeyValue = key.GetValue(ValueKey, null);
                         }
                     }
                 }
 
                 var msBuildPath = msBuildPathRegistryKeyValue != null
-                    ? string.Format("{0}MSBuild.exe", msBuildPathRegistryKeyValue)
-                    : null;
+                    ? $"{msBuildPathRegistryKeyValue}MSBuild.exe"
+                                      : null;
 
                 if (!string.IsNullOrWhiteSpace(msBuildPath))
                 {
                     foundPath = msBuildPath;
-                    logger.WriteVerbose(string.Format("Using MSBuild exe path '{0}' defined in {1}-bit registry key {2}\\{3}",
-                        foundPath, registryLookupBits, registryKeyName, valueKey));
+                    logger.WriteVerbose(
+                        $"Using MSBuild exe path '{foundPath}' defined in {RegistryLookupBits}-bit registry key {registryKeyName}\\{ValueKey}");
                     break;
                 }
             }
 
             if (string.IsNullOrWhiteSpace(foundPath))
             {
-                const string msbuildPath = "MSBUILD_PATH";
-                var fromEnvironmentVariable = Environment.GetEnvironmentVariable(msbuildPath);
+                const string MsbuildPath = "MSBUILD_PATH";
+                var fromEnvironmentVariable = Environment.GetEnvironmentVariable(MsbuildPath);
 
                 if (!string.IsNullOrWhiteSpace(fromEnvironmentVariable))
                 {
-                    logger.Write(string.Format("Using MSBuild exe path '{0}' from environment variable {1}", foundPath,
-                        msbuildPath));
+                    logger.Write($"Using MSBuild exe path '{foundPath}' from environment variable {MsbuildPath}");
                     foundPath = fromEnvironmentVariable;
                 }
                 else
                 {
-                    logger.WriteError(string.Format("The MSBuild path could not be found in the {0}-bit registry keys.",
-                        registryLookupBits));
+                    logger.WriteError(
+                        $"The MSBuild path could not be found in the {RegistryLookupBits}-bit registry keys.");
                     return null;
                 }
             }
 
-            logger.Write(string.Format("Using MSBuild exe path '{0}'", foundPath));
+            logger.Write($"Using MSBuild exe path '{foundPath}'");
 
             var environmentVariables = new[]
                                        {

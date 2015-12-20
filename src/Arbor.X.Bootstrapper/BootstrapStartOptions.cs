@@ -2,31 +2,18 @@ namespace Arbor.X.Bootstrapper
 {
     public class BootstrapStartOptions
     {
-        readonly string _baseDir;
-        readonly bool? _prereleaseEnabled;
-        readonly string _branchName;
-
         public BootstrapStartOptions(string baseDir = null, bool? prereleaseEnabled = null, string branchName = null)
         {
-            _baseDir = baseDir;
-            _prereleaseEnabled = prereleaseEnabled;
-            _branchName = branchName;
+            BaseDir = baseDir;
+            PrereleaseEnabled = prereleaseEnabled;
+            BranchName = branchName;
         }
 
-        public bool? PrereleaseEnabled
-        {
-            get { return _prereleaseEnabled; }
-        }
+        public bool? PrereleaseEnabled { get; }
 
-        public string BaseDir
-        {
-            get { return _baseDir; }
-        }
+        public string BaseDir { get; }
 
-        public string BranchName
-        {
-            get { return _branchName; }
-        }
+        public string BranchName { get; }
 
         public static BootstrapStartOptions Parse(string[] args)
         {

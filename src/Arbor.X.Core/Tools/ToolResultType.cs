@@ -3,15 +3,14 @@ namespace Arbor.X.Core.Tools
     public class ToolResultType
     {
         readonly bool? _succeeded;
-        readonly string _type;
 
         ToolResultType(string type, bool? succeeded)
         {
-            _type = type;
+            Type = type;
             _succeeded = succeeded;
         }
 
-        public string Type => _type;
+        public string Type { get; }
 
         public bool IsSuccess => _succeeded.HasValue && _succeeded.Value;
 

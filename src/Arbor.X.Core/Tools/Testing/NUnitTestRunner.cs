@@ -9,11 +9,15 @@ using Arbor.Aesculus.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;
+
+using JetBrains.Annotations;
+
 using NUnit.Framework;
 
 namespace Arbor.X.Core.Tools.Testing
 {
     [Priority(400)]
+    [UsedImplicitly]
     public class NUnitTestRunner : ITool
     {
         string _sourceRoot;
@@ -40,7 +44,7 @@ namespace Arbor.X.Core.Tools.Testing
 
             if (!testsEnabled)
             {
-                logger.WriteWarning(string.Format("Tests are disabled (build variable '{0}' is false)", WellKnownVariables.TestsEnabled));
+                logger.WriteWarning($"Tests are disabled (build variable '{WellKnownVariables.TestsEnabled}' is false)");
                 return ExitCode.Success;
             }
 
@@ -48,8 +52,9 @@ namespace Arbor.X.Core.Tools.Testing
 
             if (ignoreTestFailures)
             {
-                var message = string.Format("The exit code from NUnit test was not successful, but the environment variable {0} is set to true, thus returning success", WellKnownVariables.IgnoreTestFailures);
-                
+                var message =
+                    $"The exit code from NUnit test was not successful, but the environment variable {WellKnownVariables.IgnoreTestFailures} is set to true, thus returning success";
+
                 try
                 {
                     var exitCode = await RunNUnitAsync(externalTools, logger, reportPath);
@@ -65,7 +70,7 @@ namespace Arbor.X.Core.Tools.Testing
                 }
                 catch (Exception ex)
                 {
-                    logger.WriteWarning(message + ". " + ex);
+                    logger.WriteWarning($"{message}. {ex}");
                 }
                 return ExitCode.Success;
             }
@@ -86,7 +91,8 @@ namespace Arbor.X.Core.Tools.Testing
 
             if (!testDlls.Any())
             {
-                logger.WriteWarning(string.Format("Could not find any NUnit tests in directory '{0}' or any sub-directory", directory.FullName));
+                logger.WriteWarning(
+                    $"Could not find any NUnit tests in directory '{directory.FullName}' or any sub-directory");
                 return ExitCode.Success;
             }
 
@@ -146,8 +152,8 @@ namespace Arbor.X.Core.Tools.Testing
 
         static void LogExecution(ILogger logger, IEnumerable<string> nunitArgs, string nunitExe)
         {
-            var args = string.Join(" ", nunitArgs.Select(item => string.Format("\"{0}\"", item)));
-            logger.Write(string.Format("Running NUnit {0} {1}", nunitExe, args));
+            var args = string.Join(" ", nunitArgs.Select(item => $"\"{item}\""));
+            logger.Write($"Running NUnit {nunitExe} {args}");
         }
 
         static string GetNunitExePath(IVariable externalTools)
@@ -158,13 +164,13 @@ namespace Arbor.X.Core.Tools.Testing
 
         static IEnumerable<string> GetNUnitConsoleOptions(string reportFile)
         {
-            var options = new List<string> { string.Format("/xml:{0}", reportFile), "/framework:net-4.0", "/noshadow" };
+            var options = new List<string> { $"/xml:{reportFile}", "/framework:net-4.0", "/noshadow" };
             return options;
         }
 
         static string GetNUnitXmlReportFilePath(IVariable reportPath)
         {
-            string xmlReportName = string.Format("{0}.xml", Guid.NewGuid());
+            string xmlReportName = $"{Guid.NewGuid()}.xml";
 
             var reportFile = Path.Combine(reportPath.Value, "nunit", xmlReportName);
 

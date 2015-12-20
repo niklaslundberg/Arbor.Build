@@ -8,8 +8,11 @@ using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.Tools.Cleanup;
 
+using JetBrains.Annotations;
+
 namespace Arbor.X.Core.Tools.Versioning
 {
+    [UsedImplicitly]
     public class BuildVersionProvider : IVariableProvider
     {
         public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)

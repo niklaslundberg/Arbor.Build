@@ -42,17 +42,17 @@ namespace Arbor.X.Core.Tools.Kudu
         {
             if (string.IsNullOrWhiteSpace(name))
             {
-                throw new ArgumentNullException("name");
+                throw new ArgumentNullException(nameof(name));
             }
 
             if (string.IsNullOrWhiteSpace(type))
             {
-                throw new ArgumentNullException("type");
+                throw new ArgumentNullException(nameof(type));
             }
 
             if (string.IsNullOrWhiteSpace(projectFilePath))
             {
-                throw new ArgumentNullException("projectFilePath");
+                throw new ArgumentNullException(nameof(projectFilePath));
             }
 
             var webJobProject = new KuduWebProjectDetails(true, ParseName(name), KuduWebJobType.Parse(type), projectFilePath);

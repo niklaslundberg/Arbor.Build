@@ -5,9 +5,12 @@ using System.Text;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Tools.EnvironmentVariables;
 
+using JetBrains.Annotations;
+
 namespace Arbor.X.Core.Tools.NuGet
 {
     [Priority(52)]
+    [UsedImplicitly]
     public class NuGetEnvironmentVerification : EnvironmentVerification
     {
         public NuGetEnvironmentVerification()
@@ -30,7 +33,7 @@ namespace Arbor.X.Core.Tools.NuGet
 
             if (!fileExists)
             {
-                logger.AppendLine(string.Format("NuGet.exe path '{0}' does not exist", nuGetExePath));
+                logger.AppendLine($"NuGet.exe path '{nuGetExePath}' does not exist");
             }
 
             return fileExists;

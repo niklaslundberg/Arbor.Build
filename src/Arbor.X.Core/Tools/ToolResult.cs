@@ -4,12 +4,10 @@ namespace Arbor.X.Core.Tools
 {
     public class ToolResult
     {
-        readonly TimeSpan _executionTime;
-        readonly string _message;
-        readonly ToolResultType _resultType;
-        readonly ToolWithPriority _toolWithPriority;
-
-        public ToolResult(ToolWithPriority toolWithPriority, ToolResultType resultType, string message = null,
+        public ToolResult(
+            ToolWithPriority toolWithPriority,
+            ToolResultType resultType,
+            string message = null,
             TimeSpan executionTime = default(TimeSpan))
         {
             if (toolWithPriority == null)
@@ -22,18 +20,18 @@ namespace Arbor.X.Core.Tools
                 throw new ArgumentNullException(nameof(resultType));
             }
 
-            _toolWithPriority = toolWithPriority;
-            _resultType = resultType;
-            _message = message;
-            _executionTime = executionTime;
+            ToolWithPriority = toolWithPriority;
+            ResultType = resultType;
+            Message = message;
+            ExecutionTime = executionTime;
         }
 
-        public ToolWithPriority ToolWithPriority => _toolWithPriority;
+        public ToolWithPriority ToolWithPriority { get; }
 
-        public ToolResultType ResultType => _resultType;
+        public ToolResultType ResultType { get; }
 
-        public string Message => _message;
+        public string Message { get; }
 
-        public TimeSpan ExecutionTime => _executionTime;
+        public TimeSpan ExecutionTime { get; }
     }
 }

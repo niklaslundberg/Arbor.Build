@@ -8,9 +8,12 @@ using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;
 
+using JetBrains.Annotations;
+
 namespace Arbor.X.Core.Tools.NuGet
 {
     [Priority(800)]
+    [UsedImplicitly]
     public class NuGetPackageUploader : ITool
     {
         public Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
@@ -53,7 +56,7 @@ namespace Arbor.X.Core.Tools.NuGet
 
             if (isRunningOnBuildAgent || forceUpload)
             {
-                return UploadNuGetPackages(logger, packagesFolder, nugetExe.Value, nugetServer,
+                return UploadNuGetPackagesAsync(logger, packagesFolder, nugetExe.Value, nugetServer,
                     nuGetServerApiKey, websitePackagesUploadEnabled, websitesDirectory);
             }
 
@@ -63,7 +66,7 @@ namespace Arbor.X.Core.Tools.NuGet
             return Task.FromResult(ExitCode.Success);
         }
 
-        async Task<ExitCode> UploadNuGetPackages(ILogger logger, DirectoryInfo artifactPackagesDirectory, string nugetExePath,
+        async Task<ExitCode> UploadNuGetPackagesAsync(ILogger logger, DirectoryInfo artifactPackagesDirectory, string nugetExePath,
             string serverUri,
             string apiKey, bool websitePackagesUploadEnabled, DirectoryInfo websitesDirectory)
         {

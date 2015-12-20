@@ -10,6 +10,9 @@ using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;
+
+using JetBrains.Annotations;
+
 using Directory = Alphaleonis.Win32.Filesystem.Directory;
 using DirectoryInfo = Alphaleonis.Win32.Filesystem.DirectoryInfo;
 using FileInfo = Alphaleonis.Win32.Filesystem.FileInfo;
@@ -18,6 +21,8 @@ using Path = Alphaleonis.Win32.Filesystem.Path;
 namespace Arbor.X.Core.Tools.ILMerge
 {
     [Priority(620)]
+    [UsedImplicitly]
+    // ReSharper disable once InconsistentNaming
     public class ILMerger : ITool
     {
         string _artifactsPath;
@@ -41,8 +46,7 @@ namespace Arbor.X.Core.Tools.ILMerge
 
             var merges = string.Join(Environment.NewLine, ilMergeProjects.Select(item => item.FullName));
 
-            logger.Write(string.Format("Found {0} projects marked for ILMerge:{1}{2}", ilMergeProjects.Count,
-                Environment.NewLine, merges));
+            logger.Write($"Found {ilMergeProjects.Count} projects marked for ILMerge:{Environment.NewLine}{merges}");
 
             IReadOnlyCollection<ILMergeData> mergeDatas = ilMergeProjects.SelectMany(GetIlMergeFiles).ToReadOnlyCollection();
 
@@ -86,7 +90,7 @@ namespace Arbor.X.Core.Tools.ILMerge
                     return result;
                 }
 
-                logger.Write("ILMerged result: " + ilMergedPath);
+                logger.Write($"ILMerged result: {ilMergedPath}");
             }
 
             return ExitCode.Success;
@@ -109,17 +113,17 @@ namespace Arbor.X.Core.Tools.ILMerge
 
             if (releaseDir == null)
             {
-                _logger.WriteWarning(string.Format("A release directory '{0}' was not found",
-                    Path.Combine(binDirectory.FullName, configuration)));
+                _logger.WriteWarning(
+                    $"A release directory '{Path.Combine(binDirectory.FullName, configuration)}' was not found");
                 yield break;
             }
 
             var exes = releaseDir
                 .EnumerateFiles("*.exe")
-                .Where(file => file.Name.IndexOf(".vshost.", StringComparison.InvariantCultureIgnoreCase) < 0)
+                .Where(FileIsStandAloneExe)
                 .ToList();
 
-            if (exes.Count() != 1)
+            if (exes.Count != 1)
             {
                 throw new InvalidOperationException("Only one exe can be ILMerged");
             }
@@ -130,10 +134,15 @@ namespace Arbor.X.Core.Tools.ILMerge
 
             var dlls =
                 releaseDir.EnumerateFiles("*.dll")
-                    .Where(file => file.Name.IndexOf(".vshost.", StringComparison.InvariantCultureIgnoreCase) < 0);
+                    .Where(FileIsStandAloneExe);
 
 
             yield return new ILMergeData(exe.FullName, dlls, configuration, platform);
+        }
+
+        private static bool FileIsStandAloneExe(FileInfo file)
+        {
+            return file.Name.IndexOf(".vshost.", StringComparison.InvariantCultureIgnoreCase) < 0;
         }
 
         string GetPlatform(FileInfo exe)
@@ -155,8 +164,7 @@ namespace Arbor.X.Core.Tools.ILMerge
                     return "x86";
             }
 
-            throw new InvalidOperationException(string.Format("Could not find out the platform for the file '{0}'",
-                exe.FullName));
+            throw new InvalidOperationException($"Could not find out the platform for the file '{exe.FullName}'");
         }
 
         bool IsILMergeEnabledInProjectFile(FileInfo file)
@@ -169,14 +177,11 @@ namespace Arbor.X.Core.Tools.ILMerge
                     {
                         var line = streamReader.ReadLine();
 
-                        if (line != null)
+                        if (
+                            line?.IndexOf("<ILMergeExe>true</ILMergeExe>",
+                                StringComparison.InvariantCultureIgnoreCase) >= 0)
                         {
-                            if (
-                                line.IndexOf("<ILMergeExe>true</ILMergeExe>",
-                                    StringComparison.InvariantCultureIgnoreCase) >= 0)
-                            {
-                                return true;
-                            }
+                            return true;
                         }
                     }
                 }

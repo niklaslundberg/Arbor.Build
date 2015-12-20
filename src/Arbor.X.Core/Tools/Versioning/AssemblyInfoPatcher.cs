@@ -8,11 +8,15 @@ using Arbor.Sorbus.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.IO;
+
+using JetBrains.Annotations;
+
 using DelegateLogger = Arbor.Sorbus.Core.DelegateLogger;
 using ILogger = Arbor.X.Core.Logging.ILogger;
 
 namespace Arbor.X.Core.Tools.Versioning
 {
+    [UsedImplicitly]
     [Priority(200)]
     public class AssemblyInfoPatcher : ITool
     {

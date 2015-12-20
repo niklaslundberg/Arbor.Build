@@ -5,11 +5,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Logging;
-using Arbor.X.Core.Tools.Cleanup;
+
+using JetBrains.Annotations;
+
 using Semver;
 
 namespace Arbor.X.Core.Tools.Git
 {
+    [UsedImplicitly]
     public class GitVariableProvider :IVariableProvider
     {
         public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
@@ -18,7 +21,7 @@ namespace Arbor.X.Core.Tools.Git
 
             var variables = new List<IVariable>();
 
-            var branchName = buildVariables.Require(WellKnownVariables.BranchName).ThrowIfEmptyValue().Value;
+            string branchName = buildVariables.Require(WellKnownVariables.BranchName).ThrowIfEmptyValue().Value;
 
             if (branchName.StartsWith("refs/heads/"))
             {
@@ -31,43 +34,36 @@ namespace Arbor.X.Core.Tools.Git
 
             if (BranchHelper.BranchNameHasVersion(branchName))
             {
-                var version = BranchHelper.BranchSemVerMajorMinorPatch(branchName).ToString();
+                string version = BranchHelper.BranchSemVerMajorMinorPatch(branchName).ToString();
 
-                logger.WriteDebug(string.Format("Branch has version {0}", version));
+                logger.WriteDebug($"Branch has version {version}");
 
                 variables.Add(new EnvironmentVariable(WellKnownVariables.BranchNameVersion, version));
 
                 if (buildVariables.GetBooleanByKey(WellKnownVariables.BranchNameVersionOverrideEnabled, false))
                 {
                     logger.WriteVerbose(
-                        string.Format("Variable '{0}' is set to true, using version number '{1}' from branch",
-                            WellKnownVariables.BranchNameVersionOverrideEnabled, version));
+                        $"Variable '{WellKnownVariables.BranchNameVersionOverrideEnabled}' is set to true, using version number '{version}' from branch");
 
                     var semVer = SemVersion.Parse(version);
 
                     var major = semVer.Major.ToString(CultureInfo.InvariantCulture);
-                    logger.WriteVerbose(string.Format("Overriding {0} from '{1}' to '{2}'",
-                        WellKnownVariables.VersionMajor,
-                        Environment.GetEnvironmentVariable(WellKnownVariables.VersionMajor),
-                        major));
+                    logger.WriteVerbose(
+                        $"Overriding {WellKnownVariables.VersionMajor} from '{Environment.GetEnvironmentVariable(WellKnownVariables.VersionMajor)}' to '{major}'");
                     Environment.SetEnvironmentVariable(WellKnownVariables.VersionMajor,
                         major);
                     variables.Add(new EnvironmentVariable(WellKnownVariables.VersionMajor, major));
 
                     var minor = semVer.Minor.ToString(CultureInfo.InvariantCulture);
-                    logger.WriteVerbose(string.Format("Overriding {0} from '{1}' to '{2}'",
-                        WellKnownVariables.VersionMinor,
-                        Environment.GetEnvironmentVariable(WellKnownVariables.VersionMinor),
-                        minor));
+                    logger.WriteVerbose(
+                        $"Overriding {WellKnownVariables.VersionMinor} from '{Environment.GetEnvironmentVariable(WellKnownVariables.VersionMinor)}' to '{minor}'");
                     Environment.SetEnvironmentVariable(WellKnownVariables.VersionMinor,
                         minor);
                     variables.Add(new EnvironmentVariable(WellKnownVariables.VersionMinor, minor));
 
                     var patch = semVer.Patch.ToString(CultureInfo.InvariantCulture);
-                    logger.WriteVerbose(string.Format("Overriding {0} from '{1}' to '{2}'",
-                        WellKnownVariables.VersionPatch,
-                        Environment.GetEnvironmentVariable(WellKnownVariables.VersionPatch),
-                        patch));
+                    logger.WriteVerbose(
+                        $"Overriding {WellKnownVariables.VersionPatch} from '{Environment.GetEnvironmentVariable(WellKnownVariables.VersionPatch)}' to '{patch}'");
                     Environment.SetEnvironmentVariable(WellKnownVariables.VersionPatch,
                         patch);
                     variables.Add(new EnvironmentVariable(WellKnownVariables.VersionPatch, patch));
@@ -79,7 +75,7 @@ namespace Arbor.X.Core.Tools.Git
             }
             else
             {
-                logger.WriteDebug(string.Format("Branch has no version in name"));
+                logger.WriteDebug("Branch has no version in name");
             }
 
             return Task.FromResult<IEnumerable<IVariable>>(variables);
