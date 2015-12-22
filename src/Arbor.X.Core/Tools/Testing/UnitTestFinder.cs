@@ -5,6 +5,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using Alphaleonis.Win32.Filesystem;
+
+using Arbor.X.Core.Assemblies;
 using Arbor.X.Core.Logging;
 using ILogger = Arbor.X.Core.Logging.ILogger;
 
@@ -15,16 +17,16 @@ namespace Arbor.X.Core.Tools.Testing
         readonly IEnumerable<Type> _typesToFind;
         readonly ILogger _logger;
 
-        public UnitTestFinder(IEnumerable<Type> typesesToFind, bool debugEnabled = false, ILogger logger = null)
+        public UnitTestFinder(IEnumerable<Type> typesesToFind, bool debugLogEnabled = false, ILogger logger = null)
         {
             _logger = logger ?? new NullLogger();
             _typesToFind = typesesToFind;
-            DebugEnabled = debugEnabled;
+            DebugLogEnabled = debugLogEnabled;
         }
 
-        bool DebugEnabled { get; set; }
+        bool DebugLogEnabled { get; set; }
 
-        public IReadOnlyCollection<string> GetUnitTestFixtureDlls(DirectoryInfo currentDirectory)
+        public IReadOnlyCollection<string> GetUnitTestFixtureDlls(DirectoryInfo currentDirectory, bool? releaseBuild = null)
         {
             if (currentDirectory == null)
             {
@@ -63,11 +65,26 @@ namespace Arbor.X.Core.Tools.Testing
                 .Distinct()
                 .ToList();
 
-            var testFixtureAssemblies = UnitTestFixtureAssemblies(assemblies);
+            List<Assembly> configurationFiltered;
+
+            if (releaseBuild.HasValue && releaseBuild.Value)
+            {
+                configurationFiltered = assemblies.Where(assembly => !assembly.IsDebugAssembly()).ToList();
+            }
+            else if (releaseBuild.HasValue)
+            {
+                configurationFiltered = assemblies.Where(assembly => assembly.IsDebugAssembly()).ToList();
+            }
+            else
+            {
+                configurationFiltered = assemblies;
+            }
+
+            var testFixtureAssemblies = UnitTestFixtureAssemblies(configurationFiltered);
 
             var subDirAssemblies = currentDirectory
                 .EnumerateDirectories()
-                .SelectMany(GetUnitTestFixtureDlls);
+                .SelectMany(dir =>GetUnitTestFixtureDlls(dir, releaseBuild));
 
             var allUnitFixtureAssemblies = testFixtureAssemblies
                 .Concat(subDirAssemblies)
@@ -106,7 +123,7 @@ namespace Arbor.X.Core.Tools.Testing
                 result = false;
             }
 
-            if (DebugEnabled || result)
+            if (DebugLogEnabled || result)
             {
                 _logger.WriteVerbose(
                     $"Assembly {assembly.FullName}, found any class with {string.Join(" | ", _typesToFind.Select(type => type.FullName))}: {result}");
@@ -241,7 +258,7 @@ namespace Arbor.X.Core.Tools.Testing
 
                 int count = types.Count();
 
-                if (DebugEnabled)
+                if (DebugLogEnabled)
                 {
                     _logger.WriteVerbose($"Found {count} types in assembly '{assembly.Location}'");
                 }

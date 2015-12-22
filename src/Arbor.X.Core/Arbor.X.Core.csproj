@@ -125,6 +125,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assemblies\AssemblyExtensions.cs" />
     <Compile Include="Assemblies\AssemblyFetcher.cs" />
     <Compile Include="GenericExtensions\BoolExtensions.cs" />
     <Compile Include="BuildBootstrapper.cs" />
