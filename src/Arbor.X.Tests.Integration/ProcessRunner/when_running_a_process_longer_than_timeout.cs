@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.X.Core;
+using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 using Machine.Specifications;
 
@@ -20,7 +21,7 @@ namespace Arbor.X.Tests.Integration.ProcessRunner
 
         Establish context = () =>
         {
-            testPath = Path.Combine(Path.GetTempPath(), "Arbor.X.Test_timeout.tmp.bat");
+            testPath = Path.Combine(Path.GetTempPath(), $"{DefaultPaths.TempPathPrefix}_Test_timeout.tmp.bat");
 
             const string batchContent = @"@ECHO OFF
 ECHO Waiting for 10 seconds

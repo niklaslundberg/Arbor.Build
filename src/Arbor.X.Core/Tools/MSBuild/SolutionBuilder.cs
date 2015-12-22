@@ -1076,8 +1076,8 @@ namespace Arbor.X.Core.Tools.MSBuild
             logger.Write(nuspecContent);
 
             DirectoryInfo tempDir = new DirectoryInfo(Path.Combine(
-                Path.GetTempPath(), "ARX_SB"+
-                Guid.NewGuid())).EnsureExists();
+                Path.GetTempPath(),
+                $"{DefaultPaths.TempPathPrefix}_sb_{DateTime.Now.ToString("yyyyMMddHHmmssfff_")}{Guid.NewGuid().ToString().Substring(0, 8)}")).EnsureExists();
 
             string nuspecTempFile = Path.Combine(tempDir.FullName, $"{packageId}.nuspec");
 
@@ -1086,6 +1086,8 @@ namespace Arbor.X.Core.Tools.MSBuild
             ExitCode exitCode = await new NuGetPackager(_logger).CreatePackageAsync(nuspecTempFile, packageConfiguration, ignoreWarnings:true, cancellationToken: _cancellationToken);
 
             System.IO.File.Delete(nuspecTempFile);
+
+            tempDir.DeleteIfExists(recursive: true);
 
             return exitCode;
         }

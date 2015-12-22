@@ -67,7 +67,8 @@ namespace Arbor.X.Bootstrapper
         {
             var baseDir = VcsPathHelper.FindVcsRootPath(AppDomain.CurrentDomain.BaseDirectory);
 
-            var tempDirectory = new DirectoryInfo(Path.Combine(Path.GetTempPath(), "Arbor.X_Boot_Debug", Guid.NewGuid().ToString()));
+            var tempDirectory = new DirectoryInfo(Path.Combine(Path.GetTempPath(),
+                $"{DefaultPaths.TempPathPrefix}_Boot_Debug", DateTime.Now.ToString("yyyyMMddHHmmssfff")));
 
             tempDirectory.EnsureExists();
 
@@ -367,7 +368,7 @@ namespace Arbor.X.Bootstrapper
 
         async Task<string> CloneDirectoryAsync()
         {
-            string targetDirectoryPath = Path.Combine(Path.GetTempPath(), "AX", "R",
+            string targetDirectoryPath = Path.Combine(Path.GetTempPath(), DefaultPaths.TempPathPrefix, "R",
                 Guid.NewGuid().ToString().Substring(0, 8));
 
             var targetDirectory = new DirectoryInfo(targetDirectoryPath);

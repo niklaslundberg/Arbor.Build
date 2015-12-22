@@ -34,5 +34,7 @@ namespace Arbor.X.Core.IO
                 return new PathLookupSpecification(ignoredDirectorySegments, ignoredFileStartsWithPatterns, ignoredDirectorySegmentParts, ignoredDirectoryStartsWithPatterns);
             }
         }
+
+        public const string TempPathPrefix = "ABX";
     }
 }

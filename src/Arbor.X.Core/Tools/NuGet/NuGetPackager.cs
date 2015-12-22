@@ -88,7 +88,7 @@ namespace Arbor.X.Core.Tools.NuGet
 
             var nuSpecCopy = new NuSpec(packageId, nuGetPackageVersion, nuSpecInfo.FullName);
 
-            var nuSpecTempDirectory = Path.Combine(packageConfiguration.TempPath, "nuget-specifications");
+            var nuSpecTempDirectory = Path.Combine(packageConfiguration.TempPath, "nuspecs");
 
             if (!Directory.Exists(nuSpecTempDirectory))
             {

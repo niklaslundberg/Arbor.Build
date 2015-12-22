@@ -31,7 +31,7 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
 
             string combine = Path.Combine(root, "Arbor.X.Tests.Integration", "bin", "debug");
 
-            string tempPath = Path.Combine(Path.GetTempPath(), "Arbor.X", "MSpec", Guid.NewGuid().ToString());
+            string tempPath = Path.Combine(Path.GetTempPath(), $"{DefaultPaths.TempPathPrefix}_mspec_self_{DateTime.Now.ToString("yyyyMMddHHmmssfff_")}{Guid.NewGuid().ToString().Substring(0, 8)}");
 
             tempDirectory = new DirectoryInfo(tempPath).EnsureExists();
 

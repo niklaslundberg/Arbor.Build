@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+
+using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 using Machine.Specifications;
 
@@ -26,7 +28,7 @@ namespace Arbor.X.Tests.Integration.DirectoryDelete
 
         Establish context = () =>
         {
-            tempDir = Path.Combine(Path.GetTempPath(), "Arbor.X.DeleteDirs");
+            tempDir = Path.Combine(Path.GetTempPath(), $"{DefaultPaths.TempPathPrefix}_DeleteDirs");
 
             var directoryInfo = new DirectoryInfo(tempDir);
 

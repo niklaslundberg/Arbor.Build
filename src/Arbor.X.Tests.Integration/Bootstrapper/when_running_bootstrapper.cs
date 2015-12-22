@@ -34,11 +34,10 @@ namespace Arbor.X.Tests.Integration.Bootstrapper
 
         Establish context = () =>
         {
-            string tempDirectoryPath = Path.Combine(Path.GetTempPath(), "Arbor.X", "Bootstrapper", "Test",
-                Guid.NewGuid().ToString());
+            string tempDirectoryPath = Path.Combine(Path.GetTempPath(), $"{DefaultPaths.TempPathPrefix}_Bootstrapper_Test_{Guid.NewGuid()}");
 
             baseDirectory = new DirectoryInfo(tempDirectoryPath).EnsureExists();
-            Console.WriteLine("Temp directory is " + baseDirectory.FullName);
+            Console.WriteLine("Temp directory is {0}", baseDirectory.FullName);
 
 
             startOptions = new BootstrapStartOptions(baseDirectory.FullName, prereleaseEnabled: true,

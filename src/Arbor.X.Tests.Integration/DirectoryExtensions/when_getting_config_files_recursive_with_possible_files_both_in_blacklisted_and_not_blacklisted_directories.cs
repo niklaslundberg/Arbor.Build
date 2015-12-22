@@ -21,8 +21,8 @@ namespace Arbor.X.Tests.Integration.DirectoryExtensions
         Establish context = () =>
         {
             baseDir =
-                new DirectoryInfo(Path.Combine(Path.GetTempPath(), "Arbor.X", "DirectoryExtensions",
-                    Guid.NewGuid().ToString()));
+                new DirectoryInfo(Path.Combine(Path.GetTempPath(),
+                    $"{DefaultPaths.TempPathPrefix}_DirectoryExtensions_{Guid.NewGuid()}"));
             baseDir.EnsureExists();
 
             var a = baseDir.CreateSubdirectory("A");

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 
+using Arbor.X.Core.IO;
+
 using JetBrains.Annotations;
 
 using Newtonsoft.Json;
@@ -66,7 +68,7 @@ namespace Arbor.X.Core.Tools.NuGet
             IsReleaseBuild = isReleaseBuild;
             BranchName = branchName;
             BuildNumberEnabled = buildNumberEnabled;
-            TempPath = tempPath ?? Path.GetTempPath();
+            TempPath = tempPath ?? Path.Combine(Path.GetTempPath(), $"{DefaultPaths.TempPathPrefix}_Nuget");
             BranchNameEnabled = branchNameEnabled;
             PackageIdOverride = packageIdOverride;
             NuGetPackageVersionOverride = nuGetPackageVersionOverride;
