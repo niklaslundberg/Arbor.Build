@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Xsl;
 using Alphaleonis.Win32.Filesystem;
+
+using Arbor.Processing;
+using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.IO;

@@ -1,4 +1,6 @@
 ﻿using System;
+
+using Arbor.Processing.Core;
 using Arbor.X.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Logging;

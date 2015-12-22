@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Threading;
 
-namespace Arbor.X.Core.GenericExtensions
+namespace Arbor.Exceptions
 {
     public static class ExceptionExtensions
     {

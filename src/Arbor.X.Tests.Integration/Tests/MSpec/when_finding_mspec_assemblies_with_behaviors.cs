@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using Alphaleonis.Win32.Filesystem;
+
+using Arbor.Processing.Core;
 using Arbor.X.Core;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;

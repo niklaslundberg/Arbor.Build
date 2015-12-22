@@ -1,4 +1,4 @@
-﻿namespace Arbor.X.Core
+﻿namespace Arbor.Processing.Core
 {
     public sealed class ExitCode
     {

@@ -216,6 +216,14 @@
     <None Include="_Dummy\packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Arbor.Processing.Core\Arbor.Processing.Core.csproj">
+      <Project>{480AFB5E-4282-4B2A-A3BD-BD42830C743A}</Project>
+      <Name>Arbor.Processing.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Arbor.Processing\Arbor.Processing.csproj">
+      <Project>{5b5d302f-3197-482a-bc53-e8f41bc73701}</Project>
+      <Name>Arbor.Processing</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Arbor.X.Bootstrapper\Arbor.X.Bootstrapper.csproj">
       <Project>{9aa52382-a7b1-407b-ae0e-9b04efdfac43}</Project>
       <Name>Arbor.X.Bootstrapper</Name>

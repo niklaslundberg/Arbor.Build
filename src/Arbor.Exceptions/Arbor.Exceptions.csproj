@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{5B5D302F-3197-482A-BC53-E8F41BC73701}</ProjectGuid>
+    <ProjectGuid>{0255D0EC-426B-4857-ADCC-E8260C81D220}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Arbor.Processing</RootNamespace>
-    <AssemblyName>Arbor.Processing</AssemblyName>
+    <RootNamespace>Arbor.Exceptions</RootNamespace>
+    <AssemblyName>Arbor.Exceptions</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -40,20 +40,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="NativeMethods.cs" />
-    <Compile Include="ProcessExtensions.cs" />
-    <Compile Include="ProcessRunner.cs" />
+    <Compile Include="ExceptionExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Arbor.Exceptions\Arbor.Exceptions.csproj">
-      <Project>{0255D0EC-426B-4857-ADCC-E8260C81D220}</Project>
-      <Name>Arbor.Exceptions</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Arbor.Processing.Core\Arbor.Processing.Core.csproj">
-      <Project>{480AFB5E-4282-4B2A-A3BD-BD42830C743A}</Project>
-      <Name>Arbor.Processing.Core</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

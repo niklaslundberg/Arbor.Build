@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace Arbor.X.Core.ProcessUtils
+namespace Arbor.Processing
 {
     internal static class NativeMethods
     {

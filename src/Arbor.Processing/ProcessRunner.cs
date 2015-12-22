@@ -7,34 +7,14 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Arbor.X.Core.GenericExtensions;
-using Arbor.X.Core.Logging;
+using Arbor.Exceptions;
+using Arbor.Processing.Core;
 
-namespace Arbor.X.Core.ProcessUtils
+namespace Arbor.Processing
 {
     public static class ProcessRunner
     {
         const string ToolName = "[" + nameof(ProcessRunner) + "] ";
-
-        public static Task<ExitCode> ExecuteAsync(string executePath,
-            IEnumerable<string> arguments = null, ILogger logger = null,
-            IEnumerable<KeyValuePair<string, string>> environmentVariables = null,
-            CancellationToken cancellationToken = default(CancellationToken),
-            bool addProcessNameAsLogCategory = false,
-            bool addProcessRunnerCategory = false,
-            string parentPrefix = null)
-        {
-
-            var usedLogger = logger ?? new NullLogger();
-
-            var executingCategory = $"[{Path.GetFileNameWithoutExtension(Path.GetFileName(executePath))}]";
-
-            return ExecuteAsync(executePath, cancellationToken, arguments, standardOutLog: (message, category) => usedLogger.Write(message, executingCategory),
-                standardErrorAction: usedLogger.WriteError,
-                verboseAction: usedLogger.WriteVerbose, toolAction: (message, category) => usedLogger.Write(message, ToolName),
-                environmentVariables: environmentVariables,
-                debugAction: usedLogger.WriteDebug, addProcessNameAsLogCategory: addProcessNameAsLogCategory, addProcessRunnerCategory: addProcessRunnerCategory, parentPrefix: parentPrefix);
-        }
 
         public static async Task<ExitCode> ExecuteAsync(string executePath,
             CancellationToken cancellationToken = default(CancellationToken),
@@ -219,7 +199,7 @@ namespace Arbor.X.Core.ProcessUtils
             bool done = false;
             try
             {
-                while (IsAlive(process, taskCompletionSource.Task, cancellationToken, done, processWithArgs, toolAction,
+                while (process.IsAlive(taskCompletionSource.Task, cancellationToken, done, processWithArgs, toolAction,
                     standardAction, errorAction, verbose))
                 {
                     if (cancellationToken.IsCancellationRequested)
@@ -332,36 +312,5 @@ namespace Arbor.X.Core.ProcessUtils
             return exitCode;
         }
 
-        static bool IsAlive(Process process, Task<ExitCode> task, CancellationToken cancellationToken, bool done,
-            string processWithArgs, Action<string, string> toolAction, Action<string, string> standardAction,
-            Action<string, string> errorAction, Action<string, string> verbose)
-        {
-            if (process == null)
-            {
-                verbose($"Process '{processWithArgs}' does no longer exist", ToolName);
-                return false;
-            }
-
-            if (task.IsCompleted || task.IsFaulted || task.IsCanceled)
-            {
-                TaskStatus status = task.Status;
-                verbose($"Task status for process '{processWithArgs}' is {status}", ToolName);
-                return false;
-            }
-
-            if (cancellationToken.IsCancellationRequested)
-            {
-                verbose($"Cancellation is requested for process '{processWithArgs}'", ToolName);
-                return false;
-            }
-
-            if (done)
-            {
-                verbose($"Process '{processWithArgs}' is flagged as done", ToolName);
-                return false;
-            }
-
-            return true;
-        }
     }
 }

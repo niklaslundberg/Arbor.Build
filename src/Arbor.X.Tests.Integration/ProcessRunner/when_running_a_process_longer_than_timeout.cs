@@ -3,6 +3,8 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+
+using Arbor.Processing.Core;
 using Arbor.X.Core;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
@@ -10,7 +12,7 @@ using Machine.Specifications;
 
 namespace Arbor.X.Tests.Integration.ProcessRunner
 {
-    [Subject(typeof(Core.ProcessUtils.ProcessRunner))]
+    [Subject(typeof(Core.ProcessUtils.ProcessHelper))]
     [Tags(Arbor.X.Core.Tools.Testing.MSpecInternalConstants.RecursiveArborXTest)]
     public class when_running_a_process_longer_than_timeout
     {
@@ -49,7 +51,7 @@ EXIT /b 2
 
                 exitCode =
                     await
-                        Core.ProcessUtils.ProcessRunner.ExecuteAsync(testPath,
+                        Processing.ProcessRunner.ExecuteAsync(testPath,
                             standardOutLog: (message, prefix) => logger.Write(message, "STANDARD"),
                             standardErrorAction: (message, prefix) => logger.WriteError(message, "ERROR"),
                             toolAction: (message, prefix) => logger.Write(message, "TOOL"),

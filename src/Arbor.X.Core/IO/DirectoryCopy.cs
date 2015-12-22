@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 
+using Arbor.Processing.Core;
 using Arbor.X.Core.Logging;
 
 using DirectoryInfo = Alphaleonis.Win32.Filesystem.DirectoryInfo;
