@@ -32,6 +32,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arbor.X.Tests.DummyWebAppli
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{BE5C46C6-ACDF-4620-8C7F-471281101E9B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arbor.Processing", "Arbor.Processing\Arbor.Processing.csproj", "{5B5D302F-3197-482A-BC53-E8F41BC73701}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -58,6 +60,10 @@ Global
 		{C79E57E7-56AA-47A2-9D82-782058B8E565}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C79E57E7-56AA-47A2-9D82-782058B8E565}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C79E57E7-56AA-47A2-9D82-782058B8E565}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5B5D302F-3197-482A-BC53-E8F41BC73701}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5B5D302F-3197-482A-BC53-E8F41BC73701}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5B5D302F-3197-482A-BC53-E8F41BC73701}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5B5D302F-3197-482A-BC53-E8F41BC73701}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
