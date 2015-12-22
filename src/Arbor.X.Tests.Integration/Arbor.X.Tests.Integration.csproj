@@ -216,6 +216,10 @@
     <None Include="_Dummy\packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Arbor.Defensive\Arbor.Defensive.csproj">
+      <Project>{c35cd7d4-b07a-4809-9444-af2c35ed5908}</Project>
+      <Name>Arbor.Defensive</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Arbor.Processing.Core\Arbor.Processing.Core.csproj">
       <Project>{480AFB5E-4282-4B2A-A3BD-BD42830C743A}</Project>
       <Name>Arbor.Processing.Core</Name>

@@ -178,7 +178,6 @@
     <Compile Include="Logging\MultiplexLogger.cs" />
     <Compile Include="Logging\NLogLogger.cs" />
     <Compile Include="Logging\NullLogger.cs" />
-    <Compile Include="Maybe.cs" />
     <Compile Include="Parsing\ParseResult.cs" />
     <Compile Include="GenericExtensions\StringExtensions.cs" />
     <Compile Include="GenericExtensions\TaskExtensions.cs" />

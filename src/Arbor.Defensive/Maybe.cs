@@ -4,7 +4,7 @@ using System.ComponentModel;
 
 using JetBrains.Annotations;
 
-namespace Arbor.X.Core
+namespace Arbor.Defensive
 {
     [ImmutableObject(true)]
     public struct Maybe<T>
