@@ -59,6 +59,7 @@ namespace Arbor.X.Core
                 [WellKnownVariables.NuGetAllowManifestReWrite] = "false",
                 [WellKnownVariables.NuGetSymbolPackagesEnabled] = "false",
                 [WellKnownVariables.NugetCreateNuGetWebPackagesEnabled] = "true",
+                [WellKnownVariables.RunTestsInReleaseConfigurationEnabled] = "false",
                 ["Arbor_X_Tests_DummyWebApplication_Arbor_X_NuGet_Package_CreateNuGetWebPackageForProject_Enabled"] = "true",
             };
 

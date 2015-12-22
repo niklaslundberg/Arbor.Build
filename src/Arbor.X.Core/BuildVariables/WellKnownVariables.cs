@@ -212,6 +212,9 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescription("Generic XML transformaions enabled")]
         public static readonly string GenericXmlTransformsEnabled = "Arbor.X.Build.XmlTransformations.Enabled";
 
+        [VariableDescription("Run tests in release configuration")]
+        public static readonly string RunTestsInReleaseConfigurationEnabled = "Arbor.X.Tests.RunTestsInReleaseConfiguration";
+
         // ReSharper restore ConvertToConstant.Global
         // ReSharper restore InconsistentNaming
 

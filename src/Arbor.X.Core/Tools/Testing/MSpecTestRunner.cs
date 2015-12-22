@@ -32,7 +32,7 @@ namespace Arbor.X.Core.Tools.Testing
 
             if (!enabled)
             {
-                logger.WriteWarning("Machine.Specifications not enabled");
+                logger.WriteWarning($"{nameof(Machine.Specifications)} not enabled");
                 return ExitCode.Success;
             }
 
@@ -45,7 +45,7 @@ namespace Arbor.X.Core.Tools.Testing
             string testReportDirectoryPath =
                 buildVariables.Require(WellKnownVariables.ExternalTools_MSpec_ReportPath).ThrowIfEmptyValue().Value;
 
-            var sourceRootOverride = buildVariables.GetVariableValueOrDefault(WellKnownVariables.SourceRootOverride, "");
+            string sourceRootOverride = buildVariables.GetVariableValueOrDefault(WellKnownVariables.SourceRootOverride, "");
 
             string sourceDirectoryPath;
 
@@ -65,8 +65,12 @@ namespace Arbor.X.Core.Tools.Testing
             }
 
             var directory = new DirectoryInfo(sourceDirectoryPath);
-            string mspecExePath = Path.Combine(externalToolsPath, "Machine.Specifications", "mspec-clr4.exe");
+            string mspecExePath = Path.Combine(externalToolsPath, nameof(Machine.Specifications), "mspec-clr4.exe");
 
+            bool runTestsInReleaseConfiguration =
+                buildVariables.GetBooleanByKey(
+                    WellKnownVariables.RunTestsInReleaseConfigurationEnabled,
+                    defaultValue: true);
 
             IEnumerable<Type> typesToFind = new List<Type>
                                             {
@@ -76,11 +80,11 @@ namespace Arbor.X.Core.Tools.Testing
                                                 typeof (Behaves_like<>),
                                             };
             List<string> testDlls =
-                new UnitTestFinder(typesToFind, logger: logger).GetUnitTestFixtureDlls(directory).ToList();
+                new UnitTestFinder(typesToFind, logger: logger).GetUnitTestFixtureDlls(directory, runTestsInReleaseConfiguration).ToList();
 
             if (!testDlls.Any())
             {
-                logger.WriteWarning("No DLL files with Machine.Specifications specifications was found");
+                logger.WriteWarning($"No DLL files with {nameof(Machine.Specifications)} specifications was found");
                 return ExitCode.Success;
             }
 
@@ -146,7 +150,7 @@ namespace Arbor.X.Core.Tools.Testing
             if (buildVariables.GetBooleanByKey(WellKnownVariables.MSpecJUnitXslTransformationEnabled,
                 defaultValue: false))
             {
-                logger.WriteVerbose("Transforming Machine.Specifications test reports to JUnit format");
+                logger.WriteVerbose($"Transforming {nameof(Machine.Specifications)} test reports to JUnit format");
 
                 const string JunitSuffix = "_junit.xml";
 

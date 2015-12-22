@@ -54,11 +54,16 @@ namespace Arbor.X.Core.Tools.Testing
                 WellKnownVariables.IgnoreTestFailures,
                 defaultValue: false);
 
+            bool runTestsInReleaseConfiguration =
+                buildVariables.GetBooleanByKey(
+                    WellKnownVariables.RunTestsInReleaseConfigurationEnabled,
+                    defaultValue: true);
+
             if (ignoreTestFailures)
             {
                 try
                 {
-                    return await RunVsTestAsync(logger, reportPath, vsTestExePath);
+                    return await RunVsTestAsync(logger, reportPath, vsTestExePath, runTestsInReleaseConfiguration);
                 }
                 catch (Exception ex)
                 {
@@ -67,10 +72,10 @@ namespace Arbor.X.Core.Tools.Testing
                 return ExitCode.Success;
             }
 
-            return await RunVsTestAsync(logger, reportPath, vsTestExePath);
+            return await RunVsTestAsync(logger, reportPath, vsTestExePath, runTestsInReleaseConfiguration);
         }
 
-        async Task<ExitCode> RunVsTestAsync(ILogger logger, string vsTestReportDirectoryPath, string vsTestExePath)
+        async Task<ExitCode> RunVsTestAsync(ILogger logger, string vsTestReportDirectoryPath, string vsTestExePath, bool runTestsInReleaseConfiguration)
         {
             Type testClassAttribute = typeof(TestClassAttribute);
             Type testMethodAttribute = typeof(TestMethodAttribute);
@@ -80,7 +85,7 @@ namespace Arbor.X.Core.Tools.Testing
             var typesToFind = new List<Type> { testClassAttribute, testMethodAttribute };
 
             List<string> vsTestConsoleArguments =
-                new UnitTestFinder(typesToFind).GetUnitTestFixtureDlls(directory).ToList();
+                new UnitTestFinder(typesToFind).GetUnitTestFixtureDlls(directory, runTestsInReleaseConfiguration).ToList();
 
             if (!vsTestConsoleArguments.Any())
             {

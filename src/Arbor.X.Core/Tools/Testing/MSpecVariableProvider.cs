@@ -21,7 +21,7 @@ namespace Arbor.X.Core.Tools.Testing
 
             var reportDirectory = new DirectoryInfo(reportPath);
 
-            var testReportPathDirectory = new DirectoryInfo(Path.Combine(reportDirectory.FullName, "Machine.Specifications"));
+            var testReportPathDirectory = new DirectoryInfo(Path.Combine(reportDirectory.FullName, nameof(Machine.Specifications)));
 
             testReportPathDirectory.EnsureExists();
 

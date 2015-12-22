@@ -24,7 +24,7 @@ namespace Arbor.X.Core.Tools.Testing
             DebugLogEnabled = debugLogEnabled;
         }
 
-        bool DebugLogEnabled { get; set; }
+        bool DebugLogEnabled { get; }
 
         public IReadOnlyCollection<string> GetUnitTestFixtureDlls(DirectoryInfo currentDirectory, bool? releaseBuild = null)
         {
@@ -111,7 +111,7 @@ namespace Arbor.X.Core.Tools.Testing
             bool result;
             try
             {
-                _logger.WriteVerbose($"Testing assembly '{assembly}'");
+                _logger.WriteDebug($"Testing assembly '{assembly}'");
                 Type[] types = assembly.GetExportedTypes();
                 var anyType = types.Any(TryIsTypeTestFixture);
 
@@ -119,13 +119,13 @@ namespace Arbor.X.Core.Tools.Testing
             }
             catch (Exception)
             {
-                _logger.WriteVerbose($"Could not get types from assembly '{assembly.FullName}'");
+                _logger.WriteDebug($"Could not get types from assembly '{assembly.FullName}'");
                 result = false;
             }
 
             if (DebugLogEnabled || result)
             {
-                _logger.WriteVerbose(
+                _logger.WriteDebug(
                     $"Assembly {assembly.FullName}, found any class with {string.Join(" | ", _typesToFind.Select(type => type.FullName))}: {result}");
             }
 

@@ -48,6 +48,11 @@ namespace Arbor.X.Core.Tools.Testing
                 return ExitCode.Success;
             }
 
+            bool runTestsInReleaseConfiguration =
+                buildVariables.GetBooleanByKey(
+                    WellKnownVariables.RunTestsInReleaseConfigurationEnabled,
+                    defaultValue: true);
+
             bool ignoreTestFailures = ignoreTestFailuresVariable.GetValueOrDefault(defaultValue: false);
 
             if (ignoreTestFailures)
@@ -57,7 +62,7 @@ namespace Arbor.X.Core.Tools.Testing
 
                 try
                 {
-                    var exitCode = await RunNUnitAsync(externalTools, logger, reportPath);
+                    var exitCode = await RunNUnitAsync(externalTools, logger, reportPath, runTestsInReleaseConfiguration);
 
                     if (exitCode.IsSuccess)
                     {
@@ -75,10 +80,10 @@ namespace Arbor.X.Core.Tools.Testing
                 return ExitCode.Success;
             }
 
-            return await RunNUnitAsync(externalTools, logger, reportPath);
+            return await RunNUnitAsync(externalTools, logger, reportPath, runTestsInReleaseConfiguration);
         }
 
-        async Task<ExitCode> RunNUnitAsync(IVariable externalTools, ILogger logger, IVariable reportPath)
+        async Task<ExitCode> RunNUnitAsync(IVariable externalTools, ILogger logger, IVariable reportPath, bool runTestsInReleaseConfiguration)
         {
             Type fixtureAttribute = typeof (TestFixtureAttribute);
             Type testMethodAttribute = typeof (TestAttribute);
@@ -87,7 +92,7 @@ namespace Arbor.X.Core.Tools.Testing
 
             var typesToFind = new List<Type> { fixtureAttribute, testMethodAttribute };
 
-            var testDlls = new UnitTestFinder(typesToFind).GetUnitTestFixtureDlls(directory).ToList();
+            var testDlls = new UnitTestFinder(typesToFind).GetUnitTestFixtureDlls(directory, runTestsInReleaseConfiguration).ToList();
 
             if (!testDlls.Any())
             {
