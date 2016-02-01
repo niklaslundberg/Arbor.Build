@@ -56,6 +56,9 @@
         [VariableDescription("Flag to indicate if NuGet packages should be created regardless of the branch convention", "false")]
         public static readonly string NuGetReinstallArborPackageEnabled = "Arbor.X.NuGet.ReinstallArborPackageEnabled";
 
+        [VariableDescription("Flag to indicate if NuGet self update is enabled", "true")]
+        public static readonly string NuGetSelfUpdateEnabled = "Arbor.X.NuGet.SelfUpdate.Enabled";
+
         public const string NuGetRestoreDisableParallelProcessing = "Arbor.X.NuGet.Restore.DisableParallelProcessing";
 
         public const string NuGetRestoreNoCache = "Arbor.X.NuGet.Restore.NoCache";
