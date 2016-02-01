@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;
 using Arbor.X.Core.Tools.EnvironmentVariables;
@@ -25,11 +24,11 @@ namespace Arbor.X.Core.Tools.NuGet
         }
 
         protected override async Task<bool> PostVariableVerificationAsync(
-            StringBuilder stringBuilder,
+            StringBuilder variableBuilder,
             IReadOnlyCollection<IVariable> buildVariables,
             ILogger logger)
         {
-            var variable =
+            IVariable variable =
                 buildVariables.SingleOrDefault(item => item.Key == WellKnownVariables.ExternalTools_NuGet_ExePath);
 
             if (variable == null)
@@ -37,17 +36,17 @@ namespace Arbor.X.Core.Tools.NuGet
                 return false;
             }
 
-            var nuGetExePath = variable.Value;
+            string nuGetExePath = variable.Value;
 
-            var fileExists = File.Exists(nuGetExePath);
+            bool fileExists = File.Exists(nuGetExePath);
 
             if (!fileExists)
             {
-                stringBuilder.AppendLine($"NuGet.exe path '{nuGetExePath}' does not exist");
+                variableBuilder.AppendLine($"NuGet.exe path '{nuGetExePath}' does not exist");
             }
             else
             {
-                var nuGetUpdateEnabled =
+                bool nuGetUpdateEnabled =
                     buildVariables.GetBooleanByKey(WellKnownVariables.NuGetSelfUpdateEnabled, defaultValue: true);
 
                 if (nuGetUpdateEnabled)
@@ -86,7 +85,7 @@ namespace Arbor.X.Core.Tools.NuGet
             }
 
             var nugetVersion = "NuGet Version: ";
-            var versionLine =
+            string versionLine =
                 standardOut.FirstOrDefault(
                     line => line.StartsWith(nugetVersion, StringComparison.InvariantCultureIgnoreCase));
 
@@ -96,7 +95,7 @@ namespace Arbor.X.Core.Tools.NuGet
                 return;
             }
 
-            var majorNuGetVersion = versionLine.Substring(nugetVersion.Length).FirstOrDefault();
+            char majorNuGetVersion = versionLine.Substring(nugetVersion.Length).FirstOrDefault();
 
             if (majorNuGetVersion == '2')
             {
