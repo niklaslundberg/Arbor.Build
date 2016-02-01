@@ -1,12 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
 
 using Arbor.X.Core.Logging;
+
+using NUnit.Framework;
 
 namespace Arbor.X.Core.Tools.NuGet
 {
     public static class NuGetVersionHelper
     {
-        public static string GetVersion(string version, bool isReleaseBuild, string suffix, bool enableBuildNumber, ILogger logger)
+        public static string GetVersion(string version, bool isReleaseBuild, string suffix, bool enableBuildNumber, string packageBuildMetadata, ILogger logger)
         {
             Version parsedVersion;
             if (!Version.TryParse(version, out parsedVersion))
@@ -29,7 +32,7 @@ namespace Arbor.X.Core.Tools.NuGet
                 if (enableBuildNumber)
                 {
                     buildVersion =
-                        $"{parsedVersion.Major}.{parsedVersion.Minor}.{parsedVersion.Build}-{suffix}{parsedVersion.Revision}";
+                        $"{parsedVersion.Major}.{parsedVersion.Minor}.{parsedVersion.Build}-{suffix}.{parsedVersion.Revision}";
 
                     logger.Write($"Package suffix is {suffix}, using major.minor.patch-{{suffix}}build as the version, {buildVersion}");
 
@@ -56,7 +59,19 @@ namespace Arbor.X.Core.Tools.NuGet
                     logger.Write($"Using major.minor.patch as the version, {buildVersion}");
                 }
             }
-            return buildVersion;
+
+            string final;
+
+            if (!string.IsNullOrWhiteSpace(packageBuildMetadata))
+            {
+               final= $"{buildVersion}+{packageBuildMetadata.TrimStart('+')}";
+            }
+            else
+            {
+                final = buildVersion;
+            }
+
+            return final;
         }
     }
 } ;
