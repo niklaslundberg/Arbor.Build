@@ -64,7 +64,7 @@ namespace Arbor.X.Core.Tools.EnvironmentVariables
             return succeeded ? ExitCode.Success : ExitCode.Failure;
         }
 
-        protected virtual Task<bool> PostVariableVerificationAsync(StringBuilder vairableBuilder, IReadOnlyCollection<IVariable> buildVariables, ILogger logger)
+        protected virtual Task<bool> PostVariableVerificationAsync(StringBuilder variableBuilder, IReadOnlyCollection<IVariable> buildVariables, ILogger logger)
         {
             return Task.FromResult(true);
         }
