@@ -18,5 +18,27 @@ namespace Arbor.X.Core.GenericExtensions
 
             return ParseResult<string>.Create(value, true, value);
         }
+
+        public static string LeftPad(this string value, int totaltLenght, char character)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return new string(character, totaltLenght);
+            }
+
+            if (totaltLenght <= 0)
+            {
+                return value;
+            }
+
+            var lengthDiff = totaltLenght - value.Length;
+
+            if (lengthDiff <= 0)
+            {
+                return value;
+            }
+
+            return value.PadLeft(totaltLenght, character);
+        }
     }
 }

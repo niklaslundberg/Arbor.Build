@@ -74,7 +74,8 @@ namespace Arbor.X.Core.Tools.NuGet
                 _logger.Write($"Using NuGet package version override '{packageConfiguration.PackageIdOverride}'");
             }
 
-            string nuGetPackageVersion = !string.IsNullOrWhiteSpace(packageConfiguration.NuGetPackageVersionOverride) ? packageConfiguration.NuGetPackageVersionOverride : NuGetVersionHelper.GetVersion(packageConfiguration.Version, packageConfiguration.IsReleaseBuild, packageConfiguration.Suffix, packageConfiguration.BuildNumberEnabled, packageConfiguration.PackageBuildMetadata, _logger);
+            var nuGetVersioningSettings = new NuGetVersioningSettings {MaxZeroPaddingLength = 5, SemVerVersion = 1};
+            string nuGetPackageVersion = !string.IsNullOrWhiteSpace(packageConfiguration.NuGetPackageVersionOverride) ? packageConfiguration.NuGetPackageVersionOverride : NuGetVersionHelper.GetVersion(packageConfiguration.Version, packageConfiguration.IsReleaseBuild, packageConfiguration.Suffix, packageConfiguration.BuildNumberEnabled, packageConfiguration.PackageBuildMetadata, _logger, nuGetVersioningSettings);
 
             _logger.Write(
                 string.IsNullOrWhiteSpace(packageConfiguration.NuGetPackageVersionOverride)
