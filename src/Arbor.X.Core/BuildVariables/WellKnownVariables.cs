@@ -134,6 +134,9 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescription("ILMerge executable path (eg. C:\\ILRepack.exe)")]
         public static readonly string ExternalTools_ILRepack_ExePath = "Arbor.X.Tools.External.ILRepack.ExePath";
 
+        [VariableDescription("ILMerge custom executable path (eg. C:\\ILRepack.exe)")]
+        public static readonly string ExternalTools_ILRepack_Custom_ExePath = "Arbor.X.Tools.External.ILRepack.CustomExePath";
+
         [VariableDescription("Flag to indicate if Kudu deployment is enabled", "true")]
         public static readonly string ExternalTools_Kudu_Enabled = "Arbor.X.Tools.External.Kudu.Enabled";
 
