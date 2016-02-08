@@ -57,7 +57,14 @@ namespace Arbor.X.Core.Tools.ILRepack
                 var ilMergedDirectory = new DirectoryInfo(ilMergedDirectoryPath).EnsureExists();
 
                 var ilMergedPath = Path.Combine(ilMergedDirectory.FullName, fileInfo.Name);
-                var arguments = new List<string> {"/target:exe", "/out:" + ilMergedPath, fileInfo.FullName};
+                var arguments = new List<string>
+                {
+                    "/target:exe",
+                    $"/out:{ilMergedPath}",
+                    $"/Lib:{fileInfo.Directory.FullName}",
+                    fileInfo.FullName,
+                };
+
                 arguments.AddRange(mergeData.Dlls.Select(dll => dll.FullName));
 
                 string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
