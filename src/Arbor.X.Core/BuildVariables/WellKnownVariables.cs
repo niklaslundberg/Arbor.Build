@@ -56,6 +56,9 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescription("Flag to indicate that Symbol server package upload is enabled even if not running on a build server")]
         public static readonly string ExternalTools_SymbolServer_ForceUploadEnabled = "Arbor.X.Tools.External.SymbolServer.ForceUploadEnabled";
 
+        [VariableDescription("Flag to indicate that Symbol server package upload is enabled even if not running on a build server")]
+        public const string ExternalTools_SymbolServer_UploadTimeoutInSeconds = "Arbor.X.NuGet.SymbolServer.TimeoutInSeconds";
+
         [VariableDescription("Flag to indicate that Symbol server package upload is enabled")]
         public static readonly string ExternalTools_SymbolServer_Enabled = "Arbor.X.Tools.External.SymbolServer.Enabled";
 

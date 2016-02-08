@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -44,6 +45,8 @@ namespace Arbor.X.Core.Tools.NuGet
             bool isRunningOnBuildAgent = isRunningOnBuildAgentVariable.GetValueOrDefault(defaultValue: false);
             bool forceUpload = buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_NuGetServer_ForceUploadEnabled, defaultValue: false);
 
+            int timeoutInSeconds = buildVariables.GetInt32ByKey(WellKnownVariables.ExternalTools_NuGetServer_UploadTimeoutInSeconds, defaultValue: -1);
+
             if (isRunningOnBuildAgent)
             {
                 logger.Write("NuGet package upload is enabled");
@@ -57,7 +60,7 @@ namespace Arbor.X.Core.Tools.NuGet
             if (isRunningOnBuildAgent || forceUpload)
             {
                 return UploadNuGetPackagesAsync(logger, packagesFolder, nugetExe.Value, nugetServer,
-                    nuGetServerApiKey, websitePackagesUploadEnabled, websitesDirectory);
+                    nuGetServerApiKey, websitePackagesUploadEnabled, websitesDirectory, timeoutInSeconds);
             }
 
             logger.Write(
@@ -68,7 +71,7 @@ namespace Arbor.X.Core.Tools.NuGet
 
         async Task<ExitCode> UploadNuGetPackagesAsync(ILogger logger, DirectoryInfo artifactPackagesDirectory, string nugetExePath,
             string serverUri,
-            string apiKey, bool websitePackagesUploadEnabled, DirectoryInfo websitesDirectory)
+            string apiKey, bool websitePackagesUploadEnabled, DirectoryInfo websitesDirectory, int timeoutInseconds)
         {
             if (artifactPackagesDirectory == null)
             {
@@ -141,7 +144,7 @@ namespace Arbor.X.Core.Tools.NuGet
             {
                 string nugetPackage = fileInfo.FullName;
 
-                var exitCode = await UploadNugetPackageAsync(nugetExePath, serverUri, apiKey, nugetPackage, logger);
+                var exitCode = await UploadNugetPackageAsync(nugetExePath, serverUri, apiKey, nugetPackage, logger, timeoutInseconds);
 
                 if (!exitCode.IsSuccess)
                 {
@@ -152,8 +155,7 @@ namespace Arbor.X.Core.Tools.NuGet
             return result ? ExitCode.Success : ExitCode.Failure;
         }
 
-        static async Task<ExitCode> UploadNugetPackageAsync(string nugetExePath, string serverUri, string apiKey,
-            string nugetPackage, ILogger logger)
+        static async Task<ExitCode> UploadNugetPackageAsync(string nugetExePath, string serverUri, string apiKey, string nugetPackage, ILogger logger, int timeoutInseconds)
         {
             logger.WriteDebug($"Pushing NuGet package '{nugetPackage}'");
 
@@ -177,12 +179,40 @@ namespace Arbor.X.Core.Tools.NuGet
             args.Add("-verbosity");
             args.Add("detailed");
 
-            var exitCode =
-                await
-                    ProcessRunner.ExecuteAsync(nugetExePath, arguments: args, standardOutLog: logger.Write,
-                        standardErrorAction: logger.WriteError, toolAction: logger.Write,
-                    addProcessNameAsLogCategory: true,
-                    addProcessRunnerCategory: true);
+            if (timeoutInseconds > 0)
+            {
+                args.Add("-timeout");
+                args.Add(timeoutInseconds.ToString(CultureInfo.InvariantCulture));
+            }
+
+            const int maxAttempts = 5;
+
+            ExitCode exitCode = ExitCode.Failure;
+
+            int attemptCount = 1;
+            while (!exitCode.IsSuccess && attemptCount <= maxAttempts)
+            {
+                exitCode =
+                    await
+                        ProcessRunner.ExecuteAsync(nugetExePath, arguments: args, standardOutLog: logger.Write,
+                            standardErrorAction: logger.WriteError, toolAction: logger.Write,
+                            addProcessNameAsLogCategory: true,
+                            addProcessRunnerCategory: true);
+
+                if (!exitCode.IsSuccess && attemptCount < maxAttempts)
+                {
+                    logger.WriteWarning(
+                        $"Failed to upload nuget package '{nugetPackage}', attempt {attemptCount} of {maxAttempts}, retrying...");
+                }
+                
+                attemptCount++;
+
+                if (!exitCode.IsSuccess && attemptCount == maxAttempts)
+                {
+                    logger.WriteError(
+                        $"Failed to upload nuget package '{nugetPackage}' on last attempt {attemptCount} of {maxAttempts}");
+                }
+            }
 
             return exitCode;
         }

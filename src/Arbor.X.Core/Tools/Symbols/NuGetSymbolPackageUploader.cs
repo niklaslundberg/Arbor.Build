@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -53,6 +54,10 @@ namespace Arbor.X.Core.Tools.Symbols
                 buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_SymbolServer_ForceUploadEnabled,
                     defaultValue: false);
 
+            int timeout =
+                buildVariables.GetInt32ByKey(WellKnownVariables.ExternalTools_SymbolServer_UploadTimeoutInSeconds,
+                    defaultValue: -1);
+
             if (isRunningOnBuildAgent)
             {
                 logger.Write("Symbol package upload is enabled");
@@ -66,7 +71,7 @@ namespace Arbor.X.Core.Tools.Symbols
             if (isRunningOnBuildAgent || forceUpload)
             {
                 return UploadNuGetPackagesAsync(logger, packagesFolder.FullName, nugetExe.Value, symbolServer.Value,
-                    symbolServerApiKey.Value);
+                    symbolServerApiKey.Value, timeout);
             }
 
             logger.Write("Not running on build server. Skipped package upload");
@@ -76,7 +81,7 @@ namespace Arbor.X.Core.Tools.Symbols
 
         async Task<ExitCode> UploadNuGetPackagesAsync(ILogger logger, string packagesFolder, string nugetExePath,
             string symbolServerUrl,
-            string apiKey)
+            string apiKey, int timeout)
         {
             if (string.IsNullOrWhiteSpace(packagesFolder))
             {
@@ -107,7 +112,7 @@ namespace Arbor.X.Core.Tools.Symbols
                 string nugetPackage = fileInfo.FullName;
 
                 ExitCode exitCode =
-                    await UploadNugetPackageAsync(nugetExePath, symbolServerUrl, apiKey, nugetPackage, logger);
+                    await UploadNugetPackageAsync(nugetExePath, symbolServerUrl, apiKey, nugetPackage, logger, timeout);
 
                 if (!exitCode.IsSuccess)
                 {
@@ -118,8 +123,7 @@ namespace Arbor.X.Core.Tools.Symbols
             return result ? ExitCode.Success : ExitCode.Failure;
         }
 
-        static async Task<ExitCode> UploadNugetPackageAsync(string nugetExePath, string symbolServerUrl, string apiKey,
-            string nugetPackage, ILogger logger)
+        static async Task<ExitCode> UploadNugetPackageAsync(string nugetExePath, string symbolServerUrl, string apiKey, string nugetPackage, ILogger logger, int timeout)
         {
             var args = new List<string>
                        {
@@ -131,6 +135,13 @@ namespace Arbor.X.Core.Tools.Symbols
                            "-verbosity",
                            "detailed"
                        };
+
+            if (timeout > 0)
+            {
+                args.Add("-timeout");   
+                args.Add(timeout.ToString(CultureInfo.InvariantCulture));   
+            }
+
             ExitCode exitCode =
                 await
                     ProcessRunner.ExecuteAsync(nugetExePath, arguments: args, standardOutLog: logger.Write,
