@@ -180,17 +180,29 @@ namespace Arbor.X.Bootstrapper
 
             _logger.WriteVerbose($"Using base directory '{baseDir}'", _Prefix);
 
-            string nugetExePath = Path.Combine(buildDir.FullName, "nuget.exe");
+            var customNuGetPath =
+                Environment.GetEnvironmentVariable(WellKnownVariables.ExternalTools_NuGet_ExePath_Custom);
 
-            bool nuGetExists = await TryDownloadNuGetAsync(buildDir.FullName, nugetExePath);
+            string nugetExePath;
 
-            if (!nuGetExists)
+            if (!string.IsNullOrWhiteSpace(customNuGetPath) && File.Exists(customNuGetPath))
             {
-                _logger.WriteError(
-                    $"NuGet.exe could not be downloaded and it does not already exist at path '{nugetExePath}'", _Prefix);
-                return ExitCode.Failure;
+                nugetExePath = customNuGetPath;
             }
+            else
+            {
+                nugetExePath = Path.Combine(buildDir.FullName, "nuget.exe");
 
+                bool nuGetExists = await TryDownloadNuGetAsync(buildDir.FullName, nugetExePath);
+
+                if (!nuGetExists)
+                {
+                    _logger.WriteError(
+                        $"NuGet.exe could not be downloaded and it does not already exist at path '{nugetExePath}'", _Prefix);
+                    return ExitCode.Failure;
+                }
+            }
+            
             string outputDirectoryPath = await DownloadNuGetPackageAsync(buildDir.FullName, nugetExePath);
 
             if (string.IsNullOrWhiteSpace(outputDirectoryPath))
