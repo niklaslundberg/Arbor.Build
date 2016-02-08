@@ -46,8 +46,8 @@
       <HintPath>..\packages\Arbor.Castanea.1.0.5\lib\net45\Arbor.Castanea.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="FubuCore, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\FubuCore.2.0.0.311\lib\FubuCore.dll</HintPath>
+    <Reference Include="FubuCore, Version=2.0.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\FubuCore.2.0.1.321\lib\FubuCore.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="FubuCsProjFile, Version=1.9.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -83,8 +83,8 @@
       <HintPath>..\packages\NLog.4.2.3\lib\net45\NLog.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="nunit.framework, Version=2.6.4.14350, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
-      <HintPath>..\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
+    <Reference Include="nunit.framework, Version=3.0.5813.39031, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
+      <HintPath>..\packages\NUnit.3.0.1\lib\net45\nunit.framework.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Semver, Version=1.1.2.0, Culture=neutral, processorArchitecture=MSIL">
