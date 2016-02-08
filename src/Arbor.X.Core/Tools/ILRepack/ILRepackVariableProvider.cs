@@ -6,20 +6,20 @@ using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.Tools.Cleanup;
 
-namespace Arbor.X.Core.Tools.ILMerge
+namespace Arbor.X.Core.Tools.ILRepack
 {
-    public class ILMergeVariableProvider : IVariableProvider
+    public class ILRepackVariableProvider : IVariableProvider
     {
         public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {
             var toolsPath = buildVariables.Require(WellKnownVariables.ExternalTools).ThrowIfEmptyValue().Value;
 
-            var ilMergePath = Path.Combine(toolsPath, "ILMerge", "ILMerge.exe");
+            var ilRepackPath = Path.Combine(toolsPath, "ILRepack", "ILRepack.exe");
 
             var variables = new List<IVariable>
                             {
                                 new EnvironmentVariable(
-                                    WellKnownVariables.ExternalTools_ILMerge_ExePath, ilMergePath)
+                                    WellKnownVariables.ExternalTools_ILRepack_ExePath, ilRepackPath)
                             };
 
             return Task.FromResult<IEnumerable<IVariable>>(variables);

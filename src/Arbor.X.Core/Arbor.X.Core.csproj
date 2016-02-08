@@ -236,8 +236,8 @@
     <Compile Include="IO\DirectoryDelete.cs" />
     <Compile Include="Tools\Git\GitHelper.cs" />
     <Compile Include="Tools\Git\GitVariableProvider.cs" />
-    <Compile Include="Tools\ILMerge\ILMergeData.cs" />
-    <Compile Include="Tools\ILMerge\ILMergeVariableProvider.cs" />
+    <Compile Include="Tools\ILRepack\ILRepackData.cs" />
+    <Compile Include="Tools\ILRepack\ILRepackVariableProvider.cs" />
     <Compile Include="Tools\Cleanup\ArtifactsVariableProvider.cs" />
     <Compile Include="Tools\Environments\BuildAgentVariableProvider.cs" />
     <Compile Include="Tools\Environments\SourcePathVariableProvider.cs" />
@@ -273,7 +273,7 @@
     <Compile Include="IO\DirectoryExtensions.cs" />
     <Compile Include="BuildVariables\EnvironmentVariable.cs" />
     <Compile Include="Logging\ILogger.cs" />
-    <Compile Include="Tools\ILMerge\ILMerger.cs" />
+    <Compile Include="Tools\ILRepack\ILRepacker.cs" />
     <Compile Include="Tools\ITool.cs" />
     <Compile Include="BuildVariables\IVariable.cs" />
     <Compile Include="ProcessUtils\NativeMethods.cs" />
