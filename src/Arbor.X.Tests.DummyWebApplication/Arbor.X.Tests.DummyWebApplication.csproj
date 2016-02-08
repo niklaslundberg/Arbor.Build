@@ -45,6 +45,8 @@
   <ItemGroup>
     <Reference Include="FubuCore, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\FubuCore.2.0.0.311\lib\FubuCore.dll</HintPath>
+    <Reference Include="FubuCore, Version=2.0.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\FubuCore.2.0.1.321\lib\FubuCore.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="FubuCsProjFile, Version=1.9.0.0, Culture=neutral, processorArchitecture=MSIL">

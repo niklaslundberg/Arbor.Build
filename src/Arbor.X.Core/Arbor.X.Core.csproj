@@ -11,7 +11,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Arbor.X.Core</RootNamespace>
     <AssemblyName>Arbor.X.Core</AssemblyName>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
@@ -74,6 +74,32 @@
     </Reference>
     <Reference Include="FubuCore, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\FubuCore.2.0.0.311\lib\FubuCore.dll</HintPath>
+    <Reference Include="Arbor.KVConfiguration.Core, Version=0.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Arbor.KVConfiguration.Core.0.3.0\lib\net45\Arbor.KVConfiguration.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Arbor.KVConfiguration.JsonConfiguration, Version=0.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Arbor.KVConfiguration.JsonConfiguration.0.3.0\lib\net45\Arbor.KVConfiguration.JsonConfiguration.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Arbor.KVConfiguration.Schema, Version=0.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Arbor.KVConfiguration.Schema.0.3.0\lib\net45\Arbor.KVConfiguration.Schema.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Arbor.KVConfiguration.Schema.Json, Version=0.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Arbor.KVConfiguration.Schema.Json.0.3.0\lib\net45\Arbor.KVConfiguration.Schema.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Arbor.KVConfiguration.SystemConfiguration, Version=0.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Arbor.KVConfiguration.SystemConfiguration.0.3.0\lib\net45\Arbor.KVConfiguration.SystemConfiguration.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Arbor.KVConfiguration.UserConfiguration, Version=0.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Arbor.KVConfiguration.UserConfiguration.0.3.0\lib\net45\Arbor.KVConfiguration.UserConfiguration.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="FubuCore, Version=2.0.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\FubuCore.2.0.1.321\lib\FubuCore.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="FubuCsProjFile, Version=1.9.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -112,10 +138,26 @@
       <HintPath>..\packages\NuGet.Versioning.3.3.0\lib\net45\NuGet.Versioning.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="NuGet.Core, Version=2.10.1.766, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\NuGet.Core.2.10.1\lib\net40-Client\NuGet.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="NuGet.Versioning, Version=3.3.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\NuGet.Versioning.3.3.0\lib\net45\NuGet.Versioning.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="nunit.framework, Version=3.0.5813.39031, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
+      <HintPath>..\packages\NUnit.3.0.1\lib\net45\nunit.framework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Semver">
       <HintPath>..\packages\semver.1.1.2\lib\net451\Semver.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Collections.Immutable, Version=1.1.37.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Collections.Immutable.1.1.37\lib\dotnet\System.Collections.Immutable.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
