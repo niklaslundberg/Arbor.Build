@@ -80,7 +80,7 @@ namespace Arbor.X.Core.Tools.ILRepack
 
                 string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
 
-                string dotNetVersion = "4.5.1";
+                string dotNetVersion = "4.6";
 
                 string referenceAssemblyDirectory =
                     $"{$@"{programFiles}\Reference Assemblies\Microsoft\Framework\.NETFramework\v"}{dotNetVersion}";
