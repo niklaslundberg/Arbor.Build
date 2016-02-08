@@ -13,6 +13,7 @@ using Arbor.X.Core.ProcessUtils;
 using JetBrains.Annotations;
 using Directory = Alphaleonis.Win32.Filesystem.Directory;
 using DirectoryInfo = Alphaleonis.Win32.Filesystem.DirectoryInfo;
+using File = Alphaleonis.Win32.Filesystem.File;
 using FileInfo = Alphaleonis.Win32.Filesystem.FileInfo;
 using Path = Alphaleonis.Win32.Filesystem.Path;
 
@@ -24,15 +25,25 @@ namespace Arbor.X.Core.Tools.ILRepack
     public class ILRepacker : ITool
     {
         string _artifactsPath;
-        string _ilMergeExePath;
+        string _ilRepackExePath;
         ILogger _logger;
 
         public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {
             _logger = logger;
-            _ilMergeExePath =
+
+            _ilRepackExePath =
                 buildVariables.Require(WellKnownVariables.ExternalTools_ILRepack_ExePath).ThrowIfEmptyValue().Value;
             
+            string customILRepackPath =
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_ILRepack_Custom_ExePath, "");
+
+            if (!string.IsNullOrWhiteSpace(customILRepackPath) && File.Exists(customILRepackPath))
+            {
+                logger.Write($"Using custom path for ILRepack: '{customILRepackPath}'");
+                _ilRepackExePath = customILRepackPath;
+            } 
+
             _artifactsPath =
                 buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue().Value;
 
@@ -87,7 +98,7 @@ namespace Arbor.X.Core.Tools.ILRepack
 
                 ExitCode result =
                     await
-                        ProcessRunner.ExecuteAsync(_ilMergeExePath, arguments: arguments, standardOutLog: logger.Write,
+                        ProcessRunner.ExecuteAsync(_ilRepackExePath, arguments: arguments, standardOutLog: logger.Write,
                             toolAction: logger.Write, standardErrorAction: logger.WriteError, cancellationToken: cancellationToken);
 
                 if (!result.IsSuccess)
