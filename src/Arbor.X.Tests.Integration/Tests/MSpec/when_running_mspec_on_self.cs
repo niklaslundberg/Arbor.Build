@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
-
-using Arbor.Processing.Core;
 using Arbor.X.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
@@ -58,6 +56,7 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
             new DirectoryInfo(mspecReports).EnsureExists();
 
             variables.Add(new EnvironmentVariable(WellKnownVariables.ExternalTools_MSpec_ReportPath, mspecReports));
+            variables.Add(new EnvironmentVariable(WellKnownVariables.RunTestsInReleaseConfigurationEnabled, "false"));
         };
 
         Because of =

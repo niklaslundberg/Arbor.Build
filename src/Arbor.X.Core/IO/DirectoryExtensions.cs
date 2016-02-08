@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-using Arbor.Exceptions;
 using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.Tools;
 using DirectoryInfo = Alphaleonis.Win32.Filesystem.DirectoryInfo;

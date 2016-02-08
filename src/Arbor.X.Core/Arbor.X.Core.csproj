@@ -11,7 +11,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Arbor.X.Core</RootNamespace>
     <AssemblyName>Arbor.X.Core</AssemblyName>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
@@ -48,6 +48,30 @@
       <HintPath>..\packages\Arbor.Castanea.1.0.5\lib\net45\Arbor.Castanea.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Arbor.KVConfiguration.Core, Version=0.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Arbor.KVConfiguration.Core.0.2.0\lib\net45\Arbor.KVConfiguration.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Arbor.KVConfiguration.JsonConfiguration, Version=0.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Arbor.KVConfiguration.JsonConfiguration.0.2.0\lib\net45\Arbor.KVConfiguration.JsonConfiguration.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Arbor.KVConfiguration.Schema, Version=0.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Arbor.KVConfiguration.Schema.0.2.0\lib\net45\Arbor.KVConfiguration.Schema.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Arbor.KVConfiguration.Schema.Json, Version=0.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Arbor.KVConfiguration.Schema.Json.0.2.0\lib\net45\Arbor.KVConfiguration.Schema.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Arbor.KVConfiguration.SystemConfiguration, Version=0.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Arbor.KVConfiguration.SystemConfiguration.0.2.0\lib\net45\Arbor.KVConfiguration.SystemConfiguration.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Arbor.KVConfiguration.UserConfiguration, Version=0.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Arbor.KVConfiguration.UserConfiguration.0.2.0\lib\net45\Arbor.KVConfiguration.UserConfiguration.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="FubuCore, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\FubuCore.2.0.0.311\lib\FubuCore.dll</HintPath>
       <Private>True</Private>
@@ -72,6 +96,10 @@
       <HintPath>..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.1\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.8.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
       <HintPath>..\packages\NLog.4.2.3\lib\net45\NLog.dll</HintPath>
       <Private>True</Private>
@@ -80,8 +108,8 @@
       <HintPath>..\packages\NuGet.Core.2.10.1\lib\net40-Client\NuGet.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="nunit.framework, Version=3.0.5813.39031, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
-      <HintPath>..\packages\NUnit.3.0.1\lib\net45\nunit.framework.dll</HintPath>
+    <Reference Include="NuGet.Versioning, Version=3.3.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\NuGet.Versioning.3.3.0\lib\net45\NuGet.Versioning.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Semver">
@@ -113,8 +141,8 @@
     <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework">
       <HintPath>..\packages\Microsoft.VisualStudio.QualityTools.UnitTestFramework.11.0.50727.1\Microsoft.VisualStudio.QualityTools.UnitTestFramework.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed">
-      <HintPath>..\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="nunit.framework">
+      <HintPath>..\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System.Net.Http.Extensions, Version=2.2.29.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <HintPath>..\packages\Microsoft.Net.Http.2.2.29\lib\net45\System.Net.Http.Extensions.dll</HintPath>
@@ -172,16 +200,20 @@
     </Compile>
     <Compile Include="GenericExtensions\DisplayExtensions.cs" />
     <Compile Include="GenericExtensions\EnumerableExtensions.cs" />
+    <Compile Include="GenericExtensions\ExceptionExtensions.cs" />
+    <Compile Include="ExitCode.cs" />
     <Compile Include="GenericExtensions\IntExtensions.cs" />
     <Compile Include="Logging\DebugLogger.cs" />
     <Compile Include="Logging\LogLevel.cs" />
     <Compile Include="Logging\MultiplexLogger.cs" />
     <Compile Include="Logging\NLogLogger.cs" />
     <Compile Include="Logging\NullLogger.cs" />
+    <Compile Include="Maybe.cs" />
     <Compile Include="Parsing\ParseResult.cs" />
     <Compile Include="GenericExtensions\StringExtensions.cs" />
     <Compile Include="GenericExtensions\TaskExtensions.cs" />
     <Compile Include="Tools\MSBuild\Platforms.cs" />
+    <Compile Include="Tools\Testing\MachineSpecificationsConstants.cs" />
     <Compile Include="Tools\ToolExtensions.cs" />
     <Compile Include="Tools\ToolResult.cs" />
     <Compile Include="Tools\ToolResultType.cs" />
@@ -239,8 +271,10 @@
     <Compile Include="Tools\ILMerge\ILMerger.cs" />
     <Compile Include="Tools\ITool.cs" />
     <Compile Include="BuildVariables\IVariable.cs" />
+    <Compile Include="ProcessUtils\NativeMethods.cs" />
     <Compile Include="Tools\PriorityAttribute.cs" />
-    <Compile Include="ProcessUtils\ProcessHelper.cs" />
+    <Compile Include="ProcessUtils\ProcessExtensions.cs" />
+    <Compile Include="ProcessUtils\ProcessRunner.cs" />
     <Compile Include="BuildVariables\RequireVariableExtensions.cs" />
     <Compile Include="Tools\Versioning\AssemblyInfoPatcher.cs" />
     <Compile Include="BuildApplication.cs" />
@@ -281,20 +315,7 @@
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Arbor.Exceptions\Arbor.Exceptions.csproj">
-      <Project>{0255d0ec-426b-4857-adcc-e8260c81d220}</Project>
-      <Name>Arbor.Exceptions</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Arbor.Processing.Core\Arbor.Processing.Core.csproj">
-      <Project>{480AFB5E-4282-4B2A-A3BD-BD42830C743A}</Project>
-      <Name>Arbor.Processing.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Arbor.Processing\Arbor.Processing.csproj">
-      <Project>{5B5D302F-3197-482A-BC53-E8F41BC73701}</Project>
-      <Name>Arbor.Processing</Name>
-    </ProjectReference>
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Import Project="..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" />

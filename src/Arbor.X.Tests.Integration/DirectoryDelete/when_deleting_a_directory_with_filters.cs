@@ -22,13 +22,13 @@ namespace Arbor.X.Tests.Integration.DirectoryDelete
         {
             if (Directory.Exists(tempDir))
             {
-                Directory.Delete(tempDir);
+                Directory.Delete(tempDir, recursive:true);
             }
         };
 
         Establish context = () =>
         {
-            tempDir = Path.Combine(Path.GetTempPath(), $"{DefaultPaths.TempPathPrefix}_DeleteDirs");
+            tempDir = Path.Combine(Path.GetTempPath(), $"{DefaultPaths.TempPathPrefix}_DeleteDirs{Guid.NewGuid().ToString().Substring(0,8)}");
 
             var directoryInfo = new DirectoryInfo(tempDir);
 

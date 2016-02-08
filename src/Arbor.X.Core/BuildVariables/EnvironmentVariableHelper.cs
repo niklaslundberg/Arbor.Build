@@ -8,7 +8,6 @@ using Alphaleonis.Win32.Filesystem;
 
 using Arbor.Aesculus.Core;
 using Arbor.Castanea;
-using Arbor.Processing.Core;
 using Arbor.X.Core.Logging;
 
 using JetBrains.Annotations;

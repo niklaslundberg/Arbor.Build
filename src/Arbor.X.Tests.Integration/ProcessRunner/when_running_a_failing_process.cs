@@ -2,8 +2,6 @@
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-
-using Arbor.Processing.Core;
 using Arbor.X.Core;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
@@ -11,7 +9,7 @@ using Machine.Specifications;
 
 namespace Arbor.X.Tests.Integration.ProcessRunner
 {
-    [Subject(typeof(Core.ProcessUtils.ProcessHelper))]
+    [Subject(typeof(Core.ProcessUtils.ProcessRunner))]
     [Tags(Arbor.X.Core.Tools.Testing.MSpecInternalConstants.RecursiveArborXTest)]
     public class when_running_a_failing_process
     {
@@ -39,7 +37,7 @@ EXIT /b 3
             {
                 exitCode =
                     await
-                        Processing.ProcessRunner.ExecuteAsync(testPath,
+                        Core.ProcessUtils.ProcessRunner.ExecuteAsync(testPath,
                             standardOutLog: (message, prefix) => logger.Write(message, "STANDARD"),
                             standardErrorAction: (message, prefix) => logger.WriteError(message, "ERROR"),
                             toolAction: (message, prefix) => logger.Write(message, "TOOL"),

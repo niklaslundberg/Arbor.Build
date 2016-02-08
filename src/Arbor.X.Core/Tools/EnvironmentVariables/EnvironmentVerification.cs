@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Logging;
 
@@ -15,7 +14,7 @@ namespace Arbor.X.Core.Tools.EnvironmentVariables
     {
         protected readonly List<string> RequiredValues = new List<string>();
 
-        public Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
+        public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {
             var missingKeys =
                 RequiredValues.Where(
@@ -55,19 +54,19 @@ namespace Arbor.X.Core.Tools.EnvironmentVariables
 
             bool succeeded = !missingKeys.Any() && !missingValues.Any();
 
-            succeeded &= PostVariableVerification(sb, buildVariables);
+            succeeded &= await PostVariableVerificationAsync(sb, buildVariables, logger);
 
             if (!succeeded)
             {
                 logger.WriteError(sb.ToString());
             }
 
-            return Task.FromResult(succeeded ? ExitCode.Success : ExitCode.Failure);
+            return succeeded ? ExitCode.Success : ExitCode.Failure;
         }
 
-        protected virtual bool PostVariableVerification(StringBuilder errorLogger, IReadOnlyCollection<IVariable> buildVariables)
+        protected virtual Task<bool> PostVariableVerificationAsync(StringBuilder variableBuilder, IReadOnlyCollection<IVariable> buildVariables, ILogger logger)
         {
-            return true;
+            return Task.FromResult(true);
         }
     }
 }

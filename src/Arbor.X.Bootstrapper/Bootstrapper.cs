@@ -7,8 +7,6 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Aesculus.Core;
-using Arbor.Processing;
-using Arbor.Processing.Core;
 using Arbor.X.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.GenericExtensions;
@@ -391,7 +389,7 @@ namespace Arbor.X.Bootstrapper
             _logger.WriteVerbose($"Using temp storage to clone: '{targetDirectory.FullName}'", _Prefix);
 
             ExitCode cloneExitCode =
-                await ProcessHelper.ExecuteAsync(gitExePath, arguments: cloneArguments, logger: _logger, addProcessNameAsLogCategory:true, addProcessRunnerCategory:true, parentPrefix:_Prefix);
+                await ProcessRunner.ExecuteAsync(gitExePath, arguments: cloneArguments, logger: _logger, addProcessNameAsLogCategory:true, addProcessRunnerCategory:true, parentPrefix:_Prefix);
 
             if (!cloneExitCode.IsSuccess)
             {
@@ -550,7 +548,7 @@ namespace Arbor.X.Bootstrapper
                 try
                 {
                     var arguments = new List<string> {"update", "-self"};
-                    await ProcessHelper.ExecuteAsync(targetFile, arguments: arguments, logger: _logger, addProcessNameAsLogCategory: true, addProcessRunnerCategory:true,parentPrefix:_Prefix);
+                    await ProcessRunner.ExecuteAsync(targetFile, arguments: arguments, logger: _logger, addProcessNameAsLogCategory: true, addProcessRunnerCategory:true,parentPrefix:_Prefix);
                 }
                 catch (Exception ex)
                 {

@@ -6,8 +6,6 @@ using System.Threading.Tasks;
 
 using Alphaleonis.Win32.Filesystem;
 
-using Arbor.Processing;
-using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;

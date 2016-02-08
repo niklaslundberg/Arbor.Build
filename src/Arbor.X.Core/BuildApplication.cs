@@ -8,8 +8,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Alphaleonis.Win32.Filesystem;
 using Arbor.Aesculus.Core;
-using Arbor.Processing;
-using Arbor.Processing.Core;
+using Arbor.KVConfiguration.Core;
+using Arbor.KVConfiguration.SystemConfiguration;
+using Arbor.KVConfiguration.UserConfiguration;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.IO;
@@ -83,6 +84,8 @@ namespace Arbor.X.Core
 
         public async Task<ExitCode> RunAsync(string[] args)
         {
+            KVConfigurationManager.Initialize(new UserConfiguration(new AppSettingsKeyValueConfiguration()));
+
             if (Debugger.IsAttached)
             {
                 await StartWithDebuggerAsync(args).ConfigureAwait(false);

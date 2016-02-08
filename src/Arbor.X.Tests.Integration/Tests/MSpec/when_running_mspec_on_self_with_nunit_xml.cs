@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
-
-using Arbor.Processing.Core;
 using Arbor.X.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
@@ -56,6 +54,7 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
             variables.Add(new EnvironmentVariable(WellKnownVariables.SourceRootOverride, tempDirectory.FullName));
             variables.Add(new EnvironmentVariable(WellKnownVariables.SourceRoot, tempDirectory.FullName));
             variables.Add(new EnvironmentVariable(WellKnownVariables.MSpecJUnitXslTransformationEnabled, "true"));
+            variables.Add(new EnvironmentVariable(WellKnownVariables.RunTestsInReleaseConfigurationEnabled, "false"));
 
 
             mspecReports = Path.Combine(tempDirectory.FullName, "MSpecReports");
@@ -68,7 +67,7 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
         Because of =
             () =>
                 ExitCode =
-                    testRunner.ExecuteAsync(new ConsoleLogger {LogLevel = LogLevel.Information}, variables,
+                    testRunner.ExecuteAsync(new ConsoleLogger {LogLevel = LogLevel.Verbose}, variables,
                         new CancellationToken()).Result;
 
         It shoud_have_created_html_report = () =>
