@@ -13,7 +13,7 @@ SET Arbor.X.Build.NetAssembly.Configuration=
 SET Version.Major=1
 SET Version.Minor=0
 SET Version.Patch=28
-SET Version.Build=221
+SET Version.Build=3
 
 IF "%Arbor.X.Vcs.Branch.Name%" == "" (
 	SET Arbor.X.Vcs.Branch.Name=develop
@@ -27,7 +27,7 @@ SET Arbor.X.NuGet.Package.CreateNuGetWebPackages.Enabled=true
 SET Arbor.X.Build.NetAssembly.MetadataEnabled=true
 SET Arbor.X.Build.NetAssembly.Description=A convention-based build tool
 SET Arbor.X.Build.NetAssembly.Company=Niklas Lundberg
-SET Arbor.X.Build.NetAssembly.Copyright=© Niklas Lundberg 2014-2015
+SET Arbor.X.Build.NetAssembly.Copyright=© Niklas Lundberg 2014-2016
 SET Arbor.X.Build.NetAssembly.Trademark=Arbor.X TM
 SET Arbor.X.Build.NetAssembly.Product=Arbor.X
 SET Arbor.X.ShowAvailableVariablesEnabled=false
