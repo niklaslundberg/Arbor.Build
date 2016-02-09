@@ -131,7 +131,7 @@ namespace Arbor.X.Core.Tools.NuGet
                                                       : "";
 
                 logger.Write(
-                    $"Could not find any NuGet packages to upload in folder '{artifactPackagesDirectory}' or any subfolder{websiteUploadMissingMessage}");
+                    $"Could not find any NuGet packages to upload in folder '{artifactPackagesDirectory}' or any subfolder {websiteUploadMissingMessage}");
 
                 return ExitCode.Success;
             }
@@ -157,6 +157,14 @@ namespace Arbor.X.Core.Tools.NuGet
 
         static async Task<ExitCode> UploadNugetPackageAsync(string nugetExePath, string serverUri, string apiKey, string nugetPackage, ILogger logger, int timeoutInseconds)
         {
+            if (!File.Exists(nugetPackage))
+            {
+                logger.WriteError(
+                    $"The NuGet package '{nugetPackage}' does not exist, when trying to push to nuget source");
+                return ExitCode.Failure;
+            }
+
+
             logger.WriteDebug($"Pushing NuGet package '{nugetPackage}'");
 
             var args = new List<string>
@@ -185,12 +193,12 @@ namespace Arbor.X.Core.Tools.NuGet
                 args.Add(timeoutInseconds.ToString(CultureInfo.InvariantCulture));
             }
 
-            const int maxAttempts = 5;
+            const int MaxAttempts = 5;
 
             ExitCode exitCode = ExitCode.Failure;
 
             int attemptCount = 1;
-            while (!exitCode.IsSuccess && attemptCount <= maxAttempts)
+            while (!exitCode.IsSuccess && attemptCount <= MaxAttempts)
             {
                 exitCode =
                     await
@@ -199,18 +207,18 @@ namespace Arbor.X.Core.Tools.NuGet
                             addProcessNameAsLogCategory: true,
                             addProcessRunnerCategory: true);
 
-                if (!exitCode.IsSuccess && attemptCount < maxAttempts)
+                if (!exitCode.IsSuccess && attemptCount < MaxAttempts)
                 {
                     logger.WriteWarning(
-                        $"Failed to upload nuget package '{nugetPackage}', attempt {attemptCount} of {maxAttempts}, retrying...");
+                        $"Failed to upload nuget package '{nugetPackage}', attempt {attemptCount} of {MaxAttempts}, retrying...");
                 }
-                
+
                 attemptCount++;
 
-                if (!exitCode.IsSuccess && attemptCount == maxAttempts)
+                if (!exitCode.IsSuccess && attemptCount == MaxAttempts)
                 {
                     logger.WriteError(
-                        $"Failed to upload nuget package '{nugetPackage}' on last attempt {attemptCount} of {maxAttempts}");
+                        $"Failed to upload nuget package '{nugetPackage}' on last attempt {attemptCount} of {MaxAttempts}");
                 }
             }
 
