@@ -170,6 +170,7 @@
     <Compile Include="Maybe\when_explicitely_converting_an_empty_maybe_to_a_value.cs" />
     <Compile Include="Maybe\when_getting_the_item_from_an_empty_maybe.cs" />
     <Compile Include="Maybe\when_implicitely_converting_an_empty_maybe_to_a_value.cs" />
+    <Compile Include="PathExtensions\when_checking_file_is_blacklisted_in_artifacts_directory.cs" />
     <Compile Include="PathExtensions\when_checking_file_is_blacklisted_without_root_dir.cs" />
     <Compile Include="PathExtensions\when_checking_file_is_blacklisted_with_root_dir.cs" />
     <Compile Include="PathExtensions\when_checking_is_blacklisted_without_root_dir.cs" />

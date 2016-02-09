@@ -35,6 +35,7 @@ namespace Arbor.X.Core.IO
 
             return isBlackListed;
         }
+
         public static bool IsBlackListed(this PathLookupSpecification pathLookupSpecification, string sourceDir, string rootDir = null)
         {
             if (pathLookupSpecification == null)

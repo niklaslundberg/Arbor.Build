@@ -7,7 +7,7 @@ using Machine.Specifications;
 namespace Arbor.X.Tests.Integration.PathExtensions
 {
     [Subject(typeof(Core.IO.PathExtensions))]
-    public class when_checking_file_is_blacklisted_with_root_dir
+    public class when_checking_file_is_blacklisted_in_artifacts_directory
     {
         static bool isBlackListed;
 
@@ -21,8 +21,8 @@ namespace Arbor.X.Tests.Integration.PathExtensions
             {
                 root = @"C:\Temp\root";
 
-                new DirectoryInfo(Path.Combine(root, "afolder")).EnsureExists();
-                using (File.Create(Path.Combine(root, "afile.txt")))
+                new DirectoryInfo(Path.Combine(root, "artifacts")).EnsureExists();
+                using (File.Create(Path.Combine(root, "artifacts", "afile.txt")))
                 {
                 }
 
@@ -30,8 +30,8 @@ namespace Arbor.X.Tests.Integration.PathExtensions
             };
 
         Because of =
-            () => { isBlackListed = specification.IsFileBlackListed(@"C:\Temp\root\afile.txt", @"C:\Temp\root"); };
+            () => { isBlackListed = specification.IsFileBlackListed(@"C:\Temp\root\artifacts\afile.txt", root); };
 
-        It should_return_false = () => isBlackListed.ShouldBeFalse();
+        It should_return_false = () => isBlackListed.ShouldBeTrue();
     }
 }
