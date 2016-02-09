@@ -12,6 +12,16 @@ namespace Arbor.X.Core
     {
         private readonly T _value;
 
+        public static Maybe<T> Create([CanBeNull] T value)
+        {
+            if (value == null)
+            {
+                return Empty();
+            }
+
+            return new Maybe<T>(value);
+        }
+
         public Maybe([CanBeNull] T value = null)
         {
             _value = value;
@@ -133,7 +143,7 @@ namespace Arbor.X.Core
             {
                 var exception =
                     new InvalidOperationException(
-                        $"Cannot convert a default value of type {typeof(Maybe<T>)} into a {typeof(T)} type because the value is null. Make sure to check {nameof(HasValue)} property making an implicit conversion");
+                        $"Cannot implicitely convert a default value of type {typeof(Maybe<T>)} into a {typeof(T)} type because the value is null. Make sure to check {nameof(HasValue)} property making an implicit conversion");
 
                 throw exception;
             }
@@ -143,12 +153,19 @@ namespace Arbor.X.Core
 
         public static implicit operator Maybe<T>([CanBeNull]T value)
         {
+            if (value == null)
+            {
+                return Empty();
+            }
+
             return new Maybe<T>(value);
         }
 
+        static readonly Lazy<Maybe<T>> _LazyEmpty = new Lazy<Maybe<T>>(() => new Maybe<T>());
+
         public static Maybe<T> Empty()
         {
-            return new Maybe<T>();
+            return _LazyEmpty.Value;
         }
     }
 }
