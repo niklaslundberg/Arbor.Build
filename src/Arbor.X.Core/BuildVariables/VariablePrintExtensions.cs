@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using Arbor.X.Core.GenericExtensions;
+
 namespace Arbor.X.Core.BuildVariables
 {
     public static class VariablePrintExtensions
@@ -11,7 +13,7 @@ namespace Arbor.X.Core.BuildVariables
         {
             if (variables == null)
             {
-                throw new ArgumentNullException("variables");
+                throw new ArgumentNullException(nameof(variables));
             }
 
             var dictionaries =
@@ -25,7 +27,7 @@ namespace Arbor.X.Core.BuildVariables
         {
             if (variable == null)
             {
-                throw new ArgumentNullException("variable");
+                throw new ArgumentNullException(nameof(variable));
             }
             return string.Format("\t{0}: {1}", variable.Key, variable.Value);
         }

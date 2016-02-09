@@ -8,6 +8,7 @@ using System.Xml;
 using System.Xml.Xsl;
 using Alphaleonis.Win32.Filesystem;
 using Arbor.X.Core.BuildVariables;
+using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;
@@ -31,7 +32,7 @@ namespace Arbor.X.Core.Tools.Testing
 
             if (!enabled)
             {
-                logger.WriteWarning("Machine.Specifications not enabled");
+                logger.WriteWarning($"{MachineSpecificationsConstants.MachineSpecificationsName} not enabled");
                 return ExitCode.Success;
             }
 
@@ -44,7 +45,7 @@ namespace Arbor.X.Core.Tools.Testing
             string testReportDirectoryPath =
                 buildVariables.Require(WellKnownVariables.ExternalTools_MSpec_ReportPath).ThrowIfEmptyValue().Value;
 
-            var sourceRootOverride = buildVariables.GetVariableValueOrDefault(WellKnownVariables.SourceRootOverride, "");
+            string sourceRootOverride = buildVariables.GetVariableValueOrDefault(WellKnownVariables.SourceRootOverride, "");
 
             string sourceDirectoryPath;
 
@@ -64,8 +65,12 @@ namespace Arbor.X.Core.Tools.Testing
             }
 
             var directory = new DirectoryInfo(sourceDirectoryPath);
-            string mspecExePath = Path.Combine(externalToolsPath, "Machine.Specifications", "mspec-clr4.exe");
+            string mspecExePath = Path.Combine(externalToolsPath, MachineSpecificationsConstants.MachineSpecificationsName, "mspec-clr4.exe");
 
+            bool runTestsInReleaseConfiguration =
+                buildVariables.GetBooleanByKey(
+                    WellKnownVariables.RunTestsInReleaseConfigurationEnabled,
+                    defaultValue: true);
 
             IEnumerable<Type> typesToFind = new List<Type>
                                             {
@@ -74,12 +79,16 @@ namespace Arbor.X.Core.Tools.Testing
                                                 typeof (SubjectAttribute),
                                                 typeof (Behaves_like<>),
                                             };
+
+            logger.WriteVerbose(
+                $"Scanning directory '{directory.FullName}' for assemblies containing Machine.Specifications tests");
+
             List<string> testDlls =
-                new UnitTestFinder(typesToFind, logger: logger).GetUnitTestFixtureDlls(directory).ToList();
+                new UnitTestFinder(typesToFind, logger: logger).GetUnitTestFixtureDlls(directory, runTestsInReleaseConfiguration).ToList();
 
             if (!testDlls.Any())
             {
-                logger.WriteWarning("No DLL files with Machine.Specifications specifications was found");
+                logger.WriteWarning($"No DLL files with {MachineSpecificationsConstants.MachineSpecificationsName} specifications was found");
                 return ExitCode.Success;
             }
 
@@ -129,13 +138,14 @@ namespace Arbor.X.Core.Tools.Testing
 
                 string excludedTagsParameter = string.Join(",", allExcludedTags);
 
-                logger.Write(string.Format("Running MSpec with excluded tags: {0}", excludedTagsParameter));
+                logger.Write($"Running MSpec with excluded tags: {excludedTagsParameter}");
 
                 arguments.Add(excludedTagsParameter);
             }
 
+            // ReSharper disable once CollectionNeverUpdated.Local
             var environmentVariables = new Dictionary<string, string>();
-            
+
             var exitCode = await
                 ProcessRunner.ExecuteAsync(mspecExePath, arguments: arguments, cancellationToken: cancellationToken,
                     standardOutLog: logger.Write, standardErrorAction: logger.WriteError, toolAction: logger.Write,
@@ -144,15 +154,15 @@ namespace Arbor.X.Core.Tools.Testing
             if (buildVariables.GetBooleanByKey(WellKnownVariables.MSpecJUnitXslTransformationEnabled,
                 defaultValue: false))
             {
-                logger.WriteVerbose("Transforming Machine.Specifications test reports to JUnit format");
+                logger.WriteVerbose($"Transforming {MachineSpecificationsConstants.MachineSpecificationsName} test reports to JUnit format");
 
-                const string junitSuffix = "_junit.xml";
+                const string JunitSuffix = "_junit.xml";
 
                 var xmlReportDirectory = new FileInfo(xmlReportPath).Directory;
 // ReSharper disable once PossibleNullReferenceException
                 var xmlReports = xmlReportDirectory
                     .GetFiles("*.xml")
-                    .Where(report => !report.Name.EndsWith(junitSuffix))
+                    .Where(report => !report.Name.EndsWith(JunitSuffix))
                     .ToReadOnlyCollection();
 
                 if (xmlReports.Any())
@@ -167,17 +177,18 @@ namespace Arbor.X.Core.Tools.Testing
 
                             foreach (var xmlReport in xmlReports)
                             {
-                                logger.WriteDebug(string.Format("Transforming '{0}' to JUnit XML format", xmlReport.FullName));
+                                logger.WriteDebug($"Transforming '{xmlReport.FullName}' to JUnit XML format");
                                 try
                                 {
-                                    TransformReport(xmlReport, junitSuffix, encoding, myXslTransform, logger);
+                                    TransformReport(xmlReport, JunitSuffix, encoding, myXslTransform, logger);
                                 }
                                 catch (Exception ex)
                                 {
-                                    logger.WriteError(string.Format("Could not transform '{0}', {1}", xmlReport.FullName, ex));
+                                    logger.WriteError($"Could not transform '{xmlReport.FullName}', {ex}");
                                     return ExitCode.Failure;
                                 }
-                                logger.WriteDebug(string.Format("Successfully transformed '{0}' to JUnit XML format", xmlReport.FullName));
+                                logger.WriteDebug(
+                                    $"Successfully transformed '{xmlReport.FullName}' to JUnit XML format");
                             }
                         }
 
@@ -191,11 +202,12 @@ namespace Arbor.X.Core.Tools.Testing
         {
             // ReSharper disable once PossibleNullReferenceException
             string resultFile = Path.Combine(xmlReport.Directory.FullName,
-                Path.GetFileNameWithoutExtension(xmlReport.Name) + junitSuffix);
+                $"{Path.GetFileNameWithoutExtension(xmlReport.Name)}{junitSuffix}");
 
             if (File.Exists(resultFile))
             {
-                logger.Write(string.Format("Skipping XML transformation for '{0}', the transformation result file '{1}' already exists", xmlReport.FullName, resultFile));
+                logger.Write(
+                    $"Skipping XML transformation for '{xmlReport.FullName}', the transformation result file '{resultFile}' already exists");
                 return;
             }
 

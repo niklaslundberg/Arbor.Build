@@ -9,7 +9,7 @@ namespace Arbor.X.Core.BuildVariables
         {
             if (variable == null)
             {
-                throw new ArgumentNullException("variable");
+                throw new ArgumentNullException(nameof(variable));
             }
 
             if (string.IsNullOrWhiteSpace(variable.Value))

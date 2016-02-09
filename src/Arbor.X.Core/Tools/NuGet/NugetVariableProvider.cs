@@ -5,10 +5,12 @@ using System.Threading.Tasks;
 using Alphaleonis.Win32.Filesystem;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Logging;
-using Arbor.X.Core.Tools.Cleanup;
+
+using JetBrains.Annotations;
 
 namespace Arbor.X.Core.Tools.NuGet
 {
+    [UsedImplicitly]
     public class NugetVariableProvider : IVariableProvider
     {
         CancellationToken _cancellationToken;
@@ -20,7 +22,7 @@ namespace Arbor.X.Core.Tools.NuGet
             string userSpecifiedNuGetExePath =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_NuGet_ExePath_Custom, "");
 
-            var nuGetExePath = await EnsureNuGetExeExistsAsync(logger, userSpecifiedNuGetExePath);
+            string nuGetExePath = await EnsureNuGetExeExistsAsync(logger, userSpecifiedNuGetExePath);
 
             var variables = new List<IVariable>
                             {
@@ -58,7 +60,7 @@ namespace Arbor.X.Core.Tools.NuGet
             logger.WriteVerbose("Using default method to ensure NuGet exists");
 
             var helper = new NuGetHelper(logger);
-            var nuGetExePath = await helper.EnsureNuGetExeExistsAsync(nugetExeUri, _cancellationToken);
+            string nuGetExePath = await helper.EnsureNuGetExeExistsAsync(nugetExeUri, _cancellationToken);
 
             return nuGetExePath;
         }

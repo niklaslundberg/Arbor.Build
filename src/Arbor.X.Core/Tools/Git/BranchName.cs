@@ -11,16 +11,13 @@ namespace Arbor.X.Core.Tools.Git
         {
             if (string.IsNullOrWhiteSpace(name))
             {
-                throw new ArgumentNullException("name");
+                throw new ArgumentNullException(nameof(name));
             }
 
             _name = name;
         }
 
-        public string Name
-        {
-            get { return _name; }
-        }
+        public string Name => _name;
 
         public string Normalize()
         {
@@ -35,15 +32,9 @@ namespace Arbor.X.Core.Tools.Git
             return removedFeatureInName;
         }
 
-        public string LogicalName
-        {
-            get { return BranchHelper.GetLogicalName(Name).Name; }
-        }
+        public string LogicalName => BranchHelper.GetLogicalName(Name).Name;
 
-        public string FullName
-        {
-            get { return Name; }
-        }
+        public string FullName => Name;
 
         public override string ToString()
         {

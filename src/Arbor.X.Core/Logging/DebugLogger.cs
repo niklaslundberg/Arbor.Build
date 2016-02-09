@@ -19,7 +19,7 @@ namespace Arbor.X.Core.Logging
                 Debugger.Break();
                 return;
             }
-            Debug.WriteLine(message, TraceEventType.Error.ToString());
+            Debug.WriteLine(prefix + message, TraceEventType.Error.ToString());
             _logger.WriteError(message, prefix);
         }
 
@@ -29,7 +29,7 @@ namespace Arbor.X.Core.Logging
             {
                 return;
             }
-            Debug.WriteLine(message, TraceEventType.Information.ToString());
+            Debug.WriteLine(prefix + message, TraceEventType.Information.ToString());
             _logger.Write(message, prefix);
         }
 
@@ -44,7 +44,7 @@ namespace Arbor.X.Core.Logging
                 Debugger.Break();
                 return;
             }
-            Debug.WriteLine(message, TraceEventType.Warning.ToString());
+            Debug.WriteLine(prefix + message, TraceEventType.Warning.ToString());
             _logger.WriteWarning(message, prefix);
         }
 
@@ -54,7 +54,7 @@ namespace Arbor.X.Core.Logging
             {
                 return;
             }
-            Debug.WriteLine(message, TraceEventType.Verbose.ToString());
+            Debug.WriteLine(prefix + message, TraceEventType.Verbose.ToString());
             _logger.WriteVerbose(message, prefix);
         }
 
@@ -65,7 +65,7 @@ namespace Arbor.X.Core.Logging
             {
                 return;
             }
-            Debug.WriteLine(message, "DEBUG");
+            Debug.WriteLine(prefix + message, "DEBUG");
             _logger.WriteDebug(message, prefix);
         }
     }

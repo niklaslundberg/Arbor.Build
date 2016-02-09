@@ -4,17 +4,22 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.X.Core.BuildVariables;
+using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.Logging;
+using Arbor.X.Core.Parsing;
 using Arbor.X.Core.Tools.Cleanup;
+
+using JetBrains.Annotations;
 
 namespace Arbor.X.Core.Tools.Environments
 {
+    [UsedImplicitly]
     public class BuildAgentVariableProvider : IVariableProvider
     {
         public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {
-            bool isBuildAgentValue = false;
+            bool isBuildAgentValue;
 
             var buildAgentEnvironmentVariables = new List<string>
                                                  {

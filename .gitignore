@@ -12,6 +12,8 @@ LocalData
 *.orig
 _NCrunch_*
 _nCrunchtemp*
+.vs
+UpgradeLog*.htm
 
 #################
 ## Eclipse

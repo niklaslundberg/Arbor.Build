@@ -10,7 +10,7 @@ namespace Arbor.X.Bootstrapper
     {
         static int Main(string[] args)
         {
-            var logLevel = LogLevel.TryParse(Environment.GetEnvironmentVariable(WellKnownVariables.LogLevel));
+            LogLevel logLevel = LogLevel.TryParse(Environment.GetEnvironmentVariable(WellKnownVariables.LogLevel));
 
             Task<ExitCode> startTask = new Bootstrapper(logLevel).StartAsync(args);
 

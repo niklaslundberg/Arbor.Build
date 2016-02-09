@@ -5,8 +5,11 @@ using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.Tools.Cleanup;
 
+using JetBrains.Annotations;
+
 namespace Arbor.X.Core.Tools.TeamCity
 {
+    [UsedImplicitly]
     public class TeamCityVariableProvider : IVariableProvider
     {
         public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(ILogger logger,
@@ -21,8 +24,8 @@ namespace Arbor.X.Core.Tools.TeamCity
 
             if (buildVariables.HasKey(WellKnownVariables.ExternalTools_TeamCity_IsRunningInTeamCity))
             {
-                logger.WriteWarning(string.Format("The build variable '{0}' is already defined",
-                    WellKnownVariables.ExternalTools_TeamCity_IsRunningInTeamCity));
+                logger.WriteWarning(
+                    $"The build variable '{WellKnownVariables.ExternalTools_TeamCity_IsRunningInTeamCity}' is already defined");
             }
             else
             {

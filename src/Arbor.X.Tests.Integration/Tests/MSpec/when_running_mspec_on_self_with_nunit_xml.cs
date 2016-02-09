@@ -33,7 +33,7 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
 
             string combine = Path.Combine(root, "Arbor.X.Tests.Integration", "bin", "debug");
 
-            string tempPath = Path.Combine(Path.GetTempPath(), "Arbor.X", "MSpec", Guid.NewGuid().ToString());
+            string tempPath = Path.Combine(Path.GetTempPath(), $"{DefaultPaths.TempPathPrefix}_mspec_self_rep_{DateTime.Now.ToString("yyyyMMddHHmmssfff_")}{Guid.NewGuid().ToString().Substring(0, 8)}");
 
             tempDirectory = new DirectoryInfo(tempPath).EnsureExists();
 
@@ -54,6 +54,7 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
             variables.Add(new EnvironmentVariable(WellKnownVariables.SourceRootOverride, tempDirectory.FullName));
             variables.Add(new EnvironmentVariable(WellKnownVariables.SourceRoot, tempDirectory.FullName));
             variables.Add(new EnvironmentVariable(WellKnownVariables.MSpecJUnitXslTransformationEnabled, "true"));
+            variables.Add(new EnvironmentVariable(WellKnownVariables.RunTestsInReleaseConfigurationEnabled, "false"));
 
 
             mspecReports = Path.Combine(tempDirectory.FullName, "MSpecReports");
@@ -66,7 +67,7 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
         Because of =
             () =>
                 ExitCode =
-                    testRunner.ExecuteAsync(new ConsoleLogger {LogLevel = LogLevel.Information}, variables,
+                    testRunner.ExecuteAsync(new ConsoleLogger {LogLevel = LogLevel.Verbose}, variables,
                         new CancellationToken()).Result;
 
         It shoud_have_created_html_report = () =>

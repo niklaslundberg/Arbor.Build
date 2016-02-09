@@ -8,8 +8,11 @@ using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.Tools.Cleanup;
 
+using JetBrains.Annotations;
+
 namespace Arbor.X.Core.Tools.Testing
 {
+    [UsedImplicitly]
     public class MSpecVariableProvider : IVariableProvider
     {
         public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
@@ -18,7 +21,7 @@ namespace Arbor.X.Core.Tools.Testing
 
             var reportDirectory = new DirectoryInfo(reportPath);
 
-            var testReportPathDirectory = new DirectoryInfo(Path.Combine(reportDirectory.FullName, "Machine.Specifications"));
+            var testReportPathDirectory = new DirectoryInfo(Path.Combine(reportDirectory.FullName, MachineSpecificationsConstants.MachineSpecificationsName));
 
             testReportPathDirectory.EnsureExists();
 

@@ -3,6 +3,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Arbor.X.Core;
+using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 using Machine.Specifications;
 
@@ -18,7 +19,7 @@ namespace Arbor.X.Tests.Integration.ProcessRunner
 
         Establish context = () =>
         {
-            testPath = Path.Combine(Path.GetTempPath(), "Arbor.X.Test_fail.tmp.bat");
+            testPath = Path.Combine(Path.GetTempPath(), $"{DefaultPaths.TempPathPrefix}Test_fail.tmp.bat");
             const string batchContent = @"@ECHO OFF
 EXIT /b 3
 ";

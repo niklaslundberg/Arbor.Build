@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
@@ -14,11 +13,11 @@ namespace Arbor.X.Core.Tools.NuGet
         {
             if (string.IsNullOrWhiteSpace(filePath))
             {
-                throw new ArgumentNullException("filePath");
+                throw new ArgumentNullException(nameof(filePath));
             }
             if (!File.Exists(filePath))
             {
-                throw new ArgumentException(string.Format("The file {0} does not exist", filePath), "filePath");
+                throw new ArgumentException($"The file '{filePath}' does not exist", nameof(filePath));
             }
 
             Version = nuGetPackageVersion;
@@ -42,7 +41,7 @@ namespace Arbor.X.Core.Tools.NuGet
         {
             if (string.IsNullOrWhiteSpace(filePath))
             {
-                throw new ArgumentNullException("filePath");
+                throw new ArgumentNullException(nameof(filePath));
             }
 
             File.WriteAllText(filePath, _xml);
@@ -62,13 +61,14 @@ namespace Arbor.X.Core.Tools.NuGet
         {
             if (string.IsNullOrWhiteSpace(nuspecFilePath))
             {
-                throw new ArgumentNullException("nuspecFilePath");
+                throw new ArgumentNullException(nameof(nuspecFilePath));
             }
 
             if (!File.Exists(nuspecFilePath))
             {
-                throw new ArgumentException(string.Format("The file '{0}' does not exist", nuspecFilePath),
-                    "nuspecFilePath");
+                throw new ArgumentException(
+                    $"The file '{nuspecFilePath}' does not exist",
+                    nameof(nuspecFilePath));
             }
 
             var document = XDocument.Load(nuspecFilePath);

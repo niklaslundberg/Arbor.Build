@@ -7,12 +7,16 @@ using System.Threading.Tasks;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
+
+using JetBrains.Annotations;
+
 using DirectoryInfo = Alphaleonis.Win32.Filesystem.DirectoryInfo;
 using FileInfo = Alphaleonis.Win32.Filesystem.FileInfo;
 
 namespace Arbor.X.Core.Tools.Kudu
 {
     [Priority(1050)]
+    [UsedImplicitly]
     public class KuduWebJob : ITool
     {
         ILogger _logger;

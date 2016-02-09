@@ -1,14 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+
 using JetBrains.Annotations;
 
 namespace Arbor.X.Core
 {
     [ImmutableObject(true)]
-    public struct Maybe<T> where T : class
+    public struct Maybe<T>
+        where T : class
     {
-        readonly T _value;
+        private readonly T _value;
+
+        public static Maybe<T> Create([CanBeNull] T value)
+        {
+            if (value == null)
+            {
+                return Empty();
+            }
+
+            return new Maybe<T>(value);
+        }
 
         public Maybe([CanBeNull] T value = null)
         {
@@ -27,7 +39,7 @@ namespace Arbor.X.Core
                 if (_value == null)
                 {
                     throw new NullReferenceException(
-                        string.Format("Cannot get the instance of type {0} because it has value", typeof (T)));
+                        $"Cannot get the instance of type {typeof(T)} because it has value null. Make sure to call {nameof(HasValue)} property before access the {nameof(Value)} property");
                 }
                 return _value;
             }
@@ -67,7 +79,7 @@ namespace Arbor.X.Core
                 return true;
             }
 
-            return (obj is Maybe<T> && Equals((Maybe<T>) obj)) || (obj is T && Equals((T) obj));
+            return (obj is Maybe<T> && Equals((Maybe<T>)obj)) || (obj is T && Equals((T)obj));
         }
 
         public override int GetHashCode()
@@ -127,26 +139,33 @@ namespace Arbor.X.Core
 
         public static implicit operator T(Maybe<T> maybe)
         {
-            var exception =
-                new InvalidOperationException(string.Format("Cannot convert a default value of type {0} into a {1} type",
-                    typeof (Maybe<T>), typeof (T)));
-
             if (!maybe.HasValue)
             {
+                var exception =
+                    new InvalidOperationException(
+                        $"Cannot implicitely convert a default value of type {typeof(Maybe<T>)} into a {typeof(T)} type because the value is null. Make sure to check {nameof(HasValue)} property making an implicit conversion");
+
                 throw exception;
             }
 
             return maybe.Value;
         }
 
-        public static implicit operator Maybe<T>(T value)
+        public static implicit operator Maybe<T>([CanBeNull]T value)
         {
+            if (value == null)
+            {
+                return Empty();
+            }
+
             return new Maybe<T>(value);
         }
 
+        static readonly Lazy<Maybe<T>> _LazyEmpty = new Lazy<Maybe<T>>(() => new Maybe<T>());
+
         public static Maybe<T> Empty()
         {
-            return new Maybe<T>();
+            return _LazyEmpty.Value;
         }
     }
 }

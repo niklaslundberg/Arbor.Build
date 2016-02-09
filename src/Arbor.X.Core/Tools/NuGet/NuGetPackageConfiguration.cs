@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 
+using Arbor.X.Core.IO;
+
 using JetBrains.Annotations;
 
 using Newtonsoft.Json;
@@ -29,7 +31,8 @@ namespace Arbor.X.Core.Tools.NuGet
             bool isReleaseBuild = false,
             string branchName = null,
             bool buildNumberEnabled = true,
-            string tempPath = null)
+            string tempPath = null,
+            string packageBuildMetadata = null)
         {
             if (string.IsNullOrWhiteSpace(configuration))
             {
@@ -66,7 +69,8 @@ namespace Arbor.X.Core.Tools.NuGet
             IsReleaseBuild = isReleaseBuild;
             BranchName = branchName;
             BuildNumberEnabled = buildNumberEnabled;
-            TempPath = tempPath ?? Path.GetTempPath();
+            PackageBuildMetadata = packageBuildMetadata;
+            TempPath = tempPath ?? Path.Combine(Path.GetTempPath(), $"{DefaultPaths.TempPathPrefix}_Nuget");
             BranchNameEnabled = branchNameEnabled;
             PackageIdOverride = packageIdOverride;
             NuGetPackageVersionOverride = nuGetPackageVersionOverride;
@@ -107,5 +111,7 @@ namespace Arbor.X.Core.Tools.NuGet
         public string PackagesDirectory { get; }
 
         public bool BuildNumberEnabled { get; }
+
+        public string PackageBuildMetadata { get; }
     }
 }

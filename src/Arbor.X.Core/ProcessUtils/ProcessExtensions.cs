@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
-using Arbor.X.Core.Exceptions;
+
+using Arbor.X.Core.GenericExtensions;
 
 namespace Arbor.X.Core.ProcessUtils
 {

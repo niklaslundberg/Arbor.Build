@@ -4,11 +4,11 @@ namespace Arbor.X.Core.Tools
 {
     public class ToolWithPriority
     {
-        public ToolWithPriority(ITool tool, int priority,bool runAlways)
+        public ToolWithPriority(ITool tool, int priority, bool runAlways)
         {
             if (tool == null)
             {
-                throw new ArgumentNullException("tool");
+                throw new ArgumentNullException(nameof(tool));
             }
 
             Tool = tool;
@@ -16,13 +16,15 @@ namespace Arbor.X.Core.Tools
             RunAlways = runAlways;
         }
 
-        public ITool Tool { get; private set; }
-        public int Priority { get; private set; }
-        public bool RunAlways { get; private set; }
+        public ITool Tool { get; }
+
+        public int Priority { get; }
+
+        public bool RunAlways { get; }
 
         public override string ToString()
         {
-            return string.Format("{0} (priority={1}, run always={2})", Tool, Priority, RunAlways);
+            return $"{Tool} (priority={Priority}, run always={RunAlways})";
         }
     }
 }

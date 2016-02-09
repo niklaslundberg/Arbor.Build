@@ -26,12 +26,12 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
                                             typeof (It)
                                         }, logger: logger);
 
-            var tempPath = Path.Combine(Path.GetTempPath(), "Arbor.X", "MSpec", Guid.NewGuid().ToString());
+            var tempPath = Path.Combine(Path.GetTempPath(), $"{DefaultPaths.TempPathPrefix}_mspec_it_{DateTime.Now.ToString("yyyyMMddHHmmssfff_")}{Guid.NewGuid().ToString().Substring(0, 8)}");
             var root = Path.Combine(VcsTestPathHelper.FindVcsRootPath(), "src");
 
             var combine = Path.Combine(root, "Arbor.X.Tests.Integration", "bin", "debug");
 
-        
+
             tempDirectory = new DirectoryInfo(tempPath).EnsureExists();
 
             exitCode = DirectoryCopy.CopyAsync(combine, tempDirectory.FullName).Result;

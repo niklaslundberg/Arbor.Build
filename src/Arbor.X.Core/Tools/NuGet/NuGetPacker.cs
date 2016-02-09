@@ -7,12 +7,16 @@ using System.Threading.Tasks;
 using Alphaleonis.Win32.Filesystem;
 
 using Arbor.X.Core.BuildVariables;
+using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
+
+using JetBrains.Annotations;
 
 namespace Arbor.X.Core.Tools.NuGet
 {
     [Priority(650)]
+    [UsedImplicitly]
     public class NuGetPacker : ITool
     {
         IReadOnlyCollection<string> _excludedNuSpecFiles;
@@ -119,7 +123,7 @@ namespace Arbor.X.Core.Tools.NuGet
             foreach (var packageSpecification in packageSpecifications)
             {
                 var packageResult =
-                    await packager.CreatePackageAsync(packageSpecification, packageConfiguration, cancellationToken);
+                    await packager.CreatePackageAsync(packageSpecification, packageConfiguration, cancellationToken: cancellationToken);
 
                 if (!packageResult.IsSuccess)
                 {

@@ -2,31 +2,33 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+
+using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 using Machine.Specifications;
 
 namespace Arbor.X.Tests.Integration.DirectoryDelete
 {
-    [Subject(typeof (Core.Tools.DirectoryDelete))]
+    [Subject(typeof (Core.IO.DirectoryDelete))]
     [Tags(Arbor.X.Core.Tools.Testing.MSpecInternalConstants.RecursiveArborXTest)]
     public class when_deleting_a_directory_with_filters
     {
         static string tempDir;
         static string[] expectedDirectories;
         static string[] expectedFiles;
-        static Core.Tools.DirectoryDelete directoryDelete;
+        static Core.IO.DirectoryDelete directoryDelete;
 
         Cleanup after = () =>
         {
             if (Directory.Exists(tempDir))
             {
-                Directory.Delete(tempDir);
+                Directory.Delete(tempDir, recursive:true);
             }
         };
 
         Establish context = () =>
         {
-            tempDir = Path.Combine(Path.GetTempPath(), "Arbor.X.DeleteDirs");
+            tempDir = Path.Combine(Path.GetTempPath(), $"{DefaultPaths.TempPathPrefix}_DeleteDirs{Guid.NewGuid().ToString().Substring(0,8)}");
 
             var directoryInfo = new DirectoryInfo(tempDir);
 
@@ -58,7 +60,7 @@ namespace Arbor.X.Tests.Integration.DirectoryDelete
             expectedDirectories = new List<string> {"A","B","A1","A12", "B2"}.ToArray();
             expectedFiles = new List<string> {"app_offline.htm"}.ToArray();
 
-            directoryDelete = new Core.Tools.DirectoryDelete(new[] {"A12"}, expectedFiles, new ConsoleLogger());
+            directoryDelete = new Core.IO.DirectoryDelete(new[] {"A12"}, expectedFiles, new ConsoleLogger());
         };
 
         Because of = () => directoryDelete.Delete(tempDir);

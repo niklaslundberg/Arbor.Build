@@ -2,24 +2,26 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.X.Core.BuildVariables;
+using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.Tools.Git;
+
+using JetBrains.Annotations;
 
 namespace Arbor.X.Core.Tools.Kudu
 {
     [Priority(1100)]
+    [UsedImplicitly]
     public class KuduDeploy : ITool
     {
         string _artifacts;
         BranchName _deployBranch;
         string _deploymentTargetDirectory;
         bool _kuduEnabled;
-        string _platform;
         string _kuduConfigurationFallback;
         bool _clearTarget;
         bool _useAppOfflineFile;
@@ -38,7 +40,7 @@ namespace Arbor.X.Core.Tools.Kudu
             }
             _vcsRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
             _artifacts = buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue().Value;
-            _platform = buildVariables.Require(WellKnownVariables.ExternalTools_Kudu_Platform).ThrowIfEmptyValue().Value;
+            buildVariables.Require(WellKnownVariables.ExternalTools_Kudu_Platform).ThrowIfEmptyValue();
             _deployBranch = new BranchName(buildVariables.Require(WellKnownVariables.ExternalTools_Kudu_DeploymentBranchName).Value);
             _deploymentTargetDirectory =
                 buildVariables.Require(WellKnownVariables.ExternalTools_Kudu_DeploymentTarget).Value;
@@ -95,7 +97,7 @@ namespace Arbor.X.Core.Tools.Kudu
                     if (foundDir == null)
                     {
                         logger.WriteError(
-                            $"Found {builtWebsites.Count()} websites. Kudu deployment is specified for site {siteToDeploy} but it was not found");
+                            $"Found {builtWebsites.Length} websites. Kudu deployment is specified for site {siteToDeploy} but it was not found");
                         return ExitCode.Failure;
                     }
 
@@ -104,7 +106,7 @@ namespace Arbor.X.Core.Tools.Kudu
                 else
                 {
                     logger.WriteError(
-                        $"Found {builtWebsites.Count()} websites. Kudu deployment is only supported with a single website. \r\nBuilt websites: {string.Join(Environment.NewLine, builtWebsites.Select(dir => dir.Name))}. You can use variable '{WellKnownVariables.KuduSiteToDeploy}' to specify a single website to be built");
+                        $"Found {builtWebsites.Length} websites. Kudu deployment is only supported with a single website. \r\nBuilt websites: {string.Join(Environment.NewLine, builtWebsites.Select(dir => dir.Name))}. You can use variable '{WellKnownVariables.KuduSiteToDeploy}' to specify a single website to be built");
                     return ExitCode.Failure;
                 }
             }
@@ -115,7 +117,7 @@ namespace Arbor.X.Core.Tools.Kudu
                 return ExitCode.Failure;
             }
 
-            if (websiteToDeploy.GetDirectories().Count() > 1)
+            if (websiteToDeploy.GetDirectories().Length > 1)
             {
                 logger.WriteError($"Could not find exactly one platform for website {websiteToDeploy.Name}");
                 return ExitCode.Failure;
@@ -274,7 +276,7 @@ namespace Arbor.X.Core.Tools.Kudu
                yield break;
             }
 
-            var splitted = ignores.Split(new[] {'|'});
+            var splitted = ignores.Split('|');
 
             foreach (var item in splitted)
             {
@@ -286,7 +288,7 @@ namespace Arbor.X.Core.Tools.Kudu
         {
             DirectoryInfo[] directoryInfos = platformDirectory.GetDirectories();
 
-            if (directoryInfos.Count() == 1)
+            if (directoryInfos.Length == 1)
             {
                 var directoryInfo = directoryInfos.Single();
                 logger.Write("Found only one configuration: " + directoryInfo.Name);

@@ -32,7 +32,7 @@ namespace Arbor.X.Core.Logging
         {
             return !left.Equals(right);
         }
-        
+
         public static readonly LogLevel Critical = new LogLevel("critical", "Critical", 1);
         public static readonly LogLevel Error = new LogLevel("error", "Error", 2);
         public static readonly LogLevel Warning = new LogLevel("warning", "Warning", 4);
@@ -42,7 +42,7 @@ namespace Arbor.X.Core.Logging
         readonly string _displayName;
         readonly string _invariantName;
         readonly int _level;
-        
+
         LogLevel(string invariantName, string displayName, int level)
         {
             _invariantName = invariantName;
@@ -50,25 +50,13 @@ namespace Arbor.X.Core.Logging
             _level = level;
         }
 
-        public string DisplayName
-        {
-            get { return _displayName ?? Default.DisplayName; }
-        }
+        public string DisplayName => _displayName ?? Default.DisplayName;
 
-        public int Level
-        {
-            get { return _level == 0 ? Default._level : _level; }
-        }
+        public int Level => _level == 0 ? Default._level : _level;
 
-        public string InvariantName
-        {
-            get { return _invariantName ?? Default.InvariantName; }
-        }
+        public string InvariantName => _invariantName ?? Default.InvariantName;
 
-        public static LogLevel Default
-        {
-            get { return Information; }
-        }
+        public static LogLevel Default => Information;
 
         public static IEnumerable<LogLevel> AllValues
         {
@@ -82,7 +70,7 @@ namespace Arbor.X.Core.Logging
                 yield return Debug;
             }
         }
-        
+
         public static LogLevel TryParse(string value)
         {
             if (string.IsNullOrWhiteSpace(value))
@@ -92,7 +80,7 @@ namespace Arbor.X.Core.Logging
 
             LogLevel found = AllValues.SingleOrDefault(
                 level => level._invariantName.Equals(value, StringComparison.InvariantCultureIgnoreCase));
-            
+
             return found;
         }
 
@@ -100,7 +88,7 @@ namespace Arbor.X.Core.Logging
         {
             LogLevel found = AllValues.SingleOrDefault(
                 level => level._level == value);
-            
+
             return found;
         }
 

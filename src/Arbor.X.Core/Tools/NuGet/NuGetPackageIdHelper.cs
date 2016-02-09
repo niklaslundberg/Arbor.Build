@@ -11,7 +11,7 @@ namespace Arbor.X.Core.Tools.NuGet
         {
             if (string.IsNullOrWhiteSpace(basePackageId))
             {
-                throw new ArgumentNullException("basePackageId");
+                throw new ArgumentNullException(nameof(basePackageId));
             }
 
             var branch = new BranchName(branchName);

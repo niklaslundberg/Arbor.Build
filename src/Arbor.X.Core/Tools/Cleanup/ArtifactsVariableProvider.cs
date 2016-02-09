@@ -6,8 +6,11 @@ using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 
+using JetBrains.Annotations;
+
 namespace Arbor.X.Core.Tools.Cleanup
 {
+    [UsedImplicitly]
     public class ArtifactsVariableProvider : IVariableProvider
     {
         public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)

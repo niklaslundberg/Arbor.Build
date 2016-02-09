@@ -8,7 +8,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Alphaleonis.Win32.Filesystem;
 using Arbor.Aesculus.Core;
+using Arbor.KVConfiguration.Core;
+using Arbor.KVConfiguration.SystemConfiguration;
+using Arbor.KVConfiguration.UserConfiguration;
 using Arbor.X.Core.BuildVariables;
+using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;
@@ -50,15 +54,18 @@ namespace Arbor.X.Core
                 [WellKnownVariables.BranchName] = "develop",
                 [WellKnownVariables.VersionMajor] = "1",
                 [WellKnownVariables.VersionMinor] = "0",
-                [WellKnownVariables.VersionPatch] = "23",
-                [WellKnownVariables.VersionBuild] = "202",
+                [WellKnownVariables.VersionPatch] = "29",
+                [WellKnownVariables.VersionBuild] = "1",
                 [WellKnownVariables.Configuration] = "release",
                 [WellKnownVariables.GenericXmlTransformsEnabled] = "true",
                 [WellKnownVariables.NuGetPackageExcludesCommaSeparated] = "Arbor.X.Bootstrapper.nuspec",
                 [WellKnownVariables.NuGetAllowManifestReWrite] = "false",
                 [WellKnownVariables.NuGetSymbolPackagesEnabled] = "false",
                 [WellKnownVariables.NugetCreateNuGetWebPackagesEnabled] = "true",
+                [WellKnownVariables.RunTestsInReleaseConfigurationEnabled] = "false",
                 ["Arbor_X_Tests_DummyWebApplication_Arbor_X_NuGet_Package_CreateNuGetWebPackageForProject_Enabled"] = "true",
+                [WellKnownVariables.ExternalTools_ILRepack_Custom_ExePath] = @"C:\Tools\ILRepack\ILRepack.exe",
+                [WellKnownVariables.NuGetVersionUpdatedEnabled] = @"true"
             };
 
             foreach (KeyValuePair<string, string> environmentVariable in environmentVariables)
@@ -79,6 +86,8 @@ namespace Arbor.X.Core
 
         public async Task<ExitCode> RunAsync(string[] args)
         {
+            KVConfigurationManager.Initialize(new UserConfiguration(new AppSettingsKeyValueConfiguration()));
+
             if (Debugger.IsAttached)
             {
                 await StartWithDebuggerAsync(args).ConfigureAwait(false);

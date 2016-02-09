@@ -5,6 +5,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using Alphaleonis.Win32.Filesystem;
+
+using Arbor.X.Core.Assemblies;
 using Arbor.X.Core.Logging;
 using ILogger = Arbor.X.Core.Logging.ILogger;
 
@@ -15,20 +17,20 @@ namespace Arbor.X.Core.Tools.Testing
         readonly IEnumerable<Type> _typesToFind;
         readonly ILogger _logger;
 
-        public UnitTestFinder(IEnumerable<Type> typesesToFind, bool debugEnabled = false, ILogger logger = null)
+        public UnitTestFinder(IEnumerable<Type> typesesToFind, bool debugLogEnabled = false, ILogger logger = null)
         {
             _logger = logger ?? new NullLogger();
             _typesToFind = typesesToFind;
-            DebugEnabled = debugEnabled;
+            DebugLogEnabled = debugLogEnabled;
         }
 
-        bool DebugEnabled { get; set; }
+        bool DebugLogEnabled { get; }
 
-        public IReadOnlyCollection<string> GetUnitTestFixtureDlls(DirectoryInfo currentDirectory)
+        public IReadOnlyCollection<string> GetUnitTestFixtureDlls(DirectoryInfo currentDirectory, bool? releaseBuild = null)
         {
             if (currentDirectory == null)
             {
-                throw new ArgumentNullException("currentDirectory");
+                throw new ArgumentNullException(nameof(currentDirectory));
             }
 
             string fullName = currentDirectory.FullName;
@@ -38,16 +40,16 @@ namespace Arbor.X.Core.Tools.Testing
                 return new ReadOnlyCollection<string>(new List<string>());
             }
 
-            var blacklisted = new List<string> {".git", ".hg", ".svn", "obj", "build", "packages", "_ReSharper", "external", "artifacts", "temp", ".HistoryData", "LocalHistory", "_", ".", "NCrunch"};
-            
+            var blacklisted = new List<string> {".git", ".hg", ".svn", "obj", "build", "packages", "_ReSharper", "external", "artifacts", "temp", ".HistoryData", "LocalHistory", "_", ".", "NCrunch", ".vs"};
+
             bool isBlacklisted =
                 blacklisted.Any(
                     blackListedItem =>
                         currentDirectory.Name.StartsWith(blackListedItem, StringComparison.InvariantCultureIgnoreCase));
-            
+
             if (isBlacklisted)
             {
-                _logger.WriteDebug(string.Format("Directory '{0}' is blacklisted", fullName));
+                _logger.WriteDebug($"Directory '{fullName}' is blacklisted");
                 return new ReadOnlyCollection<string>(new List<string>());
             }
 
@@ -63,11 +65,26 @@ namespace Arbor.X.Core.Tools.Testing
                 .Distinct()
                 .ToList();
 
-            var testFixtureAssemblies = UnitTestFixtureAssemblies(assemblies);
+            List<Assembly> configurationFiltered;
+
+            if (releaseBuild.HasValue && releaseBuild.Value)
+            {
+                configurationFiltered = assemblies.Where(assembly => !assembly.IsDebugAssembly()).ToList();
+            }
+            else if (releaseBuild.HasValue)
+            {
+                configurationFiltered = assemblies.Where(assembly => assembly.IsDebugAssembly()).ToList();
+            }
+            else
+            {
+                configurationFiltered = assemblies;
+            }
+
+            var testFixtureAssemblies = UnitTestFixtureAssemblies(configurationFiltered);
 
             var subDirAssemblies = currentDirectory
                 .EnumerateDirectories()
-                .SelectMany(GetUnitTestFixtureDlls);
+                .SelectMany(dir =>GetUnitTestFixtureDlls(dir, releaseBuild));
 
             var allUnitFixtureAssemblies = testFixtureAssemblies
                 .Concat(subDirAssemblies)
@@ -76,7 +93,7 @@ namespace Arbor.X.Core.Tools.Testing
 
             return allUnitFixtureAssemblies;
         }
-        
+
 // ReSharper disable ReturnTypeCanBeEnumerable.Local
         IReadOnlyCollection<string> UnitTestFixtureAssemblies(IEnumerable<Assembly> assemblies)
 // ReSharper restore ReturnTypeCanBeEnumerable.Local
@@ -94,7 +111,7 @@ namespace Arbor.X.Core.Tools.Testing
             bool result;
             try
             {
-                _logger.WriteVerbose(string.Format("Testing assembly '{0}'", assembly));
+                _logger.WriteDebug($"Testing assembly '{assembly}'");
                 Type[] types = assembly.GetExportedTypes();
                 var anyType = types.Any(TryIsTypeTestFixture);
 
@@ -102,14 +119,14 @@ namespace Arbor.X.Core.Tools.Testing
             }
             catch (Exception)
             {
-                _logger.WriteVerbose(string.Format("Could not get types from assembly '{0}'", assembly.FullName));
+                _logger.WriteDebug($"Could not get types from assembly '{assembly.FullName}'");
                 result = false;
             }
 
-            if (DebugEnabled || result)
+            if (DebugLogEnabled || result)
             {
-                _logger.WriteVerbose(string.Format("Assembly {0}, found any class with {1}: {2}", assembly.FullName,
-                    string.Join(" | ", _typesToFind.Select(type => type.FullName)), result));
+                _logger.WriteDebug(
+                    $"Assembly {assembly.FullName}, found any class with {string.Join(" | ", _typesToFind.Select(type => type.FullName))}: {result}");
             }
 
             return result;
@@ -119,7 +136,7 @@ namespace Arbor.X.Core.Tools.Testing
         {
             if (typeToInvestigate == null)
             {
-                throw new ArgumentNullException("typeToInvestigate");
+                throw new ArgumentNullException(nameof(typeToInvestigate));
             }
 
             try
@@ -129,16 +146,15 @@ namespace Arbor.X.Core.Tools.Testing
 
                 if (any)
                 {
-                    _logger.WriteDebug(string.Format("Testing type '{0}': is unit test fixture", toInvestigate));
+                    _logger.WriteDebug($"Testing type '{toInvestigate}': is unit test fixture");
                 }
 
                 return any;
             }
             catch (Exception ex)
             {
-                _logger.WriteDebug(string.Format("Failed to determine if type {0} is {1} {2}",
-                    typeToInvestigate.AssemblyQualifiedName,
-                    string.Join(" | ", _typesToFind.Select(type => type.FullName)), ex.Message));
+                _logger.WriteDebug(
+                    $"Failed to determine if type {typeToInvestigate.AssemblyQualifiedName} is {string.Join(" | ", _typesToFind.Select(type => type.FullName))} {ex.Message}");
                 return false;
             }
         }
@@ -192,8 +208,8 @@ namespace Arbor.X.Core.Tools.Testing
 
                         if (field.FieldType.IsGenericType && !string.IsNullOrWhiteSpace(fullName))
                         {
-                            const string genericPartSeparator = "`";
-                            var fieldIndex = fullName.IndexOf(genericPartSeparator,
+                            const string GenericPartSeparator = "`";
+                            var fieldIndex = fullName.IndexOf(GenericPartSeparator,
                                 StringComparison.InvariantCultureIgnoreCase);
 
                             var fieldName = fullName.Substring(0, fieldIndex);
@@ -201,7 +217,7 @@ namespace Arbor.X.Core.Tools.Testing
                             return _typesToFind.Any(
                                 type =>
                                 {
-                                    var typePosition = type.FullName.IndexOf(genericPartSeparator,
+                                    var typePosition = type.FullName.IndexOf(GenericPartSeparator,
                                         StringComparison.InvariantCultureIgnoreCase);
 
                                     if (typePosition < 0)
@@ -242,16 +258,16 @@ namespace Arbor.X.Core.Tools.Testing
 
                 int count = types.Count();
 
-                if (DebugEnabled)
+                if (DebugLogEnabled)
                 {
-                    _logger.WriteVerbose(string.Format("Found {0} types in assembly '{1}'", count, assembly.Location));
+                    _logger.WriteVerbose($"Found {count} types in assembly '{assembly.Location}'");
                 }
 
                 return assembly;
             }
             catch (ReflectionTypeLoadException ex)
             {
-                string message = string.Format("Could not load assembly '{0}', type load exception. Ignoring.", dllFile.FullName);
+                string message = $"Could not load assembly '{dllFile.FullName}', type load exception. Ignoring.";
 
                 _logger.WriteDebug(message);
 #if DEBUG
@@ -261,7 +277,7 @@ namespace Arbor.X.Core.Tools.Testing
             }
             catch (BadImageFormatException ex)
             {
-                string message = string.Format("Could not load assembly '{0}', bad image format exception. Ignoring.", dllFile.FullName);
+                string message = $"Could not load assembly '{dllFile.FullName}', bad image format exception. Ignoring.";
 
                 _logger.WriteDebug(message);
 #if DEBUG

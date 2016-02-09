@@ -6,27 +6,34 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Arbor.X.Core.Exceptions;
+
+using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.Logging;
 
 namespace Arbor.X.Core.ProcessUtils
 {
     public static class ProcessRunner
     {
+        const string ToolName = "[" + nameof(ProcessRunner) + "] ";
+
         public static Task<ExitCode> ExecuteAsync(string executePath,
             IEnumerable<string> arguments = null, ILogger logger = null,
             IEnumerable<KeyValuePair<string, string>> environmentVariables = null,
-            CancellationToken cancellationToken = default(CancellationToken))
+            CancellationToken cancellationToken = default(CancellationToken),
+            bool addProcessNameAsLogCategory = false,
+            bool addProcessRunnerCategory = false,
+            string parentPrefix = null)
         {
 
             var usedLogger = logger ?? new NullLogger();
 
+            var executingCategory = $"[{Path.GetFileNameWithoutExtension(Path.GetFileName(executePath))}]";
 
-            return ExecuteAsync(executePath, cancellationToken, arguments, standardOutLog: usedLogger.Write,
+            return ExecuteAsync(executePath, cancellationToken, arguments, standardOutLog: (message, category) => usedLogger.Write(message, executingCategory),
                 standardErrorAction: usedLogger.WriteError,
-                verboseAction: usedLogger.WriteVerbose, toolAction: usedLogger.Write,
+                verboseAction: usedLogger.WriteVerbose, toolAction: (message, category) => usedLogger.Write(message, ToolName),
                 environmentVariables: environmentVariables,
-                debugAction: usedLogger.WriteDebug);
+                debugAction: usedLogger.WriteDebug, addProcessNameAsLogCategory: addProcessNameAsLogCategory, addProcessRunnerCategory: addProcessRunnerCategory, parentPrefix: parentPrefix);
         }
 
         public static async Task<ExitCode> ExecuteAsync(string executePath,
@@ -37,7 +44,10 @@ namespace Arbor.X.Core.ProcessUtils
             Action<string, string> toolAction = null,
             Action<string, string> verboseAction = null,
             IEnumerable<KeyValuePair<string, string>> environmentVariables = null,
-            Action<string, string> debugAction = null)
+            Action<string, string> debugAction = null,
+            bool addProcessNameAsLogCategory = false,
+            bool addProcessRunnerCategory = false,
+            string parentPrefix = null)
         {
             if (string.IsNullOrWhiteSpace(executePath))
             {
@@ -46,16 +56,17 @@ namespace Arbor.X.Core.ProcessUtils
 
             if (!File.Exists(executePath))
             {
-                throw new ArgumentException(string.Format("The executable file '{0}' does not exist", executePath),
+                throw new ArgumentException(
+                    $"The executable file '{executePath}' does not exist",
                     nameof(executePath));
             }
 
             IEnumerable<string> usedArguments = arguments ?? Enumerable.Empty<string>();
 
-            string formattedArguments = string.Join(" ", usedArguments.Select(arg => string.Format("\"{0}\"", arg)));
+            string formattedArguments = string.Join(" ", usedArguments.Select(arg => $"\"{arg}\""));
 
             Task<ExitCode> task = RunProcessAsync(executePath, formattedArguments, standardErrorAction, standardOutLog,
-                cancellationToken, toolAction, verboseAction, environmentVariables, debugAction);
+                cancellationToken, toolAction, verboseAction, environmentVariables, debugAction, addProcessNameAsLogCategory, addProcessRunnerCategory, parentPrefix);
 
             ExitCode exitCode = await task;
 
@@ -67,7 +78,10 @@ namespace Arbor.X.Core.ProcessUtils
             CancellationToken cancellationToken, Action<string, string> toolAction,
             Action<string, string> verboseAction = null,
             IEnumerable<KeyValuePair<string, string>> environmentVariables = null,
-            Action<string, string> debugAction = null)
+            Action<string, string> debugAction = null,
+            bool addProcessNameAsLogCategory = false,
+            bool addProcessRunnerCategory = false,
+            string parentPrefix = null)
         {
             toolAction = toolAction ?? ((message, prefix) => { });
             Action<string, string> standardAction = standardOutputLog ?? ((message, prefix) => { });
@@ -77,11 +91,16 @@ namespace Arbor.X.Core.ProcessUtils
 
             var taskCompletionSource = new TaskCompletionSource<ExitCode>();
 
-            string processWithArgs = string.Format("\"{0}\" {1}", executePath, formattedArguments).Trim();
+            string processWithArgs = $"\"{executePath}\" {formattedArguments}".Trim();
 
-            toolAction(string.Format("[{0}] Executing: {1}", typeof (ProcessRunner).Name, processWithArgs), null);
+            string toolCategory = parentPrefix + ToolName;
+            toolAction($"Executing '{processWithArgs}'", toolCategory);
 
             bool useShellExecute = standardErrorAction == null && standardOutputLog == null;
+
+            var category = $"[{Path.GetFileNameWithoutExtension(Path.GetFileName(executePath))}] ";
+
+            string outputCategory = parentPrefix + (addProcessRunnerCategory ? ToolName :"") + (addProcessNameAsLogCategory ? category : "");
 
             bool redirectStandardError = standardErrorAction != null;
 
@@ -115,10 +134,10 @@ namespace Arbor.X.Core.ProcessUtils
             {
                 if (!taskCompletionSource.Task.IsCompleted)
                 {
-                    verbose("Task was not completed, but process was disposed", null);
+                    verbose($"Task was not completed, but process '{processWithArgs}' was disposed", toolCategory);
                     taskCompletionSource.TrySetResult(ExitCode.Failure);
                 }
-                verbose(string.Format("Disposed process '{0}'", processWithArgs), null);
+                verbose($"Disposed process '{processWithArgs}'", toolCategory);
             };
 
             if (redirectStandardError)
@@ -127,7 +146,7 @@ namespace Arbor.X.Core.ProcessUtils
                 {
                     if (args.Data != null)
                     {
-                        errorAction(args.Data, null);
+                        errorAction(args.Data, outputCategory);
                     }
                 };
             }
@@ -137,7 +156,7 @@ namespace Arbor.X.Core.ProcessUtils
                 {
                     if (args.Data != null)
                     {
-                        standardAction(args.Data, null);
+                        standardAction(args.Data, outputCategory);
                     }
                 };
             }
@@ -145,8 +164,7 @@ namespace Arbor.X.Core.ProcessUtils
             process.Exited += (sender, args) =>
             {
                 var proc = (Process) sender;
-                toolAction(string.Format("Process '{0}' exited with code {1}", processWithArgs,
-                    new ExitCode(proc.ExitCode)), null);
+                toolAction($"Process '{processWithArgs}' exited with code {new ExitCode(proc.ExitCode)}", toolCategory);
                 taskCompletionSource.SetResult(new ExitCode(proc.ExitCode));
             };
 
@@ -158,7 +176,7 @@ namespace Arbor.X.Core.ProcessUtils
 
                 if (!started)
                 {
-                    errorAction(string.Format("Process '{0}' could not be started", processWithArgs), null);
+                    errorAction($"Process '{processWithArgs}' could not be started", toolCategory);
                     return ExitCode.Failure;
                 }
 
@@ -180,13 +198,14 @@ namespace Arbor.X.Core.ProcessUtils
                 }
                 catch (InvalidOperationException ex)
                 {
-                    debug(string.Format("Could not get process id for process '{0}'. {1}", processWithArgs, ex),null);
+                    debug($"Could not get process id for process '{processWithArgs}'. {ex}", toolCategory);
                 }
 
                 string temp = process.HasExited ? "was" : "is";
 
-                verbose(string.Format("The process '{0}' {1} running in {2}-bit mode", processWithArgs, temp, bits),
-                    null);
+                verbose(
+                    $"The process '{processWithArgs}' {temp} running in {bits}-bit mode",
+                   toolCategory);
             }
             catch (Exception ex)
             {
@@ -194,7 +213,7 @@ namespace Arbor.X.Core.ProcessUtils
                 {
                     throw;
                 }
-                errorAction(string.Format("An error occured while running process {0}: {1}", processWithArgs, ex), null);
+                errorAction($"An error occured while running process '{processWithArgs}': {ex}", toolCategory);
                 taskCompletionSource.SetException(ex);
             }
             bool done = false;
@@ -236,27 +255,25 @@ namespace Arbor.X.Core.ProcessUtils
                         {
                             try
                             {
-                                toolAction(
-                                    string.Format("Cancellation is requested, trying to kill process {0}",
-                                        processWithArgs), null);
+                                toolAction($"Cancellation is requested, trying to kill process '{processWithArgs}'", toolCategory);
 
                                 if (processId > 0)
                                 {
-                                    string args = string.Format("/PID {0}", processId);
+                                    string args = $"/PID {processId}";
                                     string killProcessPath =
                                         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System),
                                             "taskkill.exe");
-                                    toolAction(string.Format("Running {0} {1}", killProcessPath, args), null);
+                                    toolAction($"Running {killProcessPath} {args}", toolCategory);
                                     Process.Start(killProcessPath, args);
 
                                     errorAction(
-                                        string.Format("Killed process {0} because cancellation was requested",
-                                            processWithArgs), null);
+                                        $"Killed process '{processWithArgs}' because cancellation was requested", toolCategory);
                                 }
                                 else
                                 {
-                                    debugAction(string.Format("Could not kill process '{0}', missing process id", processWithArgs),
-                                        null);
+                                    debugAction(
+                                        $"Could not kill process '{processWithArgs}', missing process id",
+                                        toolCategory);
                                 }
                             }
                             catch (Exception ex)
@@ -267,25 +284,23 @@ namespace Arbor.X.Core.ProcessUtils
                                 }
 
                                 errorAction(
-                                    string.Format(
-                                        "ProcessRunner could not kill process {0} when cancellation was requested",
-                                        processWithArgs), null);
+                                    $"ProcessRunner could not kill process '{processWithArgs}' when cancellation was requested", toolCategory);
                                 errorAction(
-                                    string.Format("Could not kill process {0} when cancellation was requested",
-                                        processWithArgs), null);
-                                errorAction(ex.ToString(), null);
+                                    $"Could not kill process '{processWithArgs}' when cancellation was requested", toolCategory);
+                                errorAction(ex.ToString(), toolCategory);
                             }
                         }
                     }
                 }
                 using (process)
                 {
-                    verbose(string.Format("Task status: {0}, {1}", taskCompletionSource.Task.Status, taskCompletionSource.Task.IsCompleted), null);
-                    verbose(string.Format("Disposing process {0}", processWithArgs), null);
+                    verbose(
+                        $"Task status: {taskCompletionSource.Task.Status}, {taskCompletionSource.Task.IsCompleted}", toolCategory);
+                    verbose($"Disposing process '{processWithArgs}'", toolCategory);
                 }
             }
 
-            verbose(string.Format("Process runner exit code {0} for process {1}", exitCode, processWithArgs), null);
+            verbose($"Process runner exit code {exitCode} for process '{processWithArgs}'", toolCategory);
 
             try
             {
@@ -298,7 +313,7 @@ namespace Arbor.X.Core.ProcessUtils
                         if (!stillRunningProcess.HasExited)
                         {
                             errorAction(
-                                string.Format("The process with ID {0} '{1}' is still running", processId.ToString(CultureInfo.InvariantCulture), processWithArgs), null);
+                                $"The process with ID {processId.ToString(CultureInfo.InvariantCulture)} '{processWithArgs}' is still running", toolCategory);
 
                             return ExitCode.Failure;
                         }
@@ -311,7 +326,7 @@ namespace Arbor.X.Core.ProcessUtils
                 {
                     throw;
                 }
-                debugAction(string.Format("Could not check processes. {0}",  ex), null);
+                debugAction($"Could not check processes. {ex}", toolCategory);
             }
 
             return exitCode;
@@ -323,26 +338,26 @@ namespace Arbor.X.Core.ProcessUtils
         {
             if (process == null)
             {
-                verbose(string.Format("Process {0} does no longer exist", processWithArgs), null);
+                verbose($"Process '{processWithArgs}' does no longer exist", ToolName);
                 return false;
             }
 
             if (task.IsCompleted || task.IsFaulted || task.IsCanceled)
             {
                 TaskStatus status = task.Status;
-                verbose(string.Format("Task status for process {0} is {1}", processWithArgs, status), null);
+                verbose($"Task status for process '{processWithArgs}' is {status}", ToolName);
                 return false;
             }
 
             if (cancellationToken.IsCancellationRequested)
             {
-                verbose(string.Format("Cancellation is requested for process {0}", processWithArgs), null);
+                verbose($"Cancellation is requested for process '{processWithArgs}'", ToolName);
                 return false;
             }
 
             if (done)
             {
-                verbose(string.Format("Process {0} is flagged as done", processWithArgs), null);
+                verbose($"Process '{processWithArgs}' is flagged as done", ToolName);
                 return false;
             }
 
