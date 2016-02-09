@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Alphaleonis.Win32.Filesystem;
 
-namespace Arbor.X.Core.Tools.ILMerge
+namespace Arbor.X.Core.Tools.ILRepack
 {
     // ReSharper disable once InconsistentNaming
-    public class ILMergeData
+    public class ILRepackData
     {
-        public ILMergeData(string exe, IEnumerable<FileInfo> dlls, string configuration, string platform)
+        public ILRepackData(string exe, IEnumerable<FileInfo> dlls, string configuration, string platform)
         {
             if (string.IsNullOrWhiteSpace(exe))
             {

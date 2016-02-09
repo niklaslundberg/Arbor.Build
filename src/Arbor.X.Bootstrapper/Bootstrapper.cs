@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Management;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -180,17 +181,29 @@ namespace Arbor.X.Bootstrapper
 
             _logger.WriteVerbose($"Using base directory '{baseDir}'", _Prefix);
 
-            string nugetExePath = Path.Combine(buildDir.FullName, "nuget.exe");
+            var customNuGetPath =
+                Environment.GetEnvironmentVariable(WellKnownVariables.ExternalTools_NuGet_ExePath_Custom);
 
-            bool nuGetExists = await TryDownloadNuGetAsync(buildDir.FullName, nugetExePath);
+            string nugetExePath;
 
-            if (!nuGetExists)
+            if (!string.IsNullOrWhiteSpace(customNuGetPath) && File.Exists(customNuGetPath))
             {
-                _logger.WriteError(
-                    $"NuGet.exe could not be downloaded and it does not already exist at path '{nugetExePath}'", _Prefix);
-                return ExitCode.Failure;
+                nugetExePath = customNuGetPath;
             }
+            else
+            {
+                nugetExePath = Path.Combine(buildDir.FullName, "nuget.exe");
 
+                bool nuGetExists = await TryDownloadNuGetAsync(buildDir.FullName, nugetExePath);
+
+                if (!nuGetExists)
+                {
+                    _logger.WriteError(
+                        $"NuGet.exe could not be downloaded and it does not already exist at path '{nugetExePath}'", _Prefix);
+                    return ExitCode.Failure;
+                }
+            }
+            
             string outputDirectoryPath = await DownloadNuGetPackageAsync(buildDir.FullName, nugetExePath);
 
             if (string.IsNullOrWhiteSpace(outputDirectoryPath))
@@ -215,11 +228,49 @@ namespace Arbor.X.Bootstrapper
             }
             catch (TaskCanceledException)
             {
+                try
+                {
+                    if (Environment.GetEnvironmentVariable("KillSpawnedProcess").TryParseBool(defaultValue: true))
+                    {
+                        KillAllProcessesSpawnedBy((uint)Process.GetCurrentProcess().Id, _logger);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.WriteError(ex.ToString());
+                }
                 _logger.WriteError("The build timed out", _Prefix);
                 exitCode = ExitCode.Failure;
             }
 
             return exitCode;
+        }
+        private static void KillAllProcessesSpawnedBy(uint parentProcessId, ILogger logger)
+        {
+            logger.WriteDebug("Finding processes spawned by process with Id [" + parentProcessId + "]");
+
+            // NOTE: Process Ids are reused!
+            ManagementObjectSearcher searcher = new ManagementObjectSearcher(
+                "SELECT * " +
+                "FROM Win32_Process " +
+                "WHERE ParentProcessId=" + parentProcessId);
+            ManagementObjectCollection collection = searcher.Get();
+            if (collection.Count > 0)
+            {
+                logger.WriteDebug("Killing [" + collection.Count + "] processes spawned by process with Id [" + parentProcessId + "]");
+                foreach (var item in collection)
+                {
+                    UInt32 childProcessId = (UInt32)item["ProcessId"];
+                    if ((int)childProcessId != Process.GetCurrentProcess().Id)
+                    {
+                        KillAllProcessesSpawnedBy(childProcessId, logger);
+
+                        Process childProcess = Process.GetProcessById((int)childProcessId);
+                        logger.WriteDebug("Killing child process [" + childProcess.ProcessName + "] with Id [" + childProcessId + "]");
+                        childProcess.Kill();
+                    }
+                }
+            }
         }
 
         async Task<string> DownloadNuGetPackageAsync(string buildDir, string nugetExePath)

@@ -10,30 +10,40 @@ using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;
-
 using JetBrains.Annotations;
-
 using Directory = Alphaleonis.Win32.Filesystem.Directory;
 using DirectoryInfo = Alphaleonis.Win32.Filesystem.DirectoryInfo;
+using File = Alphaleonis.Win32.Filesystem.File;
 using FileInfo = Alphaleonis.Win32.Filesystem.FileInfo;
 using Path = Alphaleonis.Win32.Filesystem.Path;
 
-namespace Arbor.X.Core.Tools.ILMerge
+namespace Arbor.X.Core.Tools.ILRepack
 {
     [Priority(620)]
     [UsedImplicitly]
     // ReSharper disable once InconsistentNaming
-    public class ILMerger : ITool
+    public class ILRepacker : ITool
     {
         string _artifactsPath;
-        string _ilMergeExePath;
+        string _ilRepackExePath;
         ILogger _logger;
 
         public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {
             _logger = logger;
-            _ilMergeExePath =
-                buildVariables.Require(WellKnownVariables.ExternalTools_ILMerge_ExePath).ThrowIfEmptyValue().Value;
+
+            _ilRepackExePath =
+                buildVariables.Require(WellKnownVariables.ExternalTools_ILRepack_ExePath).ThrowIfEmptyValue().Value;
+            
+            string customILRepackPath =
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_ILRepack_Custom_ExePath, "");
+
+            if (!string.IsNullOrWhiteSpace(customILRepackPath) && File.Exists(customILRepackPath))
+            {
+                logger.Write($"Using custom path for ILRepack: '{customILRepackPath}'");
+                _ilRepackExePath = customILRepackPath;
+            } 
+
             _artifactsPath =
                 buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue().Value;
 
@@ -48,9 +58,9 @@ namespace Arbor.X.Core.Tools.ILMerge
 
             logger.Write($"Found {ilMergeProjects.Count} projects marked for ILMerge:{Environment.NewLine}{merges}");
 
-            IReadOnlyCollection<ILMergeData> mergeDatas = ilMergeProjects.SelectMany(GetIlMergeFiles).ToReadOnlyCollection();
+            IReadOnlyCollection<ILRepackData> mergeDatas = ilMergeProjects.SelectMany(GetIlMergeFiles).ToReadOnlyCollection();
 
-            foreach (ILMergeData mergeData in mergeDatas)
+            foreach (ILRepackData mergeData in mergeDatas)
             {
                 var fileInfo = new FileInfo(mergeData.Exe);
                 var ilMergedDirectoryPath = Path.Combine(_artifactsPath, "ILMerged", mergeData.Platform,
@@ -58,15 +68,22 @@ namespace Arbor.X.Core.Tools.ILMerge
                 var ilMergedDirectory = new DirectoryInfo(ilMergedDirectoryPath).EnsureExists();
 
                 var ilMergedPath = Path.Combine(ilMergedDirectory.FullName, fileInfo.Name);
-                var arguments = new List<string> {"/target:exe", "/out:" + ilMergedPath, fileInfo.FullName};
+                var arguments = new List<string>
+                {
+                    "/target:exe",
+                    $"/out:{ilMergedPath}",
+                    $"/Lib:{fileInfo.Directory.FullName}",
+                    fileInfo.FullName,
+                };
+
                 arguments.AddRange(mergeData.Dlls.Select(dll => dll.FullName));
 
                 string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
 
-                string dotNetVersion = "4.5.1";
+                string dotNetVersion = "4.6";
 
                 string referenceAssemblyDirectory =
-                    $@"{programFiles}\Reference Assemblies\Microsoft\Framework\.NETFramework\v" + dotNetVersion;
+                    $"{$@"{programFiles}\Reference Assemblies\Microsoft\Framework\.NETFramework\v"}{dotNetVersion}";
 
                 if (!Directory.Exists(referenceAssemblyDirectory))
                 {
@@ -79,14 +96,14 @@ namespace Arbor.X.Core.Tools.ILMerge
                 arguments.Add(
                     $@"/targetplatform:v4,{referenceAssemblyDirectory}");
 
-                var result =
+                ExitCode result =
                     await
-                        ProcessRunner.ExecuteAsync(_ilMergeExePath, arguments: arguments, standardOutLog: logger.Write,
+                        ProcessRunner.ExecuteAsync(_ilRepackExePath, arguments: arguments, standardOutLog: logger.Write,
                             toolAction: logger.Write, standardErrorAction: logger.WriteError, cancellationToken: cancellationToken);
 
                 if (!result.IsSuccess)
                 {
-                    logger.WriteError("Could not ILMerge " + fileInfo.FullName);
+                    logger.WriteError($"Could not ILRepack '{fileInfo.FullName}'");
                     return result;
                 }
 
@@ -96,7 +113,7 @@ namespace Arbor.X.Core.Tools.ILMerge
             return ExitCode.Success;
         }
 
-        IEnumerable<ILMergeData> GetIlMergeFiles(FileInfo projectFile)
+        IEnumerable<ILRepackData> GetIlMergeFiles(FileInfo projectFile)
         {
 // ReSharper disable PossibleNullReferenceException
             var binDirectory = projectFile.Directory.GetDirectories("bin").SingleOrDefault();
@@ -137,7 +154,7 @@ namespace Arbor.X.Core.Tools.ILMerge
                     .Where(FileIsStandAloneExe);
 
 
-            yield return new ILMergeData(exe.FullName, dlls, configuration, platform);
+            yield return new ILRepackData(exe.FullName, dlls, configuration, platform);
         }
 
         private static bool FileIsStandAloneExe(FileInfo file)

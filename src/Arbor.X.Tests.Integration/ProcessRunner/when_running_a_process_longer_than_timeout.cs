@@ -16,7 +16,7 @@ namespace Arbor.X.Tests.Integration.ProcessRunner
     {
         static string testPath;
         static ConsoleLogger logger;
-        static ExitCode exitCode;
+        static ExitCode exitCode = new ExitCode(99);
         static TaskCanceledException exception;
 
         Establish context = () =>
@@ -37,7 +37,7 @@ EXIT /b 2
 
         Because of = () => RunAsync().Wait();
 
-        It should_not_an_exit_code = () => exitCode.ShouldBeNull();
+        It should_not_an_exit_code = () => exitCode.Result.ShouldEqual(99);
 
         It should_throw_a_task_canceled_exception = () => exception.ShouldNotBeNull();
 

@@ -56,6 +56,9 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescription("Flag to indicate that Symbol server package upload is enabled even if not running on a build server")]
         public static readonly string ExternalTools_SymbolServer_ForceUploadEnabled = "Arbor.X.Tools.External.SymbolServer.ForceUploadEnabled";
 
+        [VariableDescription("Flag to indicate that Symbol server package upload is enabled even if not running on a build server")]
+        public const string ExternalTools_SymbolServer_UploadTimeoutInSeconds = "Arbor.X.NuGet.SymbolServer.TimeoutInSeconds";
+
         [VariableDescription("Flag to indicate that Symbol server package upload is enabled")]
         public static readonly string ExternalTools_SymbolServer_Enabled = "Arbor.X.Tools.External.SymbolServer.Enabled";
 
@@ -128,8 +131,11 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescription("PDB artifacts enabled")]
         public static readonly string PublishPdbFilesAsArtifacts = "Arbor.X.Artifacts.PdbArtifacts.Enabled";
 
-        [VariableDescription("ILMerge executable path (eg. C:\\IlMerge.exe)")]
-        public static readonly string ExternalTools_ILMerge_ExePath = "Arbor.X.Tools.External.ILMerge.ExePath";
+        [VariableDescription("ILMerge executable path (eg. C:\\ILRepack.exe)")]
+        public static readonly string ExternalTools_ILRepack_ExePath = "Arbor.X.Tools.External.ILRepack.ExePath";
+
+        [VariableDescription("ILMerge custom executable path (eg. C:\\ILRepack.exe)")]
+        public static readonly string ExternalTools_ILRepack_Custom_ExePath = "Arbor.X.Tools.External.ILRepack.CustomExePath";
 
         [VariableDescription("Flag to indicate if Kudu deployment is enabled", "true")]
         public static readonly string ExternalTools_Kudu_Enabled = "Arbor.X.Tools.External.Kudu.Enabled";

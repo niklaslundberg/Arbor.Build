@@ -72,5 +72,7 @@
         public const string ExternalTools_NuGetServer_ApiKey = "Arbor.X.NuGet.PackageUpload.Server.ApiKey";
 
         public const string ExternalTools_NuGetServer_ForceUploadEnabled = "Arbor.X.NuGet.PackageUpload.ForceUploadEnabled";
+
+        public const string ExternalTools_NuGetServer_UploadTimeoutInSeconds = "Arbor.X.NuGet.PackageUpload.TimeoutInSeconds";
     }
 }
