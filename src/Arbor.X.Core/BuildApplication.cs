@@ -20,6 +20,8 @@ using Arbor.X.Core.Tools;
 using Arbor.X.Core.Tools.Git;
 using Autofac;
 
+using JetBrains.Annotations;
+
 namespace Arbor.X.Core
 {
     public class BuildApplication
@@ -51,7 +53,7 @@ namespace Arbor.X.Core
                 [WellKnownVariables.BranchNameVersionOverrideEnabled] = "false",
                 [WellKnownVariables.VariableOverrideEnabled] = "true",
                 [WellKnownVariables.SourceRoot] = tempDirectory.FullName,
-                [WellKnownVariables.BranchName] = "develop",
+                [WellKnownVariables.BranchName] = "hotfix-v1.2.3",
                 [WellKnownVariables.VersionMajor] = "1",
                 [WellKnownVariables.VersionMinor] = "0",
                 [WellKnownVariables.VersionPatch] = "29",
@@ -519,6 +521,11 @@ namespace Arbor.X.Core
 
                 branchName = branchNameResult.Item2;
 
+                if (string.IsNullOrWhiteSpace(branchName))
+                {
+                    throw new InvalidOperationException("Could not find the branch name after asking Git");
+                }
+
                 variables.Add(WellKnownVariables.BranchName, branchName);
             }
 
@@ -566,19 +573,21 @@ namespace Arbor.X.Core
 
         bool IsReleaseBuild(string branchName)
         {
-            if (branchName.StartsWith("release", StringComparison.InvariantCultureIgnoreCase))
-            {
-                return true;
-            }
+            bool isProductionBranch = new BranchName(branchName).IsProductionBranch();
 
-            return false;
+            return isProductionBranch;
         }
 
-        string GetConfiguration(string branchName)
+        string GetConfiguration([NotNull] string branchName)
         {
-            var releaseBranches = new List<string> {"release", "master"};
+            if (branchName == null)
+            {
+                throw new ArgumentNullException(nameof(branchName));
+            }
 
-            if (releaseBranches.Any(releaseBranch => branchName.StartsWith(releaseBranch, StringComparison.InvariantCultureIgnoreCase)))
+            bool isReleaseBranch = new BranchName(branchName).IsProductionBranch();
+
+            if (isReleaseBranch)
             {
                 return "release";
             }

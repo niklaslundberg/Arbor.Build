@@ -203,7 +203,7 @@ namespace Arbor.X.Bootstrapper
                     return ExitCode.Failure;
                 }
             }
-            
+
             string outputDirectoryPath = await DownloadNuGetPackageAsync(buildDir.FullName, nugetExePath);
 
             if (string.IsNullOrWhiteSpace(outputDirectoryPath))
@@ -235,7 +235,7 @@ namespace Arbor.X.Bootstrapper
                         KillAllProcessesSpawnedBy((uint)Process.GetCurrentProcess().Id, _logger);
                     }
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (!ex.IsFatal())
                 {
                     _logger.WriteError(ex.ToString());
                 }
@@ -249,25 +249,36 @@ namespace Arbor.X.Bootstrapper
         {
             logger.WriteDebug("Finding processes spawned by process with Id [" + parentProcessId + "]");
 
-            // NOTE: Process Ids are reused!
-            ManagementObjectSearcher searcher = new ManagementObjectSearcher(
-                "SELECT * " +
-                "FROM Win32_Process " +
-                "WHERE ParentProcessId=" + parentProcessId);
+            ManagementObjectSearcher searcher = new ManagementObjectSearcher($"SELECT * FROM Win32_Process WHERE ParentProcessId={parentProcessId}");
             ManagementObjectCollection collection = searcher.Get();
             if (collection.Count > 0)
             {
-                logger.WriteDebug("Killing [" + collection.Count + "] processes spawned by process with Id [" + parentProcessId + "]");
+                logger.WriteDebug(
+                    $"Killing [{collection.Count}] processes spawned by process with Id [{parentProcessId}]");
+
                 foreach (var item in collection)
                 {
-                    UInt32 childProcessId = (UInt32)item["ProcessId"];
+                    uint childProcessId = (uint)item["ProcessId"];
                     if ((int)childProcessId != Process.GetCurrentProcess().Id)
                     {
                         KillAllProcessesSpawnedBy(childProcessId, logger);
 
-                        Process childProcess = Process.GetProcessById((int)childProcessId);
-                        logger.WriteDebug("Killing child process [" + childProcess.ProcessName + "] with Id [" + childProcessId + "]");
-                        childProcess.Kill();
+                        try
+                        {
+                            Process childProcess = Process.GetProcessById((int)childProcessId);
+                            if (!childProcess.HasExited)
+                            {
+                                logger.WriteDebug(
+                                    $"Killing child process [{childProcess.ProcessName}] with Id [{childProcessId}]");
+                                childProcess.Kill();
+
+                                logger.WriteVerbose($"Child process with id {childProcessId} was killed");
+                            }
+                        }
+                        catch (Exception ex) when (!ex.IsFatal() && (ex is ArgumentException || ex is InvalidOperationException))
+                        {
+                            logger.WriteWarning($"Child process with id {childProcessId} could not be killed");
+                        }
                     }
                 }
             }
