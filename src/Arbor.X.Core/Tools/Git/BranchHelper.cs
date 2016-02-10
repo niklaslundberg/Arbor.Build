@@ -15,7 +15,14 @@ namespace Arbor.X.Core.Tools.Git
                 throw new ArgumentNullException(nameof(branchName));
             }
 
-            var nonFeatureBranchNames = new[] {"dev", "develop", "master"};
+            var nonFeatureBranchNames = new[]
+                                            {
+                                                "dev",
+                                                "develop",
+                                                "master",
+                                                "release",
+                                                "hotfix"
+                                            };
 
             bool isAStandardBranch =
                 nonFeatureBranchNames.Any(
@@ -31,10 +38,14 @@ namespace Arbor.X.Core.Tools.Git
                 throw new ArgumentNullException(nameof(branchName));
             }
 
-            var developBranchNames = new[] {"dev", "develop"};
+            var developBranchNames = new[]
+                                         {
+                                             "develop",
+                                             "dev"
+                                         };
 
             bool isDevelopBranch =
-                developBranchNames.Any(name => name.Equals(branchName.Name, StringComparison.InvariantCultureIgnoreCase));
+                developBranchNames.Any(name => branchName.LogicalName.StartsWith(branchName.Name, StringComparison.InvariantCultureIgnoreCase));
 
             return isDevelopBranch;
         }
@@ -46,9 +57,14 @@ namespace Arbor.X.Core.Tools.Git
                 throw new ArgumentNullException(nameof(branchName));
             }
 
-            bool isProductionBranch = branchName.Name.Equals("master", StringComparison.InvariantCultureIgnoreCase) ||
-                                      branchName.Name.IndexOf("release", StringComparison.InvariantCultureIgnoreCase) >=
-                                      0;
+            var productionBranches = new List<string>(10)
+                                         {
+                                             "master",
+                                             "release",
+                                             "hotfix"
+                                         };
+
+            bool isProductionBranch = productionBranches.Any(productionBranch => branchName.LogicalName.StartsWith(productionBranch, StringComparison.InvariantCultureIgnoreCase));
 
             return isProductionBranch;
         }
@@ -60,7 +76,7 @@ namespace Arbor.X.Core.Tools.Git
                 throw new ArgumentNullException(nameof(branchName));
             }
 
-            string logicalName = branchName.Replace("refs/heads/", "");
+            string logicalName = branchName.Replace("refs/heads/", string.Empty);
 
             return new BranchName(logicalName);
         }
@@ -92,12 +108,22 @@ namespace Arbor.X.Core.Tools.Git
             string splitCharactersVariable =
                 Environment.GetEnvironmentVariable(WellKnownVariables.NameVersionCommanSeparatedSplitList);
 
-            var splitCharacters = new List<string> {"/", "-", "_"};
+            var splitCharacters = new List<string>
+                                      {
+                                          "/",
+                                          "-",
+                                          "_"
+                                      };
 
             if (!string.IsNullOrWhiteSpace(splitCharactersVariable))
             {
                 List<string> splitts =
-                    splitCharactersVariable.Split(new[] {","}, StringSplitOptions.RemoveEmptyEntries).ToList();
+                    splitCharactersVariable.Split(
+                        new[]
+                            {
+                                ","
+                            },
+                        StringSplitOptions.RemoveEmptyEntries).ToList();
 
                 splitCharacters = splitts;
             }

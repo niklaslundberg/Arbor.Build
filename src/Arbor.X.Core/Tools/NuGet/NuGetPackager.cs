@@ -10,6 +10,7 @@ using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;
+using Arbor.X.Core.Tools.Git;
 
 using Directory = Alphaleonis.Win32.Filesystem.Directory;
 using DirectoryInfo = Alphaleonis.Win32.Filesystem.DirectoryInfo;
@@ -41,11 +42,11 @@ namespace Arbor.X.Core.Tools.NuGet
             return properties;
         }
 
-        static bool IsReleaseBuild(string releaseBuild, string branchName)
+        static bool IsReleaseBuild(string releaseBuild, BranchName branchName)
         {
             bool isReleaseBuild = releaseBuild.TryParseBool(defaultValue: false);
 
-            return isReleaseBuild || branchName.Equals("master", StringComparison.InvariantCultureIgnoreCase);
+            return isReleaseBuild || branchName.IsProductionBranch();
         }
 
         public async Task<ExitCode> CreatePackageAsync(string packageSpecificationPath, NuGetPackageConfiguration packageConfiguration, bool ignoreWarnings = false, CancellationToken cancellationToken = default(CancellationToken))
@@ -269,7 +270,14 @@ namespace Arbor.X.Core.Tools.NuGet
                     $"Flag '{WellKnownVariables.NuGetCreatePackagesOnAnyBranchEnabled}' is set to true, creating NuGet packages");
             }
 
-            bool isReleaseBuild = IsReleaseBuild(releaseBuild.Value, branchName.Value);
+            Maybe<BranchName> branchNameMayBe = BranchName.TryParse(branchName.Value);
+
+            if (!branchNameMayBe.HasValue)
+            {
+                throw new InvalidOperationException("The branchname could not be found");
+            }
+
+            bool isReleaseBuild = IsReleaseBuild(releaseBuild.Value, branchNameMayBe.Value);
 
             logger.WriteVerbose(
                 $"Based on branch {branchName.Value} and release build flags {releaseBuild.Value}, the build is considered {(isReleaseBuild ? "release" : "not  release")}");

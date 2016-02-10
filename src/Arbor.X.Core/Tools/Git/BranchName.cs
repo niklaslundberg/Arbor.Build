@@ -7,6 +7,16 @@ namespace Arbor.X.Core.Tools.Git
     {
         readonly string _name;
 
+        public static Maybe<BranchName> TryParse(string branchName)
+        {
+            if (string.IsNullOrWhiteSpace(branchName))
+            {
+                return Maybe<BranchName>.Empty();
+            }
+
+            return new Maybe<BranchName>(new BranchName(branchName));
+        }
+
         public BranchName(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
