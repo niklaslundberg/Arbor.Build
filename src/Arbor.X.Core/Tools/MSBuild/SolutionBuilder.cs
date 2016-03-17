@@ -8,6 +8,10 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Alphaleonis.Win32.Filesystem;
+
+using Arbor.KVConfiguration.JsonConfiguration;
+using Arbor.KVConfiguration.Schema;
+using Arbor.KVConfiguration.Schema.Json;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.IO;
@@ -71,6 +75,10 @@ namespace Arbor.X.Core.Tools.MSBuild
 
         bool _codeAnalysisEnabled;
 
+        private bool _applicationmetadataEnabled;
+
+        private string _gitHash;
+
         public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
@@ -127,6 +135,10 @@ namespace Arbor.X.Core.Tools.MSBuild
             _defaultTarget = buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_MSBuild_DefaultTarget, "rebuild");
             _pdbArtifactsEnabled = buildVariables.GetBooleanByKey(WellKnownVariables.PublishPdbFilesAsArtifacts, defaultValue: false);
             _createNuGetWebPackage = buildVariables.GetBooleanByKey(WellKnownVariables.NugetCreateNuGetWebPackagesEnabled, defaultValue: false);
+            _gitHash = buildVariables.GetVariableValueOrDefault(WellKnownVariables.GitHash, defaultValue: string.Empty);
+            _applicationmetadataEnabled = buildVariables.GetBooleanByKey(
+                WellKnownVariables.ApplicationMetadataEnabled,
+                defaultValue: false);
 
             if (_vcsRoot == null)
             {
@@ -710,6 +722,16 @@ namespace Arbor.X.Core.Tools.MSBuild
                     logger.WriteDebug("Transforms are disabled");
                 }
 
+                if (_applicationmetadataEnabled)
+                {
+                    _logger.Write("Application metadata is enabled");
+                    await CreateApplicationMetadataAsync(siteArtifactDirectory, platformName, configuration);
+                }
+                else
+                {
+                    _logger.Write("Application metadata is disabled");
+                }
+
                 if (_createWebDeployPackages)
                 {
                     logger.Write(
@@ -779,6 +801,44 @@ namespace Arbor.X.Core.Tools.MSBuild
             }
 
             return ExitCode.Success;
+        }
+
+        private Task CreateApplicationMetadataAsync(DirectoryInfo siteArtifactDirectory, string platformName, string configuration)
+        {
+            List<KeyValueConfigurationItem> items = new List<KeyValueConfigurationItem>() {};
+
+            if (!string.IsNullOrWhiteSpace(_gitHash))
+            {
+                var keyValueConfigurationItem = new KeyValueConfigurationItem(ApplicationMetadataKeys.GitHash, _gitHash, null);
+                items.Add(keyValueConfigurationItem);
+            }
+
+            string gitBranchName = _buildVariables.GetVariableValueOrDefault(WellKnownVariables.BranchLogicalName, defaultValue: string.Empty);
+            if (!string.IsNullOrWhiteSpace(gitBranchName))
+            {
+                var keyValueConfigurationItem = new KeyValueConfigurationItem(ApplicationMetadataKeys.GitBranch, gitBranchName, null);
+                items.Add(keyValueConfigurationItem);
+            }
+
+            var configurationItem = new KeyValueConfigurationItem(ApplicationMetadataKeys.DotNetConfiguration, configuration, null);
+            items.Add(configurationItem);
+
+            var cpu = new KeyValueConfigurationItem(ApplicationMetadataKeys.DotNetCpuPlatform, platformName, null);
+            items.Add(cpu);
+
+            ConfigurationItems configurationItems = new ConfigurationItems("1.0", items.Select(i => new KeyValue(i.Key, i.Value, i.Metadata)).ToList());
+            string serialize = new JsonConfigurationSerializer().Serialize(configurationItems);
+
+            var applicationMetadataJsonFilePath = Path.Combine(siteArtifactDirectory.FullName, "applicationmetadata.json");
+
+            File.WriteAllText(applicationMetadataJsonFilePath, serialize, Encoding.UTF8);
+
+            string keyPluralSingular = items.Count == 1 ? "key" : "keys";
+            string verb = items.Count == 1 ? "has" : "have";
+
+            _logger.Write($"{items.Count} metadata {keyPluralSingular} {verb} been written to '{applicationMetadataJsonFilePath}'");
+
+            return Task.CompletedTask;
         }
 
         private async Task<ExitCode> BuildWebApplicationAsync(
@@ -852,7 +912,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             string files =
                 $@"<file src=""{siteArtifactDirectory}\**\*.*"" target=""Content"" exclude=""packages.config"" />";
 
-            ExitCode exitCode = await CreateNuGetPackageAsync(platformDirectoryPath, logger, packageId, files);
+            ExitCode exitCode = await CreateNuGetPackageAsync(platformDirectoryPath, logger, packageId, files, configuration);
 
             if (!exitCode.IsSuccess)
             {
@@ -904,7 +964,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                 string environmentPackageId = $"{packageId}.Environment.{environmentName}";
 
                 ExitCode environmentPackageExitCode
-                    = await CreateNuGetPackageAsync(platformDirectoryPath, logger, environmentPackageId, string.Join(Environment.NewLine, elements));
+                    = await CreateNuGetPackageAsync(platformDirectoryPath, logger, environmentPackageId, string.Join(Environment.NewLine, elements), configuration);
 
                 if (!environmentPackageExitCode.IsSuccess)
                 {
@@ -991,7 +1051,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             return buildNuGetWebPackageForProject;
         }
 
-        private async Task<ExitCode> CreateNuGetPackageAsync(string platformDirectoryPath, ILogger logger, string packageId, string filesList)
+        private async Task<ExitCode> CreateNuGetPackageAsync(string platformDirectoryPath, ILogger logger, string packageId, string filesList, string configuration)
         {
 
             const string XmlTemplate = @"<?xml version=""1.0""?>
@@ -1308,5 +1368,16 @@ namespace Arbor.X.Core.Tools.MSBuild
 
             return isBlacklistedByName || isBlackListedByAttributes;
         }
+    }
+
+    internal class ApplicationMetadataKeys
+    {
+        public static string GitHash = "urn:versioning:vcs:git:hash";
+
+        public static string GitBranch = "urn:versioning:vcs:git:branch";
+
+        public static string DotNetCpuPlatform = "urn:dotnet:runtime:cpu-platform";
+
+        public static string DotNetConfiguration = "urn:dotnet:compilation:configuration";
     }
 }
