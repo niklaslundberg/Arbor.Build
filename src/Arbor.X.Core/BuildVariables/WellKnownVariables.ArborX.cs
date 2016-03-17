@@ -16,5 +16,8 @@
 
         [VariableDescription("Show defined variables")]
         public static readonly string ShowDefinedVariablesEnabled = "Arbor.X.ShowDefinedVariablesEnabled";
+
+        [VariableDescription("Flag to indicate if applicationmetadata.json should be created dynamically", "false")]
+        public static readonly string ApplicationMetadataEnabled = "Arbor.X.ApplicationMetadata.Enabled";
     }
 }

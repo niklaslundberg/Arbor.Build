@@ -53,10 +53,10 @@ namespace Arbor.X.Core
                 [WellKnownVariables.BranchNameVersionOverrideEnabled] = "false",
                 [WellKnownVariables.VariableOverrideEnabled] = "true",
                 [WellKnownVariables.SourceRoot] = tempDirectory.FullName,
-                [WellKnownVariables.BranchName] = "hotfix-v1.2.3",
+                [WellKnownVariables.BranchName] = "hotfix-v1.0.35",
                 [WellKnownVariables.VersionMajor] = "1",
                 [WellKnownVariables.VersionMinor] = "0",
-                [WellKnownVariables.VersionPatch] = "29",
+                [WellKnownVariables.VersionPatch] = "35",
                 [WellKnownVariables.VersionBuild] = "1",
                 [WellKnownVariables.Configuration] = "release",
                 [WellKnownVariables.GenericXmlTransformsEnabled] = "true",
@@ -67,7 +67,9 @@ namespace Arbor.X.Core
                 [WellKnownVariables.RunTestsInReleaseConfigurationEnabled] = "false",
                 ["Arbor_X_Tests_DummyWebApplication_Arbor_X_NuGet_Package_CreateNuGetWebPackageForProject_Enabled"] = "true",
                 [WellKnownVariables.ExternalTools_ILRepack_Custom_ExePath] = @"C:\Tools\ILRepack\ILRepack.exe",
-                [WellKnownVariables.NuGetVersionUpdatedEnabled] = @"true"
+                [WellKnownVariables.NuGetVersionUpdatedEnabled] = @"true",
+                [WellKnownVariables.ApplicationMetadataEnabled] = @"true",
+                [WellKnownVariables.LogLevel] = "Info"
             };
 
             foreach (KeyValuePair<string, string> environmentVariable in environmentVariables)

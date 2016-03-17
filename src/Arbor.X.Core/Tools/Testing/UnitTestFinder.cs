@@ -80,13 +80,14 @@ namespace Arbor.X.Core.Tools.Testing
                 configurationFiltered = assemblies;
             }
 
-            var testFixtureAssemblies = UnitTestFixtureAssemblies(configurationFiltered);
+            IReadOnlyCollection<string> testFixtureAssemblies = UnitTestFixtureAssemblies(configurationFiltered);
 
-            var subDirAssemblies = currentDirectory
+            List<string> subDirAssemblies = currentDirectory
                 .EnumerateDirectories()
-                .SelectMany(dir =>GetUnitTestFixtureDlls(dir, releaseBuild));
+                .SelectMany(dir =>GetUnitTestFixtureDlls(dir, releaseBuild))
+                .ToList();
 
-            var allUnitFixtureAssemblies = testFixtureAssemblies
+            List<string> allUnitFixtureAssemblies = testFixtureAssemblies
                 .Concat(subDirAssemblies)
                 .Distinct()
                 .ToList();
@@ -98,7 +99,7 @@ namespace Arbor.X.Core.Tools.Testing
         IReadOnlyCollection<string> UnitTestFixtureAssemblies(IEnumerable<Assembly> assemblies)
 // ReSharper restore ReturnTypeCanBeEnumerable.Local
         {
-            var unitTestFixtureAssemblies =
+            List<string> unitTestFixtureAssemblies =
                 assemblies.Where(TryFindAssembly)
                     .Select(a => a.Location)
                     .Distinct()
@@ -113,7 +114,7 @@ namespace Arbor.X.Core.Tools.Testing
             {
                 _logger.WriteDebug($"Testing assembly '{assembly}'");
                 Type[] types = assembly.GetExportedTypes();
-                var anyType = types.Any(TryIsTypeTestFixture);
+                bool anyType = types.Any(TryIsTypeTestFixture);
 
                 result = anyType;
             }
@@ -141,8 +142,8 @@ namespace Arbor.X.Core.Tools.Testing
 
             try
             {
-                var toInvestigate = typeToInvestigate.FullName;
-                var any = IsTypeUnitTestFixture(typeToInvestigate);
+                string toInvestigate = typeToInvestigate.FullName;
+                bool any = IsTypeUnitTestFixture(typeToInvestigate);
 
                 if (any)
                 {
@@ -161,39 +162,39 @@ namespace Arbor.X.Core.Tools.Testing
 
         bool IsTypeUnitTestFixture(Type typeToInvestigate)
         {
-            var customAttributeDatas = typeToInvestigate.CustomAttributes;
+            IEnumerable<CustomAttributeData> customAttributeDatas = typeToInvestigate.CustomAttributes;
 
-            var isTypeUnitTestFixture = IsCustomAttributeOfExpectedType(customAttributeDatas);
+            bool isTypeUnitTestFixture = IsCustomAttributeOfExpectedType(customAttributeDatas);
 
             bool isTestType = isTypeUnitTestFixture || TypeHasTestMethods(typeToInvestigate);
 
             return isTestType;
         }
 
-        bool IsCustomAttributeOfExpectedType(IEnumerable<CustomAttributeData> customAttributeDatas)
+        bool IsCustomAttributeOfExpectedType(IEnumerable<CustomAttributeData> customAttributes)
         {
-            var isTypeUnitTestFixture = customAttributeDatas.Any(
-                attr =>
+            bool isTypeUnitTestFixture = customAttributes.Any(
+                attributeData =>
                 {
-                    if (attr.AttributeType.FullName.StartsWith("System") || attr.AttributeType.FullName.StartsWith("_"))
+                    if (attributeData.AttributeType.FullName.StartsWith(nameof(System)) || attributeData.AttributeType.FullName.StartsWith("_"))
                     {
                         return false;
                     }
 
-                    return IsCustomAttributeTypeToFind(attr);
+                    return IsCustomAttributeTypeToFind(attributeData);
                 });
             return isTypeUnitTestFixture;
         }
 
         bool TypeHasTestMethods(Type typeToInvestigate)
         {
-            var publicInstanceMethods =
+            IEnumerable<MethodInfo> publicInstanceMethods =
                 typeToInvestigate.GetTypeInfo().GetMethods().Where(method => method.IsPublic && !method.IsStatic);
 
-            var hasPublicInstanceTestMethod =
+            bool hasPublicInstanceTestMethod =
                 publicInstanceMethods.Any(method => IsCustomAttributeOfExpectedType(method.CustomAttributes));
 
-            var declaredFields = typeToInvestigate.GetTypeInfo().DeclaredFields.ToArray();
+            FieldInfo[] declaredFields = typeToInvestigate.GetTypeInfo().DeclaredFields.ToArray();
 
             bool hasPrivateFieldMethod = declaredFields
                 .Where(field => field.IsPrivate)
@@ -252,9 +253,9 @@ namespace Arbor.X.Core.Tools.Testing
         {
             try
             {
-                var assembly = Assembly.LoadFrom(dllFile.FullName);
+                Assembly assembly = Assembly.LoadFrom(dllFile.FullName);
 
-                var types = assembly.GetTypes();
+                Type[] types = assembly.GetTypes();
 
                 int count = types.Count();
 
