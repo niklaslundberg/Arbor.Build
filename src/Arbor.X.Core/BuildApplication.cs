@@ -68,7 +68,8 @@ namespace Arbor.X.Core
                 ["Arbor_X_Tests_DummyWebApplication_Arbor_X_NuGet_Package_CreateNuGetWebPackageForProject_Enabled"] = "true",
                 [WellKnownVariables.ExternalTools_ILRepack_Custom_ExePath] = @"C:\Tools\ILRepack\ILRepack.exe",
                 [WellKnownVariables.NuGetVersionUpdatedEnabled] = @"true",
-                [WellKnownVariables.ApplicationMetadataEnabled] = @"true"
+                [WellKnownVariables.ApplicationMetadataEnabled] = @"true",
+                [WellKnownVariables.LogLevel] = "Info"
             };
 
             foreach (KeyValuePair<string, string> environmentVariable in environmentVariables)

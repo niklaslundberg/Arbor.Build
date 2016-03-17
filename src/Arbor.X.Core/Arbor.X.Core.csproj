@@ -45,7 +45,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Arbor.Castanea.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Arbor.Castanea.1.0.5\lib\net45\Arbor.Castanea.Core.dll</HintPath>
+      <HintPath>..\packages\Arbor.Castanea.1.0.6\lib\net45\Arbor.Castanea.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Arbor.KVConfiguration.Core, Version=0.3.0.0, Culture=neutral, processorArchitecture=MSIL">
