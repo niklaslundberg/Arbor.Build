@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.X.Core.BuildVariables;
+using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;
 
@@ -140,7 +141,11 @@ namespace Arbor.X.Core.Tools.NuGet
 
             bool result = true;
 
-            foreach (var fileInfo in nuGetPackageFiles)
+            var sortedPackages = nuGetPackageFiles
+                .OrderByDescending(package => package.Name.Length)
+                .SafeToReadOnlyCollection();
+
+            foreach (var fileInfo in sortedPackages)
             {
                 string nugetPackage = fileInfo.FullName;
 
