@@ -44,7 +44,7 @@ namespace Arbor.X.Core
 
             tempDirectory.EnsureExists();
 
-            WriteDebug(string.Format("Using temp directory '{0}'", tempDirectory));
+            WriteDebug($"Using temp directory '{tempDirectory}'");
 
             await DirectoryCopy.CopyAsync(baseDir, tempDirectory.FullName, pathLookupSpecificationOption: DefaultPaths.DefaultPathLookupSpecification, rootDir: baseDir);
 
