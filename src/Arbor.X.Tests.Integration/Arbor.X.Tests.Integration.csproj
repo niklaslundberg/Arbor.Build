@@ -215,22 +215,10 @@
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="TestStyle.css.map">
-      <DependentUpon>TestStyle.css</DependentUpon>
-    </None>
-    <None Include="TestStyle.scss" />
     <None Include="_Dummy\packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="TestStyle.css">
-      <DependentUpon>TestStyle.scss</DependentUpon>
-    </Content>
-    <Content Include="TestStyle.min.css">
-      <DependentUpon>TestStyle.css</DependentUpon>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Arbor.X.Bootstrapper\Arbor.X.Bootstrapper.csproj">
