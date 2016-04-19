@@ -14,6 +14,10 @@ namespace Arbor.X.Core.BuildVariables
         public static readonly string ExternalTools_VisualStudio_Version =
             "Arbor.X.Tools.External.VisualStudio.Version";
 
+        [VariableDescription("Visual Studio version")]
+        public static readonly string ExternalTools_VisualStudio_Version_Allow_PreRelease =
+            "Arbor.X.Tools.External.VisualStudio.Version.PreRelease.Enabled";
+
         [VariableDescription("Build arftifacts path")]
         public static readonly string Artifacts = "Arbor.X.Artifacts";
 

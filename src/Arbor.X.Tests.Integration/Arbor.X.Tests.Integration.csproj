@@ -190,6 +190,7 @@
     <Compile Include="Tests\NUnitDummy.cs" />
     <Compile Include="Tests\VSTestDummy.cs" />
     <Compile Include="Tests\when_listing_nuget_package_configuration_files.cs" />
+    <Compile Include="VisualStudioVariableProvider\when_running_VisualStudioVariableProvider.cs" />
     <Compile Include="WellknownVariables\when_listing_all_wellknown_variables.cs" />
     <Compile Include="KuduWebProjectDetails\when_creating_kudu_web_project_details.cs" />
     <Compile Include="WellknownVariables\when_listing_all_wellknown_variables_as_a_table.cs" />
