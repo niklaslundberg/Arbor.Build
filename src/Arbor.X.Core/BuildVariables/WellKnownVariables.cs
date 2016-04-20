@@ -2,6 +2,8 @@
 using System.Linq;
 using System.Reflection;
 
+using Arbor.X.Core.GenericExtensions;
+
 namespace Arbor.X.Core.BuildVariables
 {
     public static partial class WellKnownVariables
@@ -234,7 +236,7 @@ namespace Arbor.X.Core.BuildVariables
             {
                 var allVariables = new List<VariableDescription>();
 
-                var fields = typeof (WellKnownVariables).GetTypeInfo().GetFields().Where(field => (field.IsLiteral  || field.IsStatic) && field.IsPublic).ToList();
+                List<FieldInfo> fields = typeof (WellKnownVariables).GetTypeInfo().GetFields().Where(field => field.IsPublicConstantOrStatic()).ToList();
 
                 foreach (var field in fields)
                 {
