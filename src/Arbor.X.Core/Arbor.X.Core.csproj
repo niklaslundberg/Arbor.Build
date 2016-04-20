@@ -209,6 +209,7 @@
     <Compile Include="ExitCode.cs" />
     <Compile Include="GenericExtensions\IntExtensions.cs" />
     <Compile Include="GitBranchNameExtensions.cs" />
+    <Compile Include="IO\PathSpecificationExtensions.cs" />
     <Compile Include="Logging\DebugLogger.cs" />
     <Compile Include="Logging\LogLevel.cs" />
     <Compile Include="Logging\MultiplexLogger.cs" />

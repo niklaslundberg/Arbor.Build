@@ -194,6 +194,8 @@
     <Compile Include="Tests\MSpec\when_testing_this_test_type_for_subject.cs" />
     <Compile Include="Tests\NUnitDummy.cs" />
     <Compile Include="Tests\VSTestDummy.cs" />
+    <Compile Include="PathExtensions\when_checking_is_blacklisted_for_a_blacklisted_file.cs" />
+    <Compile Include="PathExtensions\when_checking_is_blacklisted_for_a_non_blacklisted_file.cs" />
     <Compile Include="Tests\when_listing_nuget_package_configuration_files.cs" />
     <Compile Include="VisualStudioVariableProvider\when_running_VisualStudioVariableProvider.cs" />
     <Compile Include="WellknownVariables\when_listing_all_wellknown_variables.cs" />

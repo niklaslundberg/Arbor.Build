@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
+using Arbor.X.Core.GenericExtensions;
+using Arbor.X.Core.Logging;
+
 namespace Arbor.X.Core.IO
 {
     public static class PathExtensions
     {
-        public static bool IsFileBlackListed(this PathLookupSpecification pathLookupSpecification, string sourceFile, string rootDir = null)
+        public static bool IsFileBlackListed(this PathLookupSpecification pathLookupSpecification, string sourceFile, string rootDir = null, bool allowNonExistingFiles = false, ILogger logger = null)
         {
             if (pathLookupSpecification == null)
             {
@@ -18,9 +21,10 @@ namespace Arbor.X.Core.IO
             {
                 throw new ArgumentNullException(nameof(sourceFile));
             }
-            
-            if (!File.Exists(sourceFile))
+
+            if (!allowNonExistingFiles && !File.Exists(sourceFile))
             {
+                logger?.WriteDebug($"File '{sourceFile}' does not exist");
                 return true;
             }
 
@@ -28,10 +32,26 @@ namespace Arbor.X.Core.IO
 
             if (pathLookupSpecification.IsBlackListed(sourceFileInfo.Directory.FullName, rootDir))
             {
+                logger?.WriteDebug($"Directory of '{sourceFile}' is blacklisted");
                 return true;
             }
-            
-            var isBlackListed = HasAnyPathSegmentStartsWith(sourceFileInfo.Name, pathLookupSpecification.IgnoredFileStartsWithPatterns);
+
+            bool isBlackListed = HasAnyPathSegmentStartsWith(sourceFileInfo.Name, pathLookupSpecification.IgnoredFileStartsWithPatterns);
+
+            if (isBlackListed)
+            {
+                logger?.WriteDebug($"Path segments of '{sourceFile}' makes it blacklisted");
+            }
+
+            var ignoredFileNameParts = pathLookupSpecification.IignoredFileNameParts.Where(part => !string.IsNullOrEmpty(part)).Where(
+                part => sourceFileInfo.Name.IndexOf(part, StringComparison.InvariantCultureIgnoreCase) >= 0).SafeToReadOnlyCollection();
+
+            isBlackListed = isBlackListed || ignoredFileNameParts.Any();
+
+            if (ignoredFileNameParts.Any())
+            {
+                logger?.WriteDebug($"Ignored file name parts of '{sourceFile}' makes it blacklisted: {string.Join(", ", ignoredFileNameParts.Select(item => $"'{item}'"))}");
+            }
 
             return isBlackListed;
         }
@@ -52,7 +72,7 @@ namespace Arbor.X.Core.IO
             {
                 return true;
             }
-            
+
             var sourceDirSegments = GetSourceDirSegments(sourceDir, rootDir);
 
             bool hasAnyPathSegment = HasAnyPathSegment(sourceDirSegments,
@@ -84,8 +104,8 @@ namespace Arbor.X.Core.IO
 
         private static string[] GetSourceDirSegments(string sourceDir, string rootDir)
         {
-            var path = string.IsNullOrWhiteSpace(rootDir) ? 
-                sourceDir : 
+            var path = string.IsNullOrWhiteSpace(rootDir) ?
+                sourceDir :
                 sourceDir.Replace(rootDir, "");
 
             var sourceDirSegments = path.Split(new[] {Path.DirectorySeparatorChar},
