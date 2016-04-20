@@ -41,7 +41,8 @@ namespace Arbor.X.Core.BuildVariables
             {
                 var builder = new StringBuilder();
 
-                builder.AppendLine(string.Format("There are {0} existing variables that will not be overriden by environment variables:", existingVariables));
+                builder.AppendLine(
+                    $"There are {existingVariables} existing variables that will not be overriden by environment variables:");
 
                 foreach (var environmentVariable in existingVariables)
                 {
@@ -55,7 +56,7 @@ namespace Arbor.X.Core.BuildVariables
             return buildVariables;
         }
 
-        public static ExitCode SetEnvironmentVariablesFromFile([NotNull] ILogger logger)
+        public static ExitCode SetEnvironmentVariablesFromFile([NotNull] ILogger logger, string fileName)
         {
             if (logger == null)
             {
@@ -70,12 +71,12 @@ namespace Arbor.X.Core.BuildVariables
                 return ExitCode.Failure;
             }
 
-            var fileInfo = new FileInfo(Path.Combine(currentDirectory, "arborx_environmentvariables.json"));
+            var fileInfo = new FileInfo(Path.Combine(currentDirectory, fileName));
 
             if (!fileInfo.Exists)
             {
                 logger.WriteWarning(
-                    $"The environment variable file '{fileInfo}' does not exist, skipping setting environment variables from file");
+                    $"The environment variable file '{fileInfo}' does not exist, skipping setting environment variables from file '{fileName}'");
                 return ExitCode.Success;
             }
 
@@ -106,6 +107,8 @@ namespace Arbor.X.Core.BuildVariables
                     return ExitCode.Failure;
                 }
             }
+
+            logger.Write($"Used configuration values from file '{fileName}'");
 
             return ExitCode.Success;
         }

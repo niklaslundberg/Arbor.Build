@@ -331,12 +331,20 @@ namespace Arbor.X.Core
             {
                 _logger.Write(
                     $"The environment variable {WellKnownVariables.VariableFileSourceEnabled} is set to true, using file source to set environment variables");
-                ExitCode exitCode = EnvironmentVariableHelper.SetEnvironmentVariablesFromFile(_logger);
 
-                if (!exitCode.IsSuccess)
+                List<string> files = new List<string>
+                                         { "arborx_environmentvariables.json", "arborx_environmentvariables.json.user" };
+
+                foreach (var configFile in files)
                 {
-                    throw new InvalidOperationException(
-                        $"Could not set environment variables from file, set variable '{WellKnownVariables.VariableFileSourceEnabled}' to false to disabled");
+
+                    ExitCode exitCode = EnvironmentVariableHelper.SetEnvironmentVariablesFromFile(_logger, configFile);
+
+                    if (!exitCode.IsSuccess)
+                    {
+                        throw new InvalidOperationException(
+                            $"Could not set environment variables from file, set variable '{WellKnownVariables.VariableFileSourceEnabled}' to false to disabled");
+                    }
                 }
             }
             else
@@ -700,7 +708,7 @@ namespace Arbor.X.Core
                             standardErrorAction: _logger.WriteError,
                             standardOutLog: (message, prefix) =>
                                 {
-                                    _logger.Write(message);
+                                    _logger.WriteDebug(message);
                                     gitBranchBuilder.AppendLine(message);
                                 },
                             toolAction: _logger.Write,
