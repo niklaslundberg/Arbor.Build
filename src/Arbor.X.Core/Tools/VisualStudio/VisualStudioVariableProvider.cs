@@ -104,7 +104,7 @@ namespace Arbor.X.Core.Tools.VisualStudio
 
                                         if (version == null)
                                         {
-                                            logger.WriteWarning($"Could not parse Visual Studio version from registry key name '{keyName}', skipping that version.");
+                                            logger.WriteDebug($"Could not parse Visual Studio version from registry key name '{keyName}', skipping that version.");
                                         }
 
                                         return version;
