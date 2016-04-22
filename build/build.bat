@@ -10,15 +10,6 @@ SET Arbor.X.Build.VariableOverrideEnabled=true
 SET Arbor.X.Artifacts.CleanupBeforeBuildEnabled=true
 SET Arbor.X.Build.NetAssembly.Configuration=
 
-SET Version.Major=1
-SET Version.Minor=0
-SET Version.Patch=31
-SET Version.Build=3
-
-IF "%Arbor.X.Vcs.Branch.Name%" == "" (
-	SET Arbor.X.Vcs.Branch.Name=develop
-)
-
 SET Arbor.X.NuGet.ReinstallArborPackageEnabled=true
 SET Arbor.X.NuGet.VersionUpdateEnabled=false
 SET Arbor.X.Artifacts.PdbArtifacts.Enabled=true
@@ -57,12 +48,7 @@ SET Arbor.X.NuGet.Package.Artifacts.Suffix=
 SET Arbor.X.NuGet.Package.Artifacts.BuildNumber.Enabled=
 SET Arbor.X.Log.Level=
 SET Arbor.X.NuGetPackageVersion=
-SET Arbor.X.Vcs.Branch.Name.Version.OverrideEnabled
+SET Arbor.X.Vcs.Branch.Name.Version.OverrideEnabled=
 SET Arbor.X.VariableOverrideEnabled=
 SET Arbor.X.Artifacts.CleanupBeforeBuildEnabled=
 SET Arbor.X.Build.NetAssembly.Configuration=
-
-SET Version.Major=
-SET Version.Minor=
-SET Version.Patch=
-SET Version.Build=

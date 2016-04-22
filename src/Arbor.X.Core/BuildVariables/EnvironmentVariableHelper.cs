@@ -7,6 +7,8 @@ using System.Text;
 using Alphaleonis.Win32.Filesystem;
 
 using Arbor.Aesculus.Core;
+using Arbor.KVConfiguration.Core;
+using Arbor.KVConfiguration.Schema.Json;
 using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.Logging;
 
@@ -41,7 +43,8 @@ namespace Arbor.X.Core.BuildVariables
             {
                 var builder = new StringBuilder();
 
-                builder.AppendLine(string.Format("There are {0} existing variables that will not be overriden by environment variables:", existingVariables));
+                builder.AppendLine(
+                    $"There are {existingVariables} existing variables that will not be overriden by environment variables:");
 
                 foreach (var environmentVariable in existingVariables)
                 {
@@ -55,7 +58,7 @@ namespace Arbor.X.Core.BuildVariables
             return buildVariables;
         }
 
-        public static ExitCode SetEnvironmentVariablesFromFile([NotNull] ILogger logger)
+        public static ExitCode SetEnvironmentVariablesFromFile([NotNull] ILogger logger, string fileName)
         {
             if (logger == null)
             {
@@ -70,42 +73,48 @@ namespace Arbor.X.Core.BuildVariables
                 return ExitCode.Failure;
             }
 
-            var fileInfo = new FileInfo(Path.Combine(currentDirectory, "arborx_environmentvariables.json"));
+            var fileInfo = new FileInfo(Path.Combine(currentDirectory, fileName));
 
             if (!fileInfo.Exists)
             {
                 logger.WriteWarning(
-                    $"The environment variable file '{fileInfo}' does not exist, skipping setting environment variables from file");
+                    $"The environment variable file '{fileInfo}' does not exist, skipping setting environment variables from file '{fileName}'");
                 return ExitCode.Success;
             }
 
-            var fileContent = File.ReadAllText(fileInfo.FullName, Encoding.UTF8);
-
-            KeyValuePair<string, string>[] pairs;
+            ConfigurationItems configurationItems;
 
             try
             {
-                pairs = JsonConvert.DeserializeObject<KeyValuePair<string, string>[]>(fileContent);
+                configurationItems = new KVConfiguration.JsonConfiguration.JsonFileReader(fileInfo.FullName).GetConfigurationItems();
             }
             catch (Exception ex) when (!ex.IsFatal())
             {
-                logger.WriteError($"Could not parse key value pairs in file '{fileInfo.FullName}'{ex}");
+                logger.WriteError($"Could not parse key value pairs in file '{fileInfo.FullName}', {ex}");
                 return ExitCode.Failure;
             }
 
-            foreach (var keyValuePair in pairs)
+            if (configurationItems == null)
+            {
+                logger.WriteError($"Could not parse key value pairs in file '{fileInfo.FullName}'");
+                return ExitCode.Failure;
+            }
+
+            foreach (var keyValuePair in configurationItems.Keys)
             {
                 try
                 {
                     Environment.SetEnvironmentVariable(keyValuePair.Key, keyValuePair.Value);
-                    logger.WriteDebug($"Set environment variable with key '{keyValuePair.Key}' and value '{keyValuePair.Value}')");
+                    logger.WriteDebug($"Set environment variable with key '{keyValuePair.Key}' and value '{keyValuePair.Value}' from file '{fileName}'");
                 }
                 catch (Exception ex) when (!ex.IsFatal())
                 {
-                    logger.WriteError($"Could not set environment variable with key '{keyValuePair.Key}' and value '{keyValuePair.Value}')");
+                    logger.WriteError($"Could not set environment variable with key '{keyValuePair.Key}' and value '{keyValuePair.Value}' from file '{fileName}'");
                     return ExitCode.Failure;
                 }
             }
+
+            logger.Write($"Used configuration values from file '{fileName}'");
 
             return ExitCode.Success;
         }

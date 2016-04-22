@@ -2,6 +2,8 @@
 using System.Linq;
 using System.Reflection;
 
+using Arbor.X.Core.GenericExtensions;
+
 namespace Arbor.X.Core.BuildVariables
 {
     public static partial class WellKnownVariables
@@ -13,6 +15,10 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescription("Visual Studio version")]
         public static readonly string ExternalTools_VisualStudio_Version =
             "Arbor.X.Tools.External.VisualStudio.Version";
+
+        [VariableDescription("Visual Studio version")]
+        public static readonly string ExternalTools_VisualStudio_Version_Allow_PreRelease =
+            "Arbor.X.Tools.External.VisualStudio.Version.PreRelease.Enabled";
 
         [VariableDescription("Build arftifacts path")]
         public static readonly string Artifacts = "Arbor.X.Artifacts";
@@ -230,7 +236,7 @@ namespace Arbor.X.Core.BuildVariables
             {
                 var allVariables = new List<VariableDescription>();
 
-                var fields = typeof (WellKnownVariables).GetTypeInfo().GetFields().Where(field => (field.IsLiteral  || field.IsStatic) && field.IsPublic).ToList();
+                List<FieldInfo> fields = typeof (WellKnownVariables).GetTypeInfo().GetFields().Where(field => field.IsPublicConstantOrStatic()).ToList();
 
                 foreach (var field in fields)
                 {

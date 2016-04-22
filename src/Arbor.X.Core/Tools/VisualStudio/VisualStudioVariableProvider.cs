@@ -18,8 +18,13 @@ namespace Arbor.X.Core.Tools.VisualStudio
     [UsedImplicitly]
     public class VisualStudioVariableProvider : IVariableProvider
     {
+        private bool _allowPreReleaseVersions;
+
         public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {
+            _allowPreReleaseVersions =
+                buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_VisualStudio_Version_Allow_PreRelease);
+
             var currentProcessBits = Environment.Is64BitProcess ? 64 : 32;
             const int RegistryLookupBits = 32;
             logger.WriteVerbose(
@@ -58,7 +63,7 @@ namespace Arbor.X.Core.Tools.VisualStudio
             return Task.FromResult<IEnumerable<IVariable>>(environmentVariables);
         }
 
-        static string GetVisualStudioVersion(ILogger logger, string registryKeyName)
+        string GetVisualStudioVersion(ILogger logger, string registryKeyName)
         {
             string visualStudioVersion = null;
 
@@ -68,33 +73,68 @@ namespace Arbor.X.Core.Tools.VisualStudio
                 {
                     if (vsKey != null)
                     {
-                        List<Version> names = vsKey.GetSubKeyNames()
-                                                   .Where(name => char.IsDigit(name.First()))
-                                                   .Select(name =>
-                                                       {
-                                                           var verison = Version.Parse(name);
-                                                           return verison;
-                                                       })
-                                                   .OrderByDescending(name => name)
-                                                   .ToList();
+                        List<Version> versions = vsKey.GetSubKeyNames()
+                            .Where(subKeyName => char.IsDigit(subKeyName.First()))
+                            .Select(
+                                keyName =>
+                                    {
+                                        Version version;
+                                        if (!Version.TryParse(keyName, out version))
+                                        {
+                                            if (_allowPreReleaseVersions)
+                                            {
+                                                string preReleaseSeparator = "_";
+
+                                                int indexOf = keyName.IndexOf(
+                                                    preReleaseSeparator,
+                                                    StringComparison.OrdinalIgnoreCase);
+
+                                                if (indexOf >= 0)
+                                                {
+                                                    var versionOnly = keyName.Substring(0, indexOf);
+
+                                                    if (Version.TryParse(versionOnly, out version))
+                                                    {
+                                                        logger.WriteDebug($"Found pre-release Visual Studio version {version}");
+                                                    }
+                                                }
+
+                                            }
+                                        }
+
+                                        if (version == null)
+                                        {
+                                            logger.WriteDebug($"Could not parse Visual Studio version from registry key name '{keyName}', skipping that version.");
+                                        }
+
+                                        return version;
+                                    })
+                            .Where(version => version != null)
+                            .OrderByDescending(name => name)
+                            .ToList();
 
                         logger.WriteVerbose(
-                            $"Found {names.Count} Visual Studio versions: {string.Join(", ", names.Select(name => name.ToString(2)))}");
-                        if (names.Any(name => name == new Version(14, 0)))
+                            $"Found {versions.Count} Visual Studio versions: {string.Join(", ", versions.Select(version => version.ToString(2)))}");
+
+                        if (versions.Any(version => version == new Version(15, 0)))
+                        {
+                            visualStudioVersion = "15.0";
+                        }
+                        if (versions.Any(version => version == new Version(14, 0)))
                         {
                             visualStudioVersion = "14.0";
                         }
-                        else if (names.Any(name => name == new Version(12, 0)))
+                        else if (versions.Any(version => version == new Version(12, 0)))
                         {
                             visualStudioVersion = "12.0";
                         }
-                        else if (names.Any(name => name == new Version(11, 0)))
+                        else if (versions.Any(version => version == new Version(11, 0)))
                         {
                             visualStudioVersion = "11.0";
                         }
-                        else if (names.Any())
+                        else if (versions.Any())
                         {
-                            visualStudioVersion = names.First().ToString(fieldCount: 2);
+                            visualStudioVersion = versions.First().ToString(fieldCount: 2);
                         }
                     }
                 }

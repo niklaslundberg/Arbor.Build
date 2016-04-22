@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Reflection;
 
@@ -10,8 +9,10 @@ namespace Arbor.X.Core.Assemblies
     {
         public static IReadOnlyCollection<Assembly> GetAssemblies()
         {
-
-            Assembly[] assemblies = { Assembly.GetExecutingAssembly() };
+            Assembly[] assemblies =
+                {
+                    Assembly.GetExecutingAssembly()
+                };
 
             return assemblies.ToReadOnlyCollection();
         }

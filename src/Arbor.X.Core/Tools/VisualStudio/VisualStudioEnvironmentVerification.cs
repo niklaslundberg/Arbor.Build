@@ -26,15 +26,15 @@ namespace Arbor.X.Core.Tools.VisualStudio
             {
                 var rootDir = new DirectoryInfo(sourceRoot);
 
-                var extensionPatterns = new[] {".csproj", ".vcxproj"};
+                string[] extensionPatterns = new[] {".csproj", ".vcxproj"};
 
-                var projectFiles = rootDir.EnumerateFiles()
+                IEnumerable<FileInfo> projectFiles = rootDir.EnumerateFiles()
                     .Where(
                         file =>
                             extensionPatterns.Any(
                                 pattern => file.Extension.Equals(pattern, StringComparison.InvariantCultureIgnoreCase)));
 
-                var projectFiles81 = projectFiles.Where(Contains81).ToList();
+                List<FileInfo> projectFiles81 = projectFiles.Where(Contains81).ToList();
 
                 if (projectFiles81.Any())
                 {

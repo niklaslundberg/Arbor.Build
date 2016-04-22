@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -14,20 +12,20 @@ namespace Arbor.X.Core.Tools
     {
         public static IReadOnlyCollection<ToolWithPriority> GetTools(ILifetimeScope lifetimeScope, ILogger logger)
         {
-            var tools = lifetimeScope.Resolve<IEnumerable<ITool>>().SafeToReadOnlyCollection();
+            IReadOnlyCollection<ITool> tools = lifetimeScope.Resolve<IEnumerable<ITool>>().SafeToReadOnlyCollection();
 
-            var prioritizedTools = tools
+            List<ToolWithPriority> prioritizedTools = tools
                 .Select(tool =>
                 {
-                    var a =
+                    var priorityAttribute =
                         tool.GetType()
                             .GetCustomAttributes()
                             .OfType<PriorityAttribute>()
                             .SingleOrDefault();
 
-                    var priority = a?.Priority ?? int.MaxValue;
+                    var priority = priorityAttribute?.Priority ?? int.MaxValue;
 
-                    bool runAlways = a != null && a.RunAlways;
+                    bool runAlways = priorityAttribute != null && priorityAttribute.RunAlways;
 
                     return new ToolWithPriority(tool, priority, runAlways);
                 })

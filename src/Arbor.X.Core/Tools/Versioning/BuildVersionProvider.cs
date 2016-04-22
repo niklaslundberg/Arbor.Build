@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 using Alphaleonis.Win32.Filesystem;
 
+using Arbor.KVConfiguration.Core;
 using Arbor.KVConfiguration.JsonConfiguration;
 using Arbor.KVConfiguration.Schema;
 using Arbor.X.Core.BuildVariables;

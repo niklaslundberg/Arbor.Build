@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\Microsoft.Net.Compilers.1.1.1\build\Microsoft.Net.Compilers.props" Condition="Exists('..\packages\Microsoft.Net.Compilers.1.1.1\build\Microsoft.Net.Compilers.props')" />
+  <Import Project="..\packages\Microsoft.Net.Compilers.1.2.1\build\Microsoft.Net.Compilers.props" Condition="Exists('..\packages\Microsoft.Net.Compilers.1.2.1\build\Microsoft.Net.Compilers.props')" />
   <Import Project="..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.1\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.1\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -55,8 +55,8 @@
       <HintPath>..\packages\FubuCsProjFile.1.9.0.229\lib\net40\FubuCsProjFile.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="JetBrains.Annotations, Version=10.0.0.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
-      <HintPath>..\packages\JetBrains.Annotations.10.0.0\lib\net20\JetBrains.Annotations.dll</HintPath>
+    <Reference Include="JetBrains.Annotations, Version=10.1.4.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
+      <HintPath>..\packages\JetBrains.Annotations.10.1.4\lib\net20\JetBrains.Annotations.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Machine.Specifications, Version=0.9.3.0, Culture=neutral, processorArchitecture=MSIL">
@@ -77,15 +77,15 @@
     </Reference>
     <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.8.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.8.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
-      <HintPath>..\packages\NLog.4.2.3\lib\net45\NLog.dll</HintPath>
+      <HintPath>..\packages\NLog.4.3.1\lib\net45\NLog.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="nunit.framework, Version=3.0.5813.39031, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
-      <HintPath>..\packages\NUnit.3.0.1\lib\net45\nunit.framework.dll</HintPath>
+    <Reference Include="nunit.framework, Version=3.2.1.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
+      <HintPath>..\packages\NUnit.3.2.1\lib\net45\nunit.framework.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Semver, Version=1.1.2.0, Culture=neutral, processorArchitecture=MSIL">
@@ -119,6 +119,11 @@
     <Compile Include="GitBranches\when_parsing_version_from_branch_name_with_slash.cs" />
     <Compile Include="GitBranches\when_parsing_version_from_short_branch_name_with_dash.cs" />
     <Compile Include="GitBranches\when_parsing_version_from_short_branch_name_with_slash.cs" />
+    <Compile Include="GitBranchNameExtensions\when_getting_branch_name_for_branch_with_same_origin_name.cs" />
+    <Compile Include="GitBranchNameExtensions\when_getting_branch_name_for_branch_with_other_remote_name.cs" />
+    <Compile Include="GitBranchNameExtensions\when_getting_branch_name_for_head_detached.cs" />
+    <Compile Include="GitBranchNameExtensions\when_getting_branch_name_for_head_no_branch.cs" />
+    <Compile Include="GitBranchNameExtensions\when_getting_branch_name_for_on_branch.cs" />
     <Compile Include="Logging\LogLevel\when_checking_is_critical_logging_verbose.cs" />
     <Compile Include="Logging\LogLevel\when_checking_is_verbose_logging_critical.cs" />
     <Compile Include="Logging\LogLevel\when_parsing_empty_string.cs" />
@@ -189,7 +194,10 @@
     <Compile Include="Tests\MSpec\when_testing_this_test_type_for_subject.cs" />
     <Compile Include="Tests\NUnitDummy.cs" />
     <Compile Include="Tests\VSTestDummy.cs" />
+    <Compile Include="PathExtensions\when_checking_is_blacklisted_for_a_blacklisted_file.cs" />
+    <Compile Include="PathExtensions\when_checking_is_blacklisted_for_a_non_blacklisted_file.cs" />
     <Compile Include="Tests\when_listing_nuget_package_configuration_files.cs" />
+    <Compile Include="VisualStudioVariableProvider\when_running_VisualStudioVariableProvider.cs" />
     <Compile Include="WellknownVariables\when_listing_all_wellknown_variables.cs" />
     <Compile Include="KuduWebProjectDetails\when_creating_kudu_web_project_details.cs" />
     <Compile Include="WellknownVariables\when_listing_all_wellknown_variables_as_a_table.cs" />
@@ -214,22 +222,10 @@
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="TestStyle.css.map">
-      <DependentUpon>TestStyle.css</DependentUpon>
-    </None>
-    <None Include="TestStyle.scss" />
     <None Include="_Dummy\packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="TestStyle.css">
-      <DependentUpon>TestStyle.scss</DependentUpon>
-    </Content>
-    <Content Include="TestStyle.min.css">
-      <DependentUpon>TestStyle.css</DependentUpon>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Arbor.X.Bootstrapper\Arbor.X.Bootstrapper.csproj">
@@ -249,7 +245,7 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets'))" />
     <Error Condition="!Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.1\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.1\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.Net.Compilers.1.1.1\build\Microsoft.Net.Compilers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Net.Compilers.1.1.1\build\Microsoft.Net.Compilers.props'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Net.Compilers.1.2.1\build\Microsoft.Net.Compilers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Net.Compilers.1.2.1\build\Microsoft.Net.Compilers.props'))" />
   </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -436,7 +436,7 @@ namespace Arbor.X.Bootstrapper
 
             targetDirectory.EnsureExists();
 
-            string gitExePath = GitHelper.GetGitExePath();
+            string gitExePath = GitHelper.GetGitExePath(_logger);
 
             string sourceRoot = VcsPathHelper.TryFindVcsRootPath();
 
@@ -482,7 +482,7 @@ namespace Arbor.X.Bootstrapper
 
             bool isClonable = false;
 
-            string gitExePath = GitHelper.GetGitExePath();
+            string gitExePath = GitHelper.GetGitExePath(_logger);
 
             if (!string.IsNullOrWhiteSpace(gitExePath))
             {

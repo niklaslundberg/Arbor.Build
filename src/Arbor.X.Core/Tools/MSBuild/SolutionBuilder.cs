@@ -1267,7 +1267,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                     exitCode =
                         await
                             DirectoryCopy.CopyAsync(kuduWebJobs.FullName, artifactJobAppDataDirectory.FullName, logger,
-                                rootDir: _vcsRoot);
+                                rootDir: _vcsRoot, pathLookupSpecificationOption: DefaultPaths.DefaultPathLookupSpecification.WithIgnoredFileNameParts(new[] { ".vshost.", ".CodeAnalysisLog.xml", ".lastcodeanalysissucceeded" }));
                 }
                 else
                 {

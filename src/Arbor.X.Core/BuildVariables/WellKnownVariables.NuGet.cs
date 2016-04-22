@@ -59,20 +59,28 @@
         [VariableDescription("Flag to indicate if NuGet self update is enabled", "true")]
         public static readonly string NuGetSelfUpdateEnabled = "Arbor.X.NuGet.SelfUpdate.Enabled";
 
+        [VariableDescription("Flag to indicate if NuGet should have parallel processing disabled", "true")]
         public const string NuGetRestoreDisableParallelProcessing = "Arbor.X.NuGet.Restore.DisableParallelProcessing";
 
+        [VariableDescription("Flag to indicate if NuGet should use the -nocache flag", "true")]
         public const string NuGetRestoreNoCache = "Arbor.X.NuGet.Restore.NoCache";
 
+        [VariableDescription("Flag to indicate if NuGet package upload is enabled", "true")]
         public const string ExternalTools_NuGetServer_Enabled = "Arbor.X.NuGet.PackageUpload.Enabled";
 
+        [VariableDescription("Flag to indicate if NuGet Web Package upload is enabled", "true")]
         public const string ExternalTools_NuGetServer_WebSitePackagesUploadEnabled = "Arbor.X.NuGet.WebsitePackages.PackageUpload.Enabled";
 
+        [VariableDescription("NuGet package upload URI", "true")]
         public const string ExternalTools_NuGetServer_Uri = "Arbor.X.NuGet.PackageUpload.Server.Uri";
 
+        [VariableDescription("NuGet package upload API key", "true")]
         public const string ExternalTools_NuGetServer_ApiKey = "Arbor.X.NuGet.PackageUpload.Server.ApiKey";
 
+        [VariableDescription("Flag to indicate if NuGet package upload should be force enabled", "true")]
         public const string ExternalTools_NuGetServer_ForceUploadEnabled = "Arbor.X.NuGet.PackageUpload.ForceUploadEnabled";
 
+        [VariableDescription("Timeout in seconds for NuGet package upload", "true")]
         public const string ExternalTools_NuGetServer_UploadTimeoutInSeconds = "Arbor.X.NuGet.PackageUpload.TimeoutInSeconds";
     }
 }
