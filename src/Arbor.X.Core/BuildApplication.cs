@@ -161,11 +161,13 @@ namespace Arbor.X.Core
             List<IVariable> buildVariables = (await GetBuildVariablesAsync()).ToList();
 
             string variableAsTable = WellKnownVariables.AllVariables
-                .Select(variable => new Dictionary<string, string>
+                .OrderBy(item => item.InvariantName)
+                .Select(
+                    variable => new Dictionary<string, string>
                                     {
-                                        {"Name", variable.InvariantName},
-                                        {"Description", variable.Description},
-                                        {"Default value", variable.DefaultValue}
+                                        { "Name", variable.InvariantName },
+                                        { "Description", variable.Description },
+                                        { "Default value", variable.DefaultValue }
                                     })
                 .DisplayAsTable();
             var environmentVariables = Environment.GetEnvironmentVariables();
@@ -188,7 +190,7 @@ namespace Arbor.X.Core
             {
                 _logger.Write(string.Format("{1}Defined build variables: [{0}] {1}{1}{2}", buildVariables.Count,
                     Environment.NewLine,
-                    buildVariables.Print()));
+                    buildVariables.OrderBy(variable => variable.Key).Print()));
             }
 
             IReadOnlyCollection<ToolWithPriority> toolWithPriorities = ToolFinder.GetTools(_container, _logger);
@@ -255,8 +257,8 @@ namespace Arbor.X.Core
 
             string resultTable = BuildResults(toolResults);
 
-            _logger.Write(Environment.NewLine + new string('.', 100) + Environment.NewLine + "Tool results:" +
-                          Environment.NewLine + resultTable);
+            _logger.Write(
+                $"{Environment.NewLine}{new string('.', 100)}{Environment.NewLine}Tool results:{Environment.NewLine}{resultTable}");
 
             if (result != 0)
             {
