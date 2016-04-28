@@ -77,6 +77,12 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescription("Arbor.X NuGet package version for bootstrapper to download")]
         public static readonly string ArborXNuGetPackageVersion = "Arbor.X.NuGetPackageVersion";
 
+        [VariableDescription("NuGet source to use when downloading Arbor.X NuGet package")]
+        public static readonly string ArborXNuGetPackageSource = "Arbor.X.NuGetPackage.Source";
+
+        [VariableDescription("Flag to indicate if the bootstrapper should use -NoCache flag when downloading Arbor.X NuGet package")]
+        public static readonly string ArborXNuGetPackageNoCacheEnabled = "Arbor.X.NuGetPackage.NoCachedEnabled";
+
         [VariableDescription("MSBuild executable path (eg. C:\\MSbuild.exe)")]
         public static readonly string ExternalTools_MSBuild_ExePath = "Arbor.X.Tools.External.MSBuild.ExePath";
 

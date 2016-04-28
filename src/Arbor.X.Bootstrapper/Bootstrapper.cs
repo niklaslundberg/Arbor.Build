@@ -321,6 +321,21 @@ namespace Arbor.X.Bootstrapper
                 nugetArguments.Add("detailed");
             }
 
+            string nuGetSource = Environment.GetEnvironmentVariable(WellKnownVariables.ArborXNuGetPackageSource);
+
+            if (!string.IsNullOrWhiteSpace(nuGetSource))
+            {
+                nugetArguments.Add("-Source");
+                nugetArguments.Add(nuGetSource);
+            }
+
+            string noCache = Environment.GetEnvironmentVariable(WellKnownVariables.ArborXNuGetPackageNoCacheEnabled);
+
+            if (noCache.TryParseBool(defaultValue: false))
+            {
+                nugetArguments.Add("-NoCache");
+            }
+
             if (!string.IsNullOrWhiteSpace(version))
             {
                 nugetArguments.Add("-Version");
