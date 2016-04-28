@@ -20,6 +20,8 @@ using Arbor.X.Core.Parsing;
 using Arbor.X.Core.ProcessUtils;
 using Arbor.X.Core.Tools.NuGet;
 
+using FubuCore.Reflection;
+
 using FubuCsProjFile;
 using FubuCsProjFile.MSBuild;
 
@@ -78,6 +80,8 @@ namespace Arbor.X.Core.Tools.MSBuild
         private bool _applicationmetadataEnabled;
 
         private string _gitHash;
+
+        private IReadOnlyCollection<string> _filteredNuGetWebPackageProjects;
 
         public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
@@ -139,6 +143,14 @@ namespace Arbor.X.Core.Tools.MSBuild
             _applicationmetadataEnabled = buildVariables.GetBooleanByKey(
                 WellKnownVariables.ApplicationMetadataEnabled,
                 defaultValue: false);
+
+            _filteredNuGetWebPackageProjects =
+                buildVariables.GetVariableValueOrDefault(
+                    WellKnownVariables.NugetCreateNuGetWebPackageFilter,
+                    defaultValue: "")
+                    .Split(',')
+                    .Where(item => !string.IsNullOrWhiteSpace(item))
+                    .SafeToReadOnlyCollection();
 
             if (_vcsRoot == null)
             {
@@ -984,6 +996,24 @@ namespace Arbor.X.Core.Tools.MSBuild
             List<MSBuildProperty> msbuildProperties,
             string expectedName)
         {
+            bool packageFilterEnabled = _filteredNuGetWebPackageProjects.Any();
+
+            if (packageFilterEnabled)
+            {
+                _logger.WriteDebug("NuGet Web package filter is enabled");
+
+                var normalizedProjectFileName = Path.GetFileNameWithoutExtension(solutionProject.Project.FileName);
+
+                bool isIncluded = _filteredNuGetWebPackageProjects.Any(
+                    projectName => projectName.Equals(normalizedProjectFileName, StringComparison.InvariantCultureIgnoreCase));
+
+                _logger.WriteDebug(isIncluded ?
+                    $"NuGet Web package for {normalizedProjectFileName} ie enabled by filter" :
+                    $"NuGet Web package for {normalizedProjectFileName} is disabled by filter");
+
+                return isIncluded;
+            }
+
             bool buildNuGetWebPackageForProject = true;
 
             if (msbuildProperties.Any())
