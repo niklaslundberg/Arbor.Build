@@ -925,7 +925,12 @@ namespace Arbor.X.Core.Tools.MSBuild
 
                     if (binDirectory.Exists)
                     {
+                        _logger.WriteDebug($"The bin directory '{binDirectory.FullName}' does exist");
                         RemoveXmlFilesForAssemblies(binDirectory);
+                    }
+                    else
+                    {
+                        _logger.WriteDebug($"The bin directory '{binDirectory.FullName}' does not exist");
                     }
                 }
                 else
@@ -1471,7 +1476,7 @@ namespace Arbor.X.Core.Tools.MSBuild
 
         private void RemoveXmlFilesForAssemblies(DirectoryInfo directoryInfo)
         {
-            if (directoryInfo.Exists)
+            if (!directoryInfo.Exists)
             {
                 return;
             }
