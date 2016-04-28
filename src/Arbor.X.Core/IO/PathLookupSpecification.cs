@@ -17,7 +17,7 @@ namespace Arbor.X.Core.IO
             IgnoredDirectorySegments = ignoredDirectorySegments.SafeToReadOnlyCollection();
             IgnoredDirectorySegmentParts = ignoredDirectorySegmentParts.SafeToReadOnlyCollection();
             IgnoredDirectoryStartsWithPatterns = ignoredDirectoryStartsWithPatterns.SafeToReadOnlyCollection();
-            IignoredFileNameParts = ignoredFileNameParts.SafeToReadOnlyCollection();
+            IgnoredFileNameParts = ignoredFileNameParts.SafeToReadOnlyCollection();
         }
 
         public IReadOnlyCollection<string> IgnoredFileStartsWithPatterns { get; }
@@ -28,6 +28,6 @@ namespace Arbor.X.Core.IO
 
         public IReadOnlyCollection<string> IgnoredDirectorySegmentParts { get; }
 
-        public IReadOnlyCollection<string> IignoredFileNameParts { get; }
+        public IReadOnlyCollection<string> IgnoredFileNameParts { get; }
     }
 }

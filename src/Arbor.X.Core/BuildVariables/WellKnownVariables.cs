@@ -233,6 +233,12 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescription("Flag to indicate if XML files for assemblies in the bin directory should be deleted")]
         public static readonly string CleanWebJobsXmlFilesForAssembliesEnabled = "Arbor.X.Build.WebApplications.WebJobs.CleanWebJobsXmlFilesForAssembliesEnabled";
 
+        [VariableDescription("List of file name parts to be used when excluding files from being copied to web jobs directory, comma separated")]
+        public static readonly string WebJobsExcludedFileNameParts = "Arbor.X.Build.WebApplications.WebJobs.ExcludedFileNameParts";
+
+        [VariableDescription("List of file name parts to be used when excluding directories from being copied to web jobs directory, comma separated")]
+        public static readonly string WebJobsExcludedDirectorySegments = "Arbor.X.Build.WebApplications.WebJobs.ExcludedDirectorySegments";
+
         // ReSharper restore ConvertToConstant.Global
         // ReSharper restore InconsistentNaming
 

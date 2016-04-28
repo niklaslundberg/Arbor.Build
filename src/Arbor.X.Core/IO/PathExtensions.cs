@@ -43,7 +43,7 @@ namespace Arbor.X.Core.IO
                 logger?.WriteDebug($"Path segments of '{sourceFile}' makes it blacklisted");
             }
 
-            var ignoredFileNameParts = pathLookupSpecification.IignoredFileNameParts.Where(part => !string.IsNullOrEmpty(part)).Where(
+            var ignoredFileNameParts = pathLookupSpecification.IgnoredFileNameParts.Where(part => !string.IsNullOrEmpty(part)).Where(
                 part => sourceFileInfo.Name.IndexOf(part, StringComparison.InvariantCultureIgnoreCase) >= 0).SafeToReadOnlyCollection();
 
             isBlackListed = isBlackListed || ignoredFileNameParts.Any();

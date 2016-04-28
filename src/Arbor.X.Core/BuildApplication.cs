@@ -69,8 +69,11 @@ namespace Arbor.X.Core
                 [WellKnownVariables.ExternalTools_ILRepack_Custom_ExePath] = @"C:\Tools\ILRepack\ILRepack.exe",
                 [WellKnownVariables.NuGetVersionUpdatedEnabled] = @"true",
                 [WellKnownVariables.ApplicationMetadataEnabled] = @"true",
-                [WellKnownVariables.LogLevel] = "Debug",
-                [WellKnownVariables.NugetCreateNuGetWebPackageFilter] = "Arbor.X.Tests.DummyWebApplication,ABC,"
+                [WellKnownVariables.LogLevel] = "verbose",
+                [WellKnownVariables.NugetCreateNuGetWebPackageFilter] = "Arbor.X.Tests.DummyWebApplication,ABC,",
+                [WellKnownVariables.WebJobsExcludedFileNameParts] = "Microsoft.Build,Microsoft.CodeAnalysis,Microsoft.CodeDom",
+                [WellKnownVariables.WebJobsExcludedDirectorySegments] = "roslyn",
+                [WellKnownVariables.AppDataJobsEnabled] = "true"
             };
 
             foreach (KeyValuePair<string, string> environmentVariable in environmentVariables)

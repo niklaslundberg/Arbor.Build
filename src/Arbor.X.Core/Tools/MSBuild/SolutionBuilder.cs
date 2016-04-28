@@ -84,6 +84,9 @@ namespace Arbor.X.Core.Tools.MSBuild
 
         private bool _cleanWebJobsXmlFilesForAssembliesEnabled;
 
+        private IReadOnlyCollection<string> _excludedWebJobsFiles;
+        private IReadOnlyCollection<string> _excludedWebJobsDirectorySegments;
+
         public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
@@ -155,6 +158,18 @@ namespace Arbor.X.Core.Tools.MSBuild
                 buildVariables.GetVariableValueOrDefault(
                     WellKnownVariables.NugetCreateNuGetWebPackageFilter,
                     defaultValue: "")
+                    .Split(',')
+                    .Where(item => !string.IsNullOrWhiteSpace(item))
+                    .SafeToReadOnlyCollection();
+
+            _excludedWebJobsFiles =
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.WebJobsExcludedFileNameParts, defaultValue: "")
+                    .Split(',')
+                    .Where(item => !string.IsNullOrWhiteSpace(item))
+                    .SafeToReadOnlyCollection();
+
+            _excludedWebJobsDirectorySegments =
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.WebJobsExcludedDirectorySegments, defaultValue: "")
                     .Split(',')
                     .Where(item => !string.IsNullOrWhiteSpace(item))
                     .SafeToReadOnlyCollection();
@@ -1321,10 +1336,15 @@ namespace Arbor.X.Core.Tools.MSBuild
                     logger.WriteVerbose(
                         $"Copying directory '{kuduWebJobs.FullName}' to '{artifactJobAppDataDirectory.FullName}'");
 
+                    IEnumerable<string> ignoredFileNameParts = new[] { ".vshost.", ".CodeAnalysisLog.xml", ".lastcodeanalysissucceeded" }.Concat(_excludedWebJobsFiles);
+
                     exitCode =
                         await
                             DirectoryCopy.CopyAsync(kuduWebJobs.FullName, artifactJobAppDataDirectory.FullName, logger,
-                                rootDir: _vcsRoot, pathLookupSpecificationOption: DefaultPaths.DefaultPathLookupSpecification.WithIgnoredFileNameParts(new[] { ".vshost.", ".CodeAnalysisLog.xml", ".lastcodeanalysissucceeded" }));
+                                rootDir: _vcsRoot, pathLookupSpecificationOption:
+                                DefaultPaths.DefaultPathLookupSpecification
+                                .WithIgnoredFileNameParts(ignoredFileNameParts)
+                                .AddExcludedDirectorySegments(_excludedWebJobsDirectorySegments));
 
                     if (exitCode.IsSuccess)
                     {

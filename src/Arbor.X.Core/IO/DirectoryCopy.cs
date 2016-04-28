@@ -32,12 +32,13 @@ namespace Arbor.X.Core.IO
 
             if (!sourceDirectory.Exists)
             {
-                throw new ArgumentException(string.Format("Source directory '{0}' does not exist", sourceDir));
+                throw new ArgumentException($"Source directory '{sourceDir}' does not exist");
             }
 
             if (pathLookupSpecification.IsBlackListed(sourceDir, rootDir))
             {
-                logger.WriteDebug(string.Format("Directory '{0}' is blacklisted from specification {1}", sourceDir, pathLookupSpecification.ToString()));
+                logger.WriteDebug(
+                    $"Directory '{sourceDir}' is blacklisted from specification {pathLookupSpecification.ToString()}");
                 return ExitCode.Success;
             }
 
@@ -47,7 +48,13 @@ namespace Arbor.X.Core.IO
             {
                 string destFileName = Path.Combine(targetDir, file.Name);
 
-                logger.WriteVerbose(string.Format("Copying file '{0}' to destination '{1}'", file.FullName, destFileName));
+                if (pathLookupSpecification.IsFileBlackListed(file.FullName, rootDir: rootDir, logger: optionalLogger))
+                {
+                    logger.WriteVerbose($"File '{file.FullName}' is blacklisted, skipping copying file");
+                    continue;
+                }
+
+                logger.WriteVerbose($"Copying file '{file.FullName}' to destination '{destFileName}'");
 
                 try
                 {
@@ -56,14 +63,14 @@ namespace Arbor.X.Core.IO
                 catch (PathTooLongException ex)
                 {
                     logger.WriteError(
-                        string.Format("Could not copy file to '{0}', path length is too long ({1})", destFileName,
-                            destFileName.Length) + " " + ex);
+                        $"Could not copy file to '{destFileName}', path length is too long ({destFileName.Length})"
+                        + " " + ex);
                     return ExitCode.Failure;
                 }
                 catch (Exception ex)
                 {
                     logger.WriteError(
-                        string.Format("Could not copy file '{0}' to destination '{1}'", file.FullName, destFileName) +
+                        $"Could not copy file '{file.FullName}' to destination '{destFileName}'" +
                         " " + ex);
                     return ExitCode.Failure;
                 }
