@@ -766,6 +766,22 @@ namespace Arbor.X.Core.Tools.MSBuild
                     _logger.Write("Application metadata is disabled");
                 }
 
+                if (_appDataJobsEnabled)
+                {
+                    logger.Write("AppData Web Jobs are enabled");
+
+                    ExitCode exitCode = await CopyKuduWebJobsAsync(logger, solutionProject, siteArtifactDirectory);
+
+                    if (!exitCode.IsSuccess)
+                    {
+                        return exitCode;
+                    }
+                }
+                else
+                {
+                    logger.Write("AppData Web Jobs are disabled");
+                }
+
                 if (_createWebDeployPackages)
                 {
                     logger.Write(
@@ -817,21 +833,6 @@ namespace Arbor.X.Core.Tools.MSBuild
                         $"NuGet web package creation is disabled, build variable '{WellKnownVariables.NugetCreateNuGetWebPackagesEnabled}' is not set or value is other than true");
                 }
 
-                if (_appDataJobsEnabled)
-                {
-                    logger.Write("AppData Web Jobs are enabled");
-
-                    ExitCode exitCode = await CopyKuduWebJobsAsync(logger, solutionProject, siteArtifactDirectory);
-
-                    if (!exitCode.IsSuccess)
-                    {
-                        return exitCode;
-                    }
-                }
-                else
-                {
-                    logger.Write("AppData Web Jobs are disabled");
-                }
             }
 
             return ExitCode.Success;
