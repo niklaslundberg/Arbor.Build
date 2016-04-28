@@ -32,6 +32,9 @@
         [VariableDescription("Flag to indicate if creation of NuGet web package is enabled for a project")]
         public static readonly string NugetCreateNuGetWebPackageForProjectEnabledFormat = "{0}_Arbor_X_NuGet_Package_CreateNuGetWebPackageForProject_Enabled";
 
+        [VariableDescription("Comma-separated list of web projects files to create NuGet Web packages for. If specified, individual project flags will be ignored. Example: for MyWebProject.csproj enter just MyWebProject")]
+        public static readonly string NugetCreateNuGetWebPackageFilter = "Arbor.X.NuGet.Package.CreateNuGetWebPackages.Filter";
+
         [VariableDescription("Flag to indicate if the build number is included in the NuGet package artifacts")]
         public static readonly string BuildNumberInNuGetPackageArtifactsEnabled = Arbor.X + ".NuGet.Package.Artifacts.BuildNumber.Enabled";
 

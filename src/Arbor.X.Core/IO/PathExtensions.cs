@@ -43,7 +43,7 @@ namespace Arbor.X.Core.IO
                 logger?.WriteDebug($"Path segments of '{sourceFile}' makes it blacklisted");
             }
 
-            var ignoredFileNameParts = pathLookupSpecification.IignoredFileNameParts.Where(part => !string.IsNullOrEmpty(part)).Where(
+            var ignoredFileNameParts = pathLookupSpecification.IgnoredFileNameParts.Where(part => !string.IsNullOrEmpty(part)).Where(
                 part => sourceFileInfo.Name.IndexOf(part, StringComparison.InvariantCultureIgnoreCase) >= 0).SafeToReadOnlyCollection();
 
             isBlackListed = isBlackListed || ignoredFileNameParts.Any();
@@ -56,7 +56,7 @@ namespace Arbor.X.Core.IO
             return isBlackListed;
         }
 
-        public static bool IsBlackListed(this PathLookupSpecification pathLookupSpecification, string sourceDir, string rootDir = null)
+        public static bool IsBlackListed(this PathLookupSpecification pathLookupSpecification, string sourceDir, string rootDir = null, ILogger logger = null)
         {
             if (pathLookupSpecification == null)
             {
@@ -76,10 +76,11 @@ namespace Arbor.X.Core.IO
             var sourceDirSegments = GetSourceDirSegments(sourceDir, rootDir);
 
             bool hasAnyPathSegment = HasAnyPathSegment(sourceDirSegments,
-                pathLookupSpecification.IgnoredDirectorySegments);
+                pathLookupSpecification.IgnoredDirectorySegments, logger);
 
             if (hasAnyPathSegment)
             {
+                logger?.WriteDebug($"The directory '{sourceDir}' has a path segment that is blacklisted");
                 return true;
             }
 
@@ -88,6 +89,7 @@ namespace Arbor.X.Core.IO
 
             if (hasAnyPathSegmentPart)
             {
+                logger?.WriteDebug($"The directory '{sourceDir}' has a path segment part that is blacklisted");
                 return true;
             }
 
@@ -96,8 +98,11 @@ namespace Arbor.X.Core.IO
 
             if (hasAnyPartStartsWith)
             {
+                logger?.WriteDebug($"The directory '{sourceDir}' has a path that starts with a pattern that is blacklisted");
                 return true;
             }
+
+            logger?.WriteDebug($"The directory '{sourceDir}' is not blacklisted");
 
             return false;
         }
@@ -113,14 +118,24 @@ namespace Arbor.X.Core.IO
             return sourceDirSegments;
         }
 
-        static bool HasAnyPathSegment(IEnumerable<string> segments, IEnumerable<string> patterns)
+        static bool HasAnyPathSegment(IEnumerable<string> segments, IEnumerable<string> patterns, ILogger logger = null)
         {
-            return segments.Any(segment => HasAnyPathSegment(segment, patterns));
+            return segments.Any(segment => HasAnyPathSegment(segment, patterns, logger));
         }
 
-        static bool HasAnyPathSegment(string segment, IEnumerable<string> patterns)
+        static bool HasAnyPathSegment(string segment, IEnumerable<string> patterns, ILogger logger = null)
         {
-            return patterns.Any(pattern => segment.Equals(pattern, StringComparison.InvariantCultureIgnoreCase));
+            return patterns.Any(pattern =>
+                {
+                    bool isMatch = segment.Equals(pattern, StringComparison.InvariantCultureIgnoreCase);
+
+                    if (isMatch)
+                    {
+                        logger?.WriteDebug($"Segment '{segment}' matches pattern '{pattern}'");
+                    }
+
+                    return isMatch;
+                });
         }
 
         static bool HasAnyPathSegmentStartsWith(IEnumerable<string> segments, IEnumerable<string> patterns)

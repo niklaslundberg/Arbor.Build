@@ -77,6 +77,12 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescription("Arbor.X NuGet package version for bootstrapper to download")]
         public static readonly string ArborXNuGetPackageVersion = "Arbor.X.NuGetPackageVersion";
 
+        [VariableDescription("NuGet source to use when downloading Arbor.X NuGet package")]
+        public static readonly string ArborXNuGetPackageSource = "Arbor.X.NuGetPackage.Source";
+
+        [VariableDescription("Flag to indicate if the bootstrapper should use -NoCache flag when downloading Arbor.X NuGet package")]
+        public static readonly string ArborXNuGetPackageNoCacheEnabled = "Arbor.X.NuGetPackage.NoCachedEnabled";
+
         [VariableDescription("MSBuild executable path (eg. C:\\MSbuild.exe)")]
         public static readonly string ExternalTools_MSBuild_ExePath = "Arbor.X.Tools.External.MSBuild.ExePath";
 
@@ -226,6 +232,18 @@ namespace Arbor.X.Core.BuildVariables
 
         [VariableDescription("Run tests in release configuration")]
         public static readonly string RunTestsInReleaseConfigurationEnabled = "Arbor.X.Tests.RunTestsInReleaseConfiguration";
+
+        [VariableDescription("Flag to indicate if XML files for assemblies in the bin directory should be deleted")]
+        public static readonly string CleanBinXmlFilesForAssembliesEnabled = "Arbor.X.Build.WebApplications.CleanBinXmlFilesForAssembliesEnabled";
+
+        [VariableDescription("Flag to indicate if XML files for assemblies in the bin directory should be deleted")]
+        public static readonly string CleanWebJobsXmlFilesForAssembliesEnabled = "Arbor.X.Build.WebApplications.WebJobs.CleanWebJobsXmlFilesForAssembliesEnabled";
+
+        [VariableDescription("List of file name parts to be used when excluding files from being copied to web jobs directory, comma separated")]
+        public static readonly string WebJobsExcludedFileNameParts = "Arbor.X.Build.WebApplications.WebJobs.ExcludedFileNameParts";
+
+        [VariableDescription("List of file name parts to be used when excluding directories from being copied to web jobs directory, comma separated")]
+        public static readonly string WebJobsExcludedDirectorySegments = "Arbor.X.Build.WebApplications.WebJobs.ExcludedDirectorySegments";
 
         // ReSharper restore ConvertToConstant.Global
         // ReSharper restore InconsistentNaming

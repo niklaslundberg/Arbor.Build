@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Alphaleonis.Win32.Filesystem;
 
-using Arbor.KVConfiguration.JsonConfiguration;
 using Arbor.KVConfiguration.Schema;
 using Arbor.KVConfiguration.Schema.Json;
 using Arbor.X.Core.BuildVariables;
@@ -79,6 +78,15 @@ namespace Arbor.X.Core.Tools.MSBuild
 
         private string _gitHash;
 
+        private IReadOnlyCollection<string> _filteredNuGetWebPackageProjects;
+
+        private bool _cleanBinXmlFilesForAssembliesEnabled;
+
+        private bool _cleanWebJobsXmlFilesForAssembliesEnabled;
+
+        private IReadOnlyCollection<string> _excludedWebJobsFiles;
+        private IReadOnlyCollection<string> _excludedWebJobsDirectorySegments;
+
         public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
@@ -92,6 +100,12 @@ namespace Arbor.X.Core.Tools.MSBuild
 
             _appDataJobsEnabled = buildVariables.GetBooleanByKey(WellKnownVariables.AppDataJobsEnabled,
                 defaultValue: false);
+
+            _cleanBinXmlFilesForAssembliesEnabled =
+                buildVariables.GetBooleanByKey(WellKnownVariables.CleanBinXmlFilesForAssembliesEnabled, defaultValue: false);
+
+            _cleanWebJobsXmlFilesForAssembliesEnabled =
+                buildVariables.GetBooleanByKey(WellKnownVariables.CleanWebJobsXmlFilesForAssembliesEnabled, defaultValue: false);
 
             _codeAnalysisEnabled =
                 buildVariables.GetBooleanByKey(
@@ -139,6 +153,26 @@ namespace Arbor.X.Core.Tools.MSBuild
             _applicationmetadataEnabled = buildVariables.GetBooleanByKey(
                 WellKnownVariables.ApplicationMetadataEnabled,
                 defaultValue: false);
+
+            _filteredNuGetWebPackageProjects =
+                buildVariables.GetVariableValueOrDefault(
+                    WellKnownVariables.NugetCreateNuGetWebPackageFilter,
+                    defaultValue: "")
+                    .Split(',')
+                    .Where(item => !string.IsNullOrWhiteSpace(item))
+                    .SafeToReadOnlyCollection();
+
+            _excludedWebJobsFiles =
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.WebJobsExcludedFileNameParts, defaultValue: "")
+                    .Split(',')
+                    .Where(item => !string.IsNullOrWhiteSpace(item))
+                    .SafeToReadOnlyCollection();
+
+            _excludedWebJobsDirectorySegments =
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.WebJobsExcludedDirectorySegments, defaultValue: "")
+                    .Split(',')
+                    .Where(item => !string.IsNullOrWhiteSpace(item))
+                    .SafeToReadOnlyCollection();
 
             if (_vcsRoot == null)
             {
@@ -732,6 +766,22 @@ namespace Arbor.X.Core.Tools.MSBuild
                     _logger.Write("Application metadata is disabled");
                 }
 
+                if (_appDataJobsEnabled)
+                {
+                    logger.Write("AppData Web Jobs are enabled");
+
+                    ExitCode exitCode = await CopyKuduWebJobsAsync(logger, solutionProject, siteArtifactDirectory);
+
+                    if (!exitCode.IsSuccess)
+                    {
+                        return exitCode;
+                    }
+                }
+                else
+                {
+                    logger.Write("AppData Web Jobs are disabled");
+                }
+
                 if (_createWebDeployPackages)
                 {
                     logger.Write(
@@ -783,21 +833,6 @@ namespace Arbor.X.Core.Tools.MSBuild
                         $"NuGet web package creation is disabled, build variable '{WellKnownVariables.NugetCreateNuGetWebPackagesEnabled}' is not set or value is other than true");
                 }
 
-                if (_appDataJobsEnabled)
-                {
-                    logger.Write("AppData Web Jobs are enabled");
-
-                    ExitCode exitCode = await CopyKuduWebJobsAsync(logger, solutionProject, siteArtifactDirectory);
-
-                    if (!exitCode.IsSuccess)
-                    {
-                        return exitCode;
-                    }
-                }
-                else
-                {
-                    logger.Write("AppData Web Jobs are disabled");
-                }
             }
 
             return ExitCode.Success;
@@ -880,6 +915,31 @@ namespace Arbor.X.Core.Tools.MSBuild
                     cancellationToken: _cancellationToken,
                     addProcessNameAsLogCategory: true,
                     addProcessRunnerCategory: true);
+
+            if (buildSiteExitCode.IsSuccess)
+            {
+                if (_cleanBinXmlFilesForAssembliesEnabled)
+                {
+                    _logger.WriteDebug("Clean bin directory XML files is enabled");
+
+                    var binDirectory = new DirectoryInfo(Path.Combine(siteArtifactDirectory.FullName, "bin"));
+
+                    if (binDirectory.Exists)
+                    {
+                        _logger.WriteDebug($"The bin directory '{binDirectory.FullName}' does exist");
+                        RemoveXmlFilesForAssemblies(binDirectory);
+                    }
+                    else
+                    {
+                        _logger.WriteDebug($"The bin directory '{binDirectory.FullName}' does not exist");
+                    }
+                }
+                else
+                {
+                    _logger.WriteDebug("Clean bin directory XML files is disabled");
+                }
+            }
+
             return buildSiteExitCode;
         }
 
@@ -984,6 +1044,24 @@ namespace Arbor.X.Core.Tools.MSBuild
             List<MSBuildProperty> msbuildProperties,
             string expectedName)
         {
+            bool packageFilterEnabled = _filteredNuGetWebPackageProjects.Any();
+
+            if (packageFilterEnabled)
+            {
+                _logger.WriteDebug("NuGet Web package filter is enabled");
+
+                var normalizedProjectFileName = Path.GetFileNameWithoutExtension(solutionProject.Project.FileName);
+
+                bool isIncluded = _filteredNuGetWebPackageProjects.Any(
+                    projectName => projectName.Equals(normalizedProjectFileName, StringComparison.InvariantCultureIgnoreCase));
+
+                _logger.WriteDebug(isIncluded ?
+                    $"NuGet Web package for {normalizedProjectFileName} ie enabled by filter" :
+                    $"NuGet Web package for {normalizedProjectFileName} is disabled by filter");
+
+                return isIncluded;
+            }
+
             bool buildNuGetWebPackageForProject = true;
 
             if (msbuildProperties.Any())
@@ -1264,10 +1342,38 @@ namespace Arbor.X.Core.Tools.MSBuild
                     logger.WriteVerbose(
                         $"Copying directory '{kuduWebJobs.FullName}' to '{artifactJobAppDataDirectory.FullName}'");
 
+                    IEnumerable<string> ignoredFileNameParts = new[] { ".vshost.", ".CodeAnalysisLog.xml", ".lastcodeanalysissucceeded" }.Concat(_excludedWebJobsFiles);
+
                     exitCode =
                         await
                             DirectoryCopy.CopyAsync(kuduWebJobs.FullName, artifactJobAppDataDirectory.FullName, logger,
-                                rootDir: _vcsRoot, pathLookupSpecificationOption: DefaultPaths.DefaultPathLookupSpecification.WithIgnoredFileNameParts(new[] { ".vshost.", ".CodeAnalysisLog.xml", ".lastcodeanalysissucceeded" }));
+                                rootDir: _vcsRoot, pathLookupSpecificationOption:
+                                DefaultPaths.DefaultPathLookupSpecification
+                                .WithIgnoredFileNameParts(ignoredFileNameParts)
+                                .AddExcludedDirectorySegments(_excludedWebJobsDirectorySegments));
+
+                    if (exitCode.IsSuccess)
+                    {
+                        if (_cleanWebJobsXmlFilesForAssembliesEnabled)
+                        {
+                            _logger.WriteDebug("Clean bin directory XML files is enabled for WebJobs");
+
+                            var binDirectory = new DirectoryInfo(Path.Combine(artifactJobAppDataDirectory.FullName));
+
+                            if (binDirectory.Exists)
+                            {
+                                RemoveXmlFilesForAssemblies(binDirectory);
+                            }
+                        }
+                        else
+                        {
+                            _logger.WriteDebug("Clean bin directory XML files is disabled for WebJobs");
+                        }
+                    }
+                    else
+                    {
+                        _logger.WriteDebug("Clean bin directory XML files is disabled");
+                    }
                 }
                 else
                 {
@@ -1368,16 +1474,34 @@ namespace Arbor.X.Core.Tools.MSBuild
 
             return isBlacklistedByName || isBlackListedByAttributes;
         }
+
+        private void RemoveXmlFilesForAssemblies(DirectoryInfo directoryInfo)
+        {
+            if (!directoryInfo.Exists)
+            {
+                return;
+            }
+
+            _logger.WriteVerbose($"Deleting XML files for corresponding DLL files in directory '{directoryInfo.FullName}'");
+
+            var dllFiles = directoryInfo.GetFiles("*.dll", SearchOption.AllDirectories);
+
+            foreach (FileInfo fileInfo in dllFiles)
+            {
+                var xmlFile = new FileInfo(Path.Combine(
+                    fileInfo.Directory.FullName,
+                    $"{Path.GetFileNameWithoutExtension(fileInfo.Name)}.xml"));
+
+                if (xmlFile.Exists)
+                {
+                    _logger.WriteVerbose($"Deleting XML file '{xmlFile.FullName}'");
+
+                    File.Delete(xmlFile.FullName);
+
+                    _logger.WriteVerbose($"Deleted XML file '{xmlFile.FullName}'");
+                }
+            }
+        }
     }
 
-    internal class ApplicationMetadataKeys
-    {
-        public static string GitHash = "urn:versioning:vcs:git:hash";
-
-        public static string GitBranch = "urn:versioning:vcs:git:branch";
-
-        public static string DotNetCpuPlatform = "urn:dotnet:runtime:cpu-platform";
-
-        public static string DotNetConfiguration = "urn:dotnet:compilation:configuration";
-    }
 }

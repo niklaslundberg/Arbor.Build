@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.X.Core.BuildVariables;
@@ -202,15 +203,30 @@ namespace Arbor.X.Core.Tools.NuGet
 
             ExitCode exitCode = ExitCode.Failure;
 
+
             int attemptCount = 1;
             while (!exitCode.IsSuccess && attemptCount <= MaxAttempts)
             {
+                StringBuilder errorBuilder = new StringBuilder();
+
                 exitCode =
                     await
                         ProcessRunner.ExecuteAsync(nugetExePath, arguments: args, standardOutLog: logger.Write,
-                            standardErrorAction: logger.WriteError, toolAction: logger.Write,
+                            standardErrorAction: (message, prefix) =>
+                                {
+                                    errorBuilder.AppendLine(message);
+                                    logger.WriteError(message, prefix);
+                                }, toolAction: logger.Write,
                             addProcessNameAsLogCategory: true,
                             addProcessRunnerCategory: true);
+
+                if (!exitCode.IsSuccess
+                    && errorBuilder.ToString().IndexOf("conflict", StringComparison.InvariantCultureIgnoreCase) >= 0)
+                {
+                    logger.WriteError($"Failed to upload NuGet package '{nugetPackage}', skipping retry for NuGet package, conflict detected");
+
+                    return exitCode;
+                }
 
                 if (!exitCode.IsSuccess && attemptCount < MaxAttempts)
                 {

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arbor.X.Bootstrapper", "Arbor.X.Bootstrapper\Arbor.X.Bootstrapper.csproj", "{9AA52382-A7B1-407B-AE0E-9B04EFDFAC43}"
 EndProject
@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arbor.X.Tests.DummyWebAppli
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{BE5C46C6-ACDF-4620-8C7F-471281101E9B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arbor.X.Tests.DummyConsoleApp", "Arbor.X.Tests.DummyConsoleApp\Arbor.X.Tests.DummyConsoleApp.csproj", "{E414B1E3-3C82-49BD-BAC2-52CD83AFF0B7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -59,6 +61,10 @@ Global
 		{C79E57E7-56AA-47A2-9D82-782058B8E565}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C79E57E7-56AA-47A2-9D82-782058B8E565}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C79E57E7-56AA-47A2-9D82-782058B8E565}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E414B1E3-3C82-49BD-BAC2-52CD83AFF0B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E414B1E3-3C82-49BD-BAC2-52CD83AFF0B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E414B1E3-3C82-49BD-BAC2-52CD83AFF0B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E414B1E3-3C82-49BD-BAC2-52CD83AFF0B7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -66,5 +72,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{280704D5-C385-4F0A-AE3C-D6497A16C9EA} = {BE5C46C6-ACDF-4620-8C7F-471281101E9B}
 		{C79E57E7-56AA-47A2-9D82-782058B8E565} = {BE5C46C6-ACDF-4620-8C7F-471281101E9B}
+		{E414B1E3-3C82-49BD-BAC2-52CD83AFF0B7} = {BE5C46C6-ACDF-4620-8C7F-471281101E9B}
 	EndGlobalSection
 EndGlobal

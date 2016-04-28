@@ -16,6 +16,7 @@ _nCrunchtemp*
 UpgradeLog*.htm
 .idea
 *.iml
+src/Arbor.X.Tests.DummyWebApplication/App_Data/jobs/
 
 #################
 ## Eclipse
