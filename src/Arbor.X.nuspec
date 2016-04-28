@@ -27,7 +27,7 @@
 		<tags>build tools convention</tags>
 	</metadata>
 	<files>
-		<file src="Arbor.X.Build\bin\$configuration$\**\*.*" target="." exclude="*.vshost*;**\*.vshost*;*.trx;*.lastcodeanalysissucceeded;*.CodeAnalysisLog.xml" />
+		<file src="Arbor.X.Build\bin\$configuration$\**\*.*" target="" exclude="*.vshost*;**\*.vshost*;*.trx;*.lastcodeanalysissucceeded;*.CodeAnalysisLog.xml" />
 		<file src="..\tools\external\**.*" exclude="*.vshost*;**\*.vshost*;*.trx" target="tools\external" />
 	</files>
 </package>
