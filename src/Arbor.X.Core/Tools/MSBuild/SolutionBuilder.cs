@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Alphaleonis.Win32.Filesystem;
 
-using Arbor.KVConfiguration.JsonConfiguration;
 using Arbor.KVConfiguration.Schema;
 using Arbor.KVConfiguration.Schema.Json;
 using Arbor.X.Core.BuildVariables;
@@ -19,8 +18,6 @@ using Arbor.X.Core.Logging;
 using Arbor.X.Core.Parsing;
 using Arbor.X.Core.ProcessUtils;
 using Arbor.X.Core.Tools.NuGet;
-
-using FubuCore.Reflection;
 
 using FubuCsProjFile;
 using FubuCsProjFile.MSBuild;
@@ -83,6 +80,10 @@ namespace Arbor.X.Core.Tools.MSBuild
 
         private IReadOnlyCollection<string> _filteredNuGetWebPackageProjects;
 
+        private bool _cleanBinXmlFilesForAssembliesEnabled;
+
+        private bool _cleanWebJobsXmlFilesForAssembliesEnabled;
+
         public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
@@ -96,6 +97,12 @@ namespace Arbor.X.Core.Tools.MSBuild
 
             _appDataJobsEnabled = buildVariables.GetBooleanByKey(WellKnownVariables.AppDataJobsEnabled,
                 defaultValue: false);
+
+            _cleanBinXmlFilesForAssembliesEnabled =
+                buildVariables.GetBooleanByKey(WellKnownVariables.CleanBinXmlFilesForAssembliesEnabled, defaultValue: false);
+
+            _cleanWebJobsXmlFilesForAssembliesEnabled =
+                buildVariables.GetBooleanByKey(WellKnownVariables.CleanWebJobsXmlFilesForAssembliesEnabled, defaultValue: false);
 
             _codeAnalysisEnabled =
                 buildVariables.GetBooleanByKey(
@@ -892,6 +899,26 @@ namespace Arbor.X.Core.Tools.MSBuild
                     cancellationToken: _cancellationToken,
                     addProcessNameAsLogCategory: true,
                     addProcessRunnerCategory: true);
+
+            if (buildSiteExitCode.IsSuccess)
+            {
+                if (_cleanBinXmlFilesForAssembliesEnabled)
+                {
+                    _logger.WriteDebug("Clean bin directory XML files is enabled");
+
+                    var binDirectory = new DirectoryInfo(Path.Combine(siteArtifactDirectory.FullName, "bin"));
+
+                    if (binDirectory.Exists)
+                    {
+                        RemoveXmlFilesForAssemblies(binDirectory);
+                    }
+                }
+                else
+                {
+                    _logger.WriteDebug("Clean bin directory XML files is disabled");
+                }
+            }
+
             return buildSiteExitCode;
         }
 
@@ -1298,6 +1325,29 @@ namespace Arbor.X.Core.Tools.MSBuild
                         await
                             DirectoryCopy.CopyAsync(kuduWebJobs.FullName, artifactJobAppDataDirectory.FullName, logger,
                                 rootDir: _vcsRoot, pathLookupSpecificationOption: DefaultPaths.DefaultPathLookupSpecification.WithIgnoredFileNameParts(new[] { ".vshost.", ".CodeAnalysisLog.xml", ".lastcodeanalysissucceeded" }));
+
+                    if (exitCode.IsSuccess)
+                    {
+                        if (_cleanWebJobsXmlFilesForAssembliesEnabled)
+                        {
+                            _logger.WriteDebug("Clean bin directory XML files is enabled for WebJobs");
+
+                            var binDirectory = new DirectoryInfo(Path.Combine(artifactJobAppDataDirectory.FullName));
+
+                            if (binDirectory.Exists)
+                            {
+                                RemoveXmlFilesForAssemblies(binDirectory);
+                            }
+                        }
+                        else
+                        {
+                            _logger.WriteDebug("Clean bin directory XML files is disabled for WebJobs");
+                        }
+                    }
+                    else
+                    {
+                        _logger.WriteDebug("Clean bin directory XML files is disabled");
+                    }
                 }
                 else
                 {
@@ -1398,5 +1448,34 @@ namespace Arbor.X.Core.Tools.MSBuild
 
             return isBlacklistedByName || isBlackListedByAttributes;
         }
+
+        private void RemoveXmlFilesForAssemblies(DirectoryInfo directoryInfo)
+        {
+            if (directoryInfo.Exists)
+            {
+                return;
+            }
+
+            _logger.WriteVerbose($"Deleting XML files for corresponding DLL files in directory '{directoryInfo.FullName}'");
+
+            var dllFiles = directoryInfo.GetFiles("*.dll", SearchOption.AllDirectories);
+
+            foreach (FileInfo fileInfo in dllFiles)
+            {
+                var xmlFile = new FileInfo(Path.Combine(
+                    fileInfo.Directory.FullName,
+                    $"{Path.GetFileNameWithoutExtension(fileInfo.Name)}.xml"));
+
+                if (xmlFile.Exists)
+                {
+                    _logger.WriteVerbose($"Deleting XML file '{xmlFile.FullName}'");
+
+                    File.Delete(xmlFile.FullName);
+
+                    _logger.WriteVerbose($"Deleted XML file '{xmlFile.FullName}'");
+                }
+            }
+        }
     }
+
 }

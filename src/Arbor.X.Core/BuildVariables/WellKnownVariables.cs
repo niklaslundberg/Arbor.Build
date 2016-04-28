@@ -227,6 +227,12 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescription("Run tests in release configuration")]
         public static readonly string RunTestsInReleaseConfigurationEnabled = "Arbor.X.Tests.RunTestsInReleaseConfiguration";
 
+        [VariableDescription("Flag to indicate if XML files for assemblies in the bin directory should be deleted")]
+        public static readonly string CleanBinXmlFilesForAssembliesEnabled = "Arbor.X.Build.WebApplications.CleanBinXmlFilesForAssembliesEnabled";
+
+        [VariableDescription("Flag to indicate if XML files for assemblies in the bin directory should be deleted")]
+        public static readonly string CleanWebJobsXmlFilesForAssembliesEnabled = "Arbor.X.Build.WebApplications.WebJobs.CleanWebJobsXmlFilesForAssembliesEnabled";
+
         // ReSharper restore ConvertToConstant.Global
         // ReSharper restore InconsistentNaming
 
