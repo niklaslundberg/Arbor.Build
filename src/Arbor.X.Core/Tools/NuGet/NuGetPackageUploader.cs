@@ -8,10 +8,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.GenericExtensions;
-using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;
 
 using JetBrains.Annotations;
+
+using NuGet;
+
+using ILogger = Arbor.X.Core.Logging.ILogger;
 
 namespace Arbor.X.Core.Tools.NuGet
 {
@@ -49,6 +52,8 @@ namespace Arbor.X.Core.Tools.NuGet
 
             int timeoutInSeconds = buildVariables.GetInt32ByKey(WellKnownVariables.ExternalTools_NuGetServer_UploadTimeoutInSeconds, defaultValue: -1);
 
+            bool checkNuGetPackagesExists = buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_NuGetServer_CheckPackageExists, defaultValue: false);
+
             if (isRunningOnBuildAgent)
             {
                 logger.Write("NuGet package upload is enabled");
@@ -62,7 +67,7 @@ namespace Arbor.X.Core.Tools.NuGet
             if (isRunningOnBuildAgent || forceUpload)
             {
                 return UploadNuGetPackagesAsync(logger, packagesFolder, nugetExe.Value, nugetServer,
-                    nuGetServerApiKey, websitePackagesUploadEnabled, websitesDirectory, timeoutInSeconds);
+                    nuGetServerApiKey, websitePackagesUploadEnabled, websitesDirectory, timeoutInSeconds, checkNuGetPackagesExists);
             }
 
             logger.Write(
@@ -73,7 +78,7 @@ namespace Arbor.X.Core.Tools.NuGet
 
         async Task<ExitCode> UploadNuGetPackagesAsync(ILogger logger, DirectoryInfo artifactPackagesDirectory, string nugetExePath,
             string serverUri,
-            string apiKey, bool websitePackagesUploadEnabled, DirectoryInfo websitesDirectory, int timeoutInseconds)
+            string apiKey, bool websitePackagesUploadEnabled, DirectoryInfo websitesDirectory, int timeoutInseconds, bool checkNuGetPackagesExists)
         {
             if (artifactPackagesDirectory == null)
             {
@@ -146,11 +151,40 @@ namespace Arbor.X.Core.Tools.NuGet
                 .OrderByDescending(package => package.Name.Length)
                 .SafeToReadOnlyCollection();
 
+            if (checkNuGetPackagesExists)
+            {
+                logger.Write($"Checking if packages already exists in NuGet source");
+
+                foreach (var fileInfo in sortedPackages)
+                {
+                    bool? packageExists = await CheckPackageExistsAsync(fileInfo, nugetExePath, serverUri, logger);
+
+                    if (!packageExists.HasValue)
+                    {
+                        logger.WriteError(
+                            $"The NuGet package '{fileInfo.Name}' could not be determined if exists or not, skipping package push");
+                        return ExitCode.Failure;
+                    }
+
+                    if (packageExists.Value)
+                    {
+                        logger.WriteError(
+                            $"The NuGet package '{fileInfo.Name}' was found at the NuGet source, skipping package push");
+
+                        return ExitCode.Failure;
+                    }
+                }
+            }
+            else
+            {
+                logger.Write($"Skipping checking if packages already exists in NuGet source");
+            }
+
             foreach (var fileInfo in sortedPackages)
             {
                 string nugetPackage = fileInfo.FullName;
 
-                var exitCode = await UploadNugetPackageAsync(nugetExePath, serverUri, apiKey, nugetPackage, logger, timeoutInseconds);
+                ExitCode exitCode = await UploadNugetPackageAsync(nugetExePath, serverUri, apiKey, nugetPackage, logger, timeoutInseconds, checkNuGetPackagesExists);
 
                 if (!exitCode.IsSuccess)
                 {
@@ -161,7 +195,78 @@ namespace Arbor.X.Core.Tools.NuGet
             return result ? ExitCode.Success : ExitCode.Failure;
         }
 
-        static async Task<ExitCode> UploadNugetPackageAsync(string nugetExePath, string serverUri, string apiKey, string nugetPackage, ILogger logger, int timeoutInseconds)
+        private async Task<bool?> CheckPackageExistsAsync(FileInfo nugetPackage, string nugetExePath, string serverUri, ILogger logger)
+        {
+            if (!File.Exists(nugetPackage.FullName))
+            {
+                logger.WriteError(
+                    $"The NuGet package '{nugetPackage}' does not exist");
+                return null;
+            }
+
+            logger.WriteDebug($"Searching for existing NuGet package '{nugetPackage}'");
+
+            var nugetZipPackage = new ZipPackage(nugetPackage.FullName);
+
+            SemanticVersion expectedVersion = nugetZipPackage.Version;
+
+            var args = new List<string>
+                       {
+                           "list",
+                           nugetZipPackage.Id
+                       };
+
+            if (!string.IsNullOrWhiteSpace(serverUri))
+            {
+                args.Add("-s");
+                args.Add(serverUri);
+            }
+
+            args.Add("-verbosity");
+            args.Add("detailed");
+
+            if (global::NuGet.Versioning.SemanticVersion.Parse(nugetZipPackage.Version.ToNormalizedString()).IsPrerelease)
+            {
+                args.Add("-prerelease");
+            }
+
+            StringBuilder errorBuilder = new StringBuilder();
+            List<string> standardBuilder = new List<string>();
+
+            var exitCode =
+                await
+                ProcessRunner.ExecuteAsync(
+                    nugetExePath,
+                    arguments: args,
+                    standardOutLog:
+                    (message, prefix) =>
+                        {
+                            standardBuilder.Add(message);
+                            logger.Write(message, prefix);
+                        },
+                    standardErrorAction: (message, prefix) =>
+                        {
+                            errorBuilder.AppendLine(message);
+                            logger.WriteError(message, prefix);
+                        },
+                    toolAction: logger.Write,
+                    addProcessNameAsLogCategory: true,
+                    addProcessRunnerCategory: true);
+
+            if (!exitCode.IsSuccess)
+            {
+                logger.WriteError($"Could not execute process to check if package exists");
+                return null;
+            }
+
+            var expectedName = $"{nugetZipPackage.Id} {expectedVersion.ToNormalizedString()}";
+
+            bool foundSpecificPackage = standardBuilder.Any(line => line.Equals(expectedName, StringComparison.InvariantCultureIgnoreCase));
+
+            return foundSpecificPackage;
+        }
+
+        static async Task<ExitCode> UploadNugetPackageAsync(string nugetExePath, string serverUri, string apiKey, string nugetPackage, ILogger logger, int timeoutInseconds, bool checkNuGetPackagesExists)
         {
             if (!File.Exists(nugetPackage))
             {
@@ -223,6 +328,14 @@ namespace Arbor.X.Core.Tools.NuGet
                 if (!exitCode.IsSuccess
                     && errorBuilder.ToString().IndexOf("conflict", StringComparison.InvariantCultureIgnoreCase) >= 0)
                 {
+                    if (checkNuGetPackagesExists)
+                    {
+                        logger.WriteWarning(
+                            $"The NuGet package could not be pushed, however, the pre-check if the package exists succeeded, so this error might be temporal");
+
+                        return ExitCode.Success;
+                    }
+
                     logger.WriteError($"Failed to upload NuGet package '{nugetPackage}', skipping retry for NuGet package, conflict detected");
 
                     return exitCode;
