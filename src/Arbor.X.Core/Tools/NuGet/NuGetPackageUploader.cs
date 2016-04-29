@@ -53,6 +53,7 @@ namespace Arbor.X.Core.Tools.NuGet
             int timeoutInSeconds = buildVariables.GetInt32ByKey(WellKnownVariables.ExternalTools_NuGetServer_UploadTimeoutInSeconds, defaultValue: -1);
 
             bool checkNuGetPackagesExists = buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_NuGetServer_CheckPackageExists, defaultValue: false);
+            string sourceName = buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_NuGetServer_SourceName, defaultValue: "");
 
             if (isRunningOnBuildAgent)
             {
@@ -67,7 +68,7 @@ namespace Arbor.X.Core.Tools.NuGet
             if (isRunningOnBuildAgent || forceUpload)
             {
                 return UploadNuGetPackagesAsync(logger, packagesFolder, nugetExe.Value, nugetServer,
-                    nuGetServerApiKey, websitePackagesUploadEnabled, websitesDirectory, timeoutInSeconds, checkNuGetPackagesExists);
+                    nuGetServerApiKey, websitePackagesUploadEnabled, websitesDirectory, timeoutInSeconds, checkNuGetPackagesExists, sourceName);
             }
 
             logger.Write(
@@ -78,7 +79,12 @@ namespace Arbor.X.Core.Tools.NuGet
 
         async Task<ExitCode> UploadNuGetPackagesAsync(ILogger logger, DirectoryInfo artifactPackagesDirectory, string nugetExePath,
             string serverUri,
-            string apiKey, bool websitePackagesUploadEnabled, DirectoryInfo websitesDirectory, int timeoutInseconds, bool checkNuGetPackagesExists)
+            string apiKey,
+            bool websitePackagesUploadEnabled,
+            DirectoryInfo websitesDirectory,
+            int timeoutInseconds,
+            bool checkNuGetPackagesExists,
+            string sourceName)
         {
             if (artifactPackagesDirectory == null)
             {
@@ -157,7 +163,7 @@ namespace Arbor.X.Core.Tools.NuGet
 
                 foreach (var fileInfo in sortedPackages)
                 {
-                    bool? packageExists = await CheckPackageExistsAsync(fileInfo, nugetExePath, serverUri, logger);
+                    bool? packageExists = await CheckPackageExistsAsync(fileInfo, nugetExePath, serverUri, logger, sourceName);
 
                     if (!packageExists.HasValue)
                     {
@@ -195,7 +201,7 @@ namespace Arbor.X.Core.Tools.NuGet
             return result ? ExitCode.Success : ExitCode.Failure;
         }
 
-        private async Task<bool?> CheckPackageExistsAsync(FileInfo nugetPackage, string nugetExePath, string serverUri, ILogger logger)
+        private async Task<bool?> CheckPackageExistsAsync(FileInfo nugetPackage, string nugetExePath, string serverUri, ILogger logger, string sourceName)
         {
             if (!File.Exists(nugetPackage.FullName))
             {
@@ -216,10 +222,11 @@ namespace Arbor.X.Core.Tools.NuGet
                            nugetZipPackage.Id
                        };
 
-            if (!string.IsNullOrWhiteSpace(serverUri))
+            if (!string.IsNullOrWhiteSpace(sourceName))
             {
-                args.Add("-s");
-                args.Add(serverUri);
+                logger.WriteVerbose($"Using specific source name '{sourceName}'");
+                args.Add("-source");
+                args.Add(sourceName);
             }
 
             args.Add("-verbosity");
@@ -227,6 +234,7 @@ namespace Arbor.X.Core.Tools.NuGet
 
             if (global::NuGet.Versioning.SemanticVersion.Parse(nugetZipPackage.Version.ToNormalizedString()).IsPrerelease)
             {
+                logger.WriteVerbose($"Package '{nugetPackage.Name}' is pre-release");
                 args.Add("-prerelease");
             }
 
@@ -286,7 +294,7 @@ namespace Arbor.X.Core.Tools.NuGet
 
             if (!string.IsNullOrWhiteSpace(serverUri))
             {
-                args.Add("-s");
+                args.Add("-source");
                 args.Add(serverUri);
             }
 
