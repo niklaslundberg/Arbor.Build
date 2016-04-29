@@ -74,8 +74,11 @@
         [VariableDescription("Flag to indicate if NuGet Web Package upload is enabled", "true")]
         public const string ExternalTools_NuGetServer_WebSitePackagesUploadEnabled = "Arbor.X.NuGet.WebsitePackages.PackageUpload.Enabled";
 
-        [VariableDescription("NuGet package upload URI", "true")]
+        [VariableDescription("NuGet package upload URI")]
         public const string ExternalTools_NuGetServer_Uri = "Arbor.X.NuGet.PackageUpload.Server.Uri";
+
+        [VariableDescription("NuGet package upload source name")]
+        public const string ExternalTools_NuGetServer_SourceName = "Arbor.X.NuGet.PackageUpload.SourceName";
 
         [VariableDescription("NuGet package upload API key", "true")]
         public const string ExternalTools_NuGetServer_ApiKey = "Arbor.X.NuGet.PackageUpload.Server.ApiKey";
@@ -85,5 +88,8 @@
 
         [VariableDescription("Timeout in seconds for NuGet package upload", "true")]
         public const string ExternalTools_NuGetServer_UploadTimeoutInSeconds = "Arbor.X.NuGet.PackageUpload.TimeoutInSeconds";
+
+        [VariableDescription("Flag to indicate if NuGet should check for existing packages before pushing", "true")]
+        public const string ExternalTools_NuGetServer_CheckPackageExists = "Arbor.X.NuGet.PackageUpload.CheckIfPackagesExistsEnabled";
     }
 }
