@@ -230,7 +230,7 @@ namespace Arbor.X.Core.Tools.NuGet
             }
 
             args.Add("-verbosity");
-            args.Add("detailed");
+            args.Add("normal");
 
             if (global::NuGet.Versioning.SemanticVersion.Parse(nugetZipPackage.Version.ToNormalizedString()).IsPrerelease)
             {
@@ -240,6 +240,11 @@ namespace Arbor.X.Core.Tools.NuGet
 
             StringBuilder errorBuilder = new StringBuilder();
             List<string> standardBuilder = new List<string>();
+
+
+            var expectedNameAndVersion = $"{nugetZipPackage.Id} {expectedVersion.ToNormalizedString()}";
+
+            logger.Write($"Looking for '{expectedNameAndVersion}' package");
 
             var exitCode =
                 await
@@ -263,13 +268,20 @@ namespace Arbor.X.Core.Tools.NuGet
 
             if (!exitCode.IsSuccess)
             {
-                logger.WriteError($"Could not execute process to check if package exists");
+                logger.WriteError($"Could not execute process to check if package '{expectedNameAndVersion}' exists");
                 return null;
             }
 
-            var expectedName = $"{nugetZipPackage.Id} {expectedVersion.ToNormalizedString()}";
+            bool foundSpecificPackage = standardBuilder.Any(line => line.Equals(expectedNameAndVersion, StringComparison.InvariantCultureIgnoreCase));
 
-            bool foundSpecificPackage = standardBuilder.Any(line => line.Equals(expectedName, StringComparison.InvariantCultureIgnoreCase));
+            if (foundSpecificPackage)
+            {
+                logger.Write($"Found existing package id '{expectedNameAndVersion}'");
+            }
+            else
+            {
+                logger.Write($"Could not find existing package id '{expectedNameAndVersion}'");
+            }
 
             return foundSpecificPackage;
         }
