@@ -247,6 +247,8 @@ namespace Arbor.X.Core.BuildVariables
 
         public const string DotNetRestoreEnabled = "Arbor.X.DotNet.Restore.Enabled";
 
+        public const string DotNetExePath = "Arbor.X.DotNet.ExePath";
+
         // ReSharper restore ConvertToConstant.Global
         // ReSharper restore InconsistentNaming
 

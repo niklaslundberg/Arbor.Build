@@ -28,7 +28,9 @@ namespace Arbor.X.Core.Tools.NuGet
 
             string rootPath = buildVariables.GetVariable(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
 
-            ExitCode result = await ProcessRunner.ExecuteAsync("dotnet", new[] { "restore", rootPath }, logger);
+            string dotNetExePath = buildVariables.GetVariableValueOrDefault(WellKnownVariables.DotNetExePath, defaultValue: "dotnet");
+
+            ExitCode result = await ProcessRunner.ExecuteAsync(dotNetExePath, new[] { "restore", rootPath }, logger);
 
             return result;
         }
