@@ -245,6 +245,8 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescription("List of file name parts to be used when excluding directories from being copied to web jobs directory, comma separated")]
         public static readonly string WebJobsExcludedDirectorySegments = "Arbor.X.Build.WebApplications.WebJobs.ExcludedDirectorySegments";
 
+        public const string DotNetRestoreEnabled = "Arbor.X.DotNet.Restore.Enabled";
+
         // ReSharper restore ConvertToConstant.Global
         // ReSharper restore InconsistentNaming
 
