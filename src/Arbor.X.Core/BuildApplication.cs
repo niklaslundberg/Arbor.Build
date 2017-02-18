@@ -56,7 +56,7 @@ namespace Arbor.X.Core
                 [WellKnownVariables.BranchName] = "develop",
                 [WellKnownVariables.VersionMajor] = "1",
                 [WellKnownVariables.VersionMinor] = "0",
-                [WellKnownVariables.VersionPatch] = "35",
+                [WellKnownVariables.VersionPatch] = "50",
                 [WellKnownVariables.VersionBuild] = "7",
                 [WellKnownVariables.Configuration] = "release",
                 [WellKnownVariables.GenericXmlTransformsEnabled] = "true",
