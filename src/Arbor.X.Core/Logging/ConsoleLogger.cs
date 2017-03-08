@@ -4,13 +4,13 @@ namespace Arbor.X.Core.Logging
 {
     public class ConsoleLogger : ILogger
     {
-        readonly string _prefix;
-        LogLevel _maxLogLevel;
+        private readonly string _prefix;
+        private LogLevel _maxLogLevel;
 
         public ConsoleLogger(string prefix = "", LogLevel maxLogLevel = default(LogLevel))
         {
             _maxLogLevel = maxLogLevel;
-            _prefix = prefix ?? "";
+            _prefix = prefix ?? string.Empty;
         }
 
         public LogLevel LogLevel
@@ -25,6 +25,7 @@ namespace Arbor.X.Core.Logging
             {
                 return;
             }
+
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.WriteLine(GetTotalMessage(GetPrefix(prefix), message));
             Console.ResetColor();
@@ -36,6 +37,7 @@ namespace Arbor.X.Core.Logging
             {
                 return;
             }
+
             if (LogLevel.Error.Level <= _maxLogLevel.Level)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
@@ -50,6 +52,7 @@ namespace Arbor.X.Core.Logging
             {
                 return;
             }
+
             if (LogLevel.Information.Level <= _maxLogLevel.Level)
             {
                 Console.ResetColor();
@@ -63,6 +66,7 @@ namespace Arbor.X.Core.Logging
             {
                 return;
             }
+
             if (LogLevel.Warning.Level <= _maxLogLevel.Level)
             {
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
@@ -77,6 +81,7 @@ namespace Arbor.X.Core.Logging
             {
                 return;
             }
+
             if (LogLevel.Verbose.Level <= _maxLogLevel.Level)
             {
                 Console.ForegroundColor = ConsoleColor.Gray;
@@ -85,14 +90,14 @@ namespace Arbor.X.Core.Logging
             }
         }
 
-        string GetPrefix(string prefix)
+        private string GetPrefix(string prefix)
         {
             string value = !string.IsNullOrWhiteSpace(prefix) ? prefix : _prefix;
 
             return value;
         }
 
-        string GetTotalMessage(string prefix, string message)
+        private string GetTotalMessage(string prefix, string message)
         {
             return (prefix ?? "").Trim(' ') + " " + (message ?? "").Trim(' ');
         }

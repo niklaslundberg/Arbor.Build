@@ -8,14 +8,11 @@ using System.Text;
 
 
 using Arbor.Aesculus.Core;
-using Arbor.KVConfiguration.Core;
 using Arbor.KVConfiguration.Schema.Json;
 using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.Logging;
 
 using JetBrains.Annotations;
-
-using Newtonsoft.Json;
 
 namespace Arbor.X.Core.BuildVariables
 {

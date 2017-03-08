@@ -1,6 +1,4 @@
-﻿using Arbor.X.Core.BuildVariables;
-
-namespace Arbor.X.Core.BuildVariables
+﻿namespace Arbor.X.Core.BuildVariables
 {
     public partial class WellKnownVariables
     {

@@ -1,7 +1,6 @@
 ﻿
 using System.IO;
 using Arbor.X.Core.IO;
-using Arbor.X.Core.Tools;
 using Machine.Specifications;
 
 namespace Arbor.X.Tests.Integration.PathExtensions

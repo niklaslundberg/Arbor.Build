@@ -4,11 +4,16 @@ namespace Arbor.X.Core.Parsing
 {
     public sealed class ParseResult<T>
     {
-        ParseResult(bool parsed, [CanBeNull] T value, [CanBeNull] string originalValue)
+        private ParseResult(bool parsed, [CanBeNull] T value, [CanBeNull] string originalValue)
         {
             Parsed = parsed;
             Value = value;
             OriginalValue = originalValue;
+        }
+
+        public static implicit operator T(ParseResult<T> result)
+        {
+            return result.Value;
         }
 
         public bool Parsed { get; }
@@ -30,11 +35,6 @@ namespace Arbor.X.Core.Parsing
         public static ParseResult<TResult> Create<TResult>(TResult value, bool parsed, string original)
         {
             return new ParseResult<TResult>(parsed, value, original);
-        }
-
-        public static implicit operator T(ParseResult<T> result)
-        {
-            return result.Value;
         }
     }
 }

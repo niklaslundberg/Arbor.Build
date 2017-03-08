@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 
 using Arbor.X.Core.GenericExtensions;
-using Arbor.X.Core.Tools;
 
 namespace Arbor.X.Core.IO
 {

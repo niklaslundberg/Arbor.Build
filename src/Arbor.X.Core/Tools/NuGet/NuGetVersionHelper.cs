@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-
 using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.Logging;
 
 using NuGet.Versioning;
-
-using NUnit.Framework;
 
 namespace Arbor.X.Core.Tools.NuGet
 {
