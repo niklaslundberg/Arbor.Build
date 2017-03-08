@@ -9,6 +9,7 @@ SET Arbor.X.Vcs.Branch.Name.Version.OverrideEnabled=false
 SET Arbor.X.Build.VariableOverrideEnabled=true
 SET Arbor.X.Artifacts.CleanupBeforeBuildEnabled=true
 SET Arbor.X.Build.NetAssembly.Configuration=
+SET Arbor.X.MSBuild.NuGetRestore.Enabled=true
 
 SET Arbor.X.NuGet.ReinstallArborPackageEnabled=true
 SET Arbor.X.NuGet.VersionUpdateEnabled=false
