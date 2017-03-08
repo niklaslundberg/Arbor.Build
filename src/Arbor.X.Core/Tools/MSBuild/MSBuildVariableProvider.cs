@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.X.Core.BuildVariables;
@@ -24,16 +25,40 @@ namespace Arbor.X.Core.Tools.MSBuild
             logger.WriteVerbose(
                 $"Running current process [id {Process.GetCurrentProcess().Id}] as a {currentProcessBits}-bit process");
 
-            var possibleVersions = new List<string> {"14.0", "12.0", "4.0"}.Select(version => SemVersion.Parse(version)).ToList();
+            var possibleVersions = new List<string> {"15.0","14.0", "12.0", "4.0"}.Select(version => SemVersion.Parse(version)).ToList();
 
             var max = buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_MSBuild_MaxVersion,
-                "14.0");
+                "15.0");
 
             var toRemove = possibleVersions.Where(version => version > SemVersion.Parse(max)).ToArray();
 
             foreach (var semVersion in toRemove)
             {
                 possibleVersions.Remove(semVersion);
+            }
+
+            var possiblePaths = new[]
+            {
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                "Microsoft Visual Studio", "2017", "BuildTools", "MSBuild", "15.0", "bin", "MSBuild.exe"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                "Microsoft Visual Studio", "2017", "Community", "MSBuild", "15.0", "bin", "MSBuild.exe")
+            };
+
+            string fileBasedLookupResultPath = possiblePaths.FirstOrDefault(File.Exists);
+
+            if (fileBasedLookupResultPath != null)
+            {
+                logger.Write($"Found MSBuild at '{fileBasedLookupResultPath}'");
+
+                var variables = new[]
+                {
+                    new EnvironmentVariable(
+                        WellKnownVariables.ExternalTools_MSBuild_ExePath,
+                        fileBasedLookupResultPath)
+                };
+
+                return Task.FromResult<IEnumerable<IVariable>>(variables);
             }
 
             string foundPath = null;
