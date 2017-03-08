@@ -17,7 +17,6 @@
     <RestorePackages>true</RestorePackages>
     <TargetFrameworkProfile />
     <TargetFrameworkProfile />
-    <ILMergeExe>true</ILMergeExe>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
   </PropertyGroup>
