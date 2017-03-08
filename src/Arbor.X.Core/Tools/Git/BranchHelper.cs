@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Arbor.X.Core.BuildVariables;
-using Semver;
+using NuGet.Versioning;
 
 namespace Arbor.X.Core.Tools.Git
 {
@@ -88,12 +88,12 @@ namespace Arbor.X.Core.Tools.Git
                 throw new ArgumentNullException(nameof(branchName));
             }
 
-            SemVersion version = BranchSemVerMajorMinorPatch(branchName);
+            SemanticVersion version = BranchSemVerMajorMinorPatch(branchName);
 
             return version != null && (version.Major > 0 || version.Minor > 0 || version.Patch > 0);
         }
 
-        public static SemVersion BranchSemVerMajorMinorPatch(string branchName)
+        public static SemanticVersion BranchSemVerMajorMinorPatch(string branchName)
         {
             if (string.IsNullOrWhiteSpace(branchName))
             {
@@ -102,7 +102,7 @@ namespace Arbor.X.Core.Tools.Git
 
             if (string.IsNullOrWhiteSpace(branchName))
             {
-                return new SemVersion(0);
+                return new SemanticVersion(0,0,0);
             }
 
             string splitCharactersVariable =
@@ -131,13 +131,13 @@ namespace Arbor.X.Core.Tools.Git
             string version =
                 branchName.Split(splitCharacters.ToArray(), StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
 
-            SemVersion semver;
-            if (!SemVersion.TryParse(version, out semver))
+            SemanticVersion semver;
+            if (!SemanticVersion.TryParse(version, out semver))
             {
-                return new SemVersion(0);
+                return new SemanticVersion(0,0,0);
             }
 
-            return new SemVersion(semver.Major, semver.Minor, semver.Patch);
+            return new SemanticVersion(semver.Major, semver.Minor, semver.Patch);
         }
     }
 }

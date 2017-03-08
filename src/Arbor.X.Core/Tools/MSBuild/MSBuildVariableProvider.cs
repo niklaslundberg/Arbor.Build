@@ -8,10 +8,10 @@ using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.Tools.Cleanup;
 using Microsoft.Win32;
-using Semver;
 using System.Linq;
 
 using JetBrains.Annotations;
+using NuGet.Versioning;
 
 namespace Arbor.X.Core.Tools.MSBuild
 {
@@ -25,12 +25,12 @@ namespace Arbor.X.Core.Tools.MSBuild
             logger.WriteVerbose(
                 $"Running current process [id {Process.GetCurrentProcess().Id}] as a {currentProcessBits}-bit process");
 
-            var possibleVersions = new List<string> {"15.0","14.0", "12.0", "4.0"}.Select(version => SemVersion.Parse(version)).ToList();
+            var possibleVersions = new List<string> { "15.0", "14.0", "12.0", "4.0" }.Select(version => SemanticVersion.Parse(version)).ToList();
 
             var max = buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_MSBuild_MaxVersion,
                 "15.0");
 
-            var toRemove = possibleVersions.Where(version => version > SemVersion.Parse(max)).ToArray();
+            var toRemove = possibleVersions.Where(version => version > SemanticVersion.Parse(max)).ToArray();
 
             foreach (var semVersion in toRemove)
             {

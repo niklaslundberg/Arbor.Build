@@ -7,8 +7,8 @@ using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Logging;
 
 using JetBrains.Annotations;
+using NuGet.Versioning;
 
-using Semver;
 
 namespace Arbor.X.Core.Tools.Git
 {
@@ -45,7 +45,7 @@ namespace Arbor.X.Core.Tools.Git
                     logger.WriteVerbose(
                         $"Variable '{WellKnownVariables.BranchNameVersionOverrideEnabled}' is set to true, using version number '{version}' from branch");
 
-                    var semVer = SemVersion.Parse(version);
+                    var semVer = SemanticVersion.Parse(version);
 
                     var major = semVer.Major.ToString(CultureInfo.InvariantCulture);
                     logger.WriteVerbose(
