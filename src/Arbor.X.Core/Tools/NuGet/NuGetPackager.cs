@@ -12,12 +12,6 @@ using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;
 using Arbor.X.Core.Tools.Git;
 
-using Directory = Alphaleonis.Win32.Filesystem.Directory;
-using DirectoryInfo = Alphaleonis.Win32.Filesystem.DirectoryInfo;
-using File = Alphaleonis.Win32.Filesystem.File;
-using FileInfo = Alphaleonis.Win32.Filesystem.FileInfo;
-using Path = Alphaleonis.Win32.Filesystem.Path;
-
 namespace Arbor.X.Core.Tools.NuGet
 {
     public class NuGetPackager

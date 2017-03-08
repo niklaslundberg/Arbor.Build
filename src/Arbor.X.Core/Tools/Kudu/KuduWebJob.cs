@@ -10,9 +10,6 @@ using Arbor.X.Core.Logging;
 
 using JetBrains.Annotations;
 
-using DirectoryInfo = Alphaleonis.Win32.Filesystem.DirectoryInfo;
-using FileInfo = Alphaleonis.Win32.Filesystem.FileInfo;
-
 namespace Arbor.X.Core.Tools.Kudu
 {
     [Priority(1050)]

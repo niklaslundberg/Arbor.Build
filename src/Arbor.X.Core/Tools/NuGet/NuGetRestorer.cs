@@ -12,12 +12,6 @@ using Arbor.X.Core.Logging;
 
 using JetBrains.Annotations;
 
-using Directory = Alphaleonis.Win32.Filesystem.Directory;
-using DirectoryInfo = Alphaleonis.Win32.Filesystem.DirectoryInfo;
-using ExceptionExtensions = Arbor.X.Core.GenericExtensions.ExceptionExtensions;
-using FileInfo = Alphaleonis.Win32.Filesystem.FileInfo;
-using Path = Alphaleonis.Win32.Filesystem.Path;
-
 namespace Arbor.X.Core.Tools.NuGet
 {
     [Priority(100)]

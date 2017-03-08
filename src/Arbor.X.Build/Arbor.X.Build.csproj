@@ -41,10 +41,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="AlphaFS, Version=2.0.0.0, Culture=neutral, PublicKeyToken=4d31a58f7d7ad5c9, processorArchitecture=MSIL">
-      <HintPath>..\packages\AlphaFS.2.0.1\lib\net451\AlphaFS.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="Arbor.Castanea.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Arbor.Castanea.1.0.6\lib\net45\Arbor.Castanea.Core.dll</HintPath>
       <Private>True</Private>

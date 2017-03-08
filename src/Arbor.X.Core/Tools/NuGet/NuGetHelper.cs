@@ -8,9 +8,6 @@ using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;
-using File = Alphaleonis.Win32.Filesystem.File;
-using FileInfo = Alphaleonis.Win32.Filesystem.FileInfo;
-using Path = Alphaleonis.Win32.Filesystem.Path;
 
 namespace Arbor.X.Core.Tools.NuGet
 {

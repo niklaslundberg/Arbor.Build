@@ -11,11 +11,6 @@ using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;
 using JetBrains.Annotations;
-using Directory = Alphaleonis.Win32.Filesystem.Directory;
-using DirectoryInfo = Alphaleonis.Win32.Filesystem.DirectoryInfo;
-using File = Alphaleonis.Win32.Filesystem.File;
-using FileInfo = Alphaleonis.Win32.Filesystem.FileInfo;
-using Path = Alphaleonis.Win32.Filesystem.Path;
 
 namespace Arbor.X.Core.Tools.ILRepack
 {
@@ -34,7 +29,7 @@ namespace Arbor.X.Core.Tools.ILRepack
 
             _ilRepackExePath =
                 buildVariables.Require(WellKnownVariables.ExternalTools_ILRepack_ExePath).ThrowIfEmptyValue().Value;
-            
+
             string customILRepackPath =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_ILRepack_Custom_ExePath, "");
 
@@ -42,7 +37,7 @@ namespace Arbor.X.Core.Tools.ILRepack
             {
                 logger.Write($"Using custom path for ILRepack: '{customILRepackPath}'");
                 _ilRepackExePath = customILRepackPath;
-            } 
+            }
 
             _artifactsPath =
                 buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue().Value;

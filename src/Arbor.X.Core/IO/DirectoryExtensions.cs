@@ -5,8 +5,6 @@ using System.Linq;
 
 using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.Tools;
-using DirectoryInfo = Alphaleonis.Win32.Filesystem.DirectoryInfo;
-using FileInfo = Alphaleonis.Win32.Filesystem.FileInfo;
 
 namespace Arbor.X.Core.IO
 {

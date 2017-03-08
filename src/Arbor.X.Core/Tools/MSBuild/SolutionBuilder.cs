@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Alphaleonis.Win32.Filesystem;
+
 
 using Arbor.KVConfiguration.Schema;
 using Arbor.KVConfiguration.Schema.Json;
@@ -24,10 +24,6 @@ using FubuCsProjFile.MSBuild;
 
 using JetBrains.Annotations;
 using Microsoft.Web.XmlTransform;
-using DirectoryInfo = Alphaleonis.Win32.Filesystem.DirectoryInfo;
-using File = Alphaleonis.Win32.Filesystem.File;
-using FileInfo = Alphaleonis.Win32.Filesystem.FileInfo;
-using Path = Alphaleonis.Win32.Filesystem.Path;
 
 namespace Arbor.X.Core.Tools.MSBuild
 {
@@ -620,7 +616,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                     targetReportDirectory.FullName,
                     $"{projectName}.{Platforms.Normalize(platform)}.{configuration}.xml");
 
-                analysisLogFile.CopyTo(targetFilePath, CopyOptions.None);
+                analysisLogFile.CopyTo(targetFilePath);
             }
         }
 
@@ -681,7 +677,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                     {
                         _logger.WriteDebug($"Copying PDB file '{pair.PdbFile.FullName}' to '{targetFilePath}'");
 
-                    pair.PdbFile.CopyTo(targetFilePath, CopyOptions.FailIfExists);
+                    pair.PdbFile.CopyTo(targetFilePath);
                     }
                     else
                     {
@@ -694,7 +690,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                         if (!File.Exists(targetDllFilePath))
                         {
                             _logger.WriteDebug($"Copying DLL file '{pair.DllFile.FullName}' to '{targetFilePath}'");
-                            pair.DllFile.CopyTo(targetDllFilePath, CopyOptions.FailIfExists);
+                            pair.DllFile.CopyTo(targetDllFilePath);
                         }
                         else
                         {
