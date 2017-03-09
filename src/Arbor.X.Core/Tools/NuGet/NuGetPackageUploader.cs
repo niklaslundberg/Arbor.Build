@@ -312,6 +312,7 @@ namespace Arbor.X.Core.Tools.NuGet
 
             if (!string.IsNullOrWhiteSpace(apiKey))
             {
+                args.Add("-apikey");
                 args.Add(apiKey);
             }
 
