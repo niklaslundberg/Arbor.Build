@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NuGet;
+using NuGet.Packaging;
+
 using ILogger = Arbor.X.Core.Logging.ILogger;
 
 namespace Arbor.X.Core.Tools.NuGet

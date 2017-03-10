@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -11,12 +12,16 @@ using Arbor.Processing;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.GenericExtensions;
+using Arbor.X.Core.ProcessUtils;
 
 using JetBrains.Annotations;
 
 using NuGet;
+using NuGet.Packaging;
+using NuGet.Versioning;
 
 using ILogger = Arbor.X.Core.Logging.ILogger;
+using SemanticVersion = NuGet.Versioning.SemanticVersion;
 
 namespace Arbor.X.Core.Tools.NuGet
 {
@@ -214,14 +219,39 @@ namespace Arbor.X.Core.Tools.NuGet
 
             logger.WriteDebug($"Searching for existing NuGet package '{nugetPackage}'");
 
-            var nugetZipPackage = new ZipPackage(nugetPackage.FullName);
+            string packageVersion;
+            string packageId;
 
-            SemanticVersion expectedVersion = nugetZipPackage.Version;
+            using (FileStream fs = new FileStream(nugetPackage.FullName, FileMode.Open, FileAccess.Read))
+            {
+                using (ZipArchive archive = new ZipArchive(fs))
+                {
+                    ZipArchiveEntry nuspecEntry =
+                        archive.Entries.SingleOrDefault(
+                            entry =>
+                            Path.GetExtension(entry.Name).Equals(".nuspec", StringComparison.InvariantCultureIgnoreCase));
+
+                    if (nuspecEntry == null)
+                    {
+                        throw new InvalidOperationException("The nuget package does not contain any nuspec");
+                    }
+
+                    var nuspecReader = new NuspecReader(nuspecEntry.Open());
+                    NuGetVersion nuGetVersion = nuspecReader.GetVersion();
+
+                    packageVersion = nuGetVersion.ToNormalizedString();
+                    packageId = nuspecReader.GetIdentity().Id;
+                }
+            }
+
+            SemanticVersion expectedVersion = SemanticVersion.Parse(packageVersion);
+
+                var packageInfo = new { Id = packageId, Version = expectedVersion };
 
             var args = new List<string>
                        {
                            "list",
-                           nugetZipPackage.Id
+                           packageId
                        };
 
             if (!string.IsNullOrWhiteSpace(sourceName))
@@ -234,7 +264,7 @@ namespace Arbor.X.Core.Tools.NuGet
             args.Add("-verbosity");
             args.Add("normal");
 
-            if (global::NuGet.Versioning.SemanticVersion.Parse(nugetZipPackage.Version.ToNormalizedString()).IsPrerelease)
+            if (packageInfo.Version.IsPrerelease)
             {
                 logger.WriteVerbose($"Package '{nugetPackage.Name}' is pre-release");
                 args.Add("-prerelease");
@@ -244,7 +274,7 @@ namespace Arbor.X.Core.Tools.NuGet
             List<string> standardBuilder = new List<string>();
 
 
-            var expectedNameAndVersion = $"{nugetZipPackage.Id} {expectedVersion.ToNormalizedString()}";
+            var expectedNameAndVersion = $"{packageInfo.Id} {expectedVersion.ToNormalizedString()}";
 
             logger.Write($"Looking for '{expectedNameAndVersion}' package");
 
@@ -314,7 +344,6 @@ namespace Arbor.X.Core.Tools.NuGet
 
             if (!string.IsNullOrWhiteSpace(apiKey))
             {
-                args.Add("-apikey");
                 args.Add(apiKey);
             }
 
