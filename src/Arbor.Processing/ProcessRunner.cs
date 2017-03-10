@@ -144,6 +144,7 @@ namespace Arbor.Processing
             process.Exited += (sender, args) =>
             {
                 var proc = (Process) sender;
+                exitCode = new ExitCode(proc.ExitCode);
                 toolAction($"Process '{processWithArgs}' exited with code {new ExitCode(proc.ExitCode)}", toolCategory);
                 taskCompletionSource.SetResult(new ExitCode(proc.ExitCode));
             };
