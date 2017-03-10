@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -884,7 +885,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             items.Add(cpu);
 
             var configurationItems = new ConfigurationItems("1.0",
-                items.Select(i => new KeyValue(i.Key, i.Value, i.Metadata)).ToList());
+                items.Select(i => new KeyValue(i.Key, i.Value, i.ConfigurationMetadata)).ToImmutableArray());
             string serialize = new JsonConfigurationSerializer().Serialize(configurationItems);
 
             string applicationMetadataJsonFilePath = Path.Combine(siteArtifactDirectory.FullName,

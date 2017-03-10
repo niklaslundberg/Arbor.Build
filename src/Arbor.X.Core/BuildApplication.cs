@@ -97,7 +97,7 @@ namespace Arbor.X.Core
 
         public async Task<ExitCode> RunAsync(string[] args)
         {
-            KVConfigurationManager.Initialize(new UserConfiguration(new AppSettingsKeyValueConfiguration()));
+            KeyValueConfigurationManager.Initialize(new UserConfiguration(new AppSettingsKeyValueConfiguration()));
 
             if (Debugger.IsAttached)
             {

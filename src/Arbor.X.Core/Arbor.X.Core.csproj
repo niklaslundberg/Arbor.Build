@@ -44,29 +44,23 @@
       <HintPath>..\packages\Arbor.Castanea.1.0.6\lib\net45\Arbor.Castanea.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Arbor.KVConfiguration.Core, Version=0.4.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Arbor.KVConfiguration.Core.0.4.1\lib\net45\Arbor.KVConfiguration.Core.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Arbor.KVConfiguration.Core, Version=0.5.0.17, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Arbor.KVConfiguration.Core.0.5.0-build00017\lib\netstandard1.4\Arbor.KVConfiguration.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Arbor.KVConfiguration.JsonConfiguration, Version=0.4.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Arbor.KVConfiguration.JsonConfiguration.0.4.1\lib\net45\Arbor.KVConfiguration.JsonConfiguration.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Arbor.KVConfiguration.JsonConfiguration, Version=0.5.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Arbor.KVConfiguration.JsonConfiguration.0.5.0-build00017\lib\net461\Arbor.KVConfiguration.JsonConfiguration.dll</HintPath>
     </Reference>
-    <Reference Include="Arbor.KVConfiguration.Schema, Version=0.4.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Arbor.KVConfiguration.Schema.0.4.1\lib\net45\Arbor.KVConfiguration.Schema.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Arbor.KVConfiguration.Schema, Version=0.5.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Arbor.KVConfiguration.Schema.0.5.0-build00017\lib\net461\Arbor.KVConfiguration.Schema.dll</HintPath>
     </Reference>
-    <Reference Include="Arbor.KVConfiguration.Schema.Json, Version=0.4.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Arbor.KVConfiguration.Schema.Json.0.4.1\lib\net45\Arbor.KVConfiguration.Schema.Json.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Arbor.KVConfiguration.Schema.Json, Version=0.5.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Arbor.KVConfiguration.Schema.Json.0.5.0-build00017\lib\net461\Arbor.KVConfiguration.Schema.Json.dll</HintPath>
     </Reference>
-    <Reference Include="Arbor.KVConfiguration.SystemConfiguration, Version=0.4.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Arbor.KVConfiguration.SystemConfiguration.0.4.1\lib\net45\Arbor.KVConfiguration.SystemConfiguration.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Arbor.KVConfiguration.SystemConfiguration, Version=0.5.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Arbor.KVConfiguration.SystemConfiguration.0.5.0-build00017\lib\net461\Arbor.KVConfiguration.SystemConfiguration.dll</HintPath>
     </Reference>
-    <Reference Include="Arbor.KVConfiguration.UserConfiguration, Version=0.4.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Arbor.KVConfiguration.UserConfiguration.0.4.1\lib\net45\Arbor.KVConfiguration.UserConfiguration.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Arbor.KVConfiguration.UserConfiguration, Version=0.5.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Arbor.KVConfiguration.UserConfiguration.0.5.0-build00017\lib\net461\Arbor.KVConfiguration.UserConfiguration.dll</HintPath>
     </Reference>
     <Reference Include="Autofac, Version=4.4.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
       <HintPath>..\packages\Autofac.4.4.0\lib\net45\Autofac.dll</HintPath>
@@ -119,6 +113,9 @@
     <Reference Include="System.Collections.Immutable, Version=1.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Collections.Immutable.1.3.1\lib\portable-net45+win8+wp8+wpa81\System.Collections.Immutable.dll</HintPath>
       <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Collections.Specialized, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Collections.Specialized.4.3.0\lib\net46\System.Collections.Specialized.dll</HintPath>
     </Reference>
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
