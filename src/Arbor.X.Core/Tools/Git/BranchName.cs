@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Arbor.Defensive;
 
 namespace Arbor.X.Core.Tools.Git
 {

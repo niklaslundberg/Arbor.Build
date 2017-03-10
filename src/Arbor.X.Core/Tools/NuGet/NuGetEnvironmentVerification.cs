@@ -4,7 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using Arbor.Processing;
+using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;
@@ -76,7 +77,7 @@ namespace Arbor.X.Core.Tools.NuGet
                 error: nullLogger);
 
             IEnumerable<string> args = new List<string>();
-            ExitCode versionExitCode = await ProcessRunner.ExecuteAsync(nuGetExePath, arguments: args, logger: versionLogger);
+            ExitCode versionExitCode = await ProcessHelper.ExecuteAsync(nuGetExePath, arguments: args, logger: versionLogger);
 
             if (!versionExitCode.IsSuccess)
             {
@@ -100,7 +101,7 @@ namespace Arbor.X.Core.Tools.NuGet
             if (majorNuGetVersion == '2')
             {
                 IEnumerable<string> updateSelfArgs = new List<string> { "update", "-self" };
-                ExitCode exitCode = await ProcessRunner.ExecuteAsync(nuGetExePath, updateSelfArgs, logger);
+                ExitCode exitCode = await ProcessHelper.ExecuteAsync(nuGetExePath, updateSelfArgs, logger);
 
                 if (!exitCode.IsSuccess)
                 {

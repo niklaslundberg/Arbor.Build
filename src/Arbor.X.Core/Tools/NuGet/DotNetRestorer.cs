@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-
+using Arbor.Processing;
+using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;
-
 using JetBrains.Annotations;
 
 namespace Arbor.X.Core.Tools.NuGet
@@ -30,7 +30,7 @@ namespace Arbor.X.Core.Tools.NuGet
 
             string dotNetExePath = buildVariables.GetVariableValueOrDefault(WellKnownVariables.DotNetExePath, defaultValue: "dotnet");
 
-            ExitCode result = await ProcessRunner.ExecuteAsync(dotNetExePath, new[] { "restore", rootPath }, logger);
+            ExitCode result = await ProcessHelper.ExecuteAsync(dotNetExePath, new[] { "restore", rootPath }, logger);
 
             return result;
         }

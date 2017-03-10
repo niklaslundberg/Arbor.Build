@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-
+using Arbor.Defensive.Collections;
 using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.Logging;
 

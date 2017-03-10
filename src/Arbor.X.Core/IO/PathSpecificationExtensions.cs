@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-
+using Arbor.Defensive.Collections;
 using Arbor.X.Core.GenericExtensions;
 
 namespace Arbor.X.Core.IO

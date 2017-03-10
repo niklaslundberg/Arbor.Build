@@ -8,7 +8,7 @@ namespace Arbor.X.Tests.Integration.Maybe
     {
         static Exception exception;
 
-        Because of = () => exception = Catch.Exception(() => new Maybe<string>().Value);
+        Because of = () => exception = Catch.Exception(() => new Defensive.Maybe<string>().Value);
 
         It should_throw_an_exception = () => exception.ShouldNotBeNull();
     }

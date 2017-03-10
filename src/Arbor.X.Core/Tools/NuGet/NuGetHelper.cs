@@ -4,6 +4,7 @@ using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Arbor.Processing;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.Logging;
@@ -83,7 +84,7 @@ namespace Arbor.X.Core.Tools.NuGet
                 try
                 {
                     var arguments = new List<string> { "update", "-self" };
-                    await ProcessRunner.ExecuteAsync(targetFile, arguments: arguments, logger: _logger, addProcessNameAsLogCategory: true, addProcessRunnerCategory: true, cancellationToken: cancellationToken);
+                    await ProcessHelper.ExecuteAsync(targetFile, arguments: arguments, logger: _logger, addProcessNameAsLogCategory: true, addProcessRunnerCategory: true, cancellationToken: cancellationToken);
                 }
                 catch (Exception ex)
                 {

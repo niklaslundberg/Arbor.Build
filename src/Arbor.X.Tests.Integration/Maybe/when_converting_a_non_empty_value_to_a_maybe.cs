@@ -11,6 +11,6 @@ namespace Arbor.X.Tests.Integration.Maybe
 
         It should_have_value_equal_to_original = () => maybe.Value.ShouldEqual("a string");
 
-        static Maybe<string> maybe;
+        static Defensive.Maybe<string> maybe;
     }
 }

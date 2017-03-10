@@ -164,6 +164,18 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Arbor.Exceptions\Arbor.Exceptions.csproj">
+      <Project>{0255D0EC-426B-4857-ADCC-E8260C81D220}</Project>
+      <Name>Arbor.Exceptions</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Arbor.Processing.Core\Arbor.Processing.Core.csproj">
+      <Project>{480AFB5E-4282-4B2A-A3BD-BD42830C743A}</Project>
+      <Name>Arbor.Processing.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Arbor.Processing\Arbor.Processing.csproj">
+      <Project>{5B5D302F-3197-482A-BC53-E8F41BC73701}</Project>
+      <Name>Arbor.Processing</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Arbor.X.Core\Arbor.X.Core.csproj">
       <Project>{CC76C4CD-364D-4E48-9147-CBDECCD3A6F2}</Project>
       <Name>Arbor.X.Core</Name>

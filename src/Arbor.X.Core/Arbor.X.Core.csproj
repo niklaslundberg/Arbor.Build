@@ -194,9 +194,6 @@
       <DependentUpon>WellKnownVariables.cs</DependentUpon>
     </Compile>
     <Compile Include="GenericExtensions\DisplayExtensions.cs" />
-    <Compile Include="GenericExtensions\EnumerableExtensions.cs" />
-    <Compile Include="GenericExtensions\ExceptionExtensions.cs" />
-    <Compile Include="ExitCode.cs" />
     <Compile Include="GenericExtensions\IntExtensions.cs" />
     <Compile Include="GitBranchNameExtensions.cs" />
     <Compile Include="IO\PathSpecificationExtensions.cs" />
@@ -205,10 +202,10 @@
     <Compile Include="Logging\MultiplexLogger.cs" />
     <Compile Include="Logging\NLogLogger.cs" />
     <Compile Include="Logging\NullLogger.cs" />
-    <Compile Include="Maybe.cs" />
     <Compile Include="Parsing\ParseResult.cs" />
     <Compile Include="GenericExtensions\StringExtensions.cs" />
     <Compile Include="GenericExtensions\TaskExtensions.cs" />
+    <Compile Include="ProcessUtils\ProcessHelper.cs" />
     <Compile Include="Tools\MSBuild\ApplicationMetadataKeys.cs" />
     <Compile Include="Tools\MSBuild\Platforms.cs" />
     <Compile Include="Tools\NuGet\MSBuildNuGetRestorer.cs" />
@@ -271,10 +268,7 @@
     <Compile Include="Tools\ILRepack\ILRepacker.cs" />
     <Compile Include="Tools\ITool.cs" />
     <Compile Include="BuildVariables\IVariable.cs" />
-    <Compile Include="ProcessUtils\NativeMethods.cs" />
     <Compile Include="Tools\PriorityAttribute.cs" />
-    <Compile Include="ProcessUtils\ProcessExtensions.cs" />
-    <Compile Include="ProcessUtils\ProcessRunner.cs" />
     <Compile Include="BuildVariables\RequireVariableExtensions.cs" />
     <Compile Include="Tools\Versioning\AssemblyInfoPatcher.cs" />
     <Compile Include="BuildApplication.cs" />
@@ -320,6 +314,28 @@
     <Analyzer Include="..\packages\StyleCop.Analyzers.1.0.0\analyzers\dotnet\cs\Newtonsoft.Json.dll" />
     <Analyzer Include="..\packages\StyleCop.Analyzers.1.0.0\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll" />
     <Analyzer Include="..\packages\StyleCop.Analyzers.1.0.0\analyzers\dotnet\cs\StyleCop.Analyzers.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Arbor.Defensive.Collections\Arbor.Defensive.Collections.csproj">
+      <Project>{036C24D0-1BC6-48A7-9E58-AB4A0FEBACB0}</Project>
+      <Name>Arbor.Defensive.Collections</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Arbor.Defensive\Arbor.Defensive.csproj">
+      <Project>{C35CD7D4-B07A-4809-9444-AF2C35ED5908}</Project>
+      <Name>Arbor.Defensive</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Arbor.Exceptions\Arbor.Exceptions.csproj">
+      <Project>{0255D0EC-426B-4857-ADCC-E8260C81D220}</Project>
+      <Name>Arbor.Exceptions</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Arbor.Processing.Core\Arbor.Processing.Core.csproj">
+      <Project>{480AFB5E-4282-4B2A-A3BD-BD42830C743A}</Project>
+      <Name>Arbor.Processing.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Arbor.Processing\Arbor.Processing.csproj">
+      <Project>{5B5D302F-3197-482A-BC53-E8F41BC73701}</Project>
+      <Name>Arbor.Processing</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

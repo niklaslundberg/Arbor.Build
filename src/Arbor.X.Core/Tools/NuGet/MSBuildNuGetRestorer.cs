@@ -3,6 +3,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Arbor.Processing;
+using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;
@@ -42,7 +44,7 @@ namespace Arbor.X.Core.Tools.NuGet
 
             string solutionFile = solutionFiles.Single();
 
-            ExitCode result = await ProcessRunner.ExecuteAsync(msbuildExePath, new[] {solutionFile, "/t:restore"},
+            ExitCode result = await ProcessHelper.ExecuteAsync(msbuildExePath, new[] {solutionFile, "/t:restore"},
                 logger);
 
             return result;

@@ -7,7 +7,7 @@ namespace Arbor.X.Tests.Integration.GitBranchNameExtensions
     [Subject(typeof(Core.GitBranchNameExtensions))]
     public class when_getting_branch_name_for_on_branch
     {
-        private static Maybe<string> result;
+        private static Arbor.Defensive.Maybe<string> result;
 
         private static string name;
 
@@ -23,7 +23,7 @@ namespace Arbor.X.Tests.Integration.GitBranchNameExtensions
     [Subject(typeof(Core.GitBranchNameExtensions))]
     public class when_getting_branch_name_for_simple_branch_name_master
     {
-        private static Maybe<string> result;
+        private static Defensive.Maybe<string> result;
 
         private static string name;
 
@@ -39,7 +39,7 @@ namespace Arbor.X.Tests.Integration.GitBranchNameExtensions
     [Subject(typeof(Core.GitBranchNameExtensions))]
     public class when_getting_branch_name_for_simple_branch_name_release
     {
-        private static Maybe<string> result;
+        private static Defensive.Maybe<string> result;
 
         private static string name;
 
@@ -55,7 +55,7 @@ namespace Arbor.X.Tests.Integration.GitBranchNameExtensions
     [Subject(typeof(Core.GitBranchNameExtensions))]
     public class when_getting_branch_name_for_simple_branch_name_develop
     {
-        private static Maybe<string> result;
+        private static Defensive.Maybe<string> result;
 
         private static string name;
 

@@ -5,12 +5,15 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Castanea;
+using Arbor.Defensive.Collections;
+using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 
 using JetBrains.Annotations;
+using ExceptionExtensions = Arbor.Exceptions.ExceptionExtensions;
 
 namespace Arbor.X.Core.Tools.NuGet
 {

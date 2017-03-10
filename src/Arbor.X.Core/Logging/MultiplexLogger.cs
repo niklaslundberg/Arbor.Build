@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-
+using Arbor.Defensive.Collections;
 using Arbor.X.Core.GenericExtensions;
 
 namespace Arbor.X.Core.Logging

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-
+using Arbor.Defensive.Collections;
 using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.Logging;
 using Autofac;

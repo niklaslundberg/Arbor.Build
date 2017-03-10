@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Arbor.Defensive.Collections;
 using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.IO;
 using Arbor.X.Tests.Integration.Tests.MSpec;
@@ -30,7 +31,7 @@ namespace Arbor.X.Tests.Integration.Tests
                 .ToReadOnlyCollection();
 
             packageConfigFiles
-                .Select(file => file.FullName)
+                .Select(file => file.FullName).ToList()
                 .ForEach(Console.WriteLine);
         };
 
