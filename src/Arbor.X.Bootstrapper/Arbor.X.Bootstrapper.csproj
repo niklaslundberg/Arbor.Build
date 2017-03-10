@@ -50,23 +50,23 @@
       <HintPath>..\packages\Arbor.Castanea.1.0.6\lib\net45\Arbor.Castanea.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Arbor.KVConfiguration.Core, Version=0.5.0.17, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Arbor.KVConfiguration.Core.0.5.0-build00017\lib\netstandard1.4\Arbor.KVConfiguration.Core.dll</HintPath>
+    <Reference Include="Arbor.KVConfiguration.Core, Version=0.5.0.18, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Arbor.KVConfiguration.Core.0.5.0\lib\netstandard1.4\Arbor.KVConfiguration.Core.dll</HintPath>
     </Reference>
     <Reference Include="Arbor.KVConfiguration.JsonConfiguration, Version=0.5.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Arbor.KVConfiguration.JsonConfiguration.0.5.0-build00017\lib\net461\Arbor.KVConfiguration.JsonConfiguration.dll</HintPath>
+      <HintPath>..\packages\Arbor.KVConfiguration.JsonConfiguration.0.5.0\lib\net461\Arbor.KVConfiguration.JsonConfiguration.dll</HintPath>
     </Reference>
     <Reference Include="Arbor.KVConfiguration.Schema, Version=0.5.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Arbor.KVConfiguration.Schema.0.5.0-build00017\lib\net461\Arbor.KVConfiguration.Schema.dll</HintPath>
+      <HintPath>..\packages\Arbor.KVConfiguration.Schema.0.5.0\lib\net461\Arbor.KVConfiguration.Schema.dll</HintPath>
     </Reference>
     <Reference Include="Arbor.KVConfiguration.Schema.Json, Version=0.5.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Arbor.KVConfiguration.Schema.Json.0.5.0-build00017\lib\net461\Arbor.KVConfiguration.Schema.Json.dll</HintPath>
+      <HintPath>..\packages\Arbor.KVConfiguration.Schema.Json.0.5.0\lib\net461\Arbor.KVConfiguration.Schema.Json.dll</HintPath>
     </Reference>
     <Reference Include="Arbor.KVConfiguration.SystemConfiguration, Version=0.5.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Arbor.KVConfiguration.SystemConfiguration.0.5.0-build00017\lib\net461\Arbor.KVConfiguration.SystemConfiguration.dll</HintPath>
+      <HintPath>..\packages\Arbor.KVConfiguration.SystemConfiguration.0.5.0\lib\net461\Arbor.KVConfiguration.SystemConfiguration.dll</HintPath>
     </Reference>
     <Reference Include="Arbor.KVConfiguration.UserConfiguration, Version=0.5.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Arbor.KVConfiguration.UserConfiguration.0.5.0-build00017\lib\net461\Arbor.KVConfiguration.UserConfiguration.dll</HintPath>
+      <HintPath>..\packages\Arbor.KVConfiguration.UserConfiguration.0.5.0\lib\net461\Arbor.KVConfiguration.UserConfiguration.dll</HintPath>
     </Reference>
     <Reference Include="Arbor.Sorbus.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Arbor.Sorbus.1.2.1\lib\net45\Arbor.Sorbus.Core.dll</HintPath>
