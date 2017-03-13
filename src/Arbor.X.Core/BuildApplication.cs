@@ -60,7 +60,7 @@ namespace Arbor.X.Core
                 [WellKnownVariables.VersionMajor] = "1",
                 [WellKnownVariables.VersionMinor] = "0",
                 [WellKnownVariables.VersionPatch] = "50",
-                [WellKnownVariables.VersionBuild] = "7",
+                [WellKnownVariables.VersionBuild] = "43",
                 [WellKnownVariables.Configuration] = "release",
                 [WellKnownVariables.GenericXmlTransformsEnabled] = "true",
                 [WellKnownVariables.NuGetPackageExcludesCommaSeparated] = "Arbor.X.Bootstrapper.nuspec",

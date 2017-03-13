@@ -216,7 +216,9 @@
     <Compile Include="GenericExtensions\TaskExtensions.cs" />
     <Compile Include="ProcessUtils\ProcessHelper.cs" />
     <Compile Include="Tools\MSBuild\ApplicationMetadataKeys.cs" />
+    <Compile Include="Tools\MSBuild\Framework.cs" />
     <Compile Include="Tools\MSBuild\Platforms.cs" />
+    <Compile Include="Tools\MSBuild\WebSolutionProject.cs" />
     <Compile Include="Tools\NuGet\MSBuildNuGetRestorer.cs" />
     <Compile Include="Tools\NuGet\DotNetRestorer.cs" />
     <Compile Include="Tools\Testing\MachineSpecificationsConstants.cs" />

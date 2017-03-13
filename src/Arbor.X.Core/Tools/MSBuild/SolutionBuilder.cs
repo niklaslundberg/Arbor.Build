@@ -747,7 +747,15 @@ namespace Arbor.X.Core.Tools.MSBuild
             logger.Write(
                 $"WebApplication projects to build [{webProjects.Count}]: {string.Join(", ", webProjects.Select(wp => wp.Project.FileName))}");
 
-            foreach (SolutionProject solutionProject in webProjects)
+            List<WebSolutionProject> webSolutionProjects = new List<WebSolutionProject>();
+
+            webSolutionProjects.AddRange(webProjects.Select(project => new WebSolutionProject(project.Project.FileName, project.Project.ProjectName, project.Project.ProjectDirectory, project.Project.BuildProject, Framework.NetFramework)));
+
+            var solutionProjects = solution.Projects.Where(project => File.ReadAllLines(project.Project.FileName).First().IndexOf("Microsoft.NET.Sdk.Web", StringComparison.OrdinalIgnoreCase) >= 0).Select(project => new WebSolutionProject(project.Project.FileName, project.Project.ProjectName, project.Project.ProjectDirectory, project.Project.BuildProject, Framework.NetCore)).ToImmutableArray();
+
+            webSolutionProjects.AddRange(solutionProjects);
+
+            foreach (WebSolutionProject solutionProject in webSolutionProjects)
             {
                 string platformDirectoryPath = Path.Combine(_artifactsPath, "Websites", solutionProject.ProjectName,
                     Platforms.Normalize(platform));
@@ -906,24 +914,42 @@ namespace Arbor.X.Core.Tools.MSBuild
             FileInfo solutionFile,
             string configuration,
             ILogger logger,
-            SolutionProject solutionProject,
+            WebSolutionProject solutionProject,
             string platformName,
             DirectoryInfo siteArtifactDirectory)
         {
-            var buildSiteArguments = new List<string>(15)
+            List<string> buildSiteArguments;
+
+            if (solutionProject.Framework == Framework.NetFramework)
             {
-                solutionProject.Project.FileName,
-                $"/property:configuration={configuration}",
-                $"/property:platform={platformName}",
-                $"/property:_PackageTempDir={siteArtifactDirectory.FullName}",
-                // ReSharper disable once PossibleNullReferenceException
-                $"/property:SolutionDir={solutionFile.Directory.FullName}",
-                $"/verbosity:{_verbosity.Level}",
-                "/target:pipelinePreDeployCopyAllFilesToOneFolder",
-                "/property:AutoParameterizationWebConfigConnectionStrings=false",
-                $"/maxcpucount:{_processorCount.ToString(CultureInfo.InvariantCulture)}",
-                "/nodeReuse:false"
-            };
+                buildSiteArguments = new List<string>(15)
+                {
+                    solutionProject.FullPath,
+                    $"/property:configuration={configuration}",
+                    $"/property:platform={platformName}",
+                    $"/property:_PackageTempDir={siteArtifactDirectory.FullName}",
+                    // ReSharper disable once PossibleNullReferenceException
+                    $"/property:SolutionDir={solutionFile.Directory.FullName}",
+                    $"/verbosity:{_verbosity.Level}",
+                    "/target:pipelinePreDeployCopyAllFilesToOneFolder",
+                    "/property:AutoParameterizationWebConfigConnectionStrings=false",
+                    $"/maxcpucount:{_processorCount.ToString(CultureInfo.InvariantCulture)}",
+                    "/nodeReuse:false"
+                };
+            }
+            else
+            {
+                buildSiteArguments = new List<string>(15)
+                {
+                    solutionProject.FullPath,
+                    $"/property:configuration={configuration}",
+                    $"/verbosity:{_verbosity.Level}",
+                    "/target:publish",
+                    $"/property:publishdir={siteArtifactDirectory.FullName}",
+                    $"/maxcpucount:{_processorCount.ToString(CultureInfo.InvariantCulture)}",
+                    "/nodeReuse:false"
+                };
+            }
 
             if (_showSummary)
             {
@@ -970,7 +996,7 @@ namespace Arbor.X.Core.Tools.MSBuild
         }
 
         private async Task<ExitCode> CreateNuGetWebPackagesAsync(FileInfo solutionFile, string configuration,
-            ILogger logger, string platformDirectoryPath, SolutionProject solutionProject, string platformName,
+            ILogger logger, string platformDirectoryPath, WebSolutionProject solutionProject, string platformName,
             string siteArtifactDirectory)
         {
             if (
@@ -986,7 +1012,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                 solutionProject.ProjectName.Replace(".", "_").Replace(" ", "_").Replace("-", "_"));
 
             List<MSBuildProperty> msbuildProperties =
-                solutionProject.Project.BuildProject.PropertyGroups.SelectMany(s => s.Properties)
+                solutionProject.BuildProject.PropertyGroups.SelectMany(s => s.Properties)
                     .Where(
                         msBuildProperty =>
                             msBuildProperty.Name.Equals(expectedName, StringComparison.InvariantCultureIgnoreCase))
@@ -1022,7 +1048,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             char separator = '.';
             int fileNameMinPartCount = Pattern.Split(separator).Length;
 
-            var environmentFiles = new DirectoryInfo(solutionProject.Project.ProjectDirectory)
+            var environmentFiles = new DirectoryInfo(solutionProject.ProjectDirectory)
                 .GetFilesRecursive(rootDir: _vcsRoot)
                 .Select(file => new {File = file, Parts = file.Name.Split(separator)})
                 .Where(item => item.Parts.Length == fileNameMinPartCount)
@@ -1039,7 +1065,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                 .SafeToReadOnlyCollection();
 
             string rootDirectory =
-                solutionProject.Project.ProjectDirectory.Trim(Path.DirectorySeparatorChar);
+                solutionProject.ProjectDirectory.Trim(Path.DirectorySeparatorChar);
 
             _logger.WriteVerbose(
                 $"Found [{environmentNames.Count}] environnent names in project '{solutionProject.ProjectName}'");
@@ -1064,7 +1090,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                     .ToList();
 
                 _logger.WriteVerbose(
-                    $"Found '{elements.Count}' environment specific files in project directory '{solutionProject.Project.ProjectDirectory}' environment name '{environmentName}'");
+                    $"Found '{elements.Count}' environment specific files in project directory '{solutionProject.ProjectDirectory}' environment name '{environmentName}'");
 
                 string environmentPackageId = $"{packageId}.Environment.{environmentName}";
 
@@ -1087,7 +1113,7 @@ namespace Arbor.X.Core.Tools.MSBuild
         }
 
         private bool ShouldBuildNuGetWebPackageForProject(
-            SolutionProject solutionProject,
+            WebSolutionProject solutionProject,
             List<MSBuildProperty> msbuildProperties,
             string expectedName)
         {
@@ -1097,7 +1123,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             {
                 _logger.WriteDebug("NuGet Web package filter is enabled");
 
-                string normalizedProjectFileName = Path.GetFileNameWithoutExtension(solutionProject.Project.FileName);
+                string normalizedProjectFileName = Path.GetFileNameWithoutExtension(solutionProject.FullPath);
 
                 bool isIncluded = _filteredNuGetWebPackageProjects.Any(
                     projectName =>
@@ -1128,25 +1154,25 @@ namespace Arbor.X.Core.Tools.MSBuild
                     if (hasAnyPropertySetToFalse)
                     {
                         _logger.WriteVerbose(
-                            $"Build NuGet web package is disabled in project file '{solutionProject.Project.FileName}'; property '{expectedName}'");
+                            $"Build NuGet web package is disabled in project file '{solutionProject.FullPath}'; property '{expectedName}'");
                         buildNuGetWebPackageForProject = false;
                     }
                     else
                     {
                         _logger.WriteVerbose(
-                            $"Build NuGet web package is enabled via project file '{solutionProject.Project.FileName}'; property '{expectedName}'");
+                            $"Build NuGet web package is enabled via project file '{solutionProject.FullPath}'; property '{expectedName}'");
                     }
                 }
                 else
                 {
                     _logger.WriteDebug(
-                        $"Build NuGet web package is not configured in project file '{solutionProject.Project.FileName}'; property '{expectedName}', invalid value");
+                        $"Build NuGet web package is not configured in project file '{solutionProject.FullPath}'; property '{expectedName}', invalid value");
                 }
             }
             else
             {
                 _logger.WriteDebug(
-                    $"Build NuGet web package is not configured in project file '{solutionProject.Project.FileName}'; property '{expectedName}'");
+                    $"Build NuGet web package is not configured in project file '{solutionProject.FullPath}'; property '{expectedName}'");
             }
 
             string buildVariable = _buildVariables.GetVariableValueOrDefault(expectedName, defaultValue: "");
@@ -1282,7 +1308,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             return exitCode;
         }
 
-        private void TransformFiles(string configuration, ILogger logger, SolutionProject solutionProject,
+        private void TransformFiles(string configuration, ILogger logger, WebSolutionProject solutionProject,
             DirectoryInfo siteArtifactDirectory)
         {
             logger.WriteDebug("Transforms are enabled");
@@ -1290,7 +1316,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             logger.WriteDebug("Starting xml transformations");
 
             Stopwatch transformationStopwatch = Stopwatch.StartNew();
-            string projectDirectoryPath = solutionProject.Project.ProjectDirectory;
+            string projectDirectoryPath = solutionProject.ProjectDirectory;
 
             string[] extensions = {".xml", ".config"};
 
@@ -1361,8 +1387,14 @@ namespace Arbor.X.Core.Tools.MSBuild
 
         [NotNull]
         private async Task<ExitCode> CopyKuduWebJobsAsync([NotNull] ILogger logger,
-            [NotNull] SolutionProject solutionProject, [NotNull] DirectoryInfo siteArtifactDirectory)
+            [NotNull] WebSolutionProject solutionProject, [NotNull] DirectoryInfo siteArtifactDirectory)
         {
+            if (solutionProject.Framework != Framework.NetFramework)
+            {
+                logger.Write("Skipping Kudu web job, only .NET Framework projects supported");
+                return ExitCode.Success;
+            }
+
             logger.Write("AppData Web Jobs are enabled");
             logger.WriteDebug("Starting web deploy packaging");
 
@@ -1370,7 +1402,7 @@ namespace Arbor.X.Core.Tools.MSBuild
 
             ExitCode exitCode;
 
-            string appDataPath = Path.Combine(solutionProject.Project.ProjectDirectory, "App_Data");
+            string appDataPath = Path.Combine(solutionProject.ProjectDirectory, "App_Data");
 
             var appDataDirectory = new DirectoryInfo(appDataPath);
 
@@ -1453,8 +1485,14 @@ namespace Arbor.X.Core.Tools.MSBuild
 
         private async Task<ExitCode> CreateWebDeployPackagesAsync(FileInfo solutionFile, string configuration,
             ILogger logger,
-            string platformDirectoryPath, SolutionProject solutionProject, string platformName)
+            string platformDirectoryPath, WebSolutionProject solutionProject, string platformName)
         {
+            if (solutionProject.Framework != Framework.NetFramework)
+            {
+                logger.Write("Skipping web deploy package, only .NET Framework projects supported");
+                return ExitCode.Success;
+            }
+
             logger.WriteDebug("Starting web deploy packaging");
 
             Stopwatch webDeployStopwatch = Stopwatch.StartNew();
@@ -1468,7 +1506,7 @@ namespace Arbor.X.Core.Tools.MSBuild
 
             var buildSitePackageArguments = new List<string>(15)
             {
-                solutionProject.Project.FileName,
+                solutionProject.FullPath,
                 $"/property:configuration={configuration}",
                 $"/property:platform={platformName}",
 // ReSharper disable once PossibleNullReferenceException
