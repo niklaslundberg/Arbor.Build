@@ -37,7 +37,8 @@ namespace Arbor.X.Core
         {
             _logger = logger;
         }
-        async Task StartWithDebuggerAsync(string[] args)
+
+        private async Task StartWithDebuggerAsync(string[] args)
         {
             var baseDir = VcsPathHelper.FindVcsRootPath(AppDomain.CurrentDomain.BaseDirectory);
 
@@ -60,7 +61,7 @@ namespace Arbor.X.Core
                 [WellKnownVariables.VersionMajor] = "1",
                 [WellKnownVariables.VersionMinor] = "0",
                 [WellKnownVariables.VersionPatch] = "50",
-                [WellKnownVariables.VersionBuild] = "43",
+                [WellKnownVariables.VersionBuild] = "44",
                 [WellKnownVariables.Configuration] = "release",
                 [WellKnownVariables.GenericXmlTransformsEnabled] = "true",
                 [WellKnownVariables.NuGetPackageExcludesCommaSeparated] = "Arbor.X.Bootstrapper.nuspec",
@@ -89,7 +90,7 @@ namespace Arbor.X.Core
             WriteDebug("Starting with debugger attached");
         }
 
-        void WriteDebug(string message)
+        private void WriteDebug(string message)
         {
             Debug.WriteLine(message);
             _logger.WriteDebug(message);

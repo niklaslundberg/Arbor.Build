@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using JetBrains.Annotations;
 
 
 namespace Arbor.X.Core.Tools.ILRepack
@@ -9,7 +10,12 @@ namespace Arbor.X.Core.Tools.ILRepack
     // ReSharper disable once InconsistentNaming
     public class ILRepackData
     {
-        public ILRepackData(string exe, IEnumerable<FileInfo> dlls, string configuration, string platform)
+        public ILRepackData(
+            string exe,
+            IEnumerable<FileInfo> dlls,
+            string configuration,
+            string platform,
+            [NotNull] string targetFramework)
         {
             if (string.IsNullOrWhiteSpace(exe))
             {
@@ -31,6 +37,11 @@ namespace Arbor.X.Core.Tools.ILRepack
                 throw new ArgumentNullException(nameof(platform));
             }
 
+            if (string.IsNullOrWhiteSpace(targetFramework))
+            {
+                throw new ArgumentException("Value cannot be null or whitespace.", nameof(targetFramework));
+            }
+
             FileInfo[] dllArray = dlls.ToArray();
 
             if (!dllArray.Any())
@@ -42,11 +53,14 @@ namespace Arbor.X.Core.Tools.ILRepack
             Dlls = dllArray;
             Configuration = configuration;
             Platform = platform;
+            TargetFramework = targetFramework;
         }
 
         public string Configuration { get; }
 
         public string Platform { get; }
+
+        public string TargetFramework { get; }
 
         public string Exe { get; }
 

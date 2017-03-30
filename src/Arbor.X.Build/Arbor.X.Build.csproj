@@ -170,9 +170,25 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Arbor.Defensive.Collections\Arbor.Defensive.Collections.csproj">
+      <Project>{036c24d0-1bc6-48a7-9e58-ab4a0febacb0}</Project>
+      <Name>Arbor.Defensive.Collections</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Arbor.Defensive\Arbor.Defensive.csproj">
+      <Project>{c35cd7d4-b07a-4809-9444-af2c35ed5908}</Project>
+      <Name>Arbor.Defensive</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Arbor.Exceptions\Arbor.Exceptions.csproj">
+      <Project>{0255d0ec-426b-4857-adcc-e8260c81d220}</Project>
+      <Name>Arbor.Exceptions</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Arbor.Processing.Core\Arbor.Processing.Core.csproj">
       <Project>{480AFB5E-4282-4B2A-A3BD-BD42830C743A}</Project>
       <Name>Arbor.Processing.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Arbor.Processing\Arbor.Processing.csproj">
+      <Project>{5b5d302f-3197-482a-bc53-e8f41bc73701}</Project>
+      <Name>Arbor.Processing</Name>
     </ProjectReference>
     <ProjectReference Include="..\Arbor.X.Core\Arbor.X.Core.csproj">
       <Project>{CC76C4CD-364D-4E48-9147-CBDECCD3A6F2}</Project>

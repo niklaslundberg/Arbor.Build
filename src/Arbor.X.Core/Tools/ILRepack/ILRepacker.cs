@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -9,9 +10,10 @@ using Arbor.Defensive.Collections;
 using Arbor.Processing;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
+using FubuCsProjFile;
+using FubuCsProjFile.MSBuild;
 using JetBrains.Annotations;
 
 namespace Arbor.X.Core.Tools.ILRepack
@@ -57,11 +59,16 @@ namespace Arbor.X.Core.Tools.ILRepack
 
             IReadOnlyCollection<ILRepackData> mergeDatas = ilMergeProjects.SelectMany(GetIlMergeFiles).ToReadOnlyCollection();
 
-            foreach (ILRepackData mergeData in mergeDatas)
+            foreach (ILRepackData repackData in mergeDatas)
             {
-                var fileInfo = new FileInfo(mergeData.Exe);
-                var ilMergedDirectoryPath = Path.Combine(_artifactsPath, "ILMerged", mergeData.Platform,
-                    mergeData.Configuration);
+                var fileInfo = new FileInfo(repackData.Exe);
+
+                var ilMergedDirectoryPath = Path.Combine(
+                    _artifactsPath,
+                    "ILMerged",
+                    repackData.Platform,
+                    repackData.Configuration);
+
                 var ilMergedDirectory = new DirectoryInfo(ilMergedDirectoryPath).EnsureExists();
 
                 var ilMergedPath = Path.Combine(ilMergedDirectory.FullName, fileInfo.Name);
@@ -70,14 +77,15 @@ namespace Arbor.X.Core.Tools.ILRepack
                     "/target:exe",
                     $"/out:{ilMergedPath}",
                     $"/Lib:{fileInfo.Directory.FullName}",
+                    "/verbose",
                     fileInfo.FullName,
                 };
 
-                arguments.AddRange(mergeData.Dlls.Select(dll => dll.FullName));
+                arguments.AddRange(repackData.Dlls.Select(dll => dll.FullName));
 
                 string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
 
-                string dotNetVersion = "4.6";
+                string dotNetVersion = repackData.TargetFramework;
 
                 string referenceAssemblyDirectory =
                     $"{$@"{programFiles}\Reference Assemblies\Microsoft\Framework\.NETFramework\v"}{dotNetVersion}";
@@ -132,6 +140,20 @@ namespace Arbor.X.Core.Tools.ILRepack
                 yield break;
             }
 
+            CsProjFile csProjFile = CsProjFile.LoadFrom(projectFile.FullName);
+
+            const string targetFrameworkVersion = "TargetFrameworkVersion";
+
+            MSBuildProperty msBuildProperty = csProjFile.BuildProject.PropertyGroups.SelectMany(
+                group =>
+                    @group.Properties.Where(
+                        property => property.Name.Equals(targetFrameworkVersion, StringComparison.OrdinalIgnoreCase))).FirstOrDefault();
+
+            if (string.IsNullOrWhiteSpace(msBuildProperty?.Value))
+            {
+                throw new InvalidOperationException($"The CSProj file '{csProjFile.FileName}' does not contain a property '{targetFrameworkVersion}");
+            }
+
             var exes = releaseDir
                 .EnumerateFiles("*.exe")
                 .Where(FileIsStandAloneExe)
@@ -142,17 +164,31 @@ namespace Arbor.X.Core.Tools.ILRepack
                 throw new InvalidOperationException("Only one exe can be ILMerged");
             }
 
-            var exe = exes.Single();
+            FileInfo exe = exes.Single();
 
             string platform = GetPlatform(exe);
 
-            var dlls =
-                releaseDir.EnumerateFiles("*.dll")
-                    .Where(FileIsStandAloneExe);
+            ImmutableArray<FileInfo> dlls = releaseDir
+                .EnumerateFiles("*.dll")
+                .Where(FileIsStandAloneExe)
+                .ToImmutableArray();
 
+            string NormalizeVersion(string value)
+            {
+                if (value.StartsWith("v", StringComparison.OrdinalIgnoreCase))
+                {
+                    return value.Substring(1);
+                }
 
-            yield return new ILRepackData(exe.FullName, dlls, configuration, platform);
+                return value;
+            }
+
+            string targetFrameworkVersionValue = NormalizeVersion(msBuildProperty.Value);
+
+            yield return new ILRepackData(exe.FullName, dlls, configuration, platform, targetFrameworkVersionValue);
         }
+
+
 
         private static bool FileIsStandAloneExe(FileInfo file)
         {
