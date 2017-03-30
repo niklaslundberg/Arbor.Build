@@ -40,6 +40,12 @@ namespace Arbor.X.Core.Tools.MSBuild
             var possiblePaths = new[]
             {
                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                "Microsoft Visual Studio", "2017", "Enterprise", "MSBuild", "15.0", "bin", "MSBuild.exe"),
+
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                "Microsoft Visual Studio", "2017", "Profesional", "MSBuild", "15.0", "bin", "MSBuild.exe"),
+
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
                 "Microsoft Visual Studio", "2017", "Community", "MSBuild", "15.0", "bin", "MSBuild.exe"),
 
                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
