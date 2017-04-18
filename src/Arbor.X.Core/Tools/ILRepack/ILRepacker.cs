@@ -46,14 +46,17 @@ namespace Arbor.X.Core.Tools.ILRepack
             _artifactsPath =
                 buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue().Value;
 
-            var sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
+            string sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
 
             var sourceRootDirectory = new DirectoryInfo(sourceRoot);
-            var csharpProjectFiles = sourceRootDirectory.GetFiles("*.csproj", SearchOption.AllDirectories);
+
+            List<FileInfo> csharpProjectFiles =
+                sourceRootDirectory.GetFilesRecursive(new List<string> { ".csproj" }, DefaultPaths.DefaultPathLookupSpecification, sourceRoot)
+                    .ToList();
 
             List<FileInfo> ilMergeProjects = csharpProjectFiles.Where(IsILMergeEnabledInProjectFile).ToList();
 
-            var merges = string.Join(Environment.NewLine, ilMergeProjects.Select(item => item.FullName));
+            string merges = string.Join(Environment.NewLine, ilMergeProjects.Select(item => item.FullName));
 
             logger.Write($"Found {ilMergeProjects.Count} projects marked for ILMerge:{Environment.NewLine}{merges}");
 
