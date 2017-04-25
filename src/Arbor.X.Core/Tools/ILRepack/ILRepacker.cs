@@ -46,7 +46,7 @@ namespace Arbor.X.Core.Tools.ILRepack
                 buildVariables.Require(WellKnownVariables.ExternalTools_ILRepack_ExePath).ThrowIfEmptyValue().Value;
 
             string customILRepackPath =
-                buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_ILRepack_Custom_ExePath, "");
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_ILRepack_Custom_ExePath, string.Empty);
 
             if (!string.IsNullOrWhiteSpace(customILRepackPath) && File.Exists(customILRepackPath))
             {

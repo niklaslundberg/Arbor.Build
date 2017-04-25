@@ -53,7 +53,7 @@ namespace Arbor.X.Core.Tools.Git
                         logger.WriteDebug($"Testing Git exe path '{location}', exists: {exists}");
 
                         return exists;
-                    }) ?? "";
+                    }) ?? string.Empty;
 
             return exePath;
         }

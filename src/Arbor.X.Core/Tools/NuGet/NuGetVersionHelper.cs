@@ -28,7 +28,7 @@ namespace Arbor.X.Core.Tools.NuGet
 
             int usePadding = nugetVersioningSettings.SemVerVersion == 1 && nugetVersioningSettings.MaxZeroPaddingLength > 0 ? nugetVersioningSettings.MaxZeroPaddingLength : 0;
 
-            string semVer2PreReleaseSeparator = nugetVersioningSettings.SemVerVersion == 2 ? "." : "";
+            string semVer2PreReleaseSeparator = nugetVersioningSettings.SemVerVersion == 2 ? "." : string.Empty;
 
             if (!string.IsNullOrWhiteSpace(suffix))
             {

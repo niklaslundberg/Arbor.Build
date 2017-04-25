@@ -13,9 +13,9 @@ namespace Arbor.X.Core.Tools.Kudu
             string projectFilePath = null)
         {
             _isKuduWebJobProject = isKuduWebJobProject;
-            _webJobName = webJobName ?? "";
+            _webJobName = webJobName ?? string.Empty;
             _kuduWebJobType = kuduWebJobType;
-            _projectFilePath = projectFilePath ?? "";
+            _projectFilePath = projectFilePath ?? string.Empty;
         }
 
         public bool IsKuduWebJobProject

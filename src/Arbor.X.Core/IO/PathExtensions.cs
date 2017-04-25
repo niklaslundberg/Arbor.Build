@@ -111,7 +111,7 @@ namespace Arbor.X.Core.IO
         {
             var path = string.IsNullOrWhiteSpace(rootDir) ?
                 sourceDir :
-                sourceDir.Replace(rootDir, "");
+                sourceDir.Replace(rootDir, string.Empty);
 
             var sourceDirSegments = path.Split(new[] {Path.DirectorySeparatorChar},
                 StringSplitOptions.RemoveEmptyEntries);

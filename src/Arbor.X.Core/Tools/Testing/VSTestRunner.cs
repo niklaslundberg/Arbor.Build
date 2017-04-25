@@ -40,7 +40,7 @@ namespace Arbor.X.Core.Tools.Testing
 
             var vsTestExePath = buildVariables.GetVariableValueOrDefault(
                 WellKnownVariables.ExternalTools_VSTest_ExePath,
-                defaultValue: "");
+                defaultValue: string.Empty);
 
             if (string.IsNullOrWhiteSpace(vsTestExePath))
             {

@@ -38,7 +38,7 @@ namespace Arbor.X.Core.Tools.NuGet
             }
 
             _excludedNuSpecFiles =
-                buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageExcludesCommaSeparated, "")
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageExcludesCommaSeparated, string.Empty)
                     .Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries)
                     .SafeToReadOnlyCollection();
 

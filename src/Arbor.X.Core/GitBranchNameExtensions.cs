@@ -18,17 +18,17 @@ namespace Arbor.X.Core
 
             string prefix = "On branch ";
 
-            if (name.Trim().StartsWith("HEAD detached"))
+            if (name.Trim().StartsWith("HEAD detached", StringComparison.Ordinal))
             {
                 return Maybe<string>.Empty();
             }
 
-            if (name.Trim().StartsWith("HEAD (no branch)"))
+            if (name.Trim().StartsWith("HEAD (no branch)", StringComparison.Ordinal))
             {
                 return Maybe<string>.Empty();
             }
 
-            if (name.Trim().Equals("HEAD"))
+            if (name.Trim().Equals("HEAD", StringComparison.Ordinal))
             {
                 return Maybe<string>.Empty();
             }

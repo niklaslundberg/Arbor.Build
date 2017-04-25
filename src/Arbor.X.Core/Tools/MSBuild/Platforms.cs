@@ -12,7 +12,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             {
                 throw new ArgumentNullException(nameof(platform));
             }
-            return platform.Replace(" ", "");
+            return platform.Replace(" ", string.Empty);
         }
     }
 }

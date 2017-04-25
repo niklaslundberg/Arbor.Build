@@ -48,16 +48,16 @@ namespace Arbor.X.Core.Tools.Kudu
 
             _kuduConfigurationFallback = buildVariables.HasKey(WellKnownVariables.KuduConfigurationFallback)
                 ? buildVariables.Require(WellKnownVariables.KuduConfigurationFallback).Value
-                : "";
+                : string.Empty;
 
             _clearTarget = buildVariables.GetBooleanByKey(WellKnownVariables.KuduClearFilesAndDirectories, false);
             _useAppOfflineFile = buildVariables.GetBooleanByKey(WellKnownVariables.KuduUseAppOfflineHtmFile, false);
             _excludeAppData = buildVariables.GetBooleanByKey(WellKnownVariables.KuduExcludeDeleteAppData, true);
             _deleteExistingAppOfflineHtm = buildVariables.GetBooleanByKey(WellKnownVariables.KuduDeleteExistingAppOfflineHtmFile, true);
-            _ignoreDeleteFiles = buildVariables.GetVariableValueOrDefault(WellKnownVariables.KuduIgnoreDeleteFiles, "");
-            _ignoreDeleteDirectories = buildVariables.GetVariableValueOrDefault(WellKnownVariables.KuduIgnoreDeleteDirectories, "");
+            _ignoreDeleteFiles = buildVariables.GetVariableValueOrDefault(WellKnownVariables.KuduIgnoreDeleteFiles, string.Empty);
+            _ignoreDeleteDirectories = buildVariables.GetVariableValueOrDefault(WellKnownVariables.KuduIgnoreDeleteDirectories, string.Empty);
 
-            var branchNameOverride = buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_Kudu_DeploymentBranchNameOverride, defaultValue: "");
+            var branchNameOverride = buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_Kudu_DeploymentBranchNameOverride, defaultValue: string.Empty);
 
             if (!string.IsNullOrWhiteSpace(branchNameOverride))
             {
@@ -89,7 +89,7 @@ namespace Arbor.X.Core.Tools.Kudu
             }
             else
             {
-                string siteToDeploy = buildVariables.GetVariableValueOrDefault(WellKnownVariables.KuduSiteToDeploy, "");
+                string siteToDeploy = buildVariables.GetVariableValueOrDefault(WellKnownVariables.KuduSiteToDeploy, string.Empty);
                 if (!string.IsNullOrWhiteSpace(siteToDeploy))
                 {
                     var foundDir = builtWebsites.SingleOrDefault(

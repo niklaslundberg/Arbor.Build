@@ -23,7 +23,7 @@ namespace Arbor.X.Core.Tools.VisualStudio
         public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {
             if (!string.IsNullOrWhiteSpace(buildVariables.GetVariableValueOrDefault(
-                    WellKnownVariables.ExternalTools_VisualStudio_Version, "")))
+                    WellKnownVariables.ExternalTools_VisualStudio_Version, string.Empty)))
             {
                 return Task.FromResult(new List<IVariable>().AsEnumerable());
             }

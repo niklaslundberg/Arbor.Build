@@ -21,7 +21,7 @@ namespace Arbor.X.Core.Tools.NuGet
             _cancellationToken = cancellationToken;
 
             string userSpecifiedNuGetExePath =
-                buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_NuGet_ExePath_Custom, "");
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_NuGet_ExePath_Custom, string.Empty);
 
             string nuGetExePath = await EnsureNuGetExeExistsAsync(logger, userSpecifiedNuGetExePath);
 

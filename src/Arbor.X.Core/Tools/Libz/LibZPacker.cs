@@ -46,7 +46,7 @@ namespace Arbor.X.Core.Tools.Libz
                 buildVariables.Require(WellKnownVariables.ExternalTools_LibZ_ExePath).ThrowIfEmptyValue().Value;
 
             string customExePath =
-                buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_LibZ_Custom_ExePath, "");
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_LibZ_Custom_ExePath, string.Empty);
 
             if (!string.IsNullOrWhiteSpace(customExePath) && File.Exists(customExePath))
             {

@@ -165,21 +165,21 @@ namespace Arbor.X.Core.Tools.MSBuild
             _filteredNuGetWebPackageProjects =
                 buildVariables.GetVariableValueOrDefault(
                         WellKnownVariables.NugetCreateNuGetWebPackageFilter,
-                        defaultValue: "")
+                        defaultValue: string.Empty)
                     .Split(',')
                     .Where(item => !string.IsNullOrWhiteSpace(item))
                     .SafeToReadOnlyCollection();
 
             _excludedWebJobsFiles =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.WebJobsExcludedFileNameParts,
-                        defaultValue: "")
+                        defaultValue: string.Empty)
                     .Split(',')
                     .Where(item => !string.IsNullOrWhiteSpace(item))
                     .SafeToReadOnlyCollection();
 
             _excludedWebJobsDirectorySegments =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.WebJobsExcludedDirectorySegments,
-                        defaultValue: "")
+                        defaultValue: string.Empty)
                     .Split(',')
                     .Where(item => !string.IsNullOrWhiteSpace(item))
                     .SafeToReadOnlyCollection();
@@ -347,7 +347,7 @@ namespace Arbor.X.Core.Tools.MSBuild
         {
             string buildPlatform = variables.GetVariableValueOrDefault(
                 WellKnownVariables.ExternalTools_MSBuild_BuildPlatform,
-                defaultValue: "");
+                defaultValue: string.Empty);
 
             if (!string.IsNullOrWhiteSpace(buildPlatform))
             {
@@ -375,7 +375,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             string buildConfiguration =
                 variables.GetVariableValueOrDefault(
                     WellKnownVariables.ExternalTools_MSBuild_BuildConfiguration,
-                    defaultValue: "");
+                    defaultValue: string.Empty);
 
             if (!string.IsNullOrWhiteSpace(buildConfiguration))
             {
@@ -486,7 +486,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                 {
                     return result;
                 }
-                Environment.SetEnvironmentVariable(WellKnownVariables.CurrentBuildConfiguration, "");
+                Environment.SetEnvironmentVariable(WellKnownVariables.CurrentBuildConfiguration, string.Empty);
             }
 
             return ExitCode.Success;
@@ -634,7 +634,7 @@ namespace Arbor.X.Core.Tools.MSBuild
 
             foreach (FileInfo analysisLogFile in analysisLogFiles)
             {
-                string projectName = analysisLogFile.Name.Replace(".CodeAnalysisLog.xml", "");
+                string projectName = analysisLogFile.Name.Replace(".CodeAnalysisLog.xml", string.Empty);
 
                 string targetFilePath = Path.Combine(
                     targetReportDirectory.FullName,
@@ -1092,7 +1092,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                         {
                             string sourceFullPath = file.File.FullName.Trim(Path.DirectorySeparatorChar);
                             string relativePath =
-                                sourceFullPath.Replace(rootDirectory, "").Trim(Path.DirectorySeparatorChar);
+                                sourceFullPath.Replace(rootDirectory, string.Empty).Trim(Path.DirectorySeparatorChar);
                             return new {SourceFullPath = sourceFullPath, RelativePath = relativePath};
                         })
                     .Select(
@@ -1187,7 +1187,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                     $"Build NuGet web package is not configured in project file '{solutionProject.FullPath}'; property '{expectedName}'");
             }
 
-            string buildVariable = _buildVariables.GetVariableValueOrDefault(expectedName, defaultValue: "");
+            string buildVariable = _buildVariables.GetVariableValueOrDefault(expectedName, defaultValue: string.Empty);
 
             if (!string.IsNullOrWhiteSpace(buildVariable))
             {
@@ -1277,7 +1277,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             string licenseUrl = "http://nuget.org";
             string copyright = _buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyCopyright,
                 "Undefined");
-            string tags = "";
+            string tags = string.Empty;
 
             string files = filesList;
 
@@ -1372,7 +1372,7 @@ namespace Arbor.X.Core.Tools.MSBuild
 
             foreach (var configurationFile in transformationPairs)
             {
-                string relativeFilePath = configurationFile.Original.FullName.Replace(projectDirectoryPath, "");
+                string relativeFilePath = configurationFile.Original.FullName.Replace(projectDirectoryPath, string.Empty);
 
                 string targetTransformResultPath = $"{siteArtifactDirectory.FullName}{relativeFilePath}";
 

@@ -3,9 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-
-
-
 using Arbor.Aesculus.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
@@ -20,7 +17,8 @@ namespace Arbor.X.Core.Tools.Environments
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            var existingSourceRoot = buildVariables.GetVariableValueOrDefault(WellKnownVariables.SourceRoot, "");
+            string existingSourceRoot =
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.SourceRoot, string.Empty);
             string sourceRoot;
 
             if (!string.IsNullOrWhiteSpace(existingSourceRoot))
@@ -30,6 +28,7 @@ namespace Arbor.X.Core.Tools.Environments
                     throw new InvalidOperationException(
                         $"The defined variable {WellKnownVariables.SourceRoot} has value set to '{existingSourceRoot}' but the directory does not exist");
                 }
+
                 sourceRoot = existingSourceRoot;
             }
             else
@@ -37,20 +36,20 @@ namespace Arbor.X.Core.Tools.Environments
                 sourceRoot = VcsPathHelper.FindVcsRootPath();
             }
 
-            var externalTools =
+            DirectoryInfo externalTools =
                 new DirectoryInfo(Path.Combine(sourceRoot, "build", "Arbor.X", "tools", "external")).EnsureExists();
 
-            var tempPath = new DirectoryInfo(Path.Combine(sourceRoot, "temp")).EnsureExists();
+            DirectoryInfo tempPath = new DirectoryInfo(Path.Combine(sourceRoot, "temp")).EnsureExists();
 
             var variables = new List<IVariable>
-                                {
-                                    new EnvironmentVariable(
-                                        WellKnownVariables.ExternalTools,
-                                        externalTools.FullName),
-                                    new EnvironmentVariable(
-                                        WellKnownVariables.TempDirectory,
-                                        tempPath.FullName)
-                                };
+            {
+                new EnvironmentVariable(
+                    WellKnownVariables.ExternalTools,
+                    externalTools.FullName),
+                new EnvironmentVariable(
+                    WellKnownVariables.TempDirectory,
+                    tempPath.FullName)
+            };
 
             if (string.IsNullOrWhiteSpace(existingSourceRoot))
             {
@@ -60,6 +59,6 @@ namespace Arbor.X.Core.Tools.Environments
             return Task.FromResult<IEnumerable<IVariable>>(variables);
         }
 
-        public int Order => 0;
+        public int Order { get; } = 0;
     }
 }

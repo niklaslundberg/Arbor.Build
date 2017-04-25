@@ -47,9 +47,9 @@ namespace Arbor.X.Core.Tools.NuGet
 
             var nugetExe = buildVariables.Require(WellKnownVariables.ExternalTools_NuGet_ExePath).ThrowIfEmptyValue();
             var nugetServer =
-                buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_NuGetServer_Uri, "");
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_NuGetServer_Uri, string.Empty);
             var nuGetServerApiKey =
-                buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_NuGetServer_ApiKey, "");
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_NuGetServer_ApiKey, string.Empty);
 
             var isRunningOnBuildAgentVariable =
                 buildVariables.Require(WellKnownVariables.IsRunningOnBuildAgent).ThrowIfEmptyValue();
@@ -60,7 +60,7 @@ namespace Arbor.X.Core.Tools.NuGet
             int timeoutInSeconds = buildVariables.GetInt32ByKey(WellKnownVariables.ExternalTools_NuGetServer_UploadTimeoutInSeconds, defaultValue: -1);
 
             bool checkNuGetPackagesExists = buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_NuGetServer_CheckPackageExists, defaultValue: false);
-            string sourceName = buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_NuGetServer_SourceName, defaultValue: "");
+            string sourceName = buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_NuGetServer_SourceName, defaultValue: string.Empty);
 
             if (isRunningOnBuildAgent)
             {
@@ -148,7 +148,7 @@ namespace Arbor.X.Core.Tools.NuGet
             {
                 var websiteUploadMissingMessage = websitePackagesUploadEnabled
                                                       ? $" or in folder websites folder '{websitesDirectory.FullName}'"
-                                                      : "";
+                                                      : string.Empty;
 
                 logger.Write(
                     $"Could not find any NuGet packages to upload in folder '{artifactPackagesDirectory}' or any subfolder {websiteUploadMissingMessage}");

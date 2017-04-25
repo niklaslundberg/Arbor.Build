@@ -99,7 +99,7 @@ namespace Arbor.X.Core.Logging
 
         private string GetTotalMessage(string prefix, string message)
         {
-            return (prefix ?? "").Trim(' ') + " " + (message ?? "").Trim(' ');
+            return (prefix ?? string.Empty).Trim(' ') + " " + (message ?? string.Empty).Trim(' ');
         }
     }
 }

@@ -34,7 +34,7 @@ namespace Arbor.X.Core.GenericExtensions
                                MaxLength = Math.Max(key.Length, Math.Max(
                                    materialized.Where(dictionary => dictionary.ContainsKey(key))
                                        .Select(dictionary => dictionary[key])
-                                       .Select(value => (value ?? "").Length)
+                                       .Select(value => (value ?? string.Empty).Length)
                                        .Max(), NoValue.Length))
                            })
                     .ToArray();

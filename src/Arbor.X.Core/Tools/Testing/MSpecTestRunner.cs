@@ -47,7 +47,7 @@ namespace Arbor.X.Core.Tools.Testing
             string testReportDirectoryPath =
                 buildVariables.Require(WellKnownVariables.ExternalTools_MSpec_ReportPath).ThrowIfEmptyValue().Value;
 
-            string sourceRootOverride = buildVariables.GetVariableValueOrDefault(WellKnownVariables.SourceRootOverride, "");
+            string sourceRootOverride = buildVariables.GetVariableValueOrDefault(WellKnownVariables.SourceRootOverride, string.Empty);
 
             string sourceDirectoryPath;
 
@@ -111,7 +111,7 @@ namespace Arbor.X.Core.Tools.Testing
             new DirectoryInfo(htmlPath).EnsureExists();
 
             var excludedTags = buildVariables.GetVariableValueOrDefault(WellKnownVariables.IgnoredTestCategories,
-                defaultValue: "")
+                defaultValue: string.Empty)
                 .Split(new[]{","}, StringSplitOptions.RemoveEmptyEntries)
                 .Select(item => item.Trim())
                 .Where(item => !string.IsNullOrWhiteSpace(item))

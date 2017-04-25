@@ -30,7 +30,7 @@ namespace Arbor.X.Core.Logging
 
             _logger.Info($"Initialized NLog logger with level {nlogLogLevel.Name}");
 
-            _prefix = prefix ?? "";
+            _prefix = prefix ?? string.Empty;
         }
 
         private NLog.LogLevel GetLogLevel()
@@ -112,7 +112,7 @@ namespace Arbor.X.Core.Logging
 
         private string GetTotalMessage(string prefix, string message)
         {
-            return $"{(prefix ?? "").Trim(' ')} {(message ?? "").Trim(' ')}";
+            return $"{(prefix ?? string.Empty).Trim(' ')} {(message ?? string.Empty).Trim(' ')}";
         }
     }
 }

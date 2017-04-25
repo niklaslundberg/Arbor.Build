@@ -24,12 +24,12 @@ namespace Arbor.X.Core.BuildVariables
 
         public string WellknownName
         {
-            get { return _wellknownName ?? ""; }
+            get { return _wellknownName ?? string.Empty; }
         }
 
         public string DefaultValue
         {
-            get { return _defaultValue ?? ""; }
+            get { return _defaultValue ?? string.Empty; }
         }
 
         public string InvariantName
@@ -39,7 +39,7 @@ namespace Arbor.X.Core.BuildVariables
 
         public string Description
         {
-            get { return _description ?? ""; }
+            get { return _description ?? string.Empty; }
         }
 
         public bool Equals(VariableDescription other)
