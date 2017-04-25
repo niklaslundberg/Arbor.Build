@@ -52,7 +52,7 @@ namespace Arbor.X.Core
 
             await DirectoryCopy.CopyAsync(baseDir, tempDirectory.FullName, pathLookupSpecificationOption: DefaultPaths.DefaultPathLookupSpecification, rootDir: baseDir);
 
-            Dictionary<string, string> environmentVariables = new Dictionary<string, string>
+            var environmentVariables = new Dictionary<string, string>
             {
                 [WellKnownVariables.BranchNameVersionOverrideEnabled] = "false",
                 [WellKnownVariables.VariableOverrideEnabled] = "true",
@@ -77,7 +77,9 @@ namespace Arbor.X.Core
                 [WellKnownVariables.NugetCreateNuGetWebPackageFilter] = "Arbor.X.Tests.DummyWebApplication,ABC,",
                 [WellKnownVariables.WebJobsExcludedFileNameParts] = "Microsoft.Build,Microsoft.CodeAnalysis,Microsoft.CodeDom",
                 [WellKnownVariables.WebJobsExcludedDirectorySegments] = "roslyn",
-                [WellKnownVariables.AppDataJobsEnabled] = "true"
+                [WellKnownVariables.AppDataJobsEnabled] = "true",
+                [WellKnownVariables.ExternalTools_LibZ_ExePath] = @"C:\Tools\Libz\libz.exe",
+                [WellKnownVariables.ExternalTools_LibZ_Enabled] = @"true"
             };
 
             foreach (KeyValuePair<string, string> environmentVariable in environmentVariables)

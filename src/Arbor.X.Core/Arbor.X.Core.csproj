@@ -215,6 +215,8 @@
     <Compile Include="GenericExtensions\StringExtensions.cs" />
     <Compile Include="GenericExtensions\TaskExtensions.cs" />
     <Compile Include="ProcessUtils\ProcessHelper.cs" />
+    <Compile Include="Tools\Libz\CurrentDirectoryScope.cs" />
+    <Compile Include="Tools\Libz\LibZPacker.cs" />
     <Compile Include="Tools\MSBuild\ApplicationMetadataKeys.cs" />
     <Compile Include="Tools\MSBuild\Framework.cs" />
     <Compile Include="Tools\MSBuild\Platforms.cs" />

@@ -143,11 +143,24 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescription("PDB artifacts enabled")]
         public static readonly string PublishPdbFilesAsArtifacts = "Arbor.X.Artifacts.PdbArtifacts.Enabled";
 
-        [VariableDescription("ILMerge executable path (eg. C:\\ILRepack.exe)")]
+        [VariableDescription("ILRepack executable path (eg. C:\\ILRepack.exe)")]
         public static readonly string ExternalTools_ILRepack_ExePath = "Arbor.X.Tools.External.ILRepack.ExePath";
 
-        [VariableDescription("ILMerge custom executable path (eg. C:\\ILRepack.exe)")]
+        [VariableDescription("ILRepack enabled (eg. true|false")]
+        public static readonly string ExternalTools_ILRepack_Enabled = "Arbor.X.Tools.External.ILRepack.Enabled";
+
+
+        [VariableDescription("ILRepack custom executable path (eg. C:\\ILRepack.exe)")]
         public static readonly string ExternalTools_ILRepack_Custom_ExePath = "Arbor.X.Tools.External.ILRepack.CustomExePath";
+
+        [VariableDescription("LibZ executable path (eg. C:\\ILRepack.exe)")]
+        public static readonly string ExternalTools_LibZ_ExePath = "Arbor.X.Tools.External.LibZ.ExePath";
+
+        [VariableDescription("LibZ custom executable path (eg. C:\\ILRepack.exe)")]
+        public static readonly string ExternalTools_LibZ_Custom_ExePath = "Arbor.X.Tools.External.LibZ.CustomExePath";
+
+        [VariableDescription("LibZ enabled (eg. true|false")]
+        public static readonly string ExternalTools_LibZ_Enabled = "Arbor.X.Tools.External.LibZ.Enabled";
 
         [VariableDescription("Flag to indicate if Kudu deployment is enabled", "true")]
         public static readonly string ExternalTools_Kudu_Enabled = "Arbor.X.Tools.External.Kudu.Enabled";
