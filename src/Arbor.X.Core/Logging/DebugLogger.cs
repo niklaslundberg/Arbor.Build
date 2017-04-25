@@ -4,7 +4,7 @@ namespace Arbor.X.Core.Logging
 {
     public class DebugLogger : ILogger
     {
-        readonly ILogger _logger;
+        private readonly ILogger _logger;
 
         public DebugLogger(ILogger logger)
         {

@@ -13,12 +13,12 @@ namespace Arbor.X.Tests.Integration.DirectoryDelete
     [Tags(Arbor.X.Core.Tools.Testing.MSpecInternalConstants.RecursiveArborXTest)]
     public class when_deleting_a_directory_with_filters
     {
-        static string tempDir;
-        static string[] expectedDirectories;
-        static string[] expectedFiles;
-        static Core.IO.DirectoryDelete directoryDelete;
+        private static string tempDir;
+        private static string[] expectedDirectories;
+        private static string[] expectedFiles;
+        private static Core.IO.DirectoryDelete directoryDelete;
 
-        Cleanup after = () =>
+        private Cleanup after = () =>
         {
             if (Directory.Exists(tempDir))
             {
@@ -26,7 +26,7 @@ namespace Arbor.X.Tests.Integration.DirectoryDelete
             }
         };
 
-        Establish context = () =>
+        private Establish context = () =>
         {
             tempDir = Path.Combine(Path.GetTempPath(), $"{DefaultPaths.TempPathPrefix}_DeleteDirs{Guid.NewGuid().ToString().Substring(0,8)}");
 
@@ -63,9 +63,9 @@ namespace Arbor.X.Tests.Integration.DirectoryDelete
             directoryDelete = new Core.IO.DirectoryDelete(new[] {"A12"}, expectedFiles, new ConsoleLogger());
         };
 
-        Because of = () => directoryDelete.Delete(tempDir);
+        private Because of = () => directoryDelete.Delete(tempDir);
 
-        It should_delete_non_filtered_directories = () =>
+        private It should_delete_non_filtered_directories = () =>
         {
             string[] enumerateDirectories =
                 Directory.EnumerateDirectories(tempDir, "*.*", SearchOption.AllDirectories).ToArray();
@@ -79,15 +79,15 @@ namespace Arbor.X.Tests.Integration.DirectoryDelete
             existing.ShouldContain(expectedDirectories);
         };
 
-        It should_keep_correct_directory_count = () => Directory.EnumerateDirectories(tempDir, "*.*", SearchOption.AllDirectories)
+        private It should_keep_correct_directory_count = () => Directory.EnumerateDirectories(tempDir, "*.*", SearchOption.AllDirectories)
             .Count()
             .ShouldEqual(expectedDirectories.Length);
 
-        It should_keep_correct_files_count = () => Directory.EnumerateFiles(tempDir, "*.*", SearchOption.AllDirectories)
+        private It should_keep_correct_files_count = () => Directory.EnumerateFiles(tempDir, "*.*", SearchOption.AllDirectories)
             .Count()
             .ShouldEqual(expectedFiles.Length);
 
-        It should_delete_non_filtered_files = () =>
+        private It should_delete_non_filtered_files = () =>
         {
             string[] filesPaths = Directory.EnumerateFiles(tempDir, "*.*", SearchOption.AllDirectories).ToArray();
 

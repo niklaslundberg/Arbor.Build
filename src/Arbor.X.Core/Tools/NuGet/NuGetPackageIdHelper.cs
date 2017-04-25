@@ -27,7 +27,7 @@ namespace Arbor.X.Core.Tools.NuGet
             return CreateNugetPackageIdWithBranchName(basePackageId, branch);
         }
 
-        static string CreateNugetPackageIdWithBranchName(string basePackageId, BranchName branch)
+        private static string CreateNugetPackageIdWithBranchName(string basePackageId, BranchName branch)
         {
             var normalizedBranchName = branch.Normalize();
 

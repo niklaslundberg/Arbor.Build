@@ -8,8 +8,8 @@ namespace Arbor.X.Core.Logging
 {
     public class NLogLogger : ILogger
     {
-        readonly Logger _logger;
-        readonly string _prefix;
+        private readonly Logger _logger;
+        private readonly string _prefix;
 
         public NLogLogger(LogLevel logLevel, string prefix = "")
         {
@@ -33,7 +33,7 @@ namespace Arbor.X.Core.Logging
             _prefix = prefix ?? "";
         }
 
-        NLog.LogLevel GetLogLevel()
+        private NLog.LogLevel GetLogLevel()
         {
             var mapping = new Dictionary<LogLevel, NLog.LogLevel>()
             {
@@ -103,14 +103,14 @@ namespace Arbor.X.Core.Logging
             _logger.Debug(GetTotalMessage(GetPrefix(prefix), message));
         }
 
-        string GetPrefix(string prefix)
+        private string GetPrefix(string prefix)
         {
             string value = !string.IsNullOrWhiteSpace(prefix) ? prefix : _prefix;
 
             return value;
         }
 
-        string GetTotalMessage(string prefix, string message)
+        private string GetTotalMessage(string prefix, string message)
         {
             return $"{(prefix ?? "").Trim(' ')} {(message ?? "").Trim(' ')}";
         }

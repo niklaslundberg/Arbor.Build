@@ -50,7 +50,7 @@ namespace Arbor.X.Core.Tools.VisualStudio
             return Task.FromResult(ExitCode.Success);
         }
 
-        bool Contains81(FileInfo file)
+        private bool Contains81(FileInfo file)
         {
             var lookupPatterns = new[]
                                  {

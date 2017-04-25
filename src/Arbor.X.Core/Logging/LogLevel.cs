@@ -39,11 +39,11 @@ namespace Arbor.X.Core.Logging
         public static readonly LogLevel Information = new LogLevel("information", "Information", 8);
         public static readonly LogLevel Verbose = new LogLevel("verbose", "Verbose", 16);
         public static readonly LogLevel Debug = new LogLevel("debug", "Debug", 32);
-        readonly string _displayName;
-        readonly string _invariantName;
-        readonly int _level;
+        private readonly string _displayName;
+        private readonly string _invariantName;
+        private readonly int _level;
 
-        LogLevel(string invariantName, string displayName, int level)
+        private LogLevel(string invariantName, string displayName, int level)
         {
             _invariantName = invariantName;
             _displayName = displayName;

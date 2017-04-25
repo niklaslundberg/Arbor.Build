@@ -29,9 +29,9 @@ namespace Arbor.X.Core
 {
     public class BuildApplication
     {
-        ILogger _logger;
-        CancellationToken _cancellationToken;
-        IContainer _container;
+        private ILogger _logger;
+        private CancellationToken _cancellationToken;
+        private IContainer _container;
 
         public BuildApplication(ILogger logger)
         {
@@ -163,7 +163,7 @@ namespace Arbor.X.Core
             return exitCode;
         }
 
-        async Task<ExitCode> RunSystemToolsAsync()
+        private async Task<ExitCode> RunSystemToolsAsync()
         {
             List<IVariable> buildVariables = (await GetBuildVariablesAsync()).ToList();
 
@@ -275,7 +275,7 @@ namespace Arbor.X.Core
             return ExitCode.Success;
         }
 
-        static string BuildResults(IEnumerable<ToolResult> toolResults)
+        private static string BuildResults(IEnumerable<ToolResult> toolResults)
         {
             const string NotRun = "Not run";
             const string Succeeded = "Succeeded";
@@ -308,7 +308,7 @@ namespace Arbor.X.Core
             return displayTable;
         }
 
-        void LogTools(IReadOnlyCollection<ToolWithPriority> toolWithPriorities)
+        private void LogTools(IReadOnlyCollection<ToolWithPriority> toolWithPriorities)
         {
             var sb = new StringBuilder();
 
@@ -334,7 +334,7 @@ namespace Arbor.X.Core
             _logger.Write(sb.ToString());
         }
 
-        async Task<IReadOnlyCollection<IVariable>> GetBuildVariablesAsync()
+        private async Task<IReadOnlyCollection<IVariable>> GetBuildVariablesAsync()
         {
             var buildVariables = new List<IVariable>();
 
@@ -447,7 +447,7 @@ namespace Arbor.X.Core
             return sorted;
         }
 
-        void AddCompatibilityVariables(List<IVariable> buildVariables)
+        private void AddCompatibilityVariables(List<IVariable> buildVariables)
         {
             IVariable[] buildVariableArray = buildVariables.ToArray();
 
@@ -525,7 +525,7 @@ namespace Arbor.X.Core
             }
         }
 
-        async Task<IEnumerable<IVariable>> RunOnceAsync()
+        private async Task<IEnumerable<IVariable>> RunOnceAsync()
         {
             var variables = new Dictionary<string, string>();
 
@@ -594,14 +594,14 @@ namespace Arbor.X.Core
             return variables.Select(item => new EnvironmentVariable(item.Key, item.Value));
         }
 
-        bool IsReleaseBuild(string branchName)
+        private bool IsReleaseBuild(string branchName)
         {
             bool isProductionBranch = new BranchName(branchName).IsProductionBranch();
 
             return isProductionBranch;
         }
 
-        string GetConfiguration([NotNull] string branchName)
+        private string GetConfiguration([NotNull] string branchName)
         {
             if (branchName == null)
             {
@@ -618,7 +618,7 @@ namespace Arbor.X.Core
             return "debug";
         }
 
-        async Task<Tuple<int, string>> GetBranchNameByAskingGitExeAsync()
+        private async Task<Tuple<int, string>> GetBranchNameByAskingGitExeAsync()
         {
             _logger.Write($"Environment variable '{WellKnownVariables.BranchName}' is not defined or has empty value");
 
@@ -681,7 +681,7 @@ namespace Arbor.X.Core
             return Tuple.Create(0, branchName);
         }
 
-        async Task<string> GetGitBranchNameAsync(string currentDirectory,
+        private async Task<string> GetGitBranchNameAsync(string currentDirectory,
                                                  [NotNull] string gitExePath)
         {
             List<List<string>> argumentsLists = new List<List<string>>

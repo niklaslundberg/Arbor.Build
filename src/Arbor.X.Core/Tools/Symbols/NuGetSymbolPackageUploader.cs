@@ -80,7 +80,7 @@ namespace Arbor.X.Core.Tools.Symbols
             return Task.FromResult(ExitCode.Success);
         }
 
-        async Task<ExitCode> UploadNuGetPackagesAsync(ILogger logger, string packagesFolder, string nugetExePath,
+        private async Task<ExitCode> UploadNuGetPackagesAsync(ILogger logger, string packagesFolder, string nugetExePath,
             string symbolServerUrl,
             string apiKey, int timeout)
         {
@@ -124,7 +124,7 @@ namespace Arbor.X.Core.Tools.Symbols
             return result ? ExitCode.Success : ExitCode.Failure;
         }
 
-        static async Task<ExitCode> UploadNugetPackageAsync(string nugetExePath, string symbolServerUrl, string apiKey, string nugetPackage, ILogger logger, int timeout)
+        private static async Task<ExitCode> UploadNugetPackageAsync(string nugetExePath, string symbolServerUrl, string apiKey, string nugetPackage, ILogger logger, int timeout)
         {
             var args = new List<string>
                        {

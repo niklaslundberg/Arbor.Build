@@ -4,12 +4,12 @@ namespace Arbor.X.Core.BuildVariables
 {
     public sealed class VariableDescription : IEquatable<VariableDescription>
     {
-        readonly string _defaultValue;
-        readonly string _description;
-        readonly string _invariantName;
-        readonly string _wellknownName;
+        private readonly string _defaultValue;
+        private readonly string _description;
+        private readonly string _invariantName;
+        private readonly string _wellknownName;
 
-        VariableDescription(string invariantName, string description, string wellknownName, string defaultValue)
+        private VariableDescription(string invariantName, string description, string wellknownName, string defaultValue)
         {
             if (string.IsNullOrWhiteSpace(invariantName))
             {

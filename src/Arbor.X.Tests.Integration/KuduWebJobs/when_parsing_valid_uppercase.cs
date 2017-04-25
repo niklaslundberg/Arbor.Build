@@ -6,10 +6,10 @@ namespace Arbor.X.Tests.Integration.KuduWebJobs
     [Subject(typeof (KuduWebJobType))]
     public class when_parsing_valid_uppercase
     {
-        static KuduWebJobType parsed;
+        private static KuduWebJobType parsed;
 
-        Because of = () => { parsed = KuduWebJobType.Parse("CONTINUOUS"); };
+        private Because of = () => { parsed = KuduWebJobType.Parse("CONTINUOUS"); };
 
-        It should_return_a_valid_type = () => parsed.ShouldEqual(KuduWebJobType.Continuous);
+        private It should_return_a_valid_type = () => parsed.ShouldEqual(KuduWebJobType.Continuous);
     }
 }

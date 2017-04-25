@@ -19,7 +19,7 @@ namespace Arbor.X.Core.Tools.Testing
     [UsedImplicitly]
     public class VsTestRunner : ITool
     {
-        string _sourceRoot;
+        private string _sourceRoot;
 
         public async Task<ExitCode> ExecuteAsync(
             ILogger logger,
@@ -74,7 +74,7 @@ namespace Arbor.X.Core.Tools.Testing
             return await RunVsTestAsync(logger, reportPath, vsTestExePath, runTestsInReleaseConfiguration);
         }
 
-        async Task<ExitCode> RunVsTestAsync(ILogger logger, string vsTestReportDirectoryPath, string vsTestExePath, bool runTestsInReleaseConfiguration)
+        private async Task<ExitCode> RunVsTestAsync(ILogger logger, string vsTestReportDirectoryPath, string vsTestExePath, bool runTestsInReleaseConfiguration)
         {
             Type testClassAttribute = typeof(TestClassAttribute);
             Type testMethodAttribute = typeof(TestMethodAttribute);
@@ -124,22 +124,22 @@ namespace Arbor.X.Core.Tools.Testing
             }
         }
 
-        void RestoreCurrentDirectory(string currentDirectory)
+        private void RestoreCurrentDirectory(string currentDirectory)
         {
             Directory.SetCurrentDirectory(currentDirectory);
         }
 
-        string SaveCurrentDirectory()
+        private string SaveCurrentDirectory()
         {
             return Directory.GetCurrentDirectory();
         }
 
-        void SetCurrentDirectory(string vsTestReportDirectoryPath)
+        private void SetCurrentDirectory(string vsTestReportDirectoryPath)
         {
             Directory.SetCurrentDirectory(vsTestReportDirectoryPath);
         }
 
-        void EnsureTestReportDirectoryExists(string vsTestReportDirectoryPath)
+        private void EnsureTestReportDirectoryExists(string vsTestReportDirectoryPath)
         {
             if (!Directory.Exists(vsTestReportDirectoryPath))
             {
@@ -147,13 +147,13 @@ namespace Arbor.X.Core.Tools.Testing
             }
         }
 
-        static void LogExecution(ILogger logger, IEnumerable<string> arguments, string exePath)
+        private static void LogExecution(ILogger logger, IEnumerable<string> arguments, string exePath)
         {
             var args = string.Join(" ", arguments.Select(item => $"\"{item}\""));
             logger.Write($"Running VSTest {exePath} {args}");
         }
 
-        static IEnumerable<string> GetVsTestConsoleOptions()
+        private static IEnumerable<string> GetVsTestConsoleOptions()
         {
             var options = new List<string> { "/Logger:trx" };
             return options;

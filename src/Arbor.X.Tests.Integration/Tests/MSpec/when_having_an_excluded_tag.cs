@@ -6,17 +6,17 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
     [Subject(typeof (object))]
     public class when_having_an_excluded_tag
     {
-        Establish context = () =>
+        private Establish context = () =>
         {
 
         };
 
-        Because of = () =>
+        private Because of = () =>
         {
 
         };
 
-        It should_not_be_run = () =>
+        private It should_not_be_run = () =>
         {
             
         };

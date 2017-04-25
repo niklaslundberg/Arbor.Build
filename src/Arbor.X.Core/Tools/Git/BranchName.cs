@@ -6,7 +6,7 @@ namespace Arbor.X.Core.Tools.Git
 {
     public sealed class BranchName
     {
-        readonly string _name;
+        private readonly string _name;
 
         public static Maybe<BranchName> TryParse(string branchName)
         {

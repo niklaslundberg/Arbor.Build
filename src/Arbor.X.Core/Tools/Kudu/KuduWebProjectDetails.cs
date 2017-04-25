@@ -4,12 +4,12 @@ namespace Arbor.X.Core.Tools.Kudu
 {
     public class KuduWebProjectDetails
     {
-        readonly bool _isKuduWebJobProject;
-        readonly KuduWebJobType _kuduWebJobType;
-        readonly string _projectFilePath;
-        readonly string _webJobName;
+        private readonly bool _isKuduWebJobProject;
+        private readonly KuduWebJobType _kuduWebJobType;
+        private readonly string _projectFilePath;
+        private readonly string _webJobName;
 
-        KuduWebProjectDetails(bool isKuduWebJobProject, string webJobName = null, KuduWebJobType kuduWebJobType = null,
+        private KuduWebProjectDetails(bool isKuduWebJobProject, string webJobName = null, KuduWebJobType kuduWebJobType = null,
             string projectFilePath = null)
         {
             _isKuduWebJobProject = isKuduWebJobProject;
@@ -60,7 +60,7 @@ namespace Arbor.X.Core.Tools.Kudu
             return webJobProject;
         }
 
-        static string ParseName(string name)
+        private static string ParseName(string name)
         {
             return name.ExtractFromTag("KuduWebJobName");
         }

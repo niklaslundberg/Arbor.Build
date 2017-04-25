@@ -19,17 +19,17 @@ namespace Arbor.X.Core.Tools.Kudu
     [UsedImplicitly]
     public class KuduDeploy : ITool
     {
-        string _artifacts;
-        BranchName _deployBranch;
-        string _deploymentTargetDirectory;
-        bool _kuduEnabled;
-        string _kuduConfigurationFallback;
-        bool _clearTarget;
-        bool _useAppOfflineFile;
-        bool _excludeAppData;
-        bool _deleteExistingAppOfflineHtm;
-        string _ignoreDeleteFiles;
-        string _ignoreDeleteDirectories;
+        private string _artifacts;
+        private BranchName _deployBranch;
+        private string _deploymentTargetDirectory;
+        private bool _kuduEnabled;
+        private string _kuduConfigurationFallback;
+        private bool _clearTarget;
+        private bool _useAppOfflineFile;
+        private bool _excludeAppData;
+        private bool _deleteExistingAppOfflineHtm;
+        private string _ignoreDeleteFiles;
+        private string _ignoreDeleteDirectories;
         private string _vcsRoot;
 
         public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
@@ -270,7 +270,7 @@ namespace Arbor.X.Core.Tools.Kudu
             return ExitCode.Success;
         }
 
-        IEnumerable<string> GetExcludes(string ignores)
+        private IEnumerable<string> GetExcludes(string ignores)
         {
             if (string.IsNullOrWhiteSpace(ignores))
             {
@@ -285,7 +285,7 @@ namespace Arbor.X.Core.Tools.Kudu
             }
         }
 
-        DirectoryInfo GetConfigurationDirectory(DirectoryInfo platformDirectory, ILogger logger)
+        private DirectoryInfo GetConfigurationDirectory(DirectoryInfo platformDirectory, ILogger logger)
         {
             DirectoryInfo[] directoryInfos = platformDirectory.GetDirectories();
 
@@ -363,7 +363,7 @@ namespace Arbor.X.Core.Tools.Kudu
             return null;
         }
 
-        DirectoryInfo GetPlatform(DirectoryInfo websiteToDeploy)
+        private DirectoryInfo GetPlatform(DirectoryInfo websiteToDeploy)
         {
             return websiteToDeploy.GetDirectories().Single();
         }

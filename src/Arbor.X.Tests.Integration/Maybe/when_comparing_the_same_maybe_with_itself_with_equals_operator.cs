@@ -7,15 +7,15 @@ namespace Arbor.X.Tests.Integration.Maybe
     [Subject(typeof(Defensive.Maybe<string>))]
     public class when_comparing_the_same_maybe_with_itself_with_equals_operator
     {
-        Establish context = () => instance = new Defensive.Maybe<string>("a string");
+        private Establish context = () => instance = new Defensive.Maybe<string>("a string");
 
         // ReSharper disable once EqualExpressionComparison
-        Because of = () => equal = instance == instance;
+        private Because of = () => equal = instance == instance;
 
-        It should_return_true = () => equal.ShouldBeTrue();
+        private It should_return_true = () => equal.ShouldBeTrue();
 
-        static bool equal;
-        static Defensive.Maybe<string> instance;
+        private static bool equal;
+        private static Defensive.Maybe<string> instance;
     }
 #pragma warning restore 1718
 }

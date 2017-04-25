@@ -6,10 +6,10 @@ namespace Arbor.X.Tests.Integration.KuduWebJobs
     [Subject(typeof (KuduWebJobType))]
     public class when_parsing_triggered
     {
-        static KuduWebJobType parsed;
+        private static KuduWebJobType parsed;
 
-        Because of = () => { parsed = KuduWebJobType.Parse("triggered"); };
+        private Because of = () => { parsed = KuduWebJobType.Parse("triggered"); };
 
-        It should_return_a_valid_type = () => parsed.ShouldEqual(KuduWebJobType.Triggered);
+        private It should_return_a_valid_type = () => parsed.ShouldEqual(KuduWebJobType.Triggered);
     }
 }

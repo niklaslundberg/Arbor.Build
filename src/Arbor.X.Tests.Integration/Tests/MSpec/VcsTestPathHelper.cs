@@ -6,7 +6,7 @@ using Arbor.Aesculus.Core;
 
 namespace Arbor.X.Tests.Integration.Tests.MSpec
 {
-    class VcsTestPathHelper
+    internal class VcsTestPathHelper
     {
         public static string FindVcsRootPath()
         {

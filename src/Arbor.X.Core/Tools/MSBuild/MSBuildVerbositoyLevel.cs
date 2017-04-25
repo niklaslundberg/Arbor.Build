@@ -6,9 +6,9 @@ namespace Arbor.X.Core.Tools.MSBuild
 {
     public sealed class MSBuildVerbositoyLevel
     {
-        readonly string _level;
+        private readonly string _level;
 
-        MSBuildVerbositoyLevel(string level)
+        private MSBuildVerbositoyLevel(string level)
         {
             _level = level;
         }

@@ -17,7 +17,7 @@ namespace Arbor.X.Core.Tools.Kudu
     [UsedImplicitly]
     public class KuduWebJob : ITool
     {
-        ILogger _logger;
+        private ILogger _logger;
 
         public Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
@@ -63,7 +63,7 @@ namespace Arbor.X.Core.Tools.Kudu
             return Task.FromResult(ExitCode.Success);
         }
 
-        KuduWebProjectDetails IsKuduWebJobProject(FileInfo file)
+        private KuduWebProjectDetails IsKuduWebJobProject(FileInfo file)
         {
             KuduWebProjectDetails kuduWebJobProject = null;
 

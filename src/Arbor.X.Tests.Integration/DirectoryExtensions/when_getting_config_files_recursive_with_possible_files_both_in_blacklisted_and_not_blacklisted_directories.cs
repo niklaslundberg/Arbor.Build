@@ -13,12 +13,12 @@ namespace Arbor.X.Tests.Integration.DirectoryExtensions
     public class
         when_getting_config_files_recursive_with_possible_files_both_in_blacklisted_and_not_blacklisted_directories
     {
-        static DirectoryInfo baseDir;
-        static IReadOnlyCollection<string> files;
+        private static DirectoryInfo baseDir;
+        private static IReadOnlyCollection<string> files;
 
-        Cleanup after = () => { baseDir.DeleteIfExists(recursive: true); };
+        private Cleanup after = () => { baseDir.DeleteIfExists(recursive: true); };
 
-        Establish context = () =>
+        private Establish context = () =>
         {
             baseDir =
                 new DirectoryInfo(Path.Combine(Path.GetTempPath(),
@@ -66,18 +66,18 @@ namespace Arbor.X.Tests.Integration.DirectoryExtensions
             }
         };
 
-        Because of = () =>
+        private Because of = () =>
         {
             files = baseDir.GetFilesRecursive(new List<string> {".config"},
                 DefaultPaths.DefaultPathLookupSpecification, baseDir.FullName).Select(s => s.Name).ToList();
         };
 
-        It should_contain_not_blacklisted_files =
+        private It should_contain_not_blacklisted_files =
             () => { files.ShouldContain("atest.config", "atest.debug.config", "etest.debug.config", "etest.config"); };
 
-        It should_containt_correct_file_count = () => { files.Count.ShouldEqual(4); };
+        private It should_containt_correct_file_count = () => { files.Count.ShouldEqual(4); };
 
-        It should_not_contain_blacklisted_files =
+        private It should_not_contain_blacklisted_files =
             () => { files.ShouldNotContain("bower.config", "bower.debug.config", "node.debug.config", "node.config"); };
     }
 }

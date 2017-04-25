@@ -14,10 +14,10 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
     [Tags(Arbor.X.Core.Tools.Testing.MSpecInternalConstants.RecursiveArborXTest)]
     public class when_finding_mspec_assemblies_with_it
     {
-        static UnitTestFinder finder;
-        static IReadOnlyCollection<string> dlls;
+        private static UnitTestFinder finder;
+        private static IReadOnlyCollection<string> dlls;
 
-        Establish context = () =>
+        private Establish context = () =>
         {
             var logger = new ConsoleLogger {LogLevel = LogLevel.Verbose};
             finder = new UnitTestFinder(new List<Type>
@@ -36,9 +36,9 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
             exitCode = DirectoryCopy.CopyAsync(combine, tempDirectory.FullName).Result;
         };
 
-        Because of = () => { dlls = finder.GetUnitTestFixtureDlls(tempDirectory); };
+        private Because of = () => { dlls = finder.GetUnitTestFixtureDlls(tempDirectory); };
 
-        It should_Behaviour = () =>
+        private It should_Behaviour = () =>
         {
             foreach (string dll in dlls)
             {
@@ -46,7 +46,7 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
             }
         };
 
-        static DirectoryInfo tempDirectory;
-        static ExitCode exitCode;
+        private static DirectoryInfo tempDirectory;
+        private static ExitCode exitCode;
     }
 }

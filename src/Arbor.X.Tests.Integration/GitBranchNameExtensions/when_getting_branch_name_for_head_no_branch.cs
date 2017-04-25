@@ -11,11 +11,11 @@ namespace Arbor.X.Tests.Integration.GitBranchNameExtensions
 
         private static string name;
 
-        Establish context = () => { name = "## HEAD (no branch)"; };
+        private Establish context = () => { name = "## HEAD (no branch)"; };
 
-        Because of = () => { result = name.GetBranchName(); };
+        private Because of = () => { result = name.GetBranchName(); };
 
-        It should_not_return_a_branch_name = () => result.HasValue.ShouldBeFalse();
+        private It should_not_return_a_branch_name = () => result.HasValue.ShouldBeFalse();
     }
 
     [Subject(typeof(Core.GitBranchNameExtensions))]
@@ -25,10 +25,10 @@ namespace Arbor.X.Tests.Integration.GitBranchNameExtensions
 
         private static string name;
 
-        Establish context = () => { name = "HEAD"; };
+        private Establish context = () => { name = "HEAD"; };
 
-        Because of = () => { result = name.GetBranchName(); };
+        private Because of = () => { result = name.GetBranchName(); };
 
-        It should_not_return_a_branch_name = () => result.HasValue.ShouldBeFalse();
+        private It should_not_return_a_branch_name = () => result.HasValue.ShouldBeFalse();
     }
 }

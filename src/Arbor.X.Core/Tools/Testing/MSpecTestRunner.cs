@@ -200,7 +200,7 @@ namespace Arbor.X.Core.Tools.Testing
             return exitCode;
         }
 
-        static void TransformReport(FileInfo xmlReport, string junitSuffix, Encoding encoding, XslCompiledTransform myXslTransform, ILogger logger)
+        private static void TransformReport(FileInfo xmlReport, string junitSuffix, Encoding encoding, XslCompiledTransform myXslTransform, ILogger logger)
         {
             // ReSharper disable once PossibleNullReferenceException
             string resultFile = Path.Combine(xmlReport.Directory.FullName,

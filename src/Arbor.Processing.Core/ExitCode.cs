@@ -2,7 +2,7 @@
 {
     public sealed class ExitCode
     {
-        readonly int _result;
+        private readonly int _result;
 
         public ExitCode(int result)
         {

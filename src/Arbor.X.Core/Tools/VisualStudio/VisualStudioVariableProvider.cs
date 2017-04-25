@@ -69,7 +69,7 @@ namespace Arbor.X.Core.Tools.VisualStudio
             return Task.FromResult<IEnumerable<IVariable>>(environmentVariables);
         }
 
-        string GetVisualStudioVersion(ILogger logger, string registryKeyName)
+        private string GetVisualStudioVersion(ILogger logger, string registryKeyName)
         {
             string visualStudioVersion = null;
 
@@ -147,7 +147,8 @@ namespace Arbor.X.Core.Tools.VisualStudio
             }
             return visualStudioVersion;
         }
-        static string GetVSTestExePath(ILogger logger, string registryKeyName, string visualStudioVersion)
+
+        private static string GetVSTestExePath(ILogger logger, string registryKeyName, string visualStudioVersion)
         {
             string path = null;
 

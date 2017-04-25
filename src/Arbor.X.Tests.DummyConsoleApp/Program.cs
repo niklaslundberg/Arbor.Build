@@ -2,9 +2,9 @@
 
 namespace Arbor.X.Tests.DummyConsoleApp
 {
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             Console.WriteLine("Hello world " + string.Join(", ", args ?? new string [] {}));
         }

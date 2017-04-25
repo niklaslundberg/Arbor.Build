@@ -14,7 +14,7 @@ namespace Arbor.X.Core.Tools.NuGet
 {
     public class NuGetHelper
     {
-        readonly ILogger _logger;
+        private readonly ILogger _logger;
 
         public NuGetHelper(ILogger logger)
         {
@@ -95,7 +95,7 @@ namespace Arbor.X.Core.Tools.NuGet
             return targetFile;
         }
 
-        async Task DownloadNuGetExeAsync(string baseDir, string targetFile, string nugetExeUri, CancellationToken cancellationToken)
+        private async Task DownloadNuGetExeAsync(string baseDir, string targetFile, string nugetExeUri, CancellationToken cancellationToken)
         {
             var tempFile = Path.Combine(baseDir, $"nuget.exe.{Guid.NewGuid()}.tmp");
 

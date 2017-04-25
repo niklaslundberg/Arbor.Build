@@ -4,8 +4,8 @@ namespace Arbor.X.Core.BuildVariables
 {
     public class DynamicVariable : IVariable
     {
-        readonly Func<string> _getValue;
-        readonly string _key;
+        private readonly Func<string> _getValue;
+        private readonly string _key;
 
         public DynamicVariable(string key, Func<string> getValue)
         {

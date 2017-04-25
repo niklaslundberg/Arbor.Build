@@ -14,7 +14,7 @@ namespace Arbor.Processing
 {
     public static class ProcessRunner
     {
-        const string ToolName = "[" + nameof(ProcessRunner) + "] ";
+        private const string ToolName = "[" + nameof(ProcessRunner) + "] ";
 
         public static async Task<ExitCode> ExecuteAsync(string executePath,
             CancellationToken cancellationToken = default(CancellationToken),
@@ -53,7 +53,7 @@ namespace Arbor.Processing
             return exitCode;
         }
 
-        static async Task<ExitCode> RunProcessAsync(string executePath, string formattedArguments,
+        private static async Task<ExitCode> RunProcessAsync(string executePath, string formattedArguments,
             Action<string, string> standardErrorAction, Action<string, string> standardOutputLog,
             CancellationToken cancellationToken, Action<string, string> toolAction,
             Action<string, string> verboseAction = null,

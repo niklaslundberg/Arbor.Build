@@ -7,7 +7,7 @@ namespace Arbor.X.Core.Tools.NuGet
 {
     public class NuSpec
     {
-        readonly string _xml;
+        private readonly string _xml;
 
         public NuSpec(string packageId, string nuGetPackageVersion, string filePath)
         {

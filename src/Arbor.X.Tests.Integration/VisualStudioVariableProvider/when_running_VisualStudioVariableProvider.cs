@@ -18,9 +18,9 @@ namespace Arbor.X.Tests.Integration.VisualStudioVariableProvider
 
         private static List<IVariable> enumerable;
 
-        Establish context = () => { provider = new Core.Tools.VisualStudio.VisualStudioVariableProvider(); };
+        private Establish context = () => { provider = new Core.Tools.VisualStudio.VisualStudioVariableProvider(); };
 
-        Because of = () =>
+        private Because of = () =>
             {
                 enumerable = provider.GetEnvironmentVariablesAsync(
                     new ConsoleLogger(),
@@ -29,6 +29,6 @@ namespace Arbor.X.Tests.Integration.VisualStudioVariableProvider
                     CancellationToken.None).Result.ToList();
             };
 
-        It should_return_a_list_of_visual_studio_versions = () => enumerable.ShouldNotBeNull();
+        private It should_return_a_list_of_visual_studio_versions = () => enumerable.ShouldNotBeNull();
     }
 }

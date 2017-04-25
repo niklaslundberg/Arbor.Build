@@ -22,7 +22,7 @@ namespace Arbor.X.Core.Tools.Versioning
     [Priority(200)]
     public class AssemblyInfoPatcher : ITool
     {
-        string _filePattern;
+        private string _filePattern;
 
         public Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)

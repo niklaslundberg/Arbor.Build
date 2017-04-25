@@ -7,7 +7,7 @@ namespace Arbor.X.Core.Exceptions
 {
     public class BuildException : Exception
     {
-        readonly IReadOnlyCollection<IVariable> _buildVariables;
+        private readonly IReadOnlyCollection<IVariable> _buildVariables;
 
         public BuildException(string message, IReadOnlyCollection<IVariable> buildVariables)
             : base(message)

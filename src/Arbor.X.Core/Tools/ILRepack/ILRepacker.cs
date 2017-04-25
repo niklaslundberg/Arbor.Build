@@ -26,9 +26,9 @@ namespace Arbor.X.Core.Tools.ILRepack
     // ReSharper disable once InconsistentNaming
     public class ILRepacker : ITool
     {
-        string _artifactsPath;
-        string _ilRepackExePath;
-        ILogger _logger;
+        private string _artifactsPath;
+        private string _ilRepackExePath;
+        private ILogger _logger;
 
         public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {
@@ -132,7 +132,7 @@ namespace Arbor.X.Core.Tools.ILRepack
             return ExitCode.Success;
         }
 
-        IEnumerable<ILRepackData> GetIlMergeFiles(FileInfo projectFile)
+        private IEnumerable<ILRepackData> GetIlMergeFiles(FileInfo projectFile)
         {
 // ReSharper disable PossibleNullReferenceException
             var binDirectory = projectFile.Directory.GetDirectories("bin").SingleOrDefault();
@@ -209,7 +209,7 @@ namespace Arbor.X.Core.Tools.ILRepack
             return file.Name.IndexOf(".vshost.", StringComparison.InvariantCultureIgnoreCase) < 0;
         }
 
-        string GetPlatform(FileInfo exe)
+        private string GetPlatform(FileInfo exe)
         {
             Assembly assembly = Assembly.LoadFile(Path.GetFullPath(exe.FullName));
             Module manifestModule = assembly.ManifestModule;
@@ -231,7 +231,7 @@ namespace Arbor.X.Core.Tools.ILRepack
             throw new InvalidOperationException($"Could not find out the platform for the file '{exe.FullName}'");
         }
 
-        bool IsILMergeEnabledInProjectFile(FileInfo file)
+        private bool IsILMergeEnabledInProjectFile(FileInfo file)
         {
             using (var fs = file.OpenRead())
             {

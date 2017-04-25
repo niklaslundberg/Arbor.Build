@@ -33,7 +33,7 @@ namespace Arbor.X.Core.Tools.Versioning
             return Task.FromResult<IEnumerable<IVariable>>(environmentVariables);
         }
 
-        IEnumerable<KeyValuePair<string, string>> GetVersionVariables(
+        private IEnumerable<KeyValuePair<string, string>> GetVersionVariables(
             IReadOnlyCollection<IVariable> buildVariables, ILogger logger)
         {
 

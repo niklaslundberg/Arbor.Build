@@ -19,9 +19,9 @@ namespace Arbor.X.Core.Tools.NuGet
     [UsedImplicitly]
     public class NuGetPacker : ITool
     {
-        IReadOnlyCollection<string> _excludedNuSpecFiles;
+        private IReadOnlyCollection<string> _excludedNuSpecFiles;
 
-        PathLookupSpecification _pathLookupSpecification;
+        private PathLookupSpecification _pathLookupSpecification;
 
         public async Task<ExitCode> ExecuteAsync(
             ILogger logger,
@@ -74,7 +74,7 @@ namespace Arbor.X.Core.Tools.NuGet
         }
 
 
-        IReadOnlyCollection<string> GetPackageSpecifications(ILogger logger, string vcsRootDir, string packageDirectory)
+        private IReadOnlyCollection<string> GetPackageSpecifications(ILogger logger, string vcsRootDir, string packageDirectory)
         {
             DirectoryInfo vcsRootDirectory = new DirectoryInfo(vcsRootDir);
 
@@ -106,13 +106,13 @@ namespace Arbor.X.Core.Tools.NuGet
             return allIncluded;
         }
 
-        static string PackageDirectory()
+        private static string PackageDirectory()
         {
             var packageDirectory = string.Format("{0}packages{0}", Path.DirectorySeparatorChar);
             return packageDirectory;
         }
 
-        async Task<ExitCode> ProcessPackagesAsync(
+        private async Task<ExitCode> ProcessPackagesAsync(
             IEnumerable<string> packageSpecifications,
             NuGetPackageConfiguration packageConfiguration,
             ILogger logger,

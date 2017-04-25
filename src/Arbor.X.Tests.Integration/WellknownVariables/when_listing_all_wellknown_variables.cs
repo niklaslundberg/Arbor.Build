@@ -8,11 +8,11 @@ namespace Arbor.X.Tests.Integration.WellknownVariables
     [Tags(Arbor.X.Core.Tools.Testing.MSpecInternalConstants.RecursiveArborXTest)]
     public class when_listing_all_wellknown_variables
     {
-        static IReadOnlyCollection<VariableDescription> readOnlyCollection;
+        private static IReadOnlyCollection<VariableDescription> readOnlyCollection;
 
-        Because of = () => { readOnlyCollection = WellKnownVariables.AllVariables; };
+        private Because of = () => { readOnlyCollection = WellKnownVariables.AllVariables; };
 
-        It should_print_all_variables = () =>
+        private It should_print_all_variables = () =>
         {
             foreach (VariableDescription variableDescription in readOnlyCollection)
             {

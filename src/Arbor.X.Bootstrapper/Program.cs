@@ -9,7 +9,7 @@ namespace Arbor.X.Bootstrapper
 {
     internal class Program
     {
-        static int Main(string[] args)
+        private static int Main(string[] args)
         {
             LogLevel logLevel = LogLevel.TryParse(Environment.GetEnvironmentVariable(WellKnownVariables.LogLevel));
 

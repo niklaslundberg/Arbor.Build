@@ -118,12 +118,12 @@ namespace Arbor.X.Core.IO
             return sourceDirSegments;
         }
 
-        static bool HasAnyPathSegment(IEnumerable<string> segments, IEnumerable<string> patterns, ILogger logger = null)
+        private static bool HasAnyPathSegment(IEnumerable<string> segments, IEnumerable<string> patterns, ILogger logger = null)
         {
             return segments.Any(segment => HasAnyPathSegment(segment, patterns, logger));
         }
 
-        static bool HasAnyPathSegment(string segment, IEnumerable<string> patterns, ILogger logger = null)
+        private static bool HasAnyPathSegment(string segment, IEnumerable<string> patterns, ILogger logger = null)
         {
             return patterns.Any(pattern =>
                 {
@@ -138,22 +138,22 @@ namespace Arbor.X.Core.IO
                 });
         }
 
-        static bool HasAnyPathSegmentStartsWith(IEnumerable<string> segments, IEnumerable<string> patterns)
+        private static bool HasAnyPathSegmentStartsWith(IEnumerable<string> segments, IEnumerable<string> patterns)
         {
             return segments.Any(segment => HasAnyPathSegmentStartsWith(segment, patterns));
         }
 
-        static bool HasAnyPathSegmentStartsWith(string segment, IEnumerable<string> patterns)
+        private static bool HasAnyPathSegmentStartsWith(string segment, IEnumerable<string> patterns)
         {
             return patterns.Any(pattern => segment.StartsWith(pattern, StringComparison.InvariantCultureIgnoreCase));
         }
 
-        static bool HasAnyPathSegmentPart(IEnumerable<string> segments, IEnumerable<string> patterns)
+        private static bool HasAnyPathSegmentPart(IEnumerable<string> segments, IEnumerable<string> patterns)
         {
             return segments.Any(segment => HasAnyPathSegmentPart(segment, patterns));
         }
 
-        static bool HasAnyPathSegmentPart(string segment, IEnumerable<string> patterns)
+        private static bool HasAnyPathSegmentPart(string segment, IEnumerable<string> patterns)
         {
             return patterns.Any(pattern => segment.IndexOf(pattern, StringComparison.InvariantCultureIgnoreCase) >= 0);
         }

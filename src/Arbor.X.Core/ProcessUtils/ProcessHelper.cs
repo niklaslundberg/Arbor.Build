@@ -16,7 +16,7 @@ namespace Arbor.X.Core.ProcessUtils
 {
     public static class ProcessHelper
     {
-        const string ToolName = "[" + nameof(ProcessHelper) + "] ";
+        private const string ToolName = "[" + nameof(ProcessHelper) + "] ";
 
         public static Task<ExitCode> ExecuteAsync(
             string executePath,

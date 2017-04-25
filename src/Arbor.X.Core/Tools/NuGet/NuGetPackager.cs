@@ -17,14 +17,14 @@ namespace Arbor.X.Core.Tools.NuGet
 {
     public class NuGetPackager
     {
-        readonly ILogger _logger;
+        private readonly ILogger _logger;
 
         public NuGetPackager(ILogger logger)
         {
             _logger = logger;
         }
 
-        static string GetProperties(string configuration)
+        private static string GetProperties(string configuration)
         {
             var propertyValues = new List<KeyValuePair<string, string>>
                                      {
@@ -37,7 +37,7 @@ namespace Arbor.X.Core.Tools.NuGet
             return properties;
         }
 
-        static bool IsReleaseBuild(string releaseBuild, BranchName branchName)
+        private static bool IsReleaseBuild(string releaseBuild, BranchName branchName)
         {
             bool isReleaseBuild = releaseBuild.TryParseBool(defaultValue: false);
 
@@ -118,7 +118,7 @@ namespace Arbor.X.Core.Tools.NuGet
             return result;
         }
 
-        static async Task<ExitCode> ExecuteNuGetPackAsync(string nuGetExePath, string packagesDirectoryPath, ILogger logger, string nuSpecFileCopyPath, string properties, NuSpec nuSpecCopy, List<string> removedTags, bool keepBinaryAndSourcePackagesTogetherEnabled = false, bool nugetSymbolPackageEnabled = false, bool ignoreWarnings = false, CancellationToken cancellationToken = default (CancellationToken))
+        private static async Task<ExitCode> ExecuteNuGetPackAsync(string nuGetExePath, string packagesDirectoryPath, ILogger logger, string nuSpecFileCopyPath, string properties, NuSpec nuSpecCopy, List<string> removedTags, bool keepBinaryAndSourcePackagesTogetherEnabled = false, bool nugetSymbolPackageEnabled = false, bool ignoreWarnings = false, CancellationToken cancellationToken = default (CancellationToken))
         {
             bool hasRemovedNoSourceTag =
                 removedTags.Any(

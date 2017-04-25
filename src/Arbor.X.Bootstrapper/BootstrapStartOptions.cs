@@ -1,3 +1,6 @@
+using System;
+using JetBrains.Annotations;
+
 namespace Arbor.X.Bootstrapper
 {
     public class BootstrapStartOptions
@@ -15,8 +18,13 @@ namespace Arbor.X.Bootstrapper
 
         public string BranchName { get; }
 
-        public static BootstrapStartOptions Parse(string[] args)
+        public static BootstrapStartOptions Parse([NotNull] string[] args)
         {
+            if (args == null)
+            {
+                throw new ArgumentNullException(nameof(args));
+            }
+
             return new BootstrapStartOptions();
         }
     }

@@ -14,7 +14,7 @@ namespace Arbor.X.Core.Tools.NuGet
     [UsedImplicitly]
     public class NugetVariableProvider : IVariableProvider
     {
-        CancellationToken _cancellationToken;
+        private CancellationToken _cancellationToken;
 
         public async Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {
@@ -34,7 +34,7 @@ namespace Arbor.X.Core.Tools.NuGet
             return variables;
         }
 
-        async Task<string> EnsureNuGetExeExistsAsync(ILogger logger, string userSpecifiedNuGetExePath, string nugetExeUri = null)
+        private async Task<string> EnsureNuGetExeExistsAsync(ILogger logger, string userSpecifiedNuGetExePath, string nugetExeUri = null)
         {
             if (!string.IsNullOrWhiteSpace(userSpecifiedNuGetExePath))
             {

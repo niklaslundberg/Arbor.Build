@@ -129,7 +129,7 @@ namespace Arbor.X.Core.Tools.Libz
             return ExitCode.Success;
         }
 
-        IEnumerable<ILRepackData> GetMergeFiles(FileInfo projectFile)
+        private IEnumerable<ILRepackData> GetMergeFiles(FileInfo projectFile)
         {
 // ReSharper disable PossibleNullReferenceException
             DirectoryInfo binDirectory = projectFile.Directory.GetDirectories("bin").SingleOrDefault();
@@ -206,7 +206,7 @@ namespace Arbor.X.Core.Tools.Libz
             return file.Name.IndexOf(".vshost.", StringComparison.InvariantCultureIgnoreCase) < 0;
         }
 
-        string GetPlatform(FileInfo exe)
+        private string GetPlatform(FileInfo exe)
         {
             Assembly assembly = Assembly.LoadFile(Path.GetFullPath(exe.FullName));
             Module manifestModule = assembly.ManifestModule;

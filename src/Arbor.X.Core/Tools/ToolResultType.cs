@@ -2,9 +2,9 @@ namespace Arbor.X.Core.Tools
 {
     public class ToolResultType
     {
-        readonly bool? _succeeded;
+        private readonly bool? _succeeded;
 
-        ToolResultType(string type, bool? succeeded)
+        private ToolResultType(string type, bool? succeeded)
         {
             Type = type;
             _succeeded = succeeded;

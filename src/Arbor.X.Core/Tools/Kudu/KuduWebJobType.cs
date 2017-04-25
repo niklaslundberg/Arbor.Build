@@ -6,9 +6,9 @@ namespace Arbor.X.Core.Tools.Kudu
 {
     public class KuduWebJobType : IEquatable<KuduWebJobType>
     {
-        readonly string _invariantName;
+        private readonly string _invariantName;
 
-        KuduWebJobType(string invariantName)
+        private KuduWebJobType(string invariantName)
         {
             _invariantName = invariantName;
         }

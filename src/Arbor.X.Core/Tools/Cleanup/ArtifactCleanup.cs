@@ -67,7 +67,7 @@ namespace Arbor.X.Core.Tools.Cleanup
             return ExitCode.Success;
         }
 
-        static bool TryCleanup(ILogger logger, DirectoryInfo artifactsDirectory, bool throwExceptionOnFailure = false)
+        private static bool TryCleanup(ILogger logger, DirectoryInfo artifactsDirectory, bool throwExceptionOnFailure = false)
         {
             try
             {
@@ -88,7 +88,7 @@ namespace Arbor.X.Core.Tools.Cleanup
             return true;
         }
 
-        static void DoCleanup(ILogger logger, DirectoryInfo artifactsDirectory)
+        private static void DoCleanup(ILogger logger, DirectoryInfo artifactsDirectory)
         {
             logger.Write($"Artifact cleanup is enabled, removing all files and folders in '{artifactsDirectory.FullName}'");
 

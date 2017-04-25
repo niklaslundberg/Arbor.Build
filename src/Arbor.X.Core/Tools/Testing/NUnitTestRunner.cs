@@ -20,7 +20,7 @@ namespace Arbor.X.Core.Tools.Testing
     [UsedImplicitly]
     public class NUnitTestRunner : ITool
     {
-        string _sourceRoot;
+        private string _sourceRoot;
 
         public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {
@@ -83,7 +83,7 @@ namespace Arbor.X.Core.Tools.Testing
             return await RunNUnitAsync(externalTools, logger, reportPath, runTestsInReleaseConfiguration);
         }
 
-        async Task<ExitCode> RunNUnitAsync(IVariable externalTools, ILogger logger, IVariable reportPath, bool runTestsInReleaseConfiguration)
+        private async Task<ExitCode> RunNUnitAsync(IVariable externalTools, ILogger logger, IVariable reportPath, bool runTestsInReleaseConfiguration)
         {
             Type fixtureAttribute = typeof (TestFixtureAttribute);
             Type testMethodAttribute = typeof (TestAttribute);
@@ -143,7 +143,7 @@ namespace Arbor.X.Core.Tools.Testing
             return ExitCode.Failure;
         }
 
-        void EnsureNUnitReportDirectoryExists(string reportFile)
+        private void EnsureNUnitReportDirectoryExists(string reportFile)
         {
             var fileInfo = new FileInfo(reportFile);
 
@@ -155,25 +155,25 @@ namespace Arbor.X.Core.Tools.Testing
 // ReSharper restore AssignNullToNotNullAttribute
         }
 
-        static void LogExecution(ILogger logger, IEnumerable<string> nunitArgs, string nunitExe)
+        private static void LogExecution(ILogger logger, IEnumerable<string> nunitArgs, string nunitExe)
         {
             var args = string.Join(" ", nunitArgs.Select(item => $"\"{item}\""));
             logger.Write($"Running NUnit {nunitExe} {args}");
         }
 
-        static string GetNunitExePath(IVariable externalTools)
+        private static string GetNunitExePath(IVariable externalTools)
         {
             var nunitExe = Path.Combine(externalTools.Value, "nunit", "nunit-console.exe");
             return nunitExe;
         }
 
-        static IEnumerable<string> GetNUnitConsoleOptions(string reportFile)
+        private static IEnumerable<string> GetNUnitConsoleOptions(string reportFile)
         {
             var options = new List<string> { $"/xml:{reportFile}", "/framework:net-4.0", "/noshadow" };
             return options;
         }
 
-        static string GetNUnitXmlReportFilePath(IVariable reportPath)
+        private static string GetNUnitXmlReportFilePath(IVariable reportPath)
         {
             string xmlReportName = $"{Guid.NewGuid()}.xml";
 
