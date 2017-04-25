@@ -18,11 +18,14 @@ namespace Arbor.X.Core.Tools.VisualStudio
     {
         private bool _allowPreReleaseVersions;
 
-        public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(ILogger logger,
-            IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
+        public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(
+            ILogger logger,
+            IReadOnlyCollection<IVariable> buildVariables,
+            CancellationToken cancellationToken)
         {
             if (!string.IsNullOrWhiteSpace(buildVariables.GetVariableValueOrDefault(
-                WellKnownVariables.ExternalTools_VisualStudio_Version, string.Empty)))
+                WellKnownVariables.ExternalTools_VisualStudio_Version,
+                string.Empty)))
             {
                 return Task.FromResult(new List<IVariable>().AsEnumerable());
             }
@@ -57,7 +60,6 @@ namespace Arbor.X.Core.Tools.VisualStudio
                 logger.WriteWarning("Could not find any Visual Studio version");
             }
 
-
             var environmentVariables = new[]
             {
                 new EnvironmentVariable(
@@ -67,6 +69,57 @@ namespace Arbor.X.Core.Tools.VisualStudio
             };
 
             return Task.FromResult<IEnumerable<IVariable>>(environmentVariables);
+        }
+
+        public int Order => VariableProviderOrder.Ignored;
+
+        private static string GetVSTestExePath(ILogger logger, string registryKeyName, string visualStudioVersion)
+        {
+            string path = null;
+
+            using (RegistryKey view32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
+            {
+                using (RegistryKey vsKey = view32.OpenSubKey(registryKeyName))
+                {
+                    if (vsKey != null)
+                    {
+                        using (RegistryKey versionKey = vsKey.OpenSubKey(visualStudioVersion))
+                        {
+                            if (versionKey == null)
+                            {
+                                throw new InvalidOperationException(
+                                    $"Expected key {vsKey.Name} to contain a subkey with name {visualStudioVersion}");
+                            }
+
+                            const string Installdir = "InstallDir";
+                            object installDir = versionKey.GetValue(Installdir, null);
+
+                            if (string.IsNullOrWhiteSpace(installDir?.ToString()))
+                            {
+                                logger.WriteWarning(
+                                    $"Expected key {versionKey.Name} to contain a value with name {Installdir} and a non-empty value");
+                                return null;
+                            }
+
+                            string exePath = Path.Combine(
+                                installDir.ToString(),
+                                "CommonExtensions",
+                                "Microsoft",
+                                "TestWindow",
+                                "vstest.console.exe");
+
+                            if (!File.Exists(exePath))
+                            {
+                                throw new InvalidOperationException($"The file '{exePath}' does not exist");
+                            }
+
+                            path = exePath;
+                        }
+                    }
+                }
+            }
+
+            return path;
         }
 
         private string GetVisualStudioVersion(ILogger logger, string registryKeyName)
@@ -127,6 +180,7 @@ namespace Arbor.X.Core.Tools.VisualStudio
                         {
                             visualStudioVersion = "15.0";
                         }
+
                         if (versions.Any(version => version == new Version(14, 0)))
                         {
                             visualStudioVersion = "14.0";
@@ -146,54 +200,8 @@ namespace Arbor.X.Core.Tools.VisualStudio
                     }
                 }
             }
+
             return visualStudioVersion;
         }
-
-        private static string GetVSTestExePath(ILogger logger, string registryKeyName, string visualStudioVersion)
-        {
-            string path = null;
-
-            using (RegistryKey view32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
-            {
-                using (RegistryKey vsKey = view32.OpenSubKey(registryKeyName))
-                {
-                    if (vsKey != null)
-                    {
-                        using (RegistryKey versionKey = vsKey.OpenSubKey(visualStudioVersion))
-                        {
-                            if (versionKey == null)
-                            {
-                                throw new InvalidOperationException(
-                                    $"Expected key {vsKey.Name} to contain a subkey with name {visualStudioVersion}");
-                            }
-
-                            const string Installdir = "InstallDir";
-                            object installDir = versionKey.GetValue(Installdir, null);
-
-                            if (string.IsNullOrWhiteSpace(installDir?.ToString()))
-                            {
-                                logger.WriteWarning(
-                                    $"Expected key {versionKey.Name} to contain a value with name {Installdir} and a non-empty value");
-                                return null;
-                            }
-
-                            string exePath = Path.Combine(installDir.ToString(), "CommonExtensions", "Microsoft",
-                                "TestWindow",
-                                "vstest.console.exe");
-
-                            if (!File.Exists(exePath))
-                            {
-                                throw new InvalidOperationException($"The file '{exePath}' does not exist");
-                            }
-
-                            path = exePath;
-                        }
-                    }
-                }
-            }
-            return path;
-        }
-
-        public int Order => VariableProviderOrder.Ignored;
     }
 }

@@ -31,6 +31,7 @@ namespace Arbor.X.Core.BuildVariables
             {
                 throw new ArgumentNullException(nameof(variable));
             }
+
             return $"\t{variable.Key}: {variable.Value}";
         }
     }

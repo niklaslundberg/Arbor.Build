@@ -4,6 +4,8 @@ namespace Arbor.X.Core.IO
 {
     public static class DefaultPaths
     {
+        public const string TempPathPrefix = "ABX";
+
         public static PathLookupSpecification DefaultPathLookupSpecification
         {
             get
@@ -42,7 +44,5 @@ namespace Arbor.X.Core.IO
                     ignoredDirectoryStartsWithPatterns);
             }
         }
-
-        public const string TempPathPrefix = "ABX";
     }
 }

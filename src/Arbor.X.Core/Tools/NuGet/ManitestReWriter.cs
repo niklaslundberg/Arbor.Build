@@ -9,7 +9,9 @@ namespace Arbor.X.Core.Tools.NuGet
 {
     public class ManitestReWriter
     {
-        public ManifestReWriteResult Rewrite(string nuspecFullPath, string tagPrefix = "x-arbor-x",
+        public ManifestReWriteResult Rewrite(
+            string nuspecFullPath,
+            string tagPrefix = "x-arbor-x",
             ILogger logger = null)
         {
             if (string.IsNullOrWhiteSpace(nuspecFullPath))

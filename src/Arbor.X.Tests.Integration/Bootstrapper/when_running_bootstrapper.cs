@@ -38,8 +38,8 @@ namespace Arbor.X.Tests.Integration.Bootstrapper
             baseDirectory = new DirectoryInfo(tempDirectoryPath).EnsureExists();
             Console.WriteLine("Temp directory is {0}", baseDirectory.FullName);
 
-
-            startOptions = new BootstrapStartOptions(baseDirectory.FullName, true,
+            startOptions = new BootstrapStartOptions(baseDirectory.FullName,
+                true,
                 "develop");
             bootstrapper = new X.Bootstrapper.Bootstrapper(LogLevel.Verbose);
         };

@@ -21,11 +21,17 @@ namespace Arbor.X.Core.Tools.Versioning
     {
         private string _filePattern;
 
-        public Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
+        public Task<ExitCode> ExecuteAsync(
+            ILogger logger,
+            IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            var delegateLogger = new DelegateLogger(logger.WriteError, logger.WriteWarning,
-                logger.Write, logger.WriteVerbose, logger.WriteDebug)
+            var delegateLogger = new DelegateLogger(
+                logger.WriteError,
+                logger.WriteWarning,
+                logger.Write,
+                logger.WriteVerbose,
+                logger.WriteDebug)
             {
                 LogLevel = Sorbus.Core.LogLevel.TryParse(logger.LogLevel.Level)
             };
@@ -41,7 +47,8 @@ namespace Arbor.X.Core.Tools.Versioning
                 return Task.FromResult(ExitCode.Success);
             }
 
-            _filePattern = buildVariables.GetVariableValueOrDefault(WellKnownVariables.AssemblyFilePatchingFilePattern,
+            _filePattern = buildVariables.GetVariableValueOrDefault(
+                WellKnownVariables.AssemblyFilePatchingFilePattern,
                 "AssemblyInfo.cs");
 
             logger.WriteVerbose($"Using assembly version file pattern '{_filePattern}' to lookup files to patch");
@@ -66,7 +73,6 @@ namespace Arbor.X.Core.Tools.Versioning
             }
 
             var assemblyVersion = new Version(netAssemblyVersion);
-
 
             IVariable netAssemblyFileVersionVar =
                 buildVariables.SingleOrDefault(var => var.Key == WellKnownVariables.NetAssemblyFileVersion);
@@ -102,7 +108,12 @@ namespace Arbor.X.Core.Tools.Versioning
                 string trademark =
                     buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyTrademark, null);
 
-                assemblyMetadata = new AssemblyMetaData(description, configuration, company, product, copyright,
+                assemblyMetadata = new AssemblyMetaData(
+                    description,
+                    configuration,
+                    company,
+                    product,
+                    copyright,
                     trademark);
             }
 
@@ -123,18 +134,24 @@ namespace Arbor.X.Core.Tools.Versioning
 
                 logger.WriteDebug(string.Format(
                     "Using file pattern '{0}' to find assembly info files. Found these files: [{3}] {1}{2}",
-                    _filePattern, Environment.NewLine,
+                    _filePattern,
+                    Environment.NewLine,
                     string.Join(Environment.NewLine, assemblyFiles.Select(item => " * " + item.FullPath)),
                     assemblyFiles.Count));
 
-                app.Patch(new AssemblyVersion(assemblyVersion), new AssemblyFileVersion(assemblyFileVersion),
-                    sourceRoot, assemblyFiles, assemblyMetadata);
+                app.Patch(
+                    new AssemblyVersion(assemblyVersion),
+                    new AssemblyFileVersion(assemblyFileVersion),
+                    sourceRoot,
+                    assemblyFiles,
+                    assemblyMetadata);
             }
             catch (Exception ex)
             {
                 logger.WriteError($"Could not patch assembly infos. {ex}");
                 return Task.FromResult(ExitCode.Failure);
             }
+
             return Task.FromResult(ExitCode.Success);
         }
     }

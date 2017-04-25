@@ -75,7 +75,6 @@ namespace Arbor.X.Core.Tools.NuGet
                 }
             }
 
-
             bool update = Environment.GetEnvironmentVariable(WellKnownVariables.NuGetVersionUpdatedEnabled)
                 .TryParseBool(false);
 
@@ -84,8 +83,13 @@ namespace Arbor.X.Core.Tools.NuGet
                 try
                 {
                     var arguments = new List<string> { "update", "-self" };
-                    await ProcessHelper.ExecuteAsync(targetFile, arguments, _logger, addProcessNameAsLogCategory: true,
-                        addProcessRunnerCategory: true, cancellationToken: cancellationToken);
+                    await ProcessHelper.ExecuteAsync(
+                        targetFile,
+                        arguments,
+                        _logger,
+                        addProcessNameAsLogCategory: true,
+                        addProcessRunnerCategory: true,
+                        cancellationToken: cancellationToken);
                 }
                 catch (Exception ex)
                 {
@@ -96,7 +100,10 @@ namespace Arbor.X.Core.Tools.NuGet
             return targetFile;
         }
 
-        private async Task DownloadNuGetExeAsync(string baseDir, string targetFile, string nugetExeUri,
+        private async Task DownloadNuGetExeAsync(
+            string baseDir,
+            string targetFile,
+            string nugetExeUri,
             CancellationToken cancellationToken)
         {
             string tempFile = Path.Combine(baseDir, $"nuget.exe.{Guid.NewGuid()}.tmp");

@@ -34,11 +34,6 @@ namespace Arbor.X.Core.Tools.MSBuild
             }
         }
 
-        public override string ToString()
-        {
-            return Level;
-        }
-
         public static MSBuildVerbositoyLevel TryParse(string value)
         {
             if (string.IsNullOrWhiteSpace(value))
@@ -56,6 +51,11 @@ namespace Arbor.X.Core.Tools.MSBuild
             }
 
             return found;
+        }
+
+        public override string ToString()
+        {
+            return Level;
         }
     }
 }

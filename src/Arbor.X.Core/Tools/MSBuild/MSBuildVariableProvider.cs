@@ -17,8 +17,10 @@ namespace Arbor.X.Core.Tools.MSBuild
     [UsedImplicitly]
     public class MSBuildVariableProvider : IVariableProvider
     {
-        public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(ILogger logger,
-            IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
+        public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(
+            ILogger logger,
+            IReadOnlyCollection<IVariable> buildVariables,
+            CancellationToken cancellationToken)
         {
             int currentProcessBits = Environment.Is64BitProcess ? 64 : 32;
             const int RegistryLookupBits = 32;
@@ -29,7 +31,8 @@ namespace Arbor.X.Core.Tools.MSBuild
                 .Select(version => SemanticVersion.Parse(version))
                 .ToList();
 
-            string max = buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_MSBuild_MaxVersion,
+            string max = buildVariables.GetVariableValueOrDefault(
+                WellKnownVariables.ExternalTools_MSBuild_MaxVersion,
                 "15.0.0");
 
             SemanticVersion[] toRemove = possibleVersions.Where(version => version > SemanticVersion.Parse(max))
@@ -42,17 +45,45 @@ namespace Arbor.X.Core.Tools.MSBuild
 
             var possiblePaths = new[]
             {
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
-                    "Microsoft Visual Studio", "2017", "Enterprise", "MSBuild", "15.0", "bin", "MSBuild.exe"),
+                Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                    "Microsoft Visual Studio",
+                    "2017",
+                    "Enterprise",
+                    "MSBuild",
+                    "15.0",
+                    "bin",
+                    "MSBuild.exe"),
 
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
-                    "Microsoft Visual Studio", "2017", "Profesional", "MSBuild", "15.0", "bin", "MSBuild.exe"),
+                Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                    "Microsoft Visual Studio",
+                    "2017",
+                    "Profesional",
+                    "MSBuild",
+                    "15.0",
+                    "bin",
+                    "MSBuild.exe"),
 
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
-                    "Microsoft Visual Studio", "2017", "Community", "MSBuild", "15.0", "bin", "MSBuild.exe"),
+                Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                    "Microsoft Visual Studio",
+                    "2017",
+                    "Community",
+                    "MSBuild",
+                    "15.0",
+                    "bin",
+                    "MSBuild.exe"),
 
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
-                    "Microsoft Visual Studio", "2017", "BuildTools", "MSBuild", "15.0", "bin", "MSBuild.exe")
+                Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                    "Microsoft Visual Studio",
+                    "2017",
+                    "BuildTools",
+                    "MSBuild",
+                    "15.0",
+                    "bin",
+                    "MSBuild.exe")
             };
 
             string fileBasedLookupResultPath = possiblePaths.FirstOrDefault(File.Exists);

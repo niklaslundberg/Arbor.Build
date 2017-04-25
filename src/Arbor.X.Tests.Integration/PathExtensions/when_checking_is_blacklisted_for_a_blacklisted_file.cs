@@ -10,16 +10,17 @@ namespace Arbor.X.Tests.Integration.PathExtensions
         private static readonly PathLookupSpecification path_lookup_specification =
             DefaultPaths.DefaultPathLookupSpecification.WithIgnoredFileNameParts(new[] { ".vshost." });
 
+        private static bool result;
+
         private Establish context = () => { };
 
         private Because of = () =>
         {
-            result = path_lookup_specification.IsFileBlackListed(@"C:\test.vshost.exe", allowNonExistingFiles: true,
+            result = path_lookup_specification.IsFileBlackListed(@"C:\test.vshost.exe",
+                allowNonExistingFiles: true,
                 logger: new ConsoleLogger());
         };
 
         private It should_be_true = () => result.ShouldBeTrue();
-
-        private static bool result;
     }
 }

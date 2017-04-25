@@ -36,7 +36,8 @@ namespace Arbor.X.Core.Tools.NuGet
             }
 
             _excludedNuSpecFiles =
-                buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageExcludesCommaSeparated,
+                buildVariables.GetVariableValueOrDefault(
+                        WellKnownVariables.NuGetPackageExcludesCommaSeparated,
                         string.Empty)
                     .Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries)
                     .SafeToReadOnlyCollection();
@@ -66,15 +67,21 @@ namespace Arbor.X.Core.Tools.NuGet
 
             logger.Write($"Found {packageSpecifications.Count} NuGet specifications to create NuGet packages from");
 
-
             ExitCode result =
                 await ProcessPackagesAsync(packageSpecifications, packageConfiguration, logger, cancellationToken);
 
             return result;
         }
 
+        private static string PackageDirectory()
+        {
+            string packageDirectory = string.Format("{0}packages{0}", Path.DirectorySeparatorChar);
+            return packageDirectory;
+        }
 
-        private IReadOnlyCollection<string> GetPackageSpecifications(ILogger logger, string vcsRootDir,
+        private IReadOnlyCollection<string> GetPackageSpecifications(
+            ILogger logger,
+            string vcsRootDir,
             string packageDirectory)
         {
             var vcsRootDirectory = new DirectoryInfo(vcsRootDir);
@@ -97,7 +104,8 @@ namespace Arbor.X.Core.Tools.NuGet
                 filtered.Where(
                         nuspec =>
                             !_excludedNuSpecFiles.Any(
-                                exludedNuSpec => exludedNuSpec.Equals(nuspec.Name,
+                                exludedNuSpec => exludedNuSpec.Equals(
+                                    nuspec.Name,
                                     StringComparison.InvariantCultureIgnoreCase)))
                     .SafeToReadOnlyCollection();
 
@@ -107,12 +115,6 @@ namespace Arbor.X.Core.Tools.NuGet
                 .SafeToReadOnlyCollection();
 
             return allIncluded;
-        }
-
-        private static string PackageDirectory()
-        {
-            string packageDirectory = string.Format("{0}packages{0}", Path.DirectorySeparatorChar);
-            return packageDirectory;
         }
 
         private async Task<ExitCode> ProcessPackagesAsync(
@@ -126,7 +128,9 @@ namespace Arbor.X.Core.Tools.NuGet
             foreach (string packageSpecification in packageSpecifications)
             {
                 ExitCode packageResult =
-                    await packager.CreatePackageAsync(packageSpecification, packageConfiguration,
+                    await packager.CreatePackageAsync(
+                        packageSpecification,
+                        packageConfiguration,
                         cancellationToken: cancellationToken);
 
                 if (!packageResult.IsSuccess)

@@ -16,6 +16,7 @@ namespace Arbor.X.Core.Tools.NuGet
             {
                 throw new ArgumentNullException(nameof(filePath));
             }
+
             if (!File.Exists(filePath))
             {
                 throw new ArgumentException($"The file '{filePath}' does not exist", nameof(filePath));
@@ -38,27 +39,8 @@ namespace Arbor.X.Core.Tools.NuGet
         }
 
         public string PackageId { get; }
+
         public string Version { get; }
-
-        public void Save(string filePath)
-        {
-            if (string.IsNullOrWhiteSpace(filePath))
-            {
-                throw new ArgumentNullException(nameof(filePath));
-            }
-
-            File.WriteAllText(filePath, _xml);
-        }
-
-        public override string ToString()
-        {
-            if (!string.IsNullOrWhiteSpace(_xml))
-            {
-                return _xml;
-            }
-
-            return base.ToString();
-        }
 
         public static NuSpec Parse(string nuspecFilePath)
         {
@@ -86,6 +68,26 @@ namespace Arbor.X.Core.Tools.NuGet
             string version = metaData.Descendants().Single(item => item.Name.LocalName == "version").Value;
 
             return new NuSpec(id, version, nuspecFilePath);
+        }
+
+        public void Save(string filePath)
+        {
+            if (string.IsNullOrWhiteSpace(filePath))
+            {
+                throw new ArgumentNullException(nameof(filePath));
+            }
+
+            File.WriteAllText(filePath, _xml);
+        }
+
+        public override string ToString()
+        {
+            if (!string.IsNullOrWhiteSpace(_xml))
+            {
+                return _xml;
+            }
+
+            return base.ToString();
         }
     }
 }

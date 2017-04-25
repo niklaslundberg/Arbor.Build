@@ -16,11 +16,14 @@ namespace Arbor.X.Core.Tools.Cleanup
     [UsedImplicitly]
     public class ArtifactCleanup : ITool
     {
-        public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
+        public async Task<ExitCode> ExecuteAsync(
+            ILogger logger,
+            IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
             bool cleanupBeforeBuildEnabled =
-                buildVariables.GetBooleanByKey(WellKnownVariables.CleanupArtifactsBeforeBuildEnabled,
+                buildVariables.GetBooleanByKey(
+                    WellKnownVariables.CleanupArtifactsBeforeBuildEnabled,
                     false);
 
             if (!cleanupBeforeBuildEnabled)
@@ -66,7 +69,9 @@ namespace Arbor.X.Core.Tools.Cleanup
             return ExitCode.Success;
         }
 
-        private static bool TryCleanup(ILogger logger, DirectoryInfo artifactsDirectory,
+        private static bool TryCleanup(
+            ILogger logger,
+            DirectoryInfo artifactsDirectory,
             bool throwExceptionOnFailure = false)
         {
             try
@@ -79,12 +84,15 @@ namespace Arbor.X.Core.Tools.Cleanup
                 {
                     throw;
                 }
+
                 if (throwExceptionOnFailure)
                 {
                     throw;
                 }
+
                 return false;
             }
+
             return true;
         }
 

@@ -12,8 +12,8 @@ namespace Arbor.X.Core.Tools.Testing
 {
     public class UnitTestFinder
     {
-        private readonly IEnumerable<Type> _typesToFind;
         private readonly ILogger _logger;
+        private readonly IEnumerable<Type> _typesToFind;
 
         public UnitTestFinder(IEnumerable<Type> typesesToFind, bool debugLogEnabled = false, ILogger logger = null)
         {
@@ -24,7 +24,8 @@ namespace Arbor.X.Core.Tools.Testing
 
         private bool DebugLogEnabled { get; }
 
-        public IReadOnlyCollection<string> GetUnitTestFixtureDlls(DirectoryInfo currentDirectory,
+        public IReadOnlyCollection<string> GetUnitTestFixtureDlls(
+            DirectoryInfo currentDirectory,
             bool? releaseBuild = null)
         {
             if (currentDirectory == null)
@@ -113,6 +114,33 @@ namespace Arbor.X.Core.Tools.Testing
             return allUnitFixtureAssemblies;
         }
 
+        public bool TryIsTypeTestFixture(Type typeToInvestigate)
+        {
+            if (typeToInvestigate == null)
+            {
+                throw new ArgumentNullException(nameof(typeToInvestigate));
+            }
+
+            try
+            {
+                string toInvestigate = typeToInvestigate.FullName;
+                bool any = IsTypeUnitTestFixture(typeToInvestigate);
+
+                if (any)
+                {
+                    _logger.WriteDebug($"Testing type '{toInvestigate}': is unit test fixture");
+                }
+
+                return any;
+            }
+            catch (Exception ex)
+            {
+                _logger.WriteDebug(
+                    $"Failed to determine if type {typeToInvestigate.AssemblyQualifiedName} is {string.Join(" | ", _typesToFind.Select(type => type.FullName))} {ex.Message}");
+                return false;
+            }
+        }
+
 // ReSharper disable ReturnTypeCanBeEnumerable.Local
         private IReadOnlyCollection<string> UnitTestFixtureAssemblies(IEnumerable<Assembly> assemblies)
 // ReSharper restore ReturnTypeCanBeEnumerable.Local
@@ -151,33 +179,6 @@ namespace Arbor.X.Core.Tools.Testing
             return result;
         }
 
-        public bool TryIsTypeTestFixture(Type typeToInvestigate)
-        {
-            if (typeToInvestigate == null)
-            {
-                throw new ArgumentNullException(nameof(typeToInvestigate));
-            }
-
-            try
-            {
-                string toInvestigate = typeToInvestigate.FullName;
-                bool any = IsTypeUnitTestFixture(typeToInvestigate);
-
-                if (any)
-                {
-                    _logger.WriteDebug($"Testing type '{toInvestigate}': is unit test fixture");
-                }
-
-                return any;
-            }
-            catch (Exception ex)
-            {
-                _logger.WriteDebug(
-                    $"Failed to determine if type {typeToInvestigate.AssemblyQualifiedName} is {string.Join(" | ", _typesToFind.Select(type => type.FullName))} {ex.Message}");
-                return false;
-            }
-        }
-
         private bool IsTypeUnitTestFixture(Type typeToInvestigate)
         {
             IEnumerable<CustomAttributeData> customAttributeDatas = typeToInvestigate.CustomAttributes;
@@ -194,8 +195,8 @@ namespace Arbor.X.Core.Tools.Testing
             bool isTypeUnitTestFixture = customAttributes.Any(
                 attributeData =>
                 {
-                    if (attributeData.AttributeType.FullName.StartsWith(nameof(System)) ||
-                        attributeData.AttributeType.FullName.StartsWith("_"))
+                    if (attributeData.AttributeType.FullName.StartsWith(nameof(System), StringComparison.Ordinal) ||
+                        attributeData.AttributeType.FullName.StartsWith("_", StringComparison.Ordinal))
                     {
                         return false;
                     }
@@ -229,7 +230,8 @@ namespace Arbor.X.Core.Tools.Testing
                         if (field.FieldType.IsGenericType && !string.IsNullOrWhiteSpace(fullName))
                         {
                             const string GenericPartSeparator = "`";
-                            int fieldIndex = fullName.IndexOf(GenericPartSeparator,
+                            int fieldIndex = fullName.IndexOf(
+                                GenericPartSeparator,
                                 StringComparison.InvariantCultureIgnoreCase);
 
                             string fieldName = fullName.Substring(0, fieldIndex);
@@ -237,7 +239,8 @@ namespace Arbor.X.Core.Tools.Testing
                             return _typesToFind.Any(
                                 type =>
                                 {
-                                    int typePosition = type.FullName.IndexOf(GenericPartSeparator,
+                                    int typePosition = type.FullName.IndexOf(
+                                        GenericPartSeparator,
                                         StringComparison.InvariantCultureIgnoreCase);
 
                                     if (typePosition < 0)
@@ -264,7 +267,8 @@ namespace Arbor.X.Core.Tools.Testing
             return
                 _typesToFind.Any(
                     typeToFind =>
-                        attr.AttributeType.FullName.Equals(typeToFind.FullName,
+                        attr.AttributeType.FullName.Equals(
+                            typeToFind.FullName,
                             StringComparison.InvariantCultureIgnoreCase));
         }
 

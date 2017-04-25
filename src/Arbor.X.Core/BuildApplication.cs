@@ -30,9 +30,9 @@ namespace Arbor.X.Core
 {
     public class BuildApplication
     {
-        private ILogger _logger;
         private CancellationToken _cancellationToken;
         private IContainer _container;
+        private ILogger _logger;
 
         public BuildApplication(ILogger logger)
         {
@@ -83,7 +83,8 @@ namespace Arbor.X.Core
             stopwatch.Stop();
 
             Console.WriteLine(
-                "Arbor.X.Build total elapsed time in seconds: {0:F}", stopwatch.Elapsed.TotalSeconds);
+                "Arbor.X.Build total elapsed time in seconds: {0:F}",
+                stopwatch.Elapsed.TotalSeconds);
 
             ParseResult<int> exitDelayInMilliseconds =
                 Environment.GetEnvironmentVariable(WellKnownVariables.BuildApplicationExitDelayInMilliseconds)

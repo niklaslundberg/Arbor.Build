@@ -6,7 +6,8 @@
         public static readonly string ExternalTools_TeamCity_IsRunningInTeamCity =
             "Arbor.X.Tools.External.TeamCity.IsRunningInTeamCity";
 
-        [VariableDescription("TeamCity Version")] public static readonly string ExternalTools_TeamCity_TeamCityVersion =
+        [VariableDescription("TeamCity Version")]
+        public static readonly string ExternalTools_TeamCity_TeamCityVersion =
             "TEAMCITY_VERSION";
 
         [VariableDescription("TeamCity build configuration name")]

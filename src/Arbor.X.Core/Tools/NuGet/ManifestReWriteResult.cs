@@ -6,10 +6,6 @@ namespace Arbor.X.Core.Tools.NuGet
 {
     public class ManifestReWriteResult
     {
-        public string UsedPrefix { get; }
-
-        public IReadOnlyCollection<string> RemoveTags { get; }
-
         public ManifestReWriteResult(IEnumerable<string> removeTags, string usedPrefix)
         {
             if (string.IsNullOrWhiteSpace(usedPrefix))
@@ -25,5 +21,9 @@ namespace Arbor.X.Core.Tools.NuGet
             UsedPrefix = usedPrefix;
             RemoveTags = removeTags.SafeToReadOnlyCollection();
         }
+
+        public string UsedPrefix { get; }
+
+        public IReadOnlyCollection<string> RemoveTags { get; }
     }
 }

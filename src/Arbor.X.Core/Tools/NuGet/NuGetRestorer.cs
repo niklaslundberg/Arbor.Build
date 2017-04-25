@@ -26,7 +26,9 @@ namespace Arbor.X.Core.Tools.NuGet
             _fixes = fixes.SafeToReadOnlyCollection();
         }
 
-        public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
+        public async Task<ExitCode> ExecuteAsync(
+            ILogger logger,
+            IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
             var app = new CastaneaApplication();
@@ -77,6 +79,7 @@ namespace Arbor.X.Core.Tools.NuGet
                         logger.WriteError($"Could not enumerable packages.config files or solutions files. {ex}");
                         return ExitCode.Failure;
                     }
+
                     logger.WriteWarning(
                         $"Attempt {listFilesAttempt} of {listFilesMaxAttempts} failed, retrying. {ex}");
                     listFilesAttempt++;
@@ -112,10 +115,12 @@ namespace Arbor.X.Core.Tools.NuGet
                 new DirectoryInfo(outputDirectoryPath).EnsureExists();
 
                 bool disableParallelProcessing =
-                    buildVariables.GetBooleanByKey(WellKnownVariables.NuGetRestoreDisableParallelProcessing,
+                    buildVariables.GetBooleanByKey(
+                        WellKnownVariables.NuGetRestoreDisableParallelProcessing,
                         false);
 
-                bool noCache = buildVariables.GetBooleanByKey(WellKnownVariables.NuGetRestoreNoCache,
+                bool noCache = buildVariables.GetBooleanByKey(
+                    WellKnownVariables.NuGetRestoreNoCache,
                     false);
 
                 var nuGetConfig = new NuGetConfig
@@ -136,6 +141,7 @@ namespace Arbor.X.Core.Tools.NuGet
                 {
                     debugAction = message => logger.WriteVerbose(message, prefix);
                 }
+
                 int restoredPackages = 0;
 
                 int attempt = 1;
@@ -210,6 +216,7 @@ namespace Arbor.X.Core.Tools.NuGet
                 {
                     throw;
                 }
+
                 logger.WriteWarning(ex.ToString());
             }
 

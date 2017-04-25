@@ -24,46 +24,6 @@ namespace Arbor.X.Core.Tools.Kudu
             }
         }
 
-        public bool Equals(KuduWebJobType other)
-        {
-            if (ReferenceEquals(null, other))
-            {
-                return false;
-            }
-            if (ReferenceEquals(this, other))
-            {
-                return true;
-            }
-            return string.Equals(DisplayName, other.DisplayName);
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj))
-            {
-                return false;
-            }
-            if (ReferenceEquals(this, obj))
-            {
-                return true;
-            }
-            if (obj.GetType() != GetType())
-            {
-                return false;
-            }
-            return Equals((KuduWebJobType)obj);
-        }
-
-        public override int GetHashCode()
-        {
-            return DisplayName?.GetHashCode() ?? 0;
-        }
-
-        public override string ToString()
-        {
-            return DisplayName;
-        }
-
         public string DisplayName { get; }
 
         public static bool operator ==(KuduWebJobType left, KuduWebJobType right)
@@ -103,6 +63,51 @@ namespace Arbor.X.Core.Tools.Kudu
             }
 
             return foundItem;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj.GetType() != GetType())
+            {
+                return false;
+            }
+
+            return Equals((KuduWebJobType)obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return DisplayName?.GetHashCode() ?? 0;
+        }
+
+        public override string ToString()
+        {
+            return DisplayName;
+        }
+
+        public bool Equals(KuduWebJobType other)
+        {
+            if (ReferenceEquals(null, other))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return string.Equals(DisplayName, other.DisplayName);
         }
     }
 }

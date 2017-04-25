@@ -17,10 +17,13 @@ namespace Arbor.X.Core.Tools.Symbols
     [UsedImplicitly]
     public class NuGetSymbolPackageUploader : ITool
     {
-        public Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
+        public Task<ExitCode> ExecuteAsync(
+            ILogger logger,
+            IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_SymbolServer_Enabled,
+            bool enabled = buildVariables.GetBooleanByKey(
+                WellKnownVariables.ExternalTools_SymbolServer_Enabled,
                 false);
 
             if (!enabled)
@@ -51,17 +54,20 @@ namespace Arbor.X.Core.Tools.Symbols
 
             bool isRunningOnBuildAgent = isRunningOnBuildAgentVariable.GetValueOrDefault(false);
             bool forceUpload =
-                buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_SymbolServer_ForceUploadEnabled,
+                buildVariables.GetBooleanByKey(
+                    WellKnownVariables.ExternalTools_SymbolServer_ForceUploadEnabled,
                     false);
 
             int timeout =
-                buildVariables.GetInt32ByKey(WellKnownVariables.ExternalTools_SymbolServer_UploadTimeoutInSeconds,
+                buildVariables.GetInt32ByKey(
+                    WellKnownVariables.ExternalTools_SymbolServer_UploadTimeoutInSeconds,
                     -1);
 
             if (isRunningOnBuildAgent)
             {
                 logger.Write("Symbol package upload is enabled");
             }
+
             if (!isRunningOnBuildAgent && forceUpload)
             {
                 logger.Write(
@@ -70,8 +76,13 @@ namespace Arbor.X.Core.Tools.Symbols
 
             if (isRunningOnBuildAgent || forceUpload)
             {
-                return UploadNuGetPackagesAsync(logger, packagesFolder.FullName, nugetExe.Value, symbolServer.Value,
-                    symbolServerApiKey.Value, timeout);
+                return UploadNuGetPackagesAsync(
+                    logger,
+                    packagesFolder.FullName,
+                    nugetExe.Value,
+                    symbolServer.Value,
+                    symbolServerApiKey.Value,
+                    timeout);
             }
 
             logger.Write("Not running on build server. Skipped package upload");
@@ -79,23 +90,66 @@ namespace Arbor.X.Core.Tools.Symbols
             return Task.FromResult(ExitCode.Success);
         }
 
-        private async Task<ExitCode> UploadNuGetPackagesAsync(ILogger logger, string packagesFolder,
+        private static async Task<ExitCode> UploadNugetPackageAsync(
             string nugetExePath,
             string symbolServerUrl,
-            string apiKey, int timeout)
+            string apiKey,
+            string nugetPackage,
+            ILogger logger,
+            int timeout)
+        {
+            var args = new List<string>
+            {
+                "push",
+                nugetPackage,
+                "-s",
+                symbolServerUrl,
+                apiKey,
+                "-verbosity",
+                "detailed"
+            };
+
+            if (timeout > 0)
+            {
+                args.Add("-timeout");
+                args.Add(timeout.ToString(CultureInfo.InvariantCulture));
+            }
+
+            ExitCode exitCode =
+                await
+                    ProcessRunner.ExecuteAsync(
+                        nugetExePath,
+                        arguments: args,
+                        standardOutLog: logger.Write,
+                        standardErrorAction: logger.WriteError,
+                        toolAction: logger.Write);
+
+            return exitCode;
+        }
+
+        private async Task<ExitCode> UploadNuGetPackagesAsync(
+            ILogger logger,
+            string packagesFolder,
+            string nugetExePath,
+            string symbolServerUrl,
+            string apiKey,
+            int timeout)
         {
             if (string.IsNullOrWhiteSpace(packagesFolder))
             {
                 throw new ArgumentNullException(nameof(packagesFolder));
             }
+
             if (string.IsNullOrWhiteSpace(nugetExePath))
             {
                 throw new ArgumentNullException(nameof(nugetExePath));
             }
+
             if (string.IsNullOrWhiteSpace(symbolServerUrl))
             {
                 throw new ArgumentNullException(nameof(symbolServerUrl));
             }
+
             if (string.IsNullOrWhiteSpace(apiKey))
             {
                 throw new ArgumentNullException(nameof(apiKey));
@@ -122,34 +176,6 @@ namespace Arbor.X.Core.Tools.Symbols
             }
 
             return result ? ExitCode.Success : ExitCode.Failure;
-        }
-
-        private static async Task<ExitCode> UploadNugetPackageAsync(string nugetExePath, string symbolServerUrl,
-            string apiKey, string nugetPackage, ILogger logger, int timeout)
-        {
-            var args = new List<string>
-            {
-                "push",
-                nugetPackage,
-                "-s",
-                symbolServerUrl,
-                apiKey,
-                "-verbosity",
-                "detailed"
-            };
-
-            if (timeout > 0)
-            {
-                args.Add("-timeout");
-                args.Add(timeout.ToString(CultureInfo.InvariantCulture));
-            }
-
-            ExitCode exitCode =
-                await
-                    ProcessRunner.ExecuteAsync(nugetExePath, arguments: args, standardOutLog: logger.Write,
-                        standardErrorAction: logger.WriteError, toolAction: logger.Write);
-
-            return exitCode;
         }
     }
 }

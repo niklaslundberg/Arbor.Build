@@ -20,7 +20,8 @@ namespace Arbor.X.Core.Tools.NuGet
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.MSBuildNuGetRestoreEnabled,
+            bool enabled = buildVariables.GetBooleanByKey(
+                WellKnownVariables.MSBuildNuGetRestoreEnabled,
                 false);
 
             if (!enabled)
@@ -43,7 +44,9 @@ namespace Arbor.X.Core.Tools.NuGet
 
             string solutionFile = solutionFiles.Single();
 
-            ExitCode result = await ProcessHelper.ExecuteAsync(msbuildExePath, new[] { solutionFile, "/t:restore" },
+            ExitCode result = await ProcessHelper.ExecuteAsync(
+                msbuildExePath,
+                new[] { solutionFile, "/t:restore" },
                 logger);
 
             return result;

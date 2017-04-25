@@ -29,7 +29,9 @@ namespace Arbor.X.Core.Tools.ILRepack
         private string _ilRepackExePath;
         private ILogger _logger;
 
-        public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
+        public async Task<ExitCode> ExecuteAsync(
+            ILogger logger,
+            IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
             _logger = logger;
@@ -49,7 +51,8 @@ namespace Arbor.X.Core.Tools.ILRepack
                 buildVariables.Require(WellKnownVariables.ExternalTools_ILRepack_ExePath).ThrowIfEmptyValue().Value;
 
             string customILRepackPath =
-                buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_ILRepack_Custom_ExePath,
+                buildVariables.GetVariableValueOrDefault(
+                    WellKnownVariables.ExternalTools_ILRepack_Custom_ExePath,
                     string.Empty);
 
             if (!string.IsNullOrWhiteSpace(customILRepackPath) && File.Exists(customILRepackPath))
@@ -66,8 +69,10 @@ namespace Arbor.X.Core.Tools.ILRepack
             var sourceRootDirectory = new DirectoryInfo(sourceRoot);
 
             List<FileInfo> csharpProjectFiles =
-                sourceRootDirectory.GetFilesRecursive(new List<string> { ".csproj" },
-                        DefaultPaths.DefaultPathLookupSpecification, sourceRoot)
+                sourceRootDirectory.GetFilesRecursive(
+                        new List<string> { ".csproj" },
+                        DefaultPaths.DefaultPathLookupSpecification,
+                        sourceRoot)
                     .ToList();
 
             List<FileInfo> ilMergeProjects = csharpProjectFiles.Where(IsILMergeEnabledInProjectFile).ToList();
@@ -123,8 +128,12 @@ namespace Arbor.X.Core.Tools.ILRepack
 
                 ExitCode result =
                     await
-                        ProcessRunner.ExecuteAsync(_ilRepackExePath, arguments: arguments, standardOutLog: logger.Write,
-                            toolAction: logger.Write, standardErrorAction: logger.WriteError,
+                        ProcessRunner.ExecuteAsync(
+                            _ilRepackExePath,
+                            arguments: arguments,
+                            standardOutLog: logger.Write,
+                            toolAction: logger.Write,
+                            standardErrorAction: logger.WriteError,
                             cancellationToken: cancellationToken);
 
                 if (!result.IsSuccess)
@@ -139,11 +148,17 @@ namespace Arbor.X.Core.Tools.ILRepack
             return ExitCode.Success;
         }
 
+        private static bool FileIsStandAloneExe(FileInfo file)
+        {
+            return file.Name.IndexOf(".vshost.", StringComparison.InvariantCultureIgnoreCase) < 0;
+        }
+
         private IEnumerable<ILRepackData> GetIlMergeFiles(FileInfo projectFile)
         {
 // ReSharper disable PossibleNullReferenceException
             DirectoryInfo binDirectory = projectFile.Directory.GetDirectories("bin").SingleOrDefault();
-// ReSharper restore PossibleNullReferenceException
+
+            // ReSharper restore PossibleNullReferenceException
 
             if (binDirectory == null)
             {
@@ -168,7 +183,8 @@ namespace Arbor.X.Core.Tools.ILRepack
             MSBuildProperty msBuildProperty = csProjFile.BuildProject.PropertyGroups.SelectMany(
                     group =>
                         group.Properties.Where(
-                            property => property.Name.Equals(targetFrameworkVersion,
+                            property => property.Name.Equals(
+                                targetFrameworkVersion,
                                 StringComparison.OrdinalIgnoreCase)))
                 .FirstOrDefault();
 
@@ -212,12 +228,6 @@ namespace Arbor.X.Core.Tools.ILRepack
             yield return new ILRepackData(exe.FullName, dlls, configuration, platform, targetFrameworkVersionValue);
         }
 
-
-        private static bool FileIsStandAloneExe(FileInfo file)
-        {
-            return file.Name.IndexOf(".vshost.", StringComparison.InvariantCultureIgnoreCase) < 0;
-        }
-
         private string GetPlatform(FileInfo exe)
         {
             Assembly assembly = Assembly.LoadFile(Path.GetFullPath(exe.FullName));
@@ -251,7 +261,8 @@ namespace Arbor.X.Core.Tools.ILRepack
                         string line = streamReader.ReadLine();
 
                         if (
-                            line?.IndexOf("<ILMergeExe>true</ILMergeExe>",
+                            line?.IndexOf(
+                                "<ILMergeExe>true</ILMergeExe>",
                                 StringComparison.InvariantCultureIgnoreCase) >= 0)
                         {
                             return true;
@@ -259,6 +270,7 @@ namespace Arbor.X.Core.Tools.ILRepack
                     }
                 }
             }
+
             return false;
         }
     }

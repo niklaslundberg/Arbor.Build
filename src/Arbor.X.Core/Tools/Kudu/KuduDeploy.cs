@@ -19,19 +19,21 @@ namespace Arbor.X.Core.Tools.Kudu
     public class KuduDeploy : ITool
     {
         private string _artifacts;
+        private bool _clearTarget;
+        private bool _deleteExistingAppOfflineHtm;
         private BranchName _deployBranch;
         private string _deploymentTargetDirectory;
-        private bool _kuduEnabled;
-        private string _kuduConfigurationFallback;
-        private bool _clearTarget;
-        private bool _useAppOfflineFile;
         private bool _excludeAppData;
-        private bool _deleteExistingAppOfflineHtm;
-        private string _ignoreDeleteFiles;
         private string _ignoreDeleteDirectories;
+        private string _ignoreDeleteFiles;
+        private string _kuduConfigurationFallback;
+        private bool _kuduEnabled;
+        private bool _useAppOfflineFile;
         private string _vcsRoot;
 
-        public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
+        public async Task<ExitCode> ExecuteAsync(
+            ILogger logger,
+            IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
             _kuduEnabled = buildVariables.HasKey(WellKnownVariables.ExternalTools_Kudu_Enabled) &&
@@ -40,6 +42,7 @@ namespace Arbor.X.Core.Tools.Kudu
             {
                 return ExitCode.Success;
             }
+
             _vcsRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
             _artifacts = buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue().Value;
             buildVariables.Require(WellKnownVariables.ExternalTools_Kudu_Platform).ThrowIfEmptyValue();
@@ -65,7 +68,8 @@ namespace Arbor.X.Core.Tools.Kudu
 
             string branchNameOverride =
                 buildVariables.GetVariableValueOrDefault(
-                    WellKnownVariables.ExternalTools_Kudu_DeploymentBranchNameOverride, string.Empty);
+                    WellKnownVariables.ExternalTools_Kudu_DeploymentBranchNameOverride,
+                    string.Empty);
 
             if (!string.IsNullOrWhiteSpace(branchNameOverride))
             {
@@ -89,6 +93,7 @@ namespace Arbor.X.Core.Tools.Kudu
                 logger.Write("No websites found. Ignoring Kudu deployment.");
                 return ExitCode.Success;
             }
+
             DirectoryInfo websiteToDeploy;
 
             if (builtWebsites.Length == 1)
@@ -164,7 +169,8 @@ namespace Arbor.X.Core.Tools.Kudu
                         {
                             using (var streamWriter = new StreamWriter(fs, Encoding.UTF8))
                             {
-                                streamWriter.WriteLine("File created by Arbor.X Kudu at {0} (UTC)",
+                                streamWriter.WriteLine(
+                                    "File created by Arbor.X Kudu at {0} (UTC)",
                                     DateTime.UtcNow.ToString("O"));
                             }
                         }
@@ -210,13 +216,15 @@ namespace Arbor.X.Core.Tools.Kudu
 
                         if (customDirectoryExcludes.Any())
                         {
-                            logger.WriteVerbose("Adding directory ignore patterns " + string.Join("|",
+                            logger.WriteVerbose("Adding directory ignore patterns " + string.Join(
+                                                    "|",
                                                     $"'{customDirectoryExcludes.Select(item => (object)item)}'"));
                         }
 
                         if (customFileExcludes.Any())
                         {
-                            logger.WriteVerbose("Adding file ignore patterns " + string.Join("|",
+                            logger.WriteVerbose("Adding file ignore patterns " + string.Join(
+                                                    "|",
                                                     $"'{customFileExcludes.Select(item => (object)item)}'"));
                         }
 
@@ -244,8 +252,11 @@ namespace Arbor.X.Core.Tools.Kudu
 
                 try
                 {
-                    ExitCode exitCode = await DirectoryCopy.CopyAsync(configuration.FullName,
-                        _deploymentTargetDirectory, logger, rootDir: _vcsRoot,
+                    ExitCode exitCode = await DirectoryCopy.CopyAsync(
+                        configuration.FullName,
+                        _deploymentTargetDirectory,
+                        logger,
+                        rootDir: _vcsRoot,
                         pathLookupSpecificationOption: new PathLookupSpecification());
 
                     if (!exitCode.IsSuccess)
@@ -367,6 +378,7 @@ namespace Arbor.X.Core.Tools.Kudu
 
                     return configDir;
                 }
+
                 logger.WriteWarning($"Kudu fallback configuration '{_kuduConfigurationFallback}' was not found");
             }
 

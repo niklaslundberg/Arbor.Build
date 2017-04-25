@@ -15,7 +15,8 @@ namespace Arbor.X.Core.BuildVariables
 {
     public static class EnvironmentVariableHelper
     {
-        public static IReadOnlyCollection<IVariable> GetBuildVariablesFromEnvironmentVariables(ILogger logger,
+        public static IReadOnlyCollection<IVariable> GetBuildVariablesFromEnvironmentVariables(
+            ILogger logger,
             List<IVariable> existingItems = null)
         {
             List<IVariable> existing = existingItems ?? new List<IVariable>();
@@ -25,7 +26,8 @@ namespace Arbor.X.Core.BuildVariables
 
             List<EnvironmentVariable> variables = environmentVariables
                 .OfType<DictionaryEntry>()
-                .Select(entry => new EnvironmentVariable(entry.Key.ToString(),
+                .Select(entry => new EnvironmentVariable(
+                    entry.Key.ToString(),
                     entry.Value.ToString()))
                 .ToList();
 
@@ -46,6 +48,7 @@ namespace Arbor.X.Core.BuildVariables
                 {
                     builder.AppendLine(environmentVariable.Key + ": " + environmentVariable.Value);
                 }
+
                 logger.WriteVerbose(builder.ToString());
             }
 

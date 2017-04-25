@@ -36,10 +36,16 @@ namespace Arbor.Processing
             return false;
         }
 
-        public static bool IsAlive(this Process process, Task<ExitCode> task, CancellationToken cancellationToken,
+        public static bool IsAlive(
+            this Process process,
+            Task<ExitCode> task,
+            CancellationToken cancellationToken,
             bool done,
-            string processWithArgs, Action<string, string> toolAction, Action<string, string> standardAction,
-            Action<string, string> errorAction, Action<string, string> verbose)
+            string processWithArgs,
+            Action<string, string> toolAction,
+            Action<string, string> standardAction,
+            Action<string, string> errorAction,
+            Action<string, string> verbose)
         {
             if (process == null)
             {

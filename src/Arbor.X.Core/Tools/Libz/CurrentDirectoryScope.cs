@@ -16,7 +16,8 @@ namespace Arbor.X.Core.Tools.Libz
             _newDirectoryInfo = newDirectoryInfo;
         }
 
-        public static CurrentDirectoryScope Create([NotNull] DirectoryInfo originalDirectory,
+        public static CurrentDirectoryScope Create(
+            [NotNull] DirectoryInfo originalDirectory,
             [NotNull] DirectoryInfo newDirectoryInfo)
         {
             if (originalDirectory == null)

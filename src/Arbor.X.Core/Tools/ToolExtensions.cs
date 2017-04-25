@@ -10,6 +10,7 @@ namespace Arbor.X.Core.Tools
             {
                 throw new ArgumentNullException(nameof(tool));
             }
+
             return tool.GetType().Name;
         }
     }

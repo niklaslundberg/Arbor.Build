@@ -9,15 +9,19 @@
         public static readonly string BranchNameVersionOverrideEnabled =
             "Arbor.X.Vcs.Branch.Name.Version.OverrideEnabled";
 
-        [VariableDescription("VCS branch full name")] public static readonly string BranchFullName =
+        [VariableDescription("VCS branch full name")]
+        public static readonly string BranchFullName =
             "Arbor.X.Vcs.Branch.FullName";
 
-        [VariableDescription("VCS branch logical name")] public static readonly string BranchLogicalName =
+        [VariableDescription("VCS branch logical name")]
+        public static readonly string BranchLogicalName =
             "Arbor.X.Vcs.Branch.LogicalName";
 
-        [VariableDescription("Git hash")] public static readonly string GitHash = "Arbor.X.Vcs.Git.Hash";
+        [VariableDescription("Git hash")]
+        public static readonly string GitHash = "Arbor.X.Vcs.Git.Hash";
 
-        [VariableDescription("VCS branch name version if any")] public static readonly string BranchNameVersion =
+        [VariableDescription("VCS branch name version if any")]
+        public static readonly string BranchNameVersion =
             "Arbor.X.Vcs.Branch.Name.Version";
 
         [VariableDescription("VCS branch name version split charecter comma separated list")]

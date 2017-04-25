@@ -8,7 +8,8 @@ namespace Arbor.X.Core.GenericExtensions
 {
     public static class DisplayExtensions
     {
-        public static string DisplayAsTable(this IEnumerable<IDictionary<string, string>> dictionaries,
+        public static string DisplayAsTable(
+            this IEnumerable<IDictionary<string, string>> dictionaries,
             char padChar = '.')
         {
             IReadOnlyCollection<IDictionary<string, string>> materialized = dictionaries.SafeToReadOnlyCollection();
@@ -31,11 +32,14 @@ namespace Arbor.X.Core.GenericExtensions
                         key => new
                         {
                             Key = key,
-                            MaxLength = Math.Max(key.Length, Math.Max(
-                                materialized.Where(dictionary => dictionary.ContainsKey(key))
-                                    .Select(dictionary => dictionary[key])
-                                    .Select(value => (value ?? string.Empty).Length)
-                                    .Max(), NoValue.Length))
+                            MaxLength = Math.Max(
+                                key.Length,
+                                Math.Max(
+                                    materialized.Where(dictionary => dictionary.ContainsKey(key))
+                                        .Select(dictionary => dictionary[key])
+                                        .Select(value => (value ?? string.Empty).Length)
+                                        .Max(),
+                                    NoValue.Length))
                         })
                     .ToArray();
 
@@ -83,6 +87,7 @@ namespace Arbor.X.Core.GenericExtensions
                         builder.Append(new string(padChar, padLength));
                     }
                 }
+
                 builder.AppendLine();
             }
 

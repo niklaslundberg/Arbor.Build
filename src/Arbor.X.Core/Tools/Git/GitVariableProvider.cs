@@ -13,6 +13,8 @@ namespace Arbor.X.Core.Tools.Git
     [UsedImplicitly]
     public class GitVariableProvider : IVariableProvider
     {
+        public int Order { get; } = -1;
+
         public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
@@ -82,7 +84,5 @@ namespace Arbor.X.Core.Tools.Git
 
             return Task.FromResult<IEnumerable<IVariable>>(variables);
         }
-
-        public int Order { get; } = -1;
     }
 }

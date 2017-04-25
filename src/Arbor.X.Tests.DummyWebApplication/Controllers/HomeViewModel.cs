@@ -2,11 +2,11 @@
 {
     public class HomeViewModel
     {
-        public string UtcNow { get; }
-
         public HomeViewModel(string utcNow)
         {
             UtcNow = utcNow;
         }
+
+        public string UtcNow { get; }
     }
 }

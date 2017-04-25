@@ -4,7 +4,9 @@ namespace Arbor.X.Core.Tools.Kudu
 {
     public class KuduWebProjectDetails
     {
-        private KuduWebProjectDetails(bool isKuduWebJobProject, string webJobName = null,
+        private KuduWebProjectDetails(
+            bool isKuduWebJobProject,
+            string webJobName = null,
             KuduWebJobType kuduWebJobType = null,
             string projectFilePath = null)
         {
@@ -39,15 +41,13 @@ namespace Arbor.X.Core.Tools.Kudu
                 throw new ArgumentNullException(nameof(projectFilePath));
             }
 
-            var webJobProject = new KuduWebProjectDetails(true, ParseName(name), KuduWebJobType.Parse(type),
+            var webJobProject = new KuduWebProjectDetails(
+                true,
+                ParseName(name),
+                KuduWebJobType.Parse(type),
                 projectFilePath);
 
             return webJobProject;
-        }
-
-        private static string ParseName(string name)
-        {
-            return name.ExtractFromTag("KuduWebJobName");
         }
 
         public static KuduWebProjectDetails NotAKuduWebJobProject()
@@ -60,6 +60,11 @@ namespace Arbor.X.Core.Tools.Kudu
             return IsKuduWebJobProject
                 ? $"{WebJobName} ({KuduWebJobType}), path '{ProjectFilePath}'"
                 : "Not a Kudu web project";
+        }
+
+        private static string ParseName(string name)
+        {
+            return name.ExtractFromTag("KuduWebJobName");
         }
     }
 }

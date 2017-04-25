@@ -33,6 +33,58 @@ namespace Arbor.X.Core.Logging
             _prefix = prefix ?? string.Empty;
         }
 
+        public void WriteError(string message, string prefix = null)
+        {
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                return;
+            }
+
+            _logger.Error(GetTotalMessage(GetPrefix(prefix), message));
+        }
+
+        public void Write(string message, string prefix = null)
+        {
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                return;
+            }
+
+            _logger.Info(GetTotalMessage(GetPrefix(prefix), message));
+        }
+
+        public void WriteWarning(string message, string prefix = null)
+        {
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                return;
+            }
+
+            _logger.Warn(GetTotalMessage(GetPrefix(prefix), message));
+        }
+
+        public void WriteVerbose(string message, string prefix = null)
+        {
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                return;
+            }
+
+            _logger.Trace(GetTotalMessage(GetPrefix(prefix), message));
+        }
+
+        public LogLevel LogLevel { get; set; }
+
+        public void WriteDebug(string message, string prefix = null)
+        {
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                return;
+            }
+
+            _logger.Debug(GetTotalMessage(GetPrefix(prefix), message));
+        }
+
         private NLog.LogLevel GetLogLevel()
         {
             var mapping = new Dictionary<LogLevel, NLog.LogLevel>
@@ -55,54 +107,6 @@ namespace Arbor.X.Core.Logging
             }
 
             return nlogLevel;
-        }
-
-        public void WriteError(string message, string prefix = null)
-        {
-            if (string.IsNullOrWhiteSpace(message))
-            {
-                return;
-            }
-
-            _logger.Error(GetTotalMessage(GetPrefix(prefix), message));
-        }
-
-        public void Write(string message, string prefix = null)
-        {
-            if (string.IsNullOrWhiteSpace(message))
-            {
-                return;
-            }
-            _logger.Info(GetTotalMessage(GetPrefix(prefix), message));
-        }
-
-        public void WriteWarning(string message, string prefix = null)
-        {
-            if (string.IsNullOrWhiteSpace(message))
-            {
-                return;
-            }
-            _logger.Warn(GetTotalMessage(GetPrefix(prefix), message));
-        }
-
-        public void WriteVerbose(string message, string prefix = null)
-        {
-            if (string.IsNullOrWhiteSpace(message))
-            {
-                return;
-            }
-            _logger.Trace(GetTotalMessage(GetPrefix(prefix), message));
-        }
-
-        public LogLevel LogLevel { get; set; }
-
-        public void WriteDebug(string message, string prefix = null)
-        {
-            if (string.IsNullOrWhiteSpace(message))
-            {
-                return;
-            }
-            _logger.Debug(GetTotalMessage(GetPrefix(prefix), message));
         }
 
         private string GetPrefix(string prefix)

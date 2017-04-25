@@ -8,8 +8,12 @@ namespace Arbor.X.Core.IO
 {
     public static class DirectoryCopy
     {
-        public static async Task<ExitCode> CopyAsync(string sourceDir, string targetDir, ILogger optionalLogger = null,
-            PathLookupSpecification pathLookupSpecificationOption = null, string rootDir = null)
+        public static async Task<ExitCode> CopyAsync(
+            string sourceDir,
+            string targetDir,
+            ILogger optionalLogger = null,
+            PathLookupSpecification pathLookupSpecificationOption = null,
+            string rootDir = null)
         {
             PathLookupSpecification pathLookupSpecification =
                 pathLookupSpecificationOption ?? DefaultPaths.DefaultPathLookupSpecification;
@@ -76,7 +80,9 @@ namespace Arbor.X.Core.IO
 
             foreach (DirectoryInfo directory in sourceDirectory.GetDirectories())
             {
-                ExitCode exitCode = await CopyAsync(directory.FullName, Path.Combine(targetDir, directory.Name),
+                ExitCode exitCode = await CopyAsync(
+                    directory.FullName,
+                    Path.Combine(targetDir, directory.Name),
                     pathLookupSpecificationOption: pathLookupSpecification);
 
                 if (!exitCode.IsSuccess)

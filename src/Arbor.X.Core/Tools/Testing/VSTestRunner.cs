@@ -66,14 +66,30 @@ namespace Arbor.X.Core.Tools.Testing
                 {
                     logger.WriteWarning($"Ignoring test exception: {ex}");
                 }
+
                 return ExitCode.Success;
             }
 
             return await RunVsTestAsync(logger, reportPath, vsTestExePath, runTestsInReleaseConfiguration);
         }
 
-        private async Task<ExitCode> RunVsTestAsync(ILogger logger, string vsTestReportDirectoryPath,
-            string vsTestExePath, bool runTestsInReleaseConfiguration)
+        private static void LogExecution(ILogger logger, IEnumerable<string> arguments, string exePath)
+        {
+            string args = string.Join(" ", arguments.Select(item => $"\"{item}\""));
+            logger.Write($"Running VSTest {exePath} {args}");
+        }
+
+        private static IEnumerable<string> GetVsTestConsoleOptions()
+        {
+            var options = new List<string> { "/Logger:trx" };
+            return options;
+        }
+
+        private async Task<ExitCode> RunVsTestAsync(
+            ILogger logger,
+            string vsTestReportDirectoryPath,
+            string vsTestExePath,
+            bool runTestsInReleaseConfiguration)
         {
             Type testClassAttribute = typeof(TestClassAttribute);
             Type testMethodAttribute = typeof(TestMethodAttribute);
@@ -145,18 +161,6 @@ namespace Arbor.X.Core.Tools.Testing
             {
                 Directory.CreateDirectory(vsTestReportDirectoryPath);
             }
-        }
-
-        private static void LogExecution(ILogger logger, IEnumerable<string> arguments, string exePath)
-        {
-            string args = string.Join(" ", arguments.Select(item => $"\"{item}\""));
-            logger.Write($"Running VSTest {exePath} {args}");
-        }
-
-        private static IEnumerable<string> GetVsTestConsoleOptions()
-        {
-            var options = new List<string> { "/Logger:trx" };
-            return options;
         }
     }
 }

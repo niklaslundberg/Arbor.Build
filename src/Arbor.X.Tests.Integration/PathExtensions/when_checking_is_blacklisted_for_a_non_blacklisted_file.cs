@@ -10,16 +10,17 @@ namespace Arbor.X.Tests.Integration.PathExtensions
         private static readonly PathLookupSpecification path_lookup_specification =
             DefaultPaths.DefaultPathLookupSpecification.WithIgnoredFileNameParts(new[] { "" });
 
+        private static bool result;
+
         private Establish context = () => { };
 
         private Because of = () =>
         {
             result = path_lookup_specification.IsFileBlackListed(@"C:\anyrandomfile.txt",
-                allowNonExistingFiles: true, logger: new ConsoleLogger());
+                allowNonExistingFiles: true,
+                logger: new ConsoleLogger());
         };
 
         private It should_be_true = () => result.ShouldBeFalse();
-
-        private static bool result;
     }
 }

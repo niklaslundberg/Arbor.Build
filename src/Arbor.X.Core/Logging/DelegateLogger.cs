@@ -4,11 +4,11 @@ namespace Arbor.X.Core.Logging
 {
     public sealed class DelegateLogger : ILogger
     {
-        private readonly Action<string, string> _verbose;
+        private readonly Action<string, string> _debug;
         private readonly Action<string, string> _error;
         private readonly Action<string, string> _log;
         private readonly Action<string, string> _warning;
-        private readonly Action<string, string> _debug;
+        private readonly Action<string, string> _verbose;
 
         public DelegateLogger(
             Action<string, string> log,
@@ -23,6 +23,8 @@ namespace Arbor.X.Core.Logging
             _error = error ?? ((message, prefix) => { });
             _debug = debug ?? ((message, prefix) => { });
         }
+
+        public LogLevel LogLevel { get; set; }
 
         public void WriteError(string message, string prefix = null)
         {
@@ -43,8 +45,6 @@ namespace Arbor.X.Core.Logging
         {
             _verbose(message, prefix);
         }
-
-        public LogLevel LogLevel { get; set; }
 
         public void WriteDebug(string message, string prefix = null)
         {

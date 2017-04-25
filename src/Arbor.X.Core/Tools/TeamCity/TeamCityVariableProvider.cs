@@ -11,14 +11,16 @@ namespace Arbor.X.Core.Tools.TeamCity
     [UsedImplicitly]
     public class TeamCityVariableProvider : IVariableProvider
     {
-        public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(ILogger logger,
+        public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(
+            ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
             var variables = new List<IVariable>();
 
             bool isRunningInTeamCity =
-                buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_TeamCity_BuildConfigurationName,
+                buildVariables.GetBooleanByKey(
+                    WellKnownVariables.ExternalTools_TeamCity_BuildConfigurationName,
                     false);
 
             if (buildVariables.HasKey(WellKnownVariables.ExternalTools_TeamCity_IsRunningInTeamCity))
@@ -28,7 +30,8 @@ namespace Arbor.X.Core.Tools.TeamCity
             }
             else
             {
-                variables.Add(new EnvironmentVariable(WellKnownVariables.ExternalTools_TeamCity_IsRunningInTeamCity,
+                variables.Add(new EnvironmentVariable(
+                    WellKnownVariables.ExternalTools_TeamCity_IsRunningInTeamCity,
                     isRunningInTeamCity.ToString()));
             }
 

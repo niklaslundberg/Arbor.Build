@@ -8,8 +8,8 @@ namespace Arbor.X.Tests.Integration.Logging.LogLevel
         private static Core.Logging.LogLevel logLevel;
         private Because of = () => { logLevel = Core.Logging.LogLevel.TryParse("verbose"); };
 
-        private It should_equal_verbose_level = () => logLevel.Level.ShouldEqual(Core.Logging.LogLevel.Verbose.Level);
-
         private It should_equal_verbose = () => logLevel.ShouldEqual(Core.Logging.LogLevel.Verbose);
+
+        private It should_equal_verbose_level = () => logLevel.Level.ShouldEqual(Core.Logging.LogLevel.Verbose.Level);
     }
 }

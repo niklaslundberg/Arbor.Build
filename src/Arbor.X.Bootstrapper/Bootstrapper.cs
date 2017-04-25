@@ -538,7 +538,9 @@ namespace Arbor.X.Bootstrapper
 
                 var statusAllArguments = new[]
                 {
-                    $"--git-dir={gitDir}", $"--work-tree={sourceRoot}", "status"
+                    $"--git-dir={gitDir}",
+                    $"--work-tree={sourceRoot}",
+                    "status"
                 };
 
                 var argumentVariants = new List<string[]> { new[] { "status" }, statusAllArguments };
@@ -701,7 +703,8 @@ namespace Arbor.X.Bootstrapper
             else
             {
                 _logger.WriteVerbose(
-                    $"Downloading nuget.exe from user specified URI '{nugetDownloadUriEnvironmentVariable}'", _Prefix);
+                    $"Downloading nuget.exe from user specified URI '{nugetDownloadUriEnvironmentVariable}'",
+                    _Prefix);
             }
 
             _logger.WriteVerbose($"Downloading '{nugetDownloadUri}' to '{tempFile}'", _Prefix);

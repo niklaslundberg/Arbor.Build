@@ -24,11 +24,11 @@ namespace Arbor.X.Core.Tools.ILRepack
             var variables = new List<IVariable>
             {
                 new EnvironmentVariable(
-                    WellKnownVariables.ExternalTools_ILRepack_ExePath, ilRepackPath)
+                    WellKnownVariables.ExternalTools_ILRepack_ExePath,
+                    ilRepackPath)
             };
 
             return Task.FromResult<IEnumerable<IVariable>>(variables);
         }
-
     }
 }

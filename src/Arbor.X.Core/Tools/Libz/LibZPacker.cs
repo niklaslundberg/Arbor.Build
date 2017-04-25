@@ -31,7 +31,9 @@ namespace Arbor.X.Core.Tools.Libz
         private string _exePath;
         private ILogger _logger;
 
-        public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
+        public async Task<ExitCode> ExecuteAsync(
+            ILogger logger,
+            IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
             _logger = logger;
@@ -52,8 +54,8 @@ namespace Arbor.X.Core.Tools.Libz
                 .Value;
 
             string customExePath = buildVariables.GetVariableValueOrDefault(
-                    WellKnownVariables.ExternalTools_LibZ_Custom_ExePath,
-                    string.Empty);
+                WellKnownVariables.ExternalTools_LibZ_Custom_ExePath,
+                string.Empty);
 
             if (!string.IsNullOrWhiteSpace(customExePath) && File.Exists(customExePath))
             {
@@ -69,8 +71,10 @@ namespace Arbor.X.Core.Tools.Libz
             var sourceRootDirectory = new DirectoryInfo(sourceRoot);
 
             List<FileInfo> csharpProjectFiles =
-                sourceRootDirectory.GetFilesRecursive(new List<string> { ".csproj" },
-                        DefaultPaths.DefaultPathLookupSpecification, sourceRoot)
+                sourceRootDirectory.GetFilesRecursive(
+                        new List<string> { ".csproj" },
+                        DefaultPaths.DefaultPathLookupSpecification,
+                        sourceRoot)
                     .ToList();
 
             List<FileInfo> ilMergeProjects = csharpProjectFiles.Where(IsMergeEnabledInProjectFile).ToList();
@@ -115,7 +119,8 @@ namespace Arbor.X.Core.Tools.Libz
 
                 ExitCode result;
 
-                using (CurrentDirectoryScope.Create(new DirectoryInfo(Directory.GetCurrentDirectory()),
+                using (CurrentDirectoryScope.Create(
+                    new DirectoryInfo(Directory.GetCurrentDirectory()),
                     mergedDirectory))
                 {
                     result = await ProcessRunner.ExecuteAsync(
@@ -137,6 +142,11 @@ namespace Arbor.X.Core.Tools.Libz
             }
 
             return ExitCode.Success;
+        }
+
+        private static bool FileIsStandAloneExe(FileInfo file)
+        {
+            return file.Name.IndexOf(".vshost.", StringComparison.InvariantCultureIgnoreCase) < 0;
         }
 
         private IEnumerable<ILRepackData> GetMergeFiles(FileInfo projectFile)
@@ -209,12 +219,6 @@ namespace Arbor.X.Core.Tools.Libz
             string targetFrameworkVersionValue = NormalizeVersion(msBuildProperty.Value);
 
             yield return new ILRepackData(exe.FullName, dlls, configuration, platform, targetFrameworkVersionValue);
-        }
-
-
-        private static bool FileIsStandAloneExe(FileInfo file)
-        {
-            return file.Name.IndexOf(".vshost.", StringComparison.InvariantCultureIgnoreCase) < 0;
         }
 
         private string GetPlatform(FileInfo exe)

@@ -15,7 +15,8 @@ namespace Arbor.Processing
     {
         private const string ToolName = "[" + nameof(ProcessRunner) + "] ";
 
-        public static async Task<ExitCode> ExecuteAsync(string executePath,
+        public static async Task<ExitCode> ExecuteAsync(
+            string executePath,
             CancellationToken cancellationToken = default(CancellationToken),
             IEnumerable<string> arguments = null,
             Action<string, string> standardOutLog = null,
@@ -44,18 +45,31 @@ namespace Arbor.Processing
 
             string formattedArguments = string.Join(" ", usedArguments.Select(arg => $"\"{arg}\""));
 
-            Task<ExitCode> task = RunProcessAsync(executePath, formattedArguments, standardErrorAction, standardOutLog,
-                cancellationToken, toolAction, verboseAction, environmentVariables, debugAction,
-                addProcessNameAsLogCategory, addProcessRunnerCategory, parentPrefix);
+            Task<ExitCode> task = RunProcessAsync(executePath,
+                formattedArguments,
+                standardErrorAction,
+                standardOutLog,
+                cancellationToken,
+                toolAction,
+                verboseAction,
+                environmentVariables,
+                debugAction,
+                addProcessNameAsLogCategory,
+                addProcessRunnerCategory,
+                parentPrefix);
 
             ExitCode exitCode = await task;
 
             return exitCode;
         }
 
-        private static async Task<ExitCode> RunProcessAsync(string executePath, string formattedArguments,
-            Action<string, string> standardErrorAction, Action<string, string> standardOutputLog,
-            CancellationToken cancellationToken, Action<string, string> toolAction,
+        private static async Task<ExitCode> RunProcessAsync(
+            string executePath,
+            string formattedArguments,
+            Action<string, string> standardErrorAction,
+            Action<string, string> standardOutputLog,
+            CancellationToken cancellationToken,
+            Action<string, string> toolAction,
             Action<string, string> verboseAction = null,
             IEnumerable<KeyValuePair<string, string>> environmentVariables = null,
             Action<string, string> debugAction = null,
@@ -201,8 +215,14 @@ namespace Arbor.Processing
             bool done = false;
             try
             {
-                while (process.IsAlive(taskCompletionSource.Task, cancellationToken, done, processWithArgs, toolAction,
-                    standardAction, errorAction, verbose))
+                while (process.IsAlive(taskCompletionSource.Task,
+                    cancellationToken,
+                    done,
+                    processWithArgs,
+                    toolAction,
+                    standardAction,
+                    errorAction,
+                    verbose))
                 {
                     if (cancellationToken.IsCancellationRequested)
                     {

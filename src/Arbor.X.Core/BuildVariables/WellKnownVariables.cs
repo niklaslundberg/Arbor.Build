@@ -5,15 +5,64 @@ using Arbor.X.Core.GenericExtensions;
 
 namespace Arbor.X.Core.BuildVariables
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "StyleCop.CSharp.NamingRules",
+        "SA1310:Field names must not contain underscore",
+        Justification = "Variables")]
     public static partial class WellKnownVariables
     {
+        public static IReadOnlyCollection<VariableDescription> AllVariables
+        {
+            get
+            {
+                var allVariables = new List<VariableDescription>();
+
+                List<FieldInfo> fields = typeof(WellKnownVariables).GetTypeInfo()
+                    .GetFields()
+                    .Where(field => field.IsPublicConstantOrStatic())
+                    .ToList();
+
+                foreach (FieldInfo field in fields)
+                {
+                    string invariantName = (string)field.GetValue(null);
+
+                    var attribute = field.GetCustomAttribute<VariableDescriptionAttribute>();
+
+                    VariableDescription description = attribute != null
+                        ? VariableDescription.Create(
+                            invariantName,
+                            attribute.Description,
+                            field.Name,
+                            attribute.DefaultValue)
+                        : VariableDescription.Create(field.Name);
+
+                    allVariables.Add(description);
+                }
+
+                return allVariables.OrderBy(name => name.InvariantName).ToList();
+            }
+        }
+
         // ReSharper disable InconsistentNaming
 
         // ReSharper disable ConvertToConstant.Global
 
-
         [VariableDescription("Flag to indicate if build platform AnyCPU is enabled")]
         public const string AnyCpuEnabled = "Arbor.X.Build.Platform.AnyCPU.Enabled";
+
+        [VariableDescription(
+            "Flag to indicate that Symbol server package upload is enabled even if not running on a build server")]
+        public const string ExternalTools_SymbolServer_UploadTimeoutInSeconds =
+            "Arbor.X.NuGet.SymbolServer.TimeoutInSeconds";
+
+        [VariableDescription("External, Kudu: deployment version control branch")]
+        public const string ExternalTools_Kudu_DeploymentBranchName = "deployment_branch";
+
+        public const string DotNetRestoreEnabled = "Arbor.X.DotNet.Restore.Enabled";
+
+        public const string MSBuildNuGetRestoreEnabled = "Arbor.X.MSBuild.NuGetRestore.Enabled";
+
+        public const string DotNetExePath = "Arbor.X.DotNet.ExePath";
 
         [VariableDescription("Visual Studio version")]
         public static readonly string ExternalTools_VisualStudio_Version =
@@ -23,22 +72,27 @@ namespace Arbor.X.Core.BuildVariables
         public static readonly string ExternalTools_VisualStudio_Version_Allow_PreRelease =
             "Arbor.X.Tools.External.VisualStudio.Version.PreRelease.Enabled";
 
-        [VariableDescription("Build arftifacts path")] public static readonly string Artifacts = "Arbor.X.Artifacts";
+        [VariableDescription("Build arftifacts path")]
+        public static readonly string Artifacts = "Arbor.X.Artifacts";
 
         [VariableDescription("Flag to indicate if the build arftifacts should be cleaned up before the build starts")]
         public static readonly string CleanupArtifactsBeforeBuildEnabled =
             "Arbor.X.Artifacts.CleanupBeforeBuildEnabled";
 
-        [VariableDescription("Full build version number")] public static readonly string Version =
+        [VariableDescription("Full build version number")]
+        public static readonly string Version =
             Arbor.X.Build + ".Version";
 
-        [VariableDescription("Max number of CPUs for MSBuild to use")] public static readonly string CpuLimit =
+        [VariableDescription("Max number of CPUs for MSBuild to use")]
+        public static readonly string CpuLimit =
             "Arbor.X.CpuLimit";
 
-        [VariableDescription(".NET assembly version")] public static readonly string NetAssemblyVersion =
+        [VariableDescription(".NET assembly version")]
+        public static readonly string NetAssemblyVersion =
             Arbor.X.Build + ".NetAssembly.Version";
 
-        [VariableDescription(".NET assembly file version")] public static readonly string NetAssemblyFileVersion =
+        [VariableDescription(".NET assembly file version")]
+        public static readonly string NetAssemblyFileVersion =
             Arbor.X.Build + ".NetAssembly.FileVersion";
 
         [VariableDescription("Enable assembly version patching")]
@@ -47,13 +101,15 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescription("Flag to indicate if the build is consider a release build")]
         public static readonly string ReleaseBuild = Arbor.X.Build + ".IsReleaseBuild";
 
-        [VariableDescription("MSBuild configuration (eg. Debug/Release)")] public static readonly string Configuration =
+        [VariableDescription("MSBuild configuration (eg. Debug/Release)")]
+        public static readonly string Configuration =
             Arbor.X.Build + ".Configuration";
 
         [VariableDescription("Dynamic configuration property")]
         public static readonly string CurrentBuildConfiguration = Arbor.X.Build + ".CurrentBuild.Configuration";
 
-        [VariableDescription("Temporary directory path")] public static readonly string TempDirectory =
+        [VariableDescription("Temporary directory path")]
+        public static readonly string TempDirectory =
             Arbor.X.Build + ".TempDirectory";
 
         [VariableDescription("Symbol server URI for NuGet source package upload")]
@@ -67,11 +123,6 @@ namespace Arbor.X.Core.BuildVariables
         public static readonly string ExternalTools_SymbolServer_ForceUploadEnabled =
             "Arbor.X.Tools.External.SymbolServer.ForceUploadEnabled";
 
-        [VariableDescription(
-            "Flag to indicate that Symbol server package upload is enabled even if not running on a build server")]
-        public const string ExternalTools_SymbolServer_UploadTimeoutInSeconds =
-            "Arbor.X.NuGet.SymbolServer.TimeoutInSeconds";
-
         [VariableDescription("Flag to indicate that Symbol server package upload is enabled")]
         public static readonly string ExternalTools_SymbolServer_Enabled =
             "Arbor.X.Tools.External.SymbolServer.Enabled";
@@ -81,7 +132,8 @@ namespace Arbor.X.Core.BuildVariables
 
         [VariableDescription(
             "Flag to indicate if the bootstrapper is allowed to download pre-release versions of Arbor.X NuGet package",
-            "false")] public static readonly string AllowPrerelease = Arbor.X.Build + ".Bootstrapper.AllowPrerelease";
+            "false")]
+        public static readonly string AllowPrerelease = Arbor.X.Build + ".Bootstrapper.AllowPrerelease";
 
         [VariableDescription("Arbor.X NuGet package version for bootstrapper to download")]
         public static readonly string ArborXNuGetPackageVersion = "Arbor.X.NuGetPackageVersion";
@@ -96,7 +148,8 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescription("MSBuild executable path (eg. C:\\MSbuild.exe)")]
         public static readonly string ExternalTools_MSBuild_ExePath = "Arbor.X.Tools.External.MSBuild.ExePath";
 
-        [VariableDescription("MSBuild max version")] public static readonly string ExternalTools_MSBuild_MaxVersion =
+        [VariableDescription("MSBuild max version")]
+        public static readonly string ExternalTools_MSBuild_MaxVersion =
             "Arbor.X.Tools.External.MSBuild.MaxVersion";
 
         [VariableDescription("MSBuild verbosity level", "normal")]
@@ -144,8 +197,10 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescription("Flag to indicate if tests are enabled", "false")]
         public static readonly string TestsEnabled = Arbor.X.Build + ".Tests.Enabled";
 
-        [VariableDescription("Visual Studio Test Framework console application path, (eg. C:\\VSTestConsole.exe)",
-            "false")] public static readonly string ExternalTools_VSTest_ExePath =
+        [VariableDescription(
+            "Visual Studio Test Framework console application path, (eg. C:\\VSTestConsole.exe)",
+            "false")]
+        public static readonly string ExternalTools_VSTest_ExePath =
             "Arbor.X.Tools.External.VSTest.ExePath";
 
         [VariableDescription("Visual Studio Test Framework test reports directory path")]
@@ -154,7 +209,8 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescription("Machine.Specifications reports directory path")]
         public static readonly string ExternalTools_MSpec_ReportPath = "Arbor.X.Artifacts.TestReports.MSpec";
 
-        [VariableDescription("PDB artifacts enabled")] public static readonly string PublishPdbFilesAsArtifacts =
+        [VariableDescription("PDB artifacts enabled")]
+        public static readonly string PublishPdbFilesAsArtifacts =
             "Arbor.X.Artifacts.PdbArtifacts.Enabled";
 
         [VariableDescription("ILRepack executable path (eg. C:\\ILRepack.exe)")]
@@ -162,7 +218,6 @@ namespace Arbor.X.Core.BuildVariables
 
         [VariableDescription("ILRepack enabled (eg. true|false")]
         public static readonly string ExternalTools_ILRepack_Enabled = "Arbor.X.Tools.External.ILRepack.Enabled";
-
 
         [VariableDescription("ILRepack custom executable path (eg. C:\\ILRepack.exe)")]
         public static readonly string ExternalTools_ILRepack_Custom_ExePath =
@@ -186,9 +241,6 @@ namespace Arbor.X.Core.BuildVariables
 
         [VariableDescription("External, Kudu: site running as x86 or x64 process")]
         public static readonly string ExternalTools_Kudu_Platform = "REMOTEDEBUGGINGBITVERSION";
-
-        [VariableDescription("External, Kudu: deployment version control branch")]
-        public const string ExternalTools_Kudu_DeploymentBranchName = "deployment_branch";
 
         [VariableDescription("Deployment branch to be used in Kudu, overrides value defined in " +
                              ExternalTools_Kudu_DeploymentBranchName)]
@@ -237,17 +289,20 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescription("Flag to indicate if Kudu should exclude App_Data directory when deploying")]
         public static readonly string KuduExcludeDeleteAppData = "Arbor.X.Tools.External.Kudu.ExcludeDeleteApp_Data";
 
-        [VariableDescription("Enable Machine.Specifications")] public static readonly string MSpecEnabled =
+        [VariableDescription("Enable Machine.Specifications")]
+        public static readonly string MSpecEnabled =
             "Arbor.X.Tools.External.MSpec.Enabled";
 
         [VariableDescription("Enable Machine.Specifications XSL transformation to NUnit")]
         public static readonly string MSpecJUnitXslTransformationEnabled =
             "Arbor.X.Tools.External.MSpec.JUnitXslTransformation.Enabled";
 
-        [VariableDescription("Enable NUnit")] public static readonly string NUnitEnabled =
+        [VariableDescription("Enable NUnit")]
+        public static readonly string NUnitEnabled =
             "Arbor.X.Tools.External.NUnit.Enabled";
 
-        [VariableDescription("Enable VSTest")] public static readonly string VSTestEnabled =
+        [VariableDescription("Enable VSTest")]
+        public static readonly string VSTestEnabled =
             "Arbor.X.Tools.External.VSTest.Enabled";
 
         [VariableDescription("'|' (bar) separated list of file names to not delete when deploying")]
@@ -266,7 +321,8 @@ namespace Arbor.X.Core.BuildVariables
         public static readonly string KuduDeleteExistingAppOfflineHtmFile =
             "Arbor.X.Tools.External.Kudu.DeleteExistingAppOfflineHtmFile";
 
-        [VariableDescription("Log level")] public static readonly string LogLevel = "Arbor.X.Log.Level";
+        [VariableDescription("Log level")]
+        public static readonly string LogLevel = "Arbor.X.Log.Level";
 
         [VariableDescription("Generic XML transformaions enabled")]
         public static readonly string GenericXmlTransformsEnabled = "Arbor.X.Build.XmlTransformations.Enabled";
@@ -293,45 +349,7 @@ namespace Arbor.X.Core.BuildVariables
         public static readonly string WebJobsExcludedDirectorySegments =
             "Arbor.X.Build.WebApplications.WebJobs.ExcludedDirectorySegments";
 
-        public const string DotNetRestoreEnabled = "Arbor.X.DotNet.Restore.Enabled";
-
-        public const string MSBuildNuGetRestoreEnabled = "Arbor.X.MSBuild.NuGetRestore.Enabled";
-
-        public const string DotNetExePath = "Arbor.X.DotNet.ExePath";
-
         // ReSharper restore ConvertToConstant.Global
         // ReSharper restore InconsistentNaming
-
-        public static IReadOnlyCollection<VariableDescription> AllVariables
-        {
-            get
-            {
-                var allVariables = new List<VariableDescription>();
-
-                List<FieldInfo> fields = typeof(WellKnownVariables).GetTypeInfo()
-                    .GetFields()
-                    .Where(field => field.IsPublicConstantOrStatic())
-                    .ToList();
-
-                foreach (FieldInfo field in fields)
-                {
-                    string invariantName = (string)field.GetValue(null);
-
-                    var attribute = field.GetCustomAttribute<VariableDescriptionAttribute>();
-
-                    VariableDescription description = attribute != null
-                        ? VariableDescription.Create(
-                            invariantName,
-                            attribute.Description,
-                            field.Name,
-                            attribute.DefaultValue)
-                        : VariableDescription.Create(field.Name);
-
-                    allVariables.Add(description);
-                }
-
-                return allVariables.OrderBy(name => name.InvariantName).ToList();
-            }
-        }
     }
 }

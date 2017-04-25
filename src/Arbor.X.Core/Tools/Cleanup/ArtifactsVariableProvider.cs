@@ -12,8 +12,10 @@ namespace Arbor.X.Core.Tools.Cleanup
     [UsedImplicitly]
     public class ArtifactsVariableProvider : IVariableProvider
     {
-        public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(ILogger logger,
-            IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
+        public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(
+            ILogger logger,
+            IReadOnlyCollection<IVariable> buildVariables,
+            CancellationToken cancellationToken)
         {
             string sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
 
@@ -23,7 +25,8 @@ namespace Arbor.X.Core.Tools.Cleanup
 
             var variables = new List<IVariable>
             {
-                new EnvironmentVariable(WellKnownVariables.Artifacts,
+                new EnvironmentVariable(
+                    WellKnownVariables.Artifacts,
                     artifactsDirectory.FullName),
                 new EnvironmentVariable(WellKnownVariables.ReportPath, testReportsDirectory.FullName)
             };

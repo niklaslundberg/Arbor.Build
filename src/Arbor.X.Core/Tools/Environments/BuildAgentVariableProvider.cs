@@ -15,8 +15,10 @@ namespace Arbor.X.Core.Tools.Environments
     [UsedImplicitly]
     public class BuildAgentVariableProvider : IVariableProvider
     {
-        public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(ILogger logger,
-            IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
+        public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(
+            ILogger logger,
+            IReadOnlyCollection<IVariable> buildVariables,
+            CancellationToken cancellationToken)
         {
             bool isBuildAgentValue;
 
@@ -46,7 +48,8 @@ namespace Arbor.X.Core.Tools.Environments
 
             var variables = new List<IVariable>
             {
-                new EnvironmentVariable(WellKnownVariables.IsRunningOnBuildAgent,
+                new EnvironmentVariable(
+                    WellKnownVariables.IsRunningOnBuildAgent,
                     isBuildAgentValue.ToString().ToLowerInvariant())
             };
 

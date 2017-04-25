@@ -12,6 +12,8 @@ namespace Arbor.X.Core.Logging
             _loggers = loggers.SafeToReadOnlyCollection();
         }
 
+        public LogLevel LogLevel { get; set; }
+
         public void WriteError(string message, string prefix = null)
         {
             foreach (ILogger logger in _loggers)
@@ -43,8 +45,6 @@ namespace Arbor.X.Core.Logging
                 logger.WriteVerbose(message, prefix);
             }
         }
-
-        public LogLevel LogLevel { get; set; }
 
         public void WriteDebug(string message, string prefix = null)
         {

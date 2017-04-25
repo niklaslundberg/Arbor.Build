@@ -9,8 +9,12 @@ namespace Arbor.X.Core.IO
 {
     public static class PathExtensions
     {
-        public static bool IsFileBlackListed(this PathLookupSpecification pathLookupSpecification, string sourceFile,
-            string rootDir = null, bool allowNonExistingFiles = false, ILogger logger = null)
+        public static bool IsFileBlackListed(
+            this PathLookupSpecification pathLookupSpecification,
+            string sourceFile,
+            string rootDir = null,
+            bool allowNonExistingFiles = false,
+            ILogger logger = null)
         {
             if (pathLookupSpecification == null)
             {
@@ -36,7 +40,8 @@ namespace Arbor.X.Core.IO
                 return true;
             }
 
-            bool isBlackListed = HasAnyPathSegmentStartsWith(sourceFileInfo.Name,
+            bool isBlackListed = HasAnyPathSegmentStartsWith(
+                sourceFileInfo.Name,
                 pathLookupSpecification.IgnoredFileStartsWithPatterns);
 
             if (isBlackListed)
@@ -61,8 +66,11 @@ namespace Arbor.X.Core.IO
             return isBlackListed;
         }
 
-        public static bool IsBlackListed(this PathLookupSpecification pathLookupSpecification, string sourceDir,
-            string rootDir = null, ILogger logger = null)
+        public static bool IsBlackListed(
+            this PathLookupSpecification pathLookupSpecification,
+            string sourceDir,
+            string rootDir = null,
+            ILogger logger = null)
         {
             if (pathLookupSpecification == null)
             {
@@ -81,8 +89,10 @@ namespace Arbor.X.Core.IO
 
             string[] sourceDirSegments = GetSourceDirSegments(sourceDir, rootDir);
 
-            bool hasAnyPathSegment = HasAnyPathSegment(sourceDirSegments,
-                pathLookupSpecification.IgnoredDirectorySegments, logger);
+            bool hasAnyPathSegment = HasAnyPathSegment(
+                sourceDirSegments,
+                pathLookupSpecification.IgnoredDirectorySegments,
+                logger);
 
             if (hasAnyPathSegment)
             {
@@ -90,7 +100,8 @@ namespace Arbor.X.Core.IO
                 return true;
             }
 
-            bool hasAnyPathSegmentPart = HasAnyPathSegmentPart(sourceDirSegments,
+            bool hasAnyPathSegmentPart = HasAnyPathSegmentPart(
+                sourceDirSegments,
                 pathLookupSpecification.IgnoredDirectorySegmentParts);
 
             if (hasAnyPathSegmentPart)
@@ -99,7 +110,8 @@ namespace Arbor.X.Core.IO
                 return true;
             }
 
-            bool hasAnyPartStartsWith = HasAnyPathSegmentStartsWith(sourceDirSegments,
+            bool hasAnyPartStartsWith = HasAnyPathSegmentStartsWith(
+                sourceDirSegments,
                 pathLookupSpecification.IgnoredDirectoryStartsWithPatterns);
 
             if (hasAnyPartStartsWith)
@@ -118,12 +130,15 @@ namespace Arbor.X.Core.IO
         {
             string path = string.IsNullOrWhiteSpace(rootDir) ? sourceDir : sourceDir.Replace(rootDir, string.Empty);
 
-            string[] sourceDirSegments = path.Split(new[] { Path.DirectorySeparatorChar },
+            string[] sourceDirSegments = path.Split(
+                new[] { Path.DirectorySeparatorChar },
                 StringSplitOptions.RemoveEmptyEntries);
             return sourceDirSegments;
         }
 
-        private static bool HasAnyPathSegment(IEnumerable<string> segments, IEnumerable<string> patterns,
+        private static bool HasAnyPathSegment(
+            IEnumerable<string> segments,
+            IEnumerable<string> patterns,
             ILogger logger = null)
         {
             return segments.Any(segment => HasAnyPathSegment(segment, patterns, logger));

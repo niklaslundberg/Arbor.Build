@@ -7,8 +7,14 @@ namespace Arbor.X.Core.Tools.NuGet
 {
     public static class NuGetVersionHelper
     {
-        public static string GetVersion(string version, bool isReleaseBuild, string suffix, bool enableBuildNumber,
-            string packageBuildMetadata, ILogger logger, NuGetVersioningSettings nugetVersioningSettings)
+        public static string GetVersion(
+            string version,
+            bool isReleaseBuild,
+            string suffix,
+            bool enableBuildNumber,
+            string packageBuildMetadata,
+            ILogger logger,
+            NuGetVersioningSettings nugetVersioningSettings)
         {
             Version parsedVersion;
             if (!Version.TryParse(version, out parsedVersion))
@@ -24,6 +30,7 @@ namespace Arbor.X.Core.Tools.NuGet
 
                 return parsed;
             }
+
             string buildVersion;
 
             int usePadding =

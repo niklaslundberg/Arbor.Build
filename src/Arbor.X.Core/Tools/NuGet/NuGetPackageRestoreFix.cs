@@ -23,8 +23,11 @@ namespace Arbor.X.Core.Tools.NuGet
                 if (!targetDir.Exists)
                 {
                     logger.WriteDebug($"Copying NLog from '{nlogDirectory.FullName}' to '{targetDir.FullName}'");
-                    ExitCode exitCode = await DirectoryCopy.CopyAsync(nlogDirectory.FullName, targetDir.FullName,
-                        logger, new PathLookupSpecification());
+                    ExitCode exitCode = await DirectoryCopy.CopyAsync(
+                        nlogDirectory.FullName,
+                        targetDir.FullName,
+                        logger,
+                        new PathLookupSpecification());
 
                     if (!exitCode.IsSuccess)
                     {

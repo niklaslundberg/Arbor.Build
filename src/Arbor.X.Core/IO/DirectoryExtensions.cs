@@ -60,7 +60,8 @@ namespace Arbor.X.Core.IO
                             }
 
                             throw new IOException(
-                                $"Could not get files for directory '{directoryInfo.FullName}' for deletion", ex);
+                                $"Could not get files for directory '{directoryInfo.FullName}' for deletion",
+                                ex);
                         }
 
                         foreach (FileInfo file in fileInfos)
@@ -100,6 +101,7 @@ namespace Arbor.X.Core.IO
                 {
                     throw new InvalidOperationException($"Could not delete directory '{directoryInfo.FullName}'", ex);
                 }
+
                 throw;
             }
         }

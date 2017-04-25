@@ -20,8 +20,12 @@ namespace Arbor.X.Core.Tools.Versioning
     [UsedImplicitly]
     public class BuildVersionProvider : IVariableProvider
     {
-        public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(ILogger logger,
-            IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
+        public int Order => VariableProviderOrder.Ignored;
+
+        public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(
+            ILogger logger,
+            IReadOnlyCollection<IVariable> buildVariables,
+            CancellationToken cancellationToken)
         {
             IEnumerable<KeyValuePair<string, string>> variables =
                 GetVersionVariables(buildVariables, logger);
@@ -33,8 +37,26 @@ namespace Arbor.X.Core.Tools.Versioning
             return Task.FromResult<IEnumerable<IVariable>>(environmentVariables);
         }
 
+        private static bool ValidateVersionNumber(KeyValuePair<string, string> s)
+        {
+            if (string.IsNullOrWhiteSpace(s.Value))
+            {
+                return false;
+            }
+
+            int parsed;
+
+            if (!int.TryParse(s.Value, out parsed) || parsed < 0)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         private IEnumerable<KeyValuePair<string, string>> GetVersionVariables(
-            IReadOnlyCollection<IVariable> buildVariables, ILogger logger)
+            IReadOnlyCollection<IVariable> buildVariables,
+            ILogger logger)
         {
             List<KeyValuePair<string, string>> environmentVariables =
                 buildVariables.Select(item => new KeyValuePair<string, string>(item.Key, item.Value)).ToList();
@@ -69,11 +91,11 @@ namespace Arbor.X.Core.Tools.Versioning
                 {
                     var jsonKeyValueConfiguration = new JsonKeyValueConfiguration(keyValueConfigurationItems);
 
-                    string majorKey = "major"; //TODO defined major key
+                    string majorKey = "major"; // TODO defined major key
 
-                    string minorKey = "minor"; //TODO defined minor key
+                    string minorKey = "minor"; // TODO defined minor key
 
-                    string patchKey = "patch"; //TODO defined patch key
+                    string patchKey = "patch"; // TODO defined patch key
 
                     var required = new Dictionary<string, string>
                     {
@@ -166,19 +188,19 @@ namespace Arbor.X.Core.Tools.Versioning
 
             if (minor < 0)
             {
-                logger.WriteVerbose($"Found no minor version, using version 0");
+                logger.WriteVerbose("Found no minor version, using version 0");
                 minor = 0;
             }
 
             if (patch < 0)
             {
-                logger.WriteVerbose($"Found no patch version, using version 0");
+                logger.WriteVerbose("Found no patch version, using version 0");
                 patch = 0;
             }
 
             if (build < 0)
             {
-                logger.WriteVerbose($"Found no build version, using version 0");
+                logger.WriteVerbose("Found no build version, using version 0");
                 build = 0;
             }
 
@@ -196,37 +218,23 @@ namespace Arbor.X.Core.Tools.Versioning
             yield return
                 new KeyValuePair<string, string>(WellKnownVariables.NetAssemblyVersion, netAssemblyVersion.ToString(4));
             yield return
-                new KeyValuePair<string, string>(WellKnownVariables.NetAssemblyFileVersion,
+                new KeyValuePair<string, string>(
+                    WellKnownVariables.NetAssemblyFileVersion,
                     netAssemblyFileVersion.ToString(4));
-            yield return new KeyValuePair<string, string>(WellKnownVariables.VersionMajor,
+            yield return new KeyValuePair<string, string>(
+                WellKnownVariables.VersionMajor,
                 major.ToString(CultureInfo.InvariantCulture));
-            yield return new KeyValuePair<string, string>(WellKnownVariables.VersionMinor,
+            yield return new KeyValuePair<string, string>(
+                WellKnownVariables.VersionMinor,
                 minor.ToString(CultureInfo.InvariantCulture));
-            yield return new KeyValuePair<string, string>(WellKnownVariables.VersionPatch,
+            yield return new KeyValuePair<string, string>(
+                WellKnownVariables.VersionPatch,
                 patch.ToString(CultureInfo.InvariantCulture));
-            yield return new KeyValuePair<string, string>(WellKnownVariables.VersionBuild,
+            yield return new KeyValuePair<string, string>(
+                WellKnownVariables.VersionBuild,
                 build.ToString(CultureInfo.InvariantCulture));
             yield return new KeyValuePair<string, string>("Version", fullVersionValue);
             yield return new KeyValuePair<string, string>(WellKnownVariables.Version, fullVersionValue);
         }
-
-        private static bool ValidateVersionNumber(KeyValuePair<string, string> s)
-        {
-            if (string.IsNullOrWhiteSpace(s.Value))
-            {
-                return false;
-            }
-
-            int parsed;
-
-            if (!int.TryParse(s.Value, out parsed) || parsed < 0)
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        public int Order => VariableProviderOrder.Ignored;
     }
 }

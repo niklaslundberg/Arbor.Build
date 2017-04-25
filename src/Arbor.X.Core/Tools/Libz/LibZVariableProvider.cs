@@ -24,7 +24,8 @@ namespace Arbor.X.Core.Tools.Libz
             var variables = new List<IVariable>
             {
                 new EnvironmentVariable(
-                    WellKnownVariables.ExternalTools_LibZ_ExePath, exePath)
+                    WellKnownVariables.ExternalTools_LibZ_ExePath,
+                    exePath)
             };
 
             return Task.FromResult<IEnumerable<IVariable>>(variables);

@@ -68,7 +68,8 @@ namespace Arbor.X.Tests.Integration.DirectoryExtensions
         private Because of = () =>
         {
             files = baseDir.GetFilesRecursive(new List<string> { ".config" },
-                    DefaultPaths.DefaultPathLookupSpecification, baseDir.FullName)
+                    DefaultPaths.DefaultPathLookupSpecification,
+                    baseDir.FullName)
                 .Select(s => s.Name)
                 .ToList();
         };

@@ -12,6 +12,7 @@ namespace Arbor.X.Core.Tools
         }
 
         public int Priority { get; }
+
         public bool RunAlways { get; }
     }
 }

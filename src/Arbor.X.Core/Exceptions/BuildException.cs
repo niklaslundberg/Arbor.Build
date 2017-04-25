@@ -12,6 +12,7 @@ namespace Arbor.X.Core.Exceptions
             : base(message)
         {
             _buildVariables = buildVariables;
+
             // ReSharper disable once RedundantBaseQualifier
             base.Data.Add("Arbor.X.Variables", _buildVariables);
         }

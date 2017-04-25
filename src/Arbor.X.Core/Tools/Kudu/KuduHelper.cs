@@ -11,7 +11,9 @@ namespace Arbor.X.Core.Tools.Kudu
         public static bool IsKuduAware(IReadOnlyCollection<IVariable> buildVariables, ILogger loggerOption = null)
         {
             ILogger logger = loggerOption ??
-                             new DelegateLogger((info, prefix) => { }, (warning, prefix) => { },
+                             new DelegateLogger(
+                                 (info, prefix) => { },
+                                 (warning, prefix) => { },
                                  (error, prefix) => { });
 
             bool isKuduAware = false;

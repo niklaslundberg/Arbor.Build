@@ -45,7 +45,8 @@ namespace Arbor.X.Core.Tools.Git
             };
 
             bool isDevelopBranch =
-                developBranchNames.Any(name => branchName.LogicalName.StartsWith(branchName.Name,
+                developBranchNames.Any(name => branchName.LogicalName.StartsWith(
+                    branchName.Name,
                     StringComparison.InvariantCultureIgnoreCase));
 
             return isDevelopBranch;
@@ -66,7 +67,8 @@ namespace Arbor.X.Core.Tools.Git
             };
 
             bool isProductionBranch =
-                productionBranches.Any(productionBranch => branchName.LogicalName.StartsWith(productionBranch,
+                productionBranches.Any(productionBranch => branchName.LogicalName.StartsWith(
+                    productionBranch,
                     StringComparison.InvariantCultureIgnoreCase));
 
             return isProductionBranch;

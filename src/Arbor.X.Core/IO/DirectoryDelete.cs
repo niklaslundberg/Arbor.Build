@@ -50,12 +50,6 @@ namespace Arbor.X.Core.IO
             }
         }
 
-        private void WriteFilters()
-        {
-            _logger.WriteVerbose($"Directory filters: {DirectoryFilterList}");
-            _logger.WriteVerbose($"File filters: {FileFilterList}");
-        }
-
         public void Delete(
             string baseDir,
             bool deleteSelf = false,
@@ -139,6 +133,12 @@ namespace Arbor.X.Core.IO
             {
                 _logger.WriteVerbose($"Directory '{baseDirectory.FullName}' still has files or directories");
             }
+        }
+
+        private void WriteFilters()
+        {
+            _logger.WriteVerbose($"Directory filters: {DirectoryFilterList}");
+            _logger.WriteVerbose($"File filters: {FileFilterList}");
         }
     }
 }

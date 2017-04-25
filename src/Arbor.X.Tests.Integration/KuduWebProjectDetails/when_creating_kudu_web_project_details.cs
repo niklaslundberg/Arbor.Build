@@ -11,7 +11,8 @@ namespace Arbor.X.Tests.Integration.KuduWebProjectDetails
         private Because of = () =>
         {
             parsed = Core.Tools.Kudu.KuduWebProjectDetails.Create("<KuduWebJobName>MyWebJob</KuduWebJobName>",
-                "<KuduWebJobType>Continuous</KuduWebJobType>", @"C:\Temp\test.csproj");
+                "<KuduWebJobType>Continuous</KuduWebJobType>",
+                @"C:\Temp\test.csproj");
         };
 
         private It should_return_a_valid_type = () =>

@@ -15,7 +15,9 @@ namespace Arbor.X.Core.Tools.Versioning
     [Priority(1000, true)]
     public class AssemblyInfoUnpatcher : ITool
     {
-        public Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
+        public Task<ExitCode> ExecuteAsync(
+            ILogger logger,
+            IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
             bool assemblyVersionPatchingEnabled =
@@ -26,10 +28,15 @@ namespace Arbor.X.Core.Tools.Versioning
                 logger.WriteWarning("Assembly version pathcing is disabled");
                 return Task.FromResult(ExitCode.Success);
             }
+
             string sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
 
-            var delegateLogger = new DelegateLogger(logger.WriteError, logger.WriteWarning,
-                logger.Write, logger.WriteVerbose, logger.WriteDebug)
+            var delegateLogger = new DelegateLogger(
+                logger.WriteError,
+                logger.WriteWarning,
+                logger.Write,
+                logger.WriteVerbose,
+                logger.WriteDebug)
             {
                 LogLevel = Sorbus.Core.LogLevel.TryParse(logger.LogLevel.Level)
             };
@@ -47,6 +54,7 @@ namespace Arbor.X.Core.Tools.Versioning
                 logger.WriteError($"Could not unpatch. {ex}");
                 return Task.FromResult(ExitCode.Failure);
             }
+
             return Task.FromResult(ExitCode.Success);
         }
     }

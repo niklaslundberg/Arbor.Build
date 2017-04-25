@@ -2,12 +2,16 @@
 {
     public static partial class WellKnownVariables
     {
-        [VariableDescription("Major version")] public static readonly string VersionMajor = "Version.Major";
+        [VariableDescription("Major version")]
+        public static readonly string VersionMajor = "Version.Major";
 
-        [VariableDescription("Minor version")] public static readonly string VersionMinor = "Version.Minor";
+        [VariableDescription("Minor version")]
+        public static readonly string VersionMinor = "Version.Minor";
 
-        [VariableDescription("Patch version")] public static readonly string VersionPatch = "Version.Patch";
+        [VariableDescription("Patch version")]
+        public static readonly string VersionPatch = "Version.Patch";
 
-        [VariableDescription("Build version")] public static readonly string VersionBuild = "Version.Build";
+        [VariableDescription("Build version")]
+        public static readonly string VersionBuild = "Version.Build";
     }
 }

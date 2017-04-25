@@ -16,14 +16,17 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
         private static UnitTestFinder finder;
         private static IReadOnlyCollection<string> dlls;
 
+        private static DirectoryInfo tempDirectory;
+        private static ExitCode exitCode;
+
         private Establish context = () =>
         {
             var logger = new ConsoleLogger { LogLevel = LogLevel.Verbose };
             finder = new UnitTestFinder(new List<Type>
-            {
-                typeof(BehaviorsAttribute)
-            }, logger: logger);
-
+                {
+                    typeof(BehaviorsAttribute)
+                },
+                logger: logger);
 
             string root = Path.Combine(VcsTestPathHelper.FindVcsRootPath(), "src");
 
@@ -46,8 +49,5 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
                 Console.WriteLine(dll);
             }
         };
-
-        private static DirectoryInfo tempDirectory;
-        private static ExitCode exitCode;
     }
 }

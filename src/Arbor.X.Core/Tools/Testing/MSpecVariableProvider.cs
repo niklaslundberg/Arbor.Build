@@ -13,14 +13,17 @@ namespace Arbor.X.Core.Tools.Testing
     [UsedImplicitly]
     public class MSpecVariableProvider : IVariableProvider
     {
-        public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(ILogger logger,
-            IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
+        public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(
+            ILogger logger,
+            IReadOnlyCollection<IVariable> buildVariables,
+            CancellationToken cancellationToken)
         {
             string reportPath = buildVariables.Require(WellKnownVariables.ReportPath).ThrowIfEmptyValue().Value;
 
             var reportDirectory = new DirectoryInfo(reportPath);
 
-            var testReportPathDirectory = new DirectoryInfo(Path.Combine(reportDirectory.FullName,
+            var testReportPathDirectory = new DirectoryInfo(Path.Combine(
+                reportDirectory.FullName,
                 MachineSpecificationsConstants.MachineSpecificationsName));
 
             testReportPathDirectory.EnsureExists();

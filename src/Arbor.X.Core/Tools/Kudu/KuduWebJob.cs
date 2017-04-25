@@ -18,7 +18,9 @@ namespace Arbor.X.Core.Tools.Kudu
     {
         private ILogger _logger;
 
-        public Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
+        public Task<ExitCode> ExecuteAsync(
+            ILogger logger,
+            IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
             _logger = logger;
@@ -51,7 +53,8 @@ namespace Arbor.X.Core.Tools.Kudu
 
             if (kuduWebJobProjects.Any())
             {
-                logger.Write(string.Join(Environment.NewLine,
+                logger.Write(string.Join(
+                    Environment.NewLine,
                     kuduWebJobProjects.Select(
                         webProject => $"Found Kudu web job project: {webProject}")));
             }
@@ -86,7 +89,8 @@ namespace Arbor.X.Core.Tools.Kudu
                         {
                             expectedKeys.ForEach(key =>
                             {
-                                if (line.IndexOf(key,
+                                if (line.IndexOf(
+                                        key,
                                         StringComparison.InvariantCultureIgnoreCase) >= 0)
                                 {
                                     if (!foundItems.ContainsKey(key))
@@ -108,8 +112,10 @@ namespace Arbor.X.Core.Tools.Kudu
 
                             if (foundItems.Count == expectedKeys.Count)
                             {
-                                kuduWebJobProject = KuduWebProjectDetails.Create(foundItems[kuduWebJobName],
-                                    foundItems[kuduWebJobType], file.FullName);
+                                kuduWebJobProject = KuduWebProjectDetails.Create(
+                                    foundItems[kuduWebJobName],
+                                    foundItems[kuduWebJobType],
+                                    file.FullName);
                                 break;
                             }
                         }

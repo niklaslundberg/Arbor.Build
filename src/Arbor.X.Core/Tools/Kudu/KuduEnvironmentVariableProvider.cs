@@ -11,8 +11,10 @@ namespace Arbor.X.Core.Tools.Kudu
     [UsedImplicitly]
     public class KuduEnvironmentVariableProvider : IVariableProvider
     {
-        public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(ILogger logger,
-            IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
+        public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(
+            ILogger logger,
+            IReadOnlyCollection<IVariable> buildVariables,
+            CancellationToken cancellationToken)
         {
             var variables = new List<IVariable>();
 
@@ -20,12 +22,14 @@ namespace Arbor.X.Core.Tools.Kudu
             {
                 if (KuduHelper.IsKuduAware(buildVariables))
                 {
-                    variables.Add(new EnvironmentVariable(WellKnownVariables.ExternalTools_Kudu_Enabled,
+                    variables.Add(new EnvironmentVariable(
+                        WellKnownVariables.ExternalTools_Kudu_Enabled,
                         bool.TrueString));
                 }
                 else
                 {
-                    variables.Add(new EnvironmentVariable(WellKnownVariables.ExternalTools_Kudu_Enabled,
+                    variables.Add(new EnvironmentVariable(
+                        WellKnownVariables.ExternalTools_Kudu_Enabled,
                         bool.FalseString));
                 }
             }

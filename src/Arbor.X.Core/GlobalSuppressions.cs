@@ -3,4 +3,10 @@
 // Project-level suppressions either have no target or are given
 // a specific target and scoped to a namespace, type, member, etc.
 
-[assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names must not contain underscore", Justification = "Variables", Scope = "namespace", Target = "Arbor.X.Core.BuildVariables.WellKnownVariables")]
+[assembly:
+    System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "StyleCop.CSharp.NamingRules",
+        "SA1310:Field names must not contain underscore",
+        Justification = "Variables",
+        Scope = "type",
+        Target = "Arbor.X.Core.BuildVariables.WellKnownVariables")]

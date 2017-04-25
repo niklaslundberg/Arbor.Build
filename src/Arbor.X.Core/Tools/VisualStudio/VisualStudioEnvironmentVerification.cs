@@ -15,7 +15,9 @@ namespace Arbor.X.Core.Tools.VisualStudio
     [UsedImplicitly]
     public class VisualStudioEnvironmentVerification : ITool
     {
-        public Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
+        public Task<ExitCode> ExecuteAsync(
+            ILogger logger,
+            IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
             string sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
@@ -33,7 +35,8 @@ namespace Arbor.X.Core.Tools.VisualStudio
                     .Where(
                         file =>
                             extensionPatterns.Any(
-                                pattern => file.Extension.Equals(pattern,
+                                pattern => file.Extension.Equals(
+                                    pattern,
                                     StringComparison.InvariantCultureIgnoreCase)));
 
                 List<FileInfo> projectFiles81 = projectFiles.Where(Contains81).ToList();

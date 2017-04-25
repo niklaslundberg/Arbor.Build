@@ -21,6 +21,22 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
         private static ExitCode ExitCode;
         private static string mspecReports;
 
+        private static ExitCode exitCode;
+        private static DirectoryInfo tempDirectory;
+
+        private Cleanup after = () =>
+        {
+            Thread.Sleep(1000);
+            try
+            {
+                tempDirectory.DeleteIfExists(true);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Could not cleanup test directory, " + ex);
+            }
+        };
+
         private Establish context = () =>
         {
             string root = Path.Combine(VcsTestPathHelper.FindVcsRootPath(), "src");
@@ -34,7 +50,8 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
 
             DirectoryInfo binDirectory = tempDirectory.CreateSubdirectory("bin");
 
-            exitCode = DirectoryCopy.CopyAsync(combine, binDirectory.FullName,
+            exitCode = DirectoryCopy.CopyAsync(combine,
+                    binDirectory.FullName,
                     pathLookupSpecificationOption: new PathLookupSpecification())
                 .Result;
 
@@ -49,7 +66,6 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
             variables.Add(new EnvironmentVariable(WellKnownVariables.SourceRootOverride, tempDirectory.FullName));
             variables.Add(new EnvironmentVariable(WellKnownVariables.SourceRoot, tempDirectory.FullName));
 
-
             mspecReports = Path.Combine(tempDirectory.FullName, "MSpecReports");
 
             new DirectoryInfo(mspecReports).EnsureExists();
@@ -61,7 +77,8 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
         private Because of =
             () =>
                 ExitCode =
-                    testRunner.ExecuteAsync(new ConsoleLogger { LogLevel = LogLevel.Verbose }, variables,
+                    testRunner.ExecuteAsync(new ConsoleLogger { LogLevel = LogLevel.Verbose },
+                            variables,
                             new CancellationToken())
                         .Result;
 
@@ -96,21 +113,5 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
         };
 
         private It should_return_a_successful_exit_code = () => ExitCode.IsSuccess.ShouldBeTrue();
-
-        private Cleanup after = () =>
-        {
-            Thread.Sleep(1000);
-            try
-            {
-                tempDirectory.DeleteIfExists(true);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Could not cleanup test directory, " + ex);
-            }
-        };
-
-        private static ExitCode exitCode;
-        private static DirectoryInfo tempDirectory;
     }
 }

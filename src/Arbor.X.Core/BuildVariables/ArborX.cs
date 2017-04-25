@@ -4,6 +4,8 @@ namespace Arbor.X.Core.BuildVariables
     {
         private const string Namespace = "Arbor.X";
 
+        public string Build { get; } = Namespace + ".Build";
+
         public static implicit operator string(ArborX arborX)
         {
             return Namespace;
@@ -13,7 +15,5 @@ namespace Arbor.X.Core.BuildVariables
         {
             return Namespace;
         }
-
-        public string Build { get; } = Namespace + ".Build";
     }
 }

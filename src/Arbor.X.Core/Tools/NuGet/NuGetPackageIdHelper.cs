@@ -39,7 +39,8 @@ namespace Arbor.X.Core.Tools.NuGet
 
             var invalidCharacters = new List<string> { "<", "@", ">", "|", "?", ":" };
 
-            string trimmedName = invalidCharacters.Aggregate(nugetPackageId,
+            string trimmedName = invalidCharacters.Aggregate(
+                nugetPackageId,
                 (current, invalidCharacter) => current.Replace(invalidCharacter, string.Empty));
 
             return trimmedName;

@@ -6,16 +6,6 @@ namespace Arbor.X.Core.Tools.Git
 {
     public sealed class BranchName
     {
-        public static Maybe<BranchName> TryParse(string branchName)
-        {
-            if (string.IsNullOrWhiteSpace(branchName))
-            {
-                return Maybe<BranchName>.Empty();
-            }
-
-            return new Maybe<BranchName>(new BranchName(branchName));
-        }
-
         public BranchName(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -28,11 +18,26 @@ namespace Arbor.X.Core.Tools.Git
 
         public string Name { get; }
 
+        public string LogicalName => BranchHelper.GetLogicalName(Name).Name;
+
+        public string FullName => Name;
+
+        public static Maybe<BranchName> TryParse(string branchName)
+        {
+            if (string.IsNullOrWhiteSpace(branchName))
+            {
+                return Maybe<BranchName>.Empty();
+            }
+
+            return new Maybe<BranchName>(new BranchName(branchName));
+        }
+
         public string Normalize()
         {
             var invalidCharacters = new[] { "/", @"\", "\"" };
 
-            string branchNameWithValidCharacters = invalidCharacters.Aggregate(Name,
+            string branchNameWithValidCharacters = invalidCharacters.Aggregate(
+                Name,
                 (current, invalidCharacter) =>
                     current.Replace(invalidCharacter, "-"));
 
@@ -40,10 +45,6 @@ namespace Arbor.X.Core.Tools.Git
 
             return removedFeatureInName;
         }
-
-        public string LogicalName => BranchHelper.GetLogicalName(Name).Name;
-
-        public string FullName => Name;
 
         public override string ToString()
         {

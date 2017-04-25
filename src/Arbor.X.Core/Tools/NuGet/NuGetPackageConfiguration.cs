@@ -8,11 +8,6 @@ namespace Arbor.X.Core.Tools.NuGet
 {
     public class NuGetPackageConfiguration
     {
-        public override string ToString()
-        {
-            return JsonConvert.SerializeObject(this, Formatting.Indented);
-        }
-
         public NuGetPackageConfiguration(
             [NotNull] string configuration,
             [NotNull] string version,
@@ -110,5 +105,10 @@ namespace Arbor.X.Core.Tools.NuGet
         public bool BuildNumberEnabled { get; }
 
         public string PackageBuildMetadata { get; }
+
+        public override string ToString()
+        {
+            return JsonConvert.SerializeObject(this, Formatting.Indented);
+        }
     }
 }

@@ -17,9 +17,10 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
         {
             var logger = new ConsoleLogger { LogLevel = LogLevel.Verbose };
             finder = new UnitTestFinder(new List<Type>
-            {
-                typeof(SubjectAttribute)
-            }, logger: logger);
+                {
+                    typeof(SubjectAttribute)
+                },
+                logger: logger);
         };
 
         private Because of =

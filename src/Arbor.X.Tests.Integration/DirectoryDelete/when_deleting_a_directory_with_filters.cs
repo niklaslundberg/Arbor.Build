@@ -79,16 +79,6 @@ namespace Arbor.X.Tests.Integration.DirectoryDelete
             existing.ShouldContain(expectedDirectories);
         };
 
-        private It should_keep_correct_directory_count = () => Directory
-            .EnumerateDirectories(tempDir, "*.*", SearchOption.AllDirectories)
-            .Count()
-            .ShouldEqual(expectedDirectories.Length);
-
-        private It should_keep_correct_files_count = () => Directory
-            .EnumerateFiles(tempDir, "*.*", SearchOption.AllDirectories)
-            .Count()
-            .ShouldEqual(expectedFiles.Length);
-
         private It should_delete_non_filtered_files = () =>
         {
             string[] filesPaths = Directory.EnumerateFiles(tempDir, "*.*", SearchOption.AllDirectories).ToArray();
@@ -101,5 +91,15 @@ namespace Arbor.X.Tests.Integration.DirectoryDelete
             string[] existingFilePaths = filesPaths.Select(file => new FileInfo(file).Name).ToArray();
             existingFilePaths.ShouldContain(expectedFiles);
         };
+
+        private It should_keep_correct_directory_count = () => Directory
+            .EnumerateDirectories(tempDir, "*.*", SearchOption.AllDirectories)
+            .Count()
+            .ShouldEqual(expectedDirectories.Length);
+
+        private It should_keep_correct_files_count = () => Directory
+            .EnumerateFiles(tempDir, "*.*", SearchOption.AllDirectories)
+            .Count()
+            .ShouldEqual(expectedFiles.Length);
     }
 }
