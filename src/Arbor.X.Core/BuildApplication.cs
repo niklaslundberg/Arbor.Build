@@ -79,7 +79,8 @@ namespace Arbor.X.Core
                 [WellKnownVariables.WebJobsExcludedDirectorySegments] = "roslyn",
                 [WellKnownVariables.AppDataJobsEnabled] = "true",
                 [WellKnownVariables.ExternalTools_LibZ_ExePath] = @"C:\Tools\Libz\libz.exe",
-                [WellKnownVariables.ExternalTools_LibZ_Enabled] = @"true"
+                [WellKnownVariables.ExternalTools_LibZ_Enabled] = @"true",
+                [WellKnownVariables.WebDeployPreCompilationEnabled] = @"true"
             };
 
             foreach (KeyValuePair<string, string> environmentVariable in environmentVariables)

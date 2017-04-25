@@ -2,7 +2,7 @@ namespace Arbor.X.Core.BuildVariables
 {
     internal class ArborX
     {
-        const string Namespace = "Arbor.X";
+        private const string Namespace = "Arbor.X";
 
         public ArborX()
         {
@@ -18,9 +18,6 @@ namespace Arbor.X.Core.BuildVariables
             return Namespace;
         }
 
-        public string Build
-        {
-            get { return Namespace + ".Build"; }
-        }
+        public string Build { get; } = Namespace + ".Build";
     }
 }
