@@ -82,6 +82,7 @@ namespace Arbor.X.Core.Tools.MSBuild
 
         private IReadOnlyCollection<string> _excludedWebJobsFiles;
         private IReadOnlyCollection<string> _excludedWebJobsDirectorySegments;
+        private bool _preCompilationEnabled;
 
         public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
@@ -109,6 +110,9 @@ namespace Arbor.X.Core.Tools.MSBuild
                 buildVariables.GetBooleanByKey(
                     WellKnownVariables.ExternalTools_MSBuild_CodeAnalysisEnabled,
                     defaultValue: false);
+
+            _preCompilationEnabled =
+                buildVariables.GetBooleanByKey(WellKnownVariables.WebDeployPreCompilationEnabled, defaultValue: false);
 
             int maxProcessorCount = ProcessorCount(buildVariables);
 
@@ -936,6 +940,14 @@ namespace Arbor.X.Core.Tools.MSBuild
                     $"/maxcpucount:{_processorCount.ToString(CultureInfo.InvariantCulture)}",
                     "/nodeReuse:false"
                 };
+
+                if (_preCompilationEnabled)
+                {
+                    _logger.Write($"Pre-compilation is enabled");
+                    buildSiteArguments.Add("/property:UseMerge=true");
+                    buildSiteArguments.Add("/property:PrecompileBeforePublish=true");
+                    buildSiteArguments.Add("/property:SingleAssemblyName=AppCode");
+                }
             }
             else
             {
