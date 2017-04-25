@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using JetBrains.Annotations;
 
-
 namespace Arbor.X.Core.Tools.ILRepack
 {
     // ReSharper disable once InconsistentNaming

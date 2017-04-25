@@ -19,6 +19,7 @@ namespace Arbor.X.Core.Tools
         /// <param name="buildVariables"></param>
         /// <param name="cancellationToken"></param>
         /// <returns>ExitCode, value 0 meaning success; any other value failure</returns>
-        Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken);
+        Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
+            CancellationToken cancellationToken);
     }
 }

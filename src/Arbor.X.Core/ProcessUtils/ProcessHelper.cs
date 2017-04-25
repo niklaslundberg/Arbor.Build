@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Arbor.Processing;
 using Arbor.Processing.Core;
-using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.Logging;
 
 namespace Arbor.X.Core.ProcessUtils
@@ -28,17 +22,16 @@ namespace Arbor.X.Core.ProcessUtils
             bool addProcessRunnerCategory = false,
             string parentPrefix = null)
         {
+            ILogger usedLogger = logger ?? new NullLogger();
 
-            var usedLogger = logger ?? new NullLogger();
-
-            var executingCategory = $"[{Path.GetFileNameWithoutExtension(Path.GetFileName(executePath))}]";
+            string executingCategory = $"[{Path.GetFileNameWithoutExtension(Path.GetFileName(executePath))}]";
 
             return ProcessRunner.ExecuteAsync(
                 executePath,
                 cancellationToken,
                 arguments,
-                standardOutLog: (message, category) => usedLogger.Write(message, executingCategory),
-                standardErrorAction: usedLogger.WriteError,
+                (message, category) => usedLogger.Write(message, executingCategory),
+                usedLogger.WriteError,
                 verboseAction: usedLogger.WriteVerbose,
                 toolAction: (message, category) => usedLogger.Write(message, ToolName),
                 environmentVariables: environmentVariables,

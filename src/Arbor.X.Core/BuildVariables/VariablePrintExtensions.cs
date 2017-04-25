@@ -14,9 +14,13 @@ namespace Arbor.X.Core.BuildVariables
                 throw new ArgumentNullException(nameof(variables));
             }
 
-            var dictionaries =
+            IEnumerable<Dictionary<string, string>> dictionaries =
                 variables.Select(
-                    variable => new Dictionary<string, string> {{"Name", variable.Key}, {"Value", variable.Value}});
+                    variable => new Dictionary<string, string>
+                    {
+                        { "Name", variable.Key },
+                        { "Value", variable.Value }
+                    });
 
             return dictionaries.DisplayAsTable();
         }

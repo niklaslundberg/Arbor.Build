@@ -5,19 +5,14 @@ namespace Arbor.X.Core.Logging
     public class ConsoleLogger : ILogger
     {
         private readonly string _prefix;
-        private LogLevel _maxLogLevel;
 
         public ConsoleLogger(string prefix = "", LogLevel maxLogLevel = default(LogLevel))
         {
-            _maxLogLevel = maxLogLevel;
+            LogLevel = maxLogLevel;
             _prefix = prefix ?? string.Empty;
         }
 
-        public LogLevel LogLevel
-        {
-            get { return _maxLogLevel; }
-            set { _maxLogLevel = value; }
-        }
+        public LogLevel LogLevel { get; set; }
 
         public void WriteDebug(string message, string prefix = null)
         {
@@ -38,7 +33,7 @@ namespace Arbor.X.Core.Logging
                 return;
             }
 
-            if (LogLevel.Error.Level <= _maxLogLevel.Level)
+            if (LogLevel.Error.Level <= LogLevel.Level)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.Error.WriteLine(GetTotalMessage(GetPrefix(prefix), message));
@@ -53,7 +48,7 @@ namespace Arbor.X.Core.Logging
                 return;
             }
 
-            if (LogLevel.Information.Level <= _maxLogLevel.Level)
+            if (LogLevel.Information.Level <= LogLevel.Level)
             {
                 Console.ResetColor();
                 Console.WriteLine(GetTotalMessage(GetPrefix(prefix), message));
@@ -67,7 +62,7 @@ namespace Arbor.X.Core.Logging
                 return;
             }
 
-            if (LogLevel.Warning.Level <= _maxLogLevel.Level)
+            if (LogLevel.Warning.Level <= LogLevel.Level)
             {
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
                 Console.WriteLine(GetTotalMessage(GetPrefix(prefix), message));
@@ -82,7 +77,7 @@ namespace Arbor.X.Core.Logging
                 return;
             }
 
-            if (LogLevel.Verbose.Level <= _maxLogLevel.Level)
+            if (LogLevel.Verbose.Level <= LogLevel.Level)
             {
                 Console.ForegroundColor = ConsoleColor.Gray;
                 Console.WriteLine(GetTotalMessage(GetPrefix(prefix), message));

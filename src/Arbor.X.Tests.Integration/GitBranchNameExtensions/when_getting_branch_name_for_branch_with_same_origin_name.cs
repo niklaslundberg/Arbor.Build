@@ -1,5 +1,4 @@
 ﻿using Arbor.X.Core;
-
 using Machine.Specifications;
 
 namespace Arbor.X.Tests.Integration.GitBranchNameExtensions

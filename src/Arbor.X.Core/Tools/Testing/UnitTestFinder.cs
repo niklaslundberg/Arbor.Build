@@ -5,11 +5,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-
-
 using Arbor.X.Core.Assemblies;
 using Arbor.X.Core.Logging;
-using ILogger = Arbor.X.Core.Logging.ILogger;
 
 namespace Arbor.X.Core.Tools.Testing
 {
@@ -27,7 +24,8 @@ namespace Arbor.X.Core.Tools.Testing
 
         private bool DebugLogEnabled { get; }
 
-        public IReadOnlyCollection<string> GetUnitTestFixtureDlls(DirectoryInfo currentDirectory, bool? releaseBuild = null)
+        public IReadOnlyCollection<string> GetUnitTestFixtureDlls(DirectoryInfo currentDirectory,
+            bool? releaseBuild = null)
         {
             if (currentDirectory == null)
             {
@@ -41,7 +39,25 @@ namespace Arbor.X.Core.Tools.Testing
                 return new ReadOnlyCollection<string>(new List<string>());
             }
 
-            var blacklisted = new List<string> {".git", ".hg", ".svn", "obj", "build", "packages", "_ReSharper", "external", "artifacts", "temp", ".HistoryData", "LocalHistory", "_", ".", "NCrunch", ".vs"};
+            var blacklisted = new List<string>
+            {
+                ".git",
+                ".hg",
+                ".svn",
+                "obj",
+                "build",
+                "packages",
+                "_ReSharper",
+                "external",
+                "artifacts",
+                "temp",
+                ".HistoryData",
+                "LocalHistory",
+                "_",
+                ".",
+                "NCrunch",
+                ".vs"
+            };
 
             bool isBlacklisted =
                 blacklisted.Any(
@@ -54,13 +70,14 @@ namespace Arbor.X.Core.Tools.Testing
                 return new ReadOnlyCollection<string>(new List<string>());
             }
 
-            var dllFiles = currentDirectory.EnumerateFiles("*.dll");
+            IEnumerable<FileInfo> dllFiles = currentDirectory.EnumerateFiles("*.dll");
 
-            var ignoredNames = new List<string> {"ReSharper", "dotCover", "Microsoft"};
+            var ignoredNames = new List<string> { "ReSharper", "dotCover", "Microsoft" };
 
-            var assemblies = dllFiles
+            List<Assembly> assemblies = dllFiles
                 .Where(file => !file.Name.StartsWith("System", StringComparison.InvariantCultureIgnoreCase))
-                .Where(file => !ignoredNames.Any(name => file.Name.IndexOf(name, StringComparison.InvariantCultureIgnoreCase) >= 0))
+                .Where(file => !ignoredNames.Any(
+                    name => file.Name.IndexOf(name, StringComparison.InvariantCultureIgnoreCase) >= 0))
                 .Select(GetAssembly)
                 .Where(assembly => assembly != null)
                 .Distinct()
@@ -85,7 +102,7 @@ namespace Arbor.X.Core.Tools.Testing
 
             List<string> subDirAssemblies = currentDirectory
                 .EnumerateDirectories()
-                .SelectMany(dir =>GetUnitTestFixtureDlls(dir, releaseBuild))
+                .SelectMany(dir => GetUnitTestFixtureDlls(dir, releaseBuild))
                 .ToList();
 
             List<string> allUnitFixtureAssemblies = testFixtureAssemblies
@@ -177,7 +194,8 @@ namespace Arbor.X.Core.Tools.Testing
             bool isTypeUnitTestFixture = customAttributes.Any(
                 attributeData =>
                 {
-                    if (attributeData.AttributeType.FullName.StartsWith(nameof(System)) || attributeData.AttributeType.FullName.StartsWith("_"))
+                    if (attributeData.AttributeType.FullName.StartsWith(nameof(System)) ||
+                        attributeData.AttributeType.FullName.StartsWith("_"))
                     {
                         return false;
                     }
@@ -204,22 +222,22 @@ namespace Arbor.X.Core.Tools.Testing
                     {
                         string fullName = field.FieldType.FullName;
 
-                        var any = _typesToFind.Any(
+                        bool any = _typesToFind.Any(
                             type =>
                                 !string.IsNullOrWhiteSpace(fullName) && type.FullName == fullName);
 
                         if (field.FieldType.IsGenericType && !string.IsNullOrWhiteSpace(fullName))
                         {
                             const string GenericPartSeparator = "`";
-                            var fieldIndex = fullName.IndexOf(GenericPartSeparator,
+                            int fieldIndex = fullName.IndexOf(GenericPartSeparator,
                                 StringComparison.InvariantCultureIgnoreCase);
 
-                            var fieldName = fullName.Substring(0, fieldIndex);
+                            string fieldName = fullName.Substring(0, fieldIndex);
 
                             return _typesToFind.Any(
                                 type =>
                                 {
-                                    var typePosition = type.FullName.IndexOf(GenericPartSeparator,
+                                    int typePosition = type.FullName.IndexOf(GenericPartSeparator,
                                         StringComparison.InvariantCultureIgnoreCase);
 
                                     if (typePosition < 0)
@@ -227,7 +245,7 @@ namespace Arbor.X.Core.Tools.Testing
                                         return false;
                                     }
 
-                                    var typeName = type.FullName.Substring(0, typePosition);
+                                    string typeName = type.FullName.Substring(0, typePosition);
 
                                     return typeName.Equals(fieldName);
                                 });
@@ -273,7 +291,7 @@ namespace Arbor.X.Core.Tools.Testing
 
                 _logger.WriteDebug(message);
 #if DEBUG
-                Debug.WriteLine( "{0}, {1}", message, ex);
+                Debug.WriteLine("{0}, {1}", message, ex);
 #endif
                 return null;
             }

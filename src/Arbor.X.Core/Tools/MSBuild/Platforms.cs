@@ -1,5 +1,4 @@
 ﻿using System;
-
 using JetBrains.Annotations;
 
 namespace Arbor.X.Core.Tools.MSBuild

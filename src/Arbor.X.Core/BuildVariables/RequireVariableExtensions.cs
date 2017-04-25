@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Arbor.X.Core.Exceptions;
 
 namespace Arbor.X.Core.BuildVariables
@@ -20,24 +19,28 @@ namespace Arbor.X.Core.BuildVariables
                 throw new ArgumentNullException(nameof(variableName));
             }
 
-            var foundVariables = variables.Where(@var => @var.Key.Equals(variableName, StringComparison.InvariantCultureIgnoreCase)).ToList();
+            List<IVariable> foundVariables = variables
+                .Where(var => var.Key.Equals(variableName, StringComparison.InvariantCultureIgnoreCase))
+                .ToList();
 
             if (foundVariables.Count() > 1)
             {
-                throw new InvalidOperationException(string.Format("The are multiple variables with key '{0}'", variableName));
+                throw new InvalidOperationException(
+                    $"The are multiple variables with key '{variableName}'");
             }
 
-            var variable = foundVariables.SingleOrDefault();
+            IVariable variable = foundVariables.SingleOrDefault();
 
             if (variable == null)
             {
-                var message = string.Format("The key '{0}' was not found in the variable collection", variableName);
-                var property = WellKnownVariables.AllVariables.SingleOrDefault(item => item.InvariantName.Equals(variableName, StringComparison.InvariantCultureIgnoreCase));
+                string message = $"The key '{variableName}' was not found in the variable collection";
+                VariableDescription property = WellKnownVariables.AllVariables.SingleOrDefault(
+                    item => item.InvariantName.Equals(variableName, StringComparison.InvariantCultureIgnoreCase));
 
                 if (property != null)
                 {
-                    message += string.Format(". (The variable is a wellknown property {0}.{1})",
-                                             typeof (WellKnownVariables), property.WellknownName);
+                    message +=
+                        $". (The variable is a wellknown property {typeof(WellKnownVariables)}.{property.WellknownName})";
                 }
 
                 throw new BuildException(message, variables);

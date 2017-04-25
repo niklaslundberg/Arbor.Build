@@ -16,7 +16,7 @@ namespace Arbor.Defensive.Collections
 
             if (enumerable is ReadOnlyCollection<T>)
             {
-                return (ReadOnlyCollection<T>) enumerable;
+                return (ReadOnlyCollection<T>)enumerable;
             }
 
             if (enumerable is List<T>)

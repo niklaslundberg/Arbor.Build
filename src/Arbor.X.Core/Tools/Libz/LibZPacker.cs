@@ -31,23 +31,29 @@ namespace Arbor.X.Core.Tools.Libz
         private string _exePath;
         private ILogger _logger;
 
-        public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
+        public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
+            CancellationToken cancellationToken)
         {
             _logger = logger;
 
-            ParseResult<bool> parseResult = buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_LibZ_Enabled, "false").TryParseBool(defaultValue: false);
+            ParseResult<bool> parseResult = buildVariables
+                .GetVariableValueOrDefault(WellKnownVariables.ExternalTools_LibZ_Enabled, "false")
+                .TryParseBool(false);
 
             if (!parseResult.Value)
             {
-                _logger.Write($"LibZPacker is disabled, to enable it, set the flag {WellKnownVariables.ExternalTools_LibZ_Enabled} to true");
+                _logger.Write(
+                    $"LibZPacker is disabled, to enable it, set the flag {WellKnownVariables.ExternalTools_LibZ_Enabled} to true");
                 return ExitCode.Success;
             }
 
-            _exePath =
-                buildVariables.Require(WellKnownVariables.ExternalTools_LibZ_ExePath).ThrowIfEmptyValue().Value;
+            _exePath = buildVariables.Require(WellKnownVariables.ExternalTools_LibZ_ExePath)
+                .ThrowIfEmptyValue()
+                .Value;
 
-            string customExePath =
-                buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_LibZ_Custom_ExePath, string.Empty);
+            string customExePath = buildVariables.GetVariableValueOrDefault(
+                    WellKnownVariables.ExternalTools_LibZ_Custom_ExePath,
+                    string.Empty);
 
             if (!string.IsNullOrWhiteSpace(customExePath) && File.Exists(customExePath))
             {
@@ -63,7 +69,8 @@ namespace Arbor.X.Core.Tools.Libz
             var sourceRootDirectory = new DirectoryInfo(sourceRoot);
 
             List<FileInfo> csharpProjectFiles =
-                sourceRootDirectory.GetFilesRecursive(new List<string> { ".csproj" }, DefaultPaths.DefaultPathLookupSpecification, sourceRoot)
+                sourceRootDirectory.GetFilesRecursive(new List<string> { ".csproj" },
+                        DefaultPaths.DefaultPathLookupSpecification, sourceRoot)
                     .ToList();
 
             List<FileInfo> ilMergeProjects = csharpProjectFiles.Where(IsMergeEnabledInProjectFile).ToList();
@@ -72,7 +79,8 @@ namespace Arbor.X.Core.Tools.Libz
 
             logger.Write($"Found {ilMergeProjects.Count} projects marked for merging:{Environment.NewLine}{merges}");
 
-            IReadOnlyCollection<ILRepackData> filesToMerge = ilMergeProjects.SelectMany(GetMergeFiles).ToReadOnlyCollection();
+            IReadOnlyCollection<ILRepackData> filesToMerge =
+                ilMergeProjects.SelectMany(GetMergeFiles).ToReadOnlyCollection();
 
             foreach (ILRepackData repackData in filesToMerge)
             {
@@ -94,7 +102,7 @@ namespace Arbor.X.Core.Tools.Libz
                 {
                     "inject-dll",
                     "--assembly",
-                    $"{mergedPath}",
+                    $"{mergedPath}"
                 };
 
                 foreach (FileInfo dll in repackData.Dlls)
@@ -107,7 +115,8 @@ namespace Arbor.X.Core.Tools.Libz
 
                 ExitCode result;
 
-                using (CurrentDirectoryScope.Create(new DirectoryInfo(Directory.GetCurrentDirectory()), mergedDirectory))
+                using (CurrentDirectoryScope.Create(new DirectoryInfo(Directory.GetCurrentDirectory()),
+                    mergedDirectory))
                 {
                     result = await ProcessRunner.ExecuteAsync(
                         _exePath,
@@ -159,11 +168,13 @@ namespace Arbor.X.Core.Tools.Libz
             MSBuildProperty msBuildProperty = csProjFile.BuildProject.PropertyGroups
                 .SelectMany(group =>
                     group.Properties.Where(
-                        property => property.Name.Equals(targetFrameworkVersion, StringComparison.OrdinalIgnoreCase))).FirstOrDefault();
+                        property => property.Name.Equals(targetFrameworkVersion, StringComparison.OrdinalIgnoreCase)))
+                .FirstOrDefault();
 
             if (string.IsNullOrWhiteSpace(msBuildProperty?.Value))
             {
-                throw new InvalidOperationException($"The CSProj file '{csProjFile.FileName}' does not contain a property '{targetFrameworkVersion}");
+                throw new InvalidOperationException(
+                    $"The CSProj file '{csProjFile.FileName}' does not contain a property '{targetFrameworkVersion}");
             }
 
             List<FileInfo> exes = releaseDir
@@ -199,7 +210,6 @@ namespace Arbor.X.Core.Tools.Libz
 
             yield return new ILRepackData(exe.FullName, dlls, configuration, platform, targetFrameworkVersionValue);
         }
-
 
 
         private static bool FileIsStandAloneExe(FileInfo file)

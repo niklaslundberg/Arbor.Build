@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Logging;
-
 using JetBrains.Annotations;
 
 namespace Arbor.X.Core.Tools.VisualStudio
@@ -16,30 +15,32 @@ namespace Arbor.X.Core.Tools.VisualStudio
     [UsedImplicitly]
     public class VisualStudioEnvironmentVerification : ITool
     {
-        public Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
+        public Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
+            CancellationToken cancellationToken)
         {
-            var sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
+            string sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
 
-            var visualStudioVersion =
+            string visualStudioVersion =
                 buildVariables.Require(WellKnownVariables.ExternalTools_VisualStudio_Version).ThrowIfEmptyValue().Value;
 
             if (!visualStudioVersion.Equals("12.0", StringComparison.Ordinal))
             {
                 var rootDir = new DirectoryInfo(sourceRoot);
 
-                string[] extensionPatterns = new[] {".csproj", ".vcxproj"};
+                string[] extensionPatterns = { ".csproj", ".vcxproj" };
 
                 IEnumerable<FileInfo> projectFiles = rootDir.EnumerateFiles()
                     .Where(
                         file =>
                             extensionPatterns.Any(
-                                pattern => file.Extension.Equals(pattern, StringComparison.InvariantCultureIgnoreCase)));
+                                pattern => file.Extension.Equals(pattern,
+                                    StringComparison.InvariantCultureIgnoreCase)));
 
                 List<FileInfo> projectFiles81 = projectFiles.Where(Contains81).ToList();
 
                 if (projectFiles81.Any())
                 {
-                    var projectFileNames = projectFiles81.Select(file => file.FullName);
+                    IEnumerable<string> projectFileNames = projectFiles81.Select(file => file.FullName);
 
                     logger.WriteError(
                         $"Visual Studio version {visualStudioVersion} is found on this machine. Visual Studio 12.0 (2013) must be installed in order to build these projects: {Environment.NewLine}{string.Join(Environment.NewLine, projectFileNames)}");
@@ -53,18 +54,18 @@ namespace Arbor.X.Core.Tools.VisualStudio
         private bool Contains81(FileInfo file)
         {
             var lookupPatterns = new[]
-                                 {
-                                     "<ApplicationTypeRevision>8.1</ApplicationTypeRevision>",
-                                     "<TargetPlatformVersion>8.1</TargetPlatformVersion>"
-                                 };
+            {
+                "<ApplicationTypeRevision>8.1</ApplicationTypeRevision>",
+                "<TargetPlatformVersion>8.1</TargetPlatformVersion>"
+            };
 
-            using (var fs = file.OpenRead())
+            using (FileStream fs = file.OpenRead())
             {
                 using (var sr = new StreamReader(fs))
                 {
                     while (sr.Peek() >= 0)
                     {
-                        var line = sr.ReadLine();
+                        string line = sr.ReadLine();
 
                         if (!string.IsNullOrWhiteSpace(line))
                         {

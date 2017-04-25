@@ -8,7 +8,6 @@ using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.Parsing;
 using Arbor.X.Core.Tools.Cleanup;
-
 using JetBrains.Annotations;
 
 namespace Arbor.X.Core.Tools.Environments
@@ -22,15 +21,15 @@ namespace Arbor.X.Core.Tools.Environments
             bool isBuildAgentValue;
 
             var buildAgentEnvironmentVariables = new List<string>
-                                                 {
-                                                     WellKnownVariables.ExternalTools_Hudson_HudsonHome,
-                                                     WellKnownVariables.ExternalTools_Jenkins_JenkinsHome,
-                                                     WellKnownVariables.ExternalTools_TeamCity_TeamCityVersion
-                                                 };
+            {
+                WellKnownVariables.ExternalTools_Hudson_HudsonHome,
+                WellKnownVariables.ExternalTools_Jenkins_JenkinsHome,
+                WellKnownVariables.ExternalTools_TeamCity_TeamCityVersion
+            };
 
             ParseResult<bool> isBuildAgent =
                 Environment.GetEnvironmentVariable(WellKnownVariables.IsRunningOnBuildAgent)
-                    .TryParseBool(defaultValue: false);
+                    .TryParseBool(false);
 
             if (isBuildAgent.Parsed)
             {
@@ -46,10 +45,10 @@ namespace Arbor.X.Core.Tools.Environments
             }
 
             var variables = new List<IVariable>
-                            {
-                                new EnvironmentVariable(WellKnownVariables.IsRunningOnBuildAgent,
-                                    isBuildAgentValue.ToString().ToLowerInvariant())
-                            };
+            {
+                new EnvironmentVariable(WellKnownVariables.IsRunningOnBuildAgent,
+                    isBuildAgentValue.ToString().ToLowerInvariant())
+            };
 
             return Task.FromResult<IEnumerable<IVariable>>(variables);
         }

@@ -6,8 +6,6 @@ namespace Arbor.X.Core.Tools.Git
 {
     public sealed class BranchName
     {
-        private readonly string _name;
-
         public static Maybe<BranchName> TryParse(string branchName)
         {
             if (string.IsNullOrWhiteSpace(branchName))
@@ -25,20 +23,20 @@ namespace Arbor.X.Core.Tools.Git
                 throw new ArgumentNullException(nameof(name));
             }
 
-            _name = name;
+            Name = name;
         }
 
-        public string Name => _name;
+        public string Name { get; }
 
         public string Normalize()
         {
-            var invalidCharacters = new[] {"/", @"\", "\""};
+            var invalidCharacters = new[] { "/", @"\", "\"" };
 
-            string branchNameWithValidCharacters = invalidCharacters.Aggregate(_name,
-                                                                               (current, invalidCharacter) =>
-                                                                               current.Replace(invalidCharacter, "-"));
+            string branchNameWithValidCharacters = invalidCharacters.Aggregate(Name,
+                (current, invalidCharacter) =>
+                    current.Replace(invalidCharacter, "-"));
 
-            var removedFeatureInName = branchNameWithValidCharacters.Replace("feature-", string.Empty);
+            string removedFeatureInName = branchNameWithValidCharacters.Replace("feature-", string.Empty);
 
             return removedFeatureInName;
         }

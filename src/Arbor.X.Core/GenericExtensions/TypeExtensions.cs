@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Reflection;
-
 using JetBrains.Annotations;
 
 namespace Arbor.X.Core.GenericExtensions
@@ -14,7 +13,7 @@ namespace Arbor.X.Core.GenericExtensions
                 throw new ArgumentNullException(nameof(type));
             }
 
-            var isConcretePublicClassImplementing = type.IsClass && type.IsPublic && typeof(T).IsAssignableFrom(type);
+            bool isConcretePublicClassImplementing = type.IsClass && type.IsPublic && typeof(T).IsAssignableFrom(type);
 
             return isConcretePublicClassImplementing;
         }

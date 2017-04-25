@@ -14,8 +14,11 @@ namespace Arbor.X.Core.Logging
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj)) return false;
-            return obj is LogLevel && Equals((LogLevel) obj);
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+            return obj is LogLevel && Equals((LogLevel)obj);
         }
 
         public override int GetHashCode()

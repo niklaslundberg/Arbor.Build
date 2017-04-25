@@ -2,21 +2,20 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-
 using Arbor.X.Core.IO;
 using Machine.Specifications;
 using Machine.Specifications.Model;
 
 namespace Arbor.X.Tests.Integration.DirectoryExtensions
 {
-    [Subject(typeof (Subject))]
+    [Subject(typeof(Subject))]
     public class
         when_getting_config_files_recursive_with_possible_files_both_in_blacklisted_and_not_blacklisted_directories
     {
         private static DirectoryInfo baseDir;
         private static IReadOnlyCollection<string> files;
 
-        private Cleanup after = () => { baseDir.DeleteIfExists(recursive: true); };
+        private Cleanup after = () => { baseDir.DeleteIfExists(true); };
 
         private Establish context = () =>
         {
@@ -25,13 +24,13 @@ namespace Arbor.X.Tests.Integration.DirectoryExtensions
                     $"{DefaultPaths.TempPathPrefix}_DirectoryExtensions_{Guid.NewGuid()}"));
             baseDir.EnsureExists();
 
-            var a = baseDir.CreateSubdirectory("A");
-            var bower = baseDir.CreateSubdirectory("bower_components");
-            var c = baseDir.CreateSubdirectory("C");
+            DirectoryInfo a = baseDir.CreateSubdirectory("A");
+            DirectoryInfo bower = baseDir.CreateSubdirectory("bower_components");
+            DirectoryInfo c = baseDir.CreateSubdirectory("C");
 
-            var e = c.CreateSubdirectory("e");
+            DirectoryInfo e = c.CreateSubdirectory("e");
 
-            var nodeModules = bower.CreateSubdirectory("node_modules");
+            DirectoryInfo nodeModules = bower.CreateSubdirectory("node_modules");
 
             using (File.Create(Path.Combine(nodeModules.FullName, "node.config")))
             {
@@ -68,8 +67,10 @@ namespace Arbor.X.Tests.Integration.DirectoryExtensions
 
         private Because of = () =>
         {
-            files = baseDir.GetFilesRecursive(new List<string> {".config"},
-                DefaultPaths.DefaultPathLookupSpecification, baseDir.FullName).Select(s => s.Name).ToList();
+            files = baseDir.GetFilesRecursive(new List<string> { ".config" },
+                    DefaultPaths.DefaultPathLookupSpecification, baseDir.FullName)
+                .Select(s => s.Name)
+                .ToList();
         };
 
         private It should_contain_not_blacklisted_files =

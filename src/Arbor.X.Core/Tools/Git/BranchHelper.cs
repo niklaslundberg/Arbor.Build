@@ -16,13 +16,13 @@ namespace Arbor.X.Core.Tools.Git
             }
 
             var nonFeatureBranchNames = new[]
-                                            {
-                                                "dev",
-                                                "develop",
-                                                "master",
-                                                "release",
-                                                "hotfix"
-                                            };
+            {
+                "dev",
+                "develop",
+                "master",
+                "release",
+                "hotfix"
+            };
 
             bool isAStandardBranch =
                 nonFeatureBranchNames.Any(
@@ -39,13 +39,14 @@ namespace Arbor.X.Core.Tools.Git
             }
 
             var developBranchNames = new[]
-                                         {
-                                             "develop",
-                                             "dev"
-                                         };
+            {
+                "develop",
+                "dev"
+            };
 
             bool isDevelopBranch =
-                developBranchNames.Any(name => branchName.LogicalName.StartsWith(branchName.Name, StringComparison.InvariantCultureIgnoreCase));
+                developBranchNames.Any(name => branchName.LogicalName.StartsWith(branchName.Name,
+                    StringComparison.InvariantCultureIgnoreCase));
 
             return isDevelopBranch;
         }
@@ -58,13 +59,15 @@ namespace Arbor.X.Core.Tools.Git
             }
 
             var productionBranches = new List<string>(10)
-                                         {
-                                             "master",
-                                             "release",
-                                             "hotfix"
-                                         };
+            {
+                "master",
+                "release",
+                "hotfix"
+            };
 
-            bool isProductionBranch = productionBranches.Any(productionBranch => branchName.LogicalName.StartsWith(productionBranch, StringComparison.InvariantCultureIgnoreCase));
+            bool isProductionBranch =
+                productionBranches.Any(productionBranch => branchName.LogicalName.StartsWith(productionBranch,
+                    StringComparison.InvariantCultureIgnoreCase));
 
             return isProductionBranch;
         }
@@ -102,28 +105,29 @@ namespace Arbor.X.Core.Tools.Git
 
             if (string.IsNullOrWhiteSpace(branchName))
             {
-                return new SemanticVersion(0,0,0);
+                return new SemanticVersion(0, 0, 0);
             }
 
             string splitCharactersVariable =
                 Environment.GetEnvironmentVariable(WellKnownVariables.NameVersionCommanSeparatedSplitList);
 
             var splitCharacters = new List<string>
-                                      {
-                                          "/",
-                                          "-",
-                                          "_"
-                                      };
+            {
+                "/",
+                "-",
+                "_"
+            };
 
             if (!string.IsNullOrWhiteSpace(splitCharactersVariable))
             {
                 List<string> splitts =
                     splitCharactersVariable.Split(
-                        new[]
+                            new[]
                             {
                                 ","
                             },
-                        StringSplitOptions.RemoveEmptyEntries).ToList();
+                            StringSplitOptions.RemoveEmptyEntries)
+                        .ToList();
 
                 splitCharacters = splitts;
             }
@@ -134,7 +138,7 @@ namespace Arbor.X.Core.Tools.Git
             SemanticVersion semver;
             if (!SemanticVersion.TryParse(version, out semver))
             {
-                return new SemanticVersion(0,0,0);
+                return new SemanticVersion(0, 0, 0);
             }
 
             return new SemanticVersion(semver.Major, semver.Minor, semver.Patch);

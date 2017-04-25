@@ -11,41 +11,40 @@ namespace Arbor.X.Core.Tools.Kudu
                 return value;
             }
 
-            var extracted = value;
+            string extracted = value;
 
             const StringComparison comparisonType = StringComparison.InvariantCultureIgnoreCase;
-            
-            var message = string.Format("Could not extract {0} from text '{1}'",
-                whatToExtract ?? "value", value);
+
+            string message = $"Could not extract {whatToExtract ?? "value"} from text '{value}'";
 
             var exception = new FormatException(message);
 
-            if (value.Trim().StartsWith("<"))
+            if (value.Trim().StartsWith("<", StringComparison.Ordinal))
             {
-                var indexOf = value.IndexOf(">", comparisonType);
+                int indexOf = value.IndexOf(">", comparisonType);
 
                 if (indexOf < 0)
                 {
                     throw exception;
                 }
 
-                var valueStartIndex = indexOf + 1;
+                int valueStartIndex = indexOf + 1;
 
                 if (value.Length < valueStartIndex)
                 {
                     throw exception;
                 }
 
-                var valueAndClosingTag = value.Substring(valueStartIndex);
+                string valueAndClosingTag = value.Substring(valueStartIndex);
 
-                var valueEndPosition = valueAndClosingTag.IndexOf("<", comparisonType);
+                int valueEndPosition = valueAndClosingTag.IndexOf("<", comparisonType);
 
                 if (valueEndPosition < 0)
                 {
                     throw exception;
                 }
 
-                var parsedValue = valueAndClosingTag.Substring(0, valueEndPosition);
+                string parsedValue = valueAndClosingTag.Substring(0, valueEndPosition);
 
                 extracted = parsedValue;
             }

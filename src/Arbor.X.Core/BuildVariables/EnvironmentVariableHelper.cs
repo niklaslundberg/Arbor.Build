@@ -4,40 +4,36 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-
-
-
 using Arbor.Aesculus.Core;
 using Arbor.Exceptions;
 using Arbor.KVConfiguration.Schema.Json;
 using Arbor.Processing.Core;
-using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.Logging;
-
 using JetBrains.Annotations;
 
 namespace Arbor.X.Core.BuildVariables
 {
     public static class EnvironmentVariableHelper
     {
-        public static IReadOnlyCollection<IVariable> GetBuildVariablesFromEnvironmentVariables(ILogger logger, List<IVariable> existingItems = null)
+        public static IReadOnlyCollection<IVariable> GetBuildVariablesFromEnvironmentVariables(ILogger logger,
+            List<IVariable> existingItems = null)
         {
-            var existing = existingItems ?? new List<IVariable>();
+            List<IVariable> existing = existingItems ?? new List<IVariable>();
             var buildVariables = new List<IVariable>();
 
-            var environmentVariables = Environment.GetEnvironmentVariables();
+            IDictionary environmentVariables = Environment.GetEnvironmentVariables();
 
-            var variables = environmentVariables
+            List<EnvironmentVariable> variables = environmentVariables
                 .OfType<DictionaryEntry>()
                 .Select(entry => new EnvironmentVariable(entry.Key.ToString(),
                     entry.Value.ToString()))
                 .ToList();
 
-            var nonExisting = variables
+            List<EnvironmentVariable> nonExisting = variables
                 .Where(bv => !existing.Any(ebv => ebv.Key.Equals(bv.Key, StringComparison.InvariantCultureIgnoreCase)))
                 .ToList();
 
-            var existingVariables = variables.Except(nonExisting).ToList();
+            List<EnvironmentVariable> existingVariables = variables.Except(nonExisting).ToList();
 
             if (existingVariables.Any())
             {
@@ -46,7 +42,7 @@ namespace Arbor.X.Core.BuildVariables
                 builder.AppendLine(
                     $"There are {existingVariables} existing variables that will not be overriden by environment variables:");
 
-                foreach (var environmentVariable in existingVariables)
+                foreach (EnvironmentVariable environmentVariable in existingVariables)
                 {
                     builder.AppendLine(environmentVariable.Key + ": " + environmentVariable.Value);
                 }
@@ -86,7 +82,8 @@ namespace Arbor.X.Core.BuildVariables
 
             try
             {
-                configurationItems = new KVConfiguration.JsonConfiguration.JsonFileReader(fileInfo.FullName).GetConfigurationItems();
+                configurationItems = new KVConfiguration.JsonConfiguration.JsonFileReader(fileInfo.FullName)
+                    .GetConfigurationItems();
             }
             catch (Exception ex) when (!ex.IsFatal())
             {
@@ -100,16 +97,18 @@ namespace Arbor.X.Core.BuildVariables
                 return ExitCode.Failure;
             }
 
-            foreach (var keyValuePair in configurationItems.Keys)
+            foreach (KeyValue keyValuePair in configurationItems.Keys)
             {
                 try
                 {
                     Environment.SetEnvironmentVariable(keyValuePair.Key, keyValuePair.Value);
-                    logger.WriteDebug($"Set environment variable with key '{keyValuePair.Key}' and value '{keyValuePair.Value}' from file '{fileName}'");
+                    logger.WriteDebug(
+                        $"Set environment variable with key '{keyValuePair.Key}' and value '{keyValuePair.Value}' from file '{fileName}'");
                 }
                 catch (Exception ex) when (!ex.IsFatal())
                 {
-                    logger.WriteError($"Could not set environment variable with key '{keyValuePair.Key}' and value '{keyValuePair.Value}' from file '{fileName}'");
+                    logger.WriteError(
+                        $"Could not set environment variable with key '{keyValuePair.Key}' and value '{keyValuePair.Value}' from file '{fileName}'");
                     return ExitCode.Failure;
                 }
             }

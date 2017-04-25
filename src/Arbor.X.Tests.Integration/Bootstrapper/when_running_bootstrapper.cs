@@ -2,7 +2,6 @@
 using System.IO;
 using Arbor.Processing.Core;
 using Arbor.X.Bootstrapper;
-using Arbor.X.Core;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 using Machine.Specifications;
@@ -10,7 +9,7 @@ using Machine.Specifications;
 namespace Arbor.X.Tests.Integration.Bootstrapper
 {
     [Ignore("Not complete")]
-    [Subject(typeof (X.Bootstrapper.Bootstrapper))]
+    [Subject(typeof(X.Bootstrapper.Bootstrapper))]
     public class when_running_bootstrapper
     {
         private static X.Bootstrapper.Bootstrapper bootstrapper;
@@ -23,7 +22,7 @@ namespace Arbor.X.Tests.Integration.Bootstrapper
         {
             try
             {
-                baseDirectory.DeleteIfExists(recursive: true);
+                baseDirectory.DeleteIfExists(true);
             }
             catch (IOException ex)
             {
@@ -33,14 +32,15 @@ namespace Arbor.X.Tests.Integration.Bootstrapper
 
         private Establish context = () =>
         {
-            string tempDirectoryPath = Path.Combine(Path.GetTempPath(), $"{DefaultPaths.TempPathPrefix}_Bootstrapper_Test_{Guid.NewGuid()}");
+            string tempDirectoryPath = Path.Combine(Path.GetTempPath(),
+                $"{DefaultPaths.TempPathPrefix}_Bootstrapper_Test_{Guid.NewGuid()}");
 
             baseDirectory = new DirectoryInfo(tempDirectoryPath).EnsureExists();
             Console.WriteLine("Temp directory is {0}", baseDirectory.FullName);
 
 
-            startOptions = new BootstrapStartOptions(baseDirectory.FullName, prereleaseEnabled: true,
-                branchName: "develop");
+            startOptions = new BootstrapStartOptions(baseDirectory.FullName, true,
+                "develop");
             bootstrapper = new X.Bootstrapper.Bootstrapper(LogLevel.Verbose);
         };
 

@@ -6,7 +6,7 @@ namespace Arbor.X.Tests.Integration.Logging.LogLevel
     public class when_parsing_null_string
     {
         private static Core.Logging.LogLevel logLevel;
-        private Because of = () => { logLevel = Core.Logging.LogLevel.TryParse((string)null); };
+        private Because of = () => { logLevel = Core.Logging.LogLevel.TryParse(null); };
 
         private It should_equal_default_level = () => logLevel.Level.ShouldEqual(Core.Logging.LogLevel.Default.Level);
 

@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-
 using Arbor.X.Core.Logging;
-
 using JetBrains.Annotations;
 
 namespace Arbor.X.Core.Tools.Git
@@ -19,18 +17,18 @@ namespace Arbor.X.Core.Tools.Git
             }
 
             var gitExeLocations = new List<string>
-                                      {
-                                          Path.Combine(
-                                              Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
-                                              "Git",
-                                              "bin",
-                                              "git.exe"),
-                                          Path.Combine(
-                                              Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
-                                              "Git",
-                                              "bin",
-                                              "git.exe")
-                                      };
+            {
+                Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                    "Git",
+                    "bin",
+                    "git.exe"),
+                Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                    "Git",
+                    "bin",
+                    "git.exe")
+            };
 
             string programFilesX64 = Environment.GetEnvironmentVariable("ProgramW6432");
 
@@ -46,14 +44,14 @@ namespace Arbor.X.Core.Tools.Git
             }
 
             string exePath = gitExeLocations.FirstOrDefault(
-                location =>
-                    {
-                        bool exists = File.Exists(location);
+                                 location =>
+                                 {
+                                     bool exists = File.Exists(location);
 
-                        logger.WriteDebug($"Testing Git exe path '{location}', exists: {exists}");
+                                     logger.WriteDebug($"Testing Git exe path '{location}', exists: {exists}");
 
-                        return exists;
-                    }) ?? string.Empty;
+                                     return exists;
+                                 }) ?? string.Empty;
 
             return exePath;
         }

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using Arbor.Processing.Core;
-using Arbor.X.Core;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.Tools.Testing;
@@ -11,7 +10,7 @@ using Machine.Specifications;
 namespace Arbor.X.Tests.Integration.Tests.MSpec
 {
     [Subject(typeof(UnitTestFinder))]
-    [Tags(Arbor.X.Core.Tools.Testing.MSpecInternalConstants.RecursiveArborXTest)]
+    [Tags(MSpecInternalConstants.RecursiveArborXTest)]
     public class when_finding_mspec_assemblies_with_behaviors
     {
         private static UnitTestFinder finder;
@@ -21,16 +20,17 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
         {
             var logger = new ConsoleLogger { LogLevel = LogLevel.Verbose };
             finder = new UnitTestFinder(new List<Type>
-                                        {
-                                            typeof (BehaviorsAttribute)
-                                        }, logger: logger);
+            {
+                typeof(BehaviorsAttribute)
+            }, logger: logger);
 
 
-            var root = Path.Combine(VcsTestPathHelper.FindVcsRootPath(), "src");
+            string root = Path.Combine(VcsTestPathHelper.FindVcsRootPath(), "src");
 
-            var combine = Path.Combine(root, "Arbor.X.Tests.Integration", "bin", "debug");
+            string combine = Path.Combine(root, "Arbor.X.Tests.Integration", "bin", "debug");
 
-            var tempPath = Path.Combine(Path.GetTempPath(), $"{DefaultPaths.TempPathPrefix}_mspec_beh_{DateTime.Now.ToString("yyyyMMddHHmmssfff_")}{Guid.NewGuid().ToString().Substring(0, 8)}");
+            string tempPath = Path.Combine(Path.GetTempPath(),
+                $"{DefaultPaths.TempPathPrefix}_mspec_beh_{DateTime.Now.ToString("yyyyMMddHHmmssfff_")}{Guid.NewGuid().ToString().Substring(0, 8)}");
 
             tempDirectory = new DirectoryInfo(tempPath).EnsureExists();
 

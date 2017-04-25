@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Arbor.Defensive.Collections;
-using Arbor.X.Core.GenericExtensions;
 
 namespace Arbor.X.Core.Tools.NuGet
 {
@@ -13,7 +12,6 @@ namespace Arbor.X.Core.Tools.NuGet
 
         public ManifestReWriteResult(IEnumerable<string> removeTags, string usedPrefix)
         {
-
             if (string.IsNullOrWhiteSpace(usedPrefix))
             {
                 throw new ArgumentNullException(nameof(usedPrefix));

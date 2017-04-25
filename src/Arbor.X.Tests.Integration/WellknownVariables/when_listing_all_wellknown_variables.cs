@@ -5,7 +5,7 @@ using Machine.Specifications;
 
 namespace Arbor.X.Tests.Integration.WellknownVariables
 {
-    [Tags(Arbor.X.Core.Tools.Testing.MSpecInternalConstants.RecursiveArborXTest)]
+    [Tags(Core.Tools.Testing.MSpecInternalConstants.RecursiveArborXTest)]
     public class when_listing_all_wellknown_variables
     {
         private static IReadOnlyCollection<VariableDescription> readOnlyCollection;

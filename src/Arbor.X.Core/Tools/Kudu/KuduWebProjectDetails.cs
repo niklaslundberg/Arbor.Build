@@ -4,39 +4,23 @@ namespace Arbor.X.Core.Tools.Kudu
 {
     public class KuduWebProjectDetails
     {
-        private readonly bool _isKuduWebJobProject;
-        private readonly KuduWebJobType _kuduWebJobType;
-        private readonly string _projectFilePath;
-        private readonly string _webJobName;
-
-        private KuduWebProjectDetails(bool isKuduWebJobProject, string webJobName = null, KuduWebJobType kuduWebJobType = null,
+        private KuduWebProjectDetails(bool isKuduWebJobProject, string webJobName = null,
+            KuduWebJobType kuduWebJobType = null,
             string projectFilePath = null)
         {
-            _isKuduWebJobProject = isKuduWebJobProject;
-            _webJobName = webJobName ?? string.Empty;
-            _kuduWebJobType = kuduWebJobType;
-            _projectFilePath = projectFilePath ?? string.Empty;
+            IsKuduWebJobProject = isKuduWebJobProject;
+            WebJobName = webJobName ?? string.Empty;
+            KuduWebJobType = kuduWebJobType;
+            ProjectFilePath = projectFilePath ?? string.Empty;
         }
 
-        public bool IsKuduWebJobProject
-        {
-            get { return _isKuduWebJobProject; }
-        }
+        public bool IsKuduWebJobProject { get; }
 
-        public string WebJobName
-        {
-            get { return _webJobName; }
-        }
+        public string WebJobName { get; }
 
-        public KuduWebJobType KuduWebJobType
-        {
-            get { return _kuduWebJobType; }
-        }
+        public KuduWebJobType KuduWebJobType { get; }
 
-        public string ProjectFilePath
-        {
-            get { return _projectFilePath; }
-        }
+        public string ProjectFilePath { get; }
 
         public static KuduWebProjectDetails Create(string name, string type, string projectFilePath)
         {
@@ -55,7 +39,8 @@ namespace Arbor.X.Core.Tools.Kudu
                 throw new ArgumentNullException(nameof(projectFilePath));
             }
 
-            var webJobProject = new KuduWebProjectDetails(true, ParseName(name), KuduWebJobType.Parse(type), projectFilePath);
+            var webJobProject = new KuduWebProjectDetails(true, ParseName(name), KuduWebJobType.Parse(type),
+                projectFilePath);
 
             return webJobProject;
         }
@@ -73,7 +58,7 @@ namespace Arbor.X.Core.Tools.Kudu
         public override string ToString()
         {
             return IsKuduWebJobProject
-                ? string.Format("{0} ({1}), path '{2}'", WebJobName, KuduWebJobType, ProjectFilePath)
+                ? $"{WebJobName} ({KuduWebJobType}), path '{ProjectFilePath}'"
                 : "Not a Kudu web project";
         }
     }

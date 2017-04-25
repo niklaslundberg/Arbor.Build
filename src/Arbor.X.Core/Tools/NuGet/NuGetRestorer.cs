@@ -8,10 +8,8 @@ using Arbor.Castanea;
 using Arbor.Defensive.Collections;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
-
 using JetBrains.Annotations;
 using ExceptionExtensions = Arbor.Exceptions.ExceptionExtensions;
 
@@ -28,14 +26,17 @@ namespace Arbor.X.Core.Tools.NuGet
             _fixes = fixes.SafeToReadOnlyCollection();
         }
 
-        public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
+        public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
+            CancellationToken cancellationToken)
         {
             var app = new CastaneaApplication();
 
             PathLookupSpecification pathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification;
 
-            var vcsRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
-            var nuGetExetPath = buildVariables.Require(WellKnownVariables.ExternalTools_NuGet_ExePath).ThrowIfEmptyValue().Value;
+            string vcsRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
+            string nuGetExetPath = buildVariables.Require(WellKnownVariables.ExternalTools_NuGet_ExePath)
+                .ThrowIfEmptyValue()
+                .Value;
 
             var rootDirectory = new DirectoryInfo(vcsRoot);
 
@@ -56,7 +57,7 @@ namespace Arbor.X.Core.Tools.NuGet
 
                     packagesConfigFiles =
                         rootDirectory.EnumerateFiles("packages.config", SearchOption.AllDirectories)
-                            .Where(file => !pathLookupSpecification.IsFileBlackListed(file.FullName, rootDir: vcsRoot))
+                            .Where(file => !pathLookupSpecification.IsFileBlackListed(file.FullName, vcsRoot))
                             .Select(file => file.FullName)
                             .ToReadOnlyCollection();
 
@@ -64,7 +65,7 @@ namespace Arbor.X.Core.Tools.NuGet
 
                     solutionFiles =
                         rootDirectory.EnumerateFiles("*.sln", SearchOption.AllDirectories)
-                            .Where(file => !pathLookupSpecification.IsFileBlackListed(file.FullName, rootDir: vcsRoot))
+                            .Where(file => !pathLookupSpecification.IsFileBlackListed(file.FullName, vcsRoot))
                             .ToReadOnlyCollection();
 
                     listFilesSucceeded = true;
@@ -78,7 +79,7 @@ namespace Arbor.X.Core.Tools.NuGet
                     }
                     logger.WriteWarning(
                         $"Attempt {listFilesAttempt} of {listFilesMaxAttempts} failed, retrying. {ex}");
-                    listFilesAttempt ++;
+                    listFilesAttempt++;
                 }
             }
 
@@ -100,9 +101,9 @@ namespace Arbor.X.Core.Tools.NuGet
                 return ExitCode.Failure;
             }
 
-            var solutionFile = solutionFiles.Single();
+            FileInfo solutionFile = solutionFiles.Single();
 
-            var allFiles = string.Join(Environment.NewLine, packagesConfigFiles);
+            string allFiles = string.Join(Environment.NewLine, packagesConfigFiles);
             try
             {
 // ReSharper disable once PossibleNullReferenceException
@@ -112,18 +113,18 @@ namespace Arbor.X.Core.Tools.NuGet
 
                 bool disableParallelProcessing =
                     buildVariables.GetBooleanByKey(WellKnownVariables.NuGetRestoreDisableParallelProcessing,
-                        defaultValue: false);
+                        false);
 
                 bool noCache = buildVariables.GetBooleanByKey(WellKnownVariables.NuGetRestoreNoCache,
-                    defaultValue: false);
+                    false);
 
                 var nuGetConfig = new NuGetConfig
-                                  {
-                                      NuGetExePath = nuGetExetPath,
-                                      OutputDirectory = outputDirectoryPath,
-                                      DisableParallelProcessing = disableParallelProcessing,
-                                      NoCache = noCache
-                                  };
+                {
+                    NuGetExePath = nuGetExetPath,
+                    OutputDirectory = outputDirectoryPath,
+                    DisableParallelProcessing = disableParallelProcessing,
+                    NoCache = noCache
+                };
 
                 nuGetConfig.PackageConfigFiles.AddRange(packagesConfigFiles);
 
@@ -149,9 +150,9 @@ namespace Arbor.X.Core.Tools.NuGet
                     {
                         restoredPackages = app.RestoreAllSolutionPackages(
                             nuGetConfig,
-                            logInfo: message => logger.Write(message, prefix),
-                            logError: message => logger.WriteError(message, prefix),
-                            logDebug: debugAction);
+                            message => logger.Write(message, prefix),
+                            message => logger.WriteError(message, prefix),
+                            debugAction);
 
                         if (restoredPackages == 0)
                         {
@@ -189,16 +190,16 @@ namespace Arbor.X.Core.Tools.NuGet
 
             try
             {
-                foreach (var fileInfo in solutionFiles)
+                foreach (FileInfo fileInfo in solutionFiles)
                 {
                     // ReSharper disable once PossibleNullReferenceException
-                    var packagesDirectory = Path.Combine(fileInfo.Directory.FullName, "packages");
+                    string packagesDirectory = Path.Combine(fileInfo.Directory.FullName, "packages");
 
                     if (Directory.Exists(packagesDirectory))
                     {
-                        foreach (var nuGetPackageRestoreFix in _fixes)
+                        foreach (INuGetPackageRestoreFix nuGetPackageRestoreFix in _fixes)
                         {
-                           await nuGetPackageRestoreFix.FixAsync(packagesDirectory, logger);
+                            await nuGetPackageRestoreFix.FixAsync(packagesDirectory, logger);
                         }
                     }
                 }

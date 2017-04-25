@@ -1,5 +1,4 @@
 ﻿using NUnit.Framework;
-using Assert = NUnit.Framework.Assert;
 
 namespace Arbor.X.Tests.Integration.Tests
 {

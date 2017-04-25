@@ -220,6 +220,7 @@
     <Compile Include="GenericExtensions\DisplayExtensions.cs" />
     <Compile Include="GenericExtensions\IntExtensions.cs" />
     <Compile Include="GitBranchNameExtensions.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="IO\PathSpecificationExtensions.cs" />
     <Compile Include="Logging\DebugLogger.cs" />
     <Compile Include="Logging\LogLevel.cs" />

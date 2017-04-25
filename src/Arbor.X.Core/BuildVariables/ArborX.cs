@@ -4,10 +4,6 @@ namespace Arbor.X.Core.BuildVariables
     {
         private const string Namespace = "Arbor.X";
 
-        public ArborX()
-        {
-        }
-
         public static implicit operator string(ArborX arborX)
         {
             return Namespace;

@@ -8,9 +8,7 @@ using Arbor.Processing;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Logging;
-
 using JetBrains.Annotations;
-
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Arbor.X.Core.Tools.Testing
@@ -26,7 +24,7 @@ namespace Arbor.X.Core.Tools.Testing
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            var enabled = buildVariables.GetBooleanByKey(WellKnownVariables.VSTestEnabled, defaultValue: true);
+            bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.VSTestEnabled, true);
 
             if (!enabled)
             {
@@ -34,13 +32,13 @@ namespace Arbor.X.Core.Tools.Testing
                 return ExitCode.Success;
             }
 
-            var reportPath =
+            string reportPath =
                 buildVariables.Require(WellKnownVariables.ExternalTools_VSTest_ReportPath).ThrowIfEmptyValue().Value;
             _sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
 
-            var vsTestExePath = buildVariables.GetVariableValueOrDefault(
+            string vsTestExePath = buildVariables.GetVariableValueOrDefault(
                 WellKnownVariables.ExternalTools_VSTest_ExePath,
-                defaultValue: string.Empty);
+                string.Empty);
 
             if (string.IsNullOrWhiteSpace(vsTestExePath))
             {
@@ -49,14 +47,14 @@ namespace Arbor.X.Core.Tools.Testing
                 return ExitCode.Success;
             }
 
-            var ignoreTestFailures = buildVariables.GetBooleanByKey(
+            bool ignoreTestFailures = buildVariables.GetBooleanByKey(
                 WellKnownVariables.IgnoreTestFailures,
-                defaultValue: false);
+                false);
 
             bool runTestsInReleaseConfiguration =
                 buildVariables.GetBooleanByKey(
                     WellKnownVariables.RunTestsInReleaseConfigurationEnabled,
-                    defaultValue: true);
+                    true);
 
             if (ignoreTestFailures)
             {
@@ -74,7 +72,8 @@ namespace Arbor.X.Core.Tools.Testing
             return await RunVsTestAsync(logger, reportPath, vsTestExePath, runTestsInReleaseConfiguration);
         }
 
-        private async Task<ExitCode> RunVsTestAsync(ILogger logger, string vsTestReportDirectoryPath, string vsTestExePath, bool runTestsInReleaseConfiguration)
+        private async Task<ExitCode> RunVsTestAsync(ILogger logger, string vsTestReportDirectoryPath,
+            string vsTestExePath, bool runTestsInReleaseConfiguration)
         {
             Type testClassAttribute = typeof(TestClassAttribute);
             Type testMethodAttribute = typeof(TestMethodAttribute);
@@ -84,7 +83,8 @@ namespace Arbor.X.Core.Tools.Testing
             var typesToFind = new List<Type> { testClassAttribute, testMethodAttribute };
 
             List<string> vsTestConsoleArguments =
-                new UnitTestFinder(typesToFind).GetUnitTestFixtureDlls(directory, runTestsInReleaseConfiguration).ToList();
+                new UnitTestFinder(typesToFind).GetUnitTestFixtureDlls(directory, runTestsInReleaseConfiguration)
+                    .ToList();
 
             if (!vsTestConsoleArguments.Any())
             {
@@ -99,7 +99,7 @@ namespace Arbor.X.Core.Tools.Testing
 
             EnsureTestReportDirectoryExists(vsTestReportDirectoryPath);
 
-            var oldCurrentDirectory = SaveCurrentDirectory();
+            string oldCurrentDirectory = SaveCurrentDirectory();
 
             SetCurrentDirectory(vsTestReportDirectoryPath);
 
@@ -149,7 +149,7 @@ namespace Arbor.X.Core.Tools.Testing
 
         private static void LogExecution(ILogger logger, IEnumerable<string> arguments, string exePath)
         {
-            var args = string.Join(" ", arguments.Select(item => $"\"{item}\""));
+            string args = string.Join(" ", arguments.Select(item => $"\"{item}\""));
             logger.Write($"Running VSTest {exePath} {args}");
         }
 

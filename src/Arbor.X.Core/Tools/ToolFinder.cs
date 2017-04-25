@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Reflection;
 using Arbor.Defensive.Collections;
-using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.Logging;
 using Autofac;
 
@@ -17,13 +16,13 @@ namespace Arbor.X.Core.Tools
             List<ToolWithPriority> prioritizedTools = tools
                 .Select(tool =>
                 {
-                    var priorityAttribute =
+                    PriorityAttribute priorityAttribute =
                         tool.GetType()
                             .GetCustomAttributes()
                             .OfType<PriorityAttribute>()
                             .SingleOrDefault();
 
-                    var priority = priorityAttribute?.Priority ?? int.MaxValue;
+                    int priority = priorityAttribute?.Priority ?? int.MaxValue;
 
                     bool runAlways = priorityAttribute != null && priorityAttribute.RunAlways;
 

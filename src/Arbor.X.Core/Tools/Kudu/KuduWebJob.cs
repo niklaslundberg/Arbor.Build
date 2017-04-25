@@ -8,7 +8,6 @@ using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
-
 using JetBrains.Annotations;
 
 namespace Arbor.X.Core.Tools.Kudu
@@ -24,8 +23,8 @@ namespace Arbor.X.Core.Tools.Kudu
         {
             _logger = logger;
 
-            var kuduJobsEnabledKey = WellKnownVariables.KuduJobsEnabled;
-            bool kuduWebJobsEnabled = buildVariables.GetBooleanByKey(kuduJobsEnabledKey, defaultValue: false);
+            string kuduJobsEnabledKey = WellKnownVariables.KuduJobsEnabled;
+            bool kuduWebJobsEnabled = buildVariables.GetBooleanByKey(kuduJobsEnabledKey, false);
 
             if (!kuduWebJobsEnabled)
             {
@@ -42,7 +41,8 @@ namespace Arbor.X.Core.Tools.Kudu
             string sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
 
             var sourceRootDirectory = new DirectoryInfo(sourceRoot);
-            IReadOnlyCollection<FileInfo> csharpProjectFiles = sourceRootDirectory.GetFilesRecursive(new List<string> { ".csproj"}, pathLookupSpecification, rootDir);
+            IReadOnlyCollection<FileInfo> csharpProjectFiles =
+                sourceRootDirectory.GetFilesRecursive(new List<string> { ".csproj" }, pathLookupSpecification, rootDir);
 
             List<KuduWebProjectDetails> kuduWebJobProjects = csharpProjectFiles
                 .Select(IsKuduWebJobProject)
@@ -53,7 +53,7 @@ namespace Arbor.X.Core.Tools.Kudu
             {
                 logger.Write(string.Join(Environment.NewLine,
                     kuduWebJobProjects.Select(
-                        webProject => string.Format("Found Kudu web job project: {0}", webProject))));
+                        webProject => $"Found Kudu web job project: {webProject}")));
             }
             else
             {
@@ -70,7 +70,7 @@ namespace Arbor.X.Core.Tools.Kudu
             const string kuduWebJobName = "KuduWebJobName";
             const string kuduWebJobType = "KuduWebJobType";
 
-            var expectedKeys = new List<string> {kuduWebJobName, kuduWebJobType};
+            var expectedKeys = new List<string> { kuduWebJobName, kuduWebJobType };
 
             var foundItems = new Dictionary<string, string>();
 
@@ -87,7 +87,7 @@ namespace Arbor.X.Core.Tools.Kudu
                             expectedKeys.ForEach(key =>
                             {
                                 if (line.IndexOf(key,
-                                    StringComparison.InvariantCultureIgnoreCase) >= 0)
+                                        StringComparison.InvariantCultureIgnoreCase) >= 0)
                                 {
                                     if (!foundItems.ContainsKey(key))
                                     {
@@ -95,11 +95,12 @@ namespace Arbor.X.Core.Tools.Kudu
                                     }
                                     else
                                     {
-                                        var existingValue = foundItems[key];
+                                        string existingValue = foundItems[key];
 
                                         if (!existingValue.Equals(line, StringComparison.InvariantCultureIgnoreCase))
                                         {
-                                            _logger.WriteWarning(string.Format("A Kudu web job key '{0}' has already been found with value '{1}', new value is different '{2}', using first value", key, existingValue, line));
+                                            _logger.WriteWarning(
+                                                $"A Kudu web job key '{key}' has already been found with value '{existingValue}', new value is different '{line}', using first value");
                                         }
                                     }
                                 }

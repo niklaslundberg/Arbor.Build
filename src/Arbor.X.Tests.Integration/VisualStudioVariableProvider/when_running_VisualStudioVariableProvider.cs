@@ -1,11 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.Tools.Testing;
-
 using Machine.Specifications;
 
 namespace Arbor.X.Tests.Integration.VisualStudioVariableProvider
@@ -21,13 +19,17 @@ namespace Arbor.X.Tests.Integration.VisualStudioVariableProvider
         private Establish context = () => { provider = new Core.Tools.VisualStudio.VisualStudioVariableProvider(); };
 
         private Because of = () =>
-            {
-                enumerable = provider.GetEnvironmentVariablesAsync(
+        {
+            enumerable = provider.GetEnvironmentVariablesAsync(
                     new ConsoleLogger(),
                     new List<IVariable>
-                        { new EnvironmentVariable(WellKnownVariables.ExternalTools_VisualStudio_Version_Allow_PreRelease, "true") },
-                    CancellationToken.None).Result.ToList();
-            };
+                    {
+                        new EnvironmentVariable(WellKnownVariables.ExternalTools_VisualStudio_Version_Allow_PreRelease,
+                            "true")
+                    },
+                    CancellationToken.None)
+                .Result.ToList();
+        };
 
         private It should_return_a_list_of_visual_studio_versions = () => enumerable.ShouldNotBeNull();
     }

@@ -3,7 +3,6 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Arbor.Processing.Core;
-using Arbor.X.Core;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 using Machine.Specifications;
@@ -11,7 +10,7 @@ using Machine.Specifications;
 namespace Arbor.X.Tests.Integration.ProcessRunner
 {
     [Subject(typeof(Processing.ProcessRunner))]
-    [Tags(Arbor.X.Core.Tools.Testing.MSpecInternalConstants.RecursiveArborXTest)]
+    [Tags(Core.Tools.Testing.MSpecInternalConstants.RecursiveArborXTest)]
     public class when_running_a_failing_process
     {
         private static string testPath;

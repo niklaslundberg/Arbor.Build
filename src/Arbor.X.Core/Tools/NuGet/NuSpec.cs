@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
@@ -22,10 +23,12 @@ namespace Arbor.X.Core.Tools.NuGet
 
             Version = nuGetPackageVersion;
             PackageId = packageId;
-            var xml = XDocument.Load(filePath);
+            XDocument xml = XDocument.Load(filePath);
 
-            var metaData = xml.Descendants()
-                .Where(item => item.Name.LocalName == "package").Descendants().Where(item => item.Name.LocalName == "metadata")
+            List<XElement> metaData = xml.Descendants()
+                .Where(item => item.Name.LocalName == "package")
+                .Descendants()
+                .Where(item => item.Name.LocalName == "metadata")
                 .ToList();
 
             metaData.Descendants().Single(item => item.Name.LocalName == "id").Value = packageId;
@@ -34,8 +37,8 @@ namespace Arbor.X.Core.Tools.NuGet
             _xml = xml.ToString(SaveOptions.None);
         }
 
-        public string PackageId { get; private set; }
-        public string Version { get; private set; }
+        public string PackageId { get; }
+        public string Version { get; }
 
         public void Save(string filePath)
         {
@@ -71,16 +74,16 @@ namespace Arbor.X.Core.Tools.NuGet
                     nameof(nuspecFilePath));
             }
 
-            var document = XDocument.Load(nuspecFilePath);
+            XDocument document = XDocument.Load(nuspecFilePath);
 
-            var metaData = document.Descendants()
+            List<XElement> metaData = document.Descendants()
                 .Where(item => item.Name.LocalName == "package")
                 .Descendants()
                 .Where(item => item.Name.LocalName == "metadata")
                 .ToList();
 
-            var id = metaData.Descendants().Single(item => item.Name.LocalName == "id").Value;
-            var version = metaData.Descendants().Single(item => item.Name.LocalName == "version").Value;
+            string id = metaData.Descendants().Single(item => item.Name.LocalName == "id").Value;
+            string version = metaData.Descendants().Single(item => item.Name.LocalName == "version").Value;
 
             return new NuSpec(id, version, nuspecFilePath);
         }

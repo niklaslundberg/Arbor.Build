@@ -19,7 +19,7 @@ namespace Arbor.X.Core.Logging
             config.AddTarget("console", consoleTarget);
             consoleTarget.Layout = "${message}";
 
-            var nlogLogLevel = GetLogLevel();
+            NLog.LogLevel nlogLogLevel = GetLogLevel();
 
             var rule1 = new LoggingRule("*", nlogLogLevel, consoleTarget);
             config.LoggingRules.Add(rule1);
@@ -35,17 +35,19 @@ namespace Arbor.X.Core.Logging
 
         private NLog.LogLevel GetLogLevel()
         {
-            var mapping = new Dictionary<LogLevel, NLog.LogLevel>()
+            var mapping = new Dictionary<LogLevel, NLog.LogLevel>
             {
-                {LogLevel.Critical,NLog.LogLevel.Fatal},
-                {LogLevel.Error,NLog.LogLevel.Error},
-                {LogLevel.Warning,NLog.LogLevel.Warn},
-                {LogLevel.Information,NLog.LogLevel.Info},
-                {LogLevel.Verbose,NLog.LogLevel.Debug},
-                {LogLevel.Debug,NLog.LogLevel.Trace}
+                { LogLevel.Critical, NLog.LogLevel.Fatal },
+                { LogLevel.Error, NLog.LogLevel.Error },
+                { LogLevel.Warning, NLog.LogLevel.Warn },
+                { LogLevel.Information, NLog.LogLevel.Info },
+                { LogLevel.Verbose, NLog.LogLevel.Debug },
+                { LogLevel.Debug, NLog.LogLevel.Trace }
             };
 
-            var nlogLevel = mapping.Where(item => item.Key.Level == LogLevel.Level).Select(item => item.Value).SingleOrDefault();
+            NLog.LogLevel nlogLevel = mapping.Where(item => item.Key.Level == LogLevel.Level)
+                .Select(item => item.Value)
+                .SingleOrDefault();
 
             if (nlogLevel == null)
             {

@@ -9,9 +9,7 @@ using Arbor.Processing;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Logging;
-
 using JetBrains.Annotations;
-
 using NUnit.Framework;
 
 namespace Arbor.X.Core.Tools.Testing
@@ -22,9 +20,10 @@ namespace Arbor.X.Core.Tools.Testing
     {
         private string _sourceRoot;
 
-        public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
+        public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
+            CancellationToken cancellationToken)
         {
-            var enabled = buildVariables.GetBooleanByKey(WellKnownVariables.NUnitEnabled, defaultValue: true);
+            bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.NUnitEnabled, true);
 
             if (!enabled)
             {
@@ -32,37 +31,39 @@ namespace Arbor.X.Core.Tools.Testing
                 return ExitCode.Success;
             }
 
-            var externalTools = buildVariables.Require(WellKnownVariables.ExternalTools).ThrowIfEmptyValue();
-            var reportPath = buildVariables.Require(WellKnownVariables.ReportPath).ThrowIfEmptyValue();
+            IVariable externalTools = buildVariables.Require(WellKnownVariables.ExternalTools).ThrowIfEmptyValue();
+            IVariable reportPath = buildVariables.Require(WellKnownVariables.ReportPath).ThrowIfEmptyValue();
 
-            var ignoreTestFailuresVariable =
+            IVariable ignoreTestFailuresVariable =
                 buildVariables.SingleOrDefault(key => key.Key == WellKnownVariables.IgnoreTestFailures);
 
-            bool testsEnabled = buildVariables.GetBooleanByKey(WellKnownVariables.TestsEnabled, defaultValue: true);
+            bool testsEnabled = buildVariables.GetBooleanByKey(WellKnownVariables.TestsEnabled, true);
 
             _sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
 
             if (!testsEnabled)
             {
-                logger.WriteWarning($"Tests are disabled (build variable '{WellKnownVariables.TestsEnabled}' is false)");
+                logger.WriteWarning(
+                    $"Tests are disabled (build variable '{WellKnownVariables.TestsEnabled}' is false)");
                 return ExitCode.Success;
             }
 
             bool runTestsInReleaseConfiguration =
                 buildVariables.GetBooleanByKey(
                     WellKnownVariables.RunTestsInReleaseConfigurationEnabled,
-                    defaultValue: true);
+                    true);
 
-            bool ignoreTestFailures = ignoreTestFailuresVariable.GetValueOrDefault(defaultValue: false);
+            bool ignoreTestFailures = ignoreTestFailuresVariable.GetValueOrDefault(false);
 
             if (ignoreTestFailures)
             {
-                var message =
+                string message =
                     $"The exit code from NUnit test was not successful, but the environment variable {WellKnownVariables.IgnoreTestFailures} is set to true, thus returning success";
 
                 try
                 {
-                    var exitCode = await RunNUnitAsync(externalTools, logger, reportPath, runTestsInReleaseConfiguration);
+                    ExitCode exitCode = await RunNUnitAsync(externalTools, logger, reportPath,
+                        runTestsInReleaseConfiguration);
 
                     if (exitCode.IsSuccess)
                     {
@@ -83,16 +84,19 @@ namespace Arbor.X.Core.Tools.Testing
             return await RunNUnitAsync(externalTools, logger, reportPath, runTestsInReleaseConfiguration);
         }
 
-        private async Task<ExitCode> RunNUnitAsync(IVariable externalTools, ILogger logger, IVariable reportPath, bool runTestsInReleaseConfiguration)
+        private async Task<ExitCode> RunNUnitAsync(IVariable externalTools, ILogger logger, IVariable reportPath,
+            bool runTestsInReleaseConfiguration)
         {
-            Type fixtureAttribute = typeof (TestFixtureAttribute);
-            Type testMethodAttribute = typeof (TestAttribute);
+            Type fixtureAttribute = typeof(TestFixtureAttribute);
+            Type testMethodAttribute = typeof(TestAttribute);
 
             var directory = new DirectoryInfo(_sourceRoot);
 
             var typesToFind = new List<Type> { fixtureAttribute, testMethodAttribute };
 
-            var testDlls = new UnitTestFinder(typesToFind).GetUnitTestFixtureDlls(directory, runTestsInReleaseConfiguration).ToList();
+            List<string> testDlls = new UnitTestFinder(typesToFind)
+                .GetUnitTestFixtureDlls(directory, runTestsInReleaseConfiguration)
+                .ToList();
 
             if (!testDlls.Any())
             {
@@ -105,7 +109,7 @@ namespace Arbor.X.Core.Tools.Testing
 
             var results = new List<Tuple<string, ExitCode>>();
 
-            foreach (var testDll in testDlls)
+            foreach (string testDll in testDlls)
             {
                 var nunitConsoleArguments = new List<string> { testDll };
 
@@ -119,9 +123,10 @@ namespace Arbor.X.Core.Tools.Testing
 
                 LogExecution(logger, nunitConsoleArguments, nunitExePath);
 
-                var result = await ProcessRunner.ExecuteAsync(nunitExePath, arguments: nunitConsoleArguments, standardOutLog: logger.Write,
-                                                               standardErrorAction: logger.WriteError,
-                                                               toolAction: logger.Write);
+                ExitCode result = await ProcessRunner.ExecuteAsync(nunitExePath, arguments: nunitConsoleArguments,
+                    standardOutLog: logger.Write,
+                    standardErrorAction: logger.WriteError,
+                    toolAction: logger.Write);
 
                 results.Add(Tuple.Create(testDll, result));
             }
@@ -131,9 +136,9 @@ namespace Arbor.X.Core.Tools.Testing
                 return ExitCode.Success;
             }
 
-            var failedTestsBuilder =new StringBuilder();
+            var failedTestsBuilder = new StringBuilder();
             failedTestsBuilder.AppendLine("The following DLL files were not tested successfully:");
-            foreach (var result in results.Where(r => !r.Item2.IsSuccess))
+            foreach (Tuple<string, ExitCode> result in results.Where(r => !r.Item2.IsSuccess))
             {
                 failedTestsBuilder.AppendLine(result.Item1);
             }
@@ -157,13 +162,13 @@ namespace Arbor.X.Core.Tools.Testing
 
         private static void LogExecution(ILogger logger, IEnumerable<string> nunitArgs, string nunitExe)
         {
-            var args = string.Join(" ", nunitArgs.Select(item => $"\"{item}\""));
+            string args = string.Join(" ", nunitArgs.Select(item => $"\"{item}\""));
             logger.Write($"Running NUnit {nunitExe} {args}");
         }
 
         private static string GetNunitExePath(IVariable externalTools)
         {
-            var nunitExe = Path.Combine(externalTools.Value, "nunit", "nunit-console.exe");
+            string nunitExe = Path.Combine(externalTools.Value, "nunit", "nunit-console.exe");
             return nunitExe;
         }
 
@@ -177,7 +182,7 @@ namespace Arbor.X.Core.Tools.Testing
         {
             string xmlReportName = $"{Guid.NewGuid()}.xml";
 
-            var reportFile = Path.Combine(reportPath.Value, "nunit", xmlReportName);
+            string reportFile = Path.Combine(reportPath.Value, "nunit", xmlReportName);
 
             return reportFile;
         }

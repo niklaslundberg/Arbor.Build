@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using Arbor.Processing.Core;
-using Arbor.X.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
@@ -13,12 +12,12 @@ using Machine.Specifications;
 
 namespace Arbor.X.Tests.Integration.Tests.MSpec
 {
-    [Subject(typeof (MSpecTestRunner))]
-    [Tags(Arbor.X.Core.Tools.Testing.MSpecInternalConstants.RecursiveArborXTest)]
+    [Subject(typeof(MSpecTestRunner))]
+    [Tags(MSpecInternalConstants.RecursiveArborXTest)]
     public class when_running_mspec_on_self_with_nunit_xml
     {
         private static MSpecTestRunner testRunner;
-        private static List<IVariable> variables = new List<IVariable>();
+        private static readonly List<IVariable> variables = new List<IVariable>();
         private static ExitCode ExitCode;
         private static string mspecReports;
         private static ExitCode exitCode;
@@ -29,7 +28,8 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
 
             string combine = Path.Combine(root, "Arbor.X.Tests.Integration", "bin", "debug");
 
-            string tempPath = Path.Combine(Path.GetTempPath(), $"{DefaultPaths.TempPathPrefix}_mspec_self_rep_{DateTime.Now.ToString("yyyyMMddHHmmssfff_")}{Guid.NewGuid().ToString().Substring(0, 8)}");
+            string tempPath = Path.Combine(Path.GetTempPath(),
+                $"{DefaultPaths.TempPathPrefix}_mspec_self_rep_{DateTime.Now.ToString("yyyyMMddHHmmssfff_")}{Guid.NewGuid().ToString().Substring(0, 8)}");
 
             tempDirectory = new DirectoryInfo(tempPath).EnsureExists();
 
@@ -41,7 +41,8 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
 
             exitCode =
                 DirectoryCopy.CopyAsync(combine, binDirectory.FullName,
-                    pathLookupSpecificationOption: new PathLookupSpecification()).Result;
+                        pathLookupSpecificationOption: new PathLookupSpecification())
+                    .Result;
 
             testRunner = new MSpecTestRunner();
             variables.Add(new EnvironmentVariable(WellKnownVariables.ExternalTools,
@@ -63,12 +64,13 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
         private Because of =
             () =>
                 ExitCode =
-                    testRunner.ExecuteAsync(new ConsoleLogger {LogLevel = LogLevel.Verbose}, variables,
-                        new CancellationToken()).Result;
+                    testRunner.ExecuteAsync(new ConsoleLogger { LogLevel = LogLevel.Verbose }, variables,
+                            new CancellationToken())
+                        .Result;
 
         private It shoud_have_created_html_report = () =>
         {
-            DirectoryInfo reports = new DirectoryInfo(mspecReports);
+            var reports = new DirectoryInfo(mspecReports);
             DirectoryInfo htmlDirectory = reports.GetDirectories()
                 .SingleOrDefault(dir => dir.Name.Equals("html", StringComparison.InvariantCultureIgnoreCase));
 
@@ -84,7 +86,7 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
 
         private It shoud_have_created_xml_report = () =>
         {
-            DirectoryInfo reports = new DirectoryInfo(mspecReports);
+            var reports = new DirectoryInfo(mspecReports);
 
             FileInfo[] files = reports.GetFiles("*.xml", SearchOption.AllDirectories);
 
@@ -104,7 +106,7 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
 
             try
             {
-                tempDirectory.DeleteIfExists(recursive: true);
+                tempDirectory.DeleteIfExists(true);
             }
             catch (Exception ex)
             {

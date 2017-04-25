@@ -4,7 +4,8 @@ namespace Arbor.X.Core.Tools.MSBuild
 {
     public class WebSolutionProject
     {
-        public WebSolutionProject(string fullPath, string projectName, string projectDirectory, MSBuildProject msbuildProject, Framework framework)
+        public WebSolutionProject(string fullPath, string projectName, string projectDirectory,
+            MSBuildProject msbuildProject, Framework framework)
         {
             FullPath = fullPath;
             ProjectName = projectName;
@@ -19,8 +20,8 @@ namespace Arbor.X.Core.Tools.MSBuild
 
         public Framework Framework { get; }
 
-        public string ProjectDirectory { get;  }
+        public string ProjectDirectory { get; }
 
-        public MSBuildProject BuildProject { get;  }
+        public MSBuildProject BuildProject { get; }
     }
 }

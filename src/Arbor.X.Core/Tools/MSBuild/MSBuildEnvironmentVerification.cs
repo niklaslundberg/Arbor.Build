@@ -1,6 +1,5 @@
 ﻿using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Tools.EnvironmentVariables;
-
 using JetBrains.Annotations;
 
 namespace Arbor.X.Core.Tools.MSBuild

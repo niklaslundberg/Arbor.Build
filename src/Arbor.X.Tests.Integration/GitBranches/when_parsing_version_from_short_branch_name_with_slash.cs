@@ -3,7 +3,7 @@ using Machine.Specifications;
 
 namespace Arbor.X.Tests.Integration.GitBranches
 {
-    [Subject(typeof (BranchHelper))]
+    [Subject(typeof(BranchHelper))]
     public class when_parsing_version_from_short_branch_name_with_slash
     {
         private static string branchName;

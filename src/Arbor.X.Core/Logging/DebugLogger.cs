@@ -59,6 +59,7 @@ namespace Arbor.X.Core.Logging
         }
 
         public LogLevel LogLevel { get; set; }
+
         public void WriteDebug(string message, string prefix = null)
         {
             if (string.IsNullOrWhiteSpace(message))

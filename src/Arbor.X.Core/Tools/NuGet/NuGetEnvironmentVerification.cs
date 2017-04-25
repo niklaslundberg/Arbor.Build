@@ -4,13 +4,11 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Arbor.Processing;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;
 using Arbor.X.Core.Tools.EnvironmentVariables;
-
 using JetBrains.Annotations;
 
 namespace Arbor.X.Core.Tools.NuGet
@@ -48,7 +46,7 @@ namespace Arbor.X.Core.Tools.NuGet
             else
             {
                 bool nuGetUpdateEnabled =
-                    buildVariables.GetBooleanByKey(WellKnownVariables.NuGetSelfUpdateEnabled, defaultValue: true);
+                    buildVariables.GetBooleanByKey(WellKnownVariables.NuGetSelfUpdateEnabled, true);
 
                 if (nuGetUpdateEnabled)
                 {
@@ -73,11 +71,11 @@ namespace Arbor.X.Core.Tools.NuGet
             var standardOut = new List<string>();
             ILogger versionLogger = new DelegateLogger(
                 (message, category) => standardOut.Add(message),
-                warning: nullLogger,
-                error: nullLogger);
+                nullLogger,
+                nullLogger);
 
             IEnumerable<string> args = new List<string>();
-            ExitCode versionExitCode = await ProcessHelper.ExecuteAsync(nuGetExePath, arguments: args, logger: versionLogger);
+            ExitCode versionExitCode = await ProcessHelper.ExecuteAsync(nuGetExePath, args, versionLogger);
 
             if (!versionExitCode.IsSuccess)
             {
@@ -85,7 +83,7 @@ namespace Arbor.X.Core.Tools.NuGet
                 return;
             }
 
-            var nugetVersion = "NuGet Version: ";
+            string nugetVersion = "NuGet Version: ";
             string versionLine =
                 standardOut.FirstOrDefault(
                     line => line.StartsWith(nugetVersion, StringComparison.InvariantCultureIgnoreCase));

@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.Tools.Cleanup;
-
 using JetBrains.Annotations;
 
 namespace Arbor.X.Core.Tools.TeamCity
@@ -20,7 +19,7 @@ namespace Arbor.X.Core.Tools.TeamCity
 
             bool isRunningInTeamCity =
                 buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_TeamCity_BuildConfigurationName,
-                    defaultValue: false);
+                    false);
 
             if (buildVariables.HasKey(WellKnownVariables.ExternalTools_TeamCity_IsRunningInTeamCity))
             {
@@ -29,7 +28,8 @@ namespace Arbor.X.Core.Tools.TeamCity
             }
             else
             {
-                variables.Add(new EnvironmentVariable(WellKnownVariables.ExternalTools_TeamCity_IsRunningInTeamCity, isRunningInTeamCity.ToString()));
+                variables.Add(new EnvironmentVariable(WellKnownVariables.ExternalTools_TeamCity_IsRunningInTeamCity,
+                    isRunningInTeamCity.ToString()));
             }
 
             return Task.FromResult<IEnumerable<IVariable>>(variables);

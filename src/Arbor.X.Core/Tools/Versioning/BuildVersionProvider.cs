@@ -13,7 +13,6 @@ using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.Tools.Cleanup;
-
 using JetBrains.Annotations;
 
 namespace Arbor.X.Core.Tools.Versioning
@@ -21,7 +20,8 @@ namespace Arbor.X.Core.Tools.Versioning
     [UsedImplicitly]
     public class BuildVersionProvider : IVariableProvider
     {
-        public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
+        public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(ILogger logger,
+            IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {
             IEnumerable<KeyValuePair<string, string>> variables =
                 GetVersionVariables(buildVariables, logger);
@@ -36,8 +36,7 @@ namespace Arbor.X.Core.Tools.Versioning
         private IEnumerable<KeyValuePair<string, string>> GetVersionVariables(
             IReadOnlyCollection<IVariable> buildVariables, ILogger logger)
         {
-
-            var environmentVariables =
+            List<KeyValuePair<string, string>> environmentVariables =
                 buildVariables.Select(item => new KeyValuePair<string, string>(item.Key, item.Value)).ToList();
 
             int major = -1;
@@ -47,17 +46,18 @@ namespace Arbor.X.Core.Tools.Versioning
 
             string sourceRoot = buildVariables.GetVariable(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
 
-            var fileName = "version.json";
+            string fileName = "version.json";
 
-            var versionFileName = Path.Combine(sourceRoot, fileName);
+            string versionFileName = Path.Combine(sourceRoot, fileName);
 
             if (File.Exists(versionFileName))
             {
-                logger.WriteVerbose($"A version file was found with name {versionFileName} at source root '{sourceRoot}'");
+                logger.WriteVerbose(
+                    $"A version file was found with name {versionFileName} at source root '{sourceRoot}'");
                 IReadOnlyCollection<KeyValueConfigurationItem> keyValueConfigurationItems = null;
                 try
                 {
-                   keyValueConfigurationItems =
+                    keyValueConfigurationItems =
                         new JsonFileReader(versionFileName).ReadConfiguration();
                 }
                 catch (Exception ex) when (!ex.IsFatal())
@@ -69,30 +69,30 @@ namespace Arbor.X.Core.Tools.Versioning
                 {
                     var jsonKeyValueConfiguration = new JsonKeyValueConfiguration(keyValueConfigurationItems);
 
-                    var majorKey = "major"; //TODO defined major key
+                    string majorKey = "major"; //TODO defined major key
 
-                    var minorKey = "minor"; //TODO defined minor key
+                    string minorKey = "minor"; //TODO defined minor key
 
-                    var patchKey = "patch"; //TODO defined patch key
+                    string patchKey = "patch"; //TODO defined patch key
 
                     var required = new Dictionary<string, string>
-                                       {
-                                           {
-                                               majorKey,
-                                               jsonKeyValueConfiguration.ValueOrDefault(
-                                                   majorKey)
-                                           },
-                                           {
-                                               minorKey,
-                                               jsonKeyValueConfiguration.ValueOrDefault(
-                                                   minorKey)
-                                           },
-                                           {
-                                               patchKey,
-                                               jsonKeyValueConfiguration.ValueOrDefault(
-                                                   patchKey)
-                                           }
-                                       };
+                    {
+                        {
+                            majorKey,
+                            jsonKeyValueConfiguration.ValueOrDefault(
+                                majorKey)
+                        },
+                        {
+                            minorKey,
+                            jsonKeyValueConfiguration.ValueOrDefault(
+                                minorKey)
+                        },
+                        {
+                            patchKey,
+                            jsonKeyValueConfiguration.ValueOrDefault(
+                                patchKey)
+                        }
+                    };
 
                     if (required.All(ValidateVersionNumber))
                     {
@@ -105,16 +105,15 @@ namespace Arbor.X.Core.Tools.Versioning
                     }
                     else
                     {
-
                         logger.WriteVerbose(
                             $"Not all version numbers from the version file '{versionFileName}' were parsed successfully");
                     }
                 }
-
             }
             else
             {
-                logger.WriteVerbose($"No version file found with name {versionFileName} at source root '{sourceRoot}' was found");
+                logger.WriteVerbose(
+                    $"No version file found with name {versionFileName} at source root '{sourceRoot}' was found");
             }
 
             int envMajor =
@@ -189,20 +188,24 @@ namespace Arbor.X.Core.Tools.Versioning
                 minor = 1;
             }
 
-            Version netAssemblyVersion = new Version(major, minor, 0, 0);
-            Version fullVersion = new Version(major, minor, patch, build);
-            string fullVersionValue = fullVersion.ToString(fieldCount: 4);
-            Version netAssemblyFileVersion = new Version(major, minor, patch, build);
+            var netAssemblyVersion = new Version(major, minor, 0, 0);
+            var fullVersion = new Version(major, minor, patch, build);
+            string fullVersionValue = fullVersion.ToString(4);
+            var netAssemblyFileVersion = new Version(major, minor, patch, build);
 
             yield return
-                new KeyValuePair<string, string>(WellKnownVariables.NetAssemblyVersion, netAssemblyVersion.ToString(fieldCount: 4));
+                new KeyValuePair<string, string>(WellKnownVariables.NetAssemblyVersion, netAssemblyVersion.ToString(4));
             yield return
                 new KeyValuePair<string, string>(WellKnownVariables.NetAssemblyFileVersion,
-                    netAssemblyFileVersion.ToString(fieldCount: 4));
-            yield return new KeyValuePair<string, string>(WellKnownVariables.VersionMajor, major.ToString(CultureInfo.InvariantCulture));
-            yield return new KeyValuePair<string, string>(WellKnownVariables.VersionMinor, minor.ToString(CultureInfo.InvariantCulture));
-            yield return new KeyValuePair<string, string>(WellKnownVariables.VersionPatch, patch.ToString(CultureInfo.InvariantCulture));
-            yield return new KeyValuePair<string, string>(WellKnownVariables.VersionBuild, build.ToString(CultureInfo.InvariantCulture));
+                    netAssemblyFileVersion.ToString(4));
+            yield return new KeyValuePair<string, string>(WellKnownVariables.VersionMajor,
+                major.ToString(CultureInfo.InvariantCulture));
+            yield return new KeyValuePair<string, string>(WellKnownVariables.VersionMinor,
+                minor.ToString(CultureInfo.InvariantCulture));
+            yield return new KeyValuePair<string, string>(WellKnownVariables.VersionPatch,
+                patch.ToString(CultureInfo.InvariantCulture));
+            yield return new KeyValuePair<string, string>(WellKnownVariables.VersionBuild,
+                build.ToString(CultureInfo.InvariantCulture));
             yield return new KeyValuePair<string, string>("Version", fullVersionValue);
             yield return new KeyValuePair<string, string>(WellKnownVariables.Version, fullVersionValue);
         }

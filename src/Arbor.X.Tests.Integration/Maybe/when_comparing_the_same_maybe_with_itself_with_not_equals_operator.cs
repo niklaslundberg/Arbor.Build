@@ -1,9 +1,9 @@
-using Arbor.X.Core;
 using Machine.Specifications;
 
 namespace Arbor.X.Tests.Integration.Maybe
 {
 #pragma warning disable 1718
+
     [Subject(typeof(Defensive.Maybe<string>))]
     public class when_comparing_the_same_maybe_with_itself_with_not_equals_operator
     {
@@ -17,5 +17,6 @@ namespace Arbor.X.Tests.Integration.Maybe
         private static bool equal;
         private static Defensive.Maybe<string> instance;
     }
+
 #pragma warning restore 1718
 }

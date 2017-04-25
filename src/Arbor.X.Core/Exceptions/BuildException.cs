@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-
 using Arbor.X.Core.BuildVariables;
 
 namespace Arbor.X.Core.Exceptions
@@ -19,7 +18,8 @@ namespace Arbor.X.Core.Exceptions
 
         public override string ToString()
         {
-            return $"{base.ToString()}{Environment.NewLine}Build variables: [{_buildVariables.Count}] {Environment.NewLine}{_buildVariables.Print()}";
+            return
+                $"{base.ToString()}{Environment.NewLine}Build variables: [{_buildVariables.Count}] {Environment.NewLine}{_buildVariables.Print()}";
         }
     }
 }

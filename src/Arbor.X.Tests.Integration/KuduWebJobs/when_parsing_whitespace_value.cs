@@ -4,7 +4,7 @@ using Machine.Specifications;
 
 namespace Arbor.X.Tests.Integration.KuduWebJobs
 {
-    [Subject(typeof (KuduWebJobType))]
+    [Subject(typeof(KuduWebJobType))]
     public class when_parsing_whitespace_value
     {
         private static Exception exception;

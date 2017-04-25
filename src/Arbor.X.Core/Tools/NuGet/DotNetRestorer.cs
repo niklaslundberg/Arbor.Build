@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Arbor.Processing;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Logging;
@@ -19,7 +18,7 @@ namespace Arbor.X.Core.Tools.NuGet
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.DotNetRestoreEnabled, defaultValue: false);
+            bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.DotNetRestoreEnabled, false);
 
             if (!enabled)
             {
@@ -28,7 +27,7 @@ namespace Arbor.X.Core.Tools.NuGet
 
             string rootPath = buildVariables.GetVariable(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
 
-            string dotNetExePath = buildVariables.GetVariableValueOrDefault(WellKnownVariables.DotNetExePath, defaultValue: "dotnet");
+            string dotNetExePath = buildVariables.GetVariableValueOrDefault(WellKnownVariables.DotNetExePath, "dotnet");
 
             ExitCode result = await ProcessHelper.ExecuteAsync(dotNetExePath, new[] { "restore", rootPath }, logger);
 

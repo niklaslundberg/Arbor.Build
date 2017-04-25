@@ -14,7 +14,6 @@ using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.Parsing;
-using FubuCore.Reflection;
 using FubuCsProjFile;
 using FubuCsProjFile.MSBuild;
 using JetBrains.Annotations;
@@ -30,15 +29,19 @@ namespace Arbor.X.Core.Tools.ILRepack
         private string _ilRepackExePath;
         private ILogger _logger;
 
-        public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
+        public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
+            CancellationToken cancellationToken)
         {
             _logger = logger;
 
-            ParseResult<bool> parseResult = buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_ILRepack_Enabled, "false").TryParseBool(defaultValue: false);
+            ParseResult<bool> parseResult = buildVariables
+                .GetVariableValueOrDefault(WellKnownVariables.ExternalTools_ILRepack_Enabled, "false")
+                .TryParseBool(false);
 
             if (!parseResult.Value)
             {
-                _logger.Write($"ILRepack is disabled, to enable it, set the flag {WellKnownVariables.ExternalTools_ILRepack_Enabled} to true");
+                _logger.Write(
+                    $"ILRepack is disabled, to enable it, set the flag {WellKnownVariables.ExternalTools_ILRepack_Enabled} to true");
                 return ExitCode.Success;
             }
 
@@ -46,7 +49,8 @@ namespace Arbor.X.Core.Tools.ILRepack
                 buildVariables.Require(WellKnownVariables.ExternalTools_ILRepack_ExePath).ThrowIfEmptyValue().Value;
 
             string customILRepackPath =
-                buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_ILRepack_Custom_ExePath, string.Empty);
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_ILRepack_Custom_ExePath,
+                    string.Empty);
 
             if (!string.IsNullOrWhiteSpace(customILRepackPath) && File.Exists(customILRepackPath))
             {
@@ -62,7 +66,8 @@ namespace Arbor.X.Core.Tools.ILRepack
             var sourceRootDirectory = new DirectoryInfo(sourceRoot);
 
             List<FileInfo> csharpProjectFiles =
-                sourceRootDirectory.GetFilesRecursive(new List<string> { ".csproj" }, DefaultPaths.DefaultPathLookupSpecification, sourceRoot)
+                sourceRootDirectory.GetFilesRecursive(new List<string> { ".csproj" },
+                        DefaultPaths.DefaultPathLookupSpecification, sourceRoot)
                     .ToList();
 
             List<FileInfo> ilMergeProjects = csharpProjectFiles.Where(IsILMergeEnabledInProjectFile).ToList();
@@ -71,28 +76,29 @@ namespace Arbor.X.Core.Tools.ILRepack
 
             logger.Write($"Found {ilMergeProjects.Count} projects marked for ILMerge:{Environment.NewLine}{merges}");
 
-            IReadOnlyCollection<ILRepackData> mergeDatas = ilMergeProjects.SelectMany(GetIlMergeFiles).ToReadOnlyCollection();
+            IReadOnlyCollection<ILRepackData> mergeDatas = ilMergeProjects.SelectMany(GetIlMergeFiles)
+                .ToReadOnlyCollection();
 
             foreach (ILRepackData repackData in mergeDatas)
             {
                 var fileInfo = new FileInfo(repackData.Exe);
 
-                var ilMergedDirectoryPath = Path.Combine(
+                string ilMergedDirectoryPath = Path.Combine(
                     _artifactsPath,
                     "ILMerged",
                     repackData.Platform,
                     repackData.Configuration);
 
-                var ilMergedDirectory = new DirectoryInfo(ilMergedDirectoryPath).EnsureExists();
+                DirectoryInfo ilMergedDirectory = new DirectoryInfo(ilMergedDirectoryPath).EnsureExists();
 
-                var ilMergedPath = Path.Combine(ilMergedDirectory.FullName, fileInfo.Name);
+                string ilMergedPath = Path.Combine(ilMergedDirectory.FullName, fileInfo.Name);
                 var arguments = new List<string>
                 {
                     "/target:exe",
                     $"/out:{ilMergedPath}",
                     $"/Lib:{fileInfo.Directory.FullName}",
                     "/verbose",
-                    fileInfo.FullName,
+                    fileInfo.FullName
                 };
 
                 arguments.AddRange(repackData.Dlls.Select(dll => dll.FullName));
@@ -118,7 +124,8 @@ namespace Arbor.X.Core.Tools.ILRepack
                 ExitCode result =
                     await
                         ProcessRunner.ExecuteAsync(_ilRepackExePath, arguments: arguments, standardOutLog: logger.Write,
-                            toolAction: logger.Write, standardErrorAction: logger.WriteError, cancellationToken: cancellationToken);
+                            toolAction: logger.Write, standardErrorAction: logger.WriteError,
+                            cancellationToken: cancellationToken);
 
                 if (!result.IsSuccess)
                 {
@@ -135,7 +142,7 @@ namespace Arbor.X.Core.Tools.ILRepack
         private IEnumerable<ILRepackData> GetIlMergeFiles(FileInfo projectFile)
         {
 // ReSharper disable PossibleNullReferenceException
-            var binDirectory = projectFile.Directory.GetDirectories("bin").SingleOrDefault();
+            DirectoryInfo binDirectory = projectFile.Directory.GetDirectories("bin").SingleOrDefault();
 // ReSharper restore PossibleNullReferenceException
 
             if (binDirectory == null)
@@ -145,7 +152,7 @@ namespace Arbor.X.Core.Tools.ILRepack
 
             string configuration = "release"; //TODO support ilmerge for debug
 
-            var releaseDir = binDirectory.GetDirectories(configuration).SingleOrDefault();
+            DirectoryInfo releaseDir = binDirectory.GetDirectories(configuration).SingleOrDefault();
 
             if (releaseDir == null)
             {
@@ -159,16 +166,19 @@ namespace Arbor.X.Core.Tools.ILRepack
             const string targetFrameworkVersion = "TargetFrameworkVersion";
 
             MSBuildProperty msBuildProperty = csProjFile.BuildProject.PropertyGroups.SelectMany(
-                group =>
-                    @group.Properties.Where(
-                        property => property.Name.Equals(targetFrameworkVersion, StringComparison.OrdinalIgnoreCase))).FirstOrDefault();
+                    group =>
+                        group.Properties.Where(
+                            property => property.Name.Equals(targetFrameworkVersion,
+                                StringComparison.OrdinalIgnoreCase)))
+                .FirstOrDefault();
 
             if (string.IsNullOrWhiteSpace(msBuildProperty?.Value))
             {
-                throw new InvalidOperationException($"The CSProj file '{csProjFile.FileName}' does not contain a property '{targetFrameworkVersion}");
+                throw new InvalidOperationException(
+                    $"The CSProj file '{csProjFile.FileName}' does not contain a property '{targetFrameworkVersion}");
             }
 
-            var exes = releaseDir
+            List<FileInfo> exes = releaseDir
                 .EnumerateFiles("*.exe")
                 .Where(FileIsStandAloneExe)
                 .ToList();
@@ -203,7 +213,6 @@ namespace Arbor.X.Core.Tools.ILRepack
         }
 
 
-
         private static bool FileIsStandAloneExe(FileInfo file)
         {
             return file.Name.IndexOf(".vshost.", StringComparison.InvariantCultureIgnoreCase) < 0;
@@ -233,13 +242,13 @@ namespace Arbor.X.Core.Tools.ILRepack
 
         private bool IsILMergeEnabledInProjectFile(FileInfo file)
         {
-            using (var fs = file.OpenRead())
+            using (FileStream fs = file.OpenRead())
             {
                 using (var streamReader = new StreamReader(fs))
                 {
                     while (streamReader.Peek() >= 0)
                     {
-                        var line = streamReader.ReadLine();
+                        string line = streamReader.ReadLine();
 
                         if (
                             line?.IndexOf("<ILMergeExe>true</ILMergeExe>",

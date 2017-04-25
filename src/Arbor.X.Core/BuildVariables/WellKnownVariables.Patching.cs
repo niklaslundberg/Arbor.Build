@@ -3,6 +3,7 @@
     public static partial class WellKnownVariables
     {
         [VariableDescription("Assembly version patching file pattern")]
-        public static readonly string AssemblyFilePatchingFilePattern = Arbor.X.Build + ".NetAssembly.Patching.FilePattern";
+        public static readonly string AssemblyFilePatchingFilePattern =
+            Arbor.X.Build + ".NetAssembly.Patching.FilePattern";
     }
 }

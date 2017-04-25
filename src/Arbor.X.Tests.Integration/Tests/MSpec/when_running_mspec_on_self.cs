@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using Arbor.Processing.Core;
-using Arbor.X.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
@@ -13,12 +12,12 @@ using Machine.Specifications;
 
 namespace Arbor.X.Tests.Integration.Tests.MSpec
 {
-    [Subject(typeof (MSpecTestRunner))]
-    [Tags(Arbor.X.Core.Tools.Testing.MSpecInternalConstants.RecursiveArborXTest)]
+    [Subject(typeof(MSpecTestRunner))]
+    [Tags(MSpecInternalConstants.RecursiveArborXTest)]
     public class when_running_mspec_on_self
     {
         private static MSpecTestRunner testRunner;
-        private static List<IVariable> variables = new List<IVariable>();
+        private static readonly List<IVariable> variables = new List<IVariable>();
         private static ExitCode ExitCode;
         private static string mspecReports;
 
@@ -28,13 +27,16 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
 
             string combine = Path.Combine(root, "Arbor.X.Tests.Integration", "bin", "debug");
 
-            string tempPath = Path.Combine(Path.GetTempPath(), $"{DefaultPaths.TempPathPrefix}_mspec_self_{DateTime.Now.ToString("yyyyMMddHHmmssfff_")}{Guid.NewGuid().ToString().Substring(0, 8)}");
+            string tempPath = Path.Combine(Path.GetTempPath(),
+                $"{DefaultPaths.TempPathPrefix}_mspec_self_{DateTime.Now.ToString("yyyyMMddHHmmssfff_")}{Guid.NewGuid().ToString().Substring(0, 8)}");
 
             tempDirectory = new DirectoryInfo(tempPath).EnsureExists();
 
             DirectoryInfo binDirectory = tempDirectory.CreateSubdirectory("bin");
 
-            exitCode = DirectoryCopy.CopyAsync(combine, binDirectory.FullName, pathLookupSpecificationOption: new PathLookupSpecification()).Result;
+            exitCode = DirectoryCopy.CopyAsync(combine, binDirectory.FullName,
+                    pathLookupSpecificationOption: new PathLookupSpecification())
+                .Result;
 
             using (File.Create(Path.Combine(tempDirectory.FullName, ".gitattributes.")))
             {
@@ -59,18 +61,19 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
         private Because of =
             () =>
                 ExitCode =
-                    testRunner.ExecuteAsync(new ConsoleLogger {LogLevel = LogLevel.Verbose}, variables,
-                        new CancellationToken()).Result;
+                    testRunner.ExecuteAsync(new ConsoleLogger { LogLevel = LogLevel.Verbose }, variables,
+                            new CancellationToken())
+                        .Result;
 
         private It shoud_have_created_html_report = () =>
         {
-            DirectoryInfo reports = new DirectoryInfo(mspecReports);
+            var reports = new DirectoryInfo(mspecReports);
             DirectoryInfo htmlDirectory = reports.GetDirectories()
                 .SingleOrDefault(dir => dir.Name.Equals("html", StringComparison.InvariantCultureIgnoreCase));
 
-            var files = reports.GetFiles("*.html", SearchOption.AllDirectories);
+            FileInfo[] files = reports.GetFiles("*.html", SearchOption.AllDirectories);
 
-            foreach (var fileInfo in files)
+            foreach (FileInfo fileInfo in files)
             {
                 Console.WriteLine(fileInfo.FullName);
             }
@@ -80,11 +83,11 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
 
         private It shoud_have_created_xml_report = () =>
         {
-            DirectoryInfo reports = new DirectoryInfo(mspecReports);
+            var reports = new DirectoryInfo(mspecReports);
 
-            var files = reports.GetFiles("*.xml", SearchOption.AllDirectories);
+            FileInfo[] files = reports.GetFiles("*.xml", SearchOption.AllDirectories);
 
-            foreach (var fileInfo in files)
+            foreach (FileInfo fileInfo in files)
             {
                 Console.WriteLine(fileInfo.FullName);
             }
@@ -99,7 +102,7 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
             Thread.Sleep(1000);
             try
             {
-                tempDirectory.DeleteIfExists(recursive: true);
+                tempDirectory.DeleteIfExists(true);
             }
             catch (Exception ex)
             {

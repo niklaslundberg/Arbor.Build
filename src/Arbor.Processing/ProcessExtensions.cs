@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Arbor.Exceptions;
 using Arbor.Processing.Core;
 
@@ -37,13 +36,14 @@ namespace Arbor.Processing
             return false;
         }
 
-        public static bool IsAlive(this Process process, Task<ExitCode> task, CancellationToken cancellationToken, bool done,
+        public static bool IsAlive(this Process process, Task<ExitCode> task, CancellationToken cancellationToken,
+            bool done,
             string processWithArgs, Action<string, string> toolAction, Action<string, string> standardAction,
             Action<string, string> errorAction, Action<string, string> verbose)
         {
             if (process == null)
             {
-                verbose($"Process '{processWithArgs}' does no longer exist",null);
+                verbose($"Process '{processWithArgs}' does no longer exist", null);
                 return false;
             }
 

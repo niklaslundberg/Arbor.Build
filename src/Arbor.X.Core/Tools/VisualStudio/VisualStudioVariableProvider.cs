@@ -8,9 +8,7 @@ using System.Threading.Tasks;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.Tools.Cleanup;
-
 using JetBrains.Annotations;
-
 using Microsoft.Win32;
 
 namespace Arbor.X.Core.Tools.VisualStudio
@@ -20,10 +18,11 @@ namespace Arbor.X.Core.Tools.VisualStudio
     {
         private bool _allowPreReleaseVersions;
 
-        public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
+        public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(ILogger logger,
+            IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {
             if (!string.IsNullOrWhiteSpace(buildVariables.GetVariableValueOrDefault(
-                    WellKnownVariables.ExternalTools_VisualStudio_Version, string.Empty)))
+                WellKnownVariables.ExternalTools_VisualStudio_Version, string.Empty)))
             {
                 return Task.FromResult(new List<IVariable>().AsEnumerable());
             }
@@ -31,7 +30,7 @@ namespace Arbor.X.Core.Tools.VisualStudio
             _allowPreReleaseVersions =
                 buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_VisualStudio_Version_Allow_PreRelease);
 
-            var currentProcessBits = Environment.Is64BitProcess ? 64 : 32;
+            int currentProcessBits = Environment.Is64BitProcess ? 64 : 32;
             const int RegistryLookupBits = 32;
             logger.WriteVerbose(
                 $"Running current process [id {Process.GetCurrentProcess().Id}] as a {currentProcessBits}-bit process");
@@ -40,9 +39,10 @@ namespace Arbor.X.Core.Tools.VisualStudio
 
             logger.WriteVerbose(
                 $@"Looking for Visual Studio versions in {RegistryLookupBits}-bit registry key 'HKEY_LOCAL_MACHINE\{
-                    RegistryKeyName}'");
+                        RegistryKeyName
+                    }'");
 
-            var visualStudioVersion = GetVisualStudioVersion(logger, RegistryKeyName);
+            string visualStudioVersion = GetVisualStudioVersion(logger, RegistryKeyName);
 
             string vsTestExePath = null;
 
@@ -59,12 +59,12 @@ namespace Arbor.X.Core.Tools.VisualStudio
 
 
             var environmentVariables = new[]
-                                       {
-                                           new EnvironmentVariable(
-                                               WellKnownVariables.ExternalTools_VisualStudio_Version,
-                                               visualStudioVersion),
-                                               new EnvironmentVariable(WellKnownVariables.ExternalTools_VSTest_ExePath, vsTestExePath)
-                                       };
+            {
+                new EnvironmentVariable(
+                    WellKnownVariables.ExternalTools_VisualStudio_Version,
+                    visualStudioVersion),
+                new EnvironmentVariable(WellKnownVariables.ExternalTools_VSTest_ExePath, vsTestExePath)
+            };
 
             return Task.FromResult<IEnumerable<IVariable>>(environmentVariables);
         }
@@ -73,9 +73,9 @@ namespace Arbor.X.Core.Tools.VisualStudio
         {
             string visualStudioVersion = null;
 
-            using (var view32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
+            using (RegistryKey view32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
             {
-                using (var vsKey = view32.OpenSubKey(registryKeyName))
+                using (RegistryKey vsKey = view32.OpenSubKey(registryKeyName))
                 {
                     if (vsKey != null)
                     {
@@ -83,38 +83,39 @@ namespace Arbor.X.Core.Tools.VisualStudio
                             .Where(subKeyName => char.IsDigit(subKeyName.First()))
                             .Select(
                                 keyName =>
+                                {
+                                    Version version;
+                                    if (!Version.TryParse(keyName, out version))
                                     {
-                                        Version version;
-                                        if (!Version.TryParse(keyName, out version))
+                                        if (_allowPreReleaseVersions)
                                         {
-                                            if (_allowPreReleaseVersions)
+                                            string preReleaseSeparator = "_";
+
+                                            int indexOf = keyName.IndexOf(
+                                                preReleaseSeparator,
+                                                StringComparison.OrdinalIgnoreCase);
+
+                                            if (indexOf >= 0)
                                             {
-                                                string preReleaseSeparator = "_";
+                                                string versionOnly = keyName.Substring(0, indexOf);
 
-                                                int indexOf = keyName.IndexOf(
-                                                    preReleaseSeparator,
-                                                    StringComparison.OrdinalIgnoreCase);
-
-                                                if (indexOf >= 0)
+                                                if (Version.TryParse(versionOnly, out version))
                                                 {
-                                                    var versionOnly = keyName.Substring(0, indexOf);
-
-                                                    if (Version.TryParse(versionOnly, out version))
-                                                    {
-                                                        logger.WriteDebug($"Found pre-release Visual Studio version {version}");
-                                                    }
+                                                    logger.WriteDebug(
+                                                        $"Found pre-release Visual Studio version {version}");
                                                 }
-
                                             }
                                         }
+                                    }
 
-                                        if (version == null)
-                                        {
-                                            logger.WriteDebug($"Could not parse Visual Studio version from registry key name '{keyName}', skipping that version.");
-                                        }
+                                    if (version == null)
+                                    {
+                                        logger.WriteDebug(
+                                            $"Could not parse Visual Studio version from registry key name '{keyName}', skipping that version.");
+                                    }
 
-                                        return version;
-                                    })
+                                    return version;
+                                })
                             .Where(version => version != null)
                             .OrderByDescending(name => name)
                             .ToList();
@@ -140,7 +141,7 @@ namespace Arbor.X.Core.Tools.VisualStudio
                         }
                         else if (versions.Any())
                         {
-                            visualStudioVersion = versions.First().ToString(fieldCount: 2);
+                            visualStudioVersion = versions.First().ToString(2);
                         }
                     }
                 }
@@ -152,9 +153,9 @@ namespace Arbor.X.Core.Tools.VisualStudio
         {
             string path = null;
 
-            using (var view32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
+            using (RegistryKey view32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
             {
-                using (var vsKey = view32.OpenSubKey(registryKeyName))
+                using (RegistryKey vsKey = view32.OpenSubKey(registryKeyName))
                 {
                     if (vsKey != null)
                     {
@@ -167,7 +168,7 @@ namespace Arbor.X.Core.Tools.VisualStudio
                             }
 
                             const string Installdir = "InstallDir";
-                            var installDir = versionKey.GetValue(Installdir, null);
+                            object installDir = versionKey.GetValue(Installdir, null);
 
                             if (string.IsNullOrWhiteSpace(installDir?.ToString()))
                             {
@@ -176,9 +177,9 @@ namespace Arbor.X.Core.Tools.VisualStudio
                                 return null;
                             }
 
-                            var exePath = Path.Combine(installDir.ToString(), "CommonExtensions", "Microsoft",
-                                                       "TestWindow",
-                                                       "vstest.console.exe");
+                            string exePath = Path.Combine(installDir.ToString(), "CommonExtensions", "Microsoft",
+                                "TestWindow",
+                                "vstest.console.exe");
 
                             if (!File.Exists(exePath))
                             {
@@ -187,12 +188,12 @@ namespace Arbor.X.Core.Tools.VisualStudio
 
                             path = exePath;
                         }
-
                     }
                 }
             }
             return path;
         }
+
         public int Order => VariableProviderOrder.Ignored;
     }
 }

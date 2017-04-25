@@ -9,7 +9,6 @@ using Arbor.Processing;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Logging;
-
 using JetBrains.Annotations;
 
 namespace Arbor.X.Core.Tools.Symbols
@@ -22,7 +21,7 @@ namespace Arbor.X.Core.Tools.Symbols
             CancellationToken cancellationToken)
         {
             bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_SymbolServer_Enabled,
-                defaultValue: false);
+                false);
 
             if (!enabled)
             {
@@ -50,14 +49,14 @@ namespace Arbor.X.Core.Tools.Symbols
             IVariable isRunningOnBuildAgentVariable =
                 buildVariables.Require(WellKnownVariables.IsRunningOnBuildAgent).ThrowIfEmptyValue();
 
-            bool isRunningOnBuildAgent = isRunningOnBuildAgentVariable.GetValueOrDefault(defaultValue: false);
+            bool isRunningOnBuildAgent = isRunningOnBuildAgentVariable.GetValueOrDefault(false);
             bool forceUpload =
                 buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_SymbolServer_ForceUploadEnabled,
-                    defaultValue: false);
+                    false);
 
             int timeout =
                 buildVariables.GetInt32ByKey(WellKnownVariables.ExternalTools_SymbolServer_UploadTimeoutInSeconds,
-                    defaultValue: -1);
+                    -1);
 
             if (isRunningOnBuildAgent)
             {
@@ -80,7 +79,8 @@ namespace Arbor.X.Core.Tools.Symbols
             return Task.FromResult(ExitCode.Success);
         }
 
-        private async Task<ExitCode> UploadNuGetPackagesAsync(ILogger logger, string packagesFolder, string nugetExePath,
+        private async Task<ExitCode> UploadNuGetPackagesAsync(ILogger logger, string packagesFolder,
+            string nugetExePath,
             string symbolServerUrl,
             string apiKey, int timeout)
         {
@@ -124,23 +124,24 @@ namespace Arbor.X.Core.Tools.Symbols
             return result ? ExitCode.Success : ExitCode.Failure;
         }
 
-        private static async Task<ExitCode> UploadNugetPackageAsync(string nugetExePath, string symbolServerUrl, string apiKey, string nugetPackage, ILogger logger, int timeout)
+        private static async Task<ExitCode> UploadNugetPackageAsync(string nugetExePath, string symbolServerUrl,
+            string apiKey, string nugetPackage, ILogger logger, int timeout)
         {
             var args = new List<string>
-                       {
-                           "push",
-                           nugetPackage,
-                           "-s",
-                           symbolServerUrl,
-                           apiKey,
-                           "-verbosity",
-                           "detailed"
-                       };
+            {
+                "push",
+                nugetPackage,
+                "-s",
+                symbolServerUrl,
+                apiKey,
+                "-verbosity",
+                "detailed"
+            };
 
             if (timeout > 0)
             {
-                args.Add("-timeout");   
-                args.Add(timeout.ToString(CultureInfo.InvariantCulture));   
+                args.Add("-timeout");
+                args.Add(timeout.ToString(CultureInfo.InvariantCulture));
             }
 
             ExitCode exitCode =

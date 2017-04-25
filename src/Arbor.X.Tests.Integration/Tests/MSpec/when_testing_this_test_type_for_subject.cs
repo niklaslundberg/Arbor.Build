@@ -7,7 +7,7 @@ using Machine.Specifications;
 namespace Arbor.X.Tests.Integration.Tests.MSpec
 {
     [Subject(typeof(UnitTestFinder))]
-    [Tags(Arbor.X.Core.Tools.Testing.MSpecInternalConstants.RecursiveArborXTest)]
+    [Tags(MSpecInternalConstants.RecursiveArborXTest)]
     public class when_testing_this_test_type_for_subject
     {
         private static UnitTestFinder finder;
@@ -17,9 +17,9 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
         {
             var logger = new ConsoleLogger { LogLevel = LogLevel.Verbose };
             finder = new UnitTestFinder(new List<Type>
-                                        {
-                                            typeof (SubjectAttribute)
-                                        }, logger: logger);
+            {
+                typeof(SubjectAttribute)
+            }, logger: logger);
         };
 
         private Because of =

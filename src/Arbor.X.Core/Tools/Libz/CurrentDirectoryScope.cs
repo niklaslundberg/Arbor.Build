@@ -16,7 +16,8 @@ namespace Arbor.X.Core.Tools.Libz
             _newDirectoryInfo = newDirectoryInfo;
         }
 
-        public static CurrentDirectoryScope Create([NotNull] DirectoryInfo originalDirectory, [NotNull] DirectoryInfo newDirectoryInfo)
+        public static CurrentDirectoryScope Create([NotNull] DirectoryInfo originalDirectory,
+            [NotNull] DirectoryInfo newDirectoryInfo)
         {
             if (originalDirectory == null)
             {
@@ -30,7 +31,8 @@ namespace Arbor.X.Core.Tools.Libz
 
             if (!originalDirectory.Exists)
             {
-                throw new InvalidOperationException($"The original directory '{originalDirectory.FullName}' does not exist");
+                throw new InvalidOperationException(
+                    $"The original directory '{originalDirectory.FullName}' does not exist");
             }
 
             if (!newDirectoryInfo.Exists)
