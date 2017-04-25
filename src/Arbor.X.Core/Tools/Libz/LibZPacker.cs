@@ -23,6 +23,7 @@ namespace Arbor.X.Core.Tools.Libz
 {
     [Priority(620)]
     [UsedImplicitly]
+
     // ReSharper disable once InconsistentNaming
     public class LibZPacker : ITool
     {

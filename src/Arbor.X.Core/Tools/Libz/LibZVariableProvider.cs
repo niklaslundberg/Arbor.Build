@@ -12,20 +12,22 @@ namespace Arbor.X.Core.Tools.Libz
     {
         public int Order { get; } = VariableProviderOrder.Ignored;
 
-        public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
+        public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(
+            ILogger logger,
+            IReadOnlyCollection<IVariable> buildVariables,
+            CancellationToken cancellationToken)
         {
             string toolsPath = buildVariables.Require(WellKnownVariables.ExternalTools).ThrowIfEmptyValue().Value;
 
-            string ilRepackPath = Path.Combine(toolsPath, "LibZ", "LibZ.exe");
+            string exePath = Path.Combine(toolsPath, "LibZ", "LibZ.exe");
 
             var variables = new List<IVariable>
-                            {
-                                new EnvironmentVariable(
-                                    WellKnownVariables.ExternalTools_ILRepack_ExePath, ilRepackPath)
-                            };
+            {
+                new EnvironmentVariable(
+                    WellKnownVariables.ExternalTools_LibZ_ExePath, exePath)
+            };
 
             return Task.FromResult<IEnumerable<IVariable>>(variables);
         }
-
     }
 }
