@@ -12,7 +12,7 @@ using ILogger = Arbor.X.Core.Logging.ILogger;
 namespace Arbor.X.Core.Tools.Versioning
 {
     [UsedImplicitly]
-    [Priority(1000, true)]
+    [Priority(1000, runAlways: true)]
     public class AssemblyInfoUnpatcher : ITool
     {
         public Task<ExitCode> ExecuteAsync(

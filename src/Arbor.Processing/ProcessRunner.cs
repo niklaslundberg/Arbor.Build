@@ -27,7 +27,8 @@ namespace Arbor.Processing
             Action<string, string> debugAction = null,
             bool addProcessNameAsLogCategory = false,
             bool addProcessRunnerCategory = false,
-            string parentPrefix = null)
+            string parentPrefix = null,
+            bool noWindow = false)
         {
             if (string.IsNullOrWhiteSpace(executePath))
             {
@@ -56,7 +57,8 @@ namespace Arbor.Processing
                 debugAction,
                 addProcessNameAsLogCategory,
                 addProcessRunnerCategory,
-                parentPrefix);
+                parentPrefix,
+                noWindow);
 
             ExitCode exitCode = await task;
 
@@ -75,7 +77,8 @@ namespace Arbor.Processing
             Action<string, string> debugAction = null,
             bool addProcessNameAsLogCategory = false,
             bool addProcessRunnerCategory = false,
-            string parentPrefix = null)
+            string parentPrefix = null,
+            bool noWindow = false)
         {
             toolAction = toolAction ?? ((message, prefix) => { });
             Action<string, string> standardAction = standardOutputLog ?? ((message, prefix) => { });
@@ -108,6 +111,11 @@ namespace Arbor.Processing
                 RedirectStandardOutput = redirectStandardOutput,
                 UseShellExecute = useShellExecute
             };
+
+            if (!useShellExecute)
+            {
+                processStartInfo.CreateNoWindow = noWindow;
+            }
 
             if (environmentVariables != null)
             {

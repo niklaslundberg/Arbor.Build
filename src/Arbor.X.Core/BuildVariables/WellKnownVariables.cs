@@ -317,6 +317,10 @@ namespace Arbor.X.Core.BuildVariables
         public static readonly string WebJobsExcludedDirectorySegments =
             "Arbor.X.Build.WebApplications.WebJobs.ExcludedDirectorySegments";
 
+        [VariableDescription("Cleanup known processes after build")]
+        public static readonly string CleanupProcessesAfterBuildEnabled =
+            "Arbor.X.Build.Cleanup.KillProcessesAfterBuild.Enabled";
+
         public static IReadOnlyCollection<VariableDescription> AllVariables
         {
             get

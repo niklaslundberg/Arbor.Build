@@ -231,6 +231,7 @@
     <Compile Include="GenericExtensions\StringExtensions.cs" />
     <Compile Include="GenericExtensions\TaskExtensions.cs" />
     <Compile Include="ProcessUtils\ProcessHelper.cs" />
+    <Compile Include="Tools\Cleanup\ProcessCleanup.cs" />
     <Compile Include="Tools\Libz\CurrentDirectoryScope.cs" />
     <Compile Include="Tools\Libz\LibZVariableProvider.cs" />
     <Compile Include="Tools\Libz\LibZPacker.cs" />
