@@ -234,8 +234,7 @@ namespace Arbor.X.Core.Tools.MSBuild
         private string FindRuleSet()
         {
             IReadOnlyCollection<FileInfo> fileInfos = new DirectoryInfo(_vcsRoot)
-                .GetFiles("*.ruleset", SearchOption.AllDirectories)
-                .Where(file => _pathLookupSpecification.IsFileBlackListed(file.FullName, _vcsRoot))
+                .GetFilesRecursive(".ruleset".ValueToImmutableArray(), _pathLookupSpecification, _vcsRoot)
                 .ToReadOnlyCollection();
 
             if (fileInfos.Count != 1)
@@ -1487,7 +1486,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                 .Where(filePair => File.Exists(filePair.TransformFile))
                 .ToReadOnlyCollection();
 
-            logger.WriteDebug($"Found {transformationPairs.Count} files with transforms");
+            logger.WriteDebug($"Found {transformationPairs.Length} files with transforms");
 
             foreach (var configurationFile in transformationPairs)
             {
