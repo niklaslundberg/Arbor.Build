@@ -69,6 +69,8 @@ namespace Arbor.X.Core.Tools.MSBuild
 
         private IReadOnlyCollection<string> _excludedWebJobsFiles;
 
+        private IReadOnlyCollection<string> _excludedNuGetWebPackageFiles;
+
         private IReadOnlyCollection<string> _filteredNuGetWebPackageProjects;
 
         private string _gitHash;
@@ -187,6 +189,14 @@ namespace Arbor.X.Core.Tools.MSBuild
             _excludedWebJobsFiles =
                 buildVariables.GetVariableValueOrDefault(
                         WellKnownVariables.WebJobsExcludedFileNameParts,
+                        string.Empty)
+                    .Split(',')
+                    .Where(item => !string.IsNullOrWhiteSpace(item))
+                    .SafeToReadOnlyCollection();
+
+            _excludedNuGetWebPackageFiles =
+                buildVariables.GetVariableValueOrDefault(
+                        WellKnownVariables.ExcludedNuGetWebPackageFiles,
                         string.Empty)
                     .Split(',')
                     .Where(item => !string.IsNullOrWhiteSpace(item))
@@ -1129,8 +1139,10 @@ namespace Arbor.X.Core.Tools.MSBuild
 
             string packageId = solutionProject.ProjectName;
 
+            string excluded = _excludedNuGetWebPackageFiles.Any() ? $";{string.Join(";", _excludedNuGetWebPackageFiles.Select(excludePattern => $"{siteArtifactDirectory}\\{excludePattern}"))}" : string.Empty;
+
             string files =
-                $@"<file src=""{siteArtifactDirectory}\**\*.*"" target=""Content"" exclude=""packages.config"" />";
+                $@"<file src=""{siteArtifactDirectory}\**\*.*"" target=""Content"" exclude=""packages.config{excluded}"" />";
 
             ExitCode exitCode = await CreateNuGetPackageAsync(
                 platformDirectoryPath,

@@ -317,6 +317,11 @@ namespace Arbor.X.Core.BuildVariables
         public static readonly string WebJobsExcludedDirectorySegments =
             "Arbor.X.Build.WebApplications.WebJobs.ExcludedDirectorySegments";
 
+        [VariableDescription(
+            "List of file patterns to be used when excluding files to be included in a NuGet Web Package, comma separated")]
+        public static readonly string ExcludedNuGetWebPackageFiles =
+            "Arbor.X.NuGet.NuGetWebPackage.ExcludedPatterns";
+
         [VariableDescription("Cleanup known processes after build")]
         public static readonly string CleanupProcessesAfterBuildEnabled =
             "Arbor.X.Build.Cleanup.KillProcessesAfterBuild.Enabled";

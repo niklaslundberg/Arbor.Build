@@ -198,7 +198,8 @@ namespace Arbor.X.Core
                 [WellKnownVariables.AppDataJobsEnabled] = "true",
                 [WellKnownVariables.ExternalTools_LibZ_ExePath] = @"C:\Tools\Libz\libz.exe",
                 [WellKnownVariables.ExternalTools_LibZ_Enabled] = @"true",
-                [WellKnownVariables.WebDeployPreCompilationEnabled] = @"true"
+                [WellKnownVariables.WebDeployPreCompilationEnabled] = @"true",
+                [WellKnownVariables.ExcludedNuGetWebPackageFiles] = @"bin\roslyn\*.*,bin\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll",
             };
 
             foreach (KeyValuePair<string, string> environmentVariable in environmentVariables)
