@@ -95,11 +95,4 @@ namespace Arbor.X.Core.Tools.NuGet
             return final;
         }
     }
-
-    public class NuGetVersioningSettings
-    {
-        public int MaxZeroPaddingLength { get; set; }
-
-        public int SemVerVersion { get; set; }
-    }
 }

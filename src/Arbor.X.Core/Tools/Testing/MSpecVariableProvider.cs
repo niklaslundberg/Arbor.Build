@@ -13,6 +13,8 @@ namespace Arbor.X.Core.Tools.Testing
     [UsedImplicitly]
     public class MSpecVariableProvider : IVariableProvider
     {
+        public int Order => VariableProviderOrder.Ignored;
+
         public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
@@ -38,7 +40,5 @@ namespace Arbor.X.Core.Tools.Testing
             return Task.FromResult<
                 IEnumerable<IVariable>>(environmentVariables);
         }
-
-        public int Order => VariableProviderOrder.Ignored;
     }
 }

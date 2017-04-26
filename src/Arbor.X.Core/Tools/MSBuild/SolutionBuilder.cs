@@ -45,7 +45,7 @@ namespace Arbor.X.Core.Tools.MSBuild
 
         private readonly PathLookupSpecification _pathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification;
         private readonly List<string> _platforms = new List<string>();
-        public readonly Guid WebApplicationProjectTypeId = Guid.Parse("349C5851-65DF-11DA-9384-00065B846F21");
+
         private bool _appDataJobsEnabled;
 
         private bool _applicationmetadataEnabled;
@@ -82,6 +82,8 @@ namespace Arbor.X.Core.Tools.MSBuild
         private bool _showSummary;
         private string _vcsRoot;
         private MSBuildVerbositoyLevel _verbosity;
+
+        public Guid WebApplicationProjectTypeId { get; } = Guid.Parse("349C5851-65DF-11DA-9384-00065B846F21");
 
         public async Task<ExitCode> ExecuteAsync(
             ILogger logger,
@@ -539,7 +541,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                 buildStopwatch.Stop();
 
                 logger.WriteDebug(
-                    $"Stopping stopwatch for solution file {solutionFile.Name} ({configuration}|{knownPlatform}), total time in seconds {buildStopwatch.Elapsed.TotalSeconds.ToString("F")} ({(result.IsSuccess ? "success" : "failed")})");
+                    $"Stopping stopwatch for solution file {solutionFile.Name} ({configuration}|{knownPlatform}), total time in seconds {buildStopwatch.Elapsed.TotalSeconds:F} ({(result.IsSuccess ? "success" : "failed")})");
 
                 if (!result.IsSuccess)
                 {
@@ -911,16 +913,12 @@ namespace Arbor.X.Core.Tools.MSBuild
                     logger.Write(
                         $"NuGet web package creation is enabled, creating NuGet package for {solutionProject.ProjectName}");
 
-                    ExitCode packageSiteExitCode =
-                        await
-                            CreateNuGetWebPackagesAsync(
-                                solutionFile,
-                                configuration,
-                                logger,
-                                platformDirectoryPath,
-                                solutionProject,
-                                platformName,
-                                siteArtifactDirectory.FullName);
+                    ExitCode packageSiteExitCode = await CreateNuGetWebPackagesAsync(
+                        logger,
+                        platformDirectoryPath,
+                        solutionProject,
+                        platformName,
+                        siteArtifactDirectory.FullName);
 
                     if (!packageSiteExitCode.IsSuccess)
                     {
@@ -1012,6 +1010,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                     $"/property:configuration={configuration}",
                     $"/property:platform={platformName}",
                     $"/property:_PackageTempDir={siteArtifactDirectory.FullName}",
+
                     // ReSharper disable once PossibleNullReferenceException
                     $"/property:SolutionDir={solutionFile.Directory.FullName}",
                     $"/verbosity:{_verbosity.Level}",
@@ -1088,8 +1087,6 @@ namespace Arbor.X.Core.Tools.MSBuild
         }
 
         private async Task<ExitCode> CreateNuGetWebPackagesAsync(
-            FileInfo solutionFile,
-            string configuration,
             ILogger logger,
             string platformDirectoryPath,
             WebSolutionProject solutionProject,
@@ -1139,8 +1136,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                 platformDirectoryPath,
                 logger,
                 packageId,
-                files,
-                configuration);
+                files);
 
             if (!exitCode.IsSuccess)
             {
@@ -1148,16 +1144,16 @@ namespace Arbor.X.Core.Tools.MSBuild
                 return exitCode;
             }
 
-            const string EnvironmentLiteral = "Environment";
-            const string Pattern = "{Name}." + EnvironmentLiteral + ".{EnvironmentName}.{action}.{extension}";
+            const string environmentLiteral = "Environment";
+            const string pattern = "{Name}." + environmentLiteral + ".{EnvironmentName}.{action}.{extension}";
             char separator = '.';
-            int fileNameMinPartCount = Pattern.Split(separator).Length;
+            int fileNameMinPartCount = pattern.Split(separator).Length;
 
             var environmentFiles = new DirectoryInfo(solutionProject.ProjectDirectory)
                 .GetFilesRecursive(rootDir: _vcsRoot)
                 .Select(file => new { File = file, Parts = file.Name.Split(separator) })
                 .Where(item => item.Parts.Length == fileNameMinPartCount)
-                .Where(item => item.Parts[1].Equals(EnvironmentLiteral, StringComparison.OrdinalIgnoreCase))
+                .Where(item => item.Parts[1].Equals(environmentLiteral, StringComparison.OrdinalIgnoreCase))
                 .Select(item => new { item.File, EnvironmentName = item.Parts[2] })
                 .SafeToReadOnlyCollection();
 
@@ -1192,12 +1188,8 @@ namespace Arbor.X.Core.Tools.MSBuild
                                 sourceFullPath.Replace(rootDirectory, string.Empty).Trim(Path.DirectorySeparatorChar);
                             return new { SourceFullPath = sourceFullPath, RelativePath = relativePath };
                         })
-                    .Select(
-                        environmentFile =>
-                            $@"<file src=""{environmentFile.SourceFullPath}"" target=""Content\{
-                                    environmentFile
-                                        .RelativePath
-                                }"" />")
+                    .Select(environmentFile =>
+                        $"<file src=\"{environmentFile.SourceFullPath}\" target=\"Content\\{environmentFile.RelativePath}\" />")
                     .ToList();
 
                 _logger.WriteVerbose(
@@ -1210,8 +1202,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                         platformDirectoryPath,
                         logger,
                         environmentPackageId,
-                        string.Join(Environment.NewLine, elements),
-                        configuration);
+                        string.Join(Environment.NewLine, elements));
 
                 if (!environmentPackageExitCode.IsSuccess)
                 {
@@ -1324,10 +1315,9 @@ namespace Arbor.X.Core.Tools.MSBuild
             string platformDirectoryPath,
             ILogger logger,
             string packageId,
-            string filesList,
-            string configuration)
+            string filesList)
         {
-            const string XmlTemplate = @"<?xml version=""1.0""?>
+            const string xmlTemplate = @"<?xml version=""1.0""?>
 <package >
     <metadata>
         <id>{0}</id>
@@ -1393,7 +1383,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             string files = filesList;
 
             string nuspecContent = string.Format(
-                XmlTemplate,
+                xmlTemplate,
                 name,
                 version,
                 name,
@@ -1414,7 +1404,7 @@ namespace Arbor.X.Core.Tools.MSBuild
 
             DirectoryInfo tempDir = new DirectoryInfo(Path.Combine(
                     Path.GetTempPath(),
-                    $"{DefaultPaths.TempPathPrefix}_sb_{DateTime.Now.ToString("yyyyMMddHHmmssfff_")}{Guid.NewGuid().ToString().Substring(0, 8)}"))
+                    $"{DefaultPaths.TempPathPrefix}_sb_{DateTime.Now:yyyyMMddHHmmssfff_}{Guid.NewGuid().ToString().Substring(0, 8)}"))
                 .EnsureExists();
 
             string nuspecTempFile = Path.Combine(tempDir.FullName, $"{packageId}.nuspec");
@@ -1653,6 +1643,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                 solutionProject.FullPath,
                 $"/property:configuration={configuration}",
                 $"/property:platform={platformName}",
+
 // ReSharper disable once PossibleNullReferenceException
                 $"/property:SolutionDir={solutionFile.Directory.FullName}",
                 $"/property:PackageLocation={packagePath}",

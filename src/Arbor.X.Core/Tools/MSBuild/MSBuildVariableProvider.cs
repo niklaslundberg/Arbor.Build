@@ -17,18 +17,20 @@ namespace Arbor.X.Core.Tools.MSBuild
     [UsedImplicitly]
     public class MSBuildVariableProvider : IVariableProvider
     {
+        public int Order => VariableProviderOrder.Ignored;
+
         public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
             int currentProcessBits = Environment.Is64BitProcess ? 64 : 32;
-            const int RegistryLookupBits = 32;
+            const int registryLookupBits = 32;
             logger.WriteVerbose(
                 $"Running current process [id {Process.GetCurrentProcess().Id}] as a {currentProcessBits}-bit process");
 
             List<SemanticVersion> possibleVersions = new List<string> { "15.0.0", "14.0.0", "12.0.0", "4.0.0" }
-                .Select(version => SemanticVersion.Parse(version))
+                .Select(SemanticVersion.Parse)
                 .ToList();
 
             string max = buildVariables.GetVariableValueOrDefault(
@@ -109,10 +111,10 @@ namespace Arbor.X.Core.Tools.MSBuild
                 string registryKeyName = @"SOFTWARE\Microsoft\MSBuild\" + possibleVersion.Major + "." +
                                          possibleVersion.Minor;
                 object msBuildPathRegistryKeyValue = null;
-                const string ValueKey = "MSBuildOverrideTasksPath";
+                const string valueKey = "MSBuildOverrideTasksPath";
 
                 logger.WriteVerbose(
-                    $"Looking for MSBuild exe path in {RegistryLookupBits}-bit registry key '{registryKeyName}\\{ValueKey}");
+                    $"Looking for MSBuild exe path in {registryLookupBits}-bit registry key '{registryKeyName}\\{valueKey}");
 
                 using (RegistryKey view32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
                 {
@@ -120,7 +122,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                     {
                         if (key != null)
                         {
-                            msBuildPathRegistryKeyValue = key.GetValue(ValueKey, null);
+                            msBuildPathRegistryKeyValue = key.GetValue(valueKey, null);
                         }
                     }
                 }
@@ -133,25 +135,25 @@ namespace Arbor.X.Core.Tools.MSBuild
                 {
                     foundPath = msBuildPath;
                     logger.WriteVerbose(
-                        $"Using MSBuild exe path '{foundPath}' defined in {RegistryLookupBits}-bit registry key {registryKeyName}\\{ValueKey}");
+                        $"Using MSBuild exe path '{foundPath}' defined in {registryLookupBits}-bit registry key {registryKeyName}\\{valueKey}");
                     break;
                 }
             }
 
             if (string.IsNullOrWhiteSpace(foundPath))
             {
-                const string MsbuildPath = "MSBUILD_PATH";
-                string fromEnvironmentVariable = Environment.GetEnvironmentVariable(MsbuildPath);
+                const string msbuildPath = "MSBUILD_PATH";
+                string fromEnvironmentVariable = Environment.GetEnvironmentVariable(msbuildPath);
 
                 if (!string.IsNullOrWhiteSpace(fromEnvironmentVariable))
                 {
-                    logger.Write($"Using MSBuild exe path '{foundPath}' from environment variable {MsbuildPath}");
+                    logger.Write($"Using MSBuild exe path '{foundPath}' from environment variable {msbuildPath}");
                     foundPath = fromEnvironmentVariable;
                 }
                 else
                 {
                     logger.WriteError(
-                        $"The MSBuild path could not be found in the {RegistryLookupBits}-bit registry keys.");
+                        $"The MSBuild path could not be found in the {registryLookupBits}-bit registry keys.");
                     return null;
                 }
             }
@@ -166,7 +168,5 @@ namespace Arbor.X.Core.Tools.MSBuild
             };
             return Task.FromResult<IEnumerable<IVariable>>(environmentVariables);
         }
-
-        public int Order => VariableProviderOrder.Ignored;
     }
 }

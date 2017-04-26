@@ -153,14 +153,15 @@ namespace Arbor.X.Core.Tools.Libz
         {
 // ReSharper disable PossibleNullReferenceException
             DirectoryInfo binDirectory = projectFile.Directory.GetDirectories("bin").SingleOrDefault();
-// ReSharper restore PossibleNullReferenceException
+
+            // ReSharper restore PossibleNullReferenceException
 
             if (binDirectory == null)
             {
                 yield break;
             }
 
-            string configuration = "release"; //TODO support ilmerge for debug
+            string configuration = "release"; // TODO support ilmerge for debug
 
             DirectoryInfo releaseDir = binDirectory.GetDirectories(configuration).SingleOrDefault();
 

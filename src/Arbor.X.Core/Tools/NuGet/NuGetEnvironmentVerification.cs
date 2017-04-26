@@ -22,14 +22,60 @@ namespace Arbor.X.Core.Tools.NuGet
             RequiredValues.Add(WellKnownVariables.ExternalTools_NuGet_ExePath);
         }
 
+        protected override async Task<bool> PostVariableVerificationAsync(
+            StringBuilder variableBuilder,
+            IReadOnlyCollection<IVariable> buildVariables,
+            ILogger logger)
+        {
+            IVariable variable =
+                buildVariables.SingleOrDefault(item => item.Key == WellKnownVariables.ExternalTools_NuGet_ExePath);
+
+            if (variable == null)
+            {
+                return false;
+            }
+
+            string nuGetExePath = variable.Value;
+
+            bool fileExists = File.Exists(nuGetExePath);
+
+            if (!fileExists)
+            {
+                variableBuilder.AppendLine($"NuGet.exe path '{nuGetExePath}' does not exist");
+            }
+            else
+            {
+                bool nuGetUpdateEnabled =
+                    buildVariables.GetBooleanByKey(WellKnownVariables.NuGetSelfUpdateEnabled, true);
+
+                if (nuGetUpdateEnabled)
+                {
+                    logger.WriteVerbose(
+                        $"NuGet self update is enabled by variable '{WellKnownVariables.NuGetSelfUpdateEnabled}'");
+
+                    await EnsureMinNuGetVersionAsync(nuGetExePath, logger);
+                }
+                else
+                {
+                    logger.WriteVerbose(
+                        $"NuGet self update is disabled by variable '{WellKnownVariables.NuGetSelfUpdateEnabled}'");
+                }
+            }
+
+            return fileExists;
+        }
+
         private async Task EnsureMinNuGetVersionAsync(string nuGetExePath, ILogger logger)
         {
-            Action<string, string> nullLogger = (s, s1) => { };
+            void NullLogger(string message, string category)
+            {
+            }
+
             var standardOut = new List<string>();
             ILogger versionLogger = new DelegateLogger(
                 (message, category) => standardOut.Add(message),
-                nullLogger,
-                nullLogger);
+                NullLogger,
+                NullLogger);
 
             IEnumerable<string> args = new List<string>();
             ExitCode versionExitCode = await ProcessHelper.ExecuteAsync(nuGetExePath, args, versionLogger);
@@ -74,49 +120,6 @@ namespace Arbor.X.Core.Tools.NuGet
             }
 
             logger.WriteVerbose($"NuGet major version is {majorNuGetVersion}");
-        }
-
-        protected override async Task<bool> PostVariableVerificationAsync(
-            StringBuilder variableBuilder,
-            IReadOnlyCollection<IVariable> buildVariables,
-            ILogger logger)
-        {
-            IVariable variable =
-                buildVariables.SingleOrDefault(item => item.Key == WellKnownVariables.ExternalTools_NuGet_ExePath);
-
-            if (variable == null)
-            {
-                return false;
-            }
-
-            string nuGetExePath = variable.Value;
-
-            bool fileExists = File.Exists(nuGetExePath);
-
-            if (!fileExists)
-            {
-                variableBuilder.AppendLine($"NuGet.exe path '{nuGetExePath}' does not exist");
-            }
-            else
-            {
-                bool nuGetUpdateEnabled =
-                    buildVariables.GetBooleanByKey(WellKnownVariables.NuGetSelfUpdateEnabled, true);
-
-                if (nuGetUpdateEnabled)
-                {
-                    logger.WriteVerbose(
-                        $"NuGet self update is enabled by variable '{WellKnownVariables.NuGetSelfUpdateEnabled}'");
-
-                    await EnsureMinNuGetVersionAsync(nuGetExePath, logger);
-                }
-                else
-                {
-                    logger.WriteVerbose(
-                        $"NuGet self update is disabled by variable '{WellKnownVariables.NuGetSelfUpdateEnabled}'");
-                }
-            }
-
-            return fileExists;
         }
     }
 }

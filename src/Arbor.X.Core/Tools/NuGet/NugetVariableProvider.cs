@@ -14,6 +14,8 @@ namespace Arbor.X.Core.Tools.NuGet
     {
         private CancellationToken _cancellationToken;
 
+        public int Order => 3;
+
         public async Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
@@ -37,8 +39,6 @@ namespace Arbor.X.Core.Tools.NuGet
 
             return variables;
         }
-
-        public int Order => 3;
 
         private async Task<string> EnsureNuGetExeExistsAsync(
             ILogger logger,

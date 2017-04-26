@@ -12,6 +12,8 @@ namespace Arbor.X.Core.Tools.Environments
 {
     public class SourcePathVariableProvider : IVariableProvider
     {
+        public int Order { get; } = 0;
+
         public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
@@ -58,7 +60,5 @@ namespace Arbor.X.Core.Tools.Environments
 
             return Task.FromResult<IEnumerable<IVariable>>(variables);
         }
-
-        public int Order { get; } = 0;
     }
 }

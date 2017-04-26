@@ -69,7 +69,8 @@ namespace Arbor.X.Core.Tools.NuGet
                 {
                     logger.WriteWarning(
                         $"NuGet package creation is not supported on 'master' branch. To force NuGet package creation, set environment variable '{WellKnownVariables.NuGetCreatePackagesOnAnyBranchEnabled}' to value 'true'");
-                    //return ExitCode.Success;
+
+                    // return ExitCode.Success;
                 }
             }
             else
@@ -105,7 +106,8 @@ namespace Arbor.X.Core.Tools.NuGet
             if (!File.Exists(nuGetExePath))
             {
                 logger.WriteError($"The NuGet.exe path {nuGetExePath} was not found or NuGet could not be downloaded");
-                //return ExitCode.Failure;
+
+                // return ExitCode.Failure;
             }
 
             logger.WriteVerbose($"Scanning directory '{vcsRootDir}' for .nuspec files");
@@ -181,8 +183,10 @@ namespace Arbor.X.Core.Tools.NuGet
                     : $"Using NuGet package version override '{packageConfiguration.NuGetPackageVersionOverride}'");
 
             var nuSpecInfo = new FileInfo(packageSpecificationPath);
+
             // ReSharper disable AssignNullToNotNullAttribute
             string nuSpecFileCopyPath = Path.Combine(nuSpecInfo.DirectoryName, $"{Guid.NewGuid()}-{nuSpecInfo.Name}");
+
             // ReSharper restore AssignNullToNotNullAttribute
 
             var nuSpecCopy = new NuSpec(packageId, nuGetPackageVersion, nuSpecInfo.FullName);

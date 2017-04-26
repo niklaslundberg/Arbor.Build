@@ -47,11 +47,9 @@ namespace Arbor.X.Core.Tools.Kudu
 
             const StringComparison ComparisonType = StringComparison.InvariantCultureIgnoreCase;
 
-            string valueToParse;
-
             var exception = new FormatException(message);
 
-            valueToParse = type.Trim().StartsWith("<") ? type.ExtractFromTag(typeof(KuduWebJobType).Name) : type;
+            string valueToParse = type.Trim().StartsWith("<", StringComparison.Ordinal) ? type.ExtractFromTag(typeof(KuduWebJobType).Name) : type;
 
             KuduWebJobType foundItem =
                 All.SingleOrDefault(

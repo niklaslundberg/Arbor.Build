@@ -11,12 +11,14 @@ namespace Arbor.X.Core.Tools.Symbols
     [UsedImplicitly]
     public class SymbolsVariableProvider : IVariableProvider
     {
+        public int Order => VariableProviderOrder.Ignored;
+
         public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            //TODO add symbol api and key
+            // TODO add symbol api and key
             var variables = new List<IVariable>
             {
                 new EnvironmentVariable(
@@ -29,7 +31,5 @@ namespace Arbor.X.Core.Tools.Symbols
 
             return Task.FromResult<IEnumerable<IVariable>>(variables);
         }
-
-        public int Order => VariableProviderOrder.Ignored;
     }
 }

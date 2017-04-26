@@ -295,7 +295,7 @@ namespace Arbor.X.Core.Tools.NuGet
                 foreach (FileInfo fileInfo in sortedPackages)
                 {
                     bool? packageExists =
-                        await CheckPackageExistsAsync(fileInfo, nugetExePath, serverUri, logger, sourceName);
+                        await CheckPackageExistsAsync(fileInfo, nugetExePath, logger, sourceName);
 
                     if (!packageExists.HasValue)
                     {
@@ -343,7 +343,6 @@ namespace Arbor.X.Core.Tools.NuGet
         private async Task<bool?> CheckPackageExistsAsync(
             FileInfo nugetPackage,
             string nugetExePath,
-            string serverUri,
             ILogger logger,
             string sourceName)
         {

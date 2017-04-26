@@ -143,7 +143,8 @@ namespace Arbor.X.Core.Tools.Testing
 
 // ReSharper disable ReturnTypeCanBeEnumerable.Local
         private IReadOnlyCollection<string> UnitTestFixtureAssemblies(IEnumerable<Assembly> assemblies)
-// ReSharper restore ReturnTypeCanBeEnumerable.Local
+
+            // ReSharper restore ReturnTypeCanBeEnumerable.Local
         {
             List<string> unitTestFixtureAssemblies =
                 assemblies.Where(TryFindAssembly)

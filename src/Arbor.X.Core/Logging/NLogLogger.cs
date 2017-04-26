@@ -33,6 +33,8 @@ namespace Arbor.X.Core.Logging
             _prefix = prefix ?? string.Empty;
         }
 
+        public LogLevel LogLevel { get; set; }
+
         public void WriteError(string message, string prefix = null)
         {
             if (string.IsNullOrWhiteSpace(message))
@@ -72,8 +74,6 @@ namespace Arbor.X.Core.Logging
 
             _logger.Trace(GetTotalMessage(GetPrefix(prefix), message));
         }
-
-        public LogLevel LogLevel { get; set; }
 
         public void WriteDebug(string message, string prefix = null)
         {

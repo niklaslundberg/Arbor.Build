@@ -18,6 +18,8 @@ namespace Arbor.X.Core.Tools.VisualStudio
     {
         private bool _allowPreReleaseVersions;
 
+        public int Order => VariableProviderOrder.Ignored;
+
         public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
@@ -34,18 +36,16 @@ namespace Arbor.X.Core.Tools.VisualStudio
                 buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_VisualStudio_Version_Allow_PreRelease);
 
             int currentProcessBits = Environment.Is64BitProcess ? 64 : 32;
-            const int RegistryLookupBits = 32;
+            const int registryLookupBits = 32;
             logger.WriteVerbose(
                 $"Running current process [id {Process.GetCurrentProcess().Id}] as a {currentProcessBits}-bit process");
 
-            const string RegistryKeyName = @"SOFTWARE\Microsoft\VisualStudio";
+            const string registryKeyName = @"SOFTWARE\Microsoft\VisualStudio";
 
             logger.WriteVerbose(
-                $@"Looking for Visual Studio versions in {RegistryLookupBits}-bit registry key 'HKEY_LOCAL_MACHINE\{
-                        RegistryKeyName
-                    }'");
+                $"Looking for Visual Studio versions in {registryLookupBits}-bit registry key 'HKEY_LOCAL_MACHINE\\{registryKeyName}'");
 
-            string visualStudioVersion = GetVisualStudioVersion(logger, RegistryKeyName);
+            string visualStudioVersion = GetVisualStudioVersion(logger, registryKeyName);
 
             string vsTestExePath = null;
 
@@ -53,7 +53,7 @@ namespace Arbor.X.Core.Tools.VisualStudio
             {
                 logger.WriteVerbose($"Found Visual Studio version {visualStudioVersion}");
 
-                vsTestExePath = GetVSTestExePath(logger, RegistryKeyName, visualStudioVersion);
+                vsTestExePath = GetVSTestExePath(logger, registryKeyName, visualStudioVersion);
             }
             else
             {
@@ -70,8 +70,6 @@ namespace Arbor.X.Core.Tools.VisualStudio
 
             return Task.FromResult<IEnumerable<IVariable>>(environmentVariables);
         }
-
-        public int Order => VariableProviderOrder.Ignored;
 
         private static string GetVSTestExePath(ILogger logger, string registryKeyName, string visualStudioVersion)
         {
@@ -91,13 +89,13 @@ namespace Arbor.X.Core.Tools.VisualStudio
                                     $"Expected key {vsKey.Name} to contain a subkey with name {visualStudioVersion}");
                             }
 
-                            const string Installdir = "InstallDir";
-                            object installDir = versionKey.GetValue(Installdir, null);
+                            const string installdir = "InstallDir";
+                            object installDir = versionKey.GetValue(installdir, null);
 
                             if (string.IsNullOrWhiteSpace(installDir?.ToString()))
                             {
                                 logger.WriteWarning(
-                                    $"Expected key {versionKey.Name} to contain a value with name {Installdir} and a non-empty value");
+                                    $"Expected key {versionKey.Name} to contain a value with name {installdir} and a non-empty value");
                                 return null;
                             }
 

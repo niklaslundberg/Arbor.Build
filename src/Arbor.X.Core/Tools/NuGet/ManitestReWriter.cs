@@ -43,7 +43,7 @@ namespace Arbor.X.Core.Tools.NuGet
 
                 logger?.WriteVerbose("Using starts with-pattern '" + tagPrefix + "' to exclude tags from NuSpec");
 
-                string[] tagsToRemove = packageBuilder.Tags.Where(tag => tag.StartsWith(tagPrefix)).ToArray();
+                string[] tagsToRemove = packageBuilder.Tags.Where(tag => tag.StartsWith(tagPrefix, StringComparison.Ordinal)).ToArray();
 
                 if (!tagsToRemove.Any())
                 {

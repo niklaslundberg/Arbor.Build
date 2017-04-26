@@ -12,6 +12,8 @@ namespace Arbor.X.Core.Tools.Cleanup
     [UsedImplicitly]
     public class ArtifactsVariableProvider : IVariableProvider
     {
+        public int Order => 2;
+
         public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
@@ -33,7 +35,5 @@ namespace Arbor.X.Core.Tools.Cleanup
 
             return Task.FromResult<IEnumerable<IVariable>>(variables);
         }
-
-        public int Order => 2;
     }
 }

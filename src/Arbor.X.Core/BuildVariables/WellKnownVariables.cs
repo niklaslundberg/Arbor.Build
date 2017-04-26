@@ -11,38 +11,6 @@ namespace Arbor.X.Core.BuildVariables
         Justification = "Variables")]
     public static partial class WellKnownVariables
     {
-        public static IReadOnlyCollection<VariableDescription> AllVariables
-        {
-            get
-            {
-                var allVariables = new List<VariableDescription>();
-
-                List<FieldInfo> fields = typeof(WellKnownVariables).GetTypeInfo()
-                    .GetFields()
-                    .Where(field => field.IsPublicConstantOrStatic())
-                    .ToList();
-
-                foreach (FieldInfo field in fields)
-                {
-                    string invariantName = (string)field.GetValue(null);
-
-                    var attribute = field.GetCustomAttribute<VariableDescriptionAttribute>();
-
-                    VariableDescription description = attribute != null
-                        ? VariableDescription.Create(
-                            invariantName,
-                            attribute.Description,
-                            field.Name,
-                            attribute.DefaultValue)
-                        : VariableDescription.Create(field.Name);
-
-                    allVariables.Add(description);
-                }
-
-                return allVariables.OrderBy(name => name.InvariantName).ToList();
-            }
-        }
-
         // ReSharper disable InconsistentNaming
 
         // ReSharper disable ConvertToConstant.Global
@@ -348,6 +316,38 @@ namespace Arbor.X.Core.BuildVariables
             "List of file name parts to be used when excluding directories from being copied to web jobs directory, comma separated")]
         public static readonly string WebJobsExcludedDirectorySegments =
             "Arbor.X.Build.WebApplications.WebJobs.ExcludedDirectorySegments";
+
+        public static IReadOnlyCollection<VariableDescription> AllVariables
+        {
+            get
+            {
+                var allVariables = new List<VariableDescription>();
+
+                List<FieldInfo> fields = typeof(WellKnownVariables).GetTypeInfo()
+                    .GetFields()
+                    .Where(field => field.IsPublicConstantOrStatic())
+                    .ToList();
+
+                foreach (FieldInfo field in fields)
+                {
+                    string invariantName = (string)field.GetValue(null);
+
+                    var attribute = field.GetCustomAttribute<VariableDescriptionAttribute>();
+
+                    VariableDescription description = attribute != null
+                        ? VariableDescription.Create(
+                            invariantName,
+                            attribute.Description,
+                            field.Name,
+                            attribute.DefaultValue)
+                        : VariableDescription.Create(field.Name);
+
+                    allVariables.Add(description);
+                }
+
+                return allVariables.OrderBy(name => name.InvariantName).ToList();
+            }
+        }
 
         // ReSharper restore ConvertToConstant.Global
         // ReSharper restore InconsistentNaming

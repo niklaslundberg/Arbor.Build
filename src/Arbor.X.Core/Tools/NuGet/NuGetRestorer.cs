@@ -168,7 +168,6 @@ namespace Arbor.X.Core.Tools.NuGet
 
                         succeeded = true;
                     }
-
                     catch (Exception ex)
                     {
                         if (attempt < maxAttempts)

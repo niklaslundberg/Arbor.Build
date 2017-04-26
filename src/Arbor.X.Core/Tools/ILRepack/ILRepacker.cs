@@ -18,11 +18,11 @@ using FubuCsProjFile;
 using FubuCsProjFile.MSBuild;
 using JetBrains.Annotations;
 
+// ReSharper disable once InconsistentNaming
 namespace Arbor.X.Core.Tools.ILRepack
 {
     [Priority(620)]
     [UsedImplicitly]
-    // ReSharper disable once InconsistentNaming
     public class ILRepacker : ITool
     {
         private string _artifactsPath;
@@ -165,7 +165,7 @@ namespace Arbor.X.Core.Tools.ILRepack
                 yield break;
             }
 
-            string configuration = "release"; //TODO support ilmerge for debug
+            string configuration = "release"; // TODO support ilmerge for debug
 
             DirectoryInfo releaseDir = binDirectory.GetDirectories(configuration).SingleOrDefault();
 

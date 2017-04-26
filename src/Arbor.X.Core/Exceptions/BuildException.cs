@@ -4,7 +4,7 @@ using Arbor.X.Core.BuildVariables;
 
 namespace Arbor.X.Core.Exceptions
 {
-    public class BuildException : Exception
+    public sealed class BuildException : Exception
     {
         private readonly IReadOnlyCollection<IVariable> _buildVariables;
 
@@ -14,7 +14,7 @@ namespace Arbor.X.Core.Exceptions
             _buildVariables = buildVariables;
 
             // ReSharper disable once RedundantBaseQualifier
-            base.Data.Add("Arbor.X.Variables", _buildVariables);
+            Data.Add("Arbor.X.Variables", _buildVariables);
         }
 
         public override string ToString()

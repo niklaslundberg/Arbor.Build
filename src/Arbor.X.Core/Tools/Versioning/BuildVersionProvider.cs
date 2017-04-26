@@ -180,7 +180,6 @@ namespace Arbor.X.Core.Tools.Versioning
             }
 
             if (major < 0)
-
             {
                 logger.WriteVerbose($"Found no major version, using version 0");
                 major = 0;

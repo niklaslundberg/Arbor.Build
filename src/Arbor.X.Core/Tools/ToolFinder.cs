@@ -31,6 +31,8 @@ namespace Arbor.X.Core.Tools
                 .OrderBy(item => item.Priority)
                 .ToList();
 
+            logger.WriteVerbose($"Found {prioritizedTools.Count} prioritized tools");
+
             return prioritizedTools;
         }
     }

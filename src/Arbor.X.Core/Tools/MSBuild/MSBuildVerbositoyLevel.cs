@@ -21,8 +21,6 @@ namespace Arbor.X.Core.Tools.MSBuild
 
         public static MSBuildVerbositoyLevel Default => Normal;
 
-        public string Level { get; }
-
         public static IEnumerable<MSBuildVerbositoyLevel> AllValues
         {
             get
@@ -33,6 +31,8 @@ namespace Arbor.X.Core.Tools.MSBuild
                 yield return Quiet;
             }
         }
+
+        public string Level { get; }
 
         public static MSBuildVerbositoyLevel TryParse(string value)
         {

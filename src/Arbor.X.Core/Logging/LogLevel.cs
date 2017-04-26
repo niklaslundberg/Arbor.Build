@@ -26,6 +26,25 @@ namespace Arbor.X.Core.Logging
 
         public static LogLevel Default => Information;
 
+        public static IEnumerable<LogLevel> AllValues
+        {
+            get
+            {
+                yield return Critical;
+                yield return Error;
+                yield return Warning;
+                yield return Information;
+                yield return Verbose;
+                yield return Debug;
+            }
+        }
+
+        public string DisplayName => _displayName ?? Default.DisplayName;
+
+        public int Level => _level == 0 ? Default._level : _level;
+
+        public string InvariantName => _invariantName ?? Default.InvariantName;
+
         public static implicit operator string(LogLevel logLevel)
         {
             return logLevel.DisplayName;
@@ -39,30 +58,6 @@ namespace Arbor.X.Core.Logging
         public static bool operator !=(LogLevel left, LogLevel right)
         {
             return !left.Equals(right);
-        }
-
-        public string DisplayName => _displayName ?? Default.DisplayName;
-
-        public int Level => _level == 0 ? Default._level : _level;
-
-        public string InvariantName => _invariantName ?? Default.InvariantName;
-
-        public bool Equals(LogLevel other)
-        {
-            return Level == other.Level;
-        }
-
-        public static IEnumerable<LogLevel> AllValues
-        {
-            get
-            {
-                yield return Critical;
-                yield return Error;
-                yield return Warning;
-                yield return Information;
-                yield return Verbose;
-                yield return Debug;
-            }
         }
 
         public static LogLevel TryParse(string value)
@@ -84,6 +79,11 @@ namespace Arbor.X.Core.Logging
                 level => level._level == value);
 
             return found;
+        }
+
+        public bool Equals(LogLevel other)
+        {
+            return Level == other.Level;
         }
 
         public override bool Equals(object obj)
