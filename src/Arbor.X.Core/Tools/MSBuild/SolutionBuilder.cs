@@ -608,6 +608,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             }
             else
             {
+                argList.Add("/property:RunCodeAnalysis=false");
                 logger.Write("Code analysis is disabled");
             }
 
@@ -1055,6 +1056,11 @@ namespace Arbor.X.Core.Tools.MSBuild
             if (_showSummary)
             {
                 buildSiteArguments.Add("/detailedsummary");
+            }
+
+            if (!_codeAnalysisEnabled)
+            {
+                buildSiteArguments.Add("/property:RunCodeAnalysis=false");
             }
 
             ExitCode buildSiteExitCode =
@@ -1670,6 +1676,11 @@ namespace Arbor.X.Core.Tools.MSBuild
                 buildSitePackageArguments.Add("/detailedsummary");
             }
 
+            if (!_codeAnalysisEnabled)
+            {
+                buildSitePackageArguments.Add("/property:RunCodeAnalysis=false");
+            }
+
             ExitCode packageSiteExitCode =
                 await
                     ProcessRunner.ExecuteAsync(
@@ -1685,7 +1696,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             webDeployStopwatch.Stop();
 
             logger.WriteDebug(
-                $"WebDeploy packaging took {webDeployStopwatch.Elapsed.TotalSeconds.ToString("F")} seconds");
+                $"WebDeploy packaging took {webDeployStopwatch.Elapsed.TotalSeconds:F} seconds");
 
             return packageSiteExitCode;
         }
