@@ -22,18 +22,18 @@ namespace Arbor.X.Core.Tools.TeamCity
 
             bool isRunningInTeamCity =
                 buildVariables.GetBooleanByKey(
-                    WellKnownVariables.ExternalTools_TeamCity_BuildConfigurationName,
+                    WellKnownVariables.TeamCity.ExternalTools_TeamCity_BuildConfigurationName,
                     false);
 
-            if (buildVariables.HasKey(WellKnownVariables.ExternalTools_TeamCity_IsRunningInTeamCity))
+            if (buildVariables.HasKey(WellKnownVariables.TeamCity.ExternalTools_TeamCity_IsRunningInTeamCity))
             {
                 logger.WriteWarning(
-                    $"The build variable '{WellKnownVariables.ExternalTools_TeamCity_IsRunningInTeamCity}' is already defined");
+                    $"The build variable '{WellKnownVariables.TeamCity.ExternalTools_TeamCity_IsRunningInTeamCity}' is already defined");
             }
             else
             {
                 variables.Add(new EnvironmentVariable(
-                    WellKnownVariables.ExternalTools_TeamCity_IsRunningInTeamCity,
+                    WellKnownVariables.TeamCity.ExternalTools_TeamCity_IsRunningInTeamCity,
                     isRunningInTeamCity.ToString()));
             }
 

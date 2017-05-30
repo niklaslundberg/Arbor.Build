@@ -155,6 +155,19 @@ namespace Arbor.X.Core.Tools.Versioning
                     .Select(item => (int?)int.Parse(item.Value))
                     .SingleOrDefault() ?? -1;
 
+            int teamCityBuildVersion =
+                environmentVariables.Where(item => item.Key == WellKnownVariables.TeamCity.TeamCityVersionBuild)
+                    .Select(item =>
+                    {
+                        if (int.TryParse(item.Value, out int buildVersion))
+                        {
+                            return buildVersion;
+                        }
+
+                        return -1;
+                    })
+                    .SingleOrDefault();
+
             if (envMajor >= 0)
             {
                 logger.WriteVerbose($"Found major {envMajor} version in build variable");
@@ -200,7 +213,15 @@ namespace Arbor.X.Core.Tools.Versioning
             if (build < 0)
             {
                 logger.WriteVerbose("Found no build version, using version 0");
-                build = 0;
+
+                if (teamCityBuildVersion > 0)
+                {
+                    build = teamCityBuildVersion;
+                }
+                else
+                {
+                    build = 0;
+                }
             }
 
             if (major == 0 && minor == 0 && patch == 0)

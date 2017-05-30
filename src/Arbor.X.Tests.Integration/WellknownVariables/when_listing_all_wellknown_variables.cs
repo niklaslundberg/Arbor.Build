@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Arbor.X.Core.BuildVariables;
 using Machine.Specifications;
 
@@ -18,6 +19,10 @@ namespace Arbor.X.Tests.Integration.WellknownVariables
             {
                 Console.WriteLine(variableDescription.ToString());
             }
+        };
+        private It should_contain_nested_class_constants = () =>
+        {
+            readOnlyCollection.Any(variable => variable.InvariantName.Equals(WellKnownVariables.TeamCity.TeamCityVcsNumber)).ShouldBeTrue();
         };
     }
 }

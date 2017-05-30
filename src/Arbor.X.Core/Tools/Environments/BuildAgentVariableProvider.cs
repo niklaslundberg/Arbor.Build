@@ -28,7 +28,7 @@ namespace Arbor.X.Core.Tools.Environments
             {
                 WellKnownVariables.ExternalTools_Hudson_HudsonHome,
                 WellKnownVariables.ExternalTools_Jenkins_JenkinsHome,
-                WellKnownVariables.ExternalTools_TeamCity_TeamCityVersion
+                WellKnownVariables.TeamCity.ExternalTools_TeamCity_TeamCityVersion
             };
 
             ParseResult<bool> isBuildAgent =
