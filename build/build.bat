@@ -23,8 +23,6 @@ SET Arbor.X.Build.NetAssembly.Company=Niklas Lundberg
 SET Arbor.X.Build.NetAssembly.Copyright=© Niklas Lundberg 2014-2017
 SET Arbor.X.Build.NetAssembly.Trademark=Arbor.X TM
 SET Arbor.X.Build.NetAssembly.Product=Arbor.X
-SET Arbor.X.ShowAvailableVariablesEnabled=false
-SET Arbor.X.ShowDefinedVariablesEnabled=false
 SET Arbor.X.Tools.External.MSBuild.Verbosity=minimal
 SET Arbor.X.NuGet.Package.AllowManifestReWriteEnabled=false
 SET Arbor.X.Build.WebDeploy.PreCompilation.Enabled=true
@@ -35,6 +33,15 @@ SET Arbor.X.NuGet.Package.ExcludesCommaSeparated=Arbor.X.Bootstrapper.nuspec
 SET Arbor.X.Tools.External.MSBuild.CodeAnalysis.Enabled=true
 
 SET Arbor.X.Build.Tests.IgnoredCategories=dummyexcluded,dummyexcluded2,dummyexclude3
+
+
+IF "%Arbor.X.ShowAvailableVariablesEnabled%" == "" (
+    SET Arbor.X.ShowAvailableVariablesEnabled=false
+)
+
+IF "%Arbor.X.ShowDefinedVariablesEnabled%" == "" (
+    SET Arbor.X.ShowDefinedVariablesEnabled=false
+)
 
 REM SET Arbor.X.Vcs.Branch.Name=refs/heads/develop-0.1.26
 REM SET Arbor.X.Vcs.Branch.Name=
