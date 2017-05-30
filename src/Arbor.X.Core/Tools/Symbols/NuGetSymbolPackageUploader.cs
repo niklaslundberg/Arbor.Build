@@ -102,7 +102,7 @@ namespace Arbor.X.Core.Tools.Symbols
             {
                 "push",
                 nugetPackage,
-                "-s",
+                "-source",
                 symbolServerUrl,
                 apiKey,
                 "-verbosity",
