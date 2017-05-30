@@ -212,14 +212,14 @@ namespace Arbor.X.Core.Tools.Versioning
 
             if (build < 0)
             {
-                logger.WriteVerbose("Found no build version, using version 0");
-
                 if (teamCityBuildVersion > 0)
                 {
                     build = teamCityBuildVersion;
+                    logger.WriteVerbose($"Found no build version, using version {build} from TeamCity ({WellKnownVariables.TeamCity.TeamCityVersionBuild})");
                 }
                 else
                 {
+                    logger.WriteVerbose("Found no build version, using version 0");
                     build = 0;
                 }
             }

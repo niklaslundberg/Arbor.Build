@@ -13,7 +13,7 @@
                 "TEAMCITY_VERSION";
 
             [VariableDescription("TeamCity Build Version")]
-            public static readonly string TeamCityVersionBuild =
+            public const string TeamCityVersionBuild =
                 "BUILD_NUMBER";
 
             [VariableDescription("TeamCity Build Version")]
