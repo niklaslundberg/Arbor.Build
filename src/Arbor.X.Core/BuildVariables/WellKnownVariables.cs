@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 using Arbor.X.Core.GenericExtensions;
@@ -332,10 +334,17 @@ namespace Arbor.X.Core.BuildVariables
             {
                 var allVariables = new List<VariableDescription>();
 
-                List<FieldInfo> fields = typeof(WellKnownVariables).GetTypeInfo()
+                Type item = typeof(WellKnownVariables);
+                var classes = new List<Type>() { item };
+
+                ImmutableArray<Type> nestedClassTypes = GetNestedClassTypes(item);
+
+                ImmutableArray<FieldInfo> fields = nestedClassTypes
+                    .Select(@class => @class
                     .GetFields()
-                    .Where(field => field.IsPublicConstantOrStatic())
-                    .ToList();
+                    .Where(field => field.IsPublicConstantOrStatic()))
+                    .SelectMany(_ => _)
+                    .ToImmutableArray();
 
                 foreach (FieldInfo field in fields)
                 {
@@ -356,6 +365,23 @@ namespace Arbor.X.Core.BuildVariables
 
                 return allVariables.OrderBy(name => name.InvariantName).ToList();
             }
+        }
+
+        private static ImmutableArray<Type> GetNestedClassTypes(Type staticClass)
+        {
+            List<Type> nestedPublicStaticClasses = staticClass
+                .GetNestedTypes(BindingFlags.Static | BindingFlags.Public)
+                .Where(type => type.IsClass)
+                .ToList();
+
+            Type[] asArray = nestedPublicStaticClasses.ToArray();
+
+            foreach (Type nestedPublicStaticClass in asArray)
+            {
+                nestedPublicStaticClasses.AddRange(GetNestedClassTypes(nestedPublicStaticClass));
+            }
+
+            return nestedPublicStaticClasses.ToImmutableArray();
         }
 
         // ReSharper restore ConvertToConstant.Global
