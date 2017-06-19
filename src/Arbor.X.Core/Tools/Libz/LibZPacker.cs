@@ -96,7 +96,7 @@ namespace Arbor.X.Core.Tools.Libz
                     repackData.Platform,
                     repackData.Configuration);
 
-                DirectoryInfo mergedDirectory = new DirectoryInfo(mergedDirectoryPath).EnsureExists();
+                var mergedDirectory = new DirectoryInfo(mergedDirectoryPath).EnsureExists();
 
                 string mergedPath = Path.Combine(mergedDirectory.FullName, fileInfo.Name);
 
@@ -165,30 +165,71 @@ namespace Arbor.X.Core.Tools.Libz
 
             DirectoryInfo releaseDir = binDirectory.GetDirectories(configuration).SingleOrDefault();
 
-            if (releaseDir == null)
+            if (releaseDir is null)
             {
-                _logger.WriteWarning(
-                    $"A release directory '{Path.Combine(binDirectory.FullName, configuration)}' was not found");
+                _logger.WriteWarning($"The release directory '{Path.Combine(binDirectory.FullName, configuration)}' does not exist");
                 yield break;
             }
 
-            CsProjFile csProjFile = CsProjFile.LoadFrom(projectFile.FullName);
+            DirectoryInfo[] releasePlatformDirectories = releaseDir.GetDirectories();
 
-            const string targetFrameworkVersion = "TargetFrameworkVersion";
-
-            MSBuildProperty msBuildProperty = csProjFile.BuildProject.PropertyGroups
-                .SelectMany(group =>
-                    group.Properties.Where(
-                        property => property.Name.Equals(targetFrameworkVersion, StringComparison.OrdinalIgnoreCase)))
-                .FirstOrDefault();
-
-            if (string.IsNullOrWhiteSpace(msBuildProperty?.Value))
+            if (releasePlatformDirectories.Length > 1)
             {
-                throw new InvalidOperationException(
-                    $"The CSProj file '{csProjFile.FileName}' does not contain a property '{targetFrameworkVersion}");
+                _logger.WriteWarning(
+                    $"Multiple release directories were found for  '{Path.Combine(binDirectory.FullName, configuration)}'");
+                yield break;
             }
 
-            List<FileInfo> exes = releaseDir
+            if (!releasePlatformDirectories.Any())
+            {
+               yield break;
+            }
+
+            DirectoryInfo releasePlatformDirectory = releasePlatformDirectories.Single();
+
+            string NormalizeVersion(string value)
+            {
+                if (value.StartsWith("v", StringComparison.OrdinalIgnoreCase))
+                {
+                    return value.Substring(1);
+                }
+
+                return value;
+            }
+
+            string targetFrameworkVersionValue;
+
+            if (File.ReadLines(projectFile.FullName)
+                .Any(line => line.Contains("Microsoft.NET.Sdk", StringComparison.OrdinalIgnoreCase)))
+            {
+                _logger.WriteWarning(
+                    $"Microsoft.NET.Sdk projects are not supported '{Path.Combine(binDirectory.FullName, configuration)}' was not found");
+
+                targetFrameworkVersionValue = "";
+            }
+            else
+            {
+                CsProjFile csProjFile = CsProjFile.LoadFrom(projectFile.FullName);
+
+                const string targetFrameworkVersion = "TargetFrameworkVersion";
+
+                MSBuildProperty msBuildProperty = csProjFile.BuildProject.PropertyGroups
+                    .SelectMany(group =>
+                        group.Properties.Where(
+                            property => property.Name.Equals(targetFrameworkVersion,
+                                StringComparison.OrdinalIgnoreCase)))
+                    .FirstOrDefault();
+
+                if (string.IsNullOrWhiteSpace(msBuildProperty?.Value))
+                {
+                    throw new InvalidOperationException(
+                        $"The CSProj file '{csProjFile.FileName}' does not contain a property '{targetFrameworkVersion}");
+                }
+
+                targetFrameworkVersionValue = NormalizeVersion(msBuildProperty.Value);
+            }
+
+            List<FileInfo> exes = releasePlatformDirectory
                 .EnumerateFiles("*.exe")
                 .Where(FileIsStandAloneExe)
                 .ToList();
@@ -202,22 +243,10 @@ namespace Arbor.X.Core.Tools.Libz
 
             string platform = GetPlatform(exe);
 
-            ImmutableArray<FileInfo> dlls = releaseDir
+            ImmutableArray<FileInfo> dlls = releasePlatformDirectory
                 .EnumerateFiles("*.dll")
                 .Where(FileIsStandAloneExe)
                 .ToImmutableArray();
-
-            string NormalizeVersion(string value)
-            {
-                if (value.StartsWith("v", StringComparison.OrdinalIgnoreCase))
-                {
-                    return value.Substring(1);
-                }
-
-                return value;
-            }
-
-            string targetFrameworkVersionValue = NormalizeVersion(msBuildProperty.Value);
 
             yield return new ILRepackData(exe.FullName, dlls, configuration, platform, targetFrameworkVersionValue);
         }
