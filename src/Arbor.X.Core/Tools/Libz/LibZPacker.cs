@@ -234,9 +234,15 @@ namespace Arbor.X.Core.Tools.Libz
                 .Where(FileIsStandAloneExe)
                 .ToList();
 
-            if (exes.Count != 1)
+            if (exes.Count > 1)
             {
-                throw new InvalidOperationException("Only one exe can be merged");
+                throw new InvalidOperationException(
+                    $"Only one exe can be merged, found {string.Join(", ", exes.Select(file => file.FullName))}");
+            }
+
+            if (!exes.Any())
+            {
+                throw new InvalidOperationException("Could not find any exe files to merge");
             }
 
             FileInfo exe = exes.Single();
