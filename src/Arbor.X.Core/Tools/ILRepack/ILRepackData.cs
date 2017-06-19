@@ -14,7 +14,7 @@ namespace Arbor.X.Core.Tools.ILRepack
             IEnumerable<FileInfo> dlls,
             string configuration,
             string platform,
-            [NotNull] string targetFramework)
+            [CanBeNull] string targetFramework)
         {
             if (string.IsNullOrWhiteSpace(exe))
             {
@@ -34,11 +34,6 @@ namespace Arbor.X.Core.Tools.ILRepack
             if (string.IsNullOrWhiteSpace(platform))
             {
                 throw new ArgumentNullException(nameof(platform));
-            }
-
-            if (string.IsNullOrWhiteSpace(targetFramework))
-            {
-                throw new ArgumentException("Value cannot be null or whitespace.", nameof(targetFramework));
             }
 
             FileInfo[] dllArray = dlls.ToArray();
