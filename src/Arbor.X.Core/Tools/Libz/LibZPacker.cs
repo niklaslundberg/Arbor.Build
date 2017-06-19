@@ -182,13 +182,6 @@ namespace Arbor.X.Core.Tools.Libz
                 yield break;
             }
 
-            if (!releasePlatformDirectories.Any())
-            {
-               yield break;
-            }
-
-            DirectoryInfo releasePlatformDirectory = releasePlatformDirectories.Single();
-
             string NormalizeVersion(string value)
             {
                 if (value.StartsWith("v", StringComparison.OrdinalIgnoreCase))
@@ -201,6 +194,8 @@ namespace Arbor.X.Core.Tools.Libz
 
             string targetFrameworkVersionValue;
 
+            DirectoryInfo releasePlatformDirectory;
+
             if (File.ReadLines(projectFile.FullName)
                 .Any(line => line.Contains("Microsoft.NET.Sdk", StringComparison.OrdinalIgnoreCase)))
             {
@@ -208,6 +203,15 @@ namespace Arbor.X.Core.Tools.Libz
                     $"Microsoft.NET.Sdk projects are not supported '{Path.Combine(binDirectory.FullName, configuration)}' was not found");
 
                 targetFrameworkVersionValue = "";
+
+                if (!releasePlatformDirectories.Any())
+                {
+                    _logger.WriteWarning(
+                        $"No release platform directories were found in '{Path.Combine(binDirectory.FullName, configuration)}'");
+                    yield break;
+                }
+
+                releasePlatformDirectory = releasePlatformDirectories.Single();
             }
             else
             {
@@ -229,6 +233,8 @@ namespace Arbor.X.Core.Tools.Libz
                 }
 
                 targetFrameworkVersionValue = NormalizeVersion(msBuildProperty.Value);
+
+                releasePlatformDirectory = releaseDir;
             }
 
             List<FileInfo> exes = releasePlatformDirectory
