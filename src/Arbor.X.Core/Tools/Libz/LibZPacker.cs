@@ -102,6 +102,16 @@ namespace Arbor.X.Core.Tools.Libz
 
                 fileInfo.CopyTo(mergedPath);
 
+                string exeConfiguration =
+                    Path.Combine(fileInfo.Directory.FullName, $"{Path.GetFileNameWithoutExtension(fileInfo.Name)}.config");
+
+                if (File.Exists(exeConfiguration))
+                {
+                    string targetConfigFilePath = Path.Combine(mergedDirectory.FullName, Path.GetFileName(exeConfiguration));
+
+                    File.Copy(exeConfiguration, targetConfigFilePath);
+                }
+
                 var arguments = new List<string>
                 {
                     "inject-dll",
