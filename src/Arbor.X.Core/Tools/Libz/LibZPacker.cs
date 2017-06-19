@@ -6,7 +6,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Arbor.Defensive.Collections;
 using Arbor.Processing;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
@@ -14,6 +13,7 @@ using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.Parsing;
+using Arbor.X.Core.ProcessUtils;
 using Arbor.X.Core.Tools.ILRepack;
 using FubuCsProjFile;
 using FubuCsProjFile.MSBuild;
@@ -83,8 +83,8 @@ namespace Arbor.X.Core.Tools.Libz
 
             logger.Write($"Found {ilMergeProjects.Count} projects marked for merging:{Environment.NewLine}{merges}");
 
-            IReadOnlyCollection<ILRepackData> filesToMerge =
-                ilMergeProjects.SelectMany(GetMergeFiles).ToReadOnlyCollection();
+            ImmutableArray<ILRepackData> filesToMerge = (await Task.WhenAll(ilMergeProjects.Select(GetMergeFilesAsync)))
+                .SelectMany(item => item).ToImmutableArray();
 
             foreach (ILRepackData repackData in filesToMerge)
             {
@@ -96,7 +96,7 @@ namespace Arbor.X.Core.Tools.Libz
                     repackData.Platform,
                     repackData.Configuration);
 
-                var mergedDirectory = new DirectoryInfo(mergedDirectoryPath).EnsureExists();
+                DirectoryInfo mergedDirectory = new DirectoryInfo(mergedDirectoryPath).EnsureExists();
 
                 string mergedPath = Path.Combine(mergedDirectory.FullName, fileInfo.Name);
 
@@ -107,7 +107,8 @@ namespace Arbor.X.Core.Tools.Libz
 
                 if (File.Exists(exeConfiguration))
                 {
-                    string targetConfigFilePath = Path.Combine(mergedDirectory.FullName, Path.GetFileName(exeConfiguration));
+                    string targetConfigFilePath =
+                        Path.Combine(mergedDirectory.FullName, Path.GetFileName(exeConfiguration));
 
                     File.Copy(exeConfiguration, targetConfigFilePath);
                 }
@@ -158,10 +159,18 @@ namespace Arbor.X.Core.Tools.Libz
         {
             var blacklisted = new List<string> { ".vshost.", "csc.exe", "csi.exe", "vbc.exe", "VBCSCompiler.exe" };
 
-            return !blacklisted.Any(blacklistedItem => file.Name.IndexOf(blacklistedItem, StringComparison.InvariantCultureIgnoreCase) >= 0);
+            return !blacklisted.Any(
+                blacklistedItem => file.Name.IndexOf(blacklistedItem, StringComparison.InvariantCultureIgnoreCase) >=
+                                   0);
         }
 
-        private IEnumerable<ILRepackData> GetMergeFiles(FileInfo projectFile)
+        private static bool IsNetSdkProject(FileInfo projectFile)
+        {
+            return File.ReadLines(projectFile.FullName)
+                .Any(line => line.Contains("Microsoft.NET.Sdk", StringComparison.OrdinalIgnoreCase));
+        }
+
+        private async Task<ImmutableArray<ILRepackData>> GetMergeFilesAsync(FileInfo projectFile)
         {
 // ReSharper disable PossibleNullReferenceException
             DirectoryInfo binDirectory = projectFile.Directory.GetDirectories("bin").SingleOrDefault();
@@ -170,7 +179,7 @@ namespace Arbor.X.Core.Tools.Libz
 
             if (binDirectory == null)
             {
-                yield break;
+                return ImmutableArray<ILRepackData>.Empty;
             }
 
             string configuration = "release"; // TODO support ilmerge for debug
@@ -179,8 +188,9 @@ namespace Arbor.X.Core.Tools.Libz
 
             if (releaseDir is null)
             {
-                _logger.WriteWarning($"The release directory '{Path.Combine(binDirectory.FullName, configuration)}' does not exist");
-                yield break;
+                _logger.WriteWarning(
+                    $"The release directory '{Path.Combine(binDirectory.FullName, configuration)}' does not exist");
+                return ImmutableArray<ILRepackData>.Empty;
             }
 
             DirectoryInfo[] releasePlatformDirectories = releaseDir.GetDirectories();
@@ -189,7 +199,7 @@ namespace Arbor.X.Core.Tools.Libz
             {
                 _logger.WriteWarning(
                     $"Multiple release directories were found for  '{Path.Combine(binDirectory.FullName, configuration)}'");
-                yield break;
+                return ImmutableArray<ILRepackData>.Empty;
             }
 
             string NormalizeVersion(string value)
@@ -206,8 +216,7 @@ namespace Arbor.X.Core.Tools.Libz
 
             DirectoryInfo releasePlatformDirectory;
 
-            if (File.ReadLines(projectFile.FullName)
-                .Any(line => line.Contains("Microsoft.NET.Sdk", StringComparison.OrdinalIgnoreCase)))
+            if (IsNetSdkProject(projectFile))
             {
                 _logger.WriteWarning(
                     $"Microsoft.NET.Sdk projects are not supported '{Path.Combine(binDirectory.FullName, configuration)}' was not found");
@@ -218,10 +227,37 @@ namespace Arbor.X.Core.Tools.Libz
                 {
                     _logger.WriteWarning(
                         $"No release platform directories were found in '{Path.Combine(binDirectory.FullName, configuration)}'");
-                    yield break;
+                    return ImmutableArray<ILRepackData>.Empty;
                 }
 
-                releasePlatformDirectory = releasePlatformDirectories.Single();
+                List<string> args = new List<string>
+                {
+                    "publish",
+                    projectFile.FullName,
+                    $"/p:configuration={configuration}"
+                };
+
+                ExitCode exitCode = await ProcessHelper.ExecuteAsync(
+                    "dotnet",
+                    args,
+                    _logger);
+
+                if (!exitCode.IsSuccess)
+                {
+                    _logger.WriteWarning($"Could not publish project {projectFile.FullName}");
+                }
+
+                DirectoryInfo platformDirectory = releasePlatformDirectories.Single();
+
+                DirectoryInfo publishDirectoryInfo = platformDirectory.GetDirectories("publish").SingleOrDefault();
+
+                if (publishDirectoryInfo is null)
+                {
+                    _logger.WriteWarning($"The publish directory '{Path.Combine(platformDirectory.FullName, "publish")}' does not exist");
+                    return ImmutableArray<ILRepackData>.Empty;
+                }
+
+                releasePlatformDirectory = publishDirectoryInfo;
             }
             else
             {
@@ -272,7 +308,11 @@ namespace Arbor.X.Core.Tools.Libz
                 .Where(FileIsStandAloneExe)
                 .ToImmutableArray();
 
-            yield return new ILRepackData(exe.FullName, dlls, configuration, platform, targetFrameworkVersionValue);
+            ImmutableArray<ILRepackData> mergeFiles =
+                new[] { new ILRepackData(exe.FullName, dlls, configuration, platform, targetFrameworkVersionValue) }
+                    .ToImmutableArray();
+
+            return mergeFiles;
         }
 
         private string GetPlatform(FileInfo exe)
