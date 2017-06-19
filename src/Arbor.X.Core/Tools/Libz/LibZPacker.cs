@@ -146,7 +146,9 @@ namespace Arbor.X.Core.Tools.Libz
 
         private static bool FileIsStandAloneExe(FileInfo file)
         {
-            return file.Name.IndexOf(".vshost.", StringComparison.InvariantCultureIgnoreCase) < 0;
+            var blacklisted = new List<string> { ".vshost.", "csc.exe", "csi.exe", "vbc.exe", "VBCSCompiler.exe" };
+
+            return !blacklisted.Any(blacklistedItem => file.Name.IndexOf(blacklistedItem, StringComparison.InvariantCultureIgnoreCase) >= 0);
         }
 
         private IEnumerable<ILRepackData> GetMergeFiles(FileInfo projectFile)
