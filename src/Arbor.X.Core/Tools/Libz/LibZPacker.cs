@@ -219,7 +219,7 @@ namespace Arbor.X.Core.Tools.Libz
             if (IsNetSdkProject(projectFile))
             {
                 _logger.WriteWarning(
-                    $"Microsoft.NET.Sdk projects are not supported '{Path.Combine(binDirectory.FullName, configuration)}' was not found");
+                    $"Microsoft.NET.Sdk projects are in progress supported '{Path.Combine(binDirectory.FullName, configuration)}'");
 
                 targetFrameworkVersionValue = "";
 
@@ -238,13 +238,14 @@ namespace Arbor.X.Core.Tools.Libz
                 };
 
                 ExitCode exitCode = await ProcessHelper.ExecuteAsync(
-                    "dotnet",
+                    Path.Combine(System.Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "dotnet", "dotnet.exe"),
                     args,
                     _logger);
 
                 if (!exitCode.IsSuccess)
                 {
                     _logger.WriteWarning($"Could not publish project {projectFile.FullName}");
+                    return ImmutableArray<ILRepackData>.Empty;
                 }
 
                 DirectoryInfo platformDirectory = releasePlatformDirectories.Single();
