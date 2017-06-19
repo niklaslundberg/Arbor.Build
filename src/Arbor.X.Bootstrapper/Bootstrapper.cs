@@ -368,6 +368,10 @@ namespace Arbor.X.Bootstrapper
             }
             else
             {
+                _logger.WriteVerbose(
+                    $"'{WellKnownVariables.ArborXNuGetPackageVersion}' flag is not set, using latest version of Arbor.X",
+                    _Prefix);
+
                 bool allowPrerelease;
                 if (_startOptions.PrereleaseEnabled.HasValue)
                 {
