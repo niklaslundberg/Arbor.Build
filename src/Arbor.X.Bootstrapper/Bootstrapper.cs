@@ -31,6 +31,8 @@ namespace Arbor.X.Bootstrapper
         private bool _directoryCloneEnabled;
         private BootstrapStartOptions _startOptions;
 
+        bool _failed = false;
+
         public Bootstrapper(LogLevel logLevel)
         {
             var nlogLogger = new NLogLogger(logLevel);
@@ -59,7 +61,16 @@ namespace Arbor.X.Bootstrapper
                 startOptions = BootstrapStartOptions.Parse(args);
             }
 
-            return await StartAsync(startOptions);
+            ExitCode exitCode = await StartAsync(startOptions);
+
+            _logger.Write($"Bootstrapper exit code: {exitCode}");
+
+            if (_failed)
+            {
+                exitCode = ExitCode.Failure;
+            }
+
+            return exitCode;
         }
 
         public async Task<ExitCode> StartAsync(BootstrapStartOptions startOptions)
@@ -300,6 +311,7 @@ namespace Arbor.X.Bootstrapper
 
                 _logger.WriteError("The build timed out", _Prefix);
                 exitCode = ExitCode.Failure;
+                _failed = true;
             }
 
             return exitCode;
