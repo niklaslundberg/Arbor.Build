@@ -62,6 +62,9 @@ namespace Arbor.X.Core.Tools.NuGet
             bool forceUpload =
                 buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_NuGetServer_ForceUploadEnabled, false);
 
+            bool timeoutIncreaseEnabled =
+                buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_NuGetServer_UploadTimeoutIncreaseEnabled, false);
+
             int timeoutInSeconds =
                 buildVariables.GetInt32ByKey(WellKnownVariables.ExternalTools_NuGetServer_UploadTimeoutInSeconds, -1);
 
@@ -95,7 +98,8 @@ namespace Arbor.X.Core.Tools.NuGet
                     websitesDirectory,
                     timeoutInSeconds,
                     checkNuGetPackagesExists,
-                    sourceName);
+                    sourceName,
+                    timeoutIncreaseEnabled);
             }
 
             logger.Write(
@@ -111,7 +115,8 @@ namespace Arbor.X.Core.Tools.NuGet
             string nugetPackage,
             ILogger logger,
             int timeoutInseconds,
-            bool checkNuGetPackagesExists)
+            bool checkNuGetPackagesExists,
+            bool timeoutIncreaseEnabled)
         {
             if (!File.Exists(nugetPackage))
             {
@@ -142,11 +147,6 @@ namespace Arbor.X.Core.Tools.NuGet
             args.Add("-verbosity");
             args.Add("detailed");
 
-            if (timeoutInseconds > 0)
-            {
-                args.Add("-timeout");
-                args.Add(timeoutInseconds.ToString(CultureInfo.InvariantCulture));
-            }
 
             const int MaxAttempts = 5;
 
@@ -157,11 +157,31 @@ namespace Arbor.X.Core.Tools.NuGet
             {
                 var errorBuilder = new StringBuilder();
 
+                List<string> runSpecificArgs = args.ToList();
+
+                if (timeoutInseconds > 0)
+                {
+                    runSpecificArgs.Add("-timeout");
+
+                    int timeout;
+
+                    if (timeoutIncreaseEnabled)
+                    {
+                        timeout = timeoutInseconds * attemptCount;
+                    }
+                    else
+                    {
+                        timeout = timeoutInseconds;
+                    }
+
+                    runSpecificArgs.Add(timeout.ToString(CultureInfo.InvariantCulture));
+                }
+
                 exitCode =
                     await
                         ProcessRunner.ExecuteAsync(
                             nugetExePath,
-                            arguments: args,
+                            arguments: runSpecificArgs,
                             standardOutLog: logger.Write,
                             standardErrorAction: (message, prefix) =>
                             {
@@ -217,7 +237,8 @@ namespace Arbor.X.Core.Tools.NuGet
             DirectoryInfo websitesDirectory,
             int timeoutInseconds,
             bool checkNuGetPackagesExists,
-            string sourceName)
+            string sourceName,
+            bool timeoutIncreaseEnabled)
         {
             if (artifactPackagesDirectory == null)
             {
@@ -334,7 +355,8 @@ namespace Arbor.X.Core.Tools.NuGet
                     nugetPackage,
                     logger,
                     timeoutInseconds,
-                    checkNuGetPackagesExists);
+                    checkNuGetPackagesExists,
+                    timeoutIncreaseEnabled);
 
                 if (!exitCode.IsSuccess)
                 {

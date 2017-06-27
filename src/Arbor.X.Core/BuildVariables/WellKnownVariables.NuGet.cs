@@ -33,6 +33,10 @@
         public const string ExternalTools_NuGetServer_UploadTimeoutInSeconds =
             "Arbor.X.NuGet.PackageUpload.TimeoutInSeconds";
 
+        [VariableDescription("Timeout increase enabled for NuGet package upload", "true")]
+        public const string ExternalTools_NuGetServer_UploadTimeoutIncreaseEnabled =
+            "Arbor.X.NuGet.PackageUpload.TimeoutIncreaseEnabled";
+
         [VariableDescription("Flag to indicate if NuGet should check for existing packages before pushing", "true")]
         public const string ExternalTools_NuGetServer_CheckPackageExists =
             "Arbor.X.NuGet.PackageUpload.CheckIfPackagesExistsEnabled";
