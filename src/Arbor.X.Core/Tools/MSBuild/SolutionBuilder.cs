@@ -84,6 +84,7 @@ namespace Arbor.X.Core.Tools.MSBuild
         private bool _showSummary;
         private string _vcsRoot;
         private MSBuildVerbositoyLevel _verbosity;
+        private bool _webProjectsBuildEnabed;
 
         public Guid WebApplicationProjectTypeId { get; } = Guid.Parse("349C5851-65DF-11DA-9384-00065B846F21");
 
@@ -103,6 +104,9 @@ namespace Arbor.X.Core.Tools.MSBuild
             _appDataJobsEnabled = buildVariables.GetBooleanByKey(
                 WellKnownVariables.AppDataJobsEnabled,
                 false);
+
+            _webProjectsBuildEnabed =
+                buildVariables.GetBooleanByKey(WellKnownVariables.WebProjectsBuildEnabled, defaultValue: true);
 
             _cleanBinXmlFilesForAssembliesEnabled =
                 buildVariables.GetBooleanByKey(
@@ -639,10 +643,19 @@ namespace Arbor.X.Core.Tools.MSBuild
 
             if (exitCode.IsSuccess)
             {
-                ExitCode webAppsExiteCode =
-                    await BuildWebApplicationsAsync(solutionFile, configuration, platform, logger);
+                if (_webProjectsBuildEnabed)
+                {
+                    _logger.Write($"Web projects build is enabled, key {WellKnownVariables.WebProjectsBuildEnabled}");
 
-                exitCode = webAppsExiteCode;
+                    ExitCode webAppsExiteCode =
+                        await BuildWebApplicationsAsync(solutionFile, configuration, platform, logger);
+
+                    exitCode = webAppsExiteCode;
+                }
+                else
+                {
+                    _logger.Write($"Web projects build is enabled, key {WellKnownVariables.WebProjectsBuildEnabled}");
+                }
             }
             else
             {

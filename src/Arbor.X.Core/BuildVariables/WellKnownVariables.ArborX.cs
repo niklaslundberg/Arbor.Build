@@ -24,5 +24,8 @@
 
         [VariableDescription("Flag to indicate if applicationmetadata.json should be created dynamically", "false")]
         public static readonly string ApplicationMetadataEnabled = "Arbor.X.ApplicationMetadata.Enabled";
+
+        [VariableDescription("Flag to indicate if web projects should be built")]
+        public const string WebProjectsBuildEnabled = "Arbor.X.Build.WebProjectsBuild.Enabled";
     }
 }
