@@ -66,7 +66,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                     new DelegateLogger((message, prefix) => versionCheckResultBuilder.Append(message)),
                     cancellationToken: cancellationToken);
 
-                var vsWhereArgs = new List<string> { "-requires", "Microsoft.Component.MSBuild" };
+                var vsWhereArgs = new List<string> { "-requires", "Microsoft.Component.MSBuild", "-format", "json" };
 
                 bool allowPreRelease =
                     buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_MSBuild_AllowPrereleaseEnabled);
