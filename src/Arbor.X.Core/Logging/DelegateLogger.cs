@@ -10,18 +10,23 @@ namespace Arbor.X.Core.Logging
         private readonly Action<string, string> _warning;
         private readonly Action<string, string> _verbose;
 
+
         public DelegateLogger(
-            Action<string, string> log,
-            Action<string, string> warning,
-            Action<string, string> error,
+            Action<string, string> log = null,
+            Action<string, string> warning = null,
+            Action<string, string> error = null,
             Action<string, string> verbose = null,
             Action<string, string> debug = null)
         {
-            _verbose = verbose ?? ((message, prefix) => { });
-            _log = log ?? ((message, prefix) => { });
-            _warning = warning ?? ((message, prefix) => { });
-            _error = error ?? ((message, prefix) => { });
-            _debug = debug ?? ((message, prefix) => { });
+            void Noop(string message, string prefix)
+            {
+            }
+
+            _verbose = verbose ?? Noop;
+            _log = log ?? Noop;
+            _warning = warning ?? Noop;
+            _error = error ?? Noop;
+            _debug = debug ?? Noop;
         }
 
         public LogLevel LogLevel { get; set; }

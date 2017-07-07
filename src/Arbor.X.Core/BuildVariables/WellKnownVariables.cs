@@ -122,6 +122,10 @@ namespace Arbor.X.Core.BuildVariables
         public static readonly string ExternalTools_MSBuild_MaxVersion =
             "Arbor.X.Tools.External.MSBuild.MaxVersion";
 
+        [VariableDescription("MSBuild max version")]
+        public static readonly string ExternalTools_MSBuild_AllowPrereleaseEnabled =
+            "Arbor.X.Tools.External.MSBuild.AllowPrerelease.Enabled";
+
         [VariableDescription("MSBuild verbosity level", "normal")]
         public static readonly string ExternalTools_MSBuild_Verbosity = "Arbor.X.Tools.External.MSBuild.Verbosity";
 

@@ -3,13 +3,17 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Logging;
+using Arbor.X.Core.ProcessUtils;
 using Arbor.X.Core.Tools.Cleanup;
 using JetBrains.Annotations;
 using Microsoft.Win32;
+using Newtonsoft.Json;
 using NuGet.Versioning;
 
 namespace Arbor.X.Core.Tools.MSBuild
@@ -19,7 +23,7 @@ namespace Arbor.X.Core.Tools.MSBuild
     {
         public int Order => VariableProviderOrder.Ignored;
 
-        public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(
+        public async Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
@@ -43,6 +47,94 @@ namespace Arbor.X.Core.Tools.MSBuild
             foreach (SemanticVersion semVersion in toRemove)
             {
                 possibleVersions.Remove(semVersion);
+            }
+
+            string vsWherePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                "Microsoft Visual Studio",
+                "Installer",
+                "vswhere.exe");
+
+            if (File.Exists(vsWherePath))
+            {
+                var vsWhereVersionCheck = new StringBuilder();
+
+                var versionCheckResultBuilder = new StringBuilder();
+
+                ExitCode versionExitCode = await ProcessHelper.ExecuteAsync(
+                    vsWherePath,
+                    new List<string> { "-prerelease" },
+                    new DelegateLogger((message, prefix) => versionCheckResultBuilder.Append(message)),
+                    cancellationToken: cancellationToken);
+
+                var vsWhereArgs = new List<string> { "-requires", "Microsoft.Component.MSBuild" };
+
+                bool allowPreRelease =
+                    buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_MSBuild_AllowPrereleaseEnabled);
+
+                if (allowPreRelease)
+                {
+                    if (versionExitCode.IsSuccess)
+                    {
+                        vsWhereArgs.Add("-prerelase");
+                    }
+                }
+
+                var resultBuilder = new StringBuilder();
+
+                await ProcessHelper.ExecuteAsync(
+                    vsWherePath,
+                    vsWhereArgs,
+                    new DelegateLogger((message, prefix) => resultBuilder.Append(message)),
+                    cancellationToken: cancellationToken);
+
+                string json = resultBuilder.ToString();
+
+                var typedInstallations = JsonConvert.DeserializeAnonymousType(json,
+                    new[]
+                    {
+                        new { installationName = "", installationPath = "", installationVersion = "", channelId = "" }
+                    });
+
+                var candidates = typedInstallations.ToArray();
+
+                if (!allowPreRelease)
+                {
+                    candidates = candidates
+                        .Where(candidate => candidate.channelId.IndexOf("preview", StringComparison.OrdinalIgnoreCase) <
+                                            0).ToArray();
+                }
+
+                var array = candidates
+                    .Select(candidate => new { candidate, versoin = Version.Parse(candidate.installationVersion) })
+                    .ToArray();
+
+                var firstOrDefault = array.OrderByDescending(candidateItem => candidateItem.versoin).FirstOrDefault();
+
+                if (firstOrDefault != null)
+                {
+                    string msbuildPath = Path.Combine(
+                        firstOrDefault.candidate.installationPath,
+                        "MSBuild",
+                        "15.0",
+                        "bin",
+                        "MSBuild.exe");
+
+                    if (File.Exists(msbuildPath))
+                    {
+                        logger.Write($"Found MSBuild with vswhere.exe at '{msbuildPath}'");
+
+                        var variables = new[]
+                        {
+                            new EnvironmentVariable(
+                                WellKnownVariables.ExternalTools_MSBuild_ExePath,
+                                msbuildPath)
+                        };
+
+                        return variables;
+                    }
+                }
+
+                logger.Write($"Could not find any version of MSBuild.exe with vswhere.exe");
             }
 
             var possiblePaths = new[]
@@ -101,7 +193,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                         fileBasedLookupResultPath)
                 };
 
-                return Task.FromResult<IEnumerable<IVariable>>(variables);
+                return variables;
             }
 
             string foundPath = null;
@@ -166,7 +258,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                     WellKnownVariables.ExternalTools_MSBuild_ExePath,
                     foundPath)
             };
-            return Task.FromResult<IEnumerable<IVariable>>(environmentVariables);
+            return environmentVariables;
         }
     }
 }
