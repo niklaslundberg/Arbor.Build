@@ -41,7 +41,11 @@ namespace Arbor.X.Core
 
         public async Task<ExitCode> RunAsync(string[] args)
         {
-            KeyValueConfigurationManager.Initialize(new UserConfiguration(new AppSettingsKeyValueConfiguration()));
+            MultiSourceKeyValueConfiguration multiSourceKeyValueConfiguration = KeyValueConfigurationManager.Add(new UserConfiguration())
+                .Add(new AppSettingsKeyValueConfiguration())
+                .Build();
+
+            StaticKeyValueConfigurationManager.Initialize(multiSourceKeyValueConfiguration);
 
             if (Debugger.IsAttached)
             {

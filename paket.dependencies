@@ -1,12 +1,14 @@
 redirects: on
 
-source C:\Projects\Packages
-source https://nlundberg.remotewebaccess.com:10443/nuget/default
-source https://api.nuget.org/v3/index.json
+source https://nlundberg.remotewebaccess.com:10443/nuget/default username: "%ProGetUser%" password: "%ProGetPassword%"
 
 nuget NuGet.CommandLine
 nuget Arbor.Castanea
+nuget Arbor.KVConfiguration.Core prerelease
+nuget Arbor.KVConfiguration.Schema prerelease
+nuget Arbor.KVConfiguration.Schema.Json prerelease
 nuget Arbor.KVConfiguration.SystemConfiguration prerelease
+nuget Arbor.KVConfiguration.JsonConfiguration prerelease
 nuget Arbor.KVConfiguration.UserConfiguration prerelease
 nuget Arbor.Sorbus
 nuget Autofac

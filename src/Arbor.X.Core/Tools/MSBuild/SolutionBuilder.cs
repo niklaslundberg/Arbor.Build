@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Defensive.Collections;
 using Arbor.Exceptions;
+using Arbor.KVConfiguration.Core.Metadata;
 using Arbor.KVConfiguration.Schema;
 using Arbor.KVConfiguration.Schema.Json;
 using Arbor.Processing;
