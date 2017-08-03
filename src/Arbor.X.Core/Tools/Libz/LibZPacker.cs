@@ -221,7 +221,7 @@ namespace Arbor.X.Core.Tools.Libz
                 _logger.WriteWarning(
                     $"Microsoft.NET.Sdk projects are in progress supported '{Path.Combine(binDirectory.FullName, configuration)}'");
 
-                targetFrameworkVersionValue = "";
+                targetFrameworkVersionValue = string.Empty;
 
                 if (!releasePlatformDirectories.Any())
                 {
@@ -269,7 +269,8 @@ namespace Arbor.X.Core.Tools.Libz
                 MSBuildProperty msBuildProperty = csProjFile.BuildProject.PropertyGroups
                     .SelectMany(group =>
                         group.Properties.Where(
-                            property => property.Name.Equals(targetFrameworkVersion,
+                            property => property.Name.Equals(
+                                targetFrameworkVersion,
                                 StringComparison.OrdinalIgnoreCase)))
                     .FirstOrDefault();
 
@@ -320,9 +321,7 @@ namespace Arbor.X.Core.Tools.Libz
         {
             Assembly assembly = Assembly.LoadFile(Path.GetFullPath(exe.FullName));
             Module manifestModule = assembly.ManifestModule;
-            PortableExecutableKinds peKind;
-            ImageFileMachine machine;
-            manifestModule.GetPEKind(out peKind, out machine);
+            manifestModule.GetPEKind(out PortableExecutableKinds peKind, out ImageFileMachine machine);
 
             if (peKind == PortableExecutableKinds.ILOnly)
             {

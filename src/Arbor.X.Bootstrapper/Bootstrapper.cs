@@ -29,9 +29,9 @@ namespace Arbor.X.Bootstrapper
         private static readonly string _Prefix = $"[{nameof(Arbor)}.{nameof(X)}.{nameof(Bootstrapper)}] ";
         private readonly ILogger _logger;
         private bool _directoryCloneEnabled;
-        private BootstrapStartOptions _startOptions;
 
-        bool _failed = false;
+        private bool _failed;
+        private BootstrapStartOptions _startOptions;
 
         public Bootstrapper(LogLevel logLevel)
         {
@@ -319,9 +319,9 @@ namespace Arbor.X.Bootstrapper
 
         private async Task<string> DownloadNuGetPackageAsync(string buildDir, string nugetExePath)
         {
-            const string BuildToolPackageName = "Arbor.X";
+            const string buildToolPackageName = "Arbor.X";
 
-            string outputDirectoryPath = Path.Combine(buildDir, BuildToolPackageName);
+            string outputDirectoryPath = Path.Combine(buildDir, buildToolPackageName);
 
             var outputDirectory = new DirectoryInfo(outputDirectoryPath);
 
@@ -342,7 +342,7 @@ namespace Arbor.X.Bootstrapper
             var nugetArguments = new List<string>
             {
                 "install",
-                BuildToolPackageName,
+                buildToolPackageName,
                 "-ExcludeVersion",
                 "-OutputDirectory",
                 buildDir.TrimEnd('\\')
@@ -620,15 +620,15 @@ namespace Arbor.X.Bootstrapper
 
             var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(usedTimeoutInSeconds));
 
-            const string BuildApplicationPrefix = "[Arbor.X] ";
+            const string buildApplicationPrefix = "[Arbor.X] ";
 
             IEnumerable<string> arguments = Enumerable.Empty<string>();
             ExitCode result = await ProcessRunner.ExecuteAsync(
                 buildToolExe.FullName,
                 cancellationTokenSource.Token,
                 arguments,
-                (message, prefix) => _logger.Write(message, BuildApplicationPrefix),
-                (message, prefix) => _logger.WriteError(message, BuildApplicationPrefix),
+                (message, prefix) => _logger.Write(message, buildApplicationPrefix),
+                (message, prefix) => _logger.WriteError(message, buildApplicationPrefix),
                 _logger.Write,
                 _logger.WriteVerbose);
 
@@ -705,13 +705,11 @@ namespace Arbor.X.Bootstrapper
 
             const string nugetExeUri = "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe";
 
-            Uri nugetDownloadUri;
-
             string nugetDownloadUriEnvironmentVariable =
                 Environment.GetEnvironmentVariable(WellKnownVariables.NuGetExeDownloadUri);
 
             if (string.IsNullOrWhiteSpace(nugetDownloadUriEnvironmentVariable)
-                || !Uri.TryCreate(nugetDownloadUriEnvironmentVariable, UriKind.Absolute, out nugetDownloadUri))
+                || !Uri.TryCreate(nugetDownloadUriEnvironmentVariable, UriKind.Absolute, out Uri nugetDownloadUri))
             {
                 nugetDownloadUri = new Uri(nugetExeUri, UriKind.Absolute);
                 _logger.WriteVerbose($"Downloading nuget.exe from default URI, '{nugetExeUri}'", _Prefix);

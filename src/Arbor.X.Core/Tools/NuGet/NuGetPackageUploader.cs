@@ -147,7 +147,6 @@ namespace Arbor.X.Core.Tools.NuGet
             args.Add("-verbosity");
             args.Add("detailed");
 
-
             const int MaxAttempts = 5;
 
             ExitCode exitCode = ExitCode.Failure;
@@ -306,7 +305,6 @@ namespace Arbor.X.Core.Tools.NuGet
                     file => $"{file.FullName}: {file.Length / 1024.0:F1} KiB"));
 
             logger.Write($"Found {nuGetPackageFiles.Count} NuGet packages to upload {files}");
-
 
             bool result = true;
 

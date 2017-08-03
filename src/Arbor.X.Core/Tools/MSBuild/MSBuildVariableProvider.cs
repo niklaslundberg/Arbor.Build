@@ -50,7 +50,8 @@ namespace Arbor.X.Core.Tools.MSBuild
                 possibleVersions.Remove(semVersion);
             }
 
-            string vsWherePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+            string vsWherePath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
                 "Microsoft Visual Studio",
                 "Installer",
                 "vswhere.exe");

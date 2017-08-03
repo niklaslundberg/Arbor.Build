@@ -4,6 +4,10 @@
     {
         public static class TeamCity
         {
+            [VariableDescription("TeamCity Build Version")]
+            public const string TeamCityVersionBuild =
+                "BUILD_NUMBER";
+
             [VariableDescription("Flag to indiciate if running in TeamCity (calculated)")]
             public static readonly string ExternalTools_TeamCity_IsRunningInTeamCity =
                 "Arbor.X.Tools.External.TeamCity.IsRunningInTeamCity";
@@ -11,10 +15,6 @@
             [VariableDescription("TeamCity Version")]
             public static readonly string ExternalTools_TeamCity_TeamCityVersion =
                 "TEAMCITY_VERSION";
-
-            [VariableDescription("TeamCity Build Version")]
-            public const string TeamCityVersionBuild =
-                "BUILD_NUMBER";
 
             [VariableDescription("TeamCity Build Version")]
             public static readonly string TeamCityVcsNumber =

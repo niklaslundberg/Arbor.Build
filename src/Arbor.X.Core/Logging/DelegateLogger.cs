@@ -10,7 +10,6 @@ namespace Arbor.X.Core.Logging
         private readonly Action<string, string> _warning;
         private readonly Action<string, string> _verbose;
 
-
         public DelegateLogger(
             Action<string, string> log = null,
             Action<string, string> warning = null,
