@@ -8,3 +8,6 @@ NLog
 NuGet.Packaging
 NUnit
 System.Collections.Immutable
+RefactoringEssentials
+StyleCop.Analyzers
+Microsoft.Net.Compilers
