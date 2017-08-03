@@ -3,6 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26228.4
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".paket", ".paket", "{53276BAB-0DAC-476D-B564-8790E10CDCE5}"
+	ProjectSection(SolutionItems) = preProject
+		..\paket.dependencies = ..\paket.dependencies
+	EndProjectSection
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arbor.X.Bootstrapper", "Arbor.X.Bootstrapper\Arbor.X.Bootstrapper.csproj", "{9AA52382-A7B1-407B-AE0E-9B04EFDFAC43}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arbor.X.Build", "Arbor.X.Build\Arbor.X.Build.csproj", "{0CFBAA45-32D9-4790-9140-CFB6A5EFEC1C}"
@@ -23,11 +28,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arbor.X.Tests.Integration", "Arbor.X.Tests.Integration\Arbor.X.Tests.Integration.csproj", "{280704D5-C385-4F0A-AE3C-D6497A16C9EA}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{FE894271-0646-4F02-B826-DFD16D3089A2}"
-	ProjectSection(SolutionItems) = preProject
-		.nuget\packages.config = .nuget\packages.config
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arbor.X.Tests.DummyWebApplication", "Arbor.X.Tests.DummyWebApplication\Arbor.X.Tests.DummyWebApplication.csproj", "{C79E57E7-56AA-47A2-9D82-782058B8E565}"
 EndProject
