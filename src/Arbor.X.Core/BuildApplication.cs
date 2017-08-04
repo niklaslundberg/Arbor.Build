@@ -158,9 +158,8 @@ namespace Arbor.X.Core
 
             var tempDirectory = new DirectoryInfo(Path.Combine(
                 tempPath,
-                "Arbor.X_Build_Debug",
-                DateTime.UtcNow.ToFileTimeUtc().ToString(),
-                Guid.NewGuid().ToString()));
+                "D",
+                DateTime.UtcNow.ToFileTimeUtc().ToString()));
 
             tempDirectory.EnsureExists();
 
@@ -180,8 +179,8 @@ namespace Arbor.X.Core
                 [WellKnownVariables.BranchName] = "develop",
                 [WellKnownVariables.VersionMajor] = "1",
                 [WellKnownVariables.VersionMinor] = "0",
-                [WellKnownVariables.VersionPatch] = "50",
-                [WellKnownVariables.VersionBuild] = "44",
+                [WellKnownVariables.VersionPatch] = "51",
+                [WellKnownVariables.VersionBuild] = "106",
                 [WellKnownVariables.Configuration] = "release",
                 [WellKnownVariables.GenericXmlTransformsEnabled] = "true",
                 [WellKnownVariables.NuGetPackageExcludesCommaSeparated] = "Arbor.X.Bootstrapper.nuspec",
@@ -201,7 +200,7 @@ namespace Arbor.X.Core
                 [WellKnownVariables.WebJobsExcludedDirectorySegments] = "roslyn",
                 [WellKnownVariables.AppDataJobsEnabled] = "true",
                 [WellKnownVariables.ExternalTools_LibZ_ExePath] = @"C:\Tools\Libz\libz.exe",
-                [WellKnownVariables.ExternalTools_LibZ_Enabled] = @"true",
+                [WellKnownVariables.ExternalTools_LibZ_Enabled] = @"false",
                 [WellKnownVariables.WebDeployPreCompilationEnabled] = @"true",
                 [WellKnownVariables.ExcludedNuGetWebPackageFiles] = @"bin\roslyn\*.*,bin\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll",
             };
