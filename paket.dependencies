@@ -1,5 +1,7 @@
 redirects: on
 
+version --prefer-nuget
+
 source https://nlundberg.remotewebaccess.com:10443/nuget/default username: "%ProGetUser%" password: "%ProGetPassword%"
 
 nuget NuGet.CommandLine
