@@ -26,6 +26,15 @@ namespace Arbor.X.Core.Tools.Versioning
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
+            bool assemblyVersionPatchingEnabled =
+                buildVariables.GetBooleanByKey(WellKnownVariables.AssemblyFilePatchingEnabled, true);
+
+            if (!assemblyVersionPatchingEnabled)
+            {
+                logger.WriteWarning("Assembly version patching is disabled");
+                return Task.FromResult(ExitCode.Success);
+            }
+
             var delegateLogger = new DelegateLogger(
                 logger.WriteError,
                 logger.WriteWarning,
@@ -38,14 +47,6 @@ namespace Arbor.X.Core.Tools.Versioning
 
             var app = new AssemblyPatcherApp(delegateLogger);
 
-            bool assemblyVersionPatchingEnabled =
-                buildVariables.GetBooleanByKey(WellKnownVariables.AssemblyFilePatchingEnabled, true);
-
-            if (!assemblyVersionPatchingEnabled)
-            {
-                logger.WriteWarning("Assembly version patching is disabled");
-                return Task.FromResult(ExitCode.Success);
-            }
 
             _filePattern = buildVariables.GetVariableValueOrDefault(
                 WellKnownVariables.AssemblyFilePatchingFilePattern,
