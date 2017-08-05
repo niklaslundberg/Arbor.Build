@@ -69,7 +69,7 @@ NUGET
     Microsoft.Bcl (1.1.10) - restriction: && (< net45) (>= portable-net45+win8+wp81+wpa81)
       Microsoft.Bcl.Build (>= 1.0.14)
     Microsoft.Bcl.Build (1.0.21) - import_targets: false, restriction: && (< net45) (>= portable-net45+win8+wp81+wpa81)
-    Microsoft.CodeDom.Providers.DotNetCompilerPlatform (1.0.6)
+    Microsoft.CodeDom.Providers.DotNetCompilerPlatform (1.0.5)
       Microsoft.Net.Compilers (>= 1.3.2) - restriction: && (>= net45) (< net46)
       Microsoft.Net.Compilers (>= 2.1) - restriction: >= net46
     Microsoft.CSharp (4.3.0) - restriction: || (&& (< net20) (>= netstandard1.0) (< netstandard1.3)) (&& (< net20) (>= netstandard1.3))

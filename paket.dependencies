@@ -19,7 +19,7 @@ nuget JetBrains.Annotations
 nuget Machine.Specifications.Should
 nuget Microsoft.AspNet.Mvc
 nuget Microsoft.AspNet.WebApi
-nuget Microsoft.CodeDom.Providers.DotNetCompilerPlatform
+nuget Microsoft.CodeDom.Providers.DotNetCompilerPlatform 1.0.5
 nuget Microsoft.Web.Xdt
 nuget NLog
 nuget NuGet.Packaging
