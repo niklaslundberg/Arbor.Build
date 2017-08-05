@@ -180,7 +180,7 @@ namespace Arbor.X.Core
                 [WellKnownVariables.VersionMajor] = "1",
                 [WellKnownVariables.VersionMinor] = "0",
                 [WellKnownVariables.VersionPatch] = "51",
-                [WellKnownVariables.VersionBuild] = "109",
+                [WellKnownVariables.VersionBuild] = "110",
                 [WellKnownVariables.Configuration] = "release",
                 [WellKnownVariables.GenericXmlTransformsEnabled] = "true",
                 [WellKnownVariables.NuGetPackageExcludesCommaSeparated] = "Arbor.X.Bootstrapper.nuspec",

@@ -51,9 +51,6 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="Arbor.Sorbus.Core">
-      <HintPath>..\packages\Arbor.Sorbus.1.2.1\lib\net45\Arbor.Sorbus.Core.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework">
       <HintPath>..\packages\Microsoft.VisualStudio.QualityTools.UnitTestFramework.11.0.50727.1\Microsoft.VisualStudio.QualityTools.UnitTestFramework.dll</HintPath>
     </Reference>
@@ -239,6 +236,17 @@
       <ItemGroup>
         <Reference Include="Arbor.KVConfiguration.UserConfiguration">
           <HintPath>..\..\packages\Arbor.KVConfiguration.UserConfiguration\lib\netstandard2.0\Arbor.KVConfiguration.UserConfiguration.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3' Or $(TargetFrameworkVersion) == 'v4.6' Or $(TargetFrameworkVersion) == 'v4.6.1' Or $(TargetFrameworkVersion) == 'v4.6.2' Or $(TargetFrameworkVersion) == 'v4.6.3' Or $(TargetFrameworkVersion) == 'v4.7')">
+      <ItemGroup>
+        <Reference Include="Arbor.Sorbus.Core">
+          <HintPath>..\..\packages\Arbor.Sorbus\lib\net45\Arbor.Sorbus.Core.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>
