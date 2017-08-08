@@ -26,7 +26,7 @@ namespace Arbor.X.Core.Tools.Paket
             var sourceRoot =
                 new DirectoryInfo(buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value);
 
-            PathLookupSpecification pathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification;
+            PathLookupSpecification pathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification.WithIgnoredFileNameParts(new List<string>());
 
             List<string> packageSpecifications =
                 sourceRoot.GetFilesRecursive(new List<string> { ".exe" }, pathLookupSpecification)
@@ -42,10 +42,31 @@ namespace Arbor.X.Core.Tools.Paket
 
             if (!filtered.Any())
             {
+                logger.Write("Could not find paket.exe, skipping paket restore");
                 return ExitCode.Success;
             }
 
             FileInfo first = filtered.First();
+
+            logger.Write($"Found paket.exe at '{first.FullName}'");
+
+            string copyFromPath = buildVariables.GetVariableValueOrDefault("Arbor.X.Build.Tools.Paket.CoptExeFromPath", "");
+            if (!string.IsNullOrWhiteSpace(copyFromPath))
+            {
+                if (File.Exists(copyFromPath))
+                {
+                    File.Copy(copyFromPath, first.FullName, overwrite: true);
+                    logger.Write($"Copied paket.exe to {first.FullName}");
+                }
+                else
+                {
+                    logger.Write($"The specified paket.exe path '{copyFromPath}' does not exist");
+                }
+            }
+            else
+            {
+                logger.Write($"Found no paket.exe to copy");
+            }
 
             ExitCode exitCode = await ProcessHelper.ExecuteAsync(
                 first.FullName,

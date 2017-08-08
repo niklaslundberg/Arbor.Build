@@ -126,7 +126,7 @@
     <Compile Include="Tools\NuGet\MSBuildNuGetRestorer.cs" />
     <Compile Include="Tools\NuGet\DotNetRestorer.cs" />
     <Compile Include="Tools\NuGet\NuGetVersioningSettings.cs" />
-    <Compile Include="Tools\Paket\Class1.cs" />
+    <Compile Include="Tools\Paket\PaketRestorer.cs" />
     <Compile Include="Tools\Testing\MachineSpecificationsConstants.cs" />
     <Compile Include="Tools\ToolExtensions.cs" />
     <Compile Include="Tools\ToolResult.cs" />
