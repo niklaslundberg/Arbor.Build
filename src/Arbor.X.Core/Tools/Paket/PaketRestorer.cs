@@ -34,15 +34,26 @@ namespace Arbor.X.Core.Tools.Paket
                     .Select(f => f.FullName)
                     .ToList();
 
+            if (!packageSpecifications.Any())
+            {
+                logger.Write("Could not find paket.exe, skipping paket restore");
+                return ExitCode.Success;
+            }
+
             IReadOnlyCollection<FileInfo> filtered =
                 packageSpecifications.Where(
-                        packagePath => !pathLookupSpecification.IsFileBlackListed(packagePath, sourceRoot.FullName))
+                        packagePath =>
+                            !pathLookupSpecification.IsFileBlackListed(
+                                packagePath,
+                                sourceRoot.FullName,
+                                logger: logger))
                     .Select(file => new FileInfo(file))
                     .ToReadOnlyCollection();
 
             if (!filtered.Any())
             {
-                logger.Write("Could not find paket.exe, skipping paket restore");
+                logger.Write(
+                    $"Could not find paket.exe, filtered out: {string.Join(", ", packageSpecifications)}, skipping paket restore");
                 return ExitCode.Success;
             }
 
@@ -50,7 +61,8 @@ namespace Arbor.X.Core.Tools.Paket
 
             logger.Write($"Found paket.exe at '{first.FullName}'");
 
-            string copyFromPath = buildVariables.GetVariableValueOrDefault("Arbor.X.Build.Tools.Paket.CoptExeFromPath", "");
+            string copyFromPath = buildVariables.GetVariableValueOrDefault("Arbor.X.Build.Tools.Paket.CopyExeFromPath", string.Empty);
+            
             if (!string.IsNullOrWhiteSpace(copyFromPath))
             {
                 if (File.Exists(copyFromPath))
