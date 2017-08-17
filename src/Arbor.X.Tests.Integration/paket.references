@@ -11,3 +11,5 @@ System.Collections.Immutable
 RefactoringEssentials
 StyleCop.Analyzers
 Microsoft.Net.Compilers
+System.Runtime
+MSTest.TestFramework

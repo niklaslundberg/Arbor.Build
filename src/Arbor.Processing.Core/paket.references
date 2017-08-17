@@ -2,3 +2,4 @@ JetBrains.Annotations
 RefactoringEssentials
 StyleCop.Analyzers
 Microsoft.Net.Compilers
+System.Runtime

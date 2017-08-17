@@ -15,3 +15,4 @@ RefactoringEssentials
 StyleCop.Analyzers
 Microsoft.Net.Compilers
 Arbor.Sorbus
+System.Runtime

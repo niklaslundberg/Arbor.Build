@@ -13,3 +13,4 @@ NuGet.Packaging
 NUnit
 RefactoringEssentials
 StyleCop.Analyzers
+System.Runtime

@@ -3,3 +3,4 @@ RefactoringEssentials
 StyleCop.Analyzers
 Microsoft.Net.Compilers
 System.Collections.Immutable
+System.Runtime
