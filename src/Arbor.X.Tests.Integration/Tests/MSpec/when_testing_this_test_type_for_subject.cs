@@ -7,24 +7,25 @@ using Machine.Specifications;
 namespace Arbor.X.Tests.Integration.Tests.MSpec
 {
     [Subject(typeof(UnitTestFinder))]
-    [Tags(Arbor.X.Core.Tools.Testing.MSpecInternalConstants.RecursiveArborXTest)]
+    [Tags(MSpecInternalConstants.RecursiveArborXTest)]
     public class when_testing_this_test_type_for_subject
     {
-        static UnitTestFinder finder;
-        static bool isTestType;
+        private static UnitTestFinder finder;
+        private static bool isTestType;
 
-        Establish context = () =>
+        private Establish context = () =>
         {
             var logger = new ConsoleLogger { LogLevel = LogLevel.Verbose };
             finder = new UnitTestFinder(new List<Type>
-                                        {
-                                            typeof (SubjectAttribute)
-                                        }, logger: logger);
+                {
+                    typeof(SubjectAttribute)
+                },
+                logger: logger);
         };
 
-        Because of =
+        private Because of =
             () => { isTestType = finder.TryIsTypeTestFixture(typeof(when_testing_this_test_type_for_subject)); };
 
-        It should_Behaviour = () => isTestType.ShouldBeTrue();
+        private It should_Behaviour = () => isTestType.ShouldBeTrue();
     }
 }

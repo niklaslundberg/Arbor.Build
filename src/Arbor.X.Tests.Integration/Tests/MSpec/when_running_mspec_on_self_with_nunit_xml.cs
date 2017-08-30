@@ -3,37 +3,49 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using Arbor.X.Core;
+using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
-using Arbor.X.Core.Tools;
 using Arbor.X.Core.Tools.Testing;
 using Machine.Specifications;
-using DirectoryInfo = Alphaleonis.Win32.Filesystem.DirectoryInfo;
-using File = Alphaleonis.Win32.Filesystem.File;
-using FileInfo = Alphaleonis.Win32.Filesystem.FileInfo;
-using Path = Alphaleonis.Win32.Filesystem.Path;
 
 namespace Arbor.X.Tests.Integration.Tests.MSpec
 {
-    [Subject(typeof (MSpecTestRunner))]
-    [Tags(Arbor.X.Core.Tools.Testing.MSpecInternalConstants.RecursiveArborXTest)]
+    [Subject(typeof(MSpecTestRunner))]
+    [Tags(MSpecInternalConstants.RecursiveArborXTest)]
     public class when_running_mspec_on_self_with_nunit_xml
     {
-        static MSpecTestRunner testRunner;
-        static List<IVariable> variables = new List<IVariable>();
-        static ExitCode ExitCode;
-        static string mspecReports;
-        static ExitCode exitCode;
+        private static MSpecTestRunner testRunner;
+        private static readonly List<IVariable> variables = new List<IVariable>();
+        private static ExitCode ExitCode;
+        private static string mspecReports;
+        private static ExitCode exitCode;
 
-        Establish context = () =>
+        private static DirectoryInfo tempDirectory;
+
+        private Cleanup after = () =>
+        {
+            Thread.Sleep(1000);
+
+            try
+            {
+                tempDirectory.DeleteIfExists(true);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Could not cleanup test directory, " + ex);
+            }
+        };
+
+        private Establish context = () =>
         {
             string root = Path.Combine(VcsTestPathHelper.FindVcsRootPath(), "src");
 
             string combine = Path.Combine(root, "Arbor.X.Tests.Integration", "bin", "debug");
 
-            string tempPath = Path.Combine(Path.GetTempPath(), $"{DefaultPaths.TempPathPrefix}_mspec_self_rep_{DateTime.Now.ToString("yyyyMMddHHmmssfff_")}{Guid.NewGuid().ToString().Substring(0, 8)}");
+            string tempPath = Path.Combine(Path.GetTempPath(),
+                $"{DefaultPaths.TempPathPrefix}_mspec_self_rep_{DateTime.Now.ToString("yyyyMMddHHmmssfff_")}{Guid.NewGuid().ToString().Substring(0, 8)}");
 
             tempDirectory = new DirectoryInfo(tempPath).EnsureExists();
 
@@ -44,8 +56,10 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
             }
 
             exitCode =
-                DirectoryCopy.CopyAsync(combine, binDirectory.FullName,
-                    pathLookupSpecificationOption: new PathLookupSpecification()).Result;
+                DirectoryCopy.CopyAsync(combine,
+                        binDirectory.FullName,
+                        pathLookupSpecificationOption: new PathLookupSpecification())
+                    .Result;
 
             testRunner = new MSpecTestRunner();
             variables.Add(new EnvironmentVariable(WellKnownVariables.ExternalTools,
@@ -56,7 +70,6 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
             variables.Add(new EnvironmentVariable(WellKnownVariables.MSpecJUnitXslTransformationEnabled, "true"));
             variables.Add(new EnvironmentVariable(WellKnownVariables.RunTestsInReleaseConfigurationEnabled, "false"));
 
-
             mspecReports = Path.Combine(tempDirectory.FullName, "MSpecReports");
 
             new DirectoryInfo(mspecReports).EnsureExists();
@@ -64,15 +77,17 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
             variables.Add(new EnvironmentVariable(WellKnownVariables.ExternalTools_MSpec_ReportPath, mspecReports));
         };
 
-        Because of =
+        private Because of =
             () =>
                 ExitCode =
-                    testRunner.ExecuteAsync(new ConsoleLogger {LogLevel = LogLevel.Verbose}, variables,
-                        new CancellationToken()).Result;
+                    testRunner.ExecuteAsync(new ConsoleLogger { LogLevel = LogLevel.Verbose },
+                            variables,
+                            new CancellationToken())
+                        .Result;
 
-        It shoud_have_created_html_report = () =>
+        private It shoud_have_created_html_report = () =>
         {
-            DirectoryInfo reports = new DirectoryInfo(mspecReports);
+            var reports = new DirectoryInfo(mspecReports);
             DirectoryInfo htmlDirectory = reports.GetDirectories()
                 .SingleOrDefault(dir => dir.Name.Equals("html", StringComparison.InvariantCultureIgnoreCase));
 
@@ -86,9 +101,9 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
             htmlDirectory.ShouldNotBeNull();
         };
 
-        It shoud_have_created_xml_report = () =>
+        private It shoud_have_created_xml_report = () =>
         {
-            DirectoryInfo reports = new DirectoryInfo(mspecReports);
+            var reports = new DirectoryInfo(mspecReports);
 
             FileInfo[] files = reports.GetFiles("*.xml", SearchOption.AllDirectories);
 
@@ -100,22 +115,6 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
             files.Length.ShouldNotEqual(0);
         };
 
-        It should_return_success = () => ExitCode.IsSuccess.ShouldBeTrue();
-
-        Cleanup after = () =>
-        {
-            Thread.Sleep(1000);
-
-            try
-            {
-                tempDirectory.DeleteIfExists(recursive: true);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Could not cleanup test directory, " + ex);
-            }
-        };
-
-        static DirectoryInfo tempDirectory;
+        private It should_return_success = () => ExitCode.IsSuccess.ShouldBeTrue();
     }
 }

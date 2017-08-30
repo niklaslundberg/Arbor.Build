@@ -1,6 +1,5 @@
 using System.Collections.Generic;
-
-using Arbor.X.Core.GenericExtensions;
+using Arbor.Defensive.Collections;
 
 namespace Arbor.X.Core.Logging
 {
@@ -12,6 +11,8 @@ namespace Arbor.X.Core.Logging
         {
             _loggers = loggers.SafeToReadOnlyCollection();
         }
+
+        public LogLevel LogLevel { get; set; }
 
         public void WriteError(string message, string prefix = null)
         {
@@ -44,8 +45,6 @@ namespace Arbor.X.Core.Logging
                 logger.WriteVerbose(message, prefix);
             }
         }
-
-        public LogLevel LogLevel { get; set; }
 
         public void WriteDebug(string message, string prefix = null)
         {

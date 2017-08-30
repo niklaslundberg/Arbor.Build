@@ -1,0 +1,30 @@
+redirects: on
+
+version --prefer-nuget
+
+source https://nlundberg.remotewebaccess.com:10443/nuget/default username: "%ProGetUser%" password: "%ProGetPassword%"
+
+nuget MSTest.TestFramework
+nuget NuGet.CommandLine
+nuget Arbor.Castanea
+nuget Arbor.KVConfiguration.Core prerelease
+nuget Arbor.KVConfiguration.Schema prerelease
+nuget Arbor.KVConfiguration.Schema.Json prerelease
+nuget Arbor.KVConfiguration.SystemConfiguration prerelease
+nuget Arbor.KVConfiguration.JsonConfiguration prerelease
+nuget Arbor.KVConfiguration.UserConfiguration prerelease
+nuget Arbor.Sorbus
+nuget Autofac
+nuget FubuCsProjFile 
+nuget JetBrains.Annotations
+nuget Machine.Specifications.Should
+nuget Microsoft.AspNet.Mvc
+nuget Microsoft.AspNet.WebApi
+nuget Microsoft.CodeDom.Providers.DotNetCompilerPlatform 1.0.5
+nuget Microsoft.Web.Xdt
+nuget NLog
+nuget NuGet.Packaging
+nuget NUnit
+nuget RefactoringEssentials
+nuget StyleCop.Analyzers
+nuget System.Runtime

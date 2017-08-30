@@ -3,27 +3,19 @@
 namespace Arbor.X.Core.BuildVariables
 {
     [AttributeUsage(AttributeTargets.Field)]
-    class VariableDescriptionAttribute : Attribute
+    internal class VariableDescriptionAttribute : Attribute
     {
-        readonly string _description;
-        readonly string _defaultValue;
-        readonly string _preferUse;
-
-        public string DefaultValue
-        {
-            get { return _defaultValue; }
-        }
+        private readonly string _preferUse;
 
         public VariableDescriptionAttribute(string description, string defaultValue = null, string preferUse = null)
         {
-            _description = description;
-            _defaultValue = defaultValue;
+            Description = description;
+            DefaultValue = defaultValue;
             _preferUse = preferUse;
         }
 
-        public string Description
-        {
-            get { return _description; }
-        }
+        public string Description { get; }
+
+        public string DefaultValue { get; }
     }
 }

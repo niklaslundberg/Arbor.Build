@@ -7,8 +7,11 @@ namespace Arbor.X.Core.BuildVariables
 {
     public interface IVariableProvider
     {
-        Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken);
-
         int Order { get; }
+
+        Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(
+            ILogger logger,
+            IReadOnlyCollection<IVariable> buildVariables,
+            CancellationToken cancellationToken);
     }
 }

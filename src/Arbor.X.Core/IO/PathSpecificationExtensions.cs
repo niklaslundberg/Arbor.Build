@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-
-using Arbor.X.Core.GenericExtensions;
+using Arbor.Defensive.Collections;
 
 namespace Arbor.X.Core.IO
 {
@@ -28,7 +27,7 @@ namespace Arbor.X.Core.IO
                 pathLookupSpecification.IgnoredFileStartsWithPatterns,
                 pathLookupSpecification.IgnoredDirectorySegmentParts,
                 pathLookupSpecification.IgnoredDirectoryStartsWithPatterns,
-               pathLookupSpecification.IgnoredFileNameParts);
+                pathLookupSpecification.IgnoredFileNameParts);
         }
     }
 }

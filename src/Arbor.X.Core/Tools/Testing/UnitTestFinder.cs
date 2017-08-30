@@ -2,20 +2,18 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
-using Alphaleonis.Win32.Filesystem;
-
 using Arbor.X.Core.Assemblies;
 using Arbor.X.Core.Logging;
-using ILogger = Arbor.X.Core.Logging.ILogger;
 
 namespace Arbor.X.Core.Tools.Testing
 {
     public class UnitTestFinder
     {
-        readonly IEnumerable<Type> _typesToFind;
-        readonly ILogger _logger;
+        private readonly ILogger _logger;
+        private readonly IEnumerable<Type> _typesToFind;
 
         public UnitTestFinder(IEnumerable<Type> typesesToFind, bool debugLogEnabled = false, ILogger logger = null)
         {
@@ -24,9 +22,11 @@ namespace Arbor.X.Core.Tools.Testing
             DebugLogEnabled = debugLogEnabled;
         }
 
-        bool DebugLogEnabled { get; }
+        private bool DebugLogEnabled { get; }
 
-        public IReadOnlyCollection<string> GetUnitTestFixtureDlls(DirectoryInfo currentDirectory, bool? releaseBuild = null)
+        public IReadOnlyCollection<string> GetUnitTestFixtureDlls(
+            DirectoryInfo currentDirectory,
+            bool? releaseBuild = null)
         {
             if (currentDirectory == null)
             {
@@ -40,7 +40,25 @@ namespace Arbor.X.Core.Tools.Testing
                 return new ReadOnlyCollection<string>(new List<string>());
             }
 
-            var blacklisted = new List<string> {".git", ".hg", ".svn", "obj", "build", "packages", "_ReSharper", "external", "artifacts", "temp", ".HistoryData", "LocalHistory", "_", ".", "NCrunch", ".vs"};
+            var blacklisted = new List<string>
+            {
+                ".git",
+                ".hg",
+                ".svn",
+                "obj",
+                "build",
+                "packages",
+                "_ReSharper",
+                "external",
+                "artifacts",
+                "temp",
+                ".HistoryData",
+                "LocalHistory",
+                "_",
+                ".",
+                "NCrunch",
+                ".vs"
+            };
 
             bool isBlacklisted =
                 blacklisted.Any(
@@ -53,13 +71,14 @@ namespace Arbor.X.Core.Tools.Testing
                 return new ReadOnlyCollection<string>(new List<string>());
             }
 
-            var dllFiles = currentDirectory.EnumerateFiles("*.dll");
+            IEnumerable<FileInfo> dllFiles = currentDirectory.EnumerateFiles("*.dll");
 
-            var ignoredNames = new List<string> {"ReSharper", "dotCover", "Microsoft"};
+            var ignoredNames = new List<string> { "ReSharper", "dotCover", "Microsoft" };
 
-            var assemblies = dllFiles
+            List<Assembly> assemblies = dllFiles
                 .Where(file => !file.Name.StartsWith("System", StringComparison.InvariantCultureIgnoreCase))
-                .Where(file => !ignoredNames.Any(name => file.Name.IndexOf(name, StringComparison.InvariantCultureIgnoreCase) >= 0))
+                .Where(file => !ignoredNames.Any(
+                    name => file.Name.IndexOf(name, StringComparison.InvariantCultureIgnoreCase) >= 0))
                 .Select(GetAssembly)
                 .Where(assembly => assembly != null)
                 .Distinct()
@@ -84,7 +103,7 @@ namespace Arbor.X.Core.Tools.Testing
 
             List<string> subDirAssemblies = currentDirectory
                 .EnumerateDirectories()
-                .SelectMany(dir =>GetUnitTestFixtureDlls(dir, releaseBuild))
+                .SelectMany(dir => GetUnitTestFixtureDlls(dir, releaseBuild))
                 .ToList();
 
             List<string> allUnitFixtureAssemblies = testFixtureAssemblies
@@ -93,44 +112,6 @@ namespace Arbor.X.Core.Tools.Testing
                 .ToList();
 
             return allUnitFixtureAssemblies;
-        }
-
-// ReSharper disable ReturnTypeCanBeEnumerable.Local
-        IReadOnlyCollection<string> UnitTestFixtureAssemblies(IEnumerable<Assembly> assemblies)
-// ReSharper restore ReturnTypeCanBeEnumerable.Local
-        {
-            List<string> unitTestFixtureAssemblies =
-                assemblies.Where(TryFindAssembly)
-                    .Select(a => a.Location)
-                    .Distinct()
-                    .ToList();
-            return unitTestFixtureAssemblies;
-        }
-
-        bool TryFindAssembly(Assembly assembly)
-        {
-            bool result;
-            try
-            {
-                _logger.WriteDebug($"Testing assembly '{assembly}'");
-                Type[] types = assembly.GetExportedTypes();
-                bool anyType = types.Any(TryIsTypeTestFixture);
-
-                result = anyType;
-            }
-            catch (Exception)
-            {
-                _logger.WriteDebug($"Could not get types from assembly '{assembly.FullName}'");
-                result = false;
-            }
-
-            if (DebugLogEnabled || result)
-            {
-                _logger.WriteDebug(
-                    $"Assembly {assembly.FullName}, found any class with {string.Join(" | ", _typesToFind.Select(type => type.FullName))}: {result}");
-            }
-
-            return result;
         }
 
         public bool TryIsTypeTestFixture(Type typeToInvestigate)
@@ -160,7 +141,46 @@ namespace Arbor.X.Core.Tools.Testing
             }
         }
 
-        bool IsTypeUnitTestFixture(Type typeToInvestigate)
+// ReSharper disable ReturnTypeCanBeEnumerable.Local
+        private IReadOnlyCollection<string> UnitTestFixtureAssemblies(IEnumerable<Assembly> assemblies)
+
+            // ReSharper restore ReturnTypeCanBeEnumerable.Local
+        {
+            List<string> unitTestFixtureAssemblies =
+                assemblies.Where(TryFindAssembly)
+                    .Select(a => a.Location)
+                    .Distinct()
+                    .ToList();
+            return unitTestFixtureAssemblies;
+        }
+
+        private bool TryFindAssembly(Assembly assembly)
+        {
+            bool result;
+            try
+            {
+                _logger.WriteDebug($"Testing assembly '{assembly}'");
+                Type[] types = assembly.GetExportedTypes();
+                bool anyType = types.Any(TryIsTypeTestFixture);
+
+                result = anyType;
+            }
+            catch (Exception)
+            {
+                _logger.WriteDebug($"Could not get types from assembly '{assembly.FullName}'");
+                result = false;
+            }
+
+            if (DebugLogEnabled || result)
+            {
+                _logger.WriteDebug(
+                    $"Assembly {assembly.FullName}, found any class with {string.Join(" | ", _typesToFind.Select(type => type.FullName))}: {result}");
+            }
+
+            return result;
+        }
+
+        private bool IsTypeUnitTestFixture(Type typeToInvestigate)
         {
             IEnumerable<CustomAttributeData> customAttributeDatas = typeToInvestigate.CustomAttributes;
 
@@ -171,12 +191,13 @@ namespace Arbor.X.Core.Tools.Testing
             return isTestType;
         }
 
-        bool IsCustomAttributeOfExpectedType(IEnumerable<CustomAttributeData> customAttributes)
+        private bool IsCustomAttributeOfExpectedType(IEnumerable<CustomAttributeData> customAttributes)
         {
             bool isTypeUnitTestFixture = customAttributes.Any(
                 attributeData =>
                 {
-                    if (attributeData.AttributeType.FullName.StartsWith(nameof(System)) || attributeData.AttributeType.FullName.StartsWith("_"))
+                    if (attributeData.AttributeType.FullName.StartsWith(nameof(System), StringComparison.Ordinal) ||
+                        attributeData.AttributeType.FullName.StartsWith("_", StringComparison.Ordinal))
                     {
                         return false;
                     }
@@ -186,7 +207,7 @@ namespace Arbor.X.Core.Tools.Testing
             return isTypeUnitTestFixture;
         }
 
-        bool TypeHasTestMethods(Type typeToInvestigate)
+        private bool TypeHasTestMethods(Type typeToInvestigate)
         {
             IEnumerable<MethodInfo> publicInstanceMethods =
                 typeToInvestigate.GetTypeInfo().GetMethods().Where(method => method.IsPublic && !method.IsStatic);
@@ -203,22 +224,24 @@ namespace Arbor.X.Core.Tools.Testing
                     {
                         string fullName = field.FieldType.FullName;
 
-                        var any = _typesToFind.Any(
+                        bool any = _typesToFind.Any(
                             type =>
                                 !string.IsNullOrWhiteSpace(fullName) && type.FullName == fullName);
 
                         if (field.FieldType.IsGenericType && !string.IsNullOrWhiteSpace(fullName))
                         {
                             const string GenericPartSeparator = "`";
-                            var fieldIndex = fullName.IndexOf(GenericPartSeparator,
+                            int fieldIndex = fullName.IndexOf(
+                                GenericPartSeparator,
                                 StringComparison.InvariantCultureIgnoreCase);
 
-                            var fieldName = fullName.Substring(0, fieldIndex);
+                            string fieldName = fullName.Substring(0, fieldIndex);
 
                             return _typesToFind.Any(
                                 type =>
                                 {
-                                    var typePosition = type.FullName.IndexOf(GenericPartSeparator,
+                                    int typePosition = type.FullName.IndexOf(
+                                        GenericPartSeparator,
                                         StringComparison.InvariantCultureIgnoreCase);
 
                                     if (typePosition < 0)
@@ -226,7 +249,7 @@ namespace Arbor.X.Core.Tools.Testing
                                         return false;
                                     }
 
-                                    var typeName = type.FullName.Substring(0, typePosition);
+                                    string typeName = type.FullName.Substring(0, typePosition);
 
                                     return typeName.Equals(fieldName);
                                 });
@@ -240,16 +263,17 @@ namespace Arbor.X.Core.Tools.Testing
             return hasTestMethod;
         }
 
-        bool IsCustomAttributeTypeToFind(CustomAttributeData attr)
+        private bool IsCustomAttributeTypeToFind(CustomAttributeData attr)
         {
             return
                 _typesToFind.Any(
                     typeToFind =>
-                        attr.AttributeType.FullName.Equals(typeToFind.FullName,
+                        attr.AttributeType.FullName.Equals(
+                            typeToFind.FullName,
                             StringComparison.InvariantCultureIgnoreCase));
         }
 
-        Assembly GetAssembly(FileInfo dllFile)
+        private Assembly GetAssembly(FileInfo dllFile)
         {
             try
             {
@@ -272,7 +296,7 @@ namespace Arbor.X.Core.Tools.Testing
 
                 _logger.WriteDebug(message);
 #if DEBUG
-                Debug.WriteLine( "{0}, {1}", message, ex);
+                Debug.WriteLine("{0}, {1}", message, ex);
 #endif
                 return null;
             }

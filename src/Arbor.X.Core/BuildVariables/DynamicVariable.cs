@@ -4,8 +4,7 @@ namespace Arbor.X.Core.BuildVariables
 {
     public class DynamicVariable : IVariable
     {
-        readonly Func<string> _getValue;
-        readonly string _key;
+        private readonly Func<string> _getValue;
 
         public DynamicVariable(string key, Func<string> getValue)
         {
@@ -19,11 +18,12 @@ namespace Arbor.X.Core.BuildVariables
                 throw new ArgumentNullException(nameof(getValue));
             }
 
-            _key = key;
+            Key = key;
             _getValue = getValue;
         }
 
-        public string Key => _key;
+        public string Key { get; }
+
         public string Value => _getValue();
     }
 }

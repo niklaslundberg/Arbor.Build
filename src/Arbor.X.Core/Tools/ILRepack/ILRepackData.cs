@@ -1,14 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using Alphaleonis.Win32.Filesystem;
+using JetBrains.Annotations;
 
 namespace Arbor.X.Core.Tools.ILRepack
 {
     // ReSharper disable once InconsistentNaming
     public class ILRepackData
     {
-        public ILRepackData(string exe, IEnumerable<FileInfo> dlls, string configuration, string platform)
+        public ILRepackData(
+            string exe,
+            IEnumerable<FileInfo> dlls,
+            string configuration,
+            string platform,
+            [CanBeNull] string targetFramework)
         {
             if (string.IsNullOrWhiteSpace(exe))
             {
@@ -41,11 +47,14 @@ namespace Arbor.X.Core.Tools.ILRepack
             Dlls = dllArray;
             Configuration = configuration;
             Platform = platform;
+            TargetFramework = targetFramework;
         }
 
         public string Configuration { get; }
 
         public string Platform { get; }
+
+        public string TargetFramework { get; }
 
         public string Exe { get; }
 

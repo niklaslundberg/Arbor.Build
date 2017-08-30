@@ -8,7 +8,8 @@ namespace Arbor.X.Core.Assemblies
     {
         public static bool IsDebugAssembly(this Assembly assembly)
         {
-            var debuggableAttribute = assembly.GetCustomAttributes(typeof(DebuggableAttribute)).SingleOrDefault() as DebuggableAttribute;
+            var debuggableAttribute =
+                assembly.GetCustomAttributes(typeof(DebuggableAttribute)).SingleOrDefault() as DebuggableAttribute;
 
             if (debuggableAttribute == null)
             {

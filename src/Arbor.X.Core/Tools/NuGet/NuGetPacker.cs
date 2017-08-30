@@ -1,16 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
-using Alphaleonis.Win32.Filesystem;
-
+using Arbor.Defensive.Collections;
+using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
-
 using JetBrains.Annotations;
 
 namespace Arbor.X.Core.Tools.NuGet
@@ -19,16 +17,16 @@ namespace Arbor.X.Core.Tools.NuGet
     [UsedImplicitly]
     public class NuGetPacker : ITool
     {
-        IReadOnlyCollection<string> _excludedNuSpecFiles;
+        private IReadOnlyCollection<string> _excludedNuSpecFiles;
 
-        PathLookupSpecification _pathLookupSpecification;
+        private PathLookupSpecification _pathLookupSpecification;
 
         public async Task<ExitCode> ExecuteAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            var enabled = buildVariables.GetBooleanByKey(WellKnownVariables.NuGetPackageEnabled, defaultValue: true);
+            bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.NuGetPackageEnabled, true);
 
             if (!enabled)
             {
@@ -38,7 +36,9 @@ namespace Arbor.X.Core.Tools.NuGet
             }
 
             _excludedNuSpecFiles =
-                buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageExcludesCommaSeparated, "")
+                buildVariables.GetVariableValueOrDefault(
+                        WellKnownVariables.NuGetPackageExcludesCommaSeparated,
+                        string.Empty)
                     .Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries)
                     .SafeToReadOnlyCollection();
 
@@ -46,12 +46,13 @@ namespace Arbor.X.Core.Tools.NuGet
 
             string packageDirectory = PackageDirectory();
 
-            var artifacts = buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue();
-            var packagesDirectory = Path.Combine(artifacts.Value, "packages");
+            IVariable artifacts = buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue();
+            string packagesDirectory = Path.Combine(artifacts.Value, "packages");
 
-            var vcsRootDir = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
+            string vcsRootDir = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
 
-            NuGetPackageConfiguration packageConfiguration = NuGetPackager.GetNuGetPackageConfiguration(logger, buildVariables, packagesDirectory, vcsRootDir);
+            NuGetPackageConfiguration packageConfiguration =
+                NuGetPackager.GetNuGetPackageConfiguration(logger, buildVariables, packagesDirectory, vcsRootDir);
 
             IReadOnlyCollection<string> packageSpecifications = GetPackageSpecifications(
                 logger,
@@ -66,53 +67,57 @@ namespace Arbor.X.Core.Tools.NuGet
 
             logger.Write($"Found {packageSpecifications.Count} NuGet specifications to create NuGet packages from");
 
-
-            var result =
+            ExitCode result =
                 await ProcessPackagesAsync(packageSpecifications, packageConfiguration, logger, cancellationToken);
 
             return result;
         }
 
-
-        IReadOnlyCollection<string> GetPackageSpecifications(ILogger logger, string vcsRootDir, string packageDirectory)
+        private static string PackageDirectory()
         {
-            DirectoryInfo vcsRootDirectory = new DirectoryInfo(vcsRootDir);
+            string packageDirectory = string.Format("{0}packages{0}", Path.DirectorySeparatorChar);
+            return packageDirectory;
+        }
 
-            var packageSpecifications =
+        private IReadOnlyCollection<string> GetPackageSpecifications(
+            ILogger logger,
+            string vcsRootDir,
+            string packageDirectory)
+        {
+            var vcsRootDirectory = new DirectoryInfo(vcsRootDir);
+
+            List<string> packageSpecifications =
                 vcsRootDirectory.GetFilesRecursive(new List<string> { ".nuspec" }, _pathLookupSpecification, vcsRootDir)
                     .Where(file => file.FullName.IndexOf(packageDirectory, StringComparison.Ordinal) < 0)
                     .Select(f => f.FullName)
                     .ToList();
 
-            var pathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification;
+            PathLookupSpecification pathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification;
 
             IReadOnlyCollection<FileInfo> filtered =
                 packageSpecifications.Where(
-                    packagePath => !pathLookupSpecification.IsFileBlackListed(packagePath, rootDir: vcsRootDir))
+                        packagePath => !pathLookupSpecification.IsFileBlackListed(packagePath, vcsRootDir))
                     .Select(file => new FileInfo(file))
                     .ToReadOnlyCollection();
 
-            var notExcluded =
+            IReadOnlyCollection<FileInfo> notExcluded =
                 filtered.Where(
-                    nuspec =>
-                    !_excludedNuSpecFiles.Any(
-                        exludedNuSpec => exludedNuSpec.Equals(nuspec.Name, StringComparison.InvariantCultureIgnoreCase)))
+                        nuspec =>
+                            !_excludedNuSpecFiles.Any(
+                                exludedNuSpec => exludedNuSpec.Equals(
+                                    nuspec.Name,
+                                    StringComparison.InvariantCultureIgnoreCase)))
                     .SafeToReadOnlyCollection();
 
             logger.WriteVerbose(
                 $"Found nuspec files [{filtered.Count}]: {Environment.NewLine}{string.Join(Environment.NewLine, filtered)}");
-            var allIncluded = notExcluded.Select(file => file.FullName).SafeToReadOnlyCollection();
+            IReadOnlyCollection<string> allIncluded = notExcluded.Select(file => file.FullName)
+                .SafeToReadOnlyCollection();
 
             return allIncluded;
         }
 
-        static string PackageDirectory()
-        {
-            var packageDirectory = string.Format("{0}packages{0}", Path.DirectorySeparatorChar);
-            return packageDirectory;
-        }
-
-        async Task<ExitCode> ProcessPackagesAsync(
+        private async Task<ExitCode> ProcessPackagesAsync(
             IEnumerable<string> packageSpecifications,
             NuGetPackageConfiguration packageConfiguration,
             ILogger logger,
@@ -120,10 +125,13 @@ namespace Arbor.X.Core.Tools.NuGet
         {
             var packager = new NuGetPackager(logger);
 
-            foreach (var packageSpecification in packageSpecifications)
+            foreach (string packageSpecification in packageSpecifications)
             {
-                var packageResult =
-                    await packager.CreatePackageAsync(packageSpecification, packageConfiguration, cancellationToken: cancellationToken);
+                ExitCode packageResult =
+                    await packager.CreatePackageAsync(
+                        packageSpecification,
+                        packageConfiguration,
+                        cancellationToken: cancellationToken);
 
                 if (!packageResult.IsSuccess)
                 {

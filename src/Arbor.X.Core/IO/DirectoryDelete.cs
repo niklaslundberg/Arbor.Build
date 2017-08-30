@@ -2,18 +2,19 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-
 using Arbor.X.Core.Logging;
 
 namespace Arbor.X.Core.IO
 {
     public class DirectoryDelete
     {
-        readonly List<string> _directoryFilters;
-        readonly List<string> _fileFilters;
-        readonly ILogger _logger;
+        private readonly List<string> _directoryFilters;
+        private readonly List<string> _fileFilters;
+        private readonly ILogger _logger;
 
-        public DirectoryDelete(IEnumerable<string> directoryFilters, IEnumerable<string> fileFilters,
+        public DirectoryDelete(
+            IEnumerable<string> directoryFilters,
+            IEnumerable<string> fileFilters,
             ILogger logger = null)
         {
             _logger = logger ?? new NullLogger();
@@ -23,7 +24,7 @@ namespace Arbor.X.Core.IO
             WriteFilters();
         }
 
-        string DirectoryFilterList
+        private string DirectoryFilterList
         {
             get
             {
@@ -31,11 +32,12 @@ namespace Arbor.X.Core.IO
                 {
                     return "No directory filters";
                 }
-                return string.Join(", ", _directoryFilters.Select(filter => string.Format("'{0}'", filter)));
+
+                return string.Join(", ", _directoryFilters.Select(filter => $"'{filter}'"));
             }
         }
 
-        string FileFilterList
+        private string FileFilterList
         {
             get
             {
@@ -43,17 +45,15 @@ namespace Arbor.X.Core.IO
                 {
                     return "No files filters";
                 }
-                return string.Join(", ", _fileFilters.Select(filter => string.Format("'{0}'", filter)));
+
+                return string.Join(", ", _fileFilters.Select(filter => $"'{filter}'"));
             }
         }
 
-        void WriteFilters()
-        {
-            _logger.WriteVerbose(string.Format("Directory filters: {0}", DirectoryFilterList));
-            _logger.WriteVerbose(string.Format("File filters: {0}", FileFilterList));
-        }
-
-        public void Delete(string baseDir, bool deleteSelf = false, bool deleteSelfFiles = true)
+        public void Delete(
+            string baseDir,
+            bool deleteSelf = false,
+            bool deleteSelfFiles = true)
         {
             if (string.IsNullOrWhiteSpace(baseDir))
             {
@@ -73,8 +73,7 @@ namespace Arbor.X.Core.IO
             {
                 string filterList = DirectoryFilterList;
                 _logger.WriteVerbose(
-                    string.Format("Directory name '{0} is in filter list {1}, ignoring deleting directory",
-                        baseDirectory.Name, filterList));
+                    $"Directory name '{baseDirectory.Name} is in filter list {filterList}, ignoring deleting directory");
                 return;
             }
 
@@ -88,25 +87,24 @@ namespace Arbor.X.Core.IO
                     {
                         string filterList = FileFilterList;
                         _logger.WriteVerbose(
-                            string.Format("File name '{0} is in filter list {1}, ignoring deleting directory",
-                                fileToDelete.Name, filterList));
+                            $"File name '{fileToDelete.Name} is in filter list {filterList}, ignoring deleting directory");
                         continue;
                     }
 
                     try
                     {
                         fileToDelete.Delete();
-                        _logger.WriteVerbose(string.Format("Deleted file '{0}'", fileToDelete.FullName));
+                        _logger.WriteVerbose($"Deleted file '{fileToDelete.FullName}'");
                     }
                     catch (IOException ex)
                     {
-                        _logger.WriteError(string.Format("Could not delete file '{0}', {1}", fileToDelete.FullName, ex));
+                        _logger.WriteError($"Could not delete file '{fileToDelete.FullName}', {ex}");
                     }
                 }
             }
             else
             {
-                _logger.WriteVerbose(string.Format("Delete self files is false, skipping deleting files in directory '{0}'", baseDir));
+                _logger.WriteVerbose($"Delete self files is false, skipping deleting files in directory '{baseDir}'");
             }
 
             foreach (DirectoryInfo directoryToDelete in baseDirectory.EnumerateDirectories())
@@ -116,7 +114,7 @@ namespace Arbor.X.Core.IO
 
             if (!deleteSelf)
             {
-                _logger.WriteVerbose(string.Format("Delete self is false, skipping deleting directory '{0}'", baseDir));
+                _logger.WriteVerbose($"Delete self is false, skipping deleting directory '{baseDir}'");
             }
 
             if (!baseDirectory.EnumerateFileSystemInfos().Any())
@@ -124,18 +122,23 @@ namespace Arbor.X.Core.IO
                 try
                 {
                     baseDirectory.Delete();
-                    _logger.WriteVerbose(string.Format("Deleted directory '{0}'", baseDirectory.FullName));
+                    _logger.WriteVerbose($"Deleted directory '{baseDirectory.FullName}'");
                 }
                 catch (IOException ex)
                 {
-                    _logger.WriteError(string.Format("Could not delete directory '{0}', {1}", baseDirectory.FullName, ex));
+                    _logger.WriteError($"Could not delete directory '{baseDirectory.FullName}', {ex}");
                 }
             }
             else
             {
-                _logger.WriteVerbose(string.Format("Directory '{0}' still has files or directories",
-                    baseDirectory.FullName));
+                _logger.WriteVerbose($"Directory '{baseDirectory.FullName}' still has files or directories");
             }
+        }
+
+        private void WriteFilters()
+        {
+            _logger.WriteVerbose($"Directory filters: {DirectoryFilterList}");
+            _logger.WriteVerbose($"File filters: {FileFilterList}");
         }
     }
 }

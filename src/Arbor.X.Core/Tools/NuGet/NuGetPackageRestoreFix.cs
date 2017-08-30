@@ -1,9 +1,8 @@
 using System.IO;
 using System.Threading.Tasks;
-
+using Arbor.Processing.Core;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
-
 using JetBrains.Annotations;
 
 namespace Arbor.X.Core.Tools.NuGet
@@ -13,7 +12,7 @@ namespace Arbor.X.Core.Tools.NuGet
     {
         public async Task FixAsync(string packagesDirectory, ILogger logger)
         {
-            var nlogDirectoryPath = Path.Combine(packagesDirectory, "NLog.3.2.0.0");
+            string nlogDirectoryPath = Path.Combine(packagesDirectory, "NLog.3.2.0.0");
 
             var nlogDirectory = new DirectoryInfo(nlogDirectoryPath);
 
@@ -24,7 +23,11 @@ namespace Arbor.X.Core.Tools.NuGet
                 if (!targetDir.Exists)
                 {
                     logger.WriteDebug($"Copying NLog from '{nlogDirectory.FullName}' to '{targetDir.FullName}'");
-                    var exitCode = await DirectoryCopy.CopyAsync(nlogDirectory.FullName, targetDir.FullName, logger, new PathLookupSpecification());
+                    ExitCode exitCode = await DirectoryCopy.CopyAsync(
+                        nlogDirectory.FullName,
+                        targetDir.FullName,
+                        logger,
+                        new PathLookupSpecification());
 
                     if (!exitCode.IsSuccess)
                     {

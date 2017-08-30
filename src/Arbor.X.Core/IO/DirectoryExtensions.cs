@@ -2,11 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-
-using Arbor.X.Core.GenericExtensions;
-using Arbor.X.Core.Tools;
-using DirectoryInfo = Alphaleonis.Win32.Filesystem.DirectoryInfo;
-using FileInfo = Alphaleonis.Win32.Filesystem.FileInfo;
+using Arbor.Defensive.Collections;
+using Arbor.Exceptions;
 
 namespace Arbor.X.Core.IO
 {
@@ -30,7 +27,9 @@ namespace Arbor.X.Core.IO
             }
             catch (PathTooLongException ex)
             {
-                throw new PathTooLongException($"Could not create directory '{directoryInfo.FullName}', path length {directoryInfo.FullName.Length}", ex);
+                throw new PathTooLongException(
+                    $"Could not create directory '{directoryInfo.FullName}', path length {directoryInfo.FullName.Length}",
+                    ex);
             }
 
             directoryInfo.Refresh();
@@ -60,10 +59,12 @@ namespace Arbor.X.Core.IO
                                 throw;
                             }
 
-                            throw new IOException($"Could not get files for directory '{directoryInfo.FullName}' for deletion", ex);
+                            throw new IOException(
+                                $"Could not get files for directory '{directoryInfo.FullName}' for deletion",
+                                ex);
                         }
 
-                        foreach (var file in fileInfos)
+                        foreach (FileInfo file in fileInfos)
                         {
                             file.Attributes = FileAttributes.Normal;
                             try
@@ -81,7 +82,7 @@ namespace Arbor.X.Core.IO
                             }
                         }
 
-                        foreach (var subDirectory in directoryInfo.GetDirectories())
+                        foreach (DirectoryInfo subDirectory in directoryInfo.GetDirectories())
                         {
                             subDirectory.DeleteIfExists(recursive);
                         }
@@ -100,14 +101,17 @@ namespace Arbor.X.Core.IO
                 {
                     throw new InvalidOperationException($"Could not delete directory '{directoryInfo.FullName}'", ex);
                 }
+
                 throw;
             }
         }
 
-        public static IReadOnlyCollection<FileInfo> GetFilesRecursive(this DirectoryInfo directoryInfo,
-            IEnumerable<string> fileExtensions = null, PathLookupSpecification pathLookupSpecification = null, string rootDir = null)
+        public static IReadOnlyCollection<FileInfo> GetFilesRecursive(
+            this DirectoryInfo directoryInfo,
+            IEnumerable<string> fileExtensions = null,
+            PathLookupSpecification pathLookupSpecification = null,
+            string rootDir = null)
         {
-
             if (directoryInfo == null)
             {
                 throw new ArgumentNullException(nameof(directoryInfo));
@@ -118,16 +122,17 @@ namespace Arbor.X.Core.IO
                 throw new DirectoryNotFoundException($"The directory '{directoryInfo.FullName}' does not exist");
             }
 
-            PathLookupSpecification usedPathLookupSpecification = pathLookupSpecification ?? DefaultPaths.DefaultPathLookupSpecification;
-            var usedFileExtensions = fileExtensions ?? new List<string>();
+            PathLookupSpecification usedPathLookupSpecification =
+                pathLookupSpecification ?? DefaultPaths.DefaultPathLookupSpecification;
+            IEnumerable<string> usedFileExtensions = fileExtensions ?? new List<string>();
 
             if (usedPathLookupSpecification.IsBlackListed(directoryInfo.FullName, rootDir))
             {
                 return new List<FileInfo>();
             }
 
-            var invalidFileExtensions = usedFileExtensions
-                .Where(fileExtension => !fileExtension.StartsWith("."))
+            IReadOnlyCollection<string> invalidFileExtensions = usedFileExtensions
+                .Where(fileExtension => !fileExtension.StartsWith(".", StringComparison.OrdinalIgnoreCase))
                 .ToReadOnlyCollection();
 
             if (invalidFileExtensions.Any())
@@ -135,23 +140,27 @@ namespace Arbor.X.Core.IO
                 throw new ArgumentException("File extensions must start with '.', eg .txt");
             }
 
-            List<FileInfo> files = new List<FileInfo>();
+            var files = new List<FileInfo>();
 
-            var directoryFiles = directoryInfo
+            List<FileInfo> directoryFiles = directoryInfo
                 .GetFiles()
                 .Where(file => !usedPathLookupSpecification.IsFileBlackListed(file.FullName, rootDir))
                 .ToList();
 
-            var filtered = (usedFileExtensions.Any()
-                ? directoryFiles.Where(file => usedFileExtensions.Any(extension => file.Extension.Equals(extension, StringComparison.InvariantCultureIgnoreCase)))
-                : directoryFiles)
+            List<FileInfo> filtered = (usedFileExtensions.Any()
+                    ? directoryFiles.Where(file => usedFileExtensions.Any(extension => file.Extension.Equals(
+                        extension,
+                        StringComparison.InvariantCultureIgnoreCase)))
+                    : directoryFiles)
                 .ToList();
 
             files.AddRange(filtered);
 
-            var subDirectories = directoryInfo.GetDirectories();
+            DirectoryInfo[] subDirectories = directoryInfo.GetDirectories();
 
-            files.AddRange(subDirectories.SelectMany(dir => dir.GetFilesRecursive(fileExtensions, usedPathLookupSpecification, rootDir)).ToList());
+            files.AddRange(subDirectories
+                .SelectMany(dir => dir.GetFilesRecursive(fileExtensions, usedPathLookupSpecification, rootDir))
+                .ToList());
 
             return files;
         }

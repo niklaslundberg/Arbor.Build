@@ -6,7 +6,7 @@ using Arbor.Aesculus.Core;
 
 namespace Arbor.X.Tests.Integration.Tests.MSpec
 {
-    class VcsTestPathHelper
+    internal class VcsTestPathHelper
     {
         public static string FindVcsRootPath()
         {
@@ -17,7 +17,8 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
                 Type ncrunchType =
                     ncrunchAssembly.GetTypes()
                         .FirstOrDefault(
-                            type => type.Name.Equals("NCrunchEnvironment", StringComparison.InvariantCultureIgnoreCase));
+                            type => type.Name.Equals("NCrunchEnvironment",
+                                StringComparison.InvariantCultureIgnoreCase));
 
                 MethodInfo method = ncrunchType?.GetMethod("GetOriginalSolutionPath");
 

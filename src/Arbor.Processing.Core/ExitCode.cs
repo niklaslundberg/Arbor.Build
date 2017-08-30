@@ -2,20 +2,18 @@
 {
     public sealed class ExitCode
     {
-        readonly int _result;
-
         public ExitCode(int result)
         {
-            _result = result;
+            Result = result;
         }
 
-        public bool IsSuccess => _result == 0;
+        public bool IsSuccess => Result == 0;
 
         public static ExitCode Success => new ExitCode(0);
 
         public static ExitCode Failure => new ExitCode(1);
 
-        public int Result => _result;
+        public int Result { get; }
 
         public override string ToString()
         {

@@ -4,61 +4,39 @@ namespace Arbor.X.Core.BuildVariables
 {
     public sealed class VariableDescription : IEquatable<VariableDescription>
     {
-        readonly string _defaultValue;
-        readonly string _description;
-        readonly string _invariantName;
-        readonly string _wellknownName;
+        private readonly string _defaultValue;
+        private readonly string _description;
+        private readonly string _wellknownName;
 
-        VariableDescription(string invariantName, string description, string wellknownName, string defaultValue)
+        private VariableDescription(string invariantName, string description, string wellknownName, string defaultValue)
         {
             if (string.IsNullOrWhiteSpace(invariantName))
             {
                 throw new ArgumentNullException(nameof(invariantName));
             }
 
-            _invariantName = invariantName;
+            InvariantName = invariantName;
             _description = description;
             _wellknownName = wellknownName;
             _defaultValue = defaultValue;
         }
 
-        public string WellknownName
+        public string WellknownName => _wellknownName ?? string.Empty;
+
+        public string DefaultValue => _defaultValue ?? string.Empty;
+
+        public string InvariantName { get; }
+
+        public string Description => _description ?? string.Empty;
+
+        public static implicit operator string(VariableDescription variableDescription)
         {
-            get { return _wellknownName ?? ""; }
+            return variableDescription.InvariantName;
         }
 
-        public string DefaultValue
+        public static implicit operator VariableDescription(string invariantName)
         {
-            get { return _defaultValue ?? ""; }
-        }
-
-        public string InvariantName
-        {
-            get { return _invariantName; }
-        }
-
-        public string Description
-        {
-            get { return _description ?? ""; }
-        }
-
-        public bool Equals(VariableDescription other)
-        {
-            if (ReferenceEquals(null, other)) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return string.Equals(_invariantName, other._invariantName);
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            return obj is VariableDescription && Equals((VariableDescription) obj);
-        }
-
-        public override int GetHashCode()
-        {
-            return (_invariantName != null ? _invariantName.GetHashCode() : 0);
+            return Create(invariantName);
         }
 
         public static bool operator ==(VariableDescription left, VariableDescription right)
@@ -71,25 +49,53 @@ namespace Arbor.X.Core.BuildVariables
             return !Equals(left, right);
         }
 
-        public static VariableDescription Create(string invariantName, string description = null,
-            string wellknownName = null, string defaultValue = null)
+        public static VariableDescription Create(
+            string invariantName,
+            string description = null,
+            string wellknownName = null,
+            string defaultValue = null)
         {
             return new VariableDescription(invariantName, description, wellknownName, defaultValue);
         }
 
-        public static implicit operator string(VariableDescription variableDescription)
+        public override bool Equals(object obj)
         {
-            return variableDescription.InvariantName;
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            return obj is VariableDescription && Equals((VariableDescription)obj);
         }
 
-        public static implicit operator VariableDescription(string invariantName)
+        public override int GetHashCode()
         {
-            return Create(invariantName);
+            return InvariantName != null ? InvariantName.GetHashCode() : 0;
         }
 
         public override string ToString()
         {
-            return string.Format("{0} ({1}) [{2}], {3}", InvariantName, WellknownName, DefaultValue, Description);
+            return $"{InvariantName} ({WellknownName}) [{DefaultValue}], {Description}";
+        }
+
+        public bool Equals(VariableDescription other)
+        {
+            if (ReferenceEquals(null, other))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return string.Equals(InvariantName, other.InvariantName);
         }
     }
 }

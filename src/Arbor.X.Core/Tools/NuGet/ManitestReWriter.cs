@@ -2,14 +2,16 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using NuGet;
-using ILogger = Arbor.X.Core.Logging.ILogger;
+using Arbor.X.Core.Logging;
+using NuGet.Packaging;
 
 namespace Arbor.X.Core.Tools.NuGet
 {
     public class ManitestReWriter
     {
-        public ManifestReWriteResult Rewrite(string nuspecFullPath, string tagPrefix = "x-arbor-x",
+        public ManifestReWriteResult Rewrite(
+            string nuspecFullPath,
+            string tagPrefix = "x-arbor-x",
             ILogger logger = null)
         {
             if (string.IsNullOrWhiteSpace(nuspecFullPath))
@@ -27,28 +29,28 @@ namespace Arbor.X.Core.Tools.NuGet
                 throw new FileNotFoundException($"The file '{nuspecFullPath}' does not exist", nuspecFullPath);
             }
 
-            List<string> removeTags = new List<string>();
+            var removeTags = new List<string>();
 
             bool isReWritten = false;
 
-            var tempFile = $"{nuspecFullPath}.{Guid.NewGuid()}.tmp";
+            string tempFile = $"{nuspecFullPath}.{Guid.NewGuid()}.tmp";
 
-            var baseDir = new FileInfo(nuspecFullPath).Directory;
+            DirectoryInfo baseDir = new FileInfo(nuspecFullPath).Directory;
 
             using (var stream = new FileStream(nuspecFullPath, FileMode.Open))
             {
-                PackageBuilder packageBuilder = new PackageBuilder(stream, baseDir.FullName);
+                var packageBuilder = new PackageBuilder(stream, baseDir.FullName);
 
                 logger?.WriteVerbose("Using starts with-pattern '" + tagPrefix + "' to exclude tags from NuSpec");
 
-                var tagsToRemove = packageBuilder.Tags.Where(tag => tag.StartsWith(tagPrefix)).ToArray();
+                string[] tagsToRemove = packageBuilder.Tags.Where(tag => tag.StartsWith(tagPrefix, StringComparison.Ordinal)).ToArray();
 
                 if (!tagsToRemove.Any())
                 {
                     logger?.WriteVerbose($"No tags to remove from NuSpec '{nuspecFullPath}'");
                 }
 
-                foreach (var tagToRemove in tagsToRemove)
+                foreach (string tagToRemove in tagsToRemove)
                 {
                     logger?.WriteVerbose($"Removing tag '{tagToRemove}' from NuSpec '{nuspecFullPath}'");
                     packageBuilder.Tags.Remove(tagToRemove);

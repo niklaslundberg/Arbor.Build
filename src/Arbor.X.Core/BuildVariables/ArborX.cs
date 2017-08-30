@@ -2,11 +2,9 @@ namespace Arbor.X.Core.BuildVariables
 {
     internal class ArborX
     {
-        const string Namespace = "Arbor.X";
+        private const string Namespace = "Arbor.X";
 
-        public ArborX()
-        {
-        }
+        public string Build { get; } = Namespace + ".Build";
 
         public static implicit operator string(ArborX arborX)
         {
@@ -16,11 +14,6 @@ namespace Arbor.X.Core.BuildVariables
         public override string ToString()
         {
             return Namespace;
-        }
-
-        public string Build
-        {
-            get { return Namespace + ".Build"; }
         }
     }
 }

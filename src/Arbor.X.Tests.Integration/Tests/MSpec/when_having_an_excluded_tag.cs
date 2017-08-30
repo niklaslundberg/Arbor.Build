@@ -3,23 +3,13 @@
 namespace Arbor.X.Tests.Integration.Tests.MSpec
 {
     [Tags("dummyexcluded")]
-    [Subject(typeof (object))]
+    [Subject(typeof(object))]
     public class when_having_an_excluded_tag
     {
-        Establish context = () =>
-        {
+        private Establish context = () => { };
 
-        };
+        private Because of = () => { };
 
-        Because of = () =>
-        {
-
-        };
-
-        It should_not_be_run = () =>
-        {
-            
-        };
-         
+        private It should_not_be_run = () => { };
     }
 }

@@ -1,34 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Xsl;
-using Alphaleonis.Win32.Filesystem;
+using Arbor.Defensive.Collections;
+using Arbor.Processing;
+using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
-using Arbor.X.Core.ProcessUtils;
 using Machine.Specifications;
-using FileAccess = System.IO.FileAccess;
-using FileMode = System.IO.FileMode;
-using FileStream = System.IO.FileStream;
-using MemoryStream = System.IO.MemoryStream;
-using Stream = System.IO.Stream;
-using StreamReader = System.IO.StreamReader;
 
 namespace Arbor.X.Core.Tools.Testing
 {
     [Priority(450)]
     public class MSpecTestRunner : ITool
     {
-        public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
+        public async Task<ExitCode> ExecuteAsync(
+            ILogger logger,
+            IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            var enabled = buildVariables.GetBooleanByKey(WellKnownVariables.MSpecEnabled, defaultValue: true);
+            bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.MSpecEnabled, true);
 
             if (!enabled)
             {
@@ -45,7 +42,8 @@ namespace Arbor.X.Core.Tools.Testing
             string testReportDirectoryPath =
                 buildVariables.Require(WellKnownVariables.ExternalTools_MSpec_ReportPath).ThrowIfEmptyValue().Value;
 
-            string sourceRootOverride = buildVariables.GetVariableValueOrDefault(WellKnownVariables.SourceRootOverride, "");
+            string sourceRootOverride =
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.SourceRootOverride, string.Empty);
 
             string sourceDirectoryPath;
 
@@ -57,7 +55,6 @@ namespace Arbor.X.Core.Tools.Testing
                 }
 
                 sourceDirectoryPath = sourceRoot;
-
             }
             else
             {
@@ -65,30 +62,36 @@ namespace Arbor.X.Core.Tools.Testing
             }
 
             var directory = new DirectoryInfo(sourceDirectoryPath);
-            string mspecExePath = Path.Combine(externalToolsPath, MachineSpecificationsConstants.MachineSpecificationsName, "mspec-clr4.exe");
+            string mspecExePath = Path.Combine(
+                externalToolsPath,
+                MachineSpecificationsConstants.MachineSpecificationsName,
+                "mspec-clr4.exe");
 
             bool runTestsInReleaseConfiguration =
                 buildVariables.GetBooleanByKey(
                     WellKnownVariables.RunTestsInReleaseConfigurationEnabled,
-                    defaultValue: true);
+                    true);
 
             IEnumerable<Type> typesToFind = new List<Type>
-                                            {
-                                                typeof (It),
-                                                typeof (BehaviorsAttribute),
-                                                typeof (SubjectAttribute),
-                                                typeof (Behaves_like<>),
-                                            };
+            {
+                typeof(It),
+                typeof(BehaviorsAttribute),
+                typeof(SubjectAttribute),
+                typeof(Behaves_like<>)
+            };
 
             logger.WriteVerbose(
                 $"Scanning directory '{directory.FullName}' for assemblies containing Machine.Specifications tests");
 
             List<string> testDlls =
-                new UnitTestFinder(typesToFind, logger: logger).GetUnitTestFixtureDlls(directory, runTestsInReleaseConfiguration).ToList();
+                new UnitTestFinder(typesToFind, logger: logger)
+                    .GetUnitTestFixtureDlls(directory, runTestsInReleaseConfiguration)
+                    .ToList();
 
             if (!testDlls.Any())
             {
-                logger.WriteWarning($"No DLL files with {MachineSpecificationsConstants.MachineSpecificationsName} specifications was found");
+                logger.WriteWarning(
+                    $"No DLL files with {MachineSpecificationsConstants.MachineSpecificationsName} specifications was found");
                 return ExitCode.Success;
             }
 
@@ -97,20 +100,22 @@ namespace Arbor.X.Core.Tools.Testing
             arguments.AddRange(testDlls);
 
             arguments.Add("--xml");
-            var timestamp = DateTime.UtcNow.ToString("O").Replace(":", ".");
-            var fileName = "MSpec_" + timestamp + ".xml";
-            var xmlReportPath = Path.Combine(testReportDirectoryPath, "Xml", fileName);
+            string timestamp = DateTime.UtcNow.ToString("O").Replace(":", ".");
+            string fileName = "MSpec_" + timestamp + ".xml";
+            string xmlReportPath = Path.Combine(testReportDirectoryPath, "Xml", fileName);
 
             new FileInfo(xmlReportPath).Directory.EnsureExists();
 
             arguments.Add(xmlReportPath);
-            var htmlPath = Path.Combine(testReportDirectoryPath, "Html", "MSpec_" + timestamp);
+            string htmlPath = Path.Combine(testReportDirectoryPath, "Html", "MSpec_" + timestamp);
 
             new DirectoryInfo(htmlPath).EnsureExists();
 
-            var excludedTags = buildVariables.GetVariableValueOrDefault(WellKnownVariables.IgnoredTestCategories,
-                defaultValue: "")
-                .Split(new[]{","}, StringSplitOptions.RemoveEmptyEntries)
+            IReadOnlyCollection<string> excludedTags = buildVariables
+                .GetVariableValueOrDefault(
+                    WellKnownVariables.IgnoredTestCategories,
+                    string.Empty)
+                .Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries)
                 .Select(item => item.Trim())
                 .Where(item => !string.IsNullOrWhiteSpace(item))
                 .ToReadOnlyCollection();
@@ -118,11 +123,12 @@ namespace Arbor.X.Core.Tools.Testing
             arguments.Add("--html");
             arguments.Add(htmlPath);
 
-            bool hasArborTestDll = testDlls.Any(dll => dll.IndexOf("arbor", StringComparison.InvariantCultureIgnoreCase) >= 0);
+            bool hasArborTestDll =
+                testDlls.Any(dll => dll.IndexOf("arbor", StringComparison.InvariantCultureIgnoreCase) >= 0);
 
             if (hasArborTestDll || excludedTags.Any())
             {
-                List<string> allExcludedTags = new List<string>();
+                var allExcludedTags = new List<string>();
 
                 arguments.Add("--exclude");
 
@@ -146,23 +152,33 @@ namespace Arbor.X.Core.Tools.Testing
             // ReSharper disable once CollectionNeverUpdated.Local
             var environmentVariables = new Dictionary<string, string>();
 
-            var exitCode = await
-                ProcessRunner.ExecuteAsync(mspecExePath, arguments: arguments, cancellationToken: cancellationToken,
-                    standardOutLog: logger.Write, standardErrorAction: logger.WriteError, toolAction: logger.Write,
-                    verboseAction: logger.WriteVerbose, environmentVariables: environmentVariables, debugAction: logger.WriteDebug);
+            ExitCode exitCode = await
+                ProcessRunner.ExecuteAsync(
+                    mspecExePath,
+                    arguments: arguments,
+                    cancellationToken: cancellationToken,
+                    standardOutLog: logger.Write,
+                    standardErrorAction: logger.WriteError,
+                    toolAction: logger.Write,
+                    verboseAction: logger.WriteVerbose,
+                    environmentVariables: environmentVariables,
+                    debugAction: logger.WriteDebug);
 
-            if (buildVariables.GetBooleanByKey(WellKnownVariables.MSpecJUnitXslTransformationEnabled,
-                defaultValue: false))
+            if (buildVariables.GetBooleanByKey(
+                WellKnownVariables.MSpecJUnitXslTransformationEnabled,
+                false))
             {
-                logger.WriteVerbose($"Transforming {MachineSpecificationsConstants.MachineSpecificationsName} test reports to JUnit format");
+                logger.WriteVerbose(
+                    $"Transforming {MachineSpecificationsConstants.MachineSpecificationsName} test reports to JUnit format");
 
-                const string JunitSuffix = "_junit.xml";
+                const string junitSuffix = "_junit.xml";
 
-                var xmlReportDirectory = new FileInfo(xmlReportPath).Directory;
+                DirectoryInfo xmlReportDirectory = new FileInfo(xmlReportPath).Directory;
+
 // ReSharper disable once PossibleNullReferenceException
-                var xmlReports = xmlReportDirectory
+                IReadOnlyCollection<FileInfo> xmlReports = xmlReportDirectory
                     .GetFiles("*.xml")
-                    .Where(report => !report.Name.EndsWith(JunitSuffix))
+                    .Where(report => !report.Name.EndsWith(junitSuffix, StringComparison.Ordinal))
                     .ToReadOnlyCollection();
 
                 if (xmlReports.Any())
@@ -172,36 +188,43 @@ namespace Arbor.X.Core.Tools.Testing
                     {
                         using (XmlReader xmlReader = new XmlTextReader(stream))
                         {
-                            XslCompiledTransform myXslTransform = new XslCompiledTransform();
+                            var myXslTransform = new XslCompiledTransform();
                             myXslTransform.Load(xmlReader);
 
-                            foreach (var xmlReport in xmlReports)
+                            foreach (FileInfo xmlReport in xmlReports)
                             {
                                 logger.WriteDebug($"Transforming '{xmlReport.FullName}' to JUnit XML format");
                                 try
                                 {
-                                    TransformReport(xmlReport, JunitSuffix, encoding, myXslTransform, logger);
+                                    TransformReport(xmlReport, junitSuffix, encoding, myXslTransform, logger);
                                 }
                                 catch (Exception ex)
                                 {
                                     logger.WriteError($"Could not transform '{xmlReport.FullName}', {ex}");
                                     return ExitCode.Failure;
                                 }
+
                                 logger.WriteDebug(
                                     $"Successfully transformed '{xmlReport.FullName}' to JUnit XML format");
                             }
                         }
-
                     }
                 }
             }
+
             return exitCode;
         }
 
-        static void TransformReport(FileInfo xmlReport, string junitSuffix, Encoding encoding, XslCompiledTransform myXslTransform, ILogger logger)
+        private static void TransformReport(
+            FileInfo xmlReport,
+            string junitSuffix,
+            Encoding encoding,
+            XslCompiledTransform myXslTransform,
+            ILogger logger)
         {
             // ReSharper disable once PossibleNullReferenceException
-            string resultFile = Path.Combine(xmlReport.Directory.FullName,
+            string resultFile = Path.Combine(
+                xmlReport.Directory.FullName,
                 $"{Path.GetFileNameWithoutExtension(xmlReport.Name)}{junitSuffix}");
 
             if (File.Exists(resultFile))
@@ -211,13 +234,13 @@ namespace Arbor.X.Core.Tools.Testing
                 return;
             }
 
-            using (FileStream fileStream = new FileStream(xmlReport.FullName, FileMode.Open, FileAccess.Read))
+            using (var fileStream = new FileStream(xmlReport.FullName, FileMode.Open, FileAccess.Read))
             {
                 using (var streamReader = new StreamReader(fileStream, encoding))
                 {
                     using (XmlReader reportReader = XmlReader.Create(streamReader))
                     {
-                        using (FileStream outStream = new FileStream(resultFile, FileMode.Create, FileAccess.Write))
+                        using (var outStream = new FileStream(resultFile, FileMode.Create, FileAccess.Write))
                         {
                             using (XmlWriter reportWriter = new XmlTextWriter(outStream, encoding))
                             {

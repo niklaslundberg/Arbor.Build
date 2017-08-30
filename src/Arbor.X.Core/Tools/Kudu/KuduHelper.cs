@@ -10,7 +10,11 @@ namespace Arbor.X.Core.Tools.Kudu
     {
         public static bool IsKuduAware(IReadOnlyCollection<IVariable> buildVariables, ILogger loggerOption = null)
         {
-            var logger = loggerOption ?? new DelegateLogger((info,prefix) => { }, (warning, prefix) => { }, (error, prefix) => { });
+            ILogger logger = loggerOption ??
+                             new DelegateLogger(
+                                 (info, prefix) => { },
+                                 (warning, prefix) => { },
+                                 (error, prefix) => { });
 
             bool isKuduAware = false;
 
@@ -28,22 +32,25 @@ namespace Arbor.X.Core.Tools.Kudu
                         }
                         else
                         {
-                            logger.WriteVerbose(string.Format("Build variable {0} is missing", WellKnownVariables.ExternalTools_Kudu_Platform));
+                            logger.WriteVerbose(
+                                $"Build variable {WellKnownVariables.ExternalTools_Kudu_Platform} is missing");
                         }
                     }
                     else
                     {
-                        logger.WriteVerbose(string.Format("Build variable {0} is missing", WellKnownVariables.ExternalTools_Kudu_DeploymentTarget));
+                        logger.WriteVerbose(
+                            $"Build variable {WellKnownVariables.ExternalTools_Kudu_DeploymentTarget} is missing");
                     }
                 }
                 else
                 {
-                    logger.WriteVerbose(string.Format("No build variables starts with {0}", Pattern));
+                    logger.WriteVerbose($"No build variables starts with {Pattern}");
                 }
             }
             else
             {
-                logger.WriteVerbose(string.Format("Build varaible {0} is set to {1}", WellKnownVariables.ExternalTools_Kudu_Enabled, buildVariables.Require(WellKnownVariables.ExternalTools_Kudu_Enabled).Value));
+                logger.WriteVerbose(
+                    $"Build varaible {WellKnownVariables.ExternalTools_Kudu_Enabled} is set to {buildVariables.Require(WellKnownVariables.ExternalTools_Kudu_Enabled).Value}");
             }
 
             return isKuduAware;

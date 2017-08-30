@@ -1,20 +1,22 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-
+using Arbor.Processing.Core;
 using Arbor.X.Core.Logging;
-
-using DirectoryInfo = Alphaleonis.Win32.Filesystem.DirectoryInfo;
-using FileInfo = Alphaleonis.Win32.Filesystem.FileInfo;
-using Path = Alphaleonis.Win32.Filesystem.Path;
 
 namespace Arbor.X.Core.IO
 {
     public static class DirectoryCopy
     {
-        public static async Task<ExitCode> CopyAsync(string sourceDir, string targetDir, ILogger optionalLogger = null, PathLookupSpecification pathLookupSpecificationOption = null, string rootDir = null)
+        public static async Task<ExitCode> CopyAsync(
+            string sourceDir,
+            string targetDir,
+            ILogger optionalLogger = null,
+            PathLookupSpecification pathLookupSpecificationOption = null,
+            string rootDir = null)
         {
-            var pathLookupSpecification = pathLookupSpecificationOption ?? DefaultPaths.DefaultPathLookupSpecification;
+            PathLookupSpecification pathLookupSpecification =
+                pathLookupSpecificationOption ?? DefaultPaths.DefaultPathLookupSpecification;
 
             ILogger logger = optionalLogger ?? new NullLogger();
 
@@ -38,7 +40,7 @@ namespace Arbor.X.Core.IO
             if (pathLookupSpecification.IsBlackListed(sourceDir, rootDir))
             {
                 logger.WriteDebug(
-                    $"Directory '{sourceDir}' is blacklisted from specification {pathLookupSpecification.ToString()}");
+                    $"Directory '{sourceDir}' is blacklisted from specification {pathLookupSpecification}");
                 return ExitCode.Success;
             }
 
@@ -48,7 +50,7 @@ namespace Arbor.X.Core.IO
             {
                 string destFileName = Path.Combine(targetDir, file.Name);
 
-                if (pathLookupSpecification.IsFileBlackListed(file.FullName, rootDir: rootDir, logger: optionalLogger))
+                if (pathLookupSpecification.IsFileBlackListed(file.FullName, rootDir, logger: optionalLogger))
                 {
                     logger.WriteVerbose($"File '{file.FullName}' is blacklisted, skipping copying file");
                     continue;
@@ -58,7 +60,7 @@ namespace Arbor.X.Core.IO
 
                 try
                 {
-                    file.CopyTo(destFileName, overwrite: true);
+                    file.CopyTo(destFileName, true);
                 }
                 catch (PathTooLongException ex)
                 {
@@ -78,7 +80,10 @@ namespace Arbor.X.Core.IO
 
             foreach (DirectoryInfo directory in sourceDirectory.GetDirectories())
             {
-                var exitCode = await CopyAsync(directory.FullName, Path.Combine(targetDir, directory.Name), pathLookupSpecificationOption: pathLookupSpecification);
+                ExitCode exitCode = await CopyAsync(
+                    directory.FullName,
+                    Path.Combine(targetDir, directory.Name),
+                    pathLookupSpecificationOption: pathLookupSpecification);
 
                 if (!exitCode.IsSuccess)
                 {
@@ -88,6 +93,5 @@ namespace Arbor.X.Core.IO
 
             return ExitCode.Success;
         }
-
     }
 }

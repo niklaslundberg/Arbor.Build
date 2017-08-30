@@ -14,7 +14,7 @@ namespace Arbor.X.Core.BuildVariables
 
             if (string.IsNullOrWhiteSpace(variable.Value))
             {
-                throw new ValidationException(string.Format("The variable {0} must have a non-empty value", variable.Key));
+                throw new ValidationException($"The variable {variable.Key} must have a non-empty value");
             }
 
             return variable;

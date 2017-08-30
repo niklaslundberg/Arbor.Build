@@ -5,11 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.Tools.Git;
-
 using JetBrains.Annotations;
 
 namespace Arbor.X.Core.Tools.Kudu
@@ -18,45 +18,58 @@ namespace Arbor.X.Core.Tools.Kudu
     [UsedImplicitly]
     public class KuduDeploy : ITool
     {
-        string _artifacts;
-        BranchName _deployBranch;
-        string _deploymentTargetDirectory;
-        bool _kuduEnabled;
-        string _kuduConfigurationFallback;
-        bool _clearTarget;
-        bool _useAppOfflineFile;
-        bool _excludeAppData;
-        bool _deleteExistingAppOfflineHtm;
-        string _ignoreDeleteFiles;
-        string _ignoreDeleteDirectories;
+        private string _artifacts;
+        private bool _clearTarget;
+        private bool _deleteExistingAppOfflineHtm;
+        private BranchName _deployBranch;
+        private string _deploymentTargetDirectory;
+        private bool _excludeAppData;
+        private string _ignoreDeleteDirectories;
+        private string _ignoreDeleteFiles;
+        private string _kuduConfigurationFallback;
+        private bool _kuduEnabled;
+        private bool _useAppOfflineFile;
         private string _vcsRoot;
 
-        public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
+        public async Task<ExitCode> ExecuteAsync(
+            ILogger logger,
+            IReadOnlyCollection<IVariable> buildVariables,
+            CancellationToken cancellationToken)
         {
-            _kuduEnabled = buildVariables.HasKey(WellKnownVariables.ExternalTools_Kudu_Enabled) && bool.Parse(buildVariables.Require(WellKnownVariables.ExternalTools_Kudu_Enabled).Value);
+            _kuduEnabled = buildVariables.HasKey(WellKnownVariables.ExternalTools_Kudu_Enabled) &&
+                           bool.Parse(buildVariables.Require(WellKnownVariables.ExternalTools_Kudu_Enabled).Value);
             if (!_kuduEnabled)
             {
                 return ExitCode.Success;
             }
+
             _vcsRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
             _artifacts = buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue().Value;
             buildVariables.Require(WellKnownVariables.ExternalTools_Kudu_Platform).ThrowIfEmptyValue();
-            _deployBranch = new BranchName(buildVariables.Require(WellKnownVariables.ExternalTools_Kudu_DeploymentBranchName).Value);
+            _deployBranch = new BranchName(buildVariables
+                .Require(WellKnownVariables.ExternalTools_Kudu_DeploymentBranchName)
+                .Value);
             _deploymentTargetDirectory =
                 buildVariables.Require(WellKnownVariables.ExternalTools_Kudu_DeploymentTarget).Value;
 
             _kuduConfigurationFallback = buildVariables.HasKey(WellKnownVariables.KuduConfigurationFallback)
                 ? buildVariables.Require(WellKnownVariables.KuduConfigurationFallback).Value
-                : "";
+                : string.Empty;
 
             _clearTarget = buildVariables.GetBooleanByKey(WellKnownVariables.KuduClearFilesAndDirectories, false);
             _useAppOfflineFile = buildVariables.GetBooleanByKey(WellKnownVariables.KuduUseAppOfflineHtmFile, false);
             _excludeAppData = buildVariables.GetBooleanByKey(WellKnownVariables.KuduExcludeDeleteAppData, true);
-            _deleteExistingAppOfflineHtm = buildVariables.GetBooleanByKey(WellKnownVariables.KuduDeleteExistingAppOfflineHtmFile, true);
-            _ignoreDeleteFiles = buildVariables.GetVariableValueOrDefault(WellKnownVariables.KuduIgnoreDeleteFiles, "");
-            _ignoreDeleteDirectories = buildVariables.GetVariableValueOrDefault(WellKnownVariables.KuduIgnoreDeleteDirectories, "");
+            _deleteExistingAppOfflineHtm =
+                buildVariables.GetBooleanByKey(WellKnownVariables.KuduDeleteExistingAppOfflineHtmFile, true);
+            _ignoreDeleteFiles =
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.KuduIgnoreDeleteFiles, string.Empty);
+            _ignoreDeleteDirectories =
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.KuduIgnoreDeleteDirectories, string.Empty);
 
-            var branchNameOverride = buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_Kudu_DeploymentBranchNameOverride, defaultValue: "");
+            string branchNameOverride =
+                buildVariables.GetVariableValueOrDefault(
+                    WellKnownVariables.ExternalTools_Kudu_DeploymentBranchNameOverride,
+                    string.Empty);
 
             if (!string.IsNullOrWhiteSpace(branchNameOverride))
             {
@@ -73,13 +86,14 @@ namespace Arbor.X.Core.Tools.Kudu
                 return ExitCode.Success;
             }
 
-            var builtWebsites = websitesDirectory.GetDirectories();
+            DirectoryInfo[] builtWebsites = websitesDirectory.GetDirectories();
 
             if (!builtWebsites.Any())
             {
                 logger.Write("No websites found. Ignoring Kudu deployment.");
                 return ExitCode.Success;
             }
+
             DirectoryInfo websiteToDeploy;
 
             if (builtWebsites.Length == 1)
@@ -88,10 +102,11 @@ namespace Arbor.X.Core.Tools.Kudu
             }
             else
             {
-                string siteToDeploy = buildVariables.GetVariableValueOrDefault(WellKnownVariables.KuduSiteToDeploy, "");
+                string siteToDeploy =
+                    buildVariables.GetVariableValueOrDefault(WellKnownVariables.KuduSiteToDeploy, string.Empty);
                 if (!string.IsNullOrWhiteSpace(siteToDeploy))
                 {
-                    var foundDir = builtWebsites.SingleOrDefault(
+                    DirectoryInfo foundDir = builtWebsites.SingleOrDefault(
                         dir => dir.Name.Equals(siteToDeploy, StringComparison.InvariantCultureIgnoreCase));
 
                     if (foundDir == null)
@@ -123,7 +138,7 @@ namespace Arbor.X.Core.Tools.Kudu
                 return ExitCode.Failure;
             }
 
-            var platform = GetPlatform(websiteToDeploy);
+            DirectoryInfo platform = GetPlatform(websiteToDeploy);
 
             if (!platform.GetDirectories().Any())
             {
@@ -139,7 +154,7 @@ namespace Arbor.X.Core.Tools.Kudu
                 return ExitCode.Failure;
             }
 
-            var appOfflinePath = Path.Combine(_deploymentTargetDirectory, "app_offline.htm");
+            string appOfflinePath = Path.Combine(_deploymentTargetDirectory, "app_offline.htm");
 
             logger.Write(
                 $"___________________ Kudu deploy ___________________ \r\nDeploying website {websiteToDeploy.Name}, platform {platform.Name}, configuration {configuration.Name}");
@@ -154,7 +169,8 @@ namespace Arbor.X.Core.Tools.Kudu
                         {
                             using (var streamWriter = new StreamWriter(fs, Encoding.UTF8))
                             {
-                                streamWriter.WriteLine("File created by Arbor.X Kudu at {0} (UTC)",
+                                streamWriter.WriteLine(
+                                    "File created by Arbor.X Kudu at {0} (UTC)",
                                     DateTime.UtcNow.ToString("O"));
                             }
                         }
@@ -188,8 +204,8 @@ namespace Arbor.X.Core.Tools.Kudu
                             directoryFilters.Add("App_Data");
                         }
 
-                        var customFileExcludes = GetExcludes(_ignoreDeleteFiles).ToArray();
-                        var customDirectoryExcludes = GetExcludes(_ignoreDeleteDirectories).ToArray();
+                        string[] customFileExcludes = GetExcludes(_ignoreDeleteFiles).ToArray();
+                        string[] customDirectoryExcludes = GetExcludes(_ignoreDeleteDirectories).ToArray();
 
                         var fileFilters = new List<string>();
 
@@ -200,14 +216,16 @@ namespace Arbor.X.Core.Tools.Kudu
 
                         if (customDirectoryExcludes.Any())
                         {
-                            logger.WriteVerbose("Adding directory ignore patterns " + string.Join("|",
-                                $"'{customDirectoryExcludes.Select(item => (object)item)}'"));
+                            logger.WriteVerbose("Adding directory ignore patterns " + string.Join(
+                                                    "|",
+                                                    $"'{customDirectoryExcludes.Select(item => (object)item)}'"));
                         }
 
                         if (customFileExcludes.Any())
                         {
-                            logger.WriteVerbose("Adding file ignore patterns " + string.Join("|",
-                                $"'{customFileExcludes.Select(item => (object)item)}'"));
+                            logger.WriteVerbose("Adding file ignore patterns " + string.Join(
+                                                    "|",
+                                                    $"'{customFileExcludes.Select(item => (object)item)}'"));
                         }
 
                         directoryFilters.AddRange(customDirectoryExcludes);
@@ -215,7 +233,7 @@ namespace Arbor.X.Core.Tools.Kudu
 
                         var deleter = new DirectoryDelete(directoryFilters, fileFilters, logger);
 
-                        deleter.Delete(_deploymentTargetDirectory, deleteSelf: false, deleteSelfFiles: true);
+                        deleter.Delete(_deploymentTargetDirectory, false, true);
                     }
                     catch (IOException ex)
                     {
@@ -234,7 +252,12 @@ namespace Arbor.X.Core.Tools.Kudu
 
                 try
                 {
-                    var exitCode = await DirectoryCopy.CopyAsync(configuration.FullName, _deploymentTargetDirectory, logger, rootDir: _vcsRoot, pathLookupSpecificationOption: new PathLookupSpecification());
+                    ExitCode exitCode = await DirectoryCopy.CopyAsync(
+                        configuration.FullName,
+                        _deploymentTargetDirectory,
+                        logger,
+                        rootDir: _vcsRoot,
+                        pathLookupSpecificationOption: new PathLookupSpecification());
 
                     if (!exitCode.IsSuccess)
                     {
@@ -269,28 +292,28 @@ namespace Arbor.X.Core.Tools.Kudu
             return ExitCode.Success;
         }
 
-        IEnumerable<string> GetExcludes(string ignores)
+        private IEnumerable<string> GetExcludes(string ignores)
         {
             if (string.IsNullOrWhiteSpace(ignores))
             {
-               yield break;
+                yield break;
             }
 
-            var splitted = ignores.Split('|');
+            string[] splitted = ignores.Split('|');
 
-            foreach (var item in splitted)
+            foreach (string item in splitted)
             {
                 yield return item;
             }
         }
 
-        DirectoryInfo GetConfigurationDirectory(DirectoryInfo platformDirectory, ILogger logger)
+        private DirectoryInfo GetConfigurationDirectory(DirectoryInfo platformDirectory, ILogger logger)
         {
             DirectoryInfo[] directoryInfos = platformDirectory.GetDirectories();
 
             if (directoryInfos.Length == 1)
             {
-                var directoryInfo = directoryInfos.Single();
+                DirectoryInfo directoryInfo = directoryInfos.Single();
                 logger.Write("Found only one configuration: " + directoryInfo.Name);
                 return directoryInfo;
             }
@@ -323,7 +346,8 @@ namespace Arbor.X.Core.Tools.Kudu
             {
                 DirectoryInfo developConfig =
                     directoryInfos.SingleOrDefault(
-                        di => di.Name.Equals("develop", StringComparison.InvariantCultureIgnoreCase) || di.Name.Equals("dev", StringComparison.InvariantCultureIgnoreCase));
+                        di => di.Name.Equals("develop", StringComparison.InvariantCultureIgnoreCase) ||
+                              di.Name.Equals("dev", StringComparison.InvariantCultureIgnoreCase));
 
                 if (developConfig != null)
                 {
@@ -343,7 +367,7 @@ namespace Arbor.X.Core.Tools.Kudu
             }
             else if (!string.IsNullOrWhiteSpace(_kuduConfigurationFallback))
             {
-                var configDir = directoryInfos.SingleOrDefault(
+                DirectoryInfo configDir = directoryInfos.SingleOrDefault(
                     dir => dir.Name.Equals(_kuduConfigurationFallback, StringComparison.InvariantCultureIgnoreCase));
 
                 logger.Write($"Kudu fallback is '{_kuduConfigurationFallback}'");
@@ -354,6 +378,7 @@ namespace Arbor.X.Core.Tools.Kudu
 
                     return configDir;
                 }
+
                 logger.WriteWarning($"Kudu fallback configuration '{_kuduConfigurationFallback}' was not found");
             }
 
@@ -362,10 +387,9 @@ namespace Arbor.X.Core.Tools.Kudu
             return null;
         }
 
-        DirectoryInfo GetPlatform(DirectoryInfo websiteToDeploy)
+        private DirectoryInfo GetPlatform(DirectoryInfo websiteToDeploy)
         {
             return websiteToDeploy.GetDirectories().Single();
         }
-
     }
 }

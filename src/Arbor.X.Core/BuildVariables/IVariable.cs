@@ -3,6 +3,7 @@
     public interface IVariable
     {
         string Key { get; }
+
         string Value { get; }
     }
 }

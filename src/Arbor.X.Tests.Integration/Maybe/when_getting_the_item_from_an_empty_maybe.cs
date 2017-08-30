@@ -1,15 +1,14 @@
 using System;
-using Arbor.X.Core;
 using Machine.Specifications;
 
 namespace Arbor.X.Tests.Integration.Maybe
 {
     public class when_getting_the_item_from_an_empty_maybe
     {
-        static Exception exception;
+        private static Exception exception;
 
-        Because of = () => exception = Catch.Exception(() => new Maybe<string>().Value);
+        private Because of = () => exception = Catch.Exception(() => new Defensive.Maybe<string>().Value);
 
-        It should_throw_an_exception = () => exception.ShouldNotBeNull();
+        private It should_throw_an_exception = () => exception.ShouldNotBeNull();
     }
 }

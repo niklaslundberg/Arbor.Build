@@ -1,40 +1,40 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Arbor.X.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.GenericExtensions;
-
 using Machine.Specifications;
 
 namespace Arbor.X.Tests.Integration.WellknownVariables
 {
-    [Tags(Arbor.X.Core.Tools.Testing.MSpecInternalConstants.RecursiveArborXTest)]
+    [Tags(Core.Tools.Testing.MSpecInternalConstants.RecursiveArborXTest)]
     public class when_listing_all_wellknown_variables_as_a_table
     {
-        static IReadOnlyCollection<VariableDescription> readOnlyCollection;
+        private static IReadOnlyCollection<VariableDescription> readOnlyCollection;
 
-        Because of = () => { readOnlyCollection = WellKnownVariables.AllVariables; };
+        private Because of = () => { readOnlyCollection = WellKnownVariables.AllVariables; };
 
-        It should_print = () =>
+        private It should_print = () =>
         {
-            List<Dictionary<string, string>> dicts = readOnlyCollection.Select(variableDescription => new Dictionary<string, string>
-                                                                                                      {
-                                                                                                          {
-                                                                                                              "Name", 
-                                                                                                              variableDescription.InvariantName
-                                                                                                          },
-                                                                                                          {
-                                                                                                              "Description", variableDescription.Description
-                                                                                                          },
-                                                                                                          {
-                                                                                                              "Default value", variableDescription.DefaultValue
-                                                                                                          }
-                                                                                                      }).ToList();
+            List<Dictionary<string, string>> dicts = readOnlyCollection
+                .Select(variableDescription => new Dictionary<string, string>
+                {
+                    {
+                        "Name",
+                        variableDescription.InvariantName
+                    },
+                    {
+                        "Description", variableDescription.Description
+                    },
+                    {
+                        "Default value", variableDescription.DefaultValue
+                    }
+                })
+                .ToList();
 
             try
             {
-                var displayAsTable = dicts.DisplayAsTable();
+                string displayAsTable = dicts.DisplayAsTable();
                 Console.WriteLine(displayAsTable);
             }
             catch (Exception ex)
@@ -42,8 +42,6 @@ namespace Arbor.X.Tests.Integration.WellknownVariables
                 Console.Error.WriteLine(ex);
                 throw;
             }
-
-
         };
     }
 }

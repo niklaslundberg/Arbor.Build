@@ -2,22 +2,22 @@
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using Arbor.X.Core;
+using Arbor.Processing.Core;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 using Machine.Specifications;
 
 namespace Arbor.X.Tests.Integration.ProcessRunner
 {
-    [Subject(typeof(Core.ProcessUtils.ProcessRunner))]
-    [Tags(Arbor.X.Core.Tools.Testing.MSpecInternalConstants.RecursiveArborXTest)]
+    [Subject(typeof(Processing.ProcessRunner))]
+    [Tags(Core.Tools.Testing.MSpecInternalConstants.RecursiveArborXTest)]
     public class when_running_a_failing_process
     {
-        static string testPath;
-        static ConsoleLogger logger;
-        static ExitCode exitCode;
+        private static string testPath;
+        private static ConsoleLogger logger;
+        private static ExitCode exitCode;
 
-        Establish context = () =>
+        private Establish context = () =>
         {
             testPath = Path.Combine(Path.GetTempPath(), $"{DefaultPaths.TempPathPrefix}Test_fail.tmp.bat");
             const string batchContent = @"@ECHO OFF
@@ -27,17 +27,17 @@ EXIT /b 3
             logger = new ConsoleLogger("TEST ");
         };
 
-        Because of = () => RunAsync().Wait();
+        private Because of = () => RunAsync().Wait();
 
-        It should_return_exit_code_from_process = () => exitCode.Result.ShouldEqual(3);
+        private It should_return_exit_code_from_process = () => exitCode.Result.ShouldEqual(3);
 
-        static async Task RunAsync()
+        private static async Task RunAsync()
         {
             try
             {
                 exitCode =
                     await
-                        Core.ProcessUtils.ProcessRunner.ExecuteAsync(testPath,
+                        Processing.ProcessRunner.ExecuteAsync(testPath,
                             standardOutLog: (message, prefix) => logger.Write(message, "STANDARD"),
                             standardErrorAction: (message, prefix) => logger.WriteError(message, "ERROR"),
                             toolAction: (message, prefix) => logger.Write(message, "TOOL"),

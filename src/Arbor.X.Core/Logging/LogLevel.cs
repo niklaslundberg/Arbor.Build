@@ -7,54 +7,22 @@ namespace Arbor.X.Core.Logging
 {
     public struct LogLevel : IEquatable<LogLevel>
     {
-        public bool Equals(LogLevel other)
-        {
-            return Level == other.Level;
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            return obj is LogLevel && Equals((LogLevel) obj);
-        }
-
-        public override int GetHashCode()
-        {
-            return Level;
-        }
-
-        public static bool operator ==(LogLevel left, LogLevel right)
-        {
-            return left.Equals(right);
-        }
-
-        public static bool operator !=(LogLevel left, LogLevel right)
-        {
-            return !left.Equals(right);
-        }
-
         public static readonly LogLevel Critical = new LogLevel("critical", "Critical", 1);
         public static readonly LogLevel Error = new LogLevel("error", "Error", 2);
         public static readonly LogLevel Warning = new LogLevel("warning", "Warning", 4);
         public static readonly LogLevel Information = new LogLevel("information", "Information", 8);
         public static readonly LogLevel Verbose = new LogLevel("verbose", "Verbose", 16);
         public static readonly LogLevel Debug = new LogLevel("debug", "Debug", 32);
-        readonly string _displayName;
-        readonly string _invariantName;
-        readonly int _level;
+        private readonly string _displayName;
+        private readonly string _invariantName;
+        private readonly int _level;
 
-        LogLevel(string invariantName, string displayName, int level)
+        private LogLevel(string invariantName, string displayName, int level)
         {
             _invariantName = invariantName;
             _displayName = displayName;
             _level = level;
         }
-
-        public string DisplayName => _displayName ?? Default.DisplayName;
-
-        public int Level => _level == 0 ? Default._level : _level;
-
-        public string InvariantName => _invariantName ?? Default.InvariantName;
 
         public static LogLevel Default => Information;
 
@@ -69,6 +37,27 @@ namespace Arbor.X.Core.Logging
                 yield return Verbose;
                 yield return Debug;
             }
+        }
+
+        public string DisplayName => _displayName ?? Default.DisplayName;
+
+        public int Level => _level == 0 ? Default._level : _level;
+
+        public string InvariantName => _invariantName ?? Default.InvariantName;
+
+        public static implicit operator string(LogLevel logLevel)
+        {
+            return logLevel.DisplayName;
+        }
+
+        public static bool operator ==(LogLevel left, LogLevel right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(LogLevel left, LogLevel right)
+        {
+            return !left.Equals(right);
         }
 
         public static LogLevel TryParse(string value)
@@ -92,14 +81,29 @@ namespace Arbor.X.Core.Logging
             return found;
         }
 
+        public bool Equals(LogLevel other)
+        {
+            return Level == other.Level;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            return obj is LogLevel && Equals((LogLevel)obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return Level;
+        }
+
         public override string ToString()
         {
             return DisplayName;
-        }
-
-        public static implicit operator string(LogLevel logLevel)
-        {
-            return logLevel.DisplayName;
         }
 
         [Pure]

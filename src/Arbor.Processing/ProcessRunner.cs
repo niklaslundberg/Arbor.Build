@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Arbor.Exceptions;
 using Arbor.Processing.Core;
 
@@ -14,9 +13,10 @@ namespace Arbor.Processing
 {
     public static class ProcessRunner
     {
-        const string ToolName = "[" + nameof(ProcessRunner) + "] ";
+        private const string ToolName = "[" + nameof(ProcessRunner) + "] ";
 
-        public static async Task<ExitCode> ExecuteAsync(string executePath,
+        public static async Task<ExitCode> ExecuteAsync(
+            string executePath,
             CancellationToken cancellationToken = default(CancellationToken),
             IEnumerable<string> arguments = null,
             Action<string, string> standardOutLog = null,
@@ -27,7 +27,8 @@ namespace Arbor.Processing
             Action<string, string> debugAction = null,
             bool addProcessNameAsLogCategory = false,
             bool addProcessRunnerCategory = false,
-            string parentPrefix = null)
+            string parentPrefix = null,
+            bool noWindow = false)
         {
             if (string.IsNullOrWhiteSpace(executePath))
             {
@@ -45,23 +46,39 @@ namespace Arbor.Processing
 
             string formattedArguments = string.Join(" ", usedArguments.Select(arg => $"\"{arg}\""));
 
-            Task<ExitCode> task = RunProcessAsync(executePath, formattedArguments, standardErrorAction, standardOutLog,
-                cancellationToken, toolAction, verboseAction, environmentVariables, debugAction, addProcessNameAsLogCategory, addProcessRunnerCategory, parentPrefix);
+            Task<ExitCode> task = RunProcessAsync(executePath,
+                formattedArguments,
+                standardErrorAction,
+                standardOutLog,
+                cancellationToken,
+                toolAction,
+                verboseAction,
+                environmentVariables,
+                debugAction,
+                addProcessNameAsLogCategory,
+                addProcessRunnerCategory,
+                parentPrefix,
+                noWindow);
 
             ExitCode exitCode = await task;
 
             return exitCode;
         }
 
-        static async Task<ExitCode> RunProcessAsync(string executePath, string formattedArguments,
-            Action<string, string> standardErrorAction, Action<string, string> standardOutputLog,
-            CancellationToken cancellationToken, Action<string, string> toolAction,
+        private static async Task<ExitCode> RunProcessAsync(
+            string executePath,
+            string formattedArguments,
+            Action<string, string> standardErrorAction,
+            Action<string, string> standardOutputLog,
+            CancellationToken cancellationToken,
+            Action<string, string> toolAction,
             Action<string, string> verboseAction = null,
             IEnumerable<KeyValuePair<string, string>> environmentVariables = null,
             Action<string, string> debugAction = null,
             bool addProcessNameAsLogCategory = false,
             bool addProcessRunnerCategory = false,
-            string parentPrefix = null)
+            string parentPrefix = null,
+            bool noWindow = false)
         {
             toolAction = toolAction ?? ((message, prefix) => { });
             Action<string, string> standardAction = standardOutputLog ?? ((message, prefix) => { });
@@ -78,21 +95,27 @@ namespace Arbor.Processing
 
             bool useShellExecute = standardErrorAction == null && standardOutputLog == null;
 
-            var category = $"[{Path.GetFileNameWithoutExtension(Path.GetFileName(executePath))}] ";
+            string category = $"[{Path.GetFileNameWithoutExtension(Path.GetFileName(executePath))}] ";
 
-            string outputCategory = parentPrefix + (addProcessRunnerCategory ? ToolName :"") + (addProcessNameAsLogCategory ? category : "");
+            string outputCategory = parentPrefix + (addProcessRunnerCategory ? ToolName : "") +
+                                    (addProcessNameAsLogCategory ? category : "");
 
             bool redirectStandardError = standardErrorAction != null;
 
             bool redirectStandardOutput = standardOutputLog != null;
 
             var processStartInfo = new ProcessStartInfo(executePath)
-                                   {
-                                       Arguments = formattedArguments,
-                                       RedirectStandardError = redirectStandardError,
-                                       RedirectStandardOutput = redirectStandardOutput,
-                                       UseShellExecute = useShellExecute
-                                   };
+            {
+                Arguments = formattedArguments,
+                RedirectStandardError = redirectStandardError,
+                RedirectStandardOutput = redirectStandardOutput,
+                UseShellExecute = useShellExecute
+            };
+
+            if (!useShellExecute)
+            {
+                processStartInfo.CreateNoWindow = noWindow;
+            }
 
             if (environmentVariables != null)
             {
@@ -105,10 +128,10 @@ namespace Arbor.Processing
             var exitCode = new ExitCode(-1);
 
             var process = new Process
-                          {
-                              StartInfo = processStartInfo,
-                              EnableRaisingEvents = true
-                          };
+            {
+                StartInfo = processStartInfo,
+                EnableRaisingEvents = true
+            };
 
             process.Disposed += (sender, args) =>
             {
@@ -143,7 +166,8 @@ namespace Arbor.Processing
 
             process.Exited += (sender, args) =>
             {
-                var proc = (Process) sender;
+                var proc = (Process)sender;
+                exitCode = new ExitCode(proc.ExitCode);
                 toolAction($"Process '{processWithArgs}' exited with code {new ExitCode(proc.ExitCode)}", toolCategory);
                 taskCompletionSource.SetResult(new ExitCode(proc.ExitCode));
             };
@@ -185,7 +209,7 @@ namespace Arbor.Processing
 
                 verbose(
                     $"The process '{processWithArgs}' {temp} running in {bits}-bit mode",
-                   toolCategory);
+                    toolCategory);
             }
             catch (Exception ex)
             {
@@ -199,8 +223,14 @@ namespace Arbor.Processing
             bool done = false;
             try
             {
-                while (process.IsAlive(taskCompletionSource.Task, cancellationToken, done, processWithArgs, toolAction,
-                    standardAction, errorAction, verbose))
+                while (process.IsAlive(taskCompletionSource.Task,
+                    cancellationToken,
+                    done,
+                    processWithArgs,
+                    toolAction,
+                    standardAction,
+                    errorAction,
+                    verbose))
                 {
                     if (cancellationToken.IsCancellationRequested)
                     {
@@ -235,7 +265,8 @@ namespace Arbor.Processing
                         {
                             try
                             {
-                                toolAction($"Cancellation is requested, trying to kill process '{processWithArgs}'", toolCategory);
+                                toolAction($"Cancellation is requested, trying to kill process '{processWithArgs}'",
+                                    toolCategory);
 
                                 if (processId > 0)
                                 {
@@ -247,7 +278,8 @@ namespace Arbor.Processing
                                     Process.Start(killProcessPath, args);
 
                                     errorAction(
-                                        $"Killed process '{processWithArgs}' because cancellation was requested", toolCategory);
+                                        $"Killed process '{processWithArgs}' because cancellation was requested",
+                                        toolCategory);
                                 }
                                 else
                                 {
@@ -264,9 +296,11 @@ namespace Arbor.Processing
                                 }
 
                                 errorAction(
-                                    $"ProcessRunner could not kill process '{processWithArgs}' when cancellation was requested", toolCategory);
+                                    $"ProcessRunner could not kill process '{processWithArgs}' when cancellation was requested",
+                                    toolCategory);
                                 errorAction(
-                                    $"Could not kill process '{processWithArgs}' when cancellation was requested", toolCategory);
+                                    $"Could not kill process '{processWithArgs}' when cancellation was requested",
+                                    toolCategory);
                                 errorAction(ex.ToString(), toolCategory);
                             }
                         }
@@ -275,7 +309,8 @@ namespace Arbor.Processing
                 using (process)
                 {
                     verbose(
-                        $"Task status: {taskCompletionSource.Task.Status}, {taskCompletionSource.Task.IsCompleted}", toolCategory);
+                        $"Task status: {taskCompletionSource.Task.Status}, {taskCompletionSource.Task.IsCompleted}",
+                        toolCategory);
                     verbose($"Disposing process '{processWithArgs}'", toolCategory);
                 }
             }
@@ -286,14 +321,15 @@ namespace Arbor.Processing
             {
                 if (processId > 0)
                 {
-                    var stillRunningProcess = Process.GetProcesses().SingleOrDefault(p => p.Id == processId);
+                    Process stillRunningProcess = Process.GetProcesses().SingleOrDefault(p => p.Id == processId);
 
                     if (stillRunningProcess != null)
                     {
                         if (!stillRunningProcess.HasExited)
                         {
                             errorAction(
-                                $"The process with ID {processId.ToString(CultureInfo.InvariantCulture)} '{processWithArgs}' is still running", toolCategory);
+                                $"The process with ID {processId.ToString(CultureInfo.InvariantCulture)} '{processWithArgs}' is still running",
+                                toolCategory);
 
                             return ExitCode.Failure;
                         }
@@ -311,6 +347,5 @@ namespace Arbor.Processing
 
             return exitCode;
         }
-
     }
 }

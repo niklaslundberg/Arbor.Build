@@ -2,15 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Arbor.Defensive.Collections;
 
 namespace Arbor.X.Core.GenericExtensions
 {
     public static class DisplayExtensions
     {
-        public static string DisplayAsTable(this IEnumerable<IDictionary<string, string>> dictionaries,
+        public static string DisplayAsTable(
+            this IEnumerable<IDictionary<string, string>> dictionaries,
             char padChar = '.')
         {
-            var materialized = dictionaries.SafeToReadOnlyCollection();
+            IReadOnlyCollection<IDictionary<string, string>> materialized = dictionaries.SafeToReadOnlyCollection();
 
             if (dictionaries == null || !materialized.Any())
             {
@@ -27,15 +29,18 @@ namespace Arbor.X.Core.GenericExtensions
 
             var maxLengths =
                 allKeys.Select(
-                    key => new
-                           {
-                               Key = key,
-                               MaxLength = Math.Max(key.Length, Math.Max(
-                                   materialized.Where(dictionary => dictionary.ContainsKey(key))
-                                       .Select(dictionary => dictionary[key])
-                                       .Select(value => (value ?? "").Length)
-                                       .Max(), NoValue.Length))
-                           })
+                        key => new
+                        {
+                            Key = key,
+                            MaxLength = Math.Max(
+                                key.Length,
+                                Math.Max(
+                                    materialized.Where(dictionary => dictionary.ContainsKey(key))
+                                        .Select(dictionary => dictionary[key])
+                                        .Select(value => (value ?? string.Empty).Length)
+                                        .Max(),
+                                    NoValue.Length))
+                        })
                     .ToArray();
 
             var builder = new StringBuilder();
@@ -54,7 +59,7 @@ namespace Arbor.X.Core.GenericExtensions
 
             foreach (IDictionary<string, string> dictionary in materialized)
             {
-                var indexedKeys = allKeys.Select((item, index) => new {Key = item, Index = index}).ToArray();
+                var indexedKeys = allKeys.Select((item, index) => new { Key = item, Index = index }).ToArray();
 
                 foreach (var indexedKey in indexedKeys)
                 {
@@ -82,6 +87,7 @@ namespace Arbor.X.Core.GenericExtensions
                         builder.Append(new string(padChar, padLength));
                     }
                 }
+
                 builder.AppendLine();
             }
 

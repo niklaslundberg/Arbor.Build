@@ -1,17 +1,16 @@
-using Alphaleonis.Win32.Filesystem;
+using System.IO;
 using Arbor.X.Core.IO;
-using Arbor.X.Core.Tools;
 using Machine.Specifications;
 
 namespace Arbor.X.Tests.Integration.PathExtensions
 {
-    [Subject(typeof (Core.IO.PathExtensions))]
+    [Subject(typeof(Core.IO.PathExtensions))]
     public class when_checking_file_is_blacklisted_without_root_dir
     {
-        static bool isBlackListed;
-        static PathLookupSpecification specification;
+        private static bool isBlackListed;
+        private static PathLookupSpecification specification;
 
-        Establish context = () =>
+        private Establish context = () =>
         {
             new DirectoryInfo(@"C:\Temp\root\afolder").EnsureExists();
             using (File.Create(@"C:\Temp\root\afile.txt"))
@@ -20,7 +19,7 @@ namespace Arbor.X.Tests.Integration.PathExtensions
             specification = DefaultPaths.DefaultPathLookupSpecification;
         };
 
-        Because of = () => { isBlackListed = specification.IsFileBlackListed(@"C:\Temp\root\afile.txt"); };
-        It should_return_true = () => isBlackListed.ShouldBeTrue();
+        private Because of = () => { isBlackListed = specification.IsFileBlackListed(@"C:\Temp\root\afile.txt"); };
+        private It should_return_true = () => isBlackListed.ShouldBeTrue();
     }
 }

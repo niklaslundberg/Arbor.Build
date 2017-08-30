@@ -7,11 +7,11 @@
 		},
 		{
 			"key": "minor",
-			"value": "0"
+			"value": "1"
 		},
 		{
 			"key": "patch",
-			"value": "42"
+            "value": "0"
 		}
 	]
 }

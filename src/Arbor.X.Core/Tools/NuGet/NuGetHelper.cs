@@ -8,15 +8,12 @@ using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;
-using File = Alphaleonis.Win32.Filesystem.File;
-using FileInfo = Alphaleonis.Win32.Filesystem.FileInfo;
-using Path = Alphaleonis.Win32.Filesystem.Path;
 
 namespace Arbor.X.Core.Tools.NuGet
 {
     public class NuGetHelper
     {
-        readonly ILogger _logger;
+        private readonly ILogger _logger;
 
         public NuGetHelper(ILogger logger)
         {
@@ -25,8 +22,8 @@ namespace Arbor.X.Core.Tools.NuGet
 
         public async Task<string> EnsureNuGetExeExistsAsync(string exeUri, CancellationToken cancellationToken)
         {
-            var baseDir = AppDomain.CurrentDomain.BaseDirectory;
-            var targetFile = Path.Combine(baseDir, "nuget.exe");
+            string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+            string targetFile = Path.Combine(baseDir, "nuget.exe");
 
             const int MaxRetries = 6;
 
@@ -34,7 +31,7 @@ namespace Arbor.X.Core.Tools.NuGet
 
             if (!File.Exists(targetFile))
             {
-                var parentExePath = Path.Combine(currentExePath.Directory.Parent.FullName, currentExePath.Name);
+                string parentExePath = Path.Combine(currentExePath.Directory.Parent.FullName, currentExePath.Name);
                 if (File.Exists(parentExePath))
                 {
                     _logger.Write($"Found NuGet in path '{parentExePath}', skipping download");
@@ -43,7 +40,7 @@ namespace Arbor.X.Core.Tools.NuGet
 
                 _logger.Write($"'{targetFile}' does not exist, will try to download from nuget.org");
 
-                List<string> uris = new List<string>();
+                var uris = new List<string>();
 
                 Uri userUri;
                 if (!string.IsNullOrWhiteSpace(exeUri) && Uri.TryCreate(exeUri, UriKind.Absolute, out userUri))
@@ -78,15 +75,21 @@ namespace Arbor.X.Core.Tools.NuGet
                 }
             }
 
-
-            bool update = Environment.GetEnvironmentVariable(WellKnownVariables.NuGetVersionUpdatedEnabled).TryParseBool(defaultValue: false);
+            bool update = Environment.GetEnvironmentVariable(WellKnownVariables.NuGetVersionUpdatedEnabled)
+                .TryParseBool(false);
 
             if (update)
             {
                 try
                 {
                     var arguments = new List<string> { "update", "-self" };
-                    await ProcessRunner.ExecuteAsync(targetFile, arguments: arguments, logger: _logger, addProcessNameAsLogCategory: true, addProcessRunnerCategory: true, cancellationToken: cancellationToken);
+                    await ProcessHelper.ExecuteAsync(
+                        targetFile,
+                        arguments,
+                        _logger,
+                        addProcessNameAsLogCategory: true,
+                        addProcessRunnerCategory: true,
+                        cancellationToken: cancellationToken);
                 }
                 catch (Exception ex)
                 {
@@ -97,16 +100,20 @@ namespace Arbor.X.Core.Tools.NuGet
             return targetFile;
         }
 
-        async Task DownloadNuGetExeAsync(string baseDir, string targetFile, string nugetExeUri, CancellationToken cancellationToken)
+        private async Task DownloadNuGetExeAsync(
+            string baseDir,
+            string targetFile,
+            string nugetExeUri,
+            CancellationToken cancellationToken)
         {
-            var tempFile = Path.Combine(baseDir, $"nuget.exe.{Guid.NewGuid()}.tmp");
+            string tempFile = Path.Combine(baseDir, $"nuget.exe.{Guid.NewGuid()}.tmp");
 
             _logger.WriteVerbose($"Downloading {nugetExeUri} to {tempFile}");
             try
             {
                 using (var client = new HttpClient())
                 {
-                    using (var stream = await client.GetStreamAsync(nugetExeUri))
+                    using (Stream stream = await client.GetStreamAsync(nugetExeUri))
                     {
                         using (var fs = new FileStream(tempFile, FileMode.Create))
                         {
@@ -119,7 +126,7 @@ namespace Arbor.X.Core.Tools.NuGet
             {
                 if (File.Exists(tempFile) && new FileInfo(tempFile).Length > 0)
                 {
-                    File.Copy(tempFile, targetFile, overwrite: true);
+                    File.Copy(tempFile, targetFile, true);
                     _logger.WriteVerbose($"Copied {tempFile} to {targetFile}");
                     File.Delete(tempFile);
                     _logger.WriteVerbose($"Deleted temp file {tempFile}");

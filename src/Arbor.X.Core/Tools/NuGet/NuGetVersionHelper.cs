@@ -1,18 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
-
 using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.Logging;
-
 using NuGet.Versioning;
-
-using NUnit.Framework;
 
 namespace Arbor.X.Core.Tools.NuGet
 {
     public static class NuGetVersionHelper
     {
-        public static string GetVersion(string version, bool isReleaseBuild, string suffix, bool enableBuildNumber, string packageBuildMetadata, ILogger logger, NuGetVersioningSettings nugetVersioningSettings)
+        public static string GetVersion(
+            string version,
+            bool isReleaseBuild,
+            string suffix,
+            bool enableBuildNumber,
+            string packageBuildMetadata,
+            ILogger logger,
+            NuGetVersioningSettings nugetVersioningSettings)
         {
             Version parsedVersion;
             if (!Version.TryParse(version, out parsedVersion))
@@ -22,17 +24,21 @@ namespace Arbor.X.Core.Tools.NuGet
 
             if (isReleaseBuild)
             {
-                string parsed = parsedVersion.ToString(fieldCount: 3);
+                string parsed = parsedVersion.ToString(3);
 
                 logger.Write($"Build is release build, using major.minor.patch as the version, {parsed}");
 
                 return parsed;
             }
+
             string buildVersion;
 
-            int usePadding = nugetVersioningSettings.SemVerVersion == 1 && nugetVersioningSettings.MaxZeroPaddingLength > 0 ? nugetVersioningSettings.MaxZeroPaddingLength : 0;
+            int usePadding =
+                nugetVersioningSettings.SemVerVersion == 1 && nugetVersioningSettings.MaxZeroPaddingLength > 0
+                    ? nugetVersioningSettings.MaxZeroPaddingLength
+                    : 0;
 
-            string semVer2PreReleaseSeparator = nugetVersioningSettings.SemVerVersion == 2 ? "." : "";
+            string semVer2PreReleaseSeparator = nugetVersioningSettings.SemVerVersion == 2 ? "." : string.Empty;
 
             if (!string.IsNullOrWhiteSpace(suffix))
             {
@@ -41,14 +47,15 @@ namespace Arbor.X.Core.Tools.NuGet
                     buildVersion =
                         $"{parsedVersion.Major}.{parsedVersion.Minor}.{parsedVersion.Build}-{suffix}{semVer2PreReleaseSeparator}{parsedVersion.Revision.ToString().LeftPad(usePadding, '0')}";
 
-                    logger.Write($"Package suffix is {suffix}, using major.minor.patch-{{suffix}}build as the version, {buildVersion}");
-
+                    logger.Write(
+                        $"Package suffix is {suffix}, using major.minor.patch-{{suffix}}build as the version, {buildVersion}");
                 }
                 else
                 {
                     buildVersion = $"{parsedVersion.Major}.{parsedVersion.Minor}.{parsedVersion.Build}-{suffix}";
 
-                    logger.Write($"Package suffix is {suffix}, using major.minor.patch-{{suffix}} as the version, {buildVersion}");
+                    logger.Write(
+                        $"Package suffix is {suffix}, using major.minor.patch-{{suffix}} as the version, {buildVersion}");
                 }
             }
             else
@@ -71,7 +78,7 @@ namespace Arbor.X.Core.Tools.NuGet
 
             if (!string.IsNullOrWhiteSpace(packageBuildMetadata))
             {
-               final= $"{buildVersion}+{packageBuildMetadata.TrimStart('+')}";
+                final = $"{buildVersion}+{packageBuildMetadata.TrimStart('+')}";
             }
             else
             {
@@ -88,11 +95,4 @@ namespace Arbor.X.Core.Tools.NuGet
             return final;
         }
     }
-
-    public class NuGetVersioningSettings
-    {
-        public int MaxZeroPaddingLength { get; set; }
-
-        public int SemVerVersion { get; set; }
-    }
-} ;
+}

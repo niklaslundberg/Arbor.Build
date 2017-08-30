@@ -4,20 +4,15 @@ namespace Arbor.X.Core.Logging
 {
     public class ConsoleLogger : ILogger
     {
-        readonly string _prefix;
-        LogLevel _maxLogLevel;
+        private readonly string _prefix;
 
         public ConsoleLogger(string prefix = "", LogLevel maxLogLevel = default(LogLevel))
         {
-            _maxLogLevel = maxLogLevel;
-            _prefix = prefix ?? "";
+            LogLevel = maxLogLevel;
+            _prefix = prefix ?? string.Empty;
         }
 
-        public LogLevel LogLevel
-        {
-            get { return _maxLogLevel; }
-            set { _maxLogLevel = value; }
-        }
+        public LogLevel LogLevel { get; set; }
 
         public void WriteDebug(string message, string prefix = null)
         {
@@ -25,6 +20,7 @@ namespace Arbor.X.Core.Logging
             {
                 return;
             }
+
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.WriteLine(GetTotalMessage(GetPrefix(prefix), message));
             Console.ResetColor();
@@ -36,7 +32,8 @@ namespace Arbor.X.Core.Logging
             {
                 return;
             }
-            if (LogLevel.Error.Level <= _maxLogLevel.Level)
+
+            if (LogLevel.Error.Level <= LogLevel.Level)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.Error.WriteLine(GetTotalMessage(GetPrefix(prefix), message));
@@ -50,7 +47,8 @@ namespace Arbor.X.Core.Logging
             {
                 return;
             }
-            if (LogLevel.Information.Level <= _maxLogLevel.Level)
+
+            if (LogLevel.Information.Level <= LogLevel.Level)
             {
                 Console.ResetColor();
                 Console.WriteLine(GetTotalMessage(GetPrefix(prefix), message));
@@ -63,7 +61,8 @@ namespace Arbor.X.Core.Logging
             {
                 return;
             }
-            if (LogLevel.Warning.Level <= _maxLogLevel.Level)
+
+            if (LogLevel.Warning.Level <= LogLevel.Level)
             {
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
                 Console.WriteLine(GetTotalMessage(GetPrefix(prefix), message));
@@ -77,7 +76,8 @@ namespace Arbor.X.Core.Logging
             {
                 return;
             }
-            if (LogLevel.Verbose.Level <= _maxLogLevel.Level)
+
+            if (LogLevel.Verbose.Level <= LogLevel.Level)
             {
                 Console.ForegroundColor = ConsoleColor.Gray;
                 Console.WriteLine(GetTotalMessage(GetPrefix(prefix), message));
@@ -85,16 +85,16 @@ namespace Arbor.X.Core.Logging
             }
         }
 
-        string GetPrefix(string prefix)
+        private string GetPrefix(string prefix)
         {
             string value = !string.IsNullOrWhiteSpace(prefix) ? prefix : _prefix;
 
             return value;
         }
 
-        string GetTotalMessage(string prefix, string message)
+        private string GetTotalMessage(string prefix, string message)
         {
-            return (prefix ?? "").Trim(' ') + " " + (message ?? "").Trim(' ');
+            return (prefix ?? string.Empty).Trim(' ') + " " + (message ?? string.Empty).Trim(' ');
         }
     }
 }

@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Alphaleonis.Win32.Filesystem;
+using Arbor.Defensive.Collections;
+using Arbor.Processing.Core;
 using Arbor.Sorbus.Core;
 using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.IO;
-
 using JetBrains.Annotations;
-
 using DelegateLogger = Arbor.Sorbus.Core.DelegateLogger;
 using ILogger = Arbor.X.Core.Logging.ILogger;
 
@@ -20,18 +19,15 @@ namespace Arbor.X.Core.Tools.Versioning
     [Priority(200)]
     public class AssemblyInfoPatcher : ITool
     {
-        string _filePattern;
+        private string _filePattern;
 
-        public Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables,
+        public Task<ExitCode> ExecuteAsync(
+            ILogger logger,
+            IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            var delegateLogger = new DelegateLogger(error: logger.WriteError, warning: logger.WriteWarning,
-                info: logger.Write, verbose: logger.WriteVerbose, debug: logger.WriteDebug) { LogLevel = Sorbus.Core.LogLevel.TryParse(logger.LogLevel.Level) };
-
-            var app = new AssemblyPatcherApp(delegateLogger);
-
             bool assemblyVersionPatchingEnabled =
-                buildVariables.GetBooleanByKey(WellKnownVariables.AssemblyFilePatchingEnabled, defaultValue: true);
+                buildVariables.GetBooleanByKey(WellKnownVariables.AssemblyFilePatchingEnabled, true);
 
             if (!assemblyVersionPatchingEnabled)
             {
@@ -39,24 +35,38 @@ namespace Arbor.X.Core.Tools.Versioning
                 return Task.FromResult(ExitCode.Success);
             }
 
-            _filePattern = buildVariables.GetVariableValueOrDefault(WellKnownVariables.AssemblyFilePatchingFilePattern,
+            var delegateLogger = new DelegateLogger(
+                logger.WriteError,
+                logger.WriteWarning,
+                logger.Write,
+                logger.WriteVerbose,
+                logger.WriteDebug)
+            {
+                LogLevel = Sorbus.Core.LogLevel.TryParse(logger.LogLevel.Level)
+            };
+
+            var app = new AssemblyPatcherApp(delegateLogger);
+
+
+            _filePattern = buildVariables.GetVariableValueOrDefault(
+                WellKnownVariables.AssemblyFilePatchingFilePattern,
                 "AssemblyInfo.cs");
 
-            logger.WriteVerbose(string.Format("Using assembly version file pattern '{0}' to lookup files to patch", _filePattern));
+            logger.WriteVerbose($"Using assembly version file pattern '{_filePattern}' to lookup files to patch");
 
             string sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
 
             IVariable netAssemblyVersionVar =
-                buildVariables.SingleOrDefault(@var => @var.Key == WellKnownVariables.NetAssemblyVersion);
+                buildVariables.SingleOrDefault(var => var.Key == WellKnownVariables.NetAssemblyVersion);
             string netAssemblyVersion;
 
             if (netAssemblyVersionVar == null || string.IsNullOrWhiteSpace(netAssemblyVersionVar.Value))
             {
-                logger.WriteWarning(string.Format("The build variable {0} is not defined or empty",
-                    WellKnownVariables.NetAssemblyVersion));
+                logger.WriteWarning(
+                    $"The build variable {WellKnownVariables.NetAssemblyVersion} is not defined or empty");
                 netAssemblyVersion = "0.0.1.0";
 
-                logger.WriteWarning(string.Format("Using fall-back version {0}", netAssemblyVersion));
+                logger.WriteWarning($"Using fall-back version {netAssemblyVersion}");
             }
             else
             {
@@ -65,9 +75,8 @@ namespace Arbor.X.Core.Tools.Versioning
 
             var assemblyVersion = new Version(netAssemblyVersion);
 
-
             IVariable netAssemblyFileVersionVar =
-                buildVariables.SingleOrDefault(@var => @var.Key == WellKnownVariables.NetAssemblyFileVersion);
+                buildVariables.SingleOrDefault(var => var.Key == WellKnownVariables.NetAssemblyFileVersion);
             string netAssemblyFileVersion;
 
             if (string.IsNullOrWhiteSpace(netAssemblyFileVersionVar?.Value))
@@ -87,16 +96,25 @@ namespace Arbor.X.Core.Tools.Versioning
 
             AssemblyMetaData assemblyMetadata = null;
 
-            if (buildVariables.GetBooleanByKey(WellKnownVariables.NetAssemblyMetadataEnabled, defaultValue: false))
+            if (buildVariables.GetBooleanByKey(WellKnownVariables.NetAssemblyMetadataEnabled, false))
             {
-                var company = buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyCompany, defaultValue: null);
-                var description = buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyDescription, defaultValue: null);
-                var configuration = buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyConfiguration, defaultValue: null);
-                var copyright = buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyCopyright, defaultValue: null);
-                var product = buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyProduct, defaultValue: null);
-                var trademark = buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyTrademark, defaultValue: null);
+                string company = buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyCompany, null);
+                string description =
+                    buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyDescription, null);
+                string configuration =
+                    buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyConfiguration, null);
+                string copyright =
+                    buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyCopyright, null);
+                string product = buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyProduct, null);
+                string trademark =
+                    buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyTrademark, null);
 
-                assemblyMetadata = new AssemblyMetaData(description, configuration, company, product, copyright,
+                assemblyMetadata = new AssemblyMetaData(
+                    description,
+                    configuration,
+                    company,
+                    product,
+                    copyright,
                     trademark);
             }
 
@@ -110,20 +128,31 @@ namespace Arbor.X.Core.Tools.Versioning
                 PathLookupSpecification defaultPathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification;
 
                 IReadOnlyCollection<AssemblyInfoFile> assemblyFiles = sourceDirectory
-                    .GetFilesRecursive(new[] { ".cs"}, defaultPathLookupSpecification, rootDir: sourceRoot)
+                    .GetFilesRecursive(new[] { ".cs" }, defaultPathLookupSpecification, sourceRoot)
                     .Where(file => file.Name.Equals(_filePattern, StringComparison.InvariantCultureIgnoreCase))
                     .Select(file => new AssemblyInfoFile(file.FullName))
                     .ToReadOnlyCollection();
 
-                logger.WriteDebug(string.Format("Using file pattern '{0}' to find assembly info files. Found these files: [{3}] {1}{2}", _filePattern, Environment.NewLine, string.Join(Environment.NewLine, assemblyFiles.Select(item => " * " + item.FullPath)), assemblyFiles.Count));
+                logger.WriteDebug(string.Format(
+                    "Using file pattern '{0}' to find assembly info files. Found these files: [{3}] {1}{2}",
+                    _filePattern,
+                    Environment.NewLine,
+                    string.Join(Environment.NewLine, assemblyFiles.Select(item => " * " + item.FullPath)),
+                    assemblyFiles.Count));
 
-                app.Patch(new AssemblyVersion(assemblyVersion), new AssemblyFileVersion(assemblyFileVersion), sourceRoot, assemblyFiles, assemblyMetaData: assemblyMetadata);
+                app.Patch(
+                    new AssemblyVersion(assemblyVersion),
+                    new AssemblyFileVersion(assemblyFileVersion),
+                    sourceRoot,
+                    assemblyFiles,
+                    assemblyMetadata);
             }
             catch (Exception ex)
             {
-                logger.WriteError(string.Format("Could not patch assembly infos. {0}", ex));
+                logger.WriteError($"Could not patch assembly infos. {ex}");
                 return Task.FromResult(ExitCode.Failure);
             }
+
             return Task.FromResult(ExitCode.Success);
         }
     }

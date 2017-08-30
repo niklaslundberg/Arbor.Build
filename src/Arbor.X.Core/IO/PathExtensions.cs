@@ -2,15 +2,19 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-
-using Arbor.X.Core.GenericExtensions;
+using Arbor.Defensive.Collections;
 using Arbor.X.Core.Logging;
 
 namespace Arbor.X.Core.IO
 {
     public static class PathExtensions
     {
-        public static bool IsFileBlackListed(this PathLookupSpecification pathLookupSpecification, string sourceFile, string rootDir = null, bool allowNonExistingFiles = false, ILogger logger = null)
+        public static bool IsFileBlackListed(
+            this PathLookupSpecification pathLookupSpecification,
+            string sourceFile,
+            string rootDir = null,
+            bool allowNonExistingFiles = false,
+            ILogger logger = null)
         {
             if (pathLookupSpecification == null)
             {
@@ -36,27 +40,37 @@ namespace Arbor.X.Core.IO
                 return true;
             }
 
-            bool isBlackListed = HasAnyPathSegmentStartsWith(sourceFileInfo.Name, pathLookupSpecification.IgnoredFileStartsWithPatterns);
+            bool isBlackListed = HasAnyPathSegmentStartsWith(
+                sourceFileInfo.Name,
+                pathLookupSpecification.IgnoredFileStartsWithPatterns);
 
             if (isBlackListed)
             {
                 logger?.WriteDebug($"Path segments of '{sourceFile}' makes it blacklisted");
             }
 
-            var ignoredFileNameParts = pathLookupSpecification.IgnoredFileNameParts.Where(part => !string.IsNullOrEmpty(part)).Where(
-                part => sourceFileInfo.Name.IndexOf(part, StringComparison.InvariantCultureIgnoreCase) >= 0).SafeToReadOnlyCollection();
+            IReadOnlyCollection<string> ignoredFileNameParts = pathLookupSpecification.IgnoredFileNameParts
+                .Where(part => !string.IsNullOrEmpty(part))
+                .Where(
+                    part => sourceFileInfo.Name.IndexOf(part, StringComparison.InvariantCultureIgnoreCase) >= 0)
+                .SafeToReadOnlyCollection();
 
             isBlackListed = isBlackListed || ignoredFileNameParts.Any();
 
             if (ignoredFileNameParts.Any())
             {
-                logger?.WriteDebug($"Ignored file name parts of '{sourceFile}' makes it blacklisted: {string.Join(", ", ignoredFileNameParts.Select(item => $"'{item}'"))}");
+                logger?.WriteDebug(
+                    $"Ignored file name parts of '{sourceFile}' makes it blacklisted: {string.Join(", ", ignoredFileNameParts.Select(item => $"'{item}'"))}");
             }
 
             return isBlackListed;
         }
 
-        public static bool IsBlackListed(this PathLookupSpecification pathLookupSpecification, string sourceDir, string rootDir = null, ILogger logger = null)
+        public static bool IsBlackListed(
+            this PathLookupSpecification pathLookupSpecification,
+            string sourceDir,
+            string rootDir = null,
+            ILogger logger = null)
         {
             if (pathLookupSpecification == null)
             {
@@ -73,10 +87,12 @@ namespace Arbor.X.Core.IO
                 return true;
             }
 
-            var sourceDirSegments = GetSourceDirSegments(sourceDir, rootDir);
+            string[] sourceDirSegments = GetSourceDirSegments(sourceDir, rootDir);
 
-            bool hasAnyPathSegment = HasAnyPathSegment(sourceDirSegments,
-                pathLookupSpecification.IgnoredDirectorySegments, logger);
+            bool hasAnyPathSegment = HasAnyPathSegment(
+                sourceDirSegments,
+                pathLookupSpecification.IgnoredDirectorySegments,
+                logger);
 
             if (hasAnyPathSegment)
             {
@@ -84,7 +100,8 @@ namespace Arbor.X.Core.IO
                 return true;
             }
 
-            bool hasAnyPathSegmentPart = HasAnyPathSegmentPart(sourceDirSegments,
+            bool hasAnyPathSegmentPart = HasAnyPathSegmentPart(
+                sourceDirSegments,
                 pathLookupSpecification.IgnoredDirectorySegmentParts);
 
             if (hasAnyPathSegmentPart)
@@ -93,12 +110,14 @@ namespace Arbor.X.Core.IO
                 return true;
             }
 
-            bool hasAnyPartStartsWith = HasAnyPathSegmentStartsWith(sourceDirSegments,
+            bool hasAnyPartStartsWith = HasAnyPathSegmentStartsWith(
+                sourceDirSegments,
                 pathLookupSpecification.IgnoredDirectoryStartsWithPatterns);
 
             if (hasAnyPartStartsWith)
             {
-                logger?.WriteDebug($"The directory '{sourceDir}' has a path that starts with a pattern that is blacklisted");
+                logger?.WriteDebug(
+                    $"The directory '{sourceDir}' has a path that starts with a pattern that is blacklisted");
                 return true;
             }
 
@@ -109,51 +128,53 @@ namespace Arbor.X.Core.IO
 
         private static string[] GetSourceDirSegments(string sourceDir, string rootDir)
         {
-            var path = string.IsNullOrWhiteSpace(rootDir) ?
-                sourceDir :
-                sourceDir.Replace(rootDir, "");
+            string path = string.IsNullOrWhiteSpace(rootDir) ? sourceDir : sourceDir.Replace(rootDir, string.Empty);
 
-            var sourceDirSegments = path.Split(new[] {Path.DirectorySeparatorChar},
+            string[] sourceDirSegments = path.Split(
+                new[] { Path.DirectorySeparatorChar },
                 StringSplitOptions.RemoveEmptyEntries);
             return sourceDirSegments;
         }
 
-        static bool HasAnyPathSegment(IEnumerable<string> segments, IEnumerable<string> patterns, ILogger logger = null)
+        private static bool HasAnyPathSegment(
+            IEnumerable<string> segments,
+            IEnumerable<string> patterns,
+            ILogger logger = null)
         {
             return segments.Any(segment => HasAnyPathSegment(segment, patterns, logger));
         }
 
-        static bool HasAnyPathSegment(string segment, IEnumerable<string> patterns, ILogger logger = null)
+        private static bool HasAnyPathSegment(string segment, IEnumerable<string> patterns, ILogger logger = null)
         {
             return patterns.Any(pattern =>
+            {
+                bool isMatch = segment.Equals(pattern, StringComparison.InvariantCultureIgnoreCase);
+
+                if (isMatch)
                 {
-                    bool isMatch = segment.Equals(pattern, StringComparison.InvariantCultureIgnoreCase);
+                    logger?.WriteDebug($"Segment '{segment}' matches pattern '{pattern}'");
+                }
 
-                    if (isMatch)
-                    {
-                        logger?.WriteDebug($"Segment '{segment}' matches pattern '{pattern}'");
-                    }
-
-                    return isMatch;
-                });
+                return isMatch;
+            });
         }
 
-        static bool HasAnyPathSegmentStartsWith(IEnumerable<string> segments, IEnumerable<string> patterns)
+        private static bool HasAnyPathSegmentStartsWith(IEnumerable<string> segments, IEnumerable<string> patterns)
         {
             return segments.Any(segment => HasAnyPathSegmentStartsWith(segment, patterns));
         }
 
-        static bool HasAnyPathSegmentStartsWith(string segment, IEnumerable<string> patterns)
+        private static bool HasAnyPathSegmentStartsWith(string segment, IEnumerable<string> patterns)
         {
             return patterns.Any(pattern => segment.StartsWith(pattern, StringComparison.InvariantCultureIgnoreCase));
         }
 
-        static bool HasAnyPathSegmentPart(IEnumerable<string> segments, IEnumerable<string> patterns)
+        private static bool HasAnyPathSegmentPart(IEnumerable<string> segments, IEnumerable<string> patterns)
         {
             return segments.Any(segment => HasAnyPathSegmentPart(segment, patterns));
         }
 
-        static bool HasAnyPathSegmentPart(string segment, IEnumerable<string> patterns)
+        private static bool HasAnyPathSegmentPart(string segment, IEnumerable<string> patterns)
         {
             return patterns.Any(pattern => segment.IndexOf(pattern, StringComparison.InvariantCultureIgnoreCase) >= 0);
         }

@@ -6,11 +6,9 @@ namespace Arbor.X.Core.Tools.MSBuild
 {
     public sealed class MSBuildVerbositoyLevel
     {
-        readonly string _level;
-
-        MSBuildVerbositoyLevel(string level)
+        private MSBuildVerbositoyLevel(string level)
         {
-            _level = level;
+            Level = level;
         }
 
         public static MSBuildVerbositoyLevel Normal => new MSBuildVerbositoyLevel("normal");
@@ -23,8 +21,6 @@ namespace Arbor.X.Core.Tools.MSBuild
 
         public static MSBuildVerbositoyLevel Default => Normal;
 
-        public string Level => _level;
-
         public static IEnumerable<MSBuildVerbositoyLevel> AllValues
         {
             get
@@ -36,10 +32,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             }
         }
 
-        public override string ToString()
-        {
-            return _level;
-        }
+        public string Level { get; }
 
         public static MSBuildVerbositoyLevel TryParse(string value)
         {
@@ -58,6 +51,11 @@ namespace Arbor.X.Core.Tools.MSBuild
             }
 
             return found;
+        }
+
+        public override string ToString()
+        {
+            return Level;
         }
     }
 }

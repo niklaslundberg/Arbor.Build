@@ -1,0 +1,17 @@
+Arbor.Castanea
+Arbor.KVConfiguration.SystemConfiguration
+Arbor.KVConfiguration.UserConfiguration
+Arbor.Sorbus
+Autofac
+FubuCsProjFile
+JetBrains.Annotations
+Machine.Specifications
+Microsoft.CodeDom.Providers.DotNetCompilerPlatform
+Microsoft.Web.Xdt
+NLog
+NuGet.Packaging
+NUnit
+RefactoringEssentials
+StyleCop.Analyzers
+Microsoft.Net.Compilers
+System.Runtime

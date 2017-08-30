@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
@@ -7,7 +8,7 @@ namespace Arbor.X.Core.Tools.NuGet
 {
     public class NuSpec
     {
-        readonly string _xml;
+        private readonly string _xml;
 
         public NuSpec(string packageId, string nuGetPackageVersion, string filePath)
         {
@@ -15,6 +16,7 @@ namespace Arbor.X.Core.Tools.NuGet
             {
                 throw new ArgumentNullException(nameof(filePath));
             }
+
             if (!File.Exists(filePath))
             {
                 throw new ArgumentException($"The file '{filePath}' does not exist", nameof(filePath));
@@ -22,10 +24,12 @@ namespace Arbor.X.Core.Tools.NuGet
 
             Version = nuGetPackageVersion;
             PackageId = packageId;
-            var xml = XDocument.Load(filePath);
+            XDocument xml = XDocument.Load(filePath);
 
-            var metaData = xml.Descendants()
-                .Where(item => item.Name.LocalName == "package").Descendants().Where(item => item.Name.LocalName == "metadata")
+            List<XElement> metaData = xml.Descendants()
+                .Where(item => item.Name.LocalName == "package")
+                .Descendants()
+                .Where(item => item.Name.LocalName == "metadata")
                 .ToList();
 
             metaData.Descendants().Single(item => item.Name.LocalName == "id").Value = packageId;
@@ -34,8 +38,37 @@ namespace Arbor.X.Core.Tools.NuGet
             _xml = xml.ToString(SaveOptions.None);
         }
 
-        public string PackageId { get; private set; }
-        public string Version { get; private set; }
+        public string PackageId { get; }
+
+        public string Version { get; }
+
+        public static NuSpec Parse(string nuspecFilePath)
+        {
+            if (string.IsNullOrWhiteSpace(nuspecFilePath))
+            {
+                throw new ArgumentNullException(nameof(nuspecFilePath));
+            }
+
+            if (!File.Exists(nuspecFilePath))
+            {
+                throw new ArgumentException(
+                    $"The file '{nuspecFilePath}' does not exist",
+                    nameof(nuspecFilePath));
+            }
+
+            XDocument document = XDocument.Load(nuspecFilePath);
+
+            List<XElement> metaData = document.Descendants()
+                .Where(item => item.Name.LocalName == "package")
+                .Descendants()
+                .Where(item => item.Name.LocalName == "metadata")
+                .ToList();
+
+            string id = metaData.Descendants().Single(item => item.Name.LocalName == "id").Value;
+            string version = metaData.Descendants().Single(item => item.Name.LocalName == "version").Value;
+
+            return new NuSpec(id, version, nuspecFilePath);
+        }
 
         public void Save(string filePath)
         {
@@ -55,34 +88,6 @@ namespace Arbor.X.Core.Tools.NuGet
             }
 
             return base.ToString();
-        }
-
-        public static NuSpec Parse(string nuspecFilePath)
-        {
-            if (string.IsNullOrWhiteSpace(nuspecFilePath))
-            {
-                throw new ArgumentNullException(nameof(nuspecFilePath));
-            }
-
-            if (!File.Exists(nuspecFilePath))
-            {
-                throw new ArgumentException(
-                    $"The file '{nuspecFilePath}' does not exist",
-                    nameof(nuspecFilePath));
-            }
-
-            var document = XDocument.Load(nuspecFilePath);
-
-            var metaData = document.Descendants()
-                .Where(item => item.Name.LocalName == "package")
-                .Descendants()
-                .Where(item => item.Name.LocalName == "metadata")
-                .ToList();
-
-            var id = metaData.Descendants().Single(item => item.Name.LocalName == "id").Value;
-            var version = metaData.Descendants().Single(item => item.Name.LocalName == "version").Value;
-
-            return new NuSpec(id, version, nuspecFilePath);
         }
     }
 }

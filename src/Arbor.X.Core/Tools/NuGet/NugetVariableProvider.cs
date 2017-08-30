@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Alphaleonis.Win32.Filesystem;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Logging;
-
 using JetBrains.Annotations;
 
 namespace Arbor.X.Core.Tools.NuGet
@@ -13,27 +12,38 @@ namespace Arbor.X.Core.Tools.NuGet
     [UsedImplicitly]
     public class NugetVariableProvider : IVariableProvider
     {
-        CancellationToken _cancellationToken;
+        private CancellationToken _cancellationToken;
 
-        public async Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
+        public int Order => 3;
+
+        public async Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(
+            ILogger logger,
+            IReadOnlyCollection<IVariable> buildVariables,
+            CancellationToken cancellationToken)
         {
             _cancellationToken = cancellationToken;
 
             string userSpecifiedNuGetExePath =
-                buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_NuGet_ExePath_Custom, "");
+                buildVariables.GetVariableValueOrDefault(
+                    WellKnownVariables.ExternalTools_NuGet_ExePath_Custom,
+                    string.Empty);
 
             string nuGetExePath = await EnsureNuGetExeExistsAsync(logger, userSpecifiedNuGetExePath);
 
             var variables = new List<IVariable>
-                            {
-                                new EnvironmentVariable(
-                                    WellKnownVariables.ExternalTools_NuGet_ExePath, nuGetExePath)
-                            };
+            {
+                new EnvironmentVariable(
+                    WellKnownVariables.ExternalTools_NuGet_ExePath,
+                    nuGetExePath)
+            };
 
             return variables;
         }
 
-        async Task<string> EnsureNuGetExeExistsAsync(ILogger logger, string userSpecifiedNuGetExePath, string nugetExeUri = null)
+        private async Task<string> EnsureNuGetExeExistsAsync(
+            ILogger logger,
+            string userSpecifiedNuGetExePath,
+            string nugetExeUri = null)
         {
             if (!string.IsNullOrWhiteSpace(userSpecifiedNuGetExePath))
             {
@@ -47,6 +57,7 @@ namespace Arbor.X.Core.Tools.NuGet
                             $"Using NuGet '{userSpecifiedNuGetExePath}' from user specified variable '{WellKnownVariables.ExternalTools_NuGet_ExePath_Custom}'");
                         return userSpecifiedNuGetExePath;
                     }
+
                     logger.WriteWarning(
                         $"User has specified custom NuGet '{userSpecifiedNuGetExePath}' but the file does not exist, using fallback method to ensure NuGet exists");
                 }
@@ -64,7 +75,5 @@ namespace Arbor.X.Core.Tools.NuGet
 
             return nuGetExePath;
         }
-
-        public int Order => 3;
     }
 }

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-
 using JetBrains.Annotations;
 
 namespace Arbor.Defensive
@@ -141,7 +140,7 @@ namespace Arbor.Defensive
             return maybe.Value;
         }
 
-        public static implicit operator Maybe<T>([CanBeNull]T value)
+        public static implicit operator Maybe<T>([CanBeNull] T value)
         {
             return new Maybe<T>(value);
         }

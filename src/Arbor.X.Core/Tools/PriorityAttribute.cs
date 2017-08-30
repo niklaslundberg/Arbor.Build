@@ -2,7 +2,7 @@
 
 namespace Arbor.X.Core.Tools
 {
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Class)]
     public sealed class PriorityAttribute : Attribute
     {
         public PriorityAttribute(int priority, bool runAlways = false)
@@ -11,7 +11,8 @@ namespace Arbor.X.Core.Tools
             RunAlways = runAlways;
         }
 
-        public int Priority { get; private set; }
-        public bool RunAlways { get; private set; }
+        public int Priority { get; }
+
+        public bool RunAlways { get; }
     }
 }

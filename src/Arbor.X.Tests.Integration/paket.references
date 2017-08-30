@@ -1,0 +1,15 @@
+Arbor.Castanea
+FubuCsProjFile
+JetBrains.Annotations
+Machine.Specifications.Should
+Microsoft.CodeDom.Providers.DotNetCompilerPlatform
+Newtonsoft.Json
+NLog
+NuGet.Packaging
+NUnit
+System.Collections.Immutable
+RefactoringEssentials
+StyleCop.Analyzers
+Microsoft.Net.Compilers
+System.Runtime
+MSTest.TestFramework

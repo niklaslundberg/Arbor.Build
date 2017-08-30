@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-
 using Arbor.X.Core.GenericExtensions;
 
 namespace Arbor.X.Core.BuildVariables
@@ -16,9 +14,13 @@ namespace Arbor.X.Core.BuildVariables
                 throw new ArgumentNullException(nameof(variables));
             }
 
-            var dictionaries =
+            IEnumerable<Dictionary<string, string>> dictionaries =
                 variables.Select(
-                    variable => new Dictionary<string, string> {{"Name", variable.Key}, {"Value", variable.Value}});
+                    variable => new Dictionary<string, string>
+                    {
+                        { "Name", variable.Key },
+                        { "Value", variable.Value }
+                    });
 
             return dictionaries.DisplayAsTable();
         }
@@ -29,6 +31,7 @@ namespace Arbor.X.Core.BuildVariables
             {
                 throw new ArgumentNullException(nameof(variable));
             }
+
             return $"\t{variable.Key}: {variable.Value}";
         }
     }

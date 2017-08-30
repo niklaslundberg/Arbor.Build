@@ -31,7 +31,7 @@ namespace Arbor.X.Core.GenericExtensions
                 return value;
             }
 
-            var lengthDiff = totaltLenght - value.Length;
+            int lengthDiff = totaltLenght - value.Length;
 
             if (lengthDiff <= 0)
             {

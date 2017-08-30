@@ -10,21 +10,25 @@ namespace Arbor.X.Core.Tools.ILRepack
 {
     public class ILRepackVariableProvider : IVariableProvider
     {
-        public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
-        {
-            var toolsPath = buildVariables.Require(WellKnownVariables.ExternalTools).ThrowIfEmptyValue().Value;
+        public int Order { get; } = VariableProviderOrder.Ignored;
 
-            var ilRepackPath = Path.Combine(toolsPath, "ILRepack", "ILRepack.exe");
+        public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(
+            ILogger logger,
+            IReadOnlyCollection<IVariable> buildVariables,
+            CancellationToken cancellationToken)
+        {
+            string toolsPath = buildVariables.Require(WellKnownVariables.ExternalTools).ThrowIfEmptyValue().Value;
+
+            string ilRepackPath = Path.Combine(toolsPath, "ILRepack", "ILRepack.exe");
 
             var variables = new List<IVariable>
-                            {
-                                new EnvironmentVariable(
-                                    WellKnownVariables.ExternalTools_ILRepack_ExePath, ilRepackPath)
-                            };
+            {
+                new EnvironmentVariable(
+                    WellKnownVariables.ExternalTools_ILRepack_ExePath,
+                    ilRepackPath)
+            };
 
             return Task.FromResult<IEnumerable<IVariable>>(variables);
         }
-
-        public int Order => VariableProviderOrder.Ignored;
     }
 }

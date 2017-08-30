@@ -4,12 +4,11 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;
 using Arbor.X.Core.Tools.EnvironmentVariables;
-
 using JetBrains.Annotations;
 
 namespace Arbor.X.Core.Tools.NuGet
@@ -47,7 +46,7 @@ namespace Arbor.X.Core.Tools.NuGet
             else
             {
                 bool nuGetUpdateEnabled =
-                    buildVariables.GetBooleanByKey(WellKnownVariables.NuGetSelfUpdateEnabled, defaultValue: true);
+                    buildVariables.GetBooleanByKey(WellKnownVariables.NuGetSelfUpdateEnabled, true);
 
                 if (nuGetUpdateEnabled)
                 {
@@ -68,15 +67,18 @@ namespace Arbor.X.Core.Tools.NuGet
 
         private async Task EnsureMinNuGetVersionAsync(string nuGetExePath, ILogger logger)
         {
-            Action<string, string> nullLogger = (s, s1) => { };
+            void NullLogger(string message, string category)
+            {
+            }
+
             var standardOut = new List<string>();
             ILogger versionLogger = new DelegateLogger(
                 (message, category) => standardOut.Add(message),
-                warning: nullLogger,
-                error: nullLogger);
+                NullLogger,
+                NullLogger);
 
             IEnumerable<string> args = new List<string>();
-            ExitCode versionExitCode = await ProcessRunner.ExecuteAsync(nuGetExePath, arguments: args, logger: versionLogger);
+            ExitCode versionExitCode = await ProcessHelper.ExecuteAsync(nuGetExePath, args, versionLogger);
 
             if (!versionExitCode.IsSuccess)
             {
@@ -84,7 +86,7 @@ namespace Arbor.X.Core.Tools.NuGet
                 return;
             }
 
-            var nugetVersion = "NuGet Version: ";
+            string nugetVersion = "NuGet Version: ";
             string versionLine =
                 standardOut.FirstOrDefault(
                     line => line.StartsWith(nugetVersion, StringComparison.InvariantCultureIgnoreCase));
@@ -100,7 +102,7 @@ namespace Arbor.X.Core.Tools.NuGet
             if (majorNuGetVersion == '2')
             {
                 IEnumerable<string> updateSelfArgs = new List<string> { "update", "-self" };
-                ExitCode exitCode = await ProcessRunner.ExecuteAsync(nuGetExePath, updateSelfArgs, logger);
+                ExitCode exitCode = await ProcessHelper.ExecuteAsync(nuGetExePath, updateSelfArgs, logger);
 
                 if (!exitCode.IsSuccess)
                 {

@@ -7,29 +7,42 @@ namespace Arbor.X.Core.BuildVariables
 {
     public static class BuildVariableExtensions
     {
-        public static bool HasKey(this IReadOnlyCollection<IVariable> buildVariables, string key)
+        public static bool HasKey(
+            this IReadOnlyCollection<IVariable> buildVariables,
+            string key)
         {
             return buildVariables.Any(
-                bv => bv.Key.Equals(key, StringComparison.InvariantCultureIgnoreCase));
+                bv => bv.Key.Equals(
+                    key,
+                    StringComparison.InvariantCultureIgnoreCase));
         }
 
-        public static IVariable GetVariable(this IReadOnlyCollection<IVariable> buildVariables, string key)
+        public static IVariable GetVariable(
+            this IReadOnlyCollection<IVariable> buildVariables,
+            string key)
         {
             return buildVariables.Single(
-                bv => bv.Key.Equals(key, StringComparison.InvariantCultureIgnoreCase));
+                bv => bv.Key.Equals(
+                    key,
+                    StringComparison.InvariantCultureIgnoreCase));
         }
 
-        public static string GetVariableValueOrDefault(this IReadOnlyCollection<IVariable> buildVariables, string key,
+        public static string GetVariableValueOrDefault(
+            this IReadOnlyCollection<IVariable> buildVariables,
+            string key,
             string defaultValue)
         {
             if (!buildVariables.HasKey(key))
             {
                 return defaultValue;
             }
+
             return buildVariables.GetVariable(key).Value;
         }
 
-        public static bool GetBooleanByKey(this IReadOnlyCollection<IVariable> buildVariables, string key,
+        public static bool GetBooleanByKey(
+            this IReadOnlyCollection<IVariable> buildVariables,
+            string key,
             bool defaultValue = false)
         {
             if (!buildVariables.HasKey(key))
@@ -37,7 +50,9 @@ namespace Arbor.X.Core.BuildVariables
                 return defaultValue;
             }
 
-            string value = buildVariables.GetVariableValueOrDefault(key, defaultValue.ToString());
+            string value = buildVariables.GetVariableValueOrDefault(
+                key,
+                defaultValue.ToString());
 
             if (string.IsNullOrWhiteSpace(value))
             {
@@ -46,7 +61,9 @@ namespace Arbor.X.Core.BuildVariables
 
             bool parsed;
 
-            if (!bool.TryParse(value, out parsed))
+            if (!bool.TryParse(
+                value,
+                out parsed))
             {
                 return defaultValue;
             }
@@ -54,14 +71,18 @@ namespace Arbor.X.Core.BuildVariables
             return parsed;
         }
 
-        public static int GetInt32ByKey(this IReadOnlyCollection<IVariable> buildVariables, string key,
-            int defaultValue = default(int), int? minValue = null)
+        public static int GetInt32ByKey(
+            this IReadOnlyCollection<IVariable> buildVariables,
+            string key,
+            int defaultValue = default(int),
+            int? minValue = null)
         {
             int? returnValue = null;
 
             if (buildVariables.HasKey(key))
             {
-                string value = buildVariables.GetVariableValueOrDefault(key,
+                string value = buildVariables.GetVariableValueOrDefault(
+                    key,
                     defaultValue.ToString(CultureInfo.InvariantCulture));
 
                 if (!string.IsNullOrWhiteSpace(value))
@@ -79,18 +100,17 @@ namespace Arbor.X.Core.BuildVariables
                 returnValue = defaultValue;
             }
 
-            if (minValue.HasValue)
+            if (returnValue < minValue)
             {
-                if (returnValue < minValue)
-                {
-                    returnValue = minValue;
-                }
+                returnValue = minValue;
             }
 
             return returnValue.Value;
         }
 
-        public static long GetInt64ByKey(this IReadOnlyCollection<IVariable> buildVariables, string key,
+        public static long GetInt64ByKey(
+            this IReadOnlyCollection<IVariable> buildVariables,
+            string key,
             long defaultValue = default(long))
         {
             if (!buildVariables.HasKey(key))
@@ -98,7 +118,8 @@ namespace Arbor.X.Core.BuildVariables
                 return defaultValue;
             }
 
-            string value = buildVariables.GetVariableValueOrDefault(key,
+            string value = buildVariables.GetVariableValueOrDefault(
+                key,
                 defaultValue.ToString(CultureInfo.InvariantCulture));
 
             if (string.IsNullOrWhiteSpace(value))
@@ -108,7 +129,9 @@ namespace Arbor.X.Core.BuildVariables
 
             long parsed;
 
-            if (!long.TryParse(value, out parsed))
+            if (!long.TryParse(
+                value,
+                out parsed))
             {
                 return defaultValue;
             }
@@ -116,7 +139,9 @@ namespace Arbor.X.Core.BuildVariables
             return parsed;
         }
 
-        public static bool GetValueOrDefault(this IVariable variable, bool defaultValue = false)
+        public static bool GetValueOrDefault(
+            this IVariable variable,
+            bool defaultValue = false)
         {
             if (variable == null)
             {
@@ -130,14 +155,19 @@ namespace Arbor.X.Core.BuildVariables
 
             bool parsed;
 
-            if (!bool.TryParse(variable.Value, out parsed))
+            if (!bool.TryParse(
+                variable.Value,
+                out parsed))
             {
                 return defaultValue;
             }
+
             return parsed;
         }
 
-        public static int GetValueOrDefault(this IVariable variable, int defaultValue = default(int))
+        public static int GetValueOrDefault(
+            this IVariable variable,
+            int defaultValue = default(int))
         {
             if (variable == null)
             {
@@ -151,14 +181,19 @@ namespace Arbor.X.Core.BuildVariables
 
             int parsed;
 
-            if (!int.TryParse(variable.Value, out parsed))
+            if (!int.TryParse(
+                variable.Value,
+                out parsed))
             {
                 return defaultValue;
             }
+
             return parsed;
         }
 
-        public static long GetValueOrDefault(this IVariable variable, long defaultValue = default(long))
+        public static long GetValueOrDefault(
+            this IVariable variable,
+            long defaultValue = default(long))
         {
             if (variable == null)
             {
@@ -172,10 +207,13 @@ namespace Arbor.X.Core.BuildVariables
 
             long parsed;
 
-            if (!long.TryParse(variable.Value, out parsed))
+            if (!long.TryParse(
+                variable.Value,
+                out parsed))
             {
                 return defaultValue;
             }
+
             return parsed;
         }
     }
