@@ -37,41 +37,6 @@ namespace Arbor.X.Core.Tools.NuGet
 
             if (string.IsNullOrWhiteSpace(dotNetExePath))
             {
-                var sb = new List<string>(10);
-
-                string winDir = Environment.GetEnvironmentVariable("WINDIR");
-
-                if (string.IsNullOrWhiteSpace(winDir))
-                {
-                    logger.WriteError("Error finding Windows directory");
-                    return ExitCode.Failure;
-                }
-
-                string whereExePath = Path.Combine(winDir, "System32", "where.exe");
-
-                ExitCode exitCode = await Processing.ProcessRunner.ExecuteAsync(
-                    whereExePath,
-                    arguments: new[] { "dotnet.exe" },
-                    standardOutLog: (message, _) => sb.Add(message),
-                    cancellationToken: cancellationToken);
-
-                if (!exitCode.IsSuccess)
-                {
-                    logger.Write("Failed to find dotnet.exe");
-                    return exitCode;
-                }
-
-                dotNetExePath = sb.FirstOrDefault(item => item.EndsWith("dotnet.exe", StringComparison.OrdinalIgnoreCase))?.Trim();
-            }
-            else if (!File.Exists(dotNetExePath))
-            {
-                logger.WriteError(
-                    $"The specified path to dotnet.exe is from variable '{WellKnownVariables.DotNetExePath}' is set to '{dotNetExePath}' but the file does not exist");
-                return ExitCode.Failure;
-            }
-
-            if (string.IsNullOrWhiteSpace(dotNetExePath))
-            {
                 logger.Write(
                     $"Path to 'dotnet.exe' has not been specified, set variable '{WellKnownVariables.DotNetExePath}' or ensure the dotnet.exe is installed in its standard location");
                 return ExitCode.Failure;
