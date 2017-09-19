@@ -98,13 +98,13 @@ namespace Arbor.X.Core.Tools.Testing
 
         private static string GetNunitExePath(IVariable externalTools)
         {
-            string nunitExe = Path.Combine(externalTools.Value, "nunit", "nunit-console.exe");
+            string nunitExe = Path.Combine(externalTools.Value, "nunit", "nunit3-console.exe");
             return nunitExe;
         }
 
         private static IEnumerable<string> GetNUnitConsoleOptions(string reportFile)
         {
-            var options = new List<string> { $"/xml:{reportFile}", "/framework:net-4.0", "/noshadow" };
+            var options = new List<string> { "--output", reportFile };
             return options;
         }
 
