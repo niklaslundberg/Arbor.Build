@@ -135,7 +135,9 @@ namespace Arbor.X.Core.Tools.Testing
 
         private static string GetNUnitXmlReportFilePath(IVariable reportPath, string testDll)
         {
-            string xmlReportName = $"{testDll}.xml";
+            var testDllFile = new FileInfo(testDll);
+
+            string xmlReportName = $"{testDllFile.Name}.xml";
 
             string reportFile = Path.Combine(reportPath.Value, "nunit", xmlReportName);
 
