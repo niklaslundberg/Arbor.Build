@@ -176,6 +176,7 @@ namespace Arbor.X.Core
                 [WellKnownVariables.BranchNameVersionOverrideEnabled] = "false",
                 [WellKnownVariables.VariableOverrideEnabled] = "true",
                 [WellKnownVariables.SourceRoot] = tempDirectory.FullName,
+                [WellKnownVariables.ExternalTools] = new DirectoryInfo(Path.Combine(tempDirectory.FullName, "tools", "external")).EnsureExists().FullName,
                 [WellKnownVariables.BranchName] = "develop",
                 [WellKnownVariables.VersionMajor] = "1",
                 [WellKnownVariables.VersionMinor] = "0",
