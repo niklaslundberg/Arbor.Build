@@ -17,6 +17,7 @@ UpgradeLog*.htm
 .idea
 *.iml
 src/Arbor.X.Tests.DummyWebApplication/App_Data/jobs/
+paket-files
 
 #################
 ## Eclipse
