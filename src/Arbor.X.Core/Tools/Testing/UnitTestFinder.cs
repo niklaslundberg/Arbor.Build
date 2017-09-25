@@ -26,7 +26,8 @@ namespace Arbor.X.Core.Tools.Testing
 
         public IReadOnlyCollection<string> GetUnitTestFixtureDlls(
             DirectoryInfo currentDirectory,
-            bool? releaseBuild = null)
+            bool? releaseBuild = null,
+            string assemblyFilePrefix = null)
         {
             if (currentDirectory == null)
             {
@@ -71,11 +72,16 @@ namespace Arbor.X.Core.Tools.Testing
                 return new ReadOnlyCollection<string>(new List<string>());
             }
 
-            IEnumerable<FileInfo> dllFiles = currentDirectory.EnumerateFiles("*.dll");
+            string searchPattern = "*.dll";
+
+            IEnumerable<FileInfo> filteredDllFiles = string.IsNullOrWhiteSpace(assemblyFilePrefix)
+                ? currentDirectory.EnumerateFiles(searchPattern)
+                : currentDirectory.EnumerateFiles(searchPattern)
+                    .Where(file => file.Name.StartsWith(assemblyFilePrefix, StringComparison.OrdinalIgnoreCase));
 
             var ignoredNames = new List<string> { "ReSharper", "dotCover", "Microsoft" };
 
-            List<Assembly> assemblies = dllFiles
+            List<Assembly> assemblies = filteredDllFiles
                 .Where(file => !file.Name.StartsWith("System", StringComparison.InvariantCultureIgnoreCase))
                 .Where(file => !ignoredNames.Any(
                     name => file.Name.IndexOf(name, StringComparison.InvariantCultureIgnoreCase) >= 0))

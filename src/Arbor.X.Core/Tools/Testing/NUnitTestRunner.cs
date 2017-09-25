@@ -63,6 +63,8 @@ namespace Arbor.X.Core.Tools.Testing
 
             bool ignoreTestFailures = ignoreTestFailuresVariable.GetValueOrDefault(false);
 
+            string assemblyFilePrefix = buildVariables.GetVariableValueOrDefault(WellKnownVariables.TestsAssemblyStartsWith, string.Empty);
+
             if (ignoreTestFailures)
             {
                 string message =
@@ -74,7 +76,8 @@ namespace Arbor.X.Core.Tools.Testing
                         externalTools,
                         logger,
                         reportPath,
-                        runTestsInReleaseConfiguration);
+                        runTestsInReleaseConfiguration,
+                        assemblyFilePrefix);
 
                     if (exitCode.IsSuccess)
                     {
@@ -93,7 +96,7 @@ namespace Arbor.X.Core.Tools.Testing
                 return ExitCode.Success;
             }
 
-            return await RunNUnitAsync(externalTools, logger, reportPath, runTestsInReleaseConfiguration);
+            return await RunNUnitAsync(externalTools, logger, reportPath, runTestsInReleaseConfiguration, assemblyFilePrefix);
         }
 
         private static void LogExecution(ILogger logger, IEnumerable<string> nunitArgs, string nunitExe)
@@ -148,7 +151,8 @@ namespace Arbor.X.Core.Tools.Testing
             IVariable externalTools,
             ILogger logger,
             IVariable reportPath,
-            bool runTestsInReleaseConfiguration)
+            bool runTestsInReleaseConfiguration,
+            string assemblyFilePrefix)
         {
             Type fixtureAttribute = typeof(TestFixtureAttribute);
             Type testMethodAttribute = typeof(TestAttribute);
@@ -158,7 +162,7 @@ namespace Arbor.X.Core.Tools.Testing
             var typesToFind = new List<Type> { fixtureAttribute, testMethodAttribute };
 
             List<string> testDlls = new UnitTestFinder(typesToFind)
-                .GetUnitTestFixtureDlls(directory, runTestsInReleaseConfiguration)
+                .GetUnitTestFixtureDlls(directory, runTestsInReleaseConfiguration, assemblyFilePrefix)
                 .ToList();
 
             if (!testDlls.Any())

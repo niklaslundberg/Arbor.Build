@@ -165,6 +165,9 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescription("Flag to indicate if test runner error results are ignored", "false")]
         public static readonly string IgnoreTestFailures = Arbor.X.Build + ".Tests.IgnoreTestFailures";
 
+        [VariableDescription("Filter assemblies to only run tests dlls starting with prefix, case insensitive", "")]
+        public static readonly string TestsAssemblyStartsWith = Arbor.X.Build + ".Tests.AssemblyStartsWith";
+
         [VariableDescription("Test categories and tags to ignore, comma separated")]
         public static readonly string IgnoredTestCategories = Arbor.X.Build + ".Tests.IgnoredCategories";
 
