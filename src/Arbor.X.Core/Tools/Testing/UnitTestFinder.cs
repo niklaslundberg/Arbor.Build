@@ -109,7 +109,7 @@ namespace Arbor.X.Core.Tools.Testing
 
             List<string> subDirAssemblies = currentDirectory
                 .EnumerateDirectories()
-                .SelectMany(dir => GetUnitTestFixtureDlls(dir, releaseBuild))
+                .SelectMany(dir => GetUnitTestFixtureDlls(dir, releaseBuild, assemblyFilePrefix))
                 .ToList();
 
             List<string> allUnitFixtureAssemblies = testFixtureAssemblies
