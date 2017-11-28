@@ -13,3 +13,4 @@ StyleCop.Analyzers
 Microsoft.Net.Compilers
 System.Runtime
 MSTest.TestFramework
+xunit

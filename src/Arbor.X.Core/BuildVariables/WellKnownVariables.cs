@@ -286,6 +286,14 @@ namespace Arbor.X.Core.BuildVariables
         public static readonly string NUnitTransformToJunitEnabled =
             "Arbor.X.Tools.External.NUnit.JUnitXslTransform.Enabled";
 
+        [VariableDescription("Enable XUnit .NET Framework")]
+        public static readonly string XUnitNetFrameworkEnabled =
+            "Arbor.X.Tools.External.Xunit.NetFramework.Enabled";
+
+        [VariableDescription("XUnit .NET Framework exe path")]
+        public static readonly string XUnitNetFrameworkExePath =
+            "Arbor.X.Tools.External.Xunit.NetFramework.ExePath";
+
         [VariableDescription("Enable VSTest")]
         public static readonly string VSTestEnabled =
             "Arbor.X.Tools.External.VSTest.Enabled";
