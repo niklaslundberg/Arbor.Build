@@ -6,12 +6,12 @@ namespace Arbor.X.Tests.Integration.GitBranches
     [Subject(typeof(BranchHelper))]
     public class when_parsing_version_from_branch_name_with_slash
     {
-        private static string branchName;
-        private static string version;
-        private Establish context = () => { branchName = "refs/heads/release/1.2.3"; };
+        static string branchName;
+        static string version;
+        Establish context = () => { branchName = "refs/heads/release/1.2.3"; };
 
-        private Because of = () => { version = BranchHelper.BranchSemVerMajorMinorPatch(branchName).ToString(); };
+        Because of = () => { version = BranchHelper.BranchSemVerMajorMinorPatch(branchName).ToString(); };
 
-        private It should_extract_the_version = () => version.ShouldEqual("1.2.3");
+        It should_extract_the_version = () => version.ShouldEqual("1.2.3");
     }
 }

@@ -7,7 +7,7 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
     {
         protected static bool Result;
 
-        private It should_satisfy_the_specification = () =>
+        It should_satisfy_the_specification = () =>
             Result.ShouldBeTrue();
     }
 }

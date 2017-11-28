@@ -7,10 +7,10 @@ namespace Arbor.X.Tests.Integration.KuduWebJobs
     [Subject(typeof(KuduWebJobType))]
     public class when_parsing_null_value
     {
-        private static Exception exception;
+        static Exception exception;
 
-        private Because of = () => { exception = Catch.Exception(() => KuduWebJobType.Parse(null)); };
+        Because of = () => { exception = Catch.Exception(() => KuduWebJobType.Parse(null)); };
 
-        private It should_throw_a_format_exception = () => exception.ShouldBeOfExactType<ArgumentNullException>();
+        It should_throw_a_format_exception = () => exception.ShouldBeOfExactType<ArgumentNullException>();
     }
 }

@@ -7,15 +7,15 @@ namespace Arbor.X.Tests.Integration.PathExtensions
     [Subject(typeof(Core.IO.PathExtensions))]
     public class when_checking_file_is_blacklisted_in_artifacts_directory
     {
-        private static bool isBlackListed;
+        static bool isBlackListed;
 
-        private static PathLookupSpecification specification;
+        static PathLookupSpecification specification;
 
-        private static string root;
+        static string root;
 
-        private Cleanup after = () => { new DirectoryInfo(root).DeleteIfExists(true); };
+        Cleanup after = () => { new DirectoryInfo(root).DeleteIfExists(true); };
 
-        private Establish context = () =>
+        Establish context = () =>
         {
             root = @"C:\Temp\root";
 
@@ -27,9 +27,9 @@ namespace Arbor.X.Tests.Integration.PathExtensions
             specification = DefaultPaths.DefaultPathLookupSpecification;
         };
 
-        private Because of =
+        Because of =
             () => { isBlackListed = specification.IsFileBlackListed(@"C:\Temp\root\artifacts\afile.txt", root); };
 
-        private It should_return_false = () => isBlackListed.ShouldBeTrue();
+        It should_return_false = () => isBlackListed.ShouldBeTrue();
     }
 }

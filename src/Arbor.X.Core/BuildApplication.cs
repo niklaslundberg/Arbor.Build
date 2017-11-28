@@ -154,7 +154,7 @@ namespace Arbor.X.Core
 
             string baseDir = VcsPathHelper.FindVcsRootPath(AppDomain.CurrentDomain.BaseDirectory);
 
-            string tempPath = @"C:\arbor.x";
+            string tempPath = @"C:\Temp\arbor.x";
 
             var tempDirectory = new DirectoryInfo(Path.Combine(
                 tempPath,

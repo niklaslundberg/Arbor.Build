@@ -10,10 +10,10 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
     [Tags(MSpecInternalConstants.RecursiveArborXTest)]
     public class when_testing_this_test_type_for_behaves_like
     {
-        private static UnitTestFinder finder;
+        static UnitTestFinder finder;
         protected static bool Result;
 
-        private Establish context = () =>
+        Establish context = () =>
         {
             var logger = new ConsoleLogger { LogLevel = LogLevel.Verbose };
             finder = new UnitTestFinder(new List<Type>
@@ -23,11 +23,11 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
                 logger: logger);
         };
 
-        private Because of =
+        Because of =
             () => { Result = finder.TryIsTypeTestFixture(typeof(when_testing_this_test_type_for_behaves_like)); };
 
 #pragma warning disable 169
-        private Behaves_like<SampleBehaviors> sample_behaviors;
+        Behaves_like<SampleBehaviors> sample_behaviors;
 #pragma warning restore 169
     }
 }
