@@ -20,13 +20,23 @@ namespace Arbor.X.Core.Tools.Testing
     {
         private string _sourceRoot;
 
-        public async Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
+        public async Task<ExitCode> ExecuteAsync([NotNull] ILogger logger, [NotNull] IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
         {
-            bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.XUnitNetFrameworkEnabled, true);
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            if (buildVariables == null)
+            {
+                throw new ArgumentNullException(nameof(buildVariables));
+            }
+
+            bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.XUnitNetFrameworkEnabled, false);
 
             if (!enabled)
             {
-                logger.WriteWarning("XUnit .NET Framework runnet is not enabled");
+                logger.WriteDebug("Xunit .NET Framework test runner is not enabled");
                 return ExitCode.Success;
             }
 
