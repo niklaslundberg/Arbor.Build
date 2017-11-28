@@ -15,12 +15,12 @@ nuget Arbor.KVConfiguration.JsonConfiguration prerelease
 nuget Arbor.KVConfiguration.UserConfiguration prerelease
 nuget Arbor.Sorbus
 nuget Autofac
-nuget FubuCsProjFile 
+nuget FubuCsProjFile
 nuget JetBrains.Annotations
 nuget Machine.Specifications.Should
 nuget Microsoft.AspNet.Mvc
 nuget Microsoft.AspNet.WebApi
-nuget Microsoft.CodeDom.Providers.DotNetCompilerPlatform 1.0.5
+nuget Microsoft.CodeDom.Providers.DotNetCompilerPlatform
 nuget Microsoft.Web.Xdt
 nuget NLog
 nuget NuGet.Packaging

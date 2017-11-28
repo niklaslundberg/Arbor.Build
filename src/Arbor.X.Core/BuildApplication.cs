@@ -176,6 +176,7 @@ namespace Arbor.X.Core
                 [WellKnownVariables.BranchNameVersionOverrideEnabled] = "false",
                 [WellKnownVariables.VariableOverrideEnabled] = "true",
                 [WellKnownVariables.SourceRoot] = tempDirectory.FullName,
+                [WellKnownVariables.ExternalTools] = new DirectoryInfo(Path.Combine(tempDirectory.FullName, "tools", "external")).EnsureExists().FullName,
                 [WellKnownVariables.BranchName] = "develop",
                 [WellKnownVariables.VersionMajor] = "1",
                 [WellKnownVariables.VersionMinor] = "0",
@@ -186,23 +187,25 @@ namespace Arbor.X.Core
                 [WellKnownVariables.NuGetPackageExcludesCommaSeparated] = "Arbor.X.Bootstrapper.nuspec",
                 [WellKnownVariables.NuGetAllowManifestReWrite] = "false",
                 [WellKnownVariables.NuGetSymbolPackagesEnabled] = "false",
-                [WellKnownVariables.NugetCreateNuGetWebPackagesEnabled] = "true",
+                [WellKnownVariables.NugetCreateNuGetWebPackagesEnabled] = "false",
                 [WellKnownVariables.RunTestsInReleaseConfigurationEnabled] = "false",
                 ["Arbor_X_Tests_DummyWebApplication_Arbor_X_NuGet_Package_CreateNuGetWebPackageForProject_Enabled"] =
                 "true",
                 [WellKnownVariables.ExternalTools_ILRepack_Custom_ExePath] = @"C:\Tools\ILRepack\ILRepack.exe",
-                [WellKnownVariables.NuGetVersionUpdatedEnabled] = @"true",
+                [WellKnownVariables.NuGetVersionUpdatedEnabled] = @"false",
                 [WellKnownVariables.ApplicationMetadataEnabled] = @"true",
                 [WellKnownVariables.LogLevel] = "verbose",
                 [WellKnownVariables.NugetCreateNuGetWebPackageFilter] = "Arbor.X.Tests.DummyWebApplication,ABC,",
                 [WellKnownVariables.WebJobsExcludedFileNameParts] =
                 "Microsoft.Build,Microsoft.CodeAnalysis,Microsoft.CodeDom",
                 [WellKnownVariables.WebJobsExcludedDirectorySegments] = "roslyn",
-                [WellKnownVariables.AppDataJobsEnabled] = "true",
+                [WellKnownVariables.AppDataJobsEnabled] = "false",
                 [WellKnownVariables.ExternalTools_LibZ_ExePath] = @"C:\Tools\Libz\libz.exe",
                 [WellKnownVariables.ExternalTools_LibZ_Enabled] = @"false",
-                [WellKnownVariables.WebDeployPreCompilationEnabled] = @"true",
+                [WellKnownVariables.WebDeployPreCompilationEnabled] = @"false",
                 [WellKnownVariables.ExcludedNuGetWebPackageFiles] = @"bin\roslyn\*.*,bin\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll",
+                [WellKnownVariables.NUnitExePathOverride] = @"C:\Tools\NUnit\nunit3-console.exe",
+                [WellKnownVariables.NUnitTransformToJunitEnabled] = @"true",
             };
 
             foreach (KeyValuePair<string, string> environmentVariable in environmentVariables)

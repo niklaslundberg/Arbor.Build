@@ -165,6 +165,9 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescription("Flag to indicate if test runner error results are ignored", "false")]
         public static readonly string IgnoreTestFailures = Arbor.X.Build + ".Tests.IgnoreTestFailures";
 
+        [VariableDescription("Filter assemblies to only run tests dlls starting with prefix, case insensitive", "")]
+        public static readonly string TestsAssemblyStartsWith = Arbor.X.Build + ".Tests.AssemblyStartsWith";
+
         [VariableDescription("Test categories and tags to ignore, comma separated")]
         public static readonly string IgnoredTestCategories = Arbor.X.Build + ".Tests.IgnoredCategories";
 
@@ -274,6 +277,14 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescription("Enable NUnit")]
         public static readonly string NUnitEnabled =
             "Arbor.X.Tools.External.NUnit.Enabled";
+
+        [VariableDescription("NUnitExePathOverride")]
+        public static readonly string NUnitExePathOverride =
+            "Arbor.X.Tools.External.NUnit.ExePathOverride";
+
+        [VariableDescription("NUnit JUnit XSL transform enabled")]
+        public static readonly string NUnitTransformToJunitEnabled =
+            "Arbor.X.Tools.External.NUnit.JUnitXslTransform.Enabled";
 
         [VariableDescription("Enable VSTest")]
         public static readonly string VSTestEnabled =

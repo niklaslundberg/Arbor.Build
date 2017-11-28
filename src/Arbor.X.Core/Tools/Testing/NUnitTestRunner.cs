@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Arbor.Processing;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
+using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.Logging;
 using JetBrains.Annotations;
 using NUnit.Framework;
@@ -19,6 +20,8 @@ namespace Arbor.X.Core.Tools.Testing
     public class NUnitTestRunner : ITool
     {
         private string _sourceRoot;
+        private string _exePathOverride;
+        private bool _transformToJunit;
 
         public async Task<ExitCode> ExecuteAsync(
             ILogger logger,
@@ -35,6 +38,9 @@ namespace Arbor.X.Core.Tools.Testing
 
             IVariable externalTools = buildVariables.Require(WellKnownVariables.ExternalTools).ThrowIfEmptyValue();
             IVariable reportPath = buildVariables.Require(WellKnownVariables.ReportPath).ThrowIfEmptyValue();
+
+            _exePathOverride = buildVariables.GetVariableValueOrDefault(WellKnownVariables.NUnitExePathOverride, string.Empty);
+            _transformToJunit = buildVariables.GetBooleanByKey(WellKnownVariables.NUnitTransformToJunitEnabled, false);
 
             IVariable ignoreTestFailuresVariable =
                 buildVariables.SingleOrDefault(key => key.Key == WellKnownVariables.IgnoreTestFailures);
@@ -57,6 +63,8 @@ namespace Arbor.X.Core.Tools.Testing
 
             bool ignoreTestFailures = ignoreTestFailuresVariable.GetValueOrDefault(false);
 
+            string assemblyFilePrefix = buildVariables.GetVariableValueOrDefault(WellKnownVariables.TestsAssemblyStartsWith, string.Empty);
+
             if (ignoreTestFailures)
             {
                 string message =
@@ -68,7 +76,8 @@ namespace Arbor.X.Core.Tools.Testing
                         externalTools,
                         logger,
                         reportPath,
-                        runTestsInReleaseConfiguration);
+                        runTestsInReleaseConfiguration,
+                        assemblyFilePrefix);
 
                     if (exitCode.IsSuccess)
                     {
@@ -87,7 +96,7 @@ namespace Arbor.X.Core.Tools.Testing
                 return ExitCode.Success;
             }
 
-            return await RunNUnitAsync(externalTools, logger, reportPath, runTestsInReleaseConfiguration);
+            return await RunNUnitAsync(externalTools, logger, reportPath, runTestsInReleaseConfiguration, assemblyFilePrefix);
         }
 
         private static void LogExecution(ILogger logger, IEnumerable<string> nunitArgs, string nunitExe)
@@ -96,21 +105,42 @@ namespace Arbor.X.Core.Tools.Testing
             logger.Write($"Running NUnit {nunitExe} {args}");
         }
 
-        private static string GetNunitExePath(IVariable externalTools)
+        private string GetNunitExePath(IVariable externalTools)
         {
-            string nunitExe = Path.Combine(externalTools.Value, "nunit", "nunit-console.exe");
+            if (!string.IsNullOrWhiteSpace(_exePathOverride) && File.Exists(_exePathOverride))
+            {
+                return _exePathOverride;
+            }
+
+            string nunitExe = Path.Combine(externalTools.Value, "nunit", "nunit3-console.exe");
             return nunitExe;
         }
 
-        private static IEnumerable<string> GetNUnitConsoleOptions(string reportFile)
+        private IEnumerable<string> GetNUnitConsoleOptions(IVariable externalTools, string reportFile)
         {
-            var options = new List<string> { $"/xml:{reportFile}", "/framework:net-4.0", "/noshadow" };
+            string report;
+
+            if (_transformToJunit)
+            {
+                string junitTransformFile = Path.Combine(externalTools.Value, "nunit", "nunit3-junit.xslt");
+
+                report = $"--result={reportFile};transform={junitTransformFile}";
+            }
+            else
+            {
+                report = $"--result={reportFile}";
+            }
+
+            var options = new List<string> { report };
+
             return options;
         }
 
-        private static string GetNUnitXmlReportFilePath(IVariable reportPath)
+        private static string GetNUnitXmlReportFilePath(IVariable reportPath, string testDll)
         {
-            string xmlReportName = $"{Guid.NewGuid()}.xml";
+            var testDllFile = new FileInfo(testDll);
+
+            string xmlReportName = $"{testDllFile.Name}.xml";
 
             string reportFile = Path.Combine(reportPath.Value, "nunit", xmlReportName);
 
@@ -121,7 +151,8 @@ namespace Arbor.X.Core.Tools.Testing
             IVariable externalTools,
             ILogger logger,
             IVariable reportPath,
-            bool runTestsInReleaseConfiguration)
+            bool runTestsInReleaseConfiguration,
+            string assemblyFilePrefix)
         {
             Type fixtureAttribute = typeof(TestFixtureAttribute);
             Type testMethodAttribute = typeof(TestAttribute);
@@ -131,7 +162,7 @@ namespace Arbor.X.Core.Tools.Testing
             var typesToFind = new List<Type> { fixtureAttribute, testMethodAttribute };
 
             List<string> testDlls = new UnitTestFinder(typesToFind)
-                .GetUnitTestFixtureDlls(directory, runTestsInReleaseConfiguration)
+                .GetUnitTestFixtureDlls(directory, runTestsInReleaseConfiguration, assemblyFilePrefix)
                 .ToList();
 
             if (!testDlls.Any())
@@ -149,11 +180,11 @@ namespace Arbor.X.Core.Tools.Testing
             {
                 var nunitConsoleArguments = new List<string> { testDll };
 
-                string reportFilePath = GetNUnitXmlReportFilePath(reportPath);
+                string reportFilePath = GetNUnitXmlReportFilePath(reportPath, testDll);
 
                 EnsureNUnitReportDirectoryExists(reportFilePath);
 
-                IEnumerable<string> options = GetNUnitConsoleOptions(reportFilePath);
+                IEnumerable<string> options = GetNUnitConsoleOptions(externalTools, reportFilePath);
 
                 nunitConsoleArguments.AddRange(options);
 
