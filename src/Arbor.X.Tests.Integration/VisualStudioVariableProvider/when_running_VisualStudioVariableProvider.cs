@@ -20,13 +20,13 @@ namespace Arbor.X.Tests.Integration.VisualStudioVariableProvider
 
         Because of = () =>
         {
+            var environmentVariable = new EnvironmentVariable(
+                WellKnownVariables.ExternalTools_VisualStudio_Version_Allow_PreRelease,
+                "true");
+
             enumerable = provider.GetEnvironmentVariablesAsync(
                     new ConsoleLogger(),
-                    new List<IVariable>
-                    {
-                        new EnvironmentVariable(WellKnownVariables.ExternalTools_VisualStudio_Version_Allow_PreRelease,
-                            "true")
-                    },
+                    new List<IVariable> { environmentVariable },
                     CancellationToken.None)
                 .Result.ToList();
         };

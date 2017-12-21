@@ -20,7 +20,7 @@ namespace Arbor.X.Tests.Integration.PathExtensions
 
         Because of = () =>
         {
-            isBlackListed = specification.IsBlackListed(@"C:\Temp\root\afolder", @"C:\Temp\root");
+            isBlackListed = specification.IsBlackListed(@"C:\Temp\root\afolder", @"C:\Temp\root").Item1;
         };
 
         It should_return_false = () => isBlackListed.ShouldBeFalse();

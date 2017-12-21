@@ -18,7 +18,7 @@ namespace Arbor.X.Tests.Integration.PathExtensions
             specification = DefaultPaths.DefaultPathLookupSpecification;
         };
 
-        Because of = () => { isBlackListed = specification.IsBlackListed(@"C:\Temp\root\afolder"); };
+        Because of = () => { isBlackListed = specification.IsBlackListed(@"C:\Temp\root\afolder").Item1; };
         It should_return_true = () => isBlackListed.ShouldBeTrue();
     }
 }

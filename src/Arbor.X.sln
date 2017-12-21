@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.0
+VisualStudioVersion = 15.0.27130.2010
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".paket", ".paket", "{53276BAB-0DAC-476D-B564-8790E10CDCE5}"
 	ProjectSection(SolutionItems) = preProject
@@ -23,6 +23,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Arbor.X.nuspec = Arbor.X.nuspec
 		ArborX.ruleset = ArborX.ruleset
 		..\build\build.bat = ..\build\build.bat
+		Directory.Build.props = Directory.Build.props
 		..\paket.lock = ..\paket.lock
 		..\README.md = ..\README.md
 		..\version.json = ..\version.json

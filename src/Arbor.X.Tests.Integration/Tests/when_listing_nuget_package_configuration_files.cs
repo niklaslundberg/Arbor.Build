@@ -18,7 +18,7 @@ namespace Arbor.X.Tests.Integration.Tests
         static DirectoryInfo rootDirectory;
         static IReadOnlyCollection<FileInfo> packageConfigFiles;
 
-        Cleanup after = () => {  };
+        Cleanup after = () => { };
 
         Establish context = () =>
         {
@@ -30,7 +30,7 @@ namespace Arbor.X.Tests.Integration.Tests
         Because of = () =>
         {
             packageConfigFiles = rootDirectory.EnumerateFiles("packages.config", SearchOption.AllDirectories)
-                .Where(file => !pathLookupSpecification.IsFileBlackListed(file.FullName, rootDirectory.FullName))
+                .Where(file => !pathLookupSpecification.IsFileBlackListed(file.FullName, rootDirectory.FullName).Item1)
                 .ToReadOnlyCollection();
 
             packageConfigFiles

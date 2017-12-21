@@ -45,7 +45,7 @@ namespace Arbor.X.Core.Tools.NuGet
             var pathLookupSpecification = new PathLookupSpecification();
             FileInfo[] solutionFiles = new DirectoryInfo(rootPath)
                 .GetFiles("*.sln", SearchOption.AllDirectories)
-                .Where(file => !pathLookupSpecification.IsFileBlackListed(file.FullName, rootPath))
+                .Where(file => !pathLookupSpecification.IsFileBlackListed(file.FullName, rootPath).Item1)
                 .ToArray();
 
             foreach (FileInfo solutionFile in solutionFiles)

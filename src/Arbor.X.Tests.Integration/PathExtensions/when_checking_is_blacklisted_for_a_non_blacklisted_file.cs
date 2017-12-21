@@ -18,7 +18,7 @@ namespace Arbor.X.Tests.Integration.PathExtensions
         {
             result = path_lookup_specification.IsFileBlackListed(@"C:\anyrandomfile.txt",
                 allowNonExistingFiles: true,
-                logger: new ConsoleLogger());
+                logger: new ConsoleLogger()).Item1;
         };
 
         It should_be_true = () => result.ShouldBeFalse();

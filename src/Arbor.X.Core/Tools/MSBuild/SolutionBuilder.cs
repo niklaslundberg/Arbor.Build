@@ -142,15 +142,15 @@ namespace Arbor.X.Core.Tools.MSBuild
                 MSBuildVerbositoyLevel.TryParse(
                     buildVariables.GetVariableValueOrDefault(
                         WellKnownVariables.ExternalTools_MSBuild_Verbosity,
-                        "normal"));
+                        "minimal"));
 
             _showSummary = buildVariables.GetBooleanByKey(
                 WellKnownVariables.ExternalTools_MSBuild_SummaryEnabled,
-                false);
+                true);
 
             _createWebDeployPackages = buildVariables.GetBooleanByKey(
                 WellKnownVariables.WebDeployBuildPackages,
-                true);
+                false);
 
             logger.WriteVerbose($"Using MSBuild verbosity {_verbosity}");
 
@@ -304,7 +304,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             findSolutionFiles.Stop();
 
             logger.WriteDebug(
-                $"Finding solutions files took {findSolutionFiles.Elapsed.TotalSeconds.ToString("F")} seconds");
+                $"Finding solutions files took {findSolutionFiles.Elapsed.TotalSeconds:F} seconds");
 
             if (!solutionFiles.Any())
             {
@@ -1475,8 +1475,8 @@ namespace Arbor.X.Core.Tools.MSBuild
                 .GetFilesRecursive(extensions)
                 .Where(
                     file =>
-                        !_pathLookupSpecification.IsBlackListed(file.DirectoryName) &&
-                        !_pathLookupSpecification.IsFileBlackListed(file.FullName, _vcsRoot))
+                        !_pathLookupSpecification.IsBlackListed(file.DirectoryName).Item1 &&
+                        !_pathLookupSpecification.IsFileBlackListed(file.FullName, _vcsRoot).Item1)
                 .Where(
                     file =>
                         extensions.Any(
@@ -1717,10 +1717,11 @@ namespace Arbor.X.Core.Tools.MSBuild
 
         private IEnumerable<FileInfo> FindSolutionFiles(DirectoryInfo directoryInfo, ILogger logger)
         {
-            if (IsBlacklisted(directoryInfo))
+            (bool, string) isBlacklisted = IsBlacklisted(directoryInfo);
+            if (isBlacklisted.Item1)
             {
                 logger.WriteDebug(
-                    $"Skipping directory '{directoryInfo.FullName}' when searching for solution files because the directory is blacklisted");
+                    $"Skipping directory '{directoryInfo.FullName}' when searching for solution files because the directory is blacklisted, {isBlacklisted.Item2}");
                 return Enumerable.Empty<FileInfo>();
             }
 
@@ -1734,14 +1735,21 @@ namespace Arbor.X.Core.Tools.MSBuild
             return solutionFiles;
         }
 
-        private bool IsBlacklisted(DirectoryInfo directoryInfo)
+        private (bool, string) IsBlacklisted(DirectoryInfo directoryInfo)
         {
-            bool isBlacklistedByName = _pathLookupSpecification.IsBlackListed(directoryInfo.FullName, _vcsRoot);
+            (bool, string) isBlacklistedByName = _pathLookupSpecification.IsBlackListed(directoryInfo.FullName, _vcsRoot);
 
-            bool isBlackListedByAttributes = _blackListedByAttributes.Any(
-                blackListed => directoryInfo.Attributes.HasFlag(blackListed));
+            if (isBlacklistedByName.Item1)
+            {
+                return isBlacklistedByName;
+            }
 
-            return isBlacklistedByName || isBlackListedByAttributes;
+            FileAttributes[] blackListedByAttributes = _blackListedByAttributes.Where(
+                blackListed => directoryInfo.Attributes.HasFlag(blackListed)).ToArray();
+
+            bool isBlackListedByAttributes = blackListedByAttributes.Any();
+
+            return (isBlackListedByAttributes, isBlackListedByAttributes ? $"Directory has black-listed attributes {string.Join(", ", blackListedByAttributes.Select(_ => Enum.GetName(typeof(FileAttributes), _)))}" : string.Empty);
         }
 
         private void RemoveXmlFilesForAssemblies(DirectoryInfo directoryInfo)

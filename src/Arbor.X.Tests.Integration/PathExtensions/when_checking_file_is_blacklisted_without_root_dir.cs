@@ -10,18 +10,29 @@ namespace Arbor.X.Tests.Integration.PathExtensions
         static bool isBlackListed;
         static PathLookupSpecification specification;
         static DirectoryInfo root;
-        Cleanup after = () => { root.DeleteIfExists(true); };
+        Cleanup after = () =>
+        {
+            root.DeleteIfExists(true);
+            rootParent.DeleteIfExists();
+        };
 
         Establish context = () =>
         {
             root = new DirectoryInfo(@"C:\Temp\root\afolder").EnsureExists();
+
+
+            rootParent = root.Parent;
+
             using (File.Create(@"C:\Temp\root\afile.txt"))
             {
             }
+
             specification = DefaultPaths.DefaultPathLookupSpecification;
         };
 
-        Because of = () => { isBlackListed = specification.IsFileBlackListed(@"C:\Temp\root\afile.txt"); };
+        Because of = () => { isBlackListed = specification.IsFileBlackListed(@"C:\Temp\root\afile.txt").Item1; };
+
         It should_return_true = () => isBlackListed.ShouldBeTrue();
+        static DirectoryInfo rootParent;
     }
 }

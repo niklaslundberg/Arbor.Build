@@ -47,14 +47,27 @@ namespace Arbor.X.Core
 
             StaticKeyValueConfigurationManager.Initialize(multiSourceKeyValueConfiguration);
 
-            if (Debugger.IsAttached)
+            bool simulateDebug =
+                bool.TryParse(Environment.GetEnvironmentVariable("SimulateDebug"), out bool parsed) && parsed;
+
+            bool debugLoggerEnabled = false;
+
+            if (Debugger.IsAttached || simulateDebug)
             {
+                if (simulateDebug)
+                {
+                    _logger.Write("Simulating debug");
+                }
+
                 await StartWithDebuggerAsync(args).ConfigureAwait(false);
+
+                if (debugLoggerEnabled)
+                {
+                    _logger = new DebugLogger(_logger);
+                }
             }
 
             _container = await BuildBootstrapper.StartAsync();
-
-            _logger = new DebugLogger(_logger);
 
             _logger.Write($"Using logger '{_logger.GetType()}' with log level {_logger.LogLevel}");
             _cancellationToken = CancellationToken.None;
@@ -86,9 +99,7 @@ namespace Arbor.X.Core
 
             stopwatch.Stop();
 
-            Console.WriteLine(
-                "Arbor.X.Build total elapsed time in seconds: {0:F}",
-                stopwatch.Elapsed.TotalSeconds);
+            _logger.Write($"Arbor.X.Build total elapsed time in seconds: {stopwatch.Elapsed.TotalSeconds:F}");
 
             ParseResult<int> exitDelayInMilliseconds =
                 Environment.GetEnvironmentVariable(WellKnownVariables.BuildApplicationExitDelayInMilliseconds)
@@ -104,6 +115,11 @@ namespace Arbor.X.Core
             if (Debugger.IsAttached)
             {
                 WriteDebug($"Exiting build application with exit code {exitCode}");
+
+                if (!debugLoggerEnabled)
+                {
+                    Debugger.Break();
+                }
             }
 
             return exitCode;
@@ -168,7 +184,7 @@ namespace Arbor.X.Core
             await DirectoryCopy.CopyAsync(
                 baseDir,
                 tempDirectory.FullName,
-                pathLookupSpecificationOption: DefaultPaths.DefaultPathLookupSpecification,
+                pathLookupSpecificationOption: DefaultPaths.DefaultPathLookupSpecification.AddExcludedDirectorySegments(new[] { "paket-files" }),
                 rootDir: baseDir);
 
             var environmentVariables = new Dictionary<string, string>
@@ -182,7 +198,6 @@ namespace Arbor.X.Core
                 [WellKnownVariables.VersionMinor] = "0",
                 [WellKnownVariables.VersionPatch] = "51",
                 [WellKnownVariables.VersionBuild] = "124",
-                [WellKnownVariables.Configuration] = "release",
                 [WellKnownVariables.GenericXmlTransformsEnabled] = "true",
                 [WellKnownVariables.NuGetPackageExcludesCommaSeparated] = "Arbor.X.Bootstrapper.nuspec",
                 [WellKnownVariables.NuGetAllowManifestReWrite] = "false",
@@ -194,7 +209,7 @@ namespace Arbor.X.Core
                 [WellKnownVariables.ExternalTools_ILRepack_Custom_ExePath] = @"C:\Tools\ILRepack\ILRepack.exe",
                 [WellKnownVariables.NuGetVersionUpdatedEnabled] = @"false",
                 [WellKnownVariables.ApplicationMetadataEnabled] = @"true",
-                [WellKnownVariables.LogLevel] = "verbose",
+                [WellKnownVariables.LogLevel] = "information",
                 [WellKnownVariables.NugetCreateNuGetWebPackageFilter] = "Arbor.X.Tests.DummyWebApplication,ABC,",
                 [WellKnownVariables.WebJobsExcludedFileNameParts] =
                 "Microsoft.Build,Microsoft.CodeAnalysis,Microsoft.CodeDom",
@@ -206,6 +221,10 @@ namespace Arbor.X.Core
                 [WellKnownVariables.ExcludedNuGetWebPackageFiles] = @"bin\roslyn\*.*,bin\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll",
                 [WellKnownVariables.NUnitExePathOverride] = @"C:\Tools\NUnit\nunit3-console.exe",
                 [WellKnownVariables.NUnitTransformToJunitEnabled] = @"true",
+                [WellKnownVariables.XUnitNetFrameworkEnabled] = "false",
+                [WellKnownVariables.NUnitEnabled] = "true",
+                [WellKnownVariables.MSpecEnabled] = "true",
+                [WellKnownVariables.TestsAssemblyStartsWith] = "Arbor.X.Tests"
             };
 
             foreach (KeyValuePair<string, string> environmentVariable in environmentVariables)

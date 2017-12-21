@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Arbor.Defensive;
 
 namespace Arbor.X.Core.BuildVariables
 {
@@ -25,6 +26,23 @@ namespace Arbor.X.Core.BuildVariables
                 bv => bv.Key.Equals(
                     key,
                     StringComparison.InvariantCultureIgnoreCase));
+        }
+
+        public static Maybe<IVariable> GetOptionalVariable(
+            this IReadOnlyCollection<IVariable> buildVariables,
+            string key)
+        {
+            IVariable variable = buildVariables.SingleOrDefault(
+                bv => bv.Key.Equals(
+                    key,
+                    StringComparison.InvariantCultureIgnoreCase));
+
+            if (variable is null)
+            {
+                return Maybe<IVariable>.Empty();
+            }
+
+            return new Maybe<IVariable>(variable);
         }
 
         public static string GetVariableValueOrDefault(

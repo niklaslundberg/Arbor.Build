@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -161,9 +162,15 @@ namespace Arbor.X.Core.Tools.Testing
 
             var typesToFind = new List<Type> { fixtureAttribute, testMethodAttribute };
 
+            Stopwatch stopwatch = Stopwatch.StartNew();
+
             List<string> testDlls = new UnitTestFinder(typesToFind)
                 .GetUnitTestFixtureDlls(directory, runTestsInReleaseConfiguration, assemblyFilePrefix)
                 .ToList();
+
+            stopwatch.Stop();
+
+            logger.Write($"NUnit test assembly lookup took {stopwatch.ElapsedMilliseconds:F2} milliseconds");
 
             if (!testDlls.Any())
             {
@@ -190,12 +197,18 @@ namespace Arbor.X.Core.Tools.Testing
 
                 LogExecution(logger, nunitConsoleArguments, nunitExePath);
 
+                Stopwatch executionStopwatch = Stopwatch.StartNew();
+
                 ExitCode result = await ProcessRunner.ExecuteAsync(
                     nunitExePath,
                     arguments: nunitConsoleArguments,
                     standardOutLog: logger.Write,
                     standardErrorAction: logger.WriteError,
                     toolAction: logger.Write);
+
+                executionStopwatch.Stop();
+
+                logger.Write($"NUnit execution took {executionStopwatch.ElapsedMilliseconds:F2} milliseconds");
 
                 results.Add(Tuple.Create(testDll, result));
             }

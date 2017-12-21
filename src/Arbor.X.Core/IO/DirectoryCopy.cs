@@ -37,10 +37,11 @@ namespace Arbor.X.Core.IO
                 throw new ArgumentException($"Source directory '{sourceDir}' does not exist");
             }
 
-            if (pathLookupSpecification.IsBlackListed(sourceDir, rootDir))
+            (bool, string) isBlackListed = pathLookupSpecification.IsBlackListed(sourceDir, rootDir);
+            if (isBlackListed.Item1)
             {
                 logger.WriteDebug(
-                    $"Directory '{sourceDir}' is blacklisted from specification {pathLookupSpecification}");
+                    $"Directory '{sourceDir}' is blacklisted from specification {pathLookupSpecification}, {isBlackListed.Item2}");
                 return ExitCode.Success;
             }
 
@@ -50,9 +51,11 @@ namespace Arbor.X.Core.IO
             {
                 string destFileName = Path.Combine(targetDir, file.Name);
 
-                if (pathLookupSpecification.IsFileBlackListed(file.FullName, rootDir, logger: optionalLogger))
+                (bool, string) isFileBlackListed = pathLookupSpecification.IsFileBlackListed(file.FullName, rootDir, logger: optionalLogger);
+
+                if (isFileBlackListed.Item1)
                 {
-                    logger.WriteVerbose($"File '{file.FullName}' is blacklisted, skipping copying file");
+                    logger.WriteVerbose($"File '{file.FullName}' is blacklisted, skipping copying file, {isFileBlackListed.Item2}");
                     continue;
                 }
 

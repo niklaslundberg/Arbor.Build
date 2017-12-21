@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using Arbor.X.Core.IO;
 using Machine.Specifications;
@@ -17,7 +18,7 @@ namespace Arbor.X.Tests.Integration.PathExtensions
 
         Establish context = () =>
         {
-            root = @"C:\Temp\root";
+            root = $@"C:\Temp\root-{Guid.NewGuid()}";
 
             new DirectoryInfo(Path.Combine(root, "afolder")).EnsureExists();
             using (File.Create(Path.Combine(root, "afile.txt")))
@@ -28,7 +29,7 @@ namespace Arbor.X.Tests.Integration.PathExtensions
         };
 
         Because of =
-            () => { isBlackListed = specification.IsFileBlackListed(@"C:\Temp\root\afile.txt", @"C:\Temp\root"); };
+            () => { isBlackListed = specification.IsFileBlackListed($@"{root}\afile.txt", @"C:\Temp\root").Item1; };
 
         It should_return_false = () => isBlackListed.ShouldBeFalse();
     }
