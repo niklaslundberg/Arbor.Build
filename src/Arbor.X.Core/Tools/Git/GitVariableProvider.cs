@@ -39,7 +39,9 @@ namespace Arbor.X.Core.Tools.Git
             if (maybeBranch.HasValue && maybeBranch.Value.IsDevelopBranch())
             {
                 logger.WriteDebug("Branch is develop branch, checking if release build is explicitely set");
-                Maybe<IVariable> releaseBuildEnabled = buildVariables.GetOptionalVariable(WellKnownVariables.ReleaseBuildEnabled);
+                Maybe<IVariable> releaseBuildEnabled =
+                    buildVariables.GetOptionalVariable(WellKnownVariables.ReleaseBuildEnabled);
+
                 if (!releaseBuildEnabled.HasValue ||
                     !bool.TryParse(releaseBuildEnabled.Value.Value, out bool isReleaseBuildEnabled))
                 {
@@ -57,8 +59,11 @@ namespace Arbor.X.Core.Tools.Git
             if (maybeBranch.HasValue && maybeBranch.Value.IsProductionBranch())
             {
                 logger.WriteDebug("Branch is production branch, checking if release build is explicitely set");
-                Maybe<IVariable> debugBuildEnabled = buildVariables.GetOptionalVariable(WellKnownVariables.DebugBuildEnabled);
-                if (debugBuildEnabled.HasValue || !bool.TryParse(debugBuildEnabled.Value.Value, out bool isDebugBuildEnabled))
+                Maybe<IVariable> debugBuildEnabled =
+                    buildVariables.GetOptionalVariable(WellKnownVariables.DebugBuildEnabled);
+
+                if (!debugBuildEnabled.HasValue ||
+                    !bool.TryParse(debugBuildEnabled.Value.Value, out bool isDebugBuildEnabled))
                 {
                     variables.Add(new EnvironmentVariable(WellKnownVariables.DebugBuildEnabled, "false"));
                     logger.WriteDebug(
@@ -132,7 +137,8 @@ namespace Arbor.X.Core.Tools.Git
                         WellKnownVariables.GitHash,
                         gitCommitHash);
 
-                    logger.WriteDebug($"Setting commit hash variable '{WellKnownVariables.GitHash}' from TeamCity variable '{WellKnownVariables.TeamCity.TeamCityVcsNumber}', value '{gitCommitHash}'");
+                    logger.WriteDebug(
+                        $"Setting commit hash variable '{WellKnownVariables.GitHash}' from TeamCity variable '{WellKnownVariables.TeamCity.TeamCityVcsNumber}', value '{gitCommitHash}'");
 
                     variables.Add(environmentVariable);
                 }
