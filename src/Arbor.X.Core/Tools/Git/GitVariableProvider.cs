@@ -57,8 +57,8 @@ namespace Arbor.X.Core.Tools.Git
             if (maybeBranch.HasValue && maybeBranch.Value.IsProductionBranch())
             {
                 logger.WriteDebug("Branch is production branch, checking if release build is explicitely set");
-                IVariable debugBuildEnabled = buildVariables.GetVariable(WellKnownVariables.DebugBuildEnabled);
-                if (debugBuildEnabled is null || !bool.TryParse(debugBuildEnabled.Value, out bool isDebugBuildEnabled))
+                Maybe<IVariable> debugBuildEnabled = buildVariables.GetOptionalVariable(WellKnownVariables.DebugBuildEnabled);
+                if (debugBuildEnabled.HasValue || !bool.TryParse(debugBuildEnabled.Value.Value, out bool isDebugBuildEnabled))
                 {
                     variables.Add(new EnvironmentVariable(WellKnownVariables.DebugBuildEnabled, "false"));
                     logger.WriteDebug(
