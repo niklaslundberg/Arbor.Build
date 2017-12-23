@@ -54,6 +54,13 @@ namespace Arbor.X.Core.Tools.Git
                     logger.WriteDebug(
                         $"Release build is explicitely set when branch is develop branch, value {isReleaseBuildEnabled}");
                 }
+                Maybe<IVariable> isDebugBuildEnabled =
+                    buildVariables.GetOptionalVariable(WellKnownVariables.DebugBuildEnabled);
+
+                if (!isDebugBuildEnabled.HasValue)
+                {
+                    variables.Add(new EnvironmentVariable(WellKnownVariables.DebugBuildEnabled, "true"));
+                }
             }
 
             if (maybeBranch.HasValue && maybeBranch.Value.IsProductionBranch())
@@ -73,6 +80,14 @@ namespace Arbor.X.Core.Tools.Git
                 {
                     logger.WriteDebug(
                         $"Debug build is explicitely set when branch is production branch, value {isDebugBuildEnabled}");
+                }
+
+                Maybe<IVariable> releaseBuildEnabled =
+                    buildVariables.GetOptionalVariable(WellKnownVariables.ReleaseBuildEnabled);
+
+                if (!releaseBuildEnabled.HasValue)
+                {
+                    variables.Add(new EnvironmentVariable(WellKnownVariables.ReleaseBuildEnabled, "true"));
                 }
             }
 
