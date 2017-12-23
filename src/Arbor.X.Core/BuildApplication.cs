@@ -147,7 +147,7 @@ namespace Arbor.X.Core
                             },
                             {
                                 "Execution time",
-                                result.ExecutionTime == default(TimeSpan)
+                                result.ExecutionTime == default
                                     ? "N/A"
                                     : ((int)result.ExecutionTime.TotalMilliseconds).ToString("D") + " ms"
                             },

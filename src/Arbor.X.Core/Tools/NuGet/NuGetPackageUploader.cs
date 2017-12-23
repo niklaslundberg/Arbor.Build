@@ -35,7 +35,7 @@ namespace Arbor.X.Core.Tools.NuGet
 
             if (!enabled)
             {
-                logger.Write("NuGet package upload is disabled");
+                logger.Write($"NuGet package upload is disabled ('{WellKnownVariables.ExternalTools_NuGetServer_Enabled}')");
                 return Task.FromResult(ExitCode.Success);
             }
 

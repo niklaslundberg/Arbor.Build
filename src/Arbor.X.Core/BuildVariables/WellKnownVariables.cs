@@ -360,9 +360,9 @@ namespace Arbor.X.Core.BuildVariables
                 Type item = typeof(WellKnownVariables);
                 var classes = new List<Type>() { item };
 
-                ImmutableArray<Type> nestedClassTypes = GetNestedClassTypes(item);
+                classes.AddRange(GetNestedClassTypes(item));
 
-                ImmutableArray<FieldInfo> fields = nestedClassTypes
+                ImmutableArray<FieldInfo> fields = classes
                     .Select(@class => @class
                     .GetFields()
                     .Where(field => field.IsPublicConstantOrStatic()))

@@ -20,6 +20,13 @@ namespace Arbor.X.Tests.Integration.WellknownVariables
                 .ShouldBeTrue();
         };
 
+        It should_contain_non_nested_class_constants = () =>
+        {
+            readOnlyCollection
+                .Any(variable => variable.InvariantName.Equals(WellKnownVariables.ExternalTools_NuGetServer_Enabled))
+                .ShouldBeTrue();
+        };
+
         It should_print_all_variables = () =>
         {
             foreach (VariableDescription variableDescription in readOnlyCollection)
