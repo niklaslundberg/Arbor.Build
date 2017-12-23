@@ -52,6 +52,10 @@
     <Compile Include="Bootstrapper\when_running_bootstrapper.cs" />
     <Compile Include="DirectoryDelete\when_deleting_a_directory_with_filters.cs" />
     <Compile Include="DirectoryExtensions\when_getting_config_files_recursive_with_possible_files_both_in_blacklisted_and_not_blacklisted_directories.cs" />
+    <Compile Include="GitBranches\when_checking_is_develop_branch_from_develop.cs" />
+    <Compile Include="GitBranches\when_checking_is_develop_branch_from_releaase.cs" />
+    <Compile Include="GitBranches\when_checking_is_production_branch_from_develop.cs" />
+    <Compile Include="GitBranches\when_checking_is_production_branch_from_releaase.cs" />
     <Compile Include="GitBranches\when_parsing_version_from_branch_name_with_dash.cs" />
     <Compile Include="GitBranches\when_parsing_version_from_branch_name_without_version.cs" />
     <Compile Include="GitBranches\when_parsing_version_from_branch_name_with_slash.cs" />
