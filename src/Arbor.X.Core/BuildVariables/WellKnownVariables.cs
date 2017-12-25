@@ -290,6 +290,14 @@ namespace Arbor.X.Core.BuildVariables
         public static readonly string XUnitNetFrameworkEnabled =
             "Arbor.X.Tools.External.Xunit.NetFramework.Enabled";
 
+        [VariableDescription("Enable XUnit .NET Core App")]
+        public static readonly string XUnitNetCoreAppEnabled =
+            "Arbor.X.Tools.External.Xunit.NetCoreApp.Enabled";
+
+        [VariableDescription("XUnit .NET Core App DLL path")]
+        public static readonly string XUnitNetCoreAppDllPath =
+            "Arbor.X.Tools.External.Xunit.NetCoreApp.DllPath";
+
         [VariableDescription("XUnit .NET Framework exe path")]
         public static readonly string XUnitNetFrameworkExePath =
             "Arbor.X.Tools.External.Xunit.NetFramework.ExePath";

@@ -29,3 +29,4 @@ nuget RefactoringEssentials
 nuget StyleCop.Analyzers
 nuget System.Runtime
 nuget xunit
+nuget Mono.Cecil

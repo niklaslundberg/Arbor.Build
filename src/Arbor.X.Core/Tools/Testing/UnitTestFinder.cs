@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Versioning;
 using Arbor.X.Core.Assemblies;
 using Arbor.X.Core.Logging;
 
@@ -27,7 +28,8 @@ namespace Arbor.X.Core.Tools.Testing
         public IReadOnlyCollection<string> GetUnitTestFixtureDlls(
             DirectoryInfo currentDirectory,
             bool? releaseBuild = null,
-            string assemblyFilePrefix = null)
+            string assemblyFilePrefix = null,
+            string targetFrameworkPrefix = null)
         {
             if (currentDirectory == null)
             {
@@ -85,7 +87,7 @@ namespace Arbor.X.Core.Tools.Testing
                 .Where(file => !file.Name.StartsWith("System", StringComparison.InvariantCultureIgnoreCase))
                 .Where(file => !ignoredNames.Any(
                     name => file.Name.IndexOf(name, StringComparison.InvariantCultureIgnoreCase) >= 0))
-                .Select(GetAssembly)
+                .Select(dllFile => GetAssembly(dllFile, targetFrameworkPrefix))
                 .Where(assembly => assembly != null)
                 .Distinct()
                 .ToList();
@@ -109,7 +111,7 @@ namespace Arbor.X.Core.Tools.Testing
 
             List<string> subDirAssemblies = currentDirectory
                 .EnumerateDirectories()
-                .SelectMany(dir => GetUnitTestFixtureDlls(dir, releaseBuild, assemblyFilePrefix))
+                .SelectMany(dir => GetUnitTestFixtureDlls(dir, releaseBuild, assemblyFilePrefix, targetFrameworkPrefix))
                 .ToList();
 
             List<string> allUnitFixtureAssemblies = testFixtureAssemblies
@@ -279,15 +281,30 @@ namespace Arbor.X.Core.Tools.Testing
                             StringComparison.InvariantCultureIgnoreCase));
         }
 
-        private Assembly GetAssembly(FileInfo dllFile)
+        private Assembly GetAssembly(FileInfo dllFile, string targetFrameworkPrefix)
         {
             try
             {
                 Assembly assembly = Assembly.LoadFrom(dllFile.FullName);
 
+                if (!string.IsNullOrWhiteSpace(targetFrameworkPrefix))
+                {
+                    var targetFrameworkAttribute = assembly.GetCustomAttribute<TargetFrameworkAttribute>();
+
+                    if (targetFrameworkAttribute != null)
+                    {
+                        if (!targetFrameworkAttribute.FrameworkName.StartsWith(targetFrameworkPrefix,
+                            StringComparison.OrdinalIgnoreCase))
+                        {
+                            _logger.WriteDebug($"The current assembly '{dllFile.FullName}' target framework attribute with value '{targetFrameworkAttribute.FrameworkName}' does not match the specified target framework '{targetFrameworkPrefix}'");
+                            return null;
+                        }
+                    }
+                }
+
                 Type[] types = assembly.GetTypes();
 
-                int count = types.Count();
+                int count = types.Length;
 
                 if (DebugLogEnabled)
                 {

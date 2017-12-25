@@ -16,7 +16,7 @@ namespace Arbor.X.Core.Tools.Testing
 {
     [Priority(400)]
     [UsedImplicitly]
-    public class XunitNetFrameworkTestRunner : ITool
+    public class XunitNetCoreAppTestRunner : ITool
     {
         private string _sourceRoot;
 
@@ -32,17 +32,17 @@ namespace Arbor.X.Core.Tools.Testing
                 throw new ArgumentNullException(nameof(buildVariables));
             }
 
-            bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.XUnitNetFrameworkEnabled, false);
+            bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.XUnitNetCoreAppEnabled, false);
 
             if (!enabled)
             {
-                logger.WriteDebug("Xunit .NET Framework test runner is not enabled");
+                logger.WriteDebug("Xunit .NET Core App test runner is not enabled");
                 return ExitCode.Success;
             }
 
             _sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
             IVariable reportPath = buildVariables.Require(WellKnownVariables.ReportPath).ThrowIfEmptyValue();
-            string xunitExePath = buildVariables.GetVariableValueOrDefault(WellKnownVariables.XUnitNetFrameworkExePath, Path.Combine(buildVariables.Require(WellKnownVariables.ExternalTools).Value, "xunit", "net452", "xunit.console.exe"));
+            string xunitDllPath = buildVariables.GetVariableValueOrDefault(WellKnownVariables.XUnitNetCoreAppDllPath, Path.Combine(buildVariables.Require(WellKnownVariables.ExternalTools).Value, "xunit", "netcoreapp2.0", "xunit.console.dll"));
 
             Type theoryType = typeof(TheoryAttribute);
             Type factAttribute = typeof(FactAttribute);
@@ -57,8 +57,24 @@ namespace Arbor.X.Core.Tools.Testing
                     true);
 
             List<string> testDlls = new UnitTestFinder(typesToFind)
-                .GetUnitTestFixtureDlls(directory, runTestsInReleaseConfiguration, ".NETFramework")
+                .GetUnitTestFixtureDlls(directory, runTestsInReleaseConfiguration, ".NETCoreApp")
                 .ToList();
+
+            if (!testDlls.Any())
+            {
+                logger.Write("Found no .NETCoreApp Assemblies with Xunit tests");
+                return ExitCode.Success;
+            }
+
+            string dotNetExePath =
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.DotNetExePath, string.Empty);
+
+            if (string.IsNullOrWhiteSpace(dotNetExePath))
+            {
+                logger.Write(
+                    $"Path to 'dotnet.exe' has not been specified, set variable '{WellKnownVariables.DotNetExePath}' or ensure the dotnet.exe is installed in its standard location");
+                return ExitCode.Failure;
+            }
 
             string xmlReportName = $"{Guid.NewGuid()}.xml";
 
@@ -69,12 +85,13 @@ namespace Arbor.X.Core.Tools.Testing
             var fileInfo = new FileInfo(reportFile);
             fileInfo.Directory.EnsureExists();
 
+            arguments.Add(xunitDllPath);
             arguments.AddRange(testDlls);
             arguments.Add("-nunit");
             arguments.Add(fileInfo.FullName);
 
             ExitCode result = await ProcessRunner.ExecuteAsync(
-                xunitExePath,
+                dotNetExePath,
                 arguments: arguments,
                 standardOutLog: logger.Write,
                 standardErrorAction: logger.WriteError,
