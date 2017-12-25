@@ -39,6 +39,30 @@ namespace Arbor.Defensive
 
         public bool HasValue => _value != null;
 
+        public static implicit operator T(Maybe<T> maybe)
+        {
+            if (!maybe.HasValue)
+            {
+                var exception =
+                    new InvalidOperationException(
+                        $"Cannot convert a default value of type {typeof(Maybe<T>)} into a {typeof(T)} type because the value is null. Make sure to check {nameof(HasValue)} property making an implicit conversion");
+
+                throw exception;
+            }
+
+            return maybe.Value;
+        }
+
+        public static implicit operator Maybe<T>([CanBeNull] T value)
+        {
+            if (value is null)
+            {
+                return Empty();
+            }
+
+            return new Maybe<T>(value);
+        }
+
         public static bool operator ==(Maybe<T> left, T right)
         {
             if (right == null)
@@ -89,30 +113,6 @@ namespace Arbor.Defensive
             return !left.Value.Equals(right.Value);
         }
 
-        public static implicit operator T(Maybe<T> maybe)
-        {
-            if (!maybe.HasValue)
-            {
-                var exception =
-                    new InvalidOperationException(
-                        $"Cannot convert a default value of type {typeof(Maybe<T>)} into a {typeof(T)} type because the value is null. Make sure to check {nameof(HasValue)} property making an implicit conversion");
-
-                throw exception;
-            }
-
-            return maybe.Value;
-        }
-
-        public static implicit operator Maybe<T>([CanBeNull] T value)
-        {
-            if (value is null)
-            {
-                return Empty();
-            }
-
-            return new Maybe<T>(value);
-        }
-
         public static Maybe<T> Empty()
         {
             return empty.Value;
@@ -140,7 +140,7 @@ namespace Arbor.Defensive
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj))
+            if (obj is null)
             {
                 return false;
             }

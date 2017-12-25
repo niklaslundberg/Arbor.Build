@@ -1489,24 +1489,23 @@ namespace Arbor.X.Core.Tools.MSBuild
                 .Where(file => !file.Name.Equals("web.config", StringComparison.InvariantCultureIgnoreCase))
                 .ToReadOnlyCollection();
 
-            Func<FileInfo, string> transformFile = file =>
+            string TransformFile(FileInfo file)
             {
                 string nameWithoutExtension = Path.GetFileNameWithoutExtension(file.Name);
                 string extension = Path.GetExtension(file.Name);
 
                 // ReSharper disable once PossibleNullReferenceException
-                string transformFilePath = Path.Combine(
-                    file.Directory.FullName,
+                string transformFilePath = Path.Combine(file.Directory.FullName,
                     nameWithoutExtension + "." + configuration + extension);
 
                 return transformFilePath;
-            };
+            }
 
             var transformationPairs = files
                 .Select(file => new
                 {
                     Original = file,
-                    TransformFile = transformFile(file)
+                    TransformFile = TransformFile(file)
                 })
                 .Where(filePair => File.Exists(filePair.TransformFile))
                 .ToReadOnlyCollection();
