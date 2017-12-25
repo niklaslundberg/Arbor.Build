@@ -10,7 +10,7 @@ namespace Arbor.X.Tests.Integration.GitBranches
         static bool is_develop;
         Establish context = () => { branchName =new BranchName("refs/heads/develop"); };
 
-        Because of = () => { is_develop = branchName.IsDevelopBranch();};
+        Because of = () => { is_develop = branchName.IsDevelopBranch(); };
 
         It should_extract_the_version = () => is_develop.ShouldBeFalse();
     }

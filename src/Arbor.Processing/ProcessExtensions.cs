@@ -16,7 +16,6 @@ namespace Arbor.Processing
                 || ((Environment.OSVersion.Version.Major == 5) && (Environment.OSVersion.Version.Minor >= 1)))
             {
                 IntPtr processHandle;
-                bool retVal;
 
                 try
                 {
@@ -28,10 +27,11 @@ namespace Arbor.Processing
                     {
                         throw;
                     }
+
                     return false;
                 }
 
-                return NativeMethods.IsWow64Process(processHandle, out retVal) && retVal;
+                return NativeMethods.IsWow64Process(processHandle, out bool retVal) && retVal;
             }
 
             return false;

@@ -24,6 +24,17 @@ namespace Arbor.X.Core.Tools.Testing
         private string _exePathOverride;
         private bool _transformToJunit;
 
+        private static string GetNUnitXmlReportFilePath(IVariable reportPath, string testDll)
+        {
+            var testDllFile = new FileInfo(testDll);
+
+            string xmlReportName = $"{testDllFile.Name}.xml";
+
+            string reportFile = Path.Combine(reportPath.Value, "nunit", xmlReportName);
+
+            return reportFile;
+        }
+
         public async Task<ExitCode> ExecuteAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
@@ -135,17 +146,6 @@ namespace Arbor.X.Core.Tools.Testing
             var options = new List<string> { report };
 
             return options;
-        }
-
-        private static string GetNUnitXmlReportFilePath(IVariable reportPath, string testDll)
-        {
-            var testDllFile = new FileInfo(testDll);
-
-            string xmlReportName = $"{testDllFile.Name}.xml";
-
-            string reportFile = Path.Combine(reportPath.Value, "nunit", xmlReportName);
-
-            return reportFile;
         }
 
         private async Task<ExitCode> RunNUnitAsync(

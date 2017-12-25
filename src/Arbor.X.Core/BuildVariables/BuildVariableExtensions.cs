@@ -92,7 +92,7 @@ namespace Arbor.X.Core.BuildVariables
         public static int GetInt32ByKey(
             this IReadOnlyCollection<IVariable> buildVariables,
             string key,
-            int defaultValue = default(int),
+            int defaultValue = default,
             int? minValue = null)
         {
             int? returnValue = null;
@@ -129,7 +129,7 @@ namespace Arbor.X.Core.BuildVariables
         public static long GetInt64ByKey(
             this IReadOnlyCollection<IVariable> buildVariables,
             string key,
-            long defaultValue = default(long))
+            long defaultValue = default)
         {
             if (!buildVariables.HasKey(key))
             {
@@ -185,7 +185,7 @@ namespace Arbor.X.Core.BuildVariables
 
         public static int GetValueOrDefault(
             this IVariable variable,
-            int defaultValue = default(int))
+            int defaultValue = default)
         {
             if (variable == null)
             {
@@ -211,7 +211,7 @@ namespace Arbor.X.Core.BuildVariables
 
         public static long GetValueOrDefault(
             this IVariable variable,
-            long defaultValue = default(long))
+            long defaultValue = default)
         {
             if (variable == null)
             {

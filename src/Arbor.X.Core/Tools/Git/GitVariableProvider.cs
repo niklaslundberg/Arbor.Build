@@ -54,6 +54,7 @@ namespace Arbor.X.Core.Tools.Git
                     logger.WriteDebug(
                         $"Release build is explicitely set when branch is develop branch, value {isReleaseBuildEnabled}");
                 }
+
                 Maybe<IVariable> isDebugBuildEnabled =
                     buildVariables.GetOptionalVariable(WellKnownVariables.DebugBuildEnabled);
 

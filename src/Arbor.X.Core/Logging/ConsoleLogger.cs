@@ -6,7 +6,7 @@ namespace Arbor.X.Core.Logging
     {
         private readonly string _prefix;
 
-        public ConsoleLogger(string prefix = "", LogLevel maxLogLevel = default(LogLevel))
+        public ConsoleLogger(string prefix = "", LogLevel maxLogLevel = default)
         {
             LogLevel = maxLogLevel;
             _prefix = prefix ?? string.Empty;

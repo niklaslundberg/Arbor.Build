@@ -8,9 +8,9 @@ namespace Arbor.X.Tests.Integration.GitBranches
     {
         static BranchName branchName;
         static bool is_production;
-        Establish context = () => { branchName =new BranchName("refs/heads/develop"); };
+        Establish context = () => { branchName = new BranchName("refs/heads/develop"); };
 
-        Because of = () => { is_production = branchName.IsProductionBranch();};
+        Because of = () => { is_production = branchName.IsProductionBranch(); };
 
         It should_extract_the_version = () => is_production.ShouldBeFalse();
     }

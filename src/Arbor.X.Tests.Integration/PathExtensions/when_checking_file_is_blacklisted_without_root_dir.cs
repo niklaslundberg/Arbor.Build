@@ -20,7 +20,6 @@ namespace Arbor.X.Tests.Integration.PathExtensions
         {
             root = new DirectoryInfo(@"C:\Temp\root\afolder").EnsureExists();
 
-
             rootParent = root.Parent;
 
             using (File.Create(@"C:\Temp\root\afile.txt"))
@@ -33,6 +32,7 @@ namespace Arbor.X.Tests.Integration.PathExtensions
         Because of = () => { isBlackListed = specification.IsFileBlackListed(@"C:\Temp\root\afile.txt").Item1; };
 
         It should_return_true = () => isBlackListed.ShouldBeTrue();
+
         static DirectoryInfo rootParent;
     }
 }

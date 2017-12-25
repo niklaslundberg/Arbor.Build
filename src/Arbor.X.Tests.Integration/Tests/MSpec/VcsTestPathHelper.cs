@@ -39,6 +39,7 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
                 Console.WriteLine("Could not find NCrunch original solution path, {0}", ex);
 #endif
             }
+
             return VcsPathHelper.FindVcsRootPath();
         }
     }

@@ -47,7 +47,6 @@ namespace Arbor.X.Core.Tools.Versioning
 
             var app = new AssemblyPatcherApp(delegateLogger);
 
-
             _filePattern = buildVariables.GetVariableValueOrDefault(
                 WellKnownVariables.AssemblyFilePatchingFilePattern,
                 "AssemblyInfo.cs");

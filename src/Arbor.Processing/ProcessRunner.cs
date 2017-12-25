@@ -17,7 +17,7 @@ namespace Arbor.Processing
 
         public static async Task<ExitCode> ExecuteAsync(
             string executePath,
-            CancellationToken cancellationToken = default(CancellationToken),
+            CancellationToken cancellationToken = default,
             IEnumerable<string> arguments = null,
             Action<string, string> standardOutLog = null,
             Action<string, string> standardErrorAction = null,
@@ -97,8 +97,8 @@ namespace Arbor.Processing
 
             string category = $"[{Path.GetFileNameWithoutExtension(Path.GetFileName(executePath))}] ";
 
-            string outputCategory = parentPrefix + (addProcessRunnerCategory ? ToolName : "") +
-                                    (addProcessNameAsLogCategory ? category : "");
+            string outputCategory = parentPrefix + (addProcessRunnerCategory ? ToolName : string.Empty) +
+                                    (addProcessNameAsLogCategory ? category : string.Empty);
 
             bool redirectStandardError = standardErrorAction != null;
 
@@ -140,6 +140,7 @@ namespace Arbor.Processing
                     verbose($"Task was not completed, but process '{processWithArgs}' was disposed", toolCategory);
                     taskCompletionSource.TrySetResult(ExitCode.Failure);
                 }
+
                 verbose($"Disposed process '{processWithArgs}'", toolCategory);
             };
 
@@ -153,6 +154,7 @@ namespace Arbor.Processing
                     }
                 };
             }
+
             if (redirectStandardOutput)
             {
                 process.OutputDataReceived += (sender, args) =>
@@ -217,9 +219,11 @@ namespace Arbor.Processing
                 {
                     throw;
                 }
+
                 errorAction($"An error occured while running process '{processWithArgs}': {ex}", toolCategory);
                 taskCompletionSource.SetException(ex);
             }
+
             bool done = false;
             try
             {
@@ -236,6 +240,7 @@ namespace Arbor.Processing
                     {
                         break;
                     }
+
                     Task delay = Task.Delay(TimeSpan.FromMilliseconds(50), cancellationToken);
 
                     await delay;
@@ -306,6 +311,7 @@ namespace Arbor.Processing
                         }
                     }
                 }
+
                 using (process)
                 {
                     verbose(
@@ -342,6 +348,7 @@ namespace Arbor.Processing
                 {
                     throw;
                 }
+
                 debugAction($"Could not check processes. {ex}", toolCategory);
             }
 

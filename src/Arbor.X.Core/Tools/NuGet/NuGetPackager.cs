@@ -135,7 +135,7 @@ namespace Arbor.X.Core.Tools.NuGet
             string packageSpecificationPath,
             NuGetPackageConfiguration packageConfiguration,
             bool ignoreWarnings = false,
-            CancellationToken cancellationToken = default(CancellationToken))
+            CancellationToken cancellationToken = default)
         {
             _logger.WriteDebug($"Using NuGet package configuration {packageConfiguration}");
 
@@ -266,7 +266,7 @@ namespace Arbor.X.Core.Tools.NuGet
             bool keepBinaryAndSourcePackagesTogetherEnabled = false,
             bool nugetSymbolPackageEnabled = false,
             bool ignoreWarnings = false,
-            CancellationToken cancellationToken = default(CancellationToken))
+            CancellationToken cancellationToken = default)
         {
             bool hasRemovedNoSourceTag =
                 removedTags.Any(

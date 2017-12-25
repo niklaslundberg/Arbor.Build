@@ -8,7 +8,7 @@ namespace Arbor.X.Core.Tools
             ToolWithPriority toolWithPriority,
             ToolResultType resultType,
             string message = null,
-            TimeSpan executionTime = default(TimeSpan))
+            TimeSpan executionTime = default)
         {
             if (toolWithPriority == null)
             {

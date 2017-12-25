@@ -4,7 +4,7 @@ namespace Arbor.X.Core.GenericExtensions
 {
     public static class IntExtensions
     {
-        public static ParseResult<int> TryParseInt32(this string value, int defaultValue = default(int))
+        public static ParseResult<int> TryParseInt32(this string value, int defaultValue = default)
         {
             if (string.IsNullOrWhiteSpace(value))
             {

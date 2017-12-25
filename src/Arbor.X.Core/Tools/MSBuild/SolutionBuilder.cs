@@ -1165,9 +1165,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                 : string.Empty;
 
             string files =
-                $@"<file src=""{
-                        siteArtifactDirectory
-                    }\**\*.*"" target=""Content"" exclude=""packages.config{excluded}"" />";
+                $@"<file src=""{siteArtifactDirectory}\**\*.*"" target=""Content"" exclude=""packages.config{excluded}"" />";
 
             ExitCode exitCode = await CreateNuGetPackageAsync(
                 platformDirectoryPath,

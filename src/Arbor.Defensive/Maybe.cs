@@ -9,6 +9,8 @@ namespace Arbor.Defensive
     public struct Maybe<T>
         where T : class
     {
+        private static readonly Lazy<Maybe<T>> empty = new Lazy<Maybe<T>>(() => default);
+
         private readonly T _value;
 
         public Maybe([CanBeNull] T value = null)
@@ -30,51 +32,12 @@ namespace Arbor.Defensive
                     throw new NullReferenceException(
                         $"Cannot get the instance of type {typeof(T)} because it has value null. Make sure to call {nameof(HasValue)} property before access the {nameof(Value)} property");
                 }
+
                 return _value;
             }
         }
 
         public bool HasValue => _value != null;
-
-        public bool Equals(Maybe<T> other)
-        {
-            if (!other.HasValue)
-            {
-                return false;
-            }
-
-            if (!HasValue)
-            {
-                return false;
-            }
-
-            if (ReferenceEquals(_value, other._value))
-            {
-                return true;
-            }
-
-            return EqualityComparer<T>.Default.Equals(_value, other._value);
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj))
-            {
-                return false;
-            }
-
-            if (ReferenceEquals(_value, obj))
-            {
-                return true;
-            }
-
-            return (obj is Maybe<T> && Equals((Maybe<T>)obj)) || (obj is T && Equals((T)obj));
-        }
-
-        public override int GetHashCode()
-        {
-            return _value?.GetHashCode() ?? 0;
-        }
 
         public static bool operator ==(Maybe<T> left, T right)
         {
@@ -142,12 +105,57 @@ namespace Arbor.Defensive
 
         public static implicit operator Maybe<T>([CanBeNull] T value)
         {
+            if (value is null)
+            {
+                return Empty();
+            }
+
             return new Maybe<T>(value);
         }
 
         public static Maybe<T> Empty()
         {
-            return new Maybe<T>();
+            return empty.Value;
+        }
+
+        public bool Equals(Maybe<T> other)
+        {
+            if (!other.HasValue)
+            {
+                return false;
+            }
+
+            if (!HasValue)
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(_value, other._value))
+            {
+                return true;
+            }
+
+            return EqualityComparer<T>.Default.Equals(_value, other._value);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(_value, obj))
+            {
+                return true;
+            }
+
+            return (obj is Maybe<T> maybe && Equals(maybe)) || (obj is T && Equals((T)obj));
+        }
+
+        public override int GetHashCode()
+        {
+            return _value?.GetHashCode() ?? 0;
         }
     }
 }
