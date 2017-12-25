@@ -42,7 +42,7 @@ namespace Arbor.X.Core.Tools.Testing
 
             _sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
             IVariable reportPath = buildVariables.Require(WellKnownVariables.ReportPath).ThrowIfEmptyValue();
-            string xunitExePath = buildVariables.Require(WellKnownVariables.XUnitNetFrameworkExePath).ThrowIfEmptyValue().Value;
+            string xunitExePath = buildVariables.GetVariableValueOrDefault(WellKnownVariables.XUnitNetFrameworkExePath, Path.Combine(buildVariables.Require(WellKnownVariables.ExternalTools).Value, "xunit", "net452", "xunit.console.exe"));
 
             Type theoryType = typeof(TheoryAttribute);
             Type factAttribute = typeof(FactAttribute);
