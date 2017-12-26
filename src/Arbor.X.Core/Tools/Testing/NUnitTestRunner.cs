@@ -11,6 +11,7 @@ using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.Logging;
+using Arbor.X.Core.Properties;
 using JetBrains.Annotations;
 using NUnit.Framework;
 
@@ -165,7 +166,7 @@ namespace Arbor.X.Core.Tools.Testing
             Stopwatch stopwatch = Stopwatch.StartNew();
 
             List<string> testDlls = new UnitTestFinder(typesToFind)
-                .GetUnitTestFixtureDlls(directory, runTestsInReleaseConfiguration, assemblyFilePrefix)
+                .GetUnitTestFixtureDlls(directory, runTestsInReleaseConfiguration, assemblyFilePrefix, FrameworkConstants.NetFramework)
                 .ToList();
 
             stopwatch.Stop();

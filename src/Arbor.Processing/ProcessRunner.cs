@@ -169,8 +169,27 @@ namespace Arbor.Processing
             process.Exited += (sender, args) =>
             {
                 var proc = (Process)sender;
-                exitCode = new ExitCode(proc.ExitCode);
-                toolAction($"Process '{processWithArgs}' exited with code {new ExitCode(proc.ExitCode)}", toolCategory);
+
+                try
+                {
+                    exitCode = new ExitCode(proc.ExitCode);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    toolAction($"Could not get exit code for process, {ex}", toolCategory);
+
+                    if (!taskCompletionSource.Task.IsCompleted && !taskCompletionSource.Task.IsCanceled &&
+                        !taskCompletionSource.Task.IsFaulted)
+                    {
+                        taskCompletionSource.SetResult(new ExitCode(1));
+                    }
+
+                    return;
+                }
+
+                toolAction($"Process '{processWithArgs}' exited with code {exitCode}",
+                    toolCategory);
+
                 taskCompletionSource.SetResult(new ExitCode(proc.ExitCode));
             };
 

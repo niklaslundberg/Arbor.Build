@@ -1,16 +1,19 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.Tools.Testing;
+using Arbor.X.Tests.Integration.Tests.MSpec;
 using Machine.Specifications;
 using Mono.Cecil;
+using Xunit;
 
-namespace Arbor.X.Tests.Integration.Tests.MSpec
+namespace Arbor.X.Tests.Integration.Tests.Xunit
 {
+    [Ignore("local")]
     [Subject(typeof(UnitTestFinder))]
-    [Tags(MSpecInternalConstants.RecursiveArborXTest)]
-    public class when_testing_this_test_type_for_subject
+    public class when_testing_net_core_app_dll
     {
         static UnitTestFinder finder;
         static bool isTestType;
@@ -20,7 +23,7 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
             var logger = new ConsoleLogger { LogLevel = LogLevel.Verbose };
             finder = new UnitTestFinder(new List<Type>
                 {
-                    typeof(SubjectAttribute)
+                    typeof(FactAttribute)
                 },
                 logger: logger);
         };
@@ -28,11 +31,9 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
         Because of =
             () =>
             {
-                Type typeToInvestigate = typeof(when_testing_this_test_type_for_subject);
+                AssemblyDefinition assemblyDefinition = AssemblyDefinition.ReadAssembly(Path.Combine(VcsTestPathHelper.FindVcsRootPath(), "src", "Arbor.X.Tests.NetCoreAppSamle", "Arbor.X.Tests.NetCoreAppSamle.dll"));
 
-                AssemblyDefinition assemblyDefinition = AssemblyDefinition.ReadAssembly(typeToInvestigate.Assembly.Location);
-
-                TypeDefinition typeDefinition = assemblyDefinition.MainModule.Types.Single(t => t.FullName.Equals(typeToInvestigate.FullName));
+                TypeDefinition typeDefinition = assemblyDefinition.MainModule.Types.Single(t => t.FullName.StartsWith("Arbor", StringComparison.Ordinal));
 
                 isTestType = finder.TryIsTypeTestFixture(typeDefinition);
             };

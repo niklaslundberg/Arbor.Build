@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.Tools.Testing;
 using Machine.Specifications;
+using Mono.Cecil;
 
 namespace Arbor.X.Tests.Integration.Tests.MSpec
 {
@@ -24,7 +26,16 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
         };
 
         Because of =
-            () => { isTestType = finder.TryIsTypeTestFixture(typeof(when_testing_this_test_type_for_it)); };
+            () =>
+            {
+                Type typeToInvestigate = typeof(when_testing_this_test_type_for_it);
+
+                AssemblyDefinition assemblyDefinition = AssemblyDefinition.ReadAssembly(typeToInvestigate.Assembly.Location);
+
+                TypeDefinition typeDefinition = assemblyDefinition.MainModule.Types.Single(t => t.FullName.Equals(typeToInvestigate.FullName));
+
+                isTestType = finder.TryIsTypeTestFixture(typeDefinition);
+            };
 
         It should_Behaviour = () => isTestType.ShouldBeTrue();
     }

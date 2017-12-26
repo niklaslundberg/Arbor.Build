@@ -197,7 +197,7 @@ namespace Arbor.X.Core
                 [WellKnownVariables.VersionMajor] = "1",
                 [WellKnownVariables.VersionMinor] = "2",
                 [WellKnownVariables.VersionPatch] = "1",
-                [WellKnownVariables.VersionBuild] = "1",
+                [WellKnownVariables.VersionBuild] = "7",
                 [WellKnownVariables.GenericXmlTransformsEnabled] = "true",
                 [WellKnownVariables.NuGetPackageExcludesCommaSeparated] = "Arbor.X.Bootstrapper.nuspec",
                 [WellKnownVariables.NuGetAllowManifestReWrite] = "false",
@@ -224,7 +224,8 @@ namespace Arbor.X.Core
                 [WellKnownVariables.XUnitNetFrameworkEnabled] = "false",
                 [WellKnownVariables.NUnitEnabled] = "true",
                 [WellKnownVariables.MSpecEnabled] = "true",
-                [WellKnownVariables.TestsAssemblyStartsWith] = "Arbor.X.Tests"
+                [WellKnownVariables.TestsAssemblyStartsWith] = "Arbor.X.Tests",
+                [WellKnownVariables.DotNetRestoreEnabled] = "true"
             };
 
             foreach (KeyValuePair<string, string> environmentVariable in environmentVariables)

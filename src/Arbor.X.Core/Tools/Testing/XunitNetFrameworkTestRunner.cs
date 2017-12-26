@@ -9,6 +9,7 @@ using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
+using Arbor.X.Core.Properties;
 using JetBrains.Annotations;
 using Xunit;
 
@@ -56,9 +57,17 @@ namespace Arbor.X.Core.Tools.Testing
                     WellKnownVariables.RunTestsInReleaseConfigurationEnabled,
                     true);
 
+            string assemblyFilePrefix = buildVariables.GetVariableValueOrDefault(WellKnownVariables.TestsAssemblyStartsWith, string.Empty);
+
             List<string> testDlls = new UnitTestFinder(typesToFind)
-                .GetUnitTestFixtureDlls(directory, runTestsInReleaseConfiguration, ".NETFramework")
+                .GetUnitTestFixtureDlls(directory, runTestsInReleaseConfiguration, assemblyFilePrefix, FrameworkConstants.NetFramework)
                 .ToList();
+
+            if (!testDlls.Any())
+            {
+                logger.Write("Could not find any DLL files with Xunit test and target framework .NETFramework, skipping Xunit Net Framework tests");
+                return ExitCode.Success;
+            }
 
             string xmlReportName = $"{Guid.NewGuid()}.xml";
 

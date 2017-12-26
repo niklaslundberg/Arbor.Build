@@ -9,6 +9,7 @@ using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
+using Arbor.X.Core.Properties;
 using JetBrains.Annotations;
 using Xunit;
 
@@ -42,7 +43,9 @@ namespace Arbor.X.Core.Tools.Testing
 
             _sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
             IVariable reportPath = buildVariables.Require(WellKnownVariables.ReportPath).ThrowIfEmptyValue();
-            string xunitDllPath = buildVariables.GetVariableValueOrDefault(WellKnownVariables.XUnitNetCoreAppDllPath, Path.Combine(buildVariables.Require(WellKnownVariables.ExternalTools).Value, "xunit", "netcoreapp2.0", "xunit.console.dll"));
+            string xunitDllPath = buildVariables.GetVariableValueOrDefault(WellKnownVariables.XUnitNetCoreAppDllPath, null) ?? Path.Combine(buildVariables.Require(WellKnownVariables.ExternalTools).Value, "xunit", "netcoreapp2.0", "xunit.console.dll");
+
+            logger.WriteDebug($"Using XUnit dll path '{xunitDllPath}'");
 
             Type theoryType = typeof(TheoryAttribute);
             Type factAttribute = typeof(FactAttribute);
@@ -56,8 +59,15 @@ namespace Arbor.X.Core.Tools.Testing
                     WellKnownVariables.RunTestsInReleaseConfigurationEnabled,
                     true);
 
-            List<string> testDlls = new UnitTestFinder(typesToFind)
-                .GetUnitTestFixtureDlls(directory, runTestsInReleaseConfiguration, ".NETCoreApp")
+            string configuration = runTestsInReleaseConfiguration ? "release" : "debug";
+
+            string assemblyFilePrefix = buildVariables.GetVariableValueOrDefault(WellKnownVariables.TestsAssemblyStartsWith, string.Empty);
+
+            logger.Write($"Finding Xunit test DLL files built with {configuration} in directory '{_sourceRoot}'");
+            logger.Write($"Looking for types {string.Join(", ", typesToFind.Select(t => t.FullName))} in directory '{_sourceRoot}'");
+
+            List<string> testDlls = new UnitTestFinder(typesToFind, logger: logger, debugLogEnabled: true)
+                .GetUnitTestFixtureDlls(directory, runTestsInReleaseConfiguration, assemblyFilePrefix: assemblyFilePrefix, targetFrameworkPrefix: FrameworkConstants.NetCoreApp)
                 .ToList();
 
             if (!testDlls.Any())
@@ -76,19 +86,21 @@ namespace Arbor.X.Core.Tools.Testing
                 return ExitCode.Failure;
             }
 
+            logger.WriteDebug($"Using dotnet.exe in path '{dotNetExePath}'");
+
             string xmlReportName = $"{Guid.NewGuid()}.xml";
 
             var arguments = new List<string>();
 
             string reportFile = Path.Combine(reportPath.Value, "xunit", xmlReportName);
 
-            var fileInfo = new FileInfo(reportFile);
-            fileInfo.Directory.EnsureExists();
+            var reportFileInfo = new FileInfo(reportFile);
+            reportFileInfo.Directory.EnsureExists();
 
             arguments.Add(xunitDllPath);
             arguments.AddRange(testDlls);
             arguments.Add("-nunit");
-            arguments.Add(fileInfo.FullName);
+            arguments.Add(reportFileInfo.FullName);
 
             ExitCode result = await ProcessRunner.ExecuteAsync(
                 dotNetExePath,
