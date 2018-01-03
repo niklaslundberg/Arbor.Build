@@ -1,7 +1,6 @@
-﻿using System;
-using Xunit;
+﻿using Xunit;
 
-namespace Arbor.X.Tests.NetCoreAppSamle
+namespace Arbor.X.Tests.NetCoreAppSample
 {
     public class SampleXunitTest
     {
