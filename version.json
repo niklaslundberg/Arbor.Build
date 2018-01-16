@@ -3,11 +3,11 @@
 	"keys": [
 		{
 			"key": "major",
-			"value": "1"
+			"value": "2"
 		},
 		{
 			"key": "minor",
-			"value": "2"
+			"value": "0"
 		},
 		{
 			"key": "patch",
