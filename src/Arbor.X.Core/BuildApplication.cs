@@ -487,7 +487,7 @@ namespace Arbor.X.Core
 
                             bool variableOverrideEnabled = buildVariables.GetBooleanByKey(
                                 WellKnownVariables.VariableOverrideEnabled,
-                                false);
+                                true);
 
                             if (variableOverrideEnabled)
                             {
