@@ -15,12 +15,20 @@ namespace Arbor.X.Tests.Integration.ProcessRunner
     [Tags(MSpecInternalConstants.RecursiveArborXTest)]
     public class when_running_a_process_longer_than_timeout
     {
-        private static string testPath;
-        private static ConsoleLogger logger;
-        private static ExitCode exitCode = new ExitCode(99);
-        private static TaskCanceledException exception;
+        static string testPath;
+        static ConsoleLogger logger;
+        static ExitCode exitCode = new ExitCode(99);
+        static TaskCanceledException exception;
 
-        private Establish context = () =>
+        Cleanup after = () =>
+        {
+            if (File.Exists(testPath))
+            {
+                File.Delete(testPath);
+            }
+        };
+
+        Establish context = () =>
         {
             testPath = Path.Combine(Path.GetTempPath(), $"{DefaultPaths.TempPathPrefix}_Test_timeout.tmp.bat");
 
@@ -36,13 +44,13 @@ EXIT /b 2
             logger = new ConsoleLogger("TEST ");
         };
 
-        private Because of = () => RunAsync().Wait();
+        Because of = () => RunAsync().Wait();
 
-        private It should_not_an_exit_code = () => exitCode.Result.ShouldEqual(99);
+        It should_not_an_exit_code = () => exitCode.Result.ShouldEqual(99);
 
-        private It should_throw_a_task_canceled_exception = () => exception.ShouldNotBeNull();
+        It should_throw_a_task_canceled_exception = () => exception.ShouldNotBeNull();
 
-        private static async Task RunAsync()
+        static async Task RunAsync()
         {
             var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(2));
 

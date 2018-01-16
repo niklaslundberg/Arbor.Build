@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Arbor.Defensive;
 
 namespace Arbor.X.Core.BuildVariables
 {
@@ -25,6 +26,23 @@ namespace Arbor.X.Core.BuildVariables
                 bv => bv.Key.Equals(
                     key,
                     StringComparison.InvariantCultureIgnoreCase));
+        }
+
+        public static Maybe<IVariable> GetOptionalVariable(
+            this IReadOnlyCollection<IVariable> buildVariables,
+            string key)
+        {
+            IVariable variable = buildVariables.SingleOrDefault(
+                bv => bv.Key.Equals(
+                    key,
+                    StringComparison.InvariantCultureIgnoreCase));
+
+            if (variable is null)
+            {
+                return Maybe<IVariable>.Empty();
+            }
+
+            return new Maybe<IVariable>(variable);
         }
 
         public static string GetVariableValueOrDefault(
@@ -74,7 +92,7 @@ namespace Arbor.X.Core.BuildVariables
         public static int GetInt32ByKey(
             this IReadOnlyCollection<IVariable> buildVariables,
             string key,
-            int defaultValue = default(int),
+            int defaultValue = default,
             int? minValue = null)
         {
             int? returnValue = null;
@@ -111,7 +129,7 @@ namespace Arbor.X.Core.BuildVariables
         public static long GetInt64ByKey(
             this IReadOnlyCollection<IVariable> buildVariables,
             string key,
-            long defaultValue = default(long))
+            long defaultValue = default)
         {
             if (!buildVariables.HasKey(key))
             {
@@ -167,7 +185,7 @@ namespace Arbor.X.Core.BuildVariables
 
         public static int GetValueOrDefault(
             this IVariable variable,
-            int defaultValue = default(int))
+            int defaultValue = default)
         {
             if (variable == null)
             {
@@ -193,7 +211,7 @@ namespace Arbor.X.Core.BuildVariables
 
         public static long GetValueOrDefault(
             this IVariable variable,
-            long defaultValue = default(long))
+            long defaultValue = default)
         {
             if (variable == null)
             {

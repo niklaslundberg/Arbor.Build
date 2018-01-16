@@ -126,7 +126,7 @@ namespace Arbor.X.Core.IO
                 pathLookupSpecification ?? DefaultPaths.DefaultPathLookupSpecification;
             IEnumerable<string> usedFileExtensions = fileExtensions ?? new List<string>();
 
-            if (usedPathLookupSpecification.IsBlackListed(directoryInfo.FullName, rootDir))
+            if (usedPathLookupSpecification.IsBlackListed(directoryInfo.FullName, rootDir).Item1)
             {
                 return new List<FileInfo>();
             }
@@ -144,7 +144,7 @@ namespace Arbor.X.Core.IO
 
             List<FileInfo> directoryFiles = directoryInfo
                 .GetFiles()
-                .Where(file => !usedPathLookupSpecification.IsFileBlackListed(file.FullName, rootDir))
+                .Where(file => !usedPathLookupSpecification.IsFileBlackListed(file.FullName, rootDir).Item1)
                 .ToList();
 
             List<FileInfo> filtered = (usedFileExtensions.Any()

@@ -9,20 +9,30 @@ namespace Arbor.X.Tests.Integration.WellknownVariables
     [Tags(Core.Tools.Testing.MSpecInternalConstants.RecursiveArborXTest)]
     public class when_listing_all_wellknown_variables
     {
-        private static IReadOnlyCollection<VariableDescription> readOnlyCollection;
+        static IReadOnlyCollection<VariableDescription> readOnlyCollection;
 
-        private Because of = () => { readOnlyCollection = WellKnownVariables.AllVariables; };
+        Because of = () => { readOnlyCollection = WellKnownVariables.AllVariables; };
 
-        private It should_print_all_variables = () =>
+        It should_contain_nested_class_constants = () =>
+        {
+            readOnlyCollection
+                .Any(variable => variable.InvariantName.Equals(WellKnownVariables.TeamCity.TeamCityVcsNumber))
+                .ShouldBeTrue();
+        };
+
+        It should_contain_non_nested_class_constants = () =>
+        {
+            readOnlyCollection
+                .Any(variable => variable.InvariantName.Equals(WellKnownVariables.ExternalTools_NuGetServer_Enabled))
+                .ShouldBeTrue();
+        };
+
+        It should_print_all_variables = () =>
         {
             foreach (VariableDescription variableDescription in readOnlyCollection)
             {
                 Console.WriteLine(variableDescription.ToString());
             }
-        };
-        private It should_contain_nested_class_constants = () =>
-        {
-            readOnlyCollection.Any(variable => variable.InvariantName.Equals(WellKnownVariables.TeamCity.TeamCityVcsNumber)).ShouldBeTrue();
         };
     }
 }

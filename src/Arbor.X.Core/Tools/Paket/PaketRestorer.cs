@@ -62,7 +62,7 @@ namespace Arbor.X.Core.Tools.Paket
                                 !pathLookupSpecification.IsFileBlackListed(
                                     packagePath,
                                     sourceRoot.FullName,
-                                    logger: logger))
+                                    logger: logger).Item1)
                         .Select(file => new FileInfo(file))
                         .ToReadOnlyCollection();
 
@@ -96,6 +96,8 @@ namespace Arbor.X.Core.Tools.Paket
             {
                 logger.Write($"Found no paket.exe to copy");
             }
+
+            Directory.SetCurrentDirectory(sourceRoot.FullName);
 
             ExitCode exitCode = await ProcessHelper.ExecuteAsync(
                 paketExe.FullName,

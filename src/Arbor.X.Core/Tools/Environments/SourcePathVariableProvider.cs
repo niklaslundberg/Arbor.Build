@@ -21,6 +21,9 @@ namespace Arbor.X.Core.Tools.Environments
         {
             string existingSourceRoot =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.SourceRoot, string.Empty);
+
+            string existingToolsDirectory =
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools, string.Empty);
             string sourceRoot;
 
             if (!string.IsNullOrWhiteSpace(existingSourceRoot))
@@ -38,16 +41,10 @@ namespace Arbor.X.Core.Tools.Environments
                 sourceRoot = VcsPathHelper.FindVcsRootPath();
             }
 
-            DirectoryInfo externalTools =
-                new DirectoryInfo(Path.Combine(sourceRoot, "build", "Arbor.X", "tools", "external")).EnsureExists();
-
             DirectoryInfo tempPath = new DirectoryInfo(Path.Combine(sourceRoot, "temp")).EnsureExists();
 
             var variables = new List<IVariable>
             {
-                new EnvironmentVariable(
-                    WellKnownVariables.ExternalTools,
-                    externalTools.FullName),
                 new EnvironmentVariable(
                     WellKnownVariables.TempDirectory,
                     tempPath.FullName)
@@ -56,6 +53,16 @@ namespace Arbor.X.Core.Tools.Environments
             if (string.IsNullOrWhiteSpace(existingSourceRoot))
             {
                 variables.Add(new EnvironmentVariable(WellKnownVariables.SourceRoot, sourceRoot));
+            }
+
+            if (string.IsNullOrWhiteSpace(existingToolsDirectory))
+            {
+                DirectoryInfo externalTools =
+                    new DirectoryInfo(Path.Combine(sourceRoot, "build", "Arbor.X", "tools", "external")).EnsureExists();
+
+                variables.Add(new EnvironmentVariable(
+                    WellKnownVariables.ExternalTools,
+                    externalTools.FullName));
             }
 
             return Task.FromResult<IEnumerable<IVariable>>(variables);

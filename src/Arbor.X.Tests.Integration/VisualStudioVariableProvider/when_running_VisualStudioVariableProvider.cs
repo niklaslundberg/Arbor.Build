@@ -12,25 +12,25 @@ namespace Arbor.X.Tests.Integration.VisualStudioVariableProvider
     [Subject(typeof(Core.Tools.VisualStudio.VisualStudioVariableProvider))]
     public class when_getting_variables
     {
-        private static Core.Tools.VisualStudio.VisualStudioVariableProvider provider;
+        static Core.Tools.VisualStudio.VisualStudioVariableProvider provider;
 
-        private static List<IVariable> enumerable;
+        static List<IVariable> enumerable;
 
-        private Establish context = () => { provider = new Core.Tools.VisualStudio.VisualStudioVariableProvider(); };
+        Establish context = () => { provider = new Core.Tools.VisualStudio.VisualStudioVariableProvider(); };
 
-        private Because of = () =>
+        Because of = () =>
         {
+            var environmentVariable = new EnvironmentVariable(
+                WellKnownVariables.ExternalTools_VisualStudio_Version_Allow_PreRelease,
+                "true");
+
             enumerable = provider.GetEnvironmentVariablesAsync(
                     new ConsoleLogger(),
-                    new List<IVariable>
-                    {
-                        new EnvironmentVariable(WellKnownVariables.ExternalTools_VisualStudio_Version_Allow_PreRelease,
-                            "true")
-                    },
+                    new List<IVariable> { environmentVariable },
                     CancellationToken.None)
                 .Result.ToList();
         };
 
-        private It should_return_a_list_of_visual_studio_versions = () => enumerable.ShouldNotBeNull();
+        It should_return_a_list_of_visual_studio_versions = () => enumerable.ShouldNotBeNull();
     }
 }

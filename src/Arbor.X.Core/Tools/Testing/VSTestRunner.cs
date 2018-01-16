@@ -8,6 +8,7 @@ using Arbor.Processing;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Logging;
+using Arbor.X.Core.Properties;
 using JetBrains.Annotations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -56,11 +57,13 @@ namespace Arbor.X.Core.Tools.Testing
                     WellKnownVariables.RunTestsInReleaseConfigurationEnabled,
                     true);
 
+            string assemblyFilePrefix = buildVariables.GetVariableValueOrDefault(WellKnownVariables.TestsAssemblyStartsWith, string.Empty);
+
             if (ignoreTestFailures)
             {
                 try
                 {
-                    return await RunVsTestAsync(logger, reportPath, vsTestExePath, runTestsInReleaseConfiguration);
+                    return await RunVsTestAsync(logger, reportPath, vsTestExePath, runTestsInReleaseConfiguration, assemblyFilePrefix);
                 }
                 catch (Exception ex)
                 {
@@ -70,7 +73,7 @@ namespace Arbor.X.Core.Tools.Testing
                 return ExitCode.Success;
             }
 
-            return await RunVsTestAsync(logger, reportPath, vsTestExePath, runTestsInReleaseConfiguration);
+            return await RunVsTestAsync(logger, reportPath, vsTestExePath, runTestsInReleaseConfiguration, assemblyFilePrefix);
         }
 
         private static void LogExecution(ILogger logger, IEnumerable<string> arguments, string exePath)
@@ -89,7 +92,8 @@ namespace Arbor.X.Core.Tools.Testing
             ILogger logger,
             string vsTestReportDirectoryPath,
             string vsTestExePath,
-            bool runTestsInReleaseConfiguration)
+            bool runTestsInReleaseConfiguration,
+            string assemblyFilePrefix)
         {
             Type testClassAttribute = typeof(TestClassAttribute);
             Type testMethodAttribute = typeof(TestMethodAttribute);
@@ -99,7 +103,7 @@ namespace Arbor.X.Core.Tools.Testing
             var typesToFind = new List<Type> { testClassAttribute, testMethodAttribute };
 
             List<string> vsTestConsoleArguments =
-                new UnitTestFinder(typesToFind).GetUnitTestFixtureDlls(directory, runTestsInReleaseConfiguration)
+                new UnitTestFinder(typesToFind).GetUnitTestFixtureDlls(directory, runTestsInReleaseConfiguration, assemblyFilePrefix, FrameworkConstants.NetFramework)
                     .ToList();
 
             if (!vsTestConsoleArguments.Any())

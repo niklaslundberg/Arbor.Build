@@ -31,6 +31,7 @@ SET Arbor.X.NuGet.Package.AllowManifestReWriteEnabled=false
 SET Arbor.X.Build.WebDeploy.PreCompilation.Enabled=true
 SET Arbor.X.Build.Cleanup.KillProcessesAfterBuild.Enabled=true
 SET Arbor.X.NuGet.NuGetWebPackage.ExcludedPatterns=roslyn\**\*.*
+SET Arbor.X.Build.Tests.AssemblyStartsWith=Arbor.X.Tests
 
 SET Arbor.X.NuGet.Package.ExcludesCommaSeparated=Arbor.X.Bootstrapper.nuspec
 SET Arbor.X.Tools.External.MSBuild.CodeAnalysis.Enabled=true

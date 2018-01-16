@@ -12,13 +12,13 @@ namespace Arbor.X.Tests.Integration.Bootstrapper
     [Subject(typeof(X.Bootstrapper.Bootstrapper))]
     public class when_running_bootstrapper
     {
-        private static X.Bootstrapper.Bootstrapper bootstrapper;
+        static X.Bootstrapper.Bootstrapper bootstrapper;
 
-        private static BootstrapStartOptions startOptions;
-        private static ExitCode exitCode;
-        private static DirectoryInfo baseDirectory;
+        static BootstrapStartOptions startOptions;
+        static ExitCode exitCode;
+        static DirectoryInfo baseDirectory;
 
-        private Cleanup after = () =>
+        Cleanup after = () =>
         {
             try
             {
@@ -30,7 +30,7 @@ namespace Arbor.X.Tests.Integration.Bootstrapper
             }
         };
 
-        private Establish context = () =>
+        Establish context = () =>
         {
             string tempDirectoryPath = Path.Combine(Path.GetTempPath(),
                 $"{DefaultPaths.TempPathPrefix}_Bootstrapper_Test_{Guid.NewGuid()}");
@@ -44,8 +44,8 @@ namespace Arbor.X.Tests.Integration.Bootstrapper
             bootstrapper = new X.Bootstrapper.Bootstrapper(LogLevel.Verbose);
         };
 
-        private Because of = () => { exitCode = bootstrapper.StartAsync(startOptions).Result; };
+        Because of = () => { exitCode = bootstrapper.StartAsync(startOptions).Result; };
 
-        private It should_return_success_exit_code = () => exitCode.IsSuccess.ShouldBeTrue();
+        It should_return_success_exit_code = () => exitCode.IsSuccess.ShouldBeTrue();
     }
 }

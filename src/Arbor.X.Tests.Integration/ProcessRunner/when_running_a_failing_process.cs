@@ -13,11 +13,19 @@ namespace Arbor.X.Tests.Integration.ProcessRunner
     [Tags(Core.Tools.Testing.MSpecInternalConstants.RecursiveArborXTest)]
     public class when_running_a_failing_process
     {
-        private static string testPath;
-        private static ConsoleLogger logger;
-        private static ExitCode exitCode;
+        static string testPath;
+        static ConsoleLogger logger;
+        static ExitCode exitCode;
 
-        private Establish context = () =>
+        Cleanup after = () =>
+        {
+            if (File.Exists(testPath))
+            {
+                File.Delete(testPath);
+            }
+        };
+
+        Establish context = () =>
         {
             testPath = Path.Combine(Path.GetTempPath(), $"{DefaultPaths.TempPathPrefix}Test_fail.tmp.bat");
             const string batchContent = @"@ECHO OFF
@@ -27,11 +35,11 @@ EXIT /b 3
             logger = new ConsoleLogger("TEST ");
         };
 
-        private Because of = () => RunAsync().Wait();
+        Because of = () => RunAsync().Wait();
 
-        private It should_return_exit_code_from_process = () => exitCode.Result.ShouldEqual(3);
+        It should_return_exit_code_from_process = () => exitCode.Result.ShouldEqual(3);
 
-        private static async Task RunAsync()
+        static async Task RunAsync()
         {
             try
             {

@@ -59,7 +59,7 @@ namespace Arbor.X.Core.Tools.NuGet
 
                     packagesConfigFiles =
                         rootDirectory.EnumerateFiles("packages.config", SearchOption.AllDirectories)
-                            .Where(file => !pathLookupSpecification.IsFileBlackListed(file.FullName, vcsRoot))
+                            .Where(file => !pathLookupSpecification.IsFileBlackListed(file.FullName, vcsRoot).Item1)
                             .Select(file => file.FullName)
                             .ToReadOnlyCollection();
 
@@ -67,7 +67,7 @@ namespace Arbor.X.Core.Tools.NuGet
 
                     solutionFiles =
                         rootDirectory.EnumerateFiles("*.sln", SearchOption.AllDirectories)
-                            .Where(file => !pathLookupSpecification.IsFileBlackListed(file.FullName, vcsRoot))
+                            .Where(file => !pathLookupSpecification.IsFileBlackListed(file.FullName, vcsRoot).Item1)
                             .ToReadOnlyCollection();
 
                     listFilesSucceeded = true;

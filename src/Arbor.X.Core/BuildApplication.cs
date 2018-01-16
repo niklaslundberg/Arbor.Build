@@ -47,14 +47,27 @@ namespace Arbor.X.Core
 
             StaticKeyValueConfigurationManager.Initialize(multiSourceKeyValueConfiguration);
 
-            if (Debugger.IsAttached)
+            bool simulateDebug =
+                bool.TryParse(Environment.GetEnvironmentVariable("SimulateDebug"), out bool parsed) && parsed;
+
+            bool debugLoggerEnabled = false;
+
+            if (Debugger.IsAttached || simulateDebug)
             {
+                if (simulateDebug)
+                {
+                    _logger.Write("Simulating debug");
+                }
+
                 await StartWithDebuggerAsync(args).ConfigureAwait(false);
+
+                if (debugLoggerEnabled)
+                {
+                    _logger = new DebugLogger(_logger);
+                }
             }
 
             _container = await BuildBootstrapper.StartAsync();
-
-            _logger = new DebugLogger(_logger);
 
             _logger.Write($"Using logger '{_logger.GetType()}' with log level {_logger.LogLevel}");
             _cancellationToken = CancellationToken.None;
@@ -86,9 +99,7 @@ namespace Arbor.X.Core
 
             stopwatch.Stop();
 
-            Console.WriteLine(
-                "Arbor.X.Build total elapsed time in seconds: {0:F}",
-                stopwatch.Elapsed.TotalSeconds);
+            _logger.Write($"Arbor.X.Build total elapsed time in seconds: {stopwatch.Elapsed.TotalSeconds:F}");
 
             ParseResult<int> exitDelayInMilliseconds =
                 Environment.GetEnvironmentVariable(WellKnownVariables.BuildApplicationExitDelayInMilliseconds)
@@ -104,6 +115,11 @@ namespace Arbor.X.Core
             if (Debugger.IsAttached)
             {
                 WriteDebug($"Exiting build application with exit code {exitCode}");
+
+                if (!debugLoggerEnabled)
+                {
+                    Debugger.Break();
+                }
             }
 
             return exitCode;
@@ -131,7 +147,7 @@ namespace Arbor.X.Core
                             },
                             {
                                 "Execution time",
-                                result.ExecutionTime == default(TimeSpan)
+                                result.ExecutionTime == default
                                     ? "N/A"
                                     : ((int)result.ExecutionTime.TotalMilliseconds).ToString("D") + " ms"
                             },
@@ -154,7 +170,7 @@ namespace Arbor.X.Core
 
             string baseDir = VcsPathHelper.FindVcsRootPath(AppDomain.CurrentDomain.BaseDirectory);
 
-            string tempPath = @"C:\arbor.x";
+            string tempPath = @"C:\Temp\arbor.x";
 
             var tempDirectory = new DirectoryInfo(Path.Combine(
                 tempPath,
@@ -168,7 +184,7 @@ namespace Arbor.X.Core
             await DirectoryCopy.CopyAsync(
                 baseDir,
                 tempDirectory.FullName,
-                pathLookupSpecificationOption: DefaultPaths.DefaultPathLookupSpecification,
+                pathLookupSpecificationOption: DefaultPaths.DefaultPathLookupSpecification.AddExcludedDirectorySegments(new[] { "paket-files" }),
                 rootDir: baseDir);
 
             var environmentVariables = new Dictionary<string, string>
@@ -176,33 +192,40 @@ namespace Arbor.X.Core
                 [WellKnownVariables.BranchNameVersionOverrideEnabled] = "false",
                 [WellKnownVariables.VariableOverrideEnabled] = "true",
                 [WellKnownVariables.SourceRoot] = tempDirectory.FullName,
+                [WellKnownVariables.ExternalTools] = new DirectoryInfo(Path.Combine(tempDirectory.FullName, "tools", "external")).EnsureExists().FullName,
                 [WellKnownVariables.BranchName] = "develop",
                 [WellKnownVariables.VersionMajor] = "1",
-                [WellKnownVariables.VersionMinor] = "0",
-                [WellKnownVariables.VersionPatch] = "51",
-                [WellKnownVariables.VersionBuild] = "124",
-                [WellKnownVariables.Configuration] = "release",
+                [WellKnownVariables.VersionMinor] = "2",
+                [WellKnownVariables.VersionPatch] = "1",
+                [WellKnownVariables.VersionBuild] = "7",
                 [WellKnownVariables.GenericXmlTransformsEnabled] = "true",
                 [WellKnownVariables.NuGetPackageExcludesCommaSeparated] = "Arbor.X.Bootstrapper.nuspec",
                 [WellKnownVariables.NuGetAllowManifestReWrite] = "false",
                 [WellKnownVariables.NuGetSymbolPackagesEnabled] = "false",
-                [WellKnownVariables.NugetCreateNuGetWebPackagesEnabled] = "true",
+                [WellKnownVariables.NugetCreateNuGetWebPackagesEnabled] = "false",
                 [WellKnownVariables.RunTestsInReleaseConfigurationEnabled] = "false",
                 ["Arbor_X_Tests_DummyWebApplication_Arbor_X_NuGet_Package_CreateNuGetWebPackageForProject_Enabled"] =
                 "true",
                 [WellKnownVariables.ExternalTools_ILRepack_Custom_ExePath] = @"C:\Tools\ILRepack\ILRepack.exe",
-                [WellKnownVariables.NuGetVersionUpdatedEnabled] = @"true",
+                [WellKnownVariables.NuGetVersionUpdatedEnabled] = @"false",
                 [WellKnownVariables.ApplicationMetadataEnabled] = @"true",
-                [WellKnownVariables.LogLevel] = "verbose",
+                [WellKnownVariables.LogLevel] = "information",
                 [WellKnownVariables.NugetCreateNuGetWebPackageFilter] = "Arbor.X.Tests.DummyWebApplication,ABC,",
                 [WellKnownVariables.WebJobsExcludedFileNameParts] =
                 "Microsoft.Build,Microsoft.CodeAnalysis,Microsoft.CodeDom",
                 [WellKnownVariables.WebJobsExcludedDirectorySegments] = "roslyn",
-                [WellKnownVariables.AppDataJobsEnabled] = "true",
+                [WellKnownVariables.AppDataJobsEnabled] = "false",
                 [WellKnownVariables.ExternalTools_LibZ_ExePath] = @"C:\Tools\Libz\libz.exe",
                 [WellKnownVariables.ExternalTools_LibZ_Enabled] = @"false",
-                [WellKnownVariables.WebDeployPreCompilationEnabled] = @"true",
+                [WellKnownVariables.WebDeployPreCompilationEnabled] = @"false",
                 [WellKnownVariables.ExcludedNuGetWebPackageFiles] = @"bin\roslyn\*.*,bin\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll",
+                [WellKnownVariables.NUnitExePathOverride] = @"C:\Tools\NUnit\nunit3-console.exe",
+                [WellKnownVariables.NUnitTransformToJunitEnabled] = @"true",
+                [WellKnownVariables.XUnitNetFrameworkEnabled] = "false",
+                [WellKnownVariables.NUnitEnabled] = "true",
+                [WellKnownVariables.MSpecEnabled] = "true",
+                [WellKnownVariables.TestsAssemblyStartsWith] = "Arbor.X.Tests",
+                [WellKnownVariables.DotNetRestoreEnabled] = "true"
             };
 
             foreach (KeyValuePair<string, string> environmentVariable in environmentVariables)
@@ -464,7 +487,7 @@ namespace Arbor.X.Core
 
                             bool variableOverrideEnabled = buildVariables.GetBooleanByKey(
                                 WellKnownVariables.VariableOverrideEnabled,
-                                false);
+                                true);
 
                             if (variableOverrideEnabled)
                             {

@@ -13,6 +13,7 @@ using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
+using Arbor.X.Core.Properties;
 using Machine.Specifications;
 
 namespace Arbor.X.Core.Tools.Testing
@@ -83,9 +84,11 @@ namespace Arbor.X.Core.Tools.Testing
             logger.WriteVerbose(
                 $"Scanning directory '{directory.FullName}' for assemblies containing Machine.Specifications tests");
 
+            string assemblyFilePrefix = buildVariables.GetVariableValueOrDefault(WellKnownVariables.TestsAssemblyStartsWith, string.Empty);
+
             List<string> testDlls =
                 new UnitTestFinder(typesToFind, logger: logger)
-                    .GetUnitTestFixtureDlls(directory, runTestsInReleaseConfiguration)
+                    .GetUnitTestFixtureDlls(directory, runTestsInReleaseConfiguration, assemblyFilePrefix, FrameworkConstants.NetFramework)
                     .ToList();
 
             if (!testDlls.Any())

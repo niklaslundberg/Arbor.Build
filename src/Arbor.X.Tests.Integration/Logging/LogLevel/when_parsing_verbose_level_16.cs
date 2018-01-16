@@ -5,11 +5,11 @@ namespace Arbor.X.Tests.Integration.Logging.LogLevel
     [Subject(typeof(Core.Logging.LogLevel))]
     public class when_parsing_verbose_level_16
     {
-        private static Core.Logging.LogLevel logLevel;
-        private Because of = () => { logLevel = Core.Logging.LogLevel.TryParse(16); };
+        static Core.Logging.LogLevel logLevel;
+        Because of = () => { logLevel = Core.Logging.LogLevel.TryParse(16); };
 
-        private It should_equal_verbose = () => logLevel.ShouldEqual(Core.Logging.LogLevel.Verbose);
+        It should_equal_verbose = () => logLevel.ShouldEqual(Core.Logging.LogLevel.Verbose);
 
-        private It should_equal_verbose_level = () => logLevel.Level.ShouldEqual(Core.Logging.LogLevel.Verbose.Level);
+        It should_equal_verbose_level = () => logLevel.Level.ShouldEqual(Core.Logging.LogLevel.Verbose.Level);
     }
 }

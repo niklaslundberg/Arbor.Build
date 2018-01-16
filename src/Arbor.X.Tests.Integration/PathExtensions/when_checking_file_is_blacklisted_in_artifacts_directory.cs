@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using Arbor.X.Core.IO;
 using Machine.Specifications;
@@ -7,17 +8,17 @@ namespace Arbor.X.Tests.Integration.PathExtensions
     [Subject(typeof(Core.IO.PathExtensions))]
     public class when_checking_file_is_blacklisted_in_artifacts_directory
     {
-        private static bool isBlackListed;
+        static bool isBlackListed;
 
-        private static PathLookupSpecification specification;
+        static PathLookupSpecification specification;
 
-        private static string root;
+        static string root;
 
-        private Cleanup after = () => { new DirectoryInfo(root).DeleteIfExists(true); };
+        Cleanup after = () => { new DirectoryInfo(root).DeleteIfExists(true); };
 
-        private Establish context = () =>
+        Establish context = () =>
         {
-            root = @"C:\Temp\root";
+            root = $@"C:\Temp\root-{Guid.NewGuid()}";
 
             new DirectoryInfo(Path.Combine(root, "artifacts")).EnsureExists();
             using (File.Create(Path.Combine(root, "artifacts", "afile.txt")))
@@ -27,9 +28,9 @@ namespace Arbor.X.Tests.Integration.PathExtensions
             specification = DefaultPaths.DefaultPathLookupSpecification;
         };
 
-        private Because of =
-            () => { isBlackListed = specification.IsFileBlackListed(@"C:\Temp\root\artifacts\afile.txt", root); };
+        Because of =
+            () => { isBlackListed = specification.IsFileBlackListed($@"{root}\artifacts\afile.txt", root).Item1; };
 
-        private It should_return_false = () => isBlackListed.ShouldBeTrue();
+        It should_return_false = () => isBlackListed.ShouldBeTrue();
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using Arbor.X.Core.GenericExtensions;
 
@@ -165,6 +166,9 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescription("Flag to indicate if test runner error results are ignored", "false")]
         public static readonly string IgnoreTestFailures = Arbor.X.Build + ".Tests.IgnoreTestFailures";
 
+        [VariableDescription("Filter assemblies to only run tests dlls starting with prefix, case insensitive", "")]
+        public static readonly string TestsAssemblyStartsWith = Arbor.X.Build + ".Tests.AssemblyStartsWith";
+
         [VariableDescription("Test categories and tags to ignore, comma separated")]
         public static readonly string IgnoredTestCategories = Arbor.X.Build + ".Tests.IgnoredCategories";
 
@@ -275,6 +279,30 @@ namespace Arbor.X.Core.BuildVariables
         public static readonly string NUnitEnabled =
             "Arbor.X.Tools.External.NUnit.Enabled";
 
+        [VariableDescription("NUnitExePathOverride")]
+        public static readonly string NUnitExePathOverride =
+            "Arbor.X.Tools.External.NUnit.ExePathOverride";
+
+        [VariableDescription("NUnit JUnit XSL transform enabled")]
+        public static readonly string NUnitTransformToJunitEnabled =
+            "Arbor.X.Tools.External.NUnit.JUnitXslTransform.Enabled";
+
+        [VariableDescription("Enable XUnit .NET Framework")]
+        public static readonly string XUnitNetFrameworkEnabled =
+            "Arbor.X.Tools.External.Xunit.NetFramework.Enabled";
+
+        [VariableDescription("Enable XUnit .NET Core App")]
+        public static readonly string XUnitNetCoreAppEnabled =
+            "Arbor.X.Tools.External.Xunit.NetCoreApp.Enabled";
+
+        [VariableDescription("XUnit .NET Core App DLL path")]
+        public static readonly string XUnitNetCoreAppDllPath =
+            "Arbor.X.Tools.External.Xunit.NetCoreApp.DllPath";
+
+        [VariableDescription("XUnit .NET Framework exe path")]
+        public static readonly string XUnitNetFrameworkExePath =
+            "Arbor.X.Tools.External.Xunit.NetFramework.ExePath";
+
         [VariableDescription("Enable VSTest")]
         public static readonly string VSTestEnabled =
             "Arbor.X.Tools.External.VSTest.Enabled";
@@ -332,6 +360,9 @@ namespace Arbor.X.Core.BuildVariables
         public static readonly string CleanupProcessesAfterBuildEnabled =
             "Arbor.X.Build.Cleanup.KillProcessesAfterBuild.Enabled";
 
+        [VariableDescription("Colon separated list of platforms to be excluded")]
+        public const string MSBuildExcludedPlatforms = "Arbor.X.Build.MSBuild.ExcludedPlatforms";
+
         public static IReadOnlyCollection<VariableDescription> AllVariables
         {
             get
@@ -341,9 +372,9 @@ namespace Arbor.X.Core.BuildVariables
                 Type item = typeof(WellKnownVariables);
                 var classes = new List<Type>() { item };
 
-                ImmutableArray<Type> nestedClassTypes = GetNestedClassTypes(item);
+                classes.AddRange(GetNestedClassTypes(item));
 
-                ImmutableArray<FieldInfo> fields = nestedClassTypes
+                ImmutableArray<FieldInfo> fields = classes
                     .Select(@class => @class
                     .GetFields()
                     .Where(field => field.IsPublicConstantOrStatic()))

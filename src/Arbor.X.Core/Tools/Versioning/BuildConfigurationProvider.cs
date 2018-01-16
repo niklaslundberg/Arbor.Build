@@ -34,6 +34,21 @@ namespace Arbor.X.Core.Tools.Versioning
                     }));
             }
 
+            bool releaseEnabled = buildVariables.GetBooleanByKey(WellKnownVariables.ReleaseBuildEnabled, defaultValue: true);
+
+            bool debugEnabled =
+                buildVariables.GetBooleanByKey(WellKnownVariables.DebugBuildEnabled, defaultValue: true);
+
+            if (!debugEnabled && releaseEnabled)
+            {
+                variables.Add(new EnvironmentVariable(WellKnownVariables.Configuration, "release"));
+            }
+
+            if (debugEnabled && !releaseEnabled)
+            {
+                variables.Add(new EnvironmentVariable(WellKnownVariables.Configuration, "debug"));
+            }
+
             return Task.FromResult<IEnumerable<IVariable>>(variables);
         }
     }

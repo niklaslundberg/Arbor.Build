@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.Tools.Testing;
 using Machine.Specifications;
+using Mono.Cecil;
 
 namespace Arbor.X.Tests.Integration.Tests.MSpec
 {
@@ -10,10 +12,10 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
     [Tags(MSpecInternalConstants.RecursiveArborXTest)]
     public class when_testing_this_test_type_for_subject
     {
-        private static UnitTestFinder finder;
-        private static bool isTestType;
+        static UnitTestFinder finder;
+        static bool isTestType;
 
-        private Establish context = () =>
+        Establish context = () =>
         {
             var logger = new ConsoleLogger { LogLevel = LogLevel.Verbose };
             finder = new UnitTestFinder(new List<Type>
@@ -23,9 +25,18 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
                 logger: logger);
         };
 
-        private Because of =
-            () => { isTestType = finder.TryIsTypeTestFixture(typeof(when_testing_this_test_type_for_subject)); };
+        Because of =
+            () =>
+            {
+                Type typeToInvestigate = typeof(when_testing_this_test_type_for_subject);
 
-        private It should_Behaviour = () => isTestType.ShouldBeTrue();
+                AssemblyDefinition assemblyDefinition = AssemblyDefinition.ReadAssembly(typeToInvestigate.Assembly.Location);
+
+                TypeDefinition typeDefinition = assemblyDefinition.MainModule.Types.Single(t => t.FullName.Equals(typeToInvestigate.FullName));
+
+                isTestType = finder.TryIsTypeTestFixture(typeDefinition);
+            };
+
+        It should_Behaviour = () => isTestType.ShouldBeTrue();
     }
 }

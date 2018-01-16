@@ -17,7 +17,7 @@ namespace Arbor.X.Core.ProcessUtils
             IEnumerable<string> arguments = null,
             ILogger logger = null,
             IEnumerable<KeyValuePair<string, string>> environmentVariables = null,
-            CancellationToken cancellationToken = default(CancellationToken),
+            CancellationToken cancellationToken = default,
             bool addProcessNameAsLogCategory = false,
             bool addProcessRunnerCategory = false,
             string parentPrefix = null)

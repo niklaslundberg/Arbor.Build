@@ -7,20 +7,22 @@ namespace Arbor.X.Tests.Integration.PathExtensions
     [Subject(typeof(Core.IO.PathExtensions))]
     public class when_checking_is_blacklisted_with_root_dir
     {
-        private static bool isBlackListed;
-        private static PathLookupSpecification specification;
+        static bool isBlackListed;
+        static PathLookupSpecification specification;
+        static DirectoryInfo tempDir;
+        Cleanup after = () => { tempDir.DeleteIfExists(true); };
 
-        private Establish context = () =>
+        Establish context = () =>
         {
-            new DirectoryInfo(@"C:\Temp\root\afolder").EnsureExists();
+            tempDir = new DirectoryInfo(@"C:\Temp\root\afolder").EnsureExists();
             specification = DefaultPaths.DefaultPathLookupSpecification;
         };
 
-        private Because of = () =>
+        Because of = () =>
         {
-            isBlackListed = specification.IsBlackListed(@"C:\Temp\root\afolder", @"C:\Temp\root");
+            isBlackListed = specification.IsBlackListed(@"C:\Temp\root\afolder", @"C:\Temp\root").Item1;
         };
 
-        private It should_return_false = () => isBlackListed.ShouldBeFalse();
+        It should_return_false = () => isBlackListed.ShouldBeFalse();
     }
 }

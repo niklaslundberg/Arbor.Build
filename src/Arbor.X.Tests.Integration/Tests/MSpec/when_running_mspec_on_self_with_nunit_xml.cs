@@ -16,15 +16,15 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
     [Tags(MSpecInternalConstants.RecursiveArborXTest)]
     public class when_running_mspec_on_self_with_nunit_xml
     {
-        private static MSpecTestRunner testRunner;
-        private static readonly List<IVariable> variables = new List<IVariable>();
-        private static ExitCode ExitCode;
-        private static string mspecReports;
-        private static ExitCode exitCode;
+        static MSpecTestRunner testRunner;
+        static readonly List<IVariable> variables = new List<IVariable>();
+        static ExitCode ExitCode;
+        static string mspecReports;
+        static ExitCode exitCode;
 
-        private static DirectoryInfo tempDirectory;
+        static DirectoryInfo tempDirectory;
 
-        private Cleanup after = () =>
+        Cleanup after = () =>
         {
             Thread.Sleep(1000);
 
@@ -38,7 +38,7 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
             }
         };
 
-        private Establish context = () =>
+        Establish context = () =>
         {
             string root = Path.Combine(VcsTestPathHelper.FindVcsRootPath(), "src");
 
@@ -77,7 +77,7 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
             variables.Add(new EnvironmentVariable(WellKnownVariables.ExternalTools_MSpec_ReportPath, mspecReports));
         };
 
-        private Because of =
+        Because of =
             () =>
                 ExitCode =
                     testRunner.ExecuteAsync(new ConsoleLogger { LogLevel = LogLevel.Verbose },
@@ -85,7 +85,7 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
                             new CancellationToken())
                         .Result;
 
-        private It shoud_have_created_html_report = () =>
+        It shoud_have_created_html_report = () =>
         {
             var reports = new DirectoryInfo(mspecReports);
             DirectoryInfo htmlDirectory = reports.GetDirectories()
@@ -101,7 +101,7 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
             htmlDirectory.ShouldNotBeNull();
         };
 
-        private It shoud_have_created_xml_report = () =>
+        It shoud_have_created_xml_report = () =>
         {
             var reports = new DirectoryInfo(mspecReports);
 
@@ -115,6 +115,6 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
             files.Length.ShouldNotEqual(0);
         };
 
-        private It should_return_success = () => ExitCode.IsSuccess.ShouldBeTrue();
+        It should_return_success = () => ExitCode.IsSuccess.ShouldBeTrue();
     }
 }
