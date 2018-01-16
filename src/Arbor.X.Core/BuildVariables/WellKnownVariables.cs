@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using Arbor.X.Core.GenericExtensions;
 
@@ -358,6 +359,9 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescription("Cleanup known processes after build")]
         public static readonly string CleanupProcessesAfterBuildEnabled =
             "Arbor.X.Build.Cleanup.KillProcessesAfterBuild.Enabled";
+
+        [VariableDescription("Colon separated list of platforms to be excluded")]
+        public const string MSBuildExcludedPlatforms = "Arbor.X.Build.MSBuild.ExcludedPlatforms";
 
         public static IReadOnlyCollection<VariableDescription> AllVariables
         {

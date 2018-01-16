@@ -20,6 +20,7 @@ using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.Parsing;
 using Arbor.X.Core.Tools.NuGet;
+using FubuCore.Reflection;
 using FubuCsProjFile;
 using FubuCsProjFile.MSBuild;
 using JetBrains.Annotations;
@@ -85,6 +86,7 @@ namespace Arbor.X.Core.Tools.MSBuild
         string _vcsRoot;
         bool _webProjectsBuildEnabed;
         MSBuildVerbositoyLevel _verbosity;
+        ImmutableArray<string> _excludedPlatforms;
 
         public Guid WebApplicationProjectTypeId { get; } = Guid.Parse("349C5851-65DF-11DA-9384-00065B846F21");
 
@@ -112,6 +114,11 @@ namespace Arbor.X.Core.Tools.MSBuild
                 buildVariables.GetBooleanByKey(
                     WellKnownVariables.CleanBinXmlFilesForAssembliesEnabled,
                     false);
+
+            _excludedPlatforms = buildVariables
+                .GetVariableValueOrDefault(WellKnownVariables.MSBuildExcludedPlatforms, string.Empty)
+                .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                .ToImmutableArray();
 
             _cleanWebJobsXmlFilesForAssembliesEnabled =
                 buildVariables.GetBooleanByKey(
@@ -497,6 +504,21 @@ namespace Arbor.X.Core.Tools.MSBuild
             IReadOnlyList<string> platforms,
             ILogger logger)
         {
+            string[] actualPlatforms = platforms
+                .Except(_excludedPlatforms, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+
+            if (actualPlatforms.Length == 0)
+            {
+                if (_excludedPlatforms.Any())
+                {
+                    logger.WriteDebug($"Excluding platforms {string.Join(", ", _excludedPlatforms.WrapItems("'"))}");
+                }
+
+                logger.WriteWarning($"No platforms are found to be built for solution file '{solutionFile}'");
+                return ExitCode.Success;
+            }
+
             var combinations = platforms
                 .SelectMany(
                     item => _buildConfigurations.Select(config => new { Platform = item, Configuration = config }))
