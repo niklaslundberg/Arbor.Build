@@ -519,7 +519,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                 return ExitCode.Success;
             }
 
-            var combinations = platforms
+            var combinations = actualPlatforms
                 .SelectMany(
                     item => _buildConfigurations.Select(config => new { Platform = item, Configuration = config }))
                 .ToList();
@@ -543,7 +543,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             {
                 Environment.SetEnvironmentVariable(WellKnownVariables.CurrentBuildConfiguration, configuration);
                 ExitCode result =
-                    await BuildSolutionWithConfigurationAsync(solutionFile, configuration, logger, platforms);
+                    await BuildSolutionWithConfigurationAsync(solutionFile, configuration, logger, actualPlatforms);
 
                 if (!result.IsSuccess)
                 {
