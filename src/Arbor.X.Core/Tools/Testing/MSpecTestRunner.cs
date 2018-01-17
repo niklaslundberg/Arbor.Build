@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -50,12 +51,7 @@ namespace Arbor.X.Core.Tools.Testing
 
             if (string.IsNullOrWhiteSpace(sourceRootOverride) || !Directory.Exists(sourceRootOverride))
             {
-                if (sourceRoot == null)
-                {
-                    throw new InvalidOperationException("Source root cannot be null");
-                }
-
-                sourceDirectoryPath = sourceRoot;
+                sourceDirectoryPath = sourceRoot ?? throw new InvalidOperationException("Source root cannot be null");
             }
             else
             {
@@ -84,7 +80,7 @@ namespace Arbor.X.Core.Tools.Testing
             logger.WriteVerbose(
                 $"Scanning directory '{directory.FullName}' for assemblies containing Machine.Specifications tests");
 
-            string assemblyFilePrefix = buildVariables.GetVariableValueOrDefault(WellKnownVariables.TestsAssemblyStartsWith, string.Empty);
+            ImmutableArray<string> assemblyFilePrefix = buildVariables.AssemblyFilePrefixes();
 
             List<string> testDlls =
                 new UnitTestFinder(typesToFind, logger: logger)

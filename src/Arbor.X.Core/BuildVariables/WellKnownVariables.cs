@@ -166,7 +166,7 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescription("Flag to indicate if test runner error results are ignored", "false")]
         public static readonly string IgnoreTestFailures = Arbor.X.Build + ".Tests.IgnoreTestFailures";
 
-        [VariableDescription("Filter assemblies to only run tests dlls starting with prefix, case insensitive", "")]
+        [VariableDescription("Comma separated list to filter assemblies, to only run tests dlls starting with prefix, case insensitive", "")]
         public static readonly string TestsAssemblyStartsWith = Arbor.X.Build + ".Tests.AssemblyStartsWith";
 
         [VariableDescription("Test categories and tags to ignore, comma separated")]
@@ -295,9 +295,17 @@ namespace Arbor.X.Core.BuildVariables
         public static readonly string XUnitNetCoreAppEnabled =
             "Arbor.X.Tools.External.Xunit.NetCoreApp.Enabled";
 
+        [VariableDescription("Enable XUnit XML analysis for .NET Core App")]
+        public static readonly string XUnitNetCoreAppXmlAnalysisEnabled =
+            "Arbor.X.Tools.External.Xunit.NetCoreApp.Xml.Analysis.Enabled";
+
         [VariableDescription("XUnit .NET Core App DLL path")]
         public static readonly string XUnitNetCoreAppDllPath =
             "Arbor.X.Tools.External.Xunit.NetCoreApp.DllPath";
+
+        [VariableDescription("XUnit .NET Core App XML output enabled")]
+        public static readonly string XUnitNetCoreAppXmlEnabled =
+            "Arbor.X.Tools.External.Xunit.NetCoreApp.Xml.Enabled";
 
         [VariableDescription("XUnit .NET Framework exe path")]
         public static readonly string XUnitNetFrameworkExePath =

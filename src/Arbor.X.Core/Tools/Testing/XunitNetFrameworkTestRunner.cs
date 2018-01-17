@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -57,7 +58,7 @@ namespace Arbor.X.Core.Tools.Testing
                     WellKnownVariables.RunTestsInReleaseConfigurationEnabled,
                     true);
 
-            string assemblyFilePrefix = buildVariables.GetVariableValueOrDefault(WellKnownVariables.TestsAssemblyStartsWith, string.Empty);
+            ImmutableArray<string> assemblyFilePrefix = buildVariables.AssemblyFilePrefixes();
 
             List<string> testDlls = new UnitTestFinder(typesToFind)
                 .GetUnitTestFixtureDlls(directory, runTestsInReleaseConfiguration, assemblyFilePrefix, FrameworkConstants.NetFramework)

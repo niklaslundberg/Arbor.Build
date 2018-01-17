@@ -135,6 +135,7 @@
     <Compile Include="Tools\NuGet\NuGetVersioningSettings.cs" />
     <Compile Include="Tools\Paket\PaketRestorer.cs" />
     <Compile Include="Tools\Testing\MachineSpecificationsConstants.cs" />
+    <Compile Include="Tools\Testing\TestFilterHelper.cs" />
     <Compile Include="Tools\Testing\XunitNetCoreAppTestRunner.cs" />
     <Compile Include="Tools\Testing\XunitNetFrameworkTestRunner.cs" />
     <Compile Include="Tools\ToolExtensions.cs" />

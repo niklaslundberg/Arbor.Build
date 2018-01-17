@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Arbor.Processing;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
@@ -61,7 +63,7 @@ namespace Arbor.X.Core.Tools.Testing
 
             string configuration = runTestsInReleaseConfiguration ? "release" : "debug";
 
-            string assemblyFilePrefix = buildVariables.GetVariableValueOrDefault(WellKnownVariables.TestsAssemblyStartsWith, string.Empty);
+            ImmutableArray<string> assemblyFilePrefix = buildVariables.AssemblyFilePrefixes();
 
             logger.Write($"Finding Xunit test DLL files built with {configuration} in directory '{_sourceRoot}'");
             logger.Write($"Looking for types {string.Join(", ", typesToFind.Select(t => t.FullName))} in directory '{_sourceRoot}'");
@@ -99,8 +101,15 @@ namespace Arbor.X.Core.Tools.Testing
 
             arguments.Add(xunitDllPath);
             arguments.AddRange(testDlls);
-            arguments.Add("-nunit");
-            arguments.Add(reportFileInfo.FullName);
+
+            bool xmlEnabled =
+                buildVariables.GetBooleanByKey(WellKnownVariables.XUnitNetCoreAppXmlEnabled, defaultValue: true);
+
+            if (xmlEnabled)
+            {
+                arguments.Add("-xml");
+                arguments.Add(reportFileInfo.FullName);
+            }
 
             ExitCode result = await ProcessRunner.ExecuteAsync(
                 dotNetExePath,
@@ -110,7 +119,65 @@ namespace Arbor.X.Core.Tools.Testing
                 toolAction: logger.Write,
                 cancellationToken: cancellationToken);
 
+            if (!result.IsSuccess)
+            {
+                if (xmlEnabled)
+                {
+                    bool xunitXmlAnalysisEnabled =
+                        buildVariables.GetBooleanByKey(WellKnownVariables.XUnitNetCoreAppXmlAnalysisEnabled,
+                            defaultValue: true);
+
+                    if (xunitXmlAnalysisEnabled)
+                    {
+                        logger.WriteDebug($"Feature flag '{WellKnownVariables.XUnitNetCoreAppXmlAnalysisEnabled}' is enabled and the xunit exit code was {result}, running xml report to find actual result");
+
+                        return AnalyzeXml(reportFileInfo, message => logger.WriteDebug(message));
+                    }
+                }
+            }
+
             return result;
+        }
+
+        private static ExitCode AnalyzeXml(FileInfo reportFileInfo, Action<string> logger)
+        {
+            reportFileInfo.Refresh();
+
+            if (!reportFileInfo.Exists)
+            {
+                return ExitCode.Failure;
+            }
+
+            string fullName = reportFileInfo.FullName;
+
+            using (var fs = new FileStream(fullName, FileMode.Open))
+            {
+                XDocument xdoc = XDocument.Load(fs);
+
+                XElement[] collections = xdoc.Descendants("assemblies").Descendants("assembly").Descendants("collection").ToArray();
+
+                int testCount = collections.Count(collection =>
+                    int.TryParse(collection.Attribute("total")?.Value, out int total) && total > 0);
+
+                if (testCount == 0)
+                {
+                    logger?.Invoke($"Found no tests in '{fullName}'");
+                    return ExitCode.Failure;
+                }
+
+                logger?.Invoke($"Found {testCount} tests in '{fullName}'");
+
+                int failedTests = collections.Count(collection =>
+                    int.TryParse(collection.Attribute("failed")?.Value, out int failed) && failed > 0);
+
+                if (failedTests > 0)
+                {
+                    logger?.Invoke($"Found {failedTests} failing tests in '{fullName}'");
+                    return ExitCode.Failure;
+                }
+
+                return ExitCode.Success;
+            }
         }
     }
 }

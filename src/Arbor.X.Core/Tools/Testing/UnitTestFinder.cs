@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
@@ -29,7 +30,7 @@ namespace Arbor.X.Core.Tools.Testing
         public HashSet<string> GetUnitTestFixtureDlls(
             DirectoryInfo currentDirectory,
             bool? releaseBuild = null,
-            string assemblyFilePrefix = null,
+            ImmutableArray<string> assemblyFilePrefix = default,
             string targetFrameworkPrefix = null)
         {
             if (currentDirectory == null)
@@ -77,10 +78,10 @@ namespace Arbor.X.Core.Tools.Testing
 
             string searchPattern = "*.dll";
 
-            IEnumerable<FileInfo> filteredDllFiles = string.IsNullOrWhiteSpace(assemblyFilePrefix)
+            IEnumerable<FileInfo> filteredDllFiles = assemblyFilePrefix.IsDefaultOrEmpty
                 ? currentDirectory.EnumerateFiles(searchPattern)
                 : currentDirectory.EnumerateFiles(searchPattern)
-                    .Where(file => file.Name.StartsWith(assemblyFilePrefix, StringComparison.OrdinalIgnoreCase));
+                    .Where(file => assemblyFilePrefix.Any(prefix => file.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)));
 
             var ignoredNames = new List<string> { "ReSharper", "dotCover", "Microsoft" };
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -76,7 +77,7 @@ namespace Arbor.X.Core.Tools.Testing
 
             bool ignoreTestFailures = ignoreTestFailuresVariable.GetValueOrDefault(false);
 
-            string assemblyFilePrefix = buildVariables.GetVariableValueOrDefault(WellKnownVariables.TestsAssemblyStartsWith, string.Empty);
+            ImmutableArray<string> assemblyFilePrefix = buildVariables.AssemblyFilePrefixes();
 
             if (ignoreTestFailures)
             {
@@ -154,7 +155,7 @@ namespace Arbor.X.Core.Tools.Testing
             ILogger logger,
             IVariable reportPath,
             bool runTestsInReleaseConfiguration,
-            string assemblyFilePrefix)
+            ImmutableArray<string> assemblyFilePrefix)
         {
             Type fixtureAttribute = typeof(TestFixtureAttribute);
             Type testMethodAttribute = typeof(TestAttribute);
