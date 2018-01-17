@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.Tools.Testing;
@@ -15,6 +16,7 @@ namespace Arbor.X.Tests.Integration.Tests.Xunit
     {
         static UnitTestFinder finder;
         static bool isTestType;
+        static HashSet<string> unitTestFixtureDlls;
 
         Establish context = () =>
         {
@@ -29,15 +31,16 @@ namespace Arbor.X.Tests.Integration.Tests.Xunit
         Because of =
             () =>
             {
-                string currentDirectory = Path.Combine(VcsTestPathHelper.FindVcsRootPath(), "src", "Arbor.X.Tests.NetCoreAppSamle");
+                string currentDirectory = Path.Combine(VcsTestPathHelper.FindVcsRootPath(),
+                    "src",
+                    "Arbor.X.Tests.NetCoreAppSamle");
 
                 unitTestFixtureDlls = finder.GetUnitTestFixtureDlls(new DirectoryInfo(currentDirectory),
                     false,
-                    "Arbor",
+                    new[] { "Arbor" }.ToImmutableArray(),
                     ".NETCoreApp");
             };
 
         It should_Behaviour = () => unitTestFixtureDlls.ShouldNotBeEmpty();
-        static HashSet<string> unitTestFixtureDlls;
     }
 }

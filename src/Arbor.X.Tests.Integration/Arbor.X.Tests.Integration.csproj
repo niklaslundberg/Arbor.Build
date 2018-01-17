@@ -143,8 +143,6 @@
     <Compile Include="PathExtensions\when_checking_is_blacklisted_for_a_blacklisted_file.cs" />
     <Compile Include="PathExtensions\when_checking_is_blacklisted_for_a_non_blacklisted_file.cs" />
     <Compile Include="Tests\when_listing_nuget_package_configuration_files.cs" />
-    <Compile Include="Tests\Xunit\when_testing_net_core_app_dll_for_xunit_tests2.cs" />
-    <Compile Include="Tests\Xunit\when_testing_net_core_app_dll_for_xunit_tests3.cs" />
     <Compile Include="VisualStudioVariableProvider\when_running_VisualStudioVariableProvider.cs" />
     <Compile Include="WellknownVariables\when_listing_all_wellknown_variables.cs" />
     <Compile Include="KuduWebProjectDetails\when_creating_kudu_web_project_details.cs" />
