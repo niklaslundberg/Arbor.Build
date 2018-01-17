@@ -90,7 +90,7 @@ namespace Arbor.X.Core.Tools.Testing
 
             logger.WriteDebug($"Using dotnet.exe in path '{dotNetExePath}'");
 
-            string xmlReportName = $"{Guid.NewGuid()}.xml";
+            string xmlReportName = $"xunit_v2.{Guid.NewGuid()}.xml";
 
             var arguments = new List<string>();
 
