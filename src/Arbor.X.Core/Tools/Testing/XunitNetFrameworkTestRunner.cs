@@ -69,6 +69,8 @@ namespace Arbor.X.Core.Tools.Testing
                 return ExitCode.Success;
             }
 
+            logger.WriteDebug($"Found [{testDlls}] potential Assembly dll files with tests: {Environment.NewLine}: {string.Join(Environment.NewLine, testDlls.Select(dll => $" * '{dll}'"))}");
+
             string xmlReportName = $"{Guid.NewGuid()}.xml";
 
             var arguments = new List<string>();
