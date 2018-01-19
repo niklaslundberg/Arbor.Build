@@ -87,6 +87,8 @@ namespace Arbor.X.Core.Tools.MSBuild
         bool _webProjectsBuildEnabed;
         MSBuildVerbositoyLevel _verbosity;
         ImmutableArray<string> _excludedPlatforms;
+        private string _AssemblyVersion;
+        private string _AssemblyFileVersion;
 
         public Guid WebApplicationProjectTypeId { get; } = Guid.Parse("349C5851-65DF-11DA-9384-00065B846F21");
 
@@ -220,6 +222,9 @@ namespace Arbor.X.Core.Tools.MSBuild
                     .Split(',')
                     .Where(item => !string.IsNullOrWhiteSpace(item))
                     .SafeToReadOnlyCollection();
+
+            _AssemblyFileVersion = buildVariables.Require(WellKnownVariables.NetAssemblyFileVersion).Value;
+            _AssemblyVersion = buildVariables.Require(WellKnownVariables.NetAssemblyVersion).Value;
 
             if (_vcsRoot == null)
             {
@@ -618,7 +623,9 @@ namespace Arbor.X.Core.Tools.MSBuild
                 $"/verbosity:{_verbosity.Level}",
                 $"/target:{_defaultTarget}",
                 $"/maxcpucount:{_processorCount.ToString(CultureInfo.InvariantCulture)}",
-                "/nodeReuse:false"
+                "/nodeReuse:false",
+                $"/property:AssemblyVersion={_AssemblyVersion}",
+                $"/property:FileVersion={_AssemblyFileVersion}"
             };
 
             if (_codeAnalysisEnabled)
@@ -1086,7 +1093,9 @@ namespace Arbor.X.Core.Tools.MSBuild
                     "/target:publish",
                     $"/property:publishdir={siteArtifactDirectory.FullName}",
                     $"/maxcpucount:{_processorCount.ToString(CultureInfo.InvariantCulture)}",
-                    "/nodeReuse:false"
+                    "/nodeReuse:false",
+                    $"/property:AssemblyVersion={_AssemblyVersion}",
+                    $"/property:FileVersion={_AssemblyFileVersion}",
                 };
             }
 
@@ -1694,7 +1703,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                 webDeployPackageDirectory.FullName,
                 $"{solutionProject.ProjectName}_{configuration}.zip");
 
-            var buildSitePackageArguments = new List<string>(15)
+            var buildSitePackageArguments = new List<string>(20)
             {
                 solutionProject.FullPath,
                 $"/property:configuration={configuration}",
@@ -1706,7 +1715,9 @@ namespace Arbor.X.Core.Tools.MSBuild
                 $"/verbosity:{_verbosity.Level}",
                 "/target:Package",
                 $"/maxcpucount:{_processorCount.ToString(CultureInfo.InvariantCulture)}",
-                "/nodeReuse:false"
+                "/nodeReuse:false",
+                $"/property:AssemblyVersion={_AssemblyVersion}",
+                $"/property:FileVersion={_AssemblyFileVersion}"
             };
 
             if (_showSummary)
