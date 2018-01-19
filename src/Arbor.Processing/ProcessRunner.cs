@@ -215,7 +215,11 @@ namespace Arbor.Processing
                     process.BeginOutputReadLine();
                 }
 
-                int bits = process.IsWin64() ? 64 : 32;
+                await Task.Delay(50, cancellationToken);
+
+                bool? isWin64 = process.IsWin64();
+
+                int? bits = isWin64.HasValue ? isWin64.Value ? 64 : 32 : default;
 
                 try
                 {
@@ -229,7 +233,7 @@ namespace Arbor.Processing
                 string temp = process.HasExited ? "was" : "is";
 
                 verbose(
-                    $"The process '{processWithArgs}' {temp} running in {bits}-bit mode",
+                    $"The process '{processWithArgs}' {temp} running in {bits?.ToString() ?? "N/A"}-bit mode",
                     toolCategory);
             }
             catch (Exception ex)

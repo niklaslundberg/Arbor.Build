@@ -10,8 +10,13 @@ namespace Arbor.Processing
 {
     public static class ProcessExtensions
     {
-        public static bool IsWin64(this Process process)
+        public static bool? IsWin64(this Process process)
         {
+            if (process.HasExited)
+            {
+                return default;
+            }
+
             if ((Environment.OSVersion.Version.Major > 5)
                 || ((Environment.OSVersion.Version.Major == 5) && (Environment.OSVersion.Version.Minor >= 1)))
             {
@@ -28,7 +33,7 @@ namespace Arbor.Processing
                         throw;
                     }
 
-                    return false;
+                    return default;
                 }
 
                 return NativeMethods.IsWow64Process(processHandle, out bool retVal) && retVal;
