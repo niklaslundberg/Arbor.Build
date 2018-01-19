@@ -12,7 +12,9 @@ namespace Arbor.X.Core.Tools.Versioning
     [UsedImplicitly]
     public class BuildConfigurationProvider : IVariableProvider
     {
-        public int Order => VariableProviderOrder.Ignored;
+        public const int ProviderOrder = 10;
+
+        public int Order => ProviderOrder;
 
         public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(
             ILogger logger,

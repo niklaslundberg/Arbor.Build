@@ -64,10 +64,9 @@ namespace Arbor.X.Core.Tools.Testing
                 MachineSpecificationsConstants.MachineSpecificationsName,
                 "mspec-clr4.exe");
 
-            bool runTestsInReleaseConfiguration =
-                buildVariables.GetBooleanByKey(
-                    WellKnownVariables.RunTestsInReleaseConfigurationEnabled,
-                    true);
+            bool? runTestsInReleaseConfiguration =
+                buildVariables.GetOptionalBooleanByKey(
+                    WellKnownVariables.RunTestsInReleaseConfigurationEnabled);
 
             IEnumerable<Type> typesToFind = new List<Type>
             {

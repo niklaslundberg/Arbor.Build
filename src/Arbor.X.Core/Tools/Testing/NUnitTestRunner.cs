@@ -70,10 +70,9 @@ namespace Arbor.X.Core.Tools.Testing
                 return ExitCode.Success;
             }
 
-            bool runTestsInReleaseConfiguration =
-                buildVariables.GetBooleanByKey(
-                    WellKnownVariables.RunTestsInReleaseConfigurationEnabled,
-                    true);
+            bool? runTestsInReleaseConfiguration =
+                buildVariables.GetOptionalBooleanByKey(
+                    WellKnownVariables.RunTestsInReleaseConfigurationEnabled);
 
             bool ignoreTestFailures = ignoreTestFailuresVariable.GetValueOrDefault(false);
 
@@ -154,7 +153,7 @@ namespace Arbor.X.Core.Tools.Testing
             IVariable externalTools,
             ILogger logger,
             IVariable reportPath,
-            bool runTestsInReleaseConfiguration,
+            bool? runTestsInReleaseConfiguration,
             ImmutableArray<string> assemblyFilePrefix)
         {
             Type fixtureAttribute = typeof(TestFixtureAttribute);

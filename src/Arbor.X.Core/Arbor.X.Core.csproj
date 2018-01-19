@@ -214,6 +214,7 @@
     <Compile Include="Tools\ToolWithPriority.cs" />
     <Compile Include="BuildVariables\VariablePrintExtensions.cs" />
     <Compile Include="BuildVariables\VariableValidationExtensions.cs" />
+    <Compile Include="Tools\Versioning\TestConfigurationProvider.cs" />
     <Compile Include="Tools\VisualStudio\VisualStudioVariableProvider.cs" />
     <Compile Include="Tools\MSBuild\MSBuildVariableProvider.cs" />
     <Compile Include="Tools\NuGet\NuGetEnvironmentVerification.cs" />

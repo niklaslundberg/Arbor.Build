@@ -53,10 +53,9 @@ namespace Arbor.X.Core.Tools.Testing
 
             var typesToFind = new List<Type> { theoryType, factAttribute };
 
-            bool runTestsInReleaseConfiguration =
-                buildVariables.GetBooleanByKey(
-                    WellKnownVariables.RunTestsInReleaseConfigurationEnabled,
-                    true);
+            bool? runTestsInReleaseConfiguration =
+                buildVariables.GetOptionalBooleanByKey(
+                    WellKnownVariables.RunTestsInReleaseConfigurationEnabled);
 
             ImmutableArray<string> assemblyFilePrefix = buildVariables.AssemblyFilePrefixes();
 

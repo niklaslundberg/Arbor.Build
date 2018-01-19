@@ -56,16 +56,15 @@ namespace Arbor.X.Core.Tools.Testing
 
             var typesToFind = new List<Type> { theoryType, factAttribute };
 
-            bool runTestsInReleaseConfiguration =
-                buildVariables.GetBooleanByKey(
-                    WellKnownVariables.RunTestsInReleaseConfigurationEnabled,
-                    true);
+            bool? runTestsInReleaseConfiguration =
+                buildVariables.GetOptionalBooleanByKey(
+                    WellKnownVariables.RunTestsInReleaseConfigurationEnabled);
 
-            string configuration = runTestsInReleaseConfiguration ? "release" : "debug";
+            string configuration = runTestsInReleaseConfiguration.HasValue ? runTestsInReleaseConfiguration.Value ? "release" : "debug" : "[ANY]";
 
             ImmutableArray<string> assemblyFilePrefix = buildVariables.AssemblyFilePrefixes();
 
-            logger.Write($"Finding Xunit test DLL files built with {configuration} in directory '{_sourceRoot}'");
+            logger.Write($"Finding Xunit test DLL files built with '{configuration}' configuration in directory '{_sourceRoot}'");
             logger.Write($"Looking for types {string.Join(", ", typesToFind.Select(t => t.FullName))} in directory '{_sourceRoot}'");
 
             List<string> testDlls = new UnitTestFinder(typesToFind, logger: logger, debugLogEnabled: true)

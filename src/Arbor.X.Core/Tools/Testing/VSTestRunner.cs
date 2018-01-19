@@ -53,10 +53,9 @@ namespace Arbor.X.Core.Tools.Testing
                 WellKnownVariables.IgnoreTestFailures,
                 false);
 
-            bool runTestsInReleaseConfiguration =
-                buildVariables.GetBooleanByKey(
-                    WellKnownVariables.RunTestsInReleaseConfigurationEnabled,
-                    true);
+            bool? runTestsInReleaseConfiguration =
+                buildVariables.GetOptionalBooleanByKey(
+                    WellKnownVariables.RunTestsInReleaseConfigurationEnabled);
 
             ImmutableArray<string> assemblyFilePrefix = buildVariables.AssemblyFilePrefixes();
 
@@ -93,7 +92,7 @@ namespace Arbor.X.Core.Tools.Testing
             ILogger logger,
             string vsTestReportDirectoryPath,
             string vsTestExePath,
-            bool runTestsInReleaseConfiguration,
+            bool? runTestsInReleaseConfiguration,
             ImmutableArray<string> assemblyFilePrefix)
         {
             Type testClassAttribute = typeof(TestClassAttribute);

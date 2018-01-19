@@ -89,6 +89,36 @@ namespace Arbor.X.Core.BuildVariables
             return parsed;
         }
 
+        public static bool? GetOptionalBooleanByKey(
+            this IReadOnlyCollection<IVariable> buildVariables,
+            string key)
+        {
+            if (!buildVariables.HasKey(key))
+            {
+                return default;
+            }
+
+            string value = buildVariables.GetVariableValueOrDefault(
+                key,
+                default);
+
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return default;
+            }
+
+            if (!bool.TryParse(
+                value,
+                out bool parsed))
+            {
+                return default;
+            }
+
+            return parsed;
+        }
+
+
+
         public static int GetInt32ByKey(
             this IReadOnlyCollection<IVariable> buildVariables,
             string key,
