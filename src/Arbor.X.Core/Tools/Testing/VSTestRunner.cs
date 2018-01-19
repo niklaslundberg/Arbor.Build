@@ -113,7 +113,7 @@ namespace Arbor.X.Core.Tools.Testing
                 return ExitCode.Success;
             }
 
-            logger.WriteDebug($"Found [{vsTestConsoleArguments}] potential Assembly dll files with tests: {Environment.NewLine}: {string.Join(Environment.NewLine, testDlls.Select(dll => $" * '{dll}'"))}");
+            logger.WriteDebug($"Found [{vsTestConsoleArguments}] potential Assembly dll files with tests: {Environment.NewLine}: {string.Join(Environment.NewLine, vsTestConsoleArguments.Select(dll => $" * '{dll}'"))}");
 
             IEnumerable<string> options = GetVsTestConsoleOptions();
 
