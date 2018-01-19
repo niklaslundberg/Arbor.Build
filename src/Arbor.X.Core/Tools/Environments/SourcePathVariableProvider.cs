@@ -12,7 +12,7 @@ namespace Arbor.X.Core.Tools.Environments
 {
     public class SourcePathVariableProvider : IVariableProvider
     {
-        public int Order { get; } = 0;
+        public int Order { get; } = -2;
 
         public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(
             ILogger logger,

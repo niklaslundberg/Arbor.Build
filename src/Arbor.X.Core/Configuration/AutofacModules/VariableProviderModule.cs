@@ -17,8 +17,6 @@ namespace Arbor.X.Core.Configuration.AutofacModules
         {
             Assembly[] assemblies = AssemblyFetcher.GetAssemblies().ToArray();
 
-            builder.RegisterType<SourcePathVariableProvider>().AsImplementedInterfaces();
-
             builder.RegisterAssemblyTypes(assemblies)
                 .Where(type => type.IsConcretePublicClassImplementing<IVariableProvider>())
                 .AsImplementedInterfaces();
