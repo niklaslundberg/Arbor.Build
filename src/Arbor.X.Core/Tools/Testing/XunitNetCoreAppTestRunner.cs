@@ -121,6 +121,24 @@ namespace Arbor.X.Core.Tools.Testing
                 toolAction: logger.Write,
                 cancellationToken: cancellationToken);
 
+            ExitCode exitCode = ExitCode.Success;
+
+            if (!result.IsSuccess)
+            {
+                if (xmlEnabled)
+                {
+                    bool xunitXmlAnalysisEnabled =
+                        buildVariables.GetBooleanByKey(WellKnownVariables.XUnitNetCoreAppXmlAnalysisEnabled,
+                            defaultValue: true);
+
+                    if (xunitXmlAnalysisEnabled)
+                    {
+                        logger.WriteDebug($"Feature flag '{WellKnownVariables.XUnitNetCoreAppXmlAnalysisEnabled}' is enabled and the xunit exit code was {result}, running xml report to find actual result");
+
+                        exitCode = AnalyzeXml(reportFileInfo, message => logger.WriteDebug(message));
+                    }
+                }
+            }
 
             if (buildVariables.GetBooleanByKey(
                 WellKnownVariables.XUnitNetCoreAppV2XmlXsltToJunitEnabled,
@@ -163,25 +181,7 @@ namespace Arbor.X.Core.Tools.Testing
                 }
             }
 
-
-            if (!result.IsSuccess)
-            {
-                if (xmlEnabled)
-                {
-                    bool xunitXmlAnalysisEnabled =
-                        buildVariables.GetBooleanByKey(WellKnownVariables.XUnitNetCoreAppXmlAnalysisEnabled,
-                            defaultValue: true);
-
-                    if (xunitXmlAnalysisEnabled)
-                    {
-                        logger.WriteDebug($"Feature flag '{WellKnownVariables.XUnitNetCoreAppXmlAnalysisEnabled}' is enabled and the xunit exit code was {result}, running xml report to find actual result");
-
-                        return AnalyzeXml(reportFileInfo, message => logger.WriteDebug(message));
-                    }
-                }
-            }
-
-            return result;
+            return exitCode;
         }
 
         private static ExitCode AnalyzeXml(FileInfo reportFileInfo, Action<string> logger)
