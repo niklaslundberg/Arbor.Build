@@ -295,6 +295,10 @@ namespace Arbor.X.Core.BuildVariables
         public static readonly string XUnitNetCoreAppEnabled =
             "Arbor.X.Tools.External.Xunit.NetCoreApp.Enabled";
 
+        [VariableDescription("Enable XUnit .NET Core App XML report XSLT V2 to Junit")]
+        public static readonly string XUnitNetCoreAppV2XmlXsltToJunitEnabled =
+            "Arbor.X.Tools.External.Xunit.NetCoreApp.Xslt.V2ToJunit.Enabled";
+
         [VariableDescription("Enable XUnit XML analysis for .NET Core App")]
         public static readonly string XUnitNetCoreAppXmlAnalysisEnabled =
             "Arbor.X.Tools.External.Xunit.NetCoreApp.Xml.Analysis.Enabled";

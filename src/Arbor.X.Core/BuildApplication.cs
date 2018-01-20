@@ -224,7 +224,8 @@ namespace Arbor.X.Core
                 [WellKnownVariables.NUnitEnabled] = "true",
                 [WellKnownVariables.MSpecEnabled] = "true",
                 [WellKnownVariables.TestsAssemblyStartsWith] = "Arbor.X.Tests",
-                [WellKnownVariables.DotNetRestoreEnabled] = "true"
+                [WellKnownVariables.DotNetRestoreEnabled] = "true",
+                [WellKnownVariables.XUnitNetCoreAppV2XmlXsltToJunitEnabled] = "true"
             };
 
             foreach (KeyValuePair<string, string> environmentVariable in environmentVariables)

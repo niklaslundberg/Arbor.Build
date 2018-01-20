@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Arbor.Defensive.Collections;
 using Arbor.Processing;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
@@ -95,7 +96,7 @@ namespace Arbor.X.Core.Tools.Testing
 
             var arguments = new List<string>();
 
-            string reportFile = Path.Combine(reportPath.Value, "xunit", xmlReportName);
+            string reportFile = Path.Combine(reportPath.Value, "xunit", "v2", xmlReportName);
 
             var reportFileInfo = new FileInfo(reportFile);
             reportFileInfo.Directory.EnsureExists();
@@ -119,6 +120,49 @@ namespace Arbor.X.Core.Tools.Testing
                 standardErrorAction: logger.WriteError,
                 toolAction: logger.Write,
                 cancellationToken: cancellationToken);
+
+
+            if (buildVariables.GetBooleanByKey(
+                WellKnownVariables.XUnitNetCoreAppV2XmlXsltToJunitEnabled,
+                false))
+            {
+                logger.WriteVerbose(
+                    "Transforming XUnit net core app test reports to JUnit format");
+
+                DirectoryInfo xmlReportDirectory = reportFileInfo.Directory;
+
+                // ReSharper disable once PossibleNullReferenceException
+                IReadOnlyCollection<FileInfo> xmlReports = xmlReportDirectory
+                    .GetFiles("*.xml")
+                    .Where(report => !report.Name.EndsWith(TestReportXslt.JUnitSuffix, StringComparison.Ordinal))
+                    .ToReadOnlyCollection();
+
+                if (xmlReports.Any())
+                {
+                    foreach (FileInfo xmlReport in xmlReports)
+                    {
+                        logger.WriteDebug($"Transforming '{xmlReport.FullName}' to JUnit XML format");
+                        try
+                        {
+                            ExitCode transformExitCode = TestReportXslt.Transform(xmlReport, XUnitV2JUnitXsl.Xml, logger);
+
+                            if (!transformExitCode.IsSuccess)
+                            {
+                                return transformExitCode;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            logger.WriteError($"Could not transform '{xmlReport.FullName}', {ex}");
+                            return ExitCode.Failure;
+                        }
+
+                        logger.WriteDebug(
+                            $"Successfully transformed '{xmlReport.FullName}' to JUnit XML format");
+                    }
+                }
+            }
+
 
             if (!result.IsSuccess)
             {

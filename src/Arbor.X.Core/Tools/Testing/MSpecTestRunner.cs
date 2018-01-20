@@ -3,11 +3,8 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml;
-using System.Xml.Xsl;
 using Arbor.Defensive.Collections;
 using Arbor.Processing;
 using Arbor.Processing.Core;
@@ -83,7 +80,10 @@ namespace Arbor.X.Core.Tools.Testing
 
             List<string> testDlls =
                 new UnitTestFinder(typesToFind, logger: logger)
-                    .GetUnitTestFixtureDlls(directory, runTestsInReleaseConfiguration, assemblyFilePrefix, FrameworkConstants.NetFramework)
+                    .GetUnitTestFixtureDlls(directory,
+                        runTestsInReleaseConfiguration,
+                        assemblyFilePrefix,
+                        FrameworkConstants.NetFramework)
                     .ToList();
 
             if (!testDlls.Any())
@@ -93,7 +93,8 @@ namespace Arbor.X.Core.Tools.Testing
                 return ExitCode.Success;
             }
 
-            logger.WriteDebug($"Found [{testDlls}] potential Assembly dll files with tests: {Environment.NewLine}: {string.Join(Environment.NewLine, testDlls.Select(dll => $" * '{dll}'"))}");
+            logger.WriteDebug(
+                $"Found [{testDlls}] potential Assembly dll files with tests: {Environment.NewLine}: {string.Join(Environment.NewLine, testDlls.Select(dll => $" * '{dll}'"))}");
 
             var arguments = new List<string>();
 
@@ -171,87 +172,41 @@ namespace Arbor.X.Core.Tools.Testing
                 logger.WriteVerbose(
                     $"Transforming {MachineSpecificationsConstants.MachineSpecificationsName} test reports to JUnit format");
 
-                const string junitSuffix = "_junit.xml";
-
                 DirectoryInfo xmlReportDirectory = new FileInfo(xmlReportPath).Directory;
 
 // ReSharper disable once PossibleNullReferenceException
                 IReadOnlyCollection<FileInfo> xmlReports = xmlReportDirectory
                     .GetFiles("*.xml")
-                    .Where(report => !report.Name.EndsWith(junitSuffix, StringComparison.Ordinal))
+                    .Where(report => !report.Name.EndsWith(TestReportXslt.JUnitSuffix, StringComparison.Ordinal))
                     .ToReadOnlyCollection();
 
                 if (xmlReports.Any())
                 {
-                    Encoding encoding = Encoding.UTF8;
-                    using (Stream stream = new MemoryStream(encoding.GetBytes(MSpecJUnitXsl.Xml)))
+                    foreach (FileInfo xmlReport in xmlReports)
                     {
-                        using (XmlReader xmlReader = new XmlTextReader(stream))
+                        logger.WriteDebug($"Transforming '{xmlReport.FullName}' to JUnit XML format");
+                        try
                         {
-                            var myXslTransform = new XslCompiledTransform();
-                            myXslTransform.Load(xmlReader);
+                            ExitCode transformExitCode = TestReportXslt.Transform(xmlReport, MSpecJUnitXsl.Xml, logger);
 
-                            foreach (FileInfo xmlReport in xmlReports)
+                            if (!transformExitCode.IsSuccess)
                             {
-                                logger.WriteDebug($"Transforming '{xmlReport.FullName}' to JUnit XML format");
-                                try
-                                {
-                                    TransformReport(xmlReport, junitSuffix, encoding, myXslTransform, logger);
-                                }
-                                catch (Exception ex)
-                                {
-                                    logger.WriteError($"Could not transform '{xmlReport.FullName}', {ex}");
-                                    return ExitCode.Failure;
-                                }
-
-                                logger.WriteDebug(
-                                    $"Successfully transformed '{xmlReport.FullName}' to JUnit XML format");
+                                return transformExitCode;
                             }
                         }
+                        catch (Exception ex)
+                        {
+                            logger.WriteError($"Could not transform '{xmlReport.FullName}', {ex}");
+                            return ExitCode.Failure;
+                        }
+
+                        logger.WriteDebug(
+                            $"Successfully transformed '{xmlReport.FullName}' to JUnit XML format");
                     }
                 }
             }
 
             return exitCode;
-        }
-
-        private static void TransformReport(
-            FileInfo xmlReport,
-            string junitSuffix,
-            Encoding encoding,
-            XslCompiledTransform myXslTransform,
-            ILogger logger)
-        {
-            // ReSharper disable once PossibleNullReferenceException
-            string resultFile = Path.Combine(
-                xmlReport.Directory.FullName,
-                $"{Path.GetFileNameWithoutExtension(xmlReport.Name)}{junitSuffix}");
-
-            if (File.Exists(resultFile))
-            {
-                logger.Write(
-                    $"Skipping XML transformation for '{xmlReport.FullName}', the transformation result file '{resultFile}' already exists");
-                return;
-            }
-
-            using (var fileStream = new FileStream(xmlReport.FullName, FileMode.Open, FileAccess.Read))
-            {
-                using (var streamReader = new StreamReader(fileStream, encoding))
-                {
-                    using (XmlReader reportReader = XmlReader.Create(streamReader))
-                    {
-                        using (var outStream = new FileStream(resultFile, FileMode.Create, FileAccess.Write))
-                        {
-                            using (XmlWriter reportWriter = new XmlTextWriter(outStream, encoding))
-                            {
-                                myXslTransform.Transform(reportReader, reportWriter);
-                            }
-                        }
-                    }
-                }
-            }
-
-            File.Delete(xmlReport.FullName);
         }
     }
 }
