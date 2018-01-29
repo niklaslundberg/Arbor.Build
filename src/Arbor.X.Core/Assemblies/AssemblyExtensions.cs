@@ -36,6 +36,28 @@ namespace Arbor.X.Core.Assemblies
                 throw new ArgumentNullException(nameof(logger));
             }
 
+            Assembly loadedAssembly = AppDomain.CurrentDomain.GetAssemblies()
+                .SingleOrDefault(assembly => !assembly.IsDynamic
+                                             && assembly.FullName.Equals(assemblyDefinition.FullName));
+
+            if (loadedAssembly != null)
+            {
+                logger.WriteDebug($"Assembly '{assemblyDefinition.FullName}' is already loaded in the app domain");
+
+                return IsDebugAssembly(loadedAssembly);
+            }
+
+            Assembly loadedReflectionOnlyAssembly = AppDomain.CurrentDomain.ReflectionOnlyGetAssemblies()
+                .SingleOrDefault(assembly => !assembly.IsDynamic
+                                             && assembly.FullName.Equals(assemblyDefinition.FullName));
+
+            if (loadedReflectionOnlyAssembly != null)
+            {
+                logger.WriteDebug($"Assembly '{assemblyDefinition.FullName}' is already loaded in the app domain with reflection only");
+
+                return IsDebugAssembly(loadedReflectionOnlyAssembly);
+            }
+
             if (!bool.TryParse(Environment.GetEnvironmentVariable(WellKnownVariables.AssemblyUseReflectionOnlyMode),
                     out bool enabled) || enabled)
             {
