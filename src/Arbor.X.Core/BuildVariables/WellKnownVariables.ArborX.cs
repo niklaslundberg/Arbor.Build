@@ -27,5 +27,8 @@
 
         [VariableDescription("Flag to indicate if applicationmetadata.json should be created dynamically", "false")]
         public static readonly string ApplicationMetadataEnabled = "Arbor.X.ApplicationMetadata.Enabled";
+
+        [VariableDescription("Use assembly reflection only mode enabled")]
+        public const string AssemblyUseReflectionOnlyMode = "Arbor.X.ReflectionAssemblyLoad.Enabled";
     }
 }

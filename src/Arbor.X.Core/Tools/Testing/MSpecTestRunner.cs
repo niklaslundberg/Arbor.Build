@@ -78,6 +78,11 @@ namespace Arbor.X.Core.Tools.Testing
 
             ImmutableArray<string> assemblyFilePrefix = buildVariables.AssemblyFilePrefixes();
 
+            if (assemblyFilePrefix.Any())
+            {
+                logger.Write($"Scanning source root '{sourceRoot}' for assemblies using prefix {string.Join(", ", assemblyFilePrefix.Select(prefix => $"'{prefix}'"))}");
+            }
+
             List<string> testDlls =
                 new UnitTestFinder(typesToFind, logger: logger)
                     .GetUnitTestFixtureDlls(directory,

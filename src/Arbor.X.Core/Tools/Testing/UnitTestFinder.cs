@@ -97,12 +97,12 @@ namespace Arbor.X.Core.Tools.Testing
 
             if (releaseBuild.HasValue && releaseBuild.Value)
             {
-                configurationFiltered = assemblies.Where(assembly => !assembly.Item1.IsDebugAssembly()).ToList();
+                configurationFiltered = assemblies.Where(assembly => !assembly.Item1.IsDebugAssembly(assembly.Item2, _logger)).ToList();
                 _logger.WriteDebug("Filtered to only include release assemblies");
             }
             else if (releaseBuild.HasValue)
             {
-                configurationFiltered = assemblies.Where(assembly => assembly.Item1.IsDebugAssembly()).ToList();
+                configurationFiltered = assemblies.Where(assembly => assembly.Item1.IsDebugAssembly(assembly.Item2, _logger)).ToList();
                 _logger.WriteDebug("Filtered to only include debug assemblies");
             }
             else
