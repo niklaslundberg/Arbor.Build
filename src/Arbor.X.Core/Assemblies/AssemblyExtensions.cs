@@ -49,7 +49,7 @@ namespace Arbor.X.Core.Assemblies
 
             Assembly loadedReflectionOnlyAssembly = AppDomain.CurrentDomain.ReflectionOnlyGetAssemblies()
                 .SingleOrDefault(assembly => !assembly.IsDynamic
-                                             && assembly.FullName.Equals(assemblyDefinition.FullName));
+                                             && assembly.FullName.Equals(assemblyDefinition.FullName, StringComparison.OrdinalIgnoreCase));
 
             if (loadedReflectionOnlyAssembly != null)
             {
@@ -127,6 +127,10 @@ namespace Arbor.X.Core.Assemblies
                             return isDebugAssembly;
                         }
                     }
+                }
+                else
+                {
+                    return false;
                 }
             }
 
