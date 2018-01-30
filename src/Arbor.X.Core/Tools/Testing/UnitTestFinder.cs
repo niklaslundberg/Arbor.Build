@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -15,8 +14,8 @@ namespace Arbor.X.Core.Tools.Testing
 {
     public class UnitTestFinder
     {
-        private readonly ILogger _logger;
-        private readonly IEnumerable<Type> _typesToFind;
+        readonly ILogger _logger;
+        readonly IEnumerable<Type> _typesToFind;
 
         public UnitTestFinder(IEnumerable<Type> typesesToFind, bool debugLogEnabled = false, ILogger logger = null)
         {
@@ -25,7 +24,7 @@ namespace Arbor.X.Core.Tools.Testing
             DebugLogEnabled = debugLogEnabled;
         }
 
-        private bool DebugLogEnabled { get; }
+        bool DebugLogEnabled { get; }
 
         public HashSet<string> GetUnitTestFixtureDlls(
             DirectoryInfo currentDirectory,
@@ -81,7 +80,9 @@ namespace Arbor.X.Core.Tools.Testing
             IEnumerable<FileInfo> filteredDllFiles = assemblyFilePrefix.IsDefaultOrEmpty
                 ? currentDirectory.EnumerateFiles(searchPattern)
                 : currentDirectory.EnumerateFiles(searchPattern)
-                    .Where(file => assemblyFilePrefix.Any(prefix => file.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)));
+                    .Where(file =>
+                        assemblyFilePrefix.Any(prefix =>
+                            file.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)));
 
             var ignoredNames = new List<string> { "ReSharper", "dotCover", "Microsoft" };
 
@@ -97,12 +98,28 @@ namespace Arbor.X.Core.Tools.Testing
 
             if (releaseBuild.HasValue && releaseBuild.Value)
             {
-                configurationFiltered = assemblies.Where(assembly => !assembly.Item1.IsDebugAssembly(assembly.Item2, _logger)).ToList();
+                configurationFiltered = assemblies
+                    .Select(assembly => new
+                    {
+                        Assembly = assembly,
+                        IsDebug = assembly.Item1.IsDebugAssembly(assembly.Item2, _logger)
+                    })
+                    .Where(item => (item.IsDebug.HasValue && !item.IsDebug.Value) || !item.IsDebug.HasValue)
+                    .Select(item => item.Assembly)
+                    .ToList();
+
                 _logger.WriteDebug("Filtered to only include release assemblies");
             }
             else if (releaseBuild.HasValue)
             {
-                configurationFiltered = assemblies.Where(assembly => assembly.Item1.IsDebugAssembly(assembly.Item2, _logger)).ToList();
+                configurationFiltered = assemblies.Select(assembly => new
+                    {
+                        Assembly = assembly,
+                        IsDebug = assembly.Item1.IsDebugAssembly(assembly.Item2, _logger)
+                    })
+                    .Where(item => (item.IsDebug.HasValue && item.IsDebug.Value) || !item.IsDebug.HasValue)
+                    .Select(item => item.Assembly)
+                    .ToList();
                 _logger.WriteDebug("Filtered to only include debug assemblies");
             }
             else
@@ -161,7 +178,7 @@ namespace Arbor.X.Core.Tools.Testing
         }
 
 // ReSharper disable ReturnTypeCanBeEnumerable.Local
-        private IReadOnlyCollection<string> UnitTestFixtureAssemblies(IEnumerable<(AssemblyDefinition, FileInfo)> assemblies)
+        IReadOnlyCollection<string> UnitTestFixtureAssemblies(IEnumerable<(AssemblyDefinition, FileInfo)> assemblies)
 
             // ReSharper restore ReturnTypeCanBeEnumerable.Local
         {
@@ -174,7 +191,7 @@ namespace Arbor.X.Core.Tools.Testing
             return unitTestFixtureAssemblies;
         }
 
-        private bool TryFindAssembly((AssemblyDefinition, FileInfo) assembly)
+        bool TryFindAssembly((AssemblyDefinition, FileInfo) assembly)
         {
             bool result;
             try
@@ -200,7 +217,7 @@ namespace Arbor.X.Core.Tools.Testing
             return result;
         }
 
-        private bool IsTypeUnitTestFixture(TypeDefinition typeToInvestigate)
+        bool IsTypeUnitTestFixture(TypeDefinition typeToInvestigate)
         {
             IEnumerable<CustomAttribute> customAttributeDatas = typeToInvestigate.CustomAttributes;
 
@@ -211,7 +228,7 @@ namespace Arbor.X.Core.Tools.Testing
             return isTestType;
         }
 
-        private bool IsCustomAttributeOfExpectedType(IEnumerable<CustomAttribute> customAttributes)
+        bool IsCustomAttributeOfExpectedType(IEnumerable<CustomAttribute> customAttributes)
         {
             bool isTypeUnitTestFixture = customAttributes.Any(
                 attributeData =>
@@ -227,7 +244,7 @@ namespace Arbor.X.Core.Tools.Testing
             return isTypeUnitTestFixture;
         }
 
-        private bool TypeHasTestMethods(TypeDefinition typeToInvestigate)
+        bool TypeHasTestMethods(TypeDefinition typeToInvestigate)
         {
             IEnumerable<MethodDefinition> publicInstanceMethods =
                 typeToInvestigate.Methods.Where(method => method.IsPublic && !method.IsStatic);
@@ -283,7 +300,7 @@ namespace Arbor.X.Core.Tools.Testing
             return hasTestMethod;
         }
 
-        private bool IsCustomAttributeTypeToFind(CustomAttribute attr)
+        bool IsCustomAttributeTypeToFind(CustomAttribute attr)
         {
             return
                 _typesToFind.Any(
@@ -293,7 +310,7 @@ namespace Arbor.X.Core.Tools.Testing
                             StringComparison.InvariantCultureIgnoreCase));
         }
 
-        private (AssemblyDefinition, FileInfo) GetAssembly(FileInfo dllFile, string targetFrameworkPrefix)
+        (AssemblyDefinition, FileInfo) GetAssembly(FileInfo dllFile, string targetFrameworkPrefix)
         {
             try
             {
@@ -301,14 +318,16 @@ namespace Arbor.X.Core.Tools.Testing
 
                 if (!string.IsNullOrWhiteSpace(targetFrameworkPrefix))
                 {
-                    TargetFrameworkAttribute targetFrameworkAttribute = assemblyDefinition.CustomAttributes.OfType<TargetFrameworkAttribute>().FirstOrDefault();
+                    TargetFrameworkAttribute targetFrameworkAttribute = assemblyDefinition.CustomAttributes
+                        .OfType<TargetFrameworkAttribute>().FirstOrDefault();
 
                     if (targetFrameworkAttribute != null)
                     {
                         if (!targetFrameworkAttribute.FrameworkName.StartsWith(targetFrameworkPrefix,
                             StringComparison.OrdinalIgnoreCase))
                         {
-                            _logger.WriteDebug($"The current assembly '{dllFile.FullName}' target framework attribute with value '{targetFrameworkAttribute.FrameworkName}' does not match the specified target framework '{targetFrameworkPrefix}'");
+                            _logger.WriteDebug(
+                                $"The current assembly '{dllFile.FullName}' target framework attribute with value '{targetFrameworkAttribute.FrameworkName}' does not match the specified target framework '{targetFrameworkPrefix}'");
                             return (null, null);
                         }
                     }
@@ -343,7 +362,7 @@ namespace Arbor.X.Core.Tools.Testing
 #if DEBUG
                 Debug.WriteLine("{0}, {1}", message, ex);
 #endif
-                return (null,null);
+                return (null, null);
             }
         }
     }
