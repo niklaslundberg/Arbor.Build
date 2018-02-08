@@ -33,7 +33,7 @@ namespace Arbor.X.Core.Tools.NuGet
         {
             var app = new CastaneaApplication();
 
-            PathLookupSpecification pathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification;
+            PathLookupSpecification pathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification.AddExcludedDirectorySegments(new[] { "node_modules" });
 
             string vcsRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
             string nuGetExetPath = buildVariables.Require(WellKnownVariables.ExternalTools_NuGet_ExePath)
