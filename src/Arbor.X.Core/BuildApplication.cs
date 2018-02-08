@@ -224,7 +224,7 @@ namespace Arbor.X.Core
                 [WellKnownVariables.NUnitEnabled] = "true",
                 [WellKnownVariables.MSpecEnabled] = "true",
                 [WellKnownVariables.TestsAssemblyStartsWith] = "Arbor.X.Tests",
-                [WellKnownVariables.DotNetRestoreEnabled] = "true",
+                [WellKnownVariables.DotNetRestoreEnabled] = "false",
                 [WellKnownVariables.XUnitNetCoreAppV2XmlXsltToJunitEnabled] = "true",
                 [WellKnownVariables.XUnitNetCoreAppEnabled] = "true",
                 [WellKnownVariables.XUnitNetCoreAppXmlAnalysisEnabled] = "true",

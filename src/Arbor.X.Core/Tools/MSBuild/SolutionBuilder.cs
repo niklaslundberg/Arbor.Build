@@ -44,7 +44,7 @@ namespace Arbor.X.Core.Tools.MSBuild
 
         readonly List<string> _knownPlatforms = new List<string> { "x86", "x64", "Any CPU" };
 
-        readonly PathLookupSpecification _pathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification;
+        readonly PathLookupSpecification _pathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification.AddExcludedDirectorySegments(new[] { "node_modules" });
         readonly List<string> _platforms = new List<string>();
 
         bool _appDataJobsEnabled;
