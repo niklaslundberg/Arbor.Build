@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
+using Arbor.X.Core.IO;
 using Arbor.X.Core.Logging;
 using Arbor.X.Core.ProcessUtils;
 using JetBrains.Annotations;
@@ -36,10 +37,31 @@ namespace Arbor.X.Core.Tools.NuGet
 
             string[] solutionFiles = Directory.GetFiles(rootPath, "*.sln", SearchOption.AllDirectories);
 
-            if (solutionFiles.Length != 1)
+            PathLookupSpecification pathLookupSpecification =
+                DefaultPaths.DefaultPathLookupSpecification.AddExcludedDirectorySegments(new[] { "node_modules" });
+
+            var blackListStatus = solutionFiles
+                .Select(file => new { File = file, Status = pathLookupSpecification.IsFileBlackListed(file) })
+                .ToArray();
+
+            string[] included = blackListStatus
+                .Where(file => !file.Status.Item1)
+                .Select(file => file.File)
+                .ToArray();
+
+            var excluded = blackListStatus
+                .Where(file => file.Status.Item1)
+                .ToArray();
+
+            if (included.Length != 1)
             {
                 logger.WriteError($"Expected exactly 1 solution file, found {solutionFiles.Length}");
                 return ExitCode.Failure;
+            }
+
+            if (excluded.Length > 0)
+            {
+                logger.WriteWarning($"Found blacklisted solution files: {string.Join(", ", excluded.Select(excludedItem => $"{excludedItem.File} ({excludedItem.Status.Item2})"))}");
             }
 
             string solutionFile = solutionFiles.Single();
@@ -47,7 +69,8 @@ namespace Arbor.X.Core.Tools.NuGet
             ExitCode result = await ProcessHelper.ExecuteAsync(
                 msbuildExePath,
                 new[] { solutionFile, "/t:restore" },
-                logger);
+                logger,
+                cancellationToken: cancellationToken);
 
             return result;
         }
