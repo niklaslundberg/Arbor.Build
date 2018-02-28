@@ -64,7 +64,7 @@ namespace Arbor.X.Core.Tools.NuGet
                 logger.WriteWarning($"Found blacklisted solution files: {string.Join(", ", excluded.Select(excludedItem => $"{excludedItem.File} ({excludedItem.Status.Item2})"))}");
             }
 
-            string solutionFile = solutionFiles.Single();
+            string solutionFile = included.Single();
 
             ExitCode result = await ProcessHelper.ExecuteAsync(
                 msbuildExePath,
