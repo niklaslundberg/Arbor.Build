@@ -53,9 +53,15 @@ namespace Arbor.X.Core.Tools.NuGet
                 .Where(file => file.Status.Item1)
                 .ToArray();
 
-            if (included.Length != 1)
+            if (included.Length > 1)
             {
-                logger.WriteError($"Expected exactly 1 solution file, found {solutionFiles.Length}");
+                logger.WriteError($"Expected exactly 1 solution file, found {included.Length}, {string.Join(", ", included)}");
+                return ExitCode.Failure;
+            }
+
+            if (included.Length == 0)
+            {
+                logger.WriteError("Expected exactly 1 solution file, found 0");
                 return ExitCode.Failure;
             }
 
