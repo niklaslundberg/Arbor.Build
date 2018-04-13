@@ -1246,6 +1246,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                 _logger.WriteVerbose(
                     $"Creating Environment package for project '{solutionProject.ProjectName}', environment name '{environmentName}'");
                 List<string> elements = environmentFiles
+                    .Where(file => file.EnvironmentName.Equals(environmentName, StringComparison.OrdinalIgnoreCase))
                     .Select(
                         file =>
                         {
