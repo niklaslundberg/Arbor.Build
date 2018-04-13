@@ -1061,9 +1061,23 @@ namespace Arbor.X.Core.Tools.MSBuild
                 items.Select(i => new KeyValue(i.Key, i.Value, i.ConfigurationMetadata)).ToImmutableArray());
             string serialize = new JsonConfigurationSerializer().Serialize(configurationItems);
 
-            string applicationMetadataJsonFilePath = Path.Combine(
-                siteArtifactDirectory.FullName,
-                "applicationmetadata.json");
+            string applicationMetadataJsonFilePath;
+
+            string applicationmetadataJson = "applicationmetadata.json";
+
+            if (Directory.Exists(Path.Combine(siteArtifactDirectory.FullName, "wwwroot")))
+            {
+                applicationMetadataJsonFilePath = Path.Combine(
+                    siteArtifactDirectory.FullName,
+                    "wwwroot",
+                    applicationmetadataJson);
+            }
+            else
+            {
+                applicationMetadataJsonFilePath = Path.Combine(
+                    siteArtifactDirectory.FullName,
+                    applicationmetadataJson);
+            }
 
             File.WriteAllText(applicationMetadataJsonFilePath, serialize, Encoding.UTF8);
 
