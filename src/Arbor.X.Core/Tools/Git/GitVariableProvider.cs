@@ -1,11 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Defensive;
+using Arbor.Processing;
+using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
+using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.Logging;
+using FubuCore;
 using JetBrains.Annotations;
 using NuGet.Versioning;
 
@@ -16,7 +21,7 @@ namespace Arbor.X.Core.Tools.Git
     {
         public int Order { get; } = -1;
 
-        public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(
+        public async Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
@@ -149,18 +154,68 @@ namespace Arbor.X.Core.Tools.Git
                         WellKnownVariables.TeamCity.TeamCityVcsNumber,
                         string.Empty);
 
-                    var environmentVariable = new EnvironmentVariable(
-                        WellKnownVariables.GitHash,
-                        gitCommitHash);
+                    if (!string.IsNullOrWhiteSpace(gitCommitHash))
+                    {
+                        var environmentVariable = new EnvironmentVariable(
+                            WellKnownVariables.GitHash,
+                            gitCommitHash);
 
-                    logger.WriteDebug(
-                        $"Setting commit hash variable '{WellKnownVariables.GitHash}' from TeamCity variable '{WellKnownVariables.TeamCity.TeamCityVcsNumber}', value '{gitCommitHash}'");
+                        logger.WriteDebug(
+                            $"Setting commit hash variable '{WellKnownVariables.GitHash}' from TeamCity variable '{WellKnownVariables.TeamCity.TeamCityVcsNumber}', value '{gitCommitHash}'");
 
-                    variables.Add(environmentVariable);
+                        variables.Add(environmentVariable);
+                    }
+                }
+
+                if (!variables.HasKey(WellKnownVariables.GitHash))
+                {
+                    string arborXGitcommithashenabled = "Arbor.X.GitCommitHashEnabled";
+
+                    string environmentVariable = Environment.GetEnvironmentVariable(arborXGitcommithashenabled);
+
+                    if (!environmentVariable
+                        .TryParseBool(defaultValue: true).Value)
+                    {
+                        logger.Write(
+                            $"Git commit hash is disabled by environment variable {arborXGitcommithashenabled} set to {environmentVariable}");
+                    }
+                    else
+                    {
+                        string gitExePath = GitHelper.GetGitExePath(logger);
+
+                        var stringBuilder = new StringBuilder();
+
+                        if (!string.IsNullOrWhiteSpace(gitExePath))
+                        {
+                            var arguments = new List<string> { "rev-parse", "HEAD" };
+
+                            ExitCode exitCode = await ProcessRunner.ExecuteAsync(gitExePath,
+                                arguments: arguments,
+                                standardOutLog: (message, category) => stringBuilder.Append(message),
+                                toolAction: logger.Write,
+                                cancellationToken: cancellationToken);
+
+                            if (!exitCode.IsSuccess)
+                            {
+                                logger.WriteWarning("Could not get Git commit hash");
+                            }
+                            else
+                            {
+                                string result = stringBuilder.ToString().Trim();
+
+                                if (!string.IsNullOrWhiteSpace(result))
+                                {
+                                    logger.Write($"Found Git commit hash '{result}' by asking git");
+
+                                    variables.Add(new EnvironmentVariable(WellKnownVariables.GitHash, result));
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
-            return Task.FromResult<IEnumerable<IVariable>>(variables);
+            return variables;
         }
     }
 }

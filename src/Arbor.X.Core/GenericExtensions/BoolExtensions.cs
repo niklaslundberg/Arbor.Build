@@ -11,9 +11,7 @@ namespace Arbor.X.Core.GenericExtensions
                 return ParseResult<bool>.Create(defaultValue, false, value);
             }
 
-            bool parsedValue;
-
-            if (!bool.TryParse(value, out parsedValue))
+            if (!bool.TryParse(value, out bool parsedValue))
             {
                 return ParseResult<bool>.Create(defaultValue, false, value);
             }
