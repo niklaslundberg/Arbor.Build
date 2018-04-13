@@ -89,6 +89,10 @@ namespace Arbor.X.Core.Tools.MSBuild
         ImmutableArray<string> _excludedPlatforms;
         private string _AssemblyVersion;
         private string _AssemblyFileVersion;
+        bool _applicationmetadataGitHashEnabled;
+        bool _applicationmetadataGitBranchEnabled;
+        bool _applicationmetadataDotNetCpuPlatformEnabled;
+        bool _applicationmetadataDotNetConfigurationEnabled;
 
         public Guid WebApplicationProjectTypeId { get; } = Guid.Parse("349C5851-65DF-11DA-9384-00065B846F21");
 
@@ -189,6 +193,22 @@ namespace Arbor.X.Core.Tools.MSBuild
             _gitHash = buildVariables.GetVariableValueOrDefault(WellKnownVariables.GitHash, string.Empty);
             _applicationmetadataEnabled = buildVariables.GetBooleanByKey(
                 WellKnownVariables.ApplicationMetadataEnabled,
+                false);
+
+            _applicationmetadataGitHashEnabled = buildVariables.GetBooleanByKey(
+                WellKnownVariables.ApplicationMetadataGitHashEnabled,
+                false);
+
+            _applicationmetadataGitBranchEnabled = buildVariables.GetBooleanByKey(
+                WellKnownVariables.ApplicationMetadataGitBranchEnabled,
+                false);
+
+            _applicationmetadataDotNetCpuPlatformEnabled = buildVariables.GetBooleanByKey(
+                WellKnownVariables.ApplicationMetadataDotNetCpuPlatformEnabled,
+                false);
+
+            _applicationmetadataDotNetConfigurationEnabled = buildVariables.GetBooleanByKey(
+                WellKnownVariables.ApplicationMetadataDotNetConfigurationEnabled,
                 false);
 
             _filteredNuGetWebPackageProjects =
@@ -997,7 +1017,7 @@ namespace Arbor.X.Core.Tools.MSBuild
         {
             var items = new List<KeyValueConfigurationItem>();
 
-            if (!string.IsNullOrWhiteSpace(_gitHash))
+            if (!string.IsNullOrWhiteSpace(_gitHash) && _applicationmetadataGitHashEnabled)
             {
                 var keyValueConfigurationItem = new KeyValueConfigurationItem(
                     ApplicationMetadataKeys.GitHash,
@@ -1009,7 +1029,8 @@ namespace Arbor.X.Core.Tools.MSBuild
             string gitBranchName = _buildVariables.GetVariableValueOrDefault(
                 WellKnownVariables.BranchLogicalName,
                 string.Empty);
-            if (!string.IsNullOrWhiteSpace(gitBranchName))
+
+            if (!string.IsNullOrWhiteSpace(gitBranchName) && _applicationmetadataGitBranchEnabled)
             {
                 var keyValueConfigurationItem = new KeyValueConfigurationItem(
                     ApplicationMetadataKeys.GitBranch,
@@ -1022,10 +1043,18 @@ namespace Arbor.X.Core.Tools.MSBuild
                 ApplicationMetadataKeys.DotNetConfiguration,
                 configuration,
                 null);
-            items.Add(configurationItem);
+
+            if (!string.IsNullOrWhiteSpace(gitBranchName) && _applicationmetadataDotNetConfigurationEnabled)
+            {
+                items.Add(configurationItem);
+            }
 
             var cpu = new KeyValueConfigurationItem(ApplicationMetadataKeys.DotNetCpuPlatform, platformName, null);
-            items.Add(cpu);
+
+            if (!string.IsNullOrWhiteSpace(gitBranchName) && _applicationmetadataDotNetCpuPlatformEnabled)
+            {
+                items.Add(cpu);
+            }
 
             var configurationItems = new ConfigurationItems(
                 "1.0",

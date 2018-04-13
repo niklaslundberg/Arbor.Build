@@ -28,6 +28,18 @@
         [VariableDescription("Flag to indicate if applicationmetadata.json should be created dynamically", "false")]
         public static readonly string ApplicationMetadataEnabled = "Arbor.X.ApplicationMetadata.Enabled";
 
+        [VariableDescription("Flag to indicate if Git hash should be added to applicationmetadata.json when it is created", "false")]
+        public static readonly string ApplicationMetadataGitHashEnabled = "Arbor.X.ApplicationMetadata.GitHash.Enabled";
+
+        [VariableDescription("Flag to indicate if Git branch name should be added to applicationmetadata.json when it is created", "false")]
+        public static readonly string ApplicationMetadataGitBranchEnabled = "Arbor.X.ApplicationMetadata.GitBranch.Enabled";
+
+        [VariableDescription("Flag to indicate if .NET CPU platform name should be added to applicationmetadata.json when it is created", "false")]
+        public static readonly string ApplicationMetadataDotNetCpuPlatformEnabled = "Arbor.X.ApplicationMetadata.DotNetCpuPlatform.Enabled";
+
+        [VariableDescription("Flag to indicate if .NET build configuration name should be added to applicationmetadata.json when it is created", "false")]
+        public static readonly string ApplicationMetadataDotNetConfigurationEnabled = "Arbor.X.ApplicationMetadata.DotNetConfiguration.Enabled";
+
         [VariableDescription("Use assembly reflection only mode enabled")]
         public const string AssemblyUseReflectionOnlyMode = "Arbor.X.ReflectionAssemblyLoad.Enabled";
     }
