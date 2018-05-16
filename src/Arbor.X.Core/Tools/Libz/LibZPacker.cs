@@ -83,8 +83,18 @@ namespace Arbor.X.Core.Tools.Libz
 
             logger.Write($"Found {ilMergeProjects.Count} projects marked for merging:{Environment.NewLine}{merges}");
 
-            ImmutableArray<ILRepackData> filesToMerge = (await Task.WhenAll(ilMergeProjects.Select(GetMergeFilesAsync)))
-                .SelectMany(item => item).ToImmutableArray();
+            ImmutableArray<ILRepackData> filesToMerge;
+            try
+            {
+                filesToMerge = (await Task.WhenAll(ilMergeProjects.Select(GetMergeFilesAsync)))
+                    .SelectMany(item => item).ToImmutableArray();
+            }
+            catch (Exception ex)
+            {
+                _logger.WriteError(ex.ToString());
+
+                return ExitCode.Failure;
+            }
 
             foreach (ILRepackData repackData in filesToMerge)
             {
@@ -245,7 +255,7 @@ namespace Arbor.X.Core.Tools.Libz
                 if (!exitCode.IsSuccess)
                 {
                     _logger.WriteWarning($"Could not publish project {projectFile.FullName}");
-                    return ImmutableArray<ILRepackData>.Empty;
+                    throw new InvalidOperationException("Failed to get merge files for LibZ");
                 }
 
                 DirectoryInfo platformDirectory = releasePlatformDirectories.Single();
