@@ -15,6 +15,7 @@ using Arbor.X.Core.Logging;
 using Arbor.X.Core.Parsing;
 using Arbor.X.Core.ProcessUtils;
 using Arbor.X.Core.Tools.ILRepack;
+using FubuCore;
 using FubuCsProjFile;
 using FubuCsProjFile.MSBuild;
 using JetBrains.Annotations;
@@ -222,11 +223,13 @@ namespace Arbor.X.Core.Tools.Libz
                 return value;
             }
 
-            string targetFrameworkVersionValue;
+            string targetFrameworkVersionValue = null;
 
-            DirectoryInfo releasePlatformDirectory;
+            DirectoryInfo releasePlatformDirectory = null;
 
-            if (IsNetSdkProject(projectFile))
+            bool useSdkProject = IsNetSdkProject(projectFile);
+
+            if (useSdkProject)
             {
                 _logger.WriteWarning(
                     $"Microsoft.NET.Sdk projects are in progress supported '{Path.Combine(binDirectory.FullName, configuration)}'");
@@ -240,35 +243,60 @@ namespace Arbor.X.Core.Tools.Libz
                     return ImmutableArray<ILRepackData>.Empty;
                 }
 
-                List<string> args = new List<string>
+                if (releasePlatformDirectories.Length == 1 && releasePlatformDirectories[0].Name
+                        .StartsWith("net4", StringComparison.OrdinalIgnoreCase))
                 {
-                    "publish",
-                    projectFile.FullName,
-                    $"/p:configuration={configuration}"
-                };
+                    var netFrameworkMappings =
+                        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                        {
+                            { "net452", "4.5.2" },
+                            { "net461", "4.6.1" },
+                            { "net462", "4.6.2" },
+                            { "net471", "4.7.1" },
+                            { "net47", "4.7" },
+                            { "net472", "4.7.2" },
+                            { "net48", "4.8" }
+                        };
 
-                ExitCode exitCode = await ProcessHelper.ExecuteAsync(
-                    Path.Combine(System.Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "dotnet", "dotnet.exe"),
-                    args,
-                    _logger);
+                    targetFrameworkVersionValue = netFrameworkMappings.ContainsKey(releasePlatformDirectories[0].Name) ? releasePlatformDirectories[0].Name : "4.0";
 
-                if (!exitCode.IsSuccess)
-                {
-                    _logger.WriteWarning($"Could not publish project {projectFile.FullName}");
-                    throw new InvalidOperationException("Failed to get merge files for LibZ");
+                    releasePlatformDirectory = releasePlatformDirectories[0];
                 }
-
-                DirectoryInfo platformDirectory = releasePlatformDirectories.Single();
-
-                DirectoryInfo publishDirectoryInfo = platformDirectory.GetDirectories("publish").SingleOrDefault();
-
-                if (publishDirectoryInfo is null)
+                else
                 {
-                    _logger.WriteWarning($"The publish directory '{Path.Combine(platformDirectory.FullName, "publish")}' does not exist");
-                    return ImmutableArray<ILRepackData>.Empty;
-                }
+                    var args = new List<string>
+                    {
+                        "publish",
+                        projectFile.FullName,
+                        $"/p:configuration={configuration}"
+                    };
 
-                releasePlatformDirectory = publishDirectoryInfo;
+                    ExitCode exitCode = await ProcessHelper.ExecuteAsync(
+                        Path.Combine(System.Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
+                            "dotnet",
+                            "dotnet.exe"),
+                        args,
+                        _logger);
+
+                    if (!exitCode.IsSuccess)
+                    {
+                        _logger.WriteWarning($"Could not publish project {projectFile.FullName}");
+                        throw new InvalidOperationException("Failed to get merge files for LibZ");
+                    }
+
+                    DirectoryInfo platformDirectory = releasePlatformDirectories.Single();
+
+                    DirectoryInfo publishDirectoryInfo = platformDirectory.GetDirectories("publish").SingleOrDefault();
+
+                    if (publishDirectoryInfo is null)
+                    {
+                        _logger.WriteWarning(
+                            $"The publish directory '{Path.Combine(platformDirectory.FullName, "publish")}' does not exist");
+                        return ImmutableArray<ILRepackData>.Empty;
+                    }
+
+                    releasePlatformDirectory = publishDirectoryInfo;
+                }
             }
             else
             {
