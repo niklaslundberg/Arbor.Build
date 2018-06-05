@@ -40,7 +40,7 @@ namespace Arbor.X.Core.Tools.Testing
 
             if (!enabled)
             {
-                logger.WriteDebug("Xunit .NET Core App test runner is not enabled");
+                logger.Write($"Xunit .NET Core App test runner is not enabled, set variable '{WellKnownVariables.XUnitNetCoreAppEnabled}' to true to enable");
                 return ExitCode.Success;
             }
 
