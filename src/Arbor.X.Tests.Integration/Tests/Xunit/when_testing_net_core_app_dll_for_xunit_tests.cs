@@ -2,10 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
-using Arbor.X.Core.Logging;
+
 using Arbor.X.Core.Tools.Testing;
 using Arbor.X.Tests.Integration.Tests.MSpec;
 using Machine.Specifications;
+using Serilog.Core;
 using Xunit;
 
 namespace Arbor.X.Tests.Integration.Tests.Xunit
@@ -15,12 +16,12 @@ namespace Arbor.X.Tests.Integration.Tests.Xunit
     public class when_testing_net_core_app_dll_for_xunit_tests
     {
         static UnitTestFinder finder;
-        static bool isTestType;
         static HashSet<string> unitTestFixtureDlls;
 
         Establish context = () =>
         {
-            var logger = new ConsoleLogger { LogLevel = LogLevel.Verbose };
+
+            var logger = Logger.None;
             finder = new UnitTestFinder(new List<Type>
                 {
                     typeof(FactAttribute)

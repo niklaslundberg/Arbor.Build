@@ -2,8 +2,9 @@ using System.IO;
 using System.Threading.Tasks;
 using Arbor.Processing.Core;
 using Arbor.X.Core.IO;
-using Arbor.X.Core.Logging;
+
 using JetBrains.Annotations;
+using Serilog;
 
 namespace Arbor.X.Core.Tools.NuGet
 {
@@ -22,7 +23,7 @@ namespace Arbor.X.Core.Tools.NuGet
 
                 if (!targetDir.Exists)
                 {
-                    logger.WriteDebug($"Copying NLog from '{nlogDirectory.FullName}' to '{targetDir.FullName}'");
+                    logger.Debug("Copying NLog from '{FullName}' to '{FullName1}'", nlogDirectory.FullName, targetDir.FullName);
                     ExitCode exitCode = await DirectoryCopy.CopyAsync(
                         nlogDirectory.FullName,
                         targetDir.FullName,
@@ -31,7 +32,7 @@ namespace Arbor.X.Core.Tools.NuGet
 
                     if (!exitCode.IsSuccess)
                     {
-                        logger.WriteWarning("Failed to copy NLog NuGet package");
+                        logger.Warning("Failed to copy NLog NuGet package");
                     }
                 }
             }

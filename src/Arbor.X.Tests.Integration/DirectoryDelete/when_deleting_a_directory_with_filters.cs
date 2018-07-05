@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Arbor.X.Core.IO;
-using Arbor.X.Core.Logging;
+
 using Machine.Specifications;
+using Serilog.Core;
 
 namespace Arbor.X.Tests.Integration.DirectoryDelete
 {
@@ -52,7 +53,7 @@ namespace Arbor.X.Tests.Integration.DirectoryDelete
             expectedDirectories = new List<string> { "A", "B", "A1", "A12", "B2" }.ToArray();
             expectedFiles = new List<string> { "app_offline.htm" }.ToArray();
 
-            directoryDelete = new Core.IO.DirectoryDelete(new[] { "A12" }, expectedFiles, new ConsoleLogger());
+            directoryDelete = new Core.IO.DirectoryDelete(new[] { "A12" }, expectedFiles, Logger.None);
         };
 
         Because of = () => directoryDelete.Delete(tempDir.FullName);

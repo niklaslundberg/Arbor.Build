@@ -1,8 +1,6 @@
-﻿using System;
+﻿using Serilog;
 using Arbor.Processing.Core;
 using Arbor.X.Core;
-using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.Logging;
 
 namespace Arbor.X.Build
 {
@@ -12,8 +10,9 @@ namespace Arbor.X.Build
 
         private static int Main(string[] args)
         {
-            LogLevel logLevel = LogLevel.TryParse(Environment.GetEnvironmentVariable(WellKnownVariables.LogLevel));
-            _app = new BuildApplication(new NLogLogger(logLevel));
+            ILogger logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
+
+            _app = new BuildApplication(logger);
             ExitCode exitCode = _app.RunAsync(args).Result;
 
             return exitCode.Result;

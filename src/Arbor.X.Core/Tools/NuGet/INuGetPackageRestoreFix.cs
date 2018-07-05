@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using Arbor.X.Core.Logging;
+using Serilog;
 
 namespace Arbor.X.Core.Tools.NuGet
 {

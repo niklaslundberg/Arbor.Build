@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using Serilog;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -8,7 +8,7 @@ using Arbor.Aesculus.Core;
 using Arbor.Exceptions;
 using Arbor.KVConfiguration.Schema.Json;
 using Arbor.Processing.Core;
-using Arbor.X.Core.Logging;
+
 using JetBrains.Annotations;
 
 namespace Arbor.X.Core.BuildVariables
@@ -49,7 +49,7 @@ namespace Arbor.X.Core.BuildVariables
                     builder.AppendLine(environmentVariable.Key + ": " + environmentVariable.Value);
                 }
 
-                logger.WriteVerbose(builder.ToString());
+                logger.Verbose(builder.ToString());
             }
 
             buildVariables.AddRange(nonExisting);
@@ -68,7 +68,7 @@ namespace Arbor.X.Core.BuildVariables
 
             if (currentDirectory == null)
             {
-                logger.WriteError("Could not find source root");
+                logger.Error("Could not find source root");
                 return ExitCode.Failure;
             }
 
@@ -76,8 +76,7 @@ namespace Arbor.X.Core.BuildVariables
 
             if (!fileInfo.Exists)
             {
-                logger.WriteWarning(
-                    $"The environment variable file '{fileInfo}' does not exist, skipping setting environment variables from file '{fileName}'");
+                logger.Warning("The environment variable file '{FileInfo}' does not exist, skipping setting environment variables from file '{FileName}'", fileInfo, fileName);
                 return ExitCode.Success;
             }
 
@@ -90,13 +89,13 @@ namespace Arbor.X.Core.BuildVariables
             }
             catch (Exception ex) when (!ex.IsFatal())
             {
-                logger.WriteError($"Could not parse key value pairs in file '{fileInfo.FullName}', {ex}");
+                logger.Error(ex, "Could not parse key value pairs in file '{FullName}', {Ex}", fileInfo.FullName);
                 return ExitCode.Failure;
             }
 
             if (configurationItems == null)
             {
-                logger.WriteError($"Could not parse key value pairs in file '{fileInfo.FullName}'");
+                logger.Error("Could not parse key value pairs in file '{FullName}'", fileInfo.FullName);
                 return ExitCode.Failure;
             }
 
@@ -105,18 +104,16 @@ namespace Arbor.X.Core.BuildVariables
                 try
                 {
                     Environment.SetEnvironmentVariable(keyValuePair.Key, keyValuePair.Value);
-                    logger.WriteDebug(
-                        $"Set environment variable with key '{keyValuePair.Key}' and value '{keyValuePair.Value}' from file '{fileName}'");
+                    logger.Debug("Set environment variable with key '{Key}' and value '{Value}' from file '{FileName}'", keyValuePair.Key, keyValuePair.Value, fileName);
                 }
                 catch (Exception ex) when (!ex.IsFatal())
                 {
-                    logger.WriteError(
-                        $"Could not set environment variable with key '{keyValuePair.Key}' and value '{keyValuePair.Value}' from file '{fileName}'");
+                    logger.Error("Could not set environment variable with key '{Key}' and value '{Value}' from file '{FileName}'", keyValuePair.Key, keyValuePair.Value, fileName);
                     return ExitCode.Failure;
                 }
             }
 
-            logger.Write($"Used configuration values from file '{fileName}'");
+            logger.Information("Used configuration values from file '{FileName}'", fileName);
 
             return ExitCode.Success;
         }

@@ -1,9 +1,9 @@
-﻿using System;
+﻿using System; using Serilog;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.Logging;
+
 using JetBrains.Annotations;
 
 namespace Arbor.X.Core.Tools.Versioning
@@ -38,7 +38,7 @@ namespace Arbor.X.Core.Tools.Versioning
                     WellKnownVariables.RunTestsInReleaseConfigurationEnabled,
                     "true"));
 
-                logger.WriteDebug($"Release configuration is enabled but not debug, settings variable '{WellKnownVariables.RunTestsInReleaseConfigurationEnabled}' to true");
+                logger.Debug("Release configuration is enabled but not debug, settings variable '{RunTestsInReleaseConfigurationEnabled}' to true", WellKnownVariables.RunTestsInReleaseConfigurationEnabled);
             }
 
             if (!releaseConfigurationEnabled && debugConfigurationEnabled)
@@ -47,7 +47,7 @@ namespace Arbor.X.Core.Tools.Versioning
                     WellKnownVariables.RunTestsInReleaseConfigurationEnabled,
                     "false"));
 
-                logger.WriteDebug($"Debug configuration is enabled but not release, settings variable '{WellKnownVariables.RunTestsInReleaseConfigurationEnabled}' to false");
+                logger.Debug("Debug configuration is enabled but not release, settings variable '{RunTestsInReleaseConfigurationEnabled}' to false", WellKnownVariables.RunTestsInReleaseConfigurationEnabled);
             }
 
             return Task.FromResult<IEnumerable<IVariable>>(newVariables);

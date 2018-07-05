@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using Serilog;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.GenericExtensions;
-using Arbor.X.Core.Logging;
+
 using Arbor.X.Core.ProcessUtils;
 
 namespace Arbor.X.Core.Tools.NuGet
@@ -34,11 +34,11 @@ namespace Arbor.X.Core.Tools.NuGet
                 string parentExePath = Path.Combine(currentExePath.Directory.Parent.FullName, currentExePath.Name);
                 if (File.Exists(parentExePath))
                 {
-                    _logger.Write($"Found NuGet in path '{parentExePath}', skipping download");
+                    _logger.Information("Found NuGet in path '{ParentExePath}', skipping download", parentExePath);
                     return parentExePath;
                 }
 
-                _logger.Write($"'{targetFile}' does not exist, will try to download from nuget.org");
+                _logger.Information("'{TargetFile}' does not exist, will try to download from nuget.org", targetFile);
 
                 var uris = new List<string>();
 
@@ -64,12 +64,12 @@ namespace Arbor.X.Core.Tools.NuGet
                     }
                     catch (Exception ex)
                     {
-                        _logger.WriteError(string.Format("Attempt {1}. Could not download nuget.exe. {0}", ex, i + 1));
+                        _logger.Error(ex, "Attempt {V}. Could not download nuget.exe. {Ex}", i + 1);
                     }
 
                     const int WaitTimeInSeconds = 1;
 
-                    _logger.Write($"Waiting {WaitTimeInSeconds} seconds to try again");
+                    _logger.Information("Waiting {WaitTimeInSeconds} seconds to try again", WaitTimeInSeconds);
 
                     await Task.Delay(TimeSpan.FromSeconds(WaitTimeInSeconds), cancellationToken);
                 }
@@ -93,7 +93,7 @@ namespace Arbor.X.Core.Tools.NuGet
                 }
                 catch (Exception ex)
                 {
-                    _logger.WriteError(ex.ToString());
+                    _logger.Error(ex.ToString());
                 }
             }
 
@@ -108,7 +108,7 @@ namespace Arbor.X.Core.Tools.NuGet
         {
             string tempFile = Path.Combine(baseDir, $"nuget.exe.{Guid.NewGuid()}.tmp");
 
-            _logger.WriteVerbose($"Downloading {nugetExeUri} to {tempFile}");
+            _logger.Verbose("Downloading {NugetExeUri} to {TempFile}", nugetExeUri, tempFile);
             try
             {
                 using (var client = new HttpClient())
@@ -127,9 +127,9 @@ namespace Arbor.X.Core.Tools.NuGet
                 if (File.Exists(tempFile) && new FileInfo(tempFile).Length > 0)
                 {
                     File.Copy(tempFile, targetFile, true);
-                    _logger.WriteVerbose($"Copied {tempFile} to {targetFile}");
+                    _logger.Verbose("Copied {TempFile} to {TargetFile}", tempFile, targetFile);
                     File.Delete(tempFile);
-                    _logger.WriteVerbose($"Deleted temp file {tempFile}");
+                    _logger.Verbose("Deleted temp file {TempFile}", tempFile);
                 }
             }
         }

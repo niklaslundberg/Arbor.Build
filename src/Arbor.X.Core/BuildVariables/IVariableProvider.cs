@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Arbor.X.Core.Logging;
+
+using Serilog;
 
 namespace Arbor.X.Core.BuildVariables
 {

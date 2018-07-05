@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using Serilog;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -14,12 +14,13 @@ using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.IO;
-using Arbor.X.Core.Logging;
+
 using Arbor.X.Core.Parsing;
 using Arbor.X.Core.ProcessUtils;
 using Arbor.X.Core.Tools.Git;
 using Arbor.X.Core.Tools.Kudu;
 using JetBrains.Annotations;
+using Serilog.Events;
 
 namespace Arbor.X.Bootstrapper
 {
@@ -33,20 +34,9 @@ namespace Arbor.X.Bootstrapper
         private bool _failed;
         private BootstrapStartOptions _startOptions;
 
-        public Bootstrapper(LogLevel logLevel)
+        public Bootstrapper(ILogger logger)
         {
-            var nlogLogger = new NLogLogger(logLevel);
-
-            if (Debugger.IsAttached)
-            {
-                _logger = new DebugLogger(nlogLogger);
-            }
-            else
-            {
-                _logger = nlogLogger;
-            }
-
-            _logger.WriteVerbose($"{_Prefix}LogLevel is {logLevel}");
+            _logger = logger;
         }
 
         public async Task<ExitCode> StartAsync(string[] args)
@@ -63,7 +53,7 @@ namespace Arbor.X.Bootstrapper
 
             ExitCode exitCode = await StartAsync(startOptions);
 
-            _logger.Write($"Bootstrapper exit code: {exitCode}");
+            _logger.Information("Bootstrapper exit code: {ExitCode}", exitCode);
 
             if (_failed)
             {
@@ -91,18 +81,18 @@ namespace Arbor.X.Bootstrapper
             {
                 stopwatch.Stop();
                 exitCode = ExitCode.Failure;
-                _logger.WriteError(ex.ToString(), _Prefix);
+                _logger.Error(ex.ToString(), _Prefix);
 
                 foreach (Exception innerEx in ex.InnerExceptions)
                 {
-                    _logger.WriteError(innerEx.ToString(), _Prefix);
+                    _logger.Error(innerEx.ToString(), _Prefix);
                 }
             }
             catch (Exception ex)
             {
                 stopwatch.Stop();
                 exitCode = ExitCode.Failure;
-                _logger.WriteError(ex.ToString(), _Prefix);
+                _logger.Error(ex.ToString(), _Prefix);
             }
 
             ParseResult<int> exitDelayInMilliseconds =
@@ -111,30 +101,27 @@ namespace Arbor.X.Bootstrapper
 
             if (exitDelayInMilliseconds > 0)
             {
-                _logger.Write(
-                    $"Delaying bootstrapper exit with {exitDelayInMilliseconds} milliseconds as specified in '{WellKnownVariables.BootstrapperExitDelayInMilliseconds}'",
-                    _Prefix);
+                _logger.Information("Delaying bootstrapper exit with {ExitDelayInMilliseconds} milliseconds as specified in '{BootstrapperExitDelayInMilliseconds}'",
+exitDelayInMilliseconds, WellKnownVariables.BootstrapperExitDelayInMilliseconds);
                 await Task.Delay(TimeSpan.FromMilliseconds(exitDelayInMilliseconds));
             }
 
-            _logger.Write(
-                $"Arbor.X.Bootstrapper total inclusive Arbor.X.Build elapsed time in seconds: {stopwatch.Elapsed.TotalSeconds.ToString("F")}",
-                _Prefix);
+            _logger.Information("Arbor.X.Bootstrapper total inclusive Arbor.X.Build elapsed time in seconds: {V}",
+stopwatch.Elapsed.TotalSeconds.ToString("F"));
 
             return exitCode;
         }
 
         private static void KillAllProcessesSpawnedBy(uint parentProcessId, ILogger logger)
         {
-            logger.WriteDebug("Finding processes spawned by process with Id [" + parentProcessId + "]");
+            logger.Debug("Finding processes spawned by process with Id [{ParentProcessId}]", parentProcessId);
 
             var searcher =
                 new ManagementObjectSearcher($"SELECT * FROM Win32_Process WHERE ParentProcessId={parentProcessId}");
             ManagementObjectCollection collection = searcher.Get();
             if (collection.Count > 0)
             {
-                logger.WriteDebug(
-                    $"Killing [{collection.Count}] processes spawned by process with Id [{parentProcessId}]");
+                logger.Debug("Killing [{Count}] processes spawned by process with Id [{ParentProcessId}]", collection.Count, parentProcessId);
 
                 foreach (ManagementBaseObject item in collection)
                 {
@@ -148,17 +135,16 @@ namespace Arbor.X.Bootstrapper
                             Process childProcess = Process.GetProcessById((int)childProcessId);
                             if (!childProcess.HasExited)
                             {
-                                logger.WriteDebug(
-                                    $"Killing child process [{childProcess.ProcessName}] with Id [{childProcessId}]");
+                                logger.Debug("Killing child process [{ProcessName}] with Id [{ChildProcessId}]", childProcess.ProcessName, childProcessId);
                                 childProcess.Kill();
 
-                                logger.WriteVerbose($"Child process with id {childProcessId} was killed");
+                                logger.Verbose("Child process with id {ChildProcessId} was killed", childProcessId);
                             }
                         }
                         catch (Exception ex) when (!ex.IsFatal() &&
                                                    (ex is ArgumentException || ex is InvalidOperationException))
                         {
-                            logger.WriteWarning($"Child process with id {childProcessId} could not be killed");
+                            logger.Warning("Child process with id {ChildProcessId} could not be killed", childProcessId);
                         }
                     }
                 }
@@ -201,7 +187,7 @@ namespace Arbor.X.Bootstrapper
         private void WriteDebug(string message)
         {
             Debug.WriteLine(_Prefix + message);
-            _logger.WriteDebug(message, _Prefix);
+            _logger.Debug(message, _Prefix);
         }
 
         private void SetEnvironmentVariables()
@@ -226,7 +212,7 @@ namespace Arbor.X.Bootstrapper
 
         private async Task<ExitCode> TryStartAsync()
         {
-            _logger.Write("Starting Arbor.X Bootstrapper", _Prefix);
+            _logger.Information("Starting Arbor.X Bootstrapper");
 
             string directoryCloneValue = Environment.GetEnvironmentVariable(WellKnownVariables.DirectoryCloneEnabled);
 
@@ -235,16 +221,15 @@ namespace Arbor.X.Bootstrapper
 
             if (!_directoryCloneEnabled)
             {
-                _logger.WriteVerbose(
-                    $"Environment variable '{WellKnownVariables.DirectoryCloneEnabled}' has value '{directoryCloneValue}'",
-                    _Prefix);
+                _logger.Verbose("Environment variable '{DirectoryCloneEnabled}' has value '{DirectoryCloneValue}'",
+WellKnownVariables.DirectoryCloneEnabled, directoryCloneValue);
             }
 
             string baseDir = await GetBaseDirectoryAsync(_startOptions);
 
             DirectoryInfo buildDir = new DirectoryInfo(Path.Combine(baseDir, "build")).EnsureExists();
 
-            _logger.WriteVerbose($"Using base directory '{baseDir}'", _Prefix);
+            _logger.Verbose("Using base directory '{BaseDir}'", baseDir);
 
             string customNuGetPath =
                 Environment.GetEnvironmentVariable(WellKnownVariables.ExternalTools_NuGet_ExePath_Custom);
@@ -263,9 +248,8 @@ namespace Arbor.X.Bootstrapper
 
                 if (!nuGetExists)
                 {
-                    _logger.WriteError(
-                        $"NuGet.exe could not be downloaded and it does not already exist at path '{nugetExePath}'",
-                        _Prefix);
+                    _logger.Error("NuGet.exe could not be downloaded and it does not already exist at path '{NugetExePath}'",
+nugetExePath);
                     return ExitCode.Failure;
                 }
             }
@@ -284,13 +268,12 @@ namespace Arbor.X.Bootstrapper
 
                 if (buildToolsResult.IsSuccess)
                 {
-                    _logger.Write("The build tools succeeded", _Prefix);
+                    _logger.Information("The build tools succeeded");
                 }
                 else
                 {
-                    _logger.WriteError(
-                        $"The build tools process was not successful, exit code {buildToolsResult}",
-                        _Prefix);
+                    _logger.Error("The build tools process was not successful, exit code {BuildToolsResult}",
+buildToolsResult);
                 }
 
                 exitCode = buildToolsResult;
@@ -306,10 +289,10 @@ namespace Arbor.X.Bootstrapper
                 }
                 catch (Exception ex) when (!ex.IsFatal())
                 {
-                    _logger.WriteError(ex.ToString());
+                    _logger.Error(ex.ToString());
                 }
 
-                _logger.WriteError("The build timed out", _Prefix);
+                _logger.Error("The build timed out");
                 exitCode = ExitCode.Failure;
                 _failed = true;
             }
@@ -348,7 +331,7 @@ namespace Arbor.X.Bootstrapper
                 buildDir.TrimEnd('\\')
             };
 
-            if (LogLevel.Verbose.Level <= _logger.LogLevel.Level)
+            if (_logger.IsEnabled(LogEventLevel.Verbose))
             {
                 nugetArguments.Add("-Verbosity");
                 nugetArguments.Add("detailed");
@@ -374,15 +357,13 @@ namespace Arbor.X.Bootstrapper
                 nugetArguments.Add("-Version");
                 nugetArguments.Add(version);
 
-                _logger.WriteVerbose(
-                    $"'{WellKnownVariables.ArborXNuGetPackageVersion}' flag is set, using specific version of Arbor.X: {version}",
-                    _Prefix);
+                _logger.Verbose("'{ArborXNuGetPackageVersion}' flag is set, using specific version of Arbor.X: {Version}",
+WellKnownVariables.ArborXNuGetPackageVersion, version);
             }
             else
             {
-                _logger.WriteVerbose(
-                    $"'{WellKnownVariables.ArborXNuGetPackageVersion}' flag is not set, using latest version of Arbor.X",
-                    _Prefix);
+                _logger.Verbose("'{ArborXNuGetPackageVersion}' flag is not set, using latest version of Arbor.X",
+WellKnownVariables.ArborXNuGetPackageVersion);
 
                 bool allowPrerelease;
                 if (_startOptions.PrereleaseEnabled.HasValue)
@@ -391,9 +372,8 @@ namespace Arbor.X.Bootstrapper
 
                     if (allowPrerelease)
                     {
-                        _logger.WriteVerbose(
-                            "Prerelease option is set via start options, using latest version of Arbor.X allowing prerelease versions",
-                            _Prefix);
+                        _logger.Verbose(
+                            "Prerelease option is set via start options, using latest version of Arbor.X allowing prerelease versions");
                     }
                 }
                 else
@@ -404,15 +384,13 @@ namespace Arbor.X.Bootstrapper
 
                     if (allowPrerelease)
                     {
-                        _logger.WriteVerbose(
-                            $"'{WellKnownVariables.AllowPrerelease}' flag is set, using latest version of Arbor.X allowing prerelease versions",
-                            _Prefix);
+                        _logger.Verbose("'{AllowPrerelease}' flag is set, using latest version of Arbor.X allowing prerelease versions",
+WellKnownVariables.AllowPrerelease);
                     }
                     else
                     {
-                        _logger.WriteVerbose(
-                            $"'{WellKnownVariables.AllowPrerelease}' flag is not set, using latest stable version of Arbor.X",
-                            _Prefix);
+                        _logger.Verbose("'{AllowPrerelease}' flag is not set, using latest stable version of Arbor.X",
+WellKnownVariables.AllowPrerelease);
                     }
                 }
 
@@ -428,10 +406,10 @@ namespace Arbor.X.Bootstrapper
                 nugetExePath,
                 arguments: nugetArguments,
                 cancellationToken: cancellationTokenSource.Token,
-                standardOutLog: _logger.Write,
-                standardErrorAction: _logger.WriteError,
-                toolAction: _logger.Write,
-                verboseAction: _logger.WriteVerbose,
+                standardOutLog: _logger.Information,
+                standardErrorAction: _logger.Error,
+                toolAction: _logger.Information,
+                verboseAction: _logger.Verbose,
                 addProcessRunnerCategory: true,
                 addProcessNameAsLogCategory: true,
                 parentPrefix: _Prefix);
@@ -450,7 +428,7 @@ namespace Arbor.X.Bootstrapper
 
             if (!string.IsNullOrWhiteSpace(startOptions.BaseDir) && Directory.Exists(startOptions.BaseDir))
             {
-                _logger.Write($"Using base directory '{startOptions.BaseDir}' from start options", _Prefix);
+                _logger.Information("Using base directory '{BaseDir}' from start options", startOptions.BaseDir);
 
                 baseDir = startOptions.BaseDir;
             }
@@ -479,7 +457,7 @@ namespace Arbor.X.Bootstrapper
 
             bool isBetterRunOnLocalTempStorage = isKuduAware;
 
-            _logger.WriteVerbose("Is Kudu-aware: " + isKuduAware, _Prefix);
+            _logger.Verbose("Is Kudu-aware: {IsKuduAware}", isKuduAware);
 
             return isBetterRunOnLocalTempStorage;
         }
@@ -507,7 +485,7 @@ namespace Arbor.X.Bootstrapper
                 targetDirectory.FullName
             };
 
-            _logger.WriteVerbose($"Using temp storage to clone: '{targetDirectory.FullName}'", _Prefix);
+            _logger.Verbose("Using temp storage to clone: '{FullName}'", targetDirectory.FullName);
 
             ExitCode cloneExitCode = await ProcessHelper.ExecuteAsync(
                 gitExePath,
@@ -530,17 +508,17 @@ namespace Arbor.X.Bootstrapper
         {
             if (!_directoryCloneEnabled)
             {
-                _logger.WriteVerbose("Directory clone is disabled");
+                _logger.Verbose("Directory clone is disabled");
                 return false;
             }
 
-            _logger.WriteVerbose("Directory clone is enabled");
+            _logger.Verbose("Directory clone is enabled");
 
             string sourceRoot = VcsPathHelper.TryFindVcsRootPath();
 
             if (string.IsNullOrWhiteSpace(sourceRoot))
             {
-                _logger.WriteWarning("Could not find source root", _Prefix);
+                _logger.Warning("Could not find source root");
                 return false;
             }
 
@@ -566,10 +544,10 @@ namespace Arbor.X.Bootstrapper
                     ExitCode statusExitCode = await ProcessRunner.ExecuteAsync(
                         gitExePath,
                         arguments: argumentVariant,
-                        standardOutLog: _logger.WriteVerbose,
-                        standardErrorAction: _logger.WriteVerbose,
-                        toolAction: _logger.Write,
-                        verboseAction: _logger.WriteVerbose);
+                        standardOutLog: _logger.Verbose,
+                        standardErrorAction: _logger.Verbose,
+                        toolAction: _logger.Information,
+                        verboseAction: _logger.Verbose);
 
                     if (statusExitCode.IsSuccess)
                     {
@@ -579,7 +557,7 @@ namespace Arbor.X.Bootstrapper
                 }
             }
 
-            _logger.WriteVerbose($"Is directory clonable: {isClonable}");
+            _logger.Verbose("Is directory clonable: {IsClonable}", isClonable);
 
             return isClonable;
         }
@@ -611,12 +589,12 @@ namespace Arbor.X.Bootstrapper
 
             if (parseResult.Parsed)
             {
-                _logger.WriteVerbose($"Using timeout from environment variable {timeoutKey}", _Prefix);
+                _logger.Verbose("Using timeout from environment variable {TimeoutKey}", timeoutKey);
             }
 
             int usedTimeoutInSeconds = parseResult;
 
-            _logger.Write($"Using build timeout {usedTimeoutInSeconds} seconds", _Prefix);
+            _logger.Information("Using build timeout {UsedTimeoutInSeconds} seconds", usedTimeoutInSeconds);
 
             var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(usedTimeoutInSeconds));
 
@@ -627,10 +605,10 @@ namespace Arbor.X.Bootstrapper
                 buildToolExe.FullName,
                 cancellationTokenSource.Token,
                 arguments,
-                (message, prefix) => _logger.Write(message, buildApplicationPrefix),
-                (message, prefix) => _logger.WriteError(message, buildApplicationPrefix),
-                _logger.Write,
-                _logger.WriteVerbose);
+                (message, prefix) => _logger.Information(message, buildApplicationPrefix),
+                (message, prefix) => _logger.Error(message, buildApplicationPrefix),
+                _logger.Information,
+                _logger.Verbose);
 
             return result;
         }
@@ -642,9 +620,8 @@ namespace Arbor.X.Bootstrapper
             const string Single = ". Found no such files";
             string found = exeFiles.Any() ? Single : multiple;
 
-            _logger.WriteError(
-                $"Expected directory {buildToolDirectoryPath} to contain exactly one executable file with extensions .exe. {found}",
-                _Prefix);
+            _logger.Error("Expected directory {BuildToolDirectoryPath} to contain exactly one executable file with extensions .exe. {Found}",
+buildToolDirectoryPath, found);
         }
 
         private async Task<bool> TryDownloadNuGetAsync(string baseDir, string targetFile)
@@ -671,7 +648,7 @@ namespace Arbor.X.Bootstrapper
 
                 update = true;
 
-                _logger.WriteWarning($"NuGet.exe could not be downloaded, using existing nuget.exe. {ex}", _Prefix);
+                _logger.Warning(ex, "NuGet.exe could not be downloaded, using existing nuget.exe. {Ex}", _Prefix);
             }
 
             if (update)
@@ -690,7 +667,7 @@ namespace Arbor.X.Bootstrapper
                 }
                 catch (Exception ex)
                 {
-                    _logger.WriteError(ex.ToString());
+                    _logger.Error(ex.ToString());
                 }
             }
 
@@ -712,16 +689,15 @@ namespace Arbor.X.Bootstrapper
                 || !Uri.TryCreate(nugetDownloadUriEnvironmentVariable, UriKind.Absolute, out Uri nugetDownloadUri))
             {
                 nugetDownloadUri = new Uri(nugetExeUri, UriKind.Absolute);
-                _logger.WriteVerbose($"Downloading nuget.exe from default URI, '{nugetExeUri}'", _Prefix);
+                _logger.Verbose("Downloading nuget.exe from default URI, '{NugetExeUri}'", nugetExeUri);
             }
             else
             {
-                _logger.WriteVerbose(
-                    $"Downloading nuget.exe from user specified URI '{nugetDownloadUriEnvironmentVariable}'",
-                    _Prefix);
+                _logger.Verbose("Downloading nuget.exe from user specified URI '{NugetDownloadUriEnvironmentVariable}'",
+nugetDownloadUriEnvironmentVariable);
             }
 
-            _logger.WriteVerbose($"Downloading '{nugetDownloadUri}' to '{tempFile}'", _Prefix);
+            _logger.Verbose("Downloading '{NugetDownloadUri}' to '{TempFile}'", nugetDownloadUri, tempFile);
 
             using (var client = new HttpClient())
             {
@@ -736,9 +712,9 @@ namespace Arbor.X.Bootstrapper
                 if (File.Exists(tempFile))
                 {
                     File.Copy(tempFile, targetFile, true);
-                    _logger.WriteVerbose($"Copied '{tempFile}' to '{targetFile}'", _Prefix);
+                    _logger.Verbose("Copied '{TempFile}' to '{TargetFile}'", tempFile, targetFile);
                     File.Delete(tempFile);
-                    _logger.WriteVerbose($"Deleted temp file '{tempFile}'", _Prefix);
+                    _logger.Verbose("Deleted temp file '{TempFile}'", tempFile);
                 }
             }
         }

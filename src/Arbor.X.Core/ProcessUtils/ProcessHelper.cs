@@ -4,7 +4,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Processing;
 using Arbor.Processing.Core;
-using Arbor.X.Core.Logging;
+using Serilog;
+using Serilog.Core;
 
 namespace Arbor.X.Core.ProcessUtils
 {
@@ -22,7 +23,7 @@ namespace Arbor.X.Core.ProcessUtils
             bool addProcessRunnerCategory = false,
             string parentPrefix = null)
         {
-            ILogger usedLogger = logger ?? new NullLogger();
+            ILogger usedLogger = logger ?? Logger.None;
 
             string executingCategory = $"[{Path.GetFileNameWithoutExtension(Path.GetFileName(executePath))}]";
 
@@ -30,12 +31,12 @@ namespace Arbor.X.Core.ProcessUtils
                 executePath,
                 cancellationToken,
                 arguments,
-                (message, category) => usedLogger.Write(message, executingCategory),
-                usedLogger.WriteError,
-                verboseAction: usedLogger.WriteVerbose,
-                toolAction: (message, category) => usedLogger.Write(message, ToolName),
+                (message, category) => usedLogger.Information(message, executingCategory),
+                usedLogger.Error,
+                verboseAction: usedLogger.Verbose,
+                toolAction: (message, category) => usedLogger.Information(message, ToolName),
                 environmentVariables: environmentVariables,
-                debugAction: usedLogger.WriteDebug,
+                debugAction: usedLogger.Debug,
                 addProcessNameAsLogCategory: addProcessNameAsLogCategory,
                 addProcessRunnerCategory: addProcessRunnerCategory,
                 parentPrefix: parentPrefix);

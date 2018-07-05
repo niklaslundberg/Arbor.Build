@@ -1,6 +1,6 @@
-﻿using System;
+﻿using System; using Serilog;
 using Arbor.X.Core.GenericExtensions;
-using Arbor.X.Core.Logging;
+
 using NuGet.Versioning;
 
 namespace Arbor.X.Core.Tools.NuGet
@@ -26,7 +26,7 @@ namespace Arbor.X.Core.Tools.NuGet
             {
                 string parsed = parsedVersion.ToString(3);
 
-                logger.Write($"Build is release build, using major.minor.patch as the version, {parsed}");
+                logger.Information("Build is release build, using major.minor.patch as the version, {Parsed}", parsed);
 
                 return parsed;
             }
@@ -47,15 +47,13 @@ namespace Arbor.X.Core.Tools.NuGet
                     buildVersion =
                         $"{parsedVersion.Major}.{parsedVersion.Minor}.{parsedVersion.Build}-{suffix}{semVer2PreReleaseSeparator}{parsedVersion.Revision.ToString().LeftPad(usePadding, '0')}";
 
-                    logger.Write(
-                        $"Package suffix is {suffix}, using major.minor.patch-{{suffix}}build as the version, {buildVersion}");
+                    logger.Information("Package suffix is {Suffix}, using major.minor.patch-{suffix}build as the version, {BuildVersion}", suffix, null, buildVersion);
                 }
                 else
                 {
                     buildVersion = $"{parsedVersion.Major}.{parsedVersion.Minor}.{parsedVersion.Build}-{suffix}";
 
-                    logger.Write(
-                        $"Package suffix is {suffix}, using major.minor.patch-{{suffix}} as the version, {buildVersion}");
+                    logger.Information("Package suffix is {Suffix}, using major.minor.patch-{suffix} as the version, {BuildVersion}", suffix, null, buildVersion);
                 }
             }
             else
@@ -65,12 +63,12 @@ namespace Arbor.X.Core.Tools.NuGet
                     buildVersion =
                         $"{parsedVersion.Major}.{parsedVersion.Minor}.{parsedVersion.Build}-{parsedVersion.Revision.ToString().LeftPad(usePadding, '0')}";
 
-                    logger.Write($"Using major.minor.patch-build as the version, {buildVersion}");
+                    logger.Information("Using major.minor.patch-build as the version, {BuildVersion}", buildVersion);
                 }
                 else
                 {
                     buildVersion = $"{parsedVersion.Major}.{parsedVersion.Minor}.{parsedVersion.Build}";
-                    logger.Write($"Using major.minor.patch as the version, {buildVersion}");
+                    logger.Information("Using major.minor.patch as the version, {BuildVersion}", buildVersion);
                 }
             }
 

@@ -3,7 +3,6 @@ using System.Reflection;
 using Arbor.X.Core.Assemblies;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.GenericExtensions;
-using Arbor.X.Core.Tools.Environments;
 using Autofac;
 using JetBrains.Annotations;
 using Module = Autofac.Module;

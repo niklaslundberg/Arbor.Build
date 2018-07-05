@@ -2,9 +2,10 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.Logging;
+
 using Arbor.X.Core.Tools.Cleanup;
 using JetBrains.Annotations;
+using Serilog;
 
 namespace Arbor.X.Core.Tools.Kudu
 {

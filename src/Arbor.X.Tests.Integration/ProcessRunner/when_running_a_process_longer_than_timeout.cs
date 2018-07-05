@@ -1,13 +1,14 @@
-using System;
+using System; using Serilog;
 using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Processing.Core;
 using Arbor.X.Core.IO;
-using Arbor.X.Core.Logging;
+
 using Arbor.X.Core.Tools.Testing;
 using Machine.Specifications;
+using Serilog.Core;
 
 namespace Arbor.X.Tests.Integration.ProcessRunner
 {
@@ -16,10 +17,9 @@ namespace Arbor.X.Tests.Integration.ProcessRunner
     public class when_running_a_process_longer_than_timeout
     {
         static string testPath;
-        static ConsoleLogger logger;
         static ExitCode exitCode = new ExitCode(99);
         static TaskCanceledException exception;
-
+        static ILogger logger = Logger.None;
         Cleanup after = () =>
         {
             if (File.Exists(testPath))
@@ -41,7 +41,7 @@ EXIT /b 2
 ";
 
             File.WriteAllText(testPath, batchContent, Encoding.Default);
-            logger = new ConsoleLogger("TEST ");
+
         };
 
         Because of = () => RunAsync().Wait();
@@ -59,10 +59,10 @@ EXIT /b 2
                 exitCode =
                     await
                         Processing.ProcessRunner.ExecuteAsync(testPath,
-                            standardOutLog: (message, prefix) => logger.Write(message, "STANDARD"),
-                            standardErrorAction: (message, prefix) => logger.WriteError(message, "ERROR"),
-                            toolAction: (message, prefix) => logger.Write(message, "TOOL"),
-                            verboseAction: (message, prefix) => logger.Write(message, "VERBOSE"),
+                            standardOutLog: (message, prefix) => logger.Information(message, "STANDARD"),
+                            standardErrorAction: (message, prefix) => logger.Error(message, "ERROR"),
+                            toolAction: (message, prefix) => logger.Information(message, "TOOL"),
+                            verboseAction: (message, prefix) => logger.Information(message, "VERBOSE"),
                             cancellationToken: cancellationTokenSource.Token);
             }
             catch (TaskCanceledException ex)

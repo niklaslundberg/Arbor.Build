@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using Serilog;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Arbor.Processing;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.Logging;
+
 using Arbor.X.Core.ProcessUtils;
 using Arbor.X.Core.Tools.Cleanup;
 using JetBrains.Annotations;
@@ -31,8 +31,7 @@ namespace Arbor.X.Core.Tools.MSBuild
         {
             int currentProcessBits = Environment.Is64BitProcess ? 64 : 32;
             const int registryLookupBits = 32;
-            logger.WriteVerbose(
-                $"Running current process [id {Process.GetCurrentProcess().Id}] as a {currentProcessBits}-bit process");
+            logger.Verbose("Running current process [id {Id}] as a {CurrentProcessBits}-bit process", Process.GetCurrentProcess().Id, currentProcessBits);
 
             List<SemanticVersion> possibleVersions = new List<string> { "15.0.0", "14.0.0", "12.0.0", "4.0.0" }
                 .Select(SemanticVersion.Parse)
@@ -58,7 +57,7 @@ namespace Arbor.X.Core.Tools.MSBuild
 
             if (File.Exists(vsWherePath))
             {
-                logger.WriteDebug($"vswhere.exe exists at '{vsWherePath}'");
+                logger.Debug("vswhere.exe exists at '{VsWherePath}'", vsWherePath);
 
                 ExitCode versionExitCode = await ProcessHelper.ExecuteAsync(
                     vsWherePath,
@@ -86,8 +85,8 @@ namespace Arbor.X.Core.Tools.MSBuild
                     arguments: vsWhereArgs,
                     standardOutLog: (message, category) => resultBuilder.Append(message),
                     cancellationToken: cancellationToken,
-                    toolAction: logger.WriteDebug,
-                    standardErrorAction: logger.WriteError);
+                    toolAction: logger.Debug,
+                    standardErrorAction: logger.Error);
 
                 string json = resultBuilder.ToString();
 
@@ -136,7 +135,7 @@ namespace Arbor.X.Core.Tools.MSBuild
 
                         if (File.Exists(msbuildPath))
                         {
-                            logger.Write($"Found MSBuild with vswhere.exe at '{msbuildPath}'");
+                            logger.Information("Found MSBuild with vswhere.exe at '{MsbuildPath}'", msbuildPath);
 
                             var variables = new[]
                             {
@@ -149,7 +148,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                         }
                     }
 
-                    logger.Write($"Could not find any version of MSBuild.exe with vswhere.exe");
+                    logger.Information("Could not find any version of MSBuild.exe with vswhere.exe");
                 }
                 catch (Exception ex)
                 {
@@ -206,7 +205,7 @@ namespace Arbor.X.Core.Tools.MSBuild
 
             if (fileBasedLookupResultPath != null)
             {
-                logger.Write($"Found MSBuild at '{fileBasedLookupResultPath}'");
+                logger.Information("Found MSBuild at '{FileBasedLookupResultPath}'", fileBasedLookupResultPath);
 
                 var variables = new[]
                 {
@@ -227,8 +226,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                 object msBuildPathRegistryKeyValue = null;
                 const string valueKey = "MSBuildOverrideTasksPath";
 
-                logger.WriteVerbose(
-                    $"Looking for MSBuild exe path in {registryLookupBits}-bit registry key '{registryKeyName}\\{valueKey}");
+                logger.Verbose("Looking for MSBuild exe path in {RegistryLookupBits}-bit registry key '{RegistryKeyName}\\{ValueKey}", registryLookupBits, registryKeyName, valueKey);
 
                 using (RegistryKey view32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
                 {
@@ -248,8 +246,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                 if (!string.IsNullOrWhiteSpace(msBuildPath))
                 {
                     foundPath = msBuildPath;
-                    logger.WriteVerbose(
-                        $"Using MSBuild exe path '{foundPath}' defined in {registryLookupBits}-bit registry key {registryKeyName}\\{valueKey}");
+                    logger.Verbose("Using MSBuild exe path '{FoundPath}' defined in {RegistryLookupBits}-bit registry key {RegistryKeyName}\\{ValueKey}", foundPath, registryLookupBits, registryKeyName, valueKey);
                     break;
                 }
             }
@@ -261,18 +258,17 @@ namespace Arbor.X.Core.Tools.MSBuild
 
                 if (!string.IsNullOrWhiteSpace(fromEnvironmentVariable))
                 {
-                    logger.Write($"Using MSBuild exe path '{foundPath}' from environment variable {msbuildPath}");
+                    logger.Information("Using MSBuild exe path '{FoundPath}' from environment variable {MsbuildPath}", foundPath, msbuildPath);
                     foundPath = fromEnvironmentVariable;
                 }
                 else
                 {
-                    logger.WriteError(
-                        $"The MSBuild path could not be found in the {registryLookupBits}-bit registry keys.");
+                    logger.Error("The MSBuild path could not be found in the {RegistryLookupBits}-bit registry keys.", registryLookupBits);
                     return null;
                 }
             }
 
-            logger.Write($"Using MSBuild exe path '{foundPath}'");
+            logger.Information("Using MSBuild exe path '{FoundPath}'", foundPath);
 
             var environmentVariables = new[]
             {

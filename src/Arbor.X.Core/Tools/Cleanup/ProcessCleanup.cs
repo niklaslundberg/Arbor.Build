@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using Serilog;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -11,7 +11,7 @@ using Arbor.Processing;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.GenericExtensions;
-using Arbor.X.Core.Logging;
+
 
 namespace Arbor.X.Core.Tools.Cleanup
 {
@@ -26,11 +26,11 @@ namespace Arbor.X.Core.Tools.Cleanup
 
             if (!enabled)
             {
-                logger.Write($"Process cleanup is disabled, enable by setting key {WellKnownVariables.CleanupProcessesAfterBuildEnabled} to true");
+                logger.Information("Process cleanup is disabled, enable by setting key {CleanupProcessesAfterBuildEnabled} to true", WellKnownVariables.CleanupProcessesAfterBuildEnabled);
                 return ExitCode.Success.AsCompletedTask();
             }
 
-            logger.Write($"Process cleanup is enabled, from key {WellKnownVariables.CleanupProcessesAfterBuildEnabled} to true");
+            logger.Information("Process cleanup is enabled, from key {CleanupProcessesAfterBuildEnabled} to true", WellKnownVariables.CleanupProcessesAfterBuildEnabled);
 
             string sourceRoot = buildVariables.GetVariableValueOrDefault(WellKnownVariables.SourceRoot, defaultValue: string.Empty);
 
@@ -77,7 +77,7 @@ namespace Arbor.X.Core.Tools.Cleanup
                     return false;
                 }
 
-                logger.WriteVerbose($"Found process {process.ToDisplayValue()} to kill in cleanup");
+                logger.Verbose("Found process {V} to kill in cleanup", process.ToDisplayValue());
 
                 return true;
             }
@@ -96,15 +96,15 @@ namespace Arbor.X.Core.Tools.Cleanup
                         return;
                     }
 
-                    logger.WriteVerbose($"Killing process {process.ToDisplayValue()}");
+                    logger.Verbose("Killing process {V}", process.ToDisplayValue());
 
                     process.Kill();
 
-                    logger.WriteVerbose($"Killed process {process.ToDisplayValue()}");
+                    logger.Verbose("Killed process {V}", process.ToDisplayValue());
                 }
                 catch (Exception ex) when (!ex.IsFatal())
                 {
-                    logger.WriteVerbose($"Could not kill process {process.ToDisplayValue()}");
+                    logger.Verbose("Could not kill process {V}", process.ToDisplayValue());
                 }
             }
 
@@ -114,7 +114,7 @@ namespace Arbor.X.Core.Tools.Cleanup
 
             string message = $"Found [{processesToKill.Length}] processes to kill in cleanup: {Environment.NewLine}{string.Join(Environment.NewLine, processesToKill.Select(process => process.ExecutablePath()))}";
 
-            logger.WriteVerbose(message);
+            logger.Verbose(message);
 
             foreach (Process process in processesToKill)
             {

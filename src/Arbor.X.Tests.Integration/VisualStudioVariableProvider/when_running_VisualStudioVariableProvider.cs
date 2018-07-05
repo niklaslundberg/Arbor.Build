@@ -2,9 +2,10 @@
 using System.Linq;
 using System.Threading;
 using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.Logging;
+
 using Arbor.X.Core.Tools.Testing;
 using Machine.Specifications;
+using Serilog.Core;
 
 namespace Arbor.X.Tests.Integration.VisualStudioVariableProvider
 {
@@ -25,7 +26,7 @@ namespace Arbor.X.Tests.Integration.VisualStudioVariableProvider
                 "true");
 
             enumerable = provider.GetEnvironmentVariablesAsync(
-                    new ConsoleLogger(),
+                    Logger.None,
                     new List<IVariable> { environmentVariable },
                     CancellationToken.None)
                 .Result.ToList();

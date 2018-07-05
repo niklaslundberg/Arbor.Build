@@ -1,8 +1,8 @@
-using System;
+using System; using Serilog;
 using System.IO;
 using System.Threading.Tasks;
 using Arbor.Processing.Core;
-using Arbor.X.Core.Logging;
+
 
 namespace Arbor.X.Core.IO
 {
@@ -18,7 +18,7 @@ namespace Arbor.X.Core.IO
             PathLookupSpecification pathLookupSpecification =
                 pathLookupSpecificationOption ?? DefaultPaths.DefaultPathLookupSpecification;
 
-            ILogger logger = optionalLogger ?? new NullLogger();
+            ILogger logger = optionalLogger;
 
             if (string.IsNullOrWhiteSpace(sourceDir))
             {
@@ -40,8 +40,7 @@ namespace Arbor.X.Core.IO
             (bool, string) isBlackListed = pathLookupSpecification.IsBlackListed(sourceDir, rootDir);
             if (isBlackListed.Item1)
             {
-                logger.WriteDebug(
-                    $"Directory '{sourceDir}' is blacklisted from specification {pathLookupSpecification}, {isBlackListed.Item2}");
+                logger?.Debug("Directory '{SourceDir}' is blacklisted from specification {PathLookupSpecification}, {Item2}", sourceDir, pathLookupSpecification, isBlackListed.Item2);
                 return ExitCode.Success;
             }
 
@@ -55,11 +54,11 @@ namespace Arbor.X.Core.IO
 
                 if (isFileBlackListed.Item1)
                 {
-                    logger.WriteVerbose($"File '{file.FullName}' is blacklisted, skipping copying file, {isFileBlackListed.Item2}");
+                    logger?.Verbose("File '{FullName}' is blacklisted, skipping copying file, {Item2}", file.FullName, isFileBlackListed.Item2);
                     continue;
                 }
 
-                logger.WriteVerbose($"Copying file '{file.FullName}' to destination '{destFileName}'");
+                logger?.Verbose("Copying file '{FullName}' to destination '{DestFileName}'", file.FullName, destFileName);
 
                 try
                 {
@@ -67,16 +66,13 @@ namespace Arbor.X.Core.IO
                 }
                 catch (PathTooLongException ex)
                 {
-                    logger.WriteError(
-                        $"Could not copy file to '{destFileName}', path length is too long ({destFileName.Length})"
-                        + " " + ex);
+                    logger.Error(ex, "{V} {Ex}", $"Could not copy file to '{destFileName}', path length is too long ({destFileName.Length})"
+);
                     return ExitCode.Failure;
                 }
                 catch (Exception ex)
                 {
-                    logger.WriteError(
-                        $"Could not copy file '{file.FullName}' to destination '{destFileName}'" +
-                        " " + ex);
+                    logger.Error(ex, "{V} {Ex}", $"Could not copy file '{file.FullName}' to destination '{destFileName}'");
                     return ExitCode.Failure;
                 }
             }

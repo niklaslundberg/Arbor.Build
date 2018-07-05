@@ -1,10 +1,10 @@
-﻿using System;
+﻿using System; using Serilog;
 using System.IO;
 using System.Text;
 using System.Xml;
 using System.Xml.Xsl;
 using Arbor.Processing.Core;
-using Arbor.X.Core.Logging;
+
 
 namespace Arbor.X.Core.Tools.Testing
 {
@@ -27,19 +27,18 @@ namespace Arbor.X.Core.Tools.Testing
                     var myXslTransform = new XslCompiledTransform();
                     myXslTransform.Load(xmlReader);
 
-                    logger.WriteDebug($"Transforming '{xmlReport.FullName}' to JUnit XML format");
+                    logger.Debug("Transforming '{FullName}' to JUnit XML format", xmlReport.FullName);
                     try
                     {
                         TransformReport(xmlReport, JUnitSuffix, encoding, myXslTransform, logger);
                     }
                     catch (Exception ex)
                     {
-                        logger.WriteError($"Could not transform '{xmlReport.FullName}', {ex}");
+                        logger.Error(ex, "Could not transform '{FullName}', {Ex}", xmlReport.FullName);
                         return ExitCode.Failure;
                     }
 
-                    logger.WriteDebug(
-                        $"Successfully transformed '{xmlReport.FullName}' to JUnit XML format");
+                    logger.Debug("Successfully transformed '{FullName}' to JUnit XML format", xmlReport.FullName);
                 }
             }
 
@@ -60,8 +59,7 @@ namespace Arbor.X.Core.Tools.Testing
 
             if (File.Exists(resultFile))
             {
-                logger.Write(
-                    $"Skipping XML transformation for '{xmlReport.FullName}', the transformation result file '{resultFile}' already exists");
+                logger.Information("Skipping XML transformation for '{FullName}', the transformation result file '{ResultFile}' already exists", xmlReport.FullName, resultFile);
             }
 
             using (var fileStream = new FileStream(xmlReport.FullName, FileMode.Open, FileAccess.Read))

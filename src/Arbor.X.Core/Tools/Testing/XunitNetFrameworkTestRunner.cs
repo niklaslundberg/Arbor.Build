@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using Serilog;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
@@ -9,7 +9,7 @@ using Arbor.Processing;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
-using Arbor.X.Core.Logging;
+
 using Arbor.X.Core.Properties;
 using JetBrains.Annotations;
 using Xunit;
@@ -38,7 +38,7 @@ namespace Arbor.X.Core.Tools.Testing
 
             if (!enabled)
             {
-                logger.WriteDebug("Xunit .NET Framework test runner is not enabled");
+                logger.Debug("Xunit .NET Framework test runner is not enabled");
                 return ExitCode.Success;
             }
 
@@ -65,11 +65,11 @@ namespace Arbor.X.Core.Tools.Testing
 
             if (!testDlls.Any())
             {
-                logger.Write("Could not find any DLL files with Xunit test and target framework .NETFramework, skipping Xunit Net Framework tests");
+                logger.Information("Could not find any DLL files with Xunit test and target framework .NETFramework, skipping Xunit Net Framework tests");
                 return ExitCode.Success;
             }
 
-            logger.WriteDebug($"Found [{testDlls}] potential Assembly dll files with tests: {Environment.NewLine}: {string.Join(Environment.NewLine, testDlls.Select(dll => $" * '{dll}'"))}");
+            logger.Debug("Found [{TestDlls}] potential Assembly dll files with tests: {NewLine}: {V}", testDlls, Environment.NewLine, string.Join(Environment.NewLine, testDlls.Select(dll => $" * '{dll}'")));
 
             string xmlReportName = $"{Guid.NewGuid()}.xml";
 
@@ -87,9 +87,9 @@ namespace Arbor.X.Core.Tools.Testing
             ExitCode result = await ProcessRunner.ExecuteAsync(
                 xunitExePath,
                 arguments: arguments,
-                standardOutLog: logger.Write,
-                standardErrorAction: logger.WriteError,
-                toolAction: logger.Write,
+                standardOutLog: logger.Information,
+                standardErrorAction: logger.Error,
+                toolAction: logger.Information,
                 cancellationToken: cancellationToken);
 
             return result;

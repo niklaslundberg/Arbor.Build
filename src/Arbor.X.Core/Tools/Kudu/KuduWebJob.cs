@@ -1,4 +1,4 @@
-using System;
+using System; using Serilog;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
-using Arbor.X.Core.Logging;
+
 using JetBrains.Annotations;
 
 namespace Arbor.X.Core.Tools.Kudu
@@ -30,7 +30,7 @@ namespace Arbor.X.Core.Tools.Kudu
 
             if (!kuduWebJobsEnabled)
             {
-                _logger.Write("Kudu web jobs are disabled");
+                _logger.Information("Kudu web jobs are disabled");
                 return Task.FromResult(ExitCode.Success);
             }
 
@@ -38,7 +38,7 @@ namespace Arbor.X.Core.Tools.Kudu
 
             string rootDir = buildVariables.GetVariable(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
 
-            _logger.Write("Kudu web jobs are enabled");
+            _logger.Information("Kudu web jobs are enabled");
 
             string sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
 
@@ -53,14 +53,14 @@ namespace Arbor.X.Core.Tools.Kudu
 
             if (kuduWebJobProjects.Any())
             {
-                logger.Write(string.Join(
+                logger.Information(string.Join(
                     Environment.NewLine,
                     kuduWebJobProjects.Select(
                         webProject => $"Found Kudu web job project: {webProject}")));
             }
             else
             {
-                logger.Write("No Kudu web job projects were found");
+                logger.Information("No Kudu web job projects were found");
             }
 
             return Task.FromResult(ExitCode.Success);
@@ -103,8 +103,7 @@ namespace Arbor.X.Core.Tools.Kudu
 
                                         if (!existingValue.Equals(line, StringComparison.InvariantCultureIgnoreCase))
                                         {
-                                            _logger.WriteWarning(
-                                                $"A Kudu web job key '{key}' has already been found with value '{existingValue}', new value is different '{line}', using first value");
+                                            _logger.Warning("A Kudu web job key '{Key}' has already been found with value '{ExistingValue}', new value is different '{Line}', using first value", key, existingValue, line);
                                         }
                                     }
                                 }

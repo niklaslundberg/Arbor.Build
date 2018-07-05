@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using Serilog;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -6,14 +6,12 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Exceptions;
-using Arbor.KVConfiguration.Core;
 using Arbor.KVConfiguration.Core.Extensions.StringExtensions;
 using Arbor.KVConfiguration.Core.Metadata;
 using Arbor.KVConfiguration.JsonConfiguration;
-using Arbor.KVConfiguration.Schema;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.GenericExtensions;
-using Arbor.X.Core.Logging;
+
 using Arbor.X.Core.Tools.Cleanup;
 using JetBrains.Annotations;
 
@@ -76,8 +74,7 @@ namespace Arbor.X.Core.Tools.Versioning
 
             if (File.Exists(versionFileName))
             {
-                logger.WriteVerbose(
-                    $"A version file was found with name {versionFileName} at source root '{sourceRoot}'");
+                logger.Verbose("A version file was found with name {VersionFileName} at source root '{SourceRoot}'", versionFileName, sourceRoot);
                 IReadOnlyCollection<KeyValueConfigurationItem> keyValueConfigurationItems = null;
                 try
                 {
@@ -86,7 +83,7 @@ namespace Arbor.X.Core.Tools.Versioning
                 }
                 catch (Exception ex) when (!ex.IsFatal())
                 {
-                    logger.WriteWarning($"Could not read the configuration content in file '{versionFileName}'");
+                    logger.Warning("Could not read the configuration content in file '{VersionFileName}'", versionFileName);
                 }
 
                 if (keyValueConfigurationItems != null)
@@ -124,20 +121,17 @@ namespace Arbor.X.Core.Tools.Versioning
                         minor = required[minorKey].TryParseInt32().Value;
                         patch = required[patchKey].TryParseInt32().Value;
 
-                        logger.WriteVerbose(
-                            $"All version numbers from the version file '{versionFileName}' were parsed successfully");
+                        logger.Verbose("All version numbers from the version file '{VersionFileName}' were parsed successfully", versionFileName);
                     }
                     else
                     {
-                        logger.WriteVerbose(
-                            $"Not all version numbers from the version file '{versionFileName}' were parsed successfully");
+                        logger.Verbose("Not all version numbers from the version file '{VersionFileName}' were parsed successfully", versionFileName);
                     }
                 }
             }
             else
             {
-                logger.WriteVerbose(
-                    $"No version file found with name {versionFileName} at source root '{sourceRoot}' was found");
+                logger.Verbose("No version file found with name {VersionFileName} at source root '{SourceRoot}' was found", versionFileName, sourceRoot);
             }
 
             int envMajor =
@@ -172,43 +166,43 @@ namespace Arbor.X.Core.Tools.Versioning
 
             if (envMajor >= 0)
             {
-                logger.WriteVerbose($"Found major {envMajor} version in build variable");
+                logger.Verbose("Found major {EnvMajor} version in build variable", envMajor);
                 major = envMajor;
             }
 
             if (envMinor >= 0)
             {
-                logger.WriteVerbose($"Found minor {envMinor} version in build variable");
+                logger.Verbose("Found minor {EnvMinor} version in build variable", envMinor);
                 minor = envMinor;
             }
 
             if (envPatch >= 0)
             {
-                logger.WriteVerbose($"Found patch {envPatch} version in build variable");
+                logger.Verbose("Found patch {EnvPatch} version in build variable", envPatch);
                 patch = envPatch;
             }
 
             if (envBuild >= 0)
             {
-                logger.WriteVerbose($"Found build {envBuild} version in build variable");
+                logger.Verbose("Found build {EnvBuild} version in build variable", envBuild);
                 build = envBuild;
             }
 
             if (major < 0)
             {
-                logger.WriteVerbose($"Found no major version, using version 0");
+                logger.Verbose("Found no major version, using version 0");
                 major = 0;
             }
 
             if (minor < 0)
             {
-                logger.WriteVerbose("Found no minor version, using version 0");
+                logger.Verbose("Found no minor version, using version 0");
                 minor = 0;
             }
 
             if (patch < 0)
             {
-                logger.WriteVerbose("Found no patch version, using version 0");
+                logger.Verbose("Found no patch version, using version 0");
                 patch = 0;
             }
 
@@ -217,18 +211,18 @@ namespace Arbor.X.Core.Tools.Versioning
                 if (teamCityBuildVersion >= 0)
                 {
                     build = teamCityBuildVersion;
-                    logger.WriteVerbose($"Found no build version, using version {build} from TeamCity ({WellKnownVariables.TeamCity.TeamCityVersionBuild})");
+                    logger.Verbose("Found no build version, using version {Build} from TeamCity ({TeamCityVersionBuild})", build, WellKnownVariables.TeamCity.TeamCityVersionBuild);
                 }
                 else
                 {
-                    logger.WriteVerbose("Found no build version, using version 0");
+                    logger.Verbose("Found no build version, using version 0");
                     build = 0;
                 }
             }
 
             if (major == 0 && minor == 0 && patch == 0)
             {
-                logger.WriteVerbose("Major minor and build versions are all 0, setting minor version to 1");
+                logger.Verbose("Major minor and build versions are all 0, setting minor version to 1");
                 minor = 1;
             }
 

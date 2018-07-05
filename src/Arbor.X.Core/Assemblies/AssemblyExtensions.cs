@@ -1,4 +1,4 @@
-using System;
+using System; using Serilog;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -7,10 +7,10 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.Logging;
-using FubuCore;
+
 using JetBrains.Annotations;
 using Mono.Cecil;
+using Serilog.Core;
 
 namespace Arbor.X.Core.Assemblies
 {
@@ -19,7 +19,7 @@ namespace Arbor.X.Core.Assemblies
         public static bool? IsDebugAssembly(
             [NotNull] this AssemblyDefinition assemblyDefinition,
             [NotNull] FileInfo fileInfo,
-            [NotNull] ILogger logger)
+            ILogger logger = null)
         {
             if (assemblyDefinition == null)
             {
@@ -31,10 +31,7 @@ namespace Arbor.X.Core.Assemblies
                 throw new ArgumentNullException(nameof(fileInfo));
             }
 
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
+            ILogger usedLogger = logger ?? Logger.None;
 
             Assembly loadedAssembly = AppDomain.CurrentDomain.GetAssemblies()
                 .SingleOrDefault(assembly => !assembly.IsDynamic
@@ -43,9 +40,9 @@ namespace Arbor.X.Core.Assemblies
 
             if (loadedAssembly != null)
             {
-                logger.WriteDebug($"Assembly '{assemblyDefinition.FullName}' is already loaded in the app domain");
+                usedLogger.Debug("Assembly '{FullName}' is already loaded in the app domain", assemblyDefinition.FullName);
 
-                return IsDebugAssembly(loadedAssembly, logger);
+                return IsDebugAssembly(loadedAssembly, usedLogger);
             }
 
             Assembly loadedReflectionOnlyAssembly = AppDomain.CurrentDomain.ReflectionOnlyGetAssemblies()
@@ -55,10 +52,9 @@ namespace Arbor.X.Core.Assemblies
 
             if (loadedReflectionOnlyAssembly != null)
             {
-                logger.WriteDebug(
-                    $"Assembly '{assemblyDefinition.FullName}' is already loaded in the app domain with reflection only");
+                usedLogger.Debug("Assembly '{FullName}' is already loaded in the app domain with reflection only", assemblyDefinition.FullName);
 
-                return IsDebugAssembly(loadedReflectionOnlyAssembly, logger);
+                return IsDebugAssembly(loadedReflectionOnlyAssembly, usedLogger);
             }
 
             if (!bool.TryParse(Environment.GetEnvironmentVariable(WellKnownVariables.AssemblyUseReflectionOnlyMode),
@@ -70,28 +66,34 @@ namespace Arbor.X.Core.Assemblies
 
                     using (var fs = new FileStream(fileInfo.FullName, FileMode.Open))
                     {
-                        assemblyBytes = fs.ReadAllBytes();
+                        var buffer = new byte[16 * 1024];
+                        using (var ms = new MemoryStream())
+                        {
+                            int read;
+                            while ((read = fs.Read(buffer, 0, buffer.Length)) > 0)
+                            {
+                                ms.Write(buffer, 0, read);
+                            }
+                            assemblyBytes = ms.ToArray();
+                        }
                     }
 
                     Assembly reflectedAssembly = Assembly.ReflectionOnlyLoad(assemblyBytes);
 
                     if (reflectedAssembly != null)
                     {
-                        bool? isDebugAssembly = IsDebugAssembly(reflectedAssembly, logger);
+                        bool? isDebugAssembly = IsDebugAssembly(reflectedAssembly, usedLogger);
 
-                        logger.WriteVerbose(
-                            $"Assembly is debug from reflected assembly: {isDebugAssembly?.ToString(CultureInfo.InvariantCulture) ?? "N/A"}");
+                        usedLogger.Verbose("Assembly is debug from reflected assembly: {IsDebug}", isDebugAssembly?.ToString(CultureInfo.InvariantCulture) ?? "N/A");
 
                         return isDebugAssembly;
                     }
 
-                    logger.WriteVerbose(
-                        $"Reflected assembly from assembly definition {assemblyDefinition.FullName} was null");
+                    usedLogger.Verbose("Reflected assembly from assembly definition {FullName} was null", assemblyDefinition.FullName);
                 }
                 catch (Exception ex)
                 {
-                    logger.WriteError(
-                        $"Error while getting reflected assembly definition from assembly definition {assemblyDefinition.FullName} {ex}");
+                    usedLogger.Error(ex, "Error while getting reflected assembly definition from assembly definition {FullName}", assemblyDefinition.FullName);
                     return null;
                 }
             }
@@ -110,24 +112,23 @@ namespace Arbor.X.Core.Assemblies
             }
             catch (Exception ex)
             {
-                logger.WriteError(
-                    $"Error while getting is debug from assembly definition {assemblyDefinition.FullName} {ex}");
+                usedLogger.Error(ex, "Error while getting is debug from assembly definition {FullName}", assemblyDefinition.FullName);
                 return null;
             }
 
             return false;
         }
 
-        public static bool? IsDebugAssembly([NotNull] this Assembly assembly, [NotNull] ILogger logger)
+        public static bool? IsDebugAssembly([NotNull] this Assembly assembly, [NotNull] ILogger usedLogger)
         {
             if (assembly == null)
             {
                 throw new ArgumentNullException(nameof(assembly));
             }
 
-            if (logger == null)
+            if (usedLogger == null)
             {
-                throw new ArgumentNullException(nameof(logger));
+                throw new ArgumentNullException(nameof(usedLogger));
             }
 
             Type debuggableAttributeType = typeof(DebuggableAttribute);
@@ -162,7 +163,7 @@ namespace Arbor.X.Core.Assemblies
                 }
                 catch (Exception ex)
                 {
-                    logger.WriteError($"Error while getting is debug from reflected assembly {assembly.FullName} {ex}");
+                    usedLogger.Error(ex, "Error while getting is debug from reflected assembly {FullName}", assembly.FullName);
 
                     return null;
                 }
@@ -175,34 +176,21 @@ namespace Arbor.X.Core.Assemblies
                 object[] attribs = assembly.GetCustomAttributes(debuggableAttributeType,
                     false);
 
-                bool HasDebuggableAttribute;
-                bool IsJITOptimized;
-                string DebugOutput;
-
                 if (attribs.Length > 0)
                 {
                     if (attribs[0] is DebuggableAttribute debuggableAttribute)
                     {
-                        HasDebuggableAttribute = true;
-                        IsJITOptimized = !debuggableAttribute.IsJITOptimizerDisabled;
                         isDebugBuild = debuggableAttribute.IsJITOptimizerDisabled;
-
-                        DebugOutput = (debuggableAttribute.DebuggingFlags &
-                                       DebuggableAttribute.DebuggingModes.Default) !=
-                                      DebuggableAttribute.DebuggingModes.None
-                            ? "Full"
-                            : "pdb-only";
                     }
                 }
                 else
                 {
-                    IsJITOptimized = true;
                     isDebugBuild = false;
                 }
             }
             catch (Exception ex)
             {
-                logger.WriteError($"Error while is debug from assembly {assembly.FullName} {ex}");
+                usedLogger.Error(ex, "Error while is debug from assembly {FullName}", assembly.FullName);
             }
 
             return isDebugBuild;

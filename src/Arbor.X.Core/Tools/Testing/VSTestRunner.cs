@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using Serilog;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Arbor.Processing;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.Logging;
+
 using Arbor.X.Core.Properties;
 using JetBrains.Annotations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -30,7 +30,7 @@ namespace Arbor.X.Core.Tools.Testing
 
             if (!enabled)
             {
-                logger.WriteWarning("VSTest not enabled");
+                logger.Warning("VSTest not enabled");
                 return ExitCode.Success;
             }
 
@@ -44,8 +44,7 @@ namespace Arbor.X.Core.Tools.Testing
 
             if (string.IsNullOrWhiteSpace(vsTestExePath))
             {
-                logger.WriteWarning(
-                    $"{WellKnownVariables.ExternalTools_VSTest_ExePath} is not defined, cannot run any VSTests");
+                logger.Warning("{ExternalTools_VSTest_ExePath} is not defined, cannot run any VSTests", WellKnownVariables.ExternalTools_VSTest_ExePath);
                 return ExitCode.Success;
             }
 
@@ -67,7 +66,7 @@ namespace Arbor.X.Core.Tools.Testing
                 }
                 catch (Exception ex)
                 {
-                    logger.WriteWarning($"Ignoring test exception: {ex}");
+                    logger.Warning(ex, "Ignoring test exception: {Ex}");
                 }
 
                 return ExitCode.Success;
@@ -79,7 +78,7 @@ namespace Arbor.X.Core.Tools.Testing
         private static void LogExecution(ILogger logger, IEnumerable<string> arguments, string exePath)
         {
             string args = string.Join(" ", arguments.Select(item => $"\"{item}\""));
-            logger.Write($"Running VSTest {exePath} {args}");
+            logger.Information("Running VSTest {ExePath} {Args}", exePath, args);
         }
 
         private static IEnumerable<string> GetVsTestConsoleOptions()
@@ -108,12 +107,11 @@ namespace Arbor.X.Core.Tools.Testing
 
             if (!vsTestConsoleArguments.Any())
             {
-                logger.WriteWarning(
-                    $"Could not find any VSTest tests in directory '{directory.FullName}' or any sub-directory");
+                logger.Warning("Could not find any VSTest tests in directory '{FullName}' or any sub-directory", directory.FullName);
                 return ExitCode.Success;
             }
 
-            logger.WriteDebug($"Found [{vsTestConsoleArguments}] potential Assembly dll files with tests: {Environment.NewLine}: {string.Join(Environment.NewLine, vsTestConsoleArguments.Select(dll => $" * '{dll}'"))}");
+            logger.Debug("Found [{VsTestConsoleArguments}] potential Assembly dll files with tests: {NewLine}: {V}", vsTestConsoleArguments, Environment.NewLine, string.Join(Environment.NewLine, vsTestConsoleArguments.Select(dll => $" * '{dll}'")));
 
             IEnumerable<string> options = GetVsTestConsoleOptions();
 
@@ -132,9 +130,9 @@ namespace Arbor.X.Core.Tools.Testing
                 Task<ExitCode> execute = ProcessRunner.ExecuteAsync(
                     vsTestExePath,
                     arguments: vsTestConsoleArguments,
-                    standardOutLog: logger.Write,
-                    standardErrorAction: logger.WriteError,
-                    toolAction: logger.Write);
+                    standardOutLog: logger.Information,
+                    standardErrorAction: logger.Error,
+                    toolAction: logger.Information);
 
                 ExitCode result = await execute;
 

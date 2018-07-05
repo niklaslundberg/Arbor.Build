@@ -1,10 +1,10 @@
-﻿using System;
+﻿using System; using Serilog;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.Logging;
+
 using JetBrains.Annotations;
 
 namespace Arbor.X.Core.Tools.NuGet
@@ -53,22 +53,19 @@ namespace Arbor.X.Core.Tools.NuGet
                 {
                     if (File.Exists(userSpecifiedNuGetExePath))
                     {
-                        logger.Write(
-                            $"Using NuGet '{userSpecifiedNuGetExePath}' from user specified variable '{WellKnownVariables.ExternalTools_NuGet_ExePath_Custom}'");
+                        logger.Information("Using NuGet '{UserSpecifiedNuGetExePath}' from user specified variable '{ExternalTools_NuGet_ExePath_Custom}'", userSpecifiedNuGetExePath, WellKnownVariables.ExternalTools_NuGet_ExePath_Custom);
                         return userSpecifiedNuGetExePath;
                     }
 
-                    logger.WriteWarning(
-                        $"User has specified custom NuGet '{userSpecifiedNuGetExePath}' but the file does not exist, using fallback method to ensure NuGet exists");
+                    logger.Warning("User has specified custom NuGet '{UserSpecifiedNuGetExePath}' but the file does not exist, using fallback method to ensure NuGet exists", userSpecifiedNuGetExePath);
                 }
                 else
                 {
-                    logger.WriteWarning(
-                        $"User has specified custom NuGet '{userSpecifiedNuGetExePath}' but it does not have name 'nuget.exe', ignoring and using fallback method to ensure NuGet exists");
+                    logger.Warning("User has specified custom NuGet '{UserSpecifiedNuGetExePath}' but it does not have name 'nuget.exe', ignoring and using fallback method to ensure NuGet exists", userSpecifiedNuGetExePath);
                 }
             }
 
-            logger.WriteVerbose("Using default method to ensure NuGet exists");
+            logger.Verbose("Using default method to ensure NuGet exists");
 
             var helper = new NuGetHelper(logger);
             string nuGetExePath = await helper.EnsureNuGetExeExistsAsync(nugetExeUri, _cancellationToken);

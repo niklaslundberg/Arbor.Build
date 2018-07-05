@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
 using Arbor.X.Core.GenericExtensions;
 
@@ -290,6 +289,10 @@ namespace Arbor.X.Core.BuildVariables
         [VariableDescription("Enable XUnit .NET Framework")]
         public static readonly string XUnitNetFrameworkEnabled =
             "Arbor.X.Tools.External.Xunit.NetFramework.Enabled";
+
+        [VariableDescription("Enable XUnit .NET Core App")]
+        public static readonly string XUnitNetCoreAppV2Enabled =
+            "Arbor.X.Tools.External.Xunit.NetCoreAppV2.Enabled";
 
         [VariableDescription("Enable XUnit .NET Core App")]
         public static readonly string XUnitNetCoreAppEnabled =

@@ -1,8 +1,7 @@
-﻿using System;
+﻿using Serilog;
 using System.Threading.Tasks;
 using Arbor.Processing.Core;
-using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.Logging;
+using Serilog.Core;
 
 namespace Arbor.X.Bootstrapper
 {
@@ -10,9 +9,9 @@ namespace Arbor.X.Bootstrapper
     {
         private static int Main(string[] args)
         {
-            LogLevel logLevel = LogLevel.TryParse(Environment.GetEnvironmentVariable(WellKnownVariables.LogLevel));
+            Logger logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
 
-            Task<ExitCode> startTask = new Bootstrapper(logLevel).StartAsync(args);
+            Task<ExitCode> startTask = new Bootstrapper(logger).StartAsync(args);
 
             ExitCode exitCode = startTask.Result;
 

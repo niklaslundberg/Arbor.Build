@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using Serilog;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
@@ -10,7 +10,7 @@ using Arbor.Processing;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
-using Arbor.X.Core.Logging;
+
 using Arbor.X.Core.Properties;
 using Machine.Specifications;
 
@@ -28,7 +28,7 @@ namespace Arbor.X.Core.Tools.Testing
 
             if (!enabled)
             {
-                logger.WriteWarning($"{MachineSpecificationsConstants.MachineSpecificationsName} not enabled");
+                logger.Warning("{MachineSpecificationsName} not enabled", MachineSpecificationsConstants.MachineSpecificationsName);
                 return ExitCode.Success;
             }
 
@@ -73,14 +73,13 @@ namespace Arbor.X.Core.Tools.Testing
                 typeof(Behaves_like<>)
             };
 
-            logger.WriteVerbose(
-                $"Scanning directory '{directory.FullName}' for assemblies containing Machine.Specifications tests");
+            logger.Verbose("Scanning directory '{FullName}' for assemblies containing Machine.Specifications tests", directory.FullName);
 
             ImmutableArray<string> assemblyFilePrefix = buildVariables.AssemblyFilePrefixes();
 
             if (assemblyFilePrefix.Any())
             {
-                logger.Write($"Scanning source root '{sourceRoot}' for assemblies using prefix {string.Join(", ", assemblyFilePrefix.Select(prefix => $"'{prefix}'"))}");
+                logger.Information("Scanning source root '{SourceRoot}' for assemblies using prefix {V}", sourceRoot, string.Join(", ", assemblyFilePrefix.Select(prefix => $"'{prefix}'")));
             }
 
             List<string> testDlls =
@@ -93,13 +92,11 @@ namespace Arbor.X.Core.Tools.Testing
 
             if (!testDlls.Any())
             {
-                logger.WriteWarning(
-                    $"No DLL files with {MachineSpecificationsConstants.MachineSpecificationsName} specifications was found");
+                logger.Warning("No DLL files with {MachineSpecificationsName} specifications was found", MachineSpecificationsConstants.MachineSpecificationsName);
                 return ExitCode.Success;
             }
 
-            logger.WriteDebug(
-                $"Found [{testDlls}] potential Assembly dll files with tests: {Environment.NewLine}: {string.Join(Environment.NewLine, testDlls.Select(dll => $" * '{dll}'"))}");
+            logger.Debug("Found [{TestDlls}] potential Assembly dll files with tests: {NewLine}: {V}", testDlls, Environment.NewLine, string.Join(Environment.NewLine, testDlls.Select(dll => $" * '{dll}'")));
 
             var arguments = new List<string>();
 
@@ -150,7 +147,7 @@ namespace Arbor.X.Core.Tools.Testing
 
                 string excludedTagsParameter = string.Join(",", allExcludedTags);
 
-                logger.Write($"Running MSpec with excluded tags: {excludedTagsParameter}");
+                logger.Information("Running MSpec with excluded tags: {ExcludedTagsParameter}", excludedTagsParameter);
 
                 arguments.Add(excludedTagsParameter);
             }
@@ -163,19 +160,18 @@ namespace Arbor.X.Core.Tools.Testing
                     mspecExePath,
                     arguments: arguments,
                     cancellationToken: cancellationToken,
-                    standardOutLog: logger.Write,
-                    standardErrorAction: logger.WriteError,
-                    toolAction: logger.Write,
-                    verboseAction: logger.WriteVerbose,
+                    standardOutLog: logger.Information,
+                    standardErrorAction: logger.Error,
+                    toolAction: logger.Information,
+                    verboseAction: logger.Verbose,
                     environmentVariables: environmentVariables,
-                    debugAction: logger.WriteDebug);
+                    debugAction: logger.Debug);
 
             if (buildVariables.GetBooleanByKey(
                 WellKnownVariables.MSpecJUnitXslTransformationEnabled,
                 false))
             {
-                logger.WriteVerbose(
-                    $"Transforming {MachineSpecificationsConstants.MachineSpecificationsName} test reports to JUnit format");
+                logger.Verbose("Transforming {MachineSpecificationsName} test reports to JUnit format", MachineSpecificationsConstants.MachineSpecificationsName);
 
                 DirectoryInfo xmlReportDirectory = new FileInfo(xmlReportPath).Directory;
 
@@ -189,7 +185,7 @@ namespace Arbor.X.Core.Tools.Testing
                 {
                     foreach (FileInfo xmlReport in xmlReports)
                     {
-                        logger.WriteDebug($"Transforming '{xmlReport.FullName}' to JUnit XML format");
+                        logger.Debug("Transforming '{FullName}' to JUnit XML format", xmlReport.FullName);
                         try
                         {
                             ExitCode transformExitCode = TestReportXslt.Transform(xmlReport, MSpecJUnitXsl.Xml, logger);
@@ -201,12 +197,11 @@ namespace Arbor.X.Core.Tools.Testing
                         }
                         catch (Exception ex)
                         {
-                            logger.WriteError($"Could not transform '{xmlReport.FullName}', {ex}");
+                            logger.Error(ex, "Could not transform '{FullName}', {Ex}", xmlReport.FullName);
                             return ExitCode.Failure;
                         }
 
-                        logger.WriteDebug(
-                            $"Successfully transformed '{xmlReport.FullName}' to JUnit XML format");
+                        logger.Debug("Successfully transformed '{FullName}' to JUnit XML format", xmlReport.FullName);
                     }
                 }
             }

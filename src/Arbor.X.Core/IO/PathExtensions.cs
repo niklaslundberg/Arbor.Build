@@ -1,9 +1,8 @@
-using System;
+using System; using Serilog;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Arbor.Defensive.Collections;
-using Arbor.X.Core.Logging;
 
 namespace Arbor.X.Core.IO
 {
@@ -29,7 +28,7 @@ namespace Arbor.X.Core.IO
             if (!allowNonExistingFiles && !File.Exists(sourceFile))
             {
                 string messageMessage = $"File '{sourceFile}' does not exist";
-                logger?.WriteDebug(messageMessage);
+                logger?.Debug(messageMessage);
                 return (true, messageMessage);
             }
 
@@ -40,7 +39,7 @@ namespace Arbor.X.Core.IO
             if (directoryBlackListed.Item1)
             {
                 string reasonMessage = $"Directory of '{sourceFile}' is blacklisted, {directoryBlackListed.Item2}";
-                logger?.WriteDebug(reasonMessage);
+                logger?.Debug(reasonMessage);
                 return (true, reasonMessage);
             }
 
@@ -51,7 +50,7 @@ namespace Arbor.X.Core.IO
             if (isBlackListed)
             {
                 string reasonMessage = $"Path segments of '{sourceFile}' makes it blacklisted";
-                logger?.WriteDebug(reasonMessage);
+                logger?.Debug(reasonMessage);
                 return (true, reasonMessage);
             }
 
@@ -64,7 +63,7 @@ namespace Arbor.X.Core.IO
             if (ignoredFileNameParts.Any())
             {
                 string reasonMessage = $"Ignored file name parts of '{sourceFile}' makes it blacklisted: {string.Join(", ", ignoredFileNameParts.Select(item => $"'{item}'"))}";
-                logger?.WriteDebug(reasonMessage);
+                logger?.Debug(reasonMessage);
                 return (true, reasonMessage);
             }
 
@@ -102,7 +101,7 @@ namespace Arbor.X.Core.IO
             if (hasAnyPathSegment)
             {
                 string reasonMessage = $"The directory '{sourceDir}' has a path segment that is blacklisted";
-                logger?.WriteDebug(reasonMessage);
+                logger?.Debug(reasonMessage);
                 return (true, reasonMessage);
             }
 
@@ -113,7 +112,7 @@ namespace Arbor.X.Core.IO
             if (hasAnyPathSegmentPart)
             {
                 string reasonMessage = $"The directory '{sourceDir}' has a path segment part that is blacklisted";
-                logger?.WriteDebug(reasonMessage);
+                logger?.Debug(reasonMessage);
                 return (true, reasonMessage);
             }
 
@@ -124,12 +123,12 @@ namespace Arbor.X.Core.IO
             if (hasAnyPartStartsWith)
             {
                 string reasonMessage = $"The directory '{sourceDir}' has a path that starts with a pattern that is blacklisted";
-                logger?.WriteDebug(
+                logger?.Debug(
                     reasonMessage);
                 return (true, reasonMessage);
             }
 
-            logger?.WriteDebug($"The directory '{sourceDir}' is not blacklisted");
+            logger?.Debug("The directory '{SourceDir}' is not blacklisted", sourceDir);
 
             return (false, string.Empty);
         }
@@ -160,7 +159,7 @@ namespace Arbor.X.Core.IO
 
                 if (isMatch)
                 {
-                    logger?.WriteDebug($"Segment '{segment}' matches pattern '{pattern}'");
+                    logger?.Debug("Segment '{Segment}' matches pattern '{Pattern}'", segment, pattern);
                 }
 
                 return isMatch;

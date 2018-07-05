@@ -2,7 +2,7 @@
 <Project>
   <PropertyGroup>
     <Deterministic>true</Deterministic>
-    <LangVersion>7.1</LangVersion>
+    <LangVersion>latest</LangVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Features>IOperation</Features>
     <DebugType>embedded</DebugType>

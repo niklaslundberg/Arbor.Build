@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using Arbor.Processing.Core;
 using Arbor.X.Core.IO;
-using Arbor.X.Core.Logging;
+
 using Arbor.X.Core.Tools.Testing;
 using Machine.Specifications;
+using Serilog.Core;
 
 namespace Arbor.X.Tests.Integration.Tests.MSpec
 {
@@ -21,7 +22,7 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
 
         Establish context = () =>
         {
-            var logger = new ConsoleLogger { LogLevel = LogLevel.Verbose };
+            var logger = Logger.None;
             finder = new UnitTestFinder(new List<Type>
                 {
                     typeof(BehaviorsAttribute)

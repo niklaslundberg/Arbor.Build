@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using Serilog;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.Logging;
+
 
 namespace Arbor.X.Core.Tools.EnvironmentVariables
 {
@@ -65,7 +65,7 @@ namespace Arbor.X.Core.Tools.EnvironmentVariables
 
             if (!succeeded)
             {
-                logger.WriteError(sb.ToString());
+                logger.Error(sb.ToString());
             }
 
             return succeeded ? ExitCode.Success : ExitCode.Failure;

@@ -1,6 +1,7 @@
 using Arbor.X.Core.IO;
-using Arbor.X.Core.Logging;
+
 using Machine.Specifications;
+using Serilog.Core;
 
 namespace Arbor.X.Tests.Integration.PathExtensions
 {
@@ -19,7 +20,7 @@ namespace Arbor.X.Tests.Integration.PathExtensions
             result = path_lookup_specification.IsFileBlackListed(
                 @"C:\test.vshost.exe",
                 allowNonExistingFiles: true,
-                logger: new ConsoleLogger()).Item1;
+                logger: Logger.None).Item1;
         };
 
         It should_be_true = () => result.ShouldBeTrue();

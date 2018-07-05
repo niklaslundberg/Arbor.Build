@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using Serilog;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Arbor.Aesculus.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
-using Arbor.X.Core.Logging;
+
 
 namespace Arbor.X.Core.Tools.Environments
 {

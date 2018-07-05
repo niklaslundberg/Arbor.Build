@@ -1,13 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Arbor.X.Core.Logging;
+
 using Arbor.X.Core.Tools.Testing;
 using Machine.Specifications;
 using Mono.Cecil;
+using Serilog.Core;
 
 namespace Arbor.X.Tests.Integration.Tests.MSpec
 {
+    [Ignore("Self")]
     [Subject(typeof(UnitTestFinder))]
     [Tags(MSpecInternalConstants.RecursiveArborXTest)]
     public class when_testing_this_test_type_for_behaves_like
@@ -17,7 +19,8 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
 
         Establish context = () =>
         {
-            var logger = new ConsoleLogger { LogLevel = LogLevel.Verbose };
+
+            var logger = Logger.None;
             finder = new UnitTestFinder(new List<Type>
                 {
                     typeof(Behaves_like<>)

@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using Serilog;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -7,7 +7,7 @@ using Arbor.Exceptions;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
-using Arbor.X.Core.Logging;
+
 using JetBrains.Annotations;
 
 namespace Arbor.X.Core.Tools.Cleanup
@@ -28,7 +28,7 @@ namespace Arbor.X.Core.Tools.Cleanup
 
             if (!cleanupBeforeBuildEnabled)
             {
-                logger.WriteVerbose("Cleanup before build is disabled");
+                logger.Verbose("Cleanup before build is disabled");
                 return ExitCode.Success;
             }
 
@@ -53,13 +53,12 @@ namespace Arbor.X.Core.Tools.Cleanup
 
                 if (result)
                 {
-                    logger.WriteVerbose($"Cleanup succeeded on attempt {attemptCount}");
+                    logger.Verbose("Cleanup succeeded on attempt {AttemptCount}", attemptCount);
                     cleanupSucceeded = true;
                 }
                 else
                 {
-                    logger.WriteVerbose(
-                        $"Attempt {attemptCount} of {maxAttempts} failed, could not cleanup the artifacts folder, retrying");
+                    logger.Verbose("Attempt {AttemptCount} of {MaxAttempts} failed, could not cleanup the artifacts folder, retrying", attemptCount, maxAttempts);
                     await Task.Delay(TimeSpan.FromMilliseconds(50), cancellationToken);
                 }
 
@@ -98,8 +97,7 @@ namespace Arbor.X.Core.Tools.Cleanup
 
         private static void DoCleanup(ILogger logger, DirectoryInfo artifactsDirectory)
         {
-            logger.Write(
-                $"Artifact cleanup is enabled, removing all files and folders in '{artifactsDirectory.FullName}'");
+            logger.Information("Artifact cleanup is enabled, removing all files and folders in '{FullName}'", artifactsDirectory.FullName);
 
             artifactsDirectory.DeleteIfExists();
             artifactsDirectory.Refresh();

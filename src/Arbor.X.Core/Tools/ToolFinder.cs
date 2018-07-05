@@ -2,8 +2,9 @@
 using System.Linq;
 using System.Reflection;
 using Arbor.Defensive.Collections;
-using Arbor.X.Core.Logging;
+
 using Autofac;
+using Serilog;
 
 namespace Arbor.X.Core.Tools
 {
@@ -31,7 +32,7 @@ namespace Arbor.X.Core.Tools
                 .OrderBy(item => item.Priority)
                 .ToList();
 
-            logger.WriteVerbose($"Found {prioritizedTools.Count} prioritized tools");
+            logger.Verbose("Found {Count} prioritized tools", prioritizedTools.Count);
 
             return prioritizedTools;
         }

@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using Serilog;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -7,7 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Versioning;
 using Arbor.X.Core.Assemblies;
-using Arbor.X.Core.Logging;
+
 using Mono.Cecil;
 
 namespace Arbor.X.Core.Tools.Testing
@@ -19,7 +19,7 @@ namespace Arbor.X.Core.Tools.Testing
 
         public UnitTestFinder(IEnumerable<Type> typesesToFind, bool debugLogEnabled = false, ILogger logger = null)
         {
-            _logger = logger ?? new NullLogger();
+            _logger = logger;
             _typesToFind = typesesToFind;
             DebugLogEnabled = debugLogEnabled;
         }
@@ -71,7 +71,7 @@ namespace Arbor.X.Core.Tools.Testing
 
             if (isBlacklisted)
             {
-                _logger.WriteDebug($"Directory '{fullName}' is blacklisted");
+                _logger?.Debug("Directory '{FullName}' is blacklisted", fullName);
                 return new HashSet<string>();
             }
 
@@ -108,7 +108,7 @@ namespace Arbor.X.Core.Tools.Testing
                     .Select(item => item.Assembly)
                     .ToList();
 
-                _logger.WriteDebug("Filtered to only include release assemblies");
+                _logger?.Debug("Filtered to only include release assemblies");
             }
             else if (releaseBuild.HasValue)
             {
@@ -120,12 +120,12 @@ namespace Arbor.X.Core.Tools.Testing
                     .Where(item => (item.IsDebug.HasValue && item.IsDebug.Value) || !item.IsDebug.HasValue)
                     .Select(item => item.Assembly)
                     .ToList();
-                _logger.WriteDebug("Filtered to only include debug assemblies");
+                _logger?.Debug("Filtered to only include debug assemblies");
             }
             else
             {
                 configurationFiltered = assemblies;
-                _logger.WriteDebug("No debug/release filter is used");
+                _logger?.Debug("No debug/release filter is used");
             }
 
             IReadOnlyCollection<string> testFixtureAssemblies = UnitTestFixtureAssemblies(configurationFiltered);
@@ -164,15 +164,14 @@ namespace Arbor.X.Core.Tools.Testing
 
                 if (any)
                 {
-                    _logger.WriteDebug($"Testing type '{toInvestigate}': is unit test fixture");
+                    _logger?.Debug("Testing type '{ToInvestigate}': is unit test fixture", toInvestigate);
                 }
 
                 return any;
             }
             catch (Exception ex)
             {
-                _logger.WriteDebug(
-                    $"Failed to determine if type {typeToInvestigate.Module.Assembly.FullName} is {string.Join(" | ", _typesToFind.Select(type => type.FullName))} {ex.Message}");
+                _logger?.Debug("Failed to determine if type {FullName} is {V} {Message}", typeToInvestigate.Module.Assembly.FullName, string.Join(" | ", _typesToFind.Select(type => type.FullName)), ex.Message);
                 return false;
             }
         }
@@ -196,7 +195,7 @@ namespace Arbor.X.Core.Tools.Testing
             bool result;
             try
             {
-                _logger.WriteDebug($"Testing assembly '{assembly}'");
+                _logger?.Debug("Testing assembly '{Assembly}'", assembly);
                 TypeDefinition[] types = assembly.Item1.MainModule.Types.ToArray();
                 bool anyType = types.Any(TryIsTypeTestFixture);
 
@@ -204,14 +203,13 @@ namespace Arbor.X.Core.Tools.Testing
             }
             catch (Exception)
             {
-                _logger.WriteDebug($"Could not get types from assembly '{assembly.Item1.FullName}'");
+                _logger?.Debug("Could not get types from assembly '{FullName}'", assembly.Item1.FullName);
                 result = false;
             }
 
             if (DebugLogEnabled || result)
             {
-                _logger.WriteDebug(
-                    $"Assembly {assembly.Item1.FullName}, found any class with {string.Join(" | ", _typesToFind.Select(type => type.FullName))}: {result}");
+                _logger?.Debug("Assembly {FullName}, found any class with {V}: {Result}", assembly.Item1.FullName, string.Join(" | ", _typesToFind.Select(type => type.FullName)), result);
             }
 
             return result;
@@ -326,8 +324,7 @@ namespace Arbor.X.Core.Tools.Testing
                         if (!targetFrameworkAttribute.FrameworkName.StartsWith(targetFrameworkPrefix,
                             StringComparison.OrdinalIgnoreCase))
                         {
-                            _logger.WriteDebug(
-                                $"The current assembly '{dllFile.FullName}' target framework attribute with value '{targetFrameworkAttribute.FrameworkName}' does not match the specified target framework '{targetFrameworkPrefix}'");
+                            _logger?.Debug("The current assembly '{FullName}' target framework attribute with value '{FrameworkName}' does not match the specified target framework '{TargetFrameworkPrefix}'", dllFile.FullName, targetFrameworkAttribute.FrameworkName, targetFrameworkPrefix);
                             return (null, null);
                         }
                     }
@@ -339,7 +336,7 @@ namespace Arbor.X.Core.Tools.Testing
 
                 if (DebugLogEnabled)
                 {
-                    _logger.WriteVerbose($"Found {count} types in assembly '{dllFile.FullName}'");
+                    _logger?.Verbose("Found {Count} types in assembly '{FullName}'", count, dllFile.FullName);
                 }
 
                 return (assemblyDefinition, dllFile);
@@ -348,7 +345,7 @@ namespace Arbor.X.Core.Tools.Testing
             {
                 string message = $"Could not load assembly '{dllFile.FullName}', type load exception. Ignoring.";
 
-                _logger.WriteDebug(message);
+                _logger?.Debug(message);
 #if DEBUG
                 Debug.WriteLine("{0}, {1}", message, ex);
 #endif
@@ -358,7 +355,7 @@ namespace Arbor.X.Core.Tools.Testing
             {
                 string message = $"Could not load assembly '{dllFile.FullName}', bad image format exception. Ignoring.";
 
-                _logger.WriteDebug(message);
+                _logger?.Debug(message);
 #if DEBUG
                 Debug.WriteLine("{0}, {1}", message, ex);
 #endif

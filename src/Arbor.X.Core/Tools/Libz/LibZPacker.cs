@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using Serilog;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
@@ -11,11 +11,10 @@ using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.IO;
-using Arbor.X.Core.Logging;
+
 using Arbor.X.Core.Parsing;
 using Arbor.X.Core.ProcessUtils;
 using Arbor.X.Core.Tools.ILRepack;
-using FubuCore;
 using FubuCsProjFile;
 using FubuCsProjFile.MSBuild;
 using JetBrains.Annotations;
@@ -45,8 +44,7 @@ namespace Arbor.X.Core.Tools.Libz
 
             if (!parseResult.Value)
             {
-                _logger.Write(
-                    $"LibZPacker is disabled, to enable it, set the flag {WellKnownVariables.ExternalTools_LibZ_Enabled} to true");
+                _logger.Information("LibZPacker is disabled, to enable it, set the flag {ExternalTools_LibZ_Enabled} to true", WellKnownVariables.ExternalTools_LibZ_Enabled);
                 return ExitCode.Success;
             }
 
@@ -60,7 +58,7 @@ namespace Arbor.X.Core.Tools.Libz
 
             if (!string.IsNullOrWhiteSpace(customExePath) && File.Exists(customExePath))
             {
-                logger.Write($"Using custom path for LibZ: '{customExePath}'");
+                logger.Information("Using custom path for LibZ: '{CustomExePath}'", customExePath);
                 _exePath = customExePath;
             }
 
@@ -82,7 +80,7 @@ namespace Arbor.X.Core.Tools.Libz
 
             string merges = string.Join(Environment.NewLine, ilMergeProjects.Select(item => item.FullName));
 
-            logger.Write($"Found {ilMergeProjects.Count} projects marked for merging:{Environment.NewLine}{merges}");
+            logger.Information("Found {Count} projects marked for merging:{NewLine}{Merges}", ilMergeProjects.Count, Environment.NewLine, merges);
 
             ImmutableArray<ILRepackData> filesToMerge;
             try
@@ -92,7 +90,7 @@ namespace Arbor.X.Core.Tools.Libz
             }
             catch (Exception ex)
             {
-                _logger.WriteError(ex.ToString());
+                _logger.Error(ex.ToString());
 
                 return ExitCode.Failure;
             }
@@ -148,19 +146,19 @@ namespace Arbor.X.Core.Tools.Libz
                     result = await ProcessRunner.ExecuteAsync(
                         _exePath,
                         arguments: arguments,
-                        standardOutLog: logger.Write,
-                        toolAction: logger.Write,
-                        standardErrorAction: logger.WriteError,
+                        standardOutLog: logger.Information,
+                        toolAction: logger.Information,
+                        standardErrorAction: logger.Error,
                         cancellationToken: cancellationToken);
                 }
 
                 if (!result.IsSuccess)
                 {
-                    logger.WriteError($"Could not LibZ '{fileInfo.FullName}'");
+                    logger.Error("Could not LibZ '{FullName}'", fileInfo.FullName);
                     return result;
                 }
 
-                logger.Write($"LibZ result: {mergedPath}");
+                logger.Information("LibZ result: {MergedPath}", mergedPath);
             }
 
             return ExitCode.Success;
@@ -178,7 +176,7 @@ namespace Arbor.X.Core.Tools.Libz
         private static bool IsNetSdkProject(FileInfo projectFile)
         {
             return File.ReadLines(projectFile.FullName)
-                .Any(line => line.Contains("Microsoft.NET.Sdk", StringComparison.OrdinalIgnoreCase));
+                .Any(line => line.IndexOf("Microsoft.NET.Sdk", StringComparison.OrdinalIgnoreCase) >= 0);
         }
 
         private async Task<ImmutableArray<ILRepackData>> GetMergeFilesAsync(FileInfo projectFile)
@@ -199,8 +197,7 @@ namespace Arbor.X.Core.Tools.Libz
 
             if (releaseDir is null)
             {
-                _logger.WriteWarning(
-                    $"The release directory '{Path.Combine(binDirectory.FullName, configuration)}' does not exist");
+                _logger.Warning("The release directory '{V}' does not exist", Path.Combine(binDirectory.FullName, configuration));
                 return ImmutableArray<ILRepackData>.Empty;
             }
 
@@ -208,8 +205,7 @@ namespace Arbor.X.Core.Tools.Libz
 
             if (releasePlatformDirectories.Length > 1)
             {
-                _logger.WriteWarning(
-                    $"Multiple release directories were found for  '{Path.Combine(binDirectory.FullName, configuration)}'");
+                _logger.Warning("Multiple release directories were found for  '{V}'", Path.Combine(binDirectory.FullName, configuration));
                 return ImmutableArray<ILRepackData>.Empty;
             }
 
@@ -231,15 +227,13 @@ namespace Arbor.X.Core.Tools.Libz
 
             if (useSdkProject)
             {
-                _logger.WriteWarning(
-                    $"Microsoft.NET.Sdk projects are in progress supported '{Path.Combine(binDirectory.FullName, configuration)}'");
+                _logger.Warning("Microsoft.NET.Sdk projects are in progress supported '{V}'", Path.Combine(binDirectory.FullName, configuration));
 
                 targetFrameworkVersionValue = string.Empty;
 
                 if (!releasePlatformDirectories.Any())
                 {
-                    _logger.WriteWarning(
-                        $"No release platform directories were found in '{Path.Combine(binDirectory.FullName, configuration)}'");
+                    _logger.Warning("No release platform directories were found in '{V}'", Path.Combine(binDirectory.FullName, configuration));
                     return ImmutableArray<ILRepackData>.Empty;
                 }
 
@@ -280,7 +274,7 @@ namespace Arbor.X.Core.Tools.Libz
 
                     if (!exitCode.IsSuccess)
                     {
-                        _logger.WriteWarning($"Could not publish project {projectFile.FullName}");
+                        _logger.Warning("Could not publish project {FullName}", projectFile.FullName);
                         throw new InvalidOperationException("Failed to get merge files for LibZ");
                     }
 
@@ -290,8 +284,7 @@ namespace Arbor.X.Core.Tools.Libz
 
                     if (publishDirectoryInfo is null)
                     {
-                        _logger.WriteWarning(
-                            $"The publish directory '{Path.Combine(platformDirectory.FullName, "publish")}' does not exist");
+                        _logger.Warning("The publish directory '{V}' does not exist", Path.Combine(platformDirectory.FullName, "publish"));
                         return ImmutableArray<ILRepackData>.Empty;
                     }
 

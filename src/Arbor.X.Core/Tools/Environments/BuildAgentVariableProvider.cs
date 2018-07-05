@@ -1,11 +1,11 @@
-using System;
+using System; using Serilog;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.GenericExtensions;
-using Arbor.X.Core.Logging;
+
 using Arbor.X.Core.Parsing;
 using Arbor.X.Core.Tools.Cleanup;
 using JetBrains.Annotations;
@@ -37,8 +37,7 @@ namespace Arbor.X.Core.Tools.Environments
 
             if (isBuildAgent.Parsed)
             {
-                logger.WriteVerbose(
-                    $"Successfully parsed environment variable '{WellKnownVariables.IsRunningOnBuildAgent}' with value '{isBuildAgent.OriginalValue}' as boolean with value: {isBuildAgent.Value}");
+                logger.Verbose("Successfully parsed environment variable '{IsRunningOnBuildAgent}' with value '{OriginalValue}' as boolean with value: {Value}", WellKnownVariables.IsRunningOnBuildAgent, isBuildAgent.OriginalValue, isBuildAgent.Value);
                 isBuildAgentValue = isBuildAgent.Value;
             }
             else

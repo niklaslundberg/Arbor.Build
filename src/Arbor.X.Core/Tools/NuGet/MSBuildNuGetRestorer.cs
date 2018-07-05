@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
-using Arbor.X.Core.Logging;
+
 using Arbor.X.Core.ProcessUtils;
 using JetBrains.Annotations;
+using Serilog;
 
 namespace Arbor.X.Core.Tools.NuGet
 {
@@ -41,7 +42,7 @@ namespace Arbor.X.Core.Tools.NuGet
                 DefaultPaths.DefaultPathLookupSpecification.AddExcludedDirectorySegments(new[] { "node_modules" });
 
             var blackListStatus = solutionFiles
-                .Select(file => new { File = file, Status = pathLookupSpecification.IsFileBlackListed(file) })
+                .Select(file => new { File = file, Status = pathLookupSpecification.IsFileBlackListed(file, rootPath=rootPath) })
                 .ToArray();
 
             string[] included = blackListStatus
@@ -55,19 +56,19 @@ namespace Arbor.X.Core.Tools.NuGet
 
             if (included.Length > 1)
             {
-                logger.WriteError($"Expected exactly 1 solution file, found {included.Length}, {string.Join(", ", included)}");
+                logger.Error("Expected exactly 1 solution file, found {Length}, {V}", included.Length, string.Join(", ", included));
                 return ExitCode.Failure;
             }
 
             if (included.Length == 0)
             {
-                logger.WriteError("Expected exactly 1 solution file, found 0");
+                logger.Error("Expected exactly 1 solution file, found 0");
                 return ExitCode.Failure;
             }
 
             if (excluded.Length > 0)
             {
-                logger.WriteWarning($"Found blacklisted solution files: {string.Join(", ", excluded.Select(excludedItem => $"{excludedItem.File} ({excludedItem.Status.Item2})"))}");
+                logger.Warning("Found blacklisted solution files: {V}", string.Join(", ", excluded.Select(excludedItem => $"{excludedItem.File} ({excludedItem.Status.Item2})")));
             }
 
             string solutionFile = included.Single();

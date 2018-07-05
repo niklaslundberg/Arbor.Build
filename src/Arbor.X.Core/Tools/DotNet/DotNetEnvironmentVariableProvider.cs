@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using Serilog;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.Logging;
+
 using Arbor.X.Core.Tools.Cleanup;
 using JetBrains.Annotations;
 
@@ -38,7 +38,7 @@ namespace Arbor.X.Core.Tools.DotNet
 
                 if (string.IsNullOrWhiteSpace(winDir))
                 {
-                    logger.WriteWarning("Error finding Windows directory");
+                    logger.Warning("Error finding Windows directory");
                     return Array.Empty<IVariable>();
                 }
 
@@ -52,7 +52,7 @@ namespace Arbor.X.Core.Tools.DotNet
 
                 if (!exitCode.IsSuccess)
                 {
-                    logger.WriteError("Failed to find dotnet.exe with where.exe");
+                    logger.Error("Failed to find dotnet.exe with where.exe");
                 }
 
                 dotNetExePath =
@@ -60,8 +60,7 @@ namespace Arbor.X.Core.Tools.DotNet
             }
             else if (!File.Exists(dotNetExePath))
             {
-                logger.WriteWarning(
-                    $"The specified path to dotnet.exe is from variable '{WellKnownVariables.DotNetExePath}' is set to '{dotNetExePath}' but the file does not exist");
+                logger.Warning("The specified path to dotnet.exe is from variable '{DotNetExePath}' is set to '{DotNetExePath1}' but the file does not exist", WellKnownVariables.DotNetExePath, dotNetExePath);
                 return Array.Empty<IVariable>();
             }
 

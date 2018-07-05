@@ -2,9 +2,10 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.Logging;
+
 using Arbor.X.Core.Tools.Cleanup;
 using JetBrains.Annotations;
+using Serilog;
 
 namespace Arbor.X.Core.Tools.TeamCity
 {
@@ -27,8 +28,7 @@ namespace Arbor.X.Core.Tools.TeamCity
 
             if (buildVariables.HasKey(WellKnownVariables.TeamCity.ExternalTools_TeamCity_IsRunningInTeamCity))
             {
-                logger.WriteWarning(
-                    $"The build variable '{WellKnownVariables.TeamCity.ExternalTools_TeamCity_IsRunningInTeamCity}' is already defined");
+                logger.Warning("The build variable '{ExternalTools_TeamCity_IsRunningInTeamCity}' is already defined", WellKnownVariables.TeamCity.ExternalTools_TeamCity_IsRunningInTeamCity);
             }
             else
             {

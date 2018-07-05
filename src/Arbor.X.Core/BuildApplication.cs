@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; using Serilog;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -19,7 +19,6 @@ using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.IO;
-using Arbor.X.Core.Logging;
 using Arbor.X.Core.Parsing;
 using Arbor.X.Core.Tools;
 using Arbor.X.Core.Tools.Git;
@@ -56,20 +55,16 @@ namespace Arbor.X.Core
             {
                 if (simulateDebug)
                 {
-                    _logger.Write("Simulating debug");
+                    _logger.Information("Simulating debug");
                 }
 
                 await StartWithDebuggerAsync(args).ConfigureAwait(false);
 
-                if (debugLoggerEnabled)
-                {
-                    _logger = new DebugLogger(_logger);
-                }
             }
 
-            _container = await BuildBootstrapper.StartAsync();
+            _container = await BuildBootstrapper.StartAsync(_logger);
 
-            _logger.Write($"Using logger '{_logger.GetType()}' with log level {_logger.LogLevel}");
+            _logger.Information("Using logger '{Type}'", _logger.GetType());
             _cancellationToken = CancellationToken.None;
             ExitCode exitCode;
             var stopwatch = new Stopwatch();
@@ -81,25 +76,25 @@ namespace Arbor.X.Core
                 if (!systemToolsResult.IsSuccess)
                 {
                     const string ToolsMessage = "All system tools did not succeed";
-                    _logger.WriteError(ToolsMessage);
+                    _logger.Error(ToolsMessage);
 
                     exitCode = systemToolsResult;
                 }
                 else
                 {
                     exitCode = ExitCode.Success;
-                    _logger.Write("All tools succeeded");
+                    _logger.Information("All tools succeeded");
                 }
             }
             catch (Exception ex)
             {
-                _logger.WriteError(ex.ToString());
+                _logger.Error(ex.ToString());
                 exitCode = ExitCode.Failure;
             }
 
             stopwatch.Stop();
 
-            _logger.Write($"Arbor.X.Build total elapsed time in seconds: {stopwatch.Elapsed.TotalSeconds:F}");
+            _logger.Information("Arbor.X.Build total elapsed time in seconds: {TotalSeconds:F}", stopwatch.Elapsed.TotalSeconds);
 
             ParseResult<int> exitDelayInMilliseconds =
                 Environment.GetEnvironmentVariable(WellKnownVariables.BuildApplicationExitDelayInMilliseconds)
@@ -107,8 +102,7 @@ namespace Arbor.X.Core
 
             if (exitDelayInMilliseconds > 0)
             {
-                _logger.Write(
-                    $"Delaying build application exit with {exitDelayInMilliseconds} milliseconds specified in '{WellKnownVariables.BuildApplicationExitDelayInMilliseconds}'");
+                _logger.Information("Delaying build application exit with {ExitDelayInMilliseconds} milliseconds specified in '{BuildApplicationExitDelayInMilliseconds}'", exitDelayInMilliseconds, WellKnownVariables.BuildApplicationExitDelayInMilliseconds);
                 await Task.Delay(TimeSpan.FromMilliseconds(exitDelayInMilliseconds), _cancellationToken);
             }
 
@@ -228,7 +222,8 @@ namespace Arbor.X.Core
                 [WellKnownVariables.XUnitNetCoreAppV2XmlXsltToJunitEnabled] = "true",
                 [WellKnownVariables.XUnitNetCoreAppEnabled] = "true",
                 [WellKnownVariables.XUnitNetCoreAppXmlAnalysisEnabled] = "true",
-                [WellKnownVariables.AssemblyUseReflectionOnlyMode] = "true"
+                [WellKnownVariables.AssemblyUseReflectionOnlyMode] = "true",
+                [WellKnownVariables.MSBuildNuGetRestoreEnabled] = "true",
             };
 
             foreach (KeyValuePair<string, string> environmentVariable in environmentVariables)
@@ -236,7 +231,6 @@ namespace Arbor.X.Core
                 Environment.SetEnvironmentVariable(environmentVariable.Key, environmentVariable.Value);
             }
 
-            _logger.LogLevel = LogLevel.Debug;
 
             WriteDebug("Starting with debugger attached");
         }
@@ -244,7 +238,7 @@ namespace Arbor.X.Core
         private void WriteDebug(string message)
         {
             Debug.WriteLine(message);
-            _logger.WriteDebug(message);
+            _logger.Debug(message);
         }
 
         private async Task<ExitCode> RunSystemToolsAsync()
@@ -273,19 +267,12 @@ namespace Arbor.X.Core
 
             if (buildVariables.GetBooleanByKey(WellKnownVariables.ShowAvailableVariablesEnabled, true))
             {
-                _logger.Write(string.Format(
-                    "{0}Available wellknown variables: {0}{0}{1}",
-                    Environment.NewLine,
-                    variableAsTable));
+                _logger.Information("{NewLine}Available wellknown variables: {NewLine1}{NewLine2}{VariableAsTable}", Environment.NewLine, Environment.NewLine, Environment.NewLine, variableAsTable);
             }
 
             if (buildVariables.GetBooleanByKey(WellKnownVariables.ShowDefinedVariablesEnabled, true))
             {
-                _logger.Write(string.Format(
-                    "{1}Defined build variables: [{0}] {1}{1}{2}",
-                    buildVariables.Count,
-                    Environment.NewLine,
-                    buildVariables.OrderBy(variable => variable.Key).Print()));
+                _logger.Information("{NewLine}Defined build variables: [{Count}] {NewLine1}{NewLine2}{V}", Environment.NewLine, buildVariables.Count, Environment.NewLine, Environment.NewLine, buildVariables.OrderBy(variable => variable.Key).Print());
             }
 
             IReadOnlyCollection<ToolWithPriority> toolWithPriorities = ToolFinder.GetTools(_container, _logger);
@@ -319,7 +306,7 @@ namespace Arbor.X.Core
                     boxCharacter,
                     toolWithPriority);
 
-                _logger.Write(message);
+                _logger.Information(message);
 
                 Stopwatch stopwatch = Stopwatch.StartNew();
 
@@ -332,7 +319,7 @@ namespace Arbor.X.Core
 
                     if (toolResult.IsSuccess)
                     {
-                        _logger.Write($"The tool {toolWithPriority} succeeded with exit code {toolResult}");
+                        _logger.Information("The tool {ToolWithPriority} succeeded with exit code {ToolResult}", toolWithPriority, toolResult);
 
                         toolResults.Add(new ToolResult(
                             toolWithPriority,
@@ -341,7 +328,7 @@ namespace Arbor.X.Core
                     }
                     else
                     {
-                        _logger.WriteError($"The tool {toolWithPriority} failed with exit code {toolResult}");
+                        _logger.Error("The tool {ToolWithPriority} failed with exit code {ToolResult}", toolWithPriority, toolResult);
                         result = toolResult.Result;
 
                         toolResults.Add(
@@ -360,15 +347,14 @@ namespace Arbor.X.Core
                         ToolResultType.Failed,
                         $"threw {ex.GetType().Name}",
                         stopwatch.Elapsed));
-                    _logger.WriteError($"The tool {toolWithPriority} failed with exception {ex}");
+                    _logger.Error(ex, "The tool {ToolWithPriority} failed with exception", toolWithPriority);
                     result = 1;
                 }
             }
 
             string resultTable = BuildResults(toolResults);
 
-            _logger.Write(
-                $"{Environment.NewLine}{new string('.', 100)}{Environment.NewLine}Tool results:{Environment.NewLine}{resultTable}");
+            _logger.Information("{NewLine}{V}{NewLine1}Tool results:{NewLine2}{ResultTable}", Environment.NewLine, new string('.', 100), Environment.NewLine, Environment.NewLine, resultTable);
 
             if (result != 0)
             {
@@ -401,7 +387,7 @@ namespace Arbor.X.Core
                     })
                 .DisplayAsTable());
 
-            _logger.Write(sb.ToString());
+            _logger.Information(sb.ToString());
         }
 
         private async Task<IReadOnlyCollection<IVariable>> GetBuildVariablesAsync()
@@ -412,8 +398,7 @@ namespace Arbor.X.Core
                 Environment.GetEnvironmentVariable(WellKnownVariables.VariableFileSourceEnabled)
                     .TryParseBool(false))
             {
-                _logger.Write(
-                    $"The environment variable {WellKnownVariables.VariableFileSourceEnabled} is set to true, using file source to set environment variables");
+                _logger.Information("The environment variable {VariableFileSourceEnabled} is set to true, using file source to set environment variables", WellKnownVariables.VariableFileSourceEnabled);
 
                 var files = new List<string>
                     { "arborx_environmentvariables.json", "arborx_environmentvariables.json.user" };
@@ -431,8 +416,7 @@ namespace Arbor.X.Core
             }
             else
             {
-                _logger.WriteDebug(
-                    $"The environment variable {WellKnownVariables.VariableFileSourceEnabled} is not set or false, skipping file source to set environment variables");
+                _logger.Debug("The environment variable {VariableFileSourceEnabled} is not set or false, skipping file source to set environment variables", WellKnownVariables.VariableFileSourceEnabled);
             }
 
             IEnumerable<IVariable> result = await RunOnceAsync().ConfigureAwait(false);
@@ -450,11 +434,7 @@ namespace Arbor.X.Core
                 providers.Select(item => new Dictionary<string, string> { { "Provider", item.GetType().Name } })
                     .DisplayAsTable();
 
-            _logger.WriteVerbose(string.Format(
-                "{1}Available variable providers: [{0}]{1}{1}{2}{1}",
-                providers.Count,
-                Environment.NewLine,
-                displayAsTable));
+            _logger.Verbose("{NewLine}Available variable providers: [{Count}]{NewLine1}{NewLine2}{DisplayAsTable}{NewLine3}", Environment.NewLine, providers.Count, Environment.NewLine, Environment.NewLine, displayAsTable, Environment.NewLine);
 
             foreach (IVariableProvider provider in providers)
             {
@@ -471,13 +451,11 @@ namespace Arbor.X.Core
                         {
                             if (string.IsNullOrWhiteSpace(var.Value))
                             {
-                                _logger.WriteWarning(
-                                    $"The build variable {var.Key} already exists with empty value, new value is also empty");
+                                _logger.Warning("The build variable {Key} already exists with empty value, new value is also empty", var.Key);
                                 continue;
                             }
 
-                            _logger.WriteWarning(
-                                $"The build variable {var.Key} already exists with empty value, using new value '{var.Value}'");
+                            _logger.Warning("The build variable {Key} already exists with empty value, using new value '{Value}'", var.Key, var.Value);
 
                             buildVariables.Remove(existing);
                         }
@@ -496,13 +474,11 @@ namespace Arbor.X.Core
                             {
                                 buildVariables.Remove(existing);
 
-                                _logger.Write(
-                                    $"Flag '{WellKnownVariables.VariableOverrideEnabled}' is set to true, existing variable with key '{existing.Key}' and value '{existing.Value}', replacing the value with '{var.Value}'");
+                                _logger.Information("Flag '{VariableOverrideEnabled}' is set to true, existing variable with key '{Key}' and value '{Value}', replacing the value with '{Value1}'", WellKnownVariables.VariableOverrideEnabled, existing.Key, existing.Value, var.Value);
                             }
                             else
                             {
-                                _logger.WriteWarning(
-                                    $"The build variable '{var.Key}' already exists with value '{var.Value}'. To override variables, set flag '{WellKnownVariables.VariableOverrideEnabled}' to true");
+                                _logger.Warning("The build variable '{Key}' already exists with value '{Value}'. To override variables, set flag '{VariableOverrideEnabled}' to true", var.Key, var.Value, WellKnownVariables.VariableOverrideEnabled);
                                 continue;
                             }
                         }
@@ -562,18 +538,12 @@ namespace Arbor.X.Core
 
             if (alreadyDefined.Any())
             {
-                _logger.WriteWarning(string.Format(
-                    "{0}Compatibility build variables alread defined {0}{0}{1}{0}",
-                    Environment.NewLine,
-                    alreadyDefined.DisplayAsTable()));
+                _logger.Warning("{NewLine}Compatibility build variables alread defined {NewLine1}{NewLine2}{V}{NewLine3}", Environment.NewLine, Environment.NewLine, Environment.NewLine, alreadyDefined.DisplayAsTable(), Environment.NewLine);
             }
 
             if (compatibilities.Any())
             {
-                _logger.WriteVerbose(string.Format(
-                    "{0}Compatibility build variables added {0}{0}{1}{0}",
-                    Environment.NewLine,
-                    compatibilities.DisplayAsTable()));
+                _logger.Verbose("{NewLine}Compatibility build variables added {NewLine1}{NewLine2}{V}{NewLine3}", Environment.NewLine, Environment.NewLine, Environment.NewLine, compatibilities.DisplayAsTable(), Environment.NewLine);
             }
 
             IVariable arborXBranchName =
@@ -587,8 +557,7 @@ namespace Arbor.X.Core
 
                 if (!buildVariables.Any(var => var.Key.Equals(BranchKey, StringComparison.InvariantCultureIgnoreCase)))
                 {
-                    _logger.WriteVerbose(
-                        $"Build variable with key '{BranchKey}' was not defined, using value from variable key {arborXBranchName.Key} ('{arborXBranchName.Value}')");
+                    _logger.Verbose("Build variable with key '{BranchKey}' was not defined, using value from variable key {Key} ('{Value}')", BranchKey, arborXBranchName.Key, arborXBranchName.Value);
                     buildVariables.Add(new EnvironmentVariable(BranchKey, arborXBranchName.Value));
                 }
 
@@ -596,8 +565,7 @@ namespace Arbor.X.Core
                     !buildVariables.Any(
                         var => var.Key.Equals(BranchNameKey, StringComparison.InvariantCultureIgnoreCase)))
                 {
-                    _logger.WriteVerbose(
-                        $"Build variable with key '{BranchNameKey}' was not defined, using value from variable key {arborXBranchName.Key} ('{arborXBranchName.Value}')");
+                    _logger.Verbose("Build variable with key '{BranchNameKey}' was not defined, using value from variable key {Key} ('{Value}')", BranchNameKey, arborXBranchName.Key, arborXBranchName.Value);
                     buildVariables.Add(new EnvironmentVariable(BranchNameKey, arborXBranchName.Value));
                 }
             }
@@ -611,7 +579,7 @@ namespace Arbor.X.Core
 
             if (string.IsNullOrWhiteSpace(branchName))
             {
-                _logger.WriteVerbose("There is no branch name defined in the environment variables, asking Git");
+                _logger.Verbose("There is no branch name defined in the environment variables, asking Git");
                 Tuple<int, string> branchNameResult = await GetBranchNameByAskingGitExeAsync();
 
                 if (branchNameResult.Item1 != 0)
@@ -635,14 +603,13 @@ namespace Arbor.X.Core
             {
                 string configuration = GetConfiguration(branchName);
 
-                _logger.WriteVerbose($"Using configuration '{configuration}' based on branch name '{branchName}'");
+                _logger.Verbose("Using configuration '{Configuration}' based on branch name '{BranchName}'", configuration, branchName);
 
                 variables.Add(WellKnownVariables.Configuration, configuration);
             }
             else
             {
-                _logger.WriteVerbose(
-                    $"Using configuration from environment variable '{WellKnownVariables.Configuration}' with value '{configurationFromEnvironment}'");
+                _logger.Verbose("Using configuration from environment variable '{Configuration}' with value '{ConfigurationFromEnvironment}'", WellKnownVariables.Configuration, configurationFromEnvironment);
                 variables.Add(WellKnownVariables.Configuration, configurationFromEnvironment);
             }
 
@@ -664,7 +631,7 @@ namespace Arbor.X.Core
                     variablesWithNewLinesBuilder.AppendLine($"'{keyValuePair.Value}'");
                 }
 
-                _logger.WriteError(variablesWithNewLinesBuilder.ToString());
+                _logger.Error(variablesWithNewLinesBuilder.ToString());
 
                 throw new InvalidOperationException(variablesWithNewLinesBuilder.ToString());
             }
@@ -698,13 +665,13 @@ namespace Arbor.X.Core
 
         private async Task<Tuple<int, string>> GetBranchNameByAskingGitExeAsync()
         {
-            _logger.Write($"Environment variable '{WellKnownVariables.BranchName}' is not defined or has empty value");
+            _logger.Information("Environment variable '{BranchName}' is not defined or has empty value", WellKnownVariables.BranchName);
 
             string gitExePath = GitHelper.GetGitExePath(_logger);
 
             if (!File.Exists(gitExePath))
             {
-                _logger.WriteDebug($"The git path '{gitExePath}' does not exist");
+                _logger.Debug("The git path '{GitExePath}' does not exist", gitExePath);
 
                 string githubForWindowsPath =
                     Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "GitHub");
@@ -738,7 +705,7 @@ namespace Arbor.X.Core
 
                 if (!File.Exists(gitExePath))
                 {
-                    _logger.WriteError($"Could not find Git. '{gitExePath}' does not exist");
+                    _logger.Error("Could not find Git. '{GitExePath}' does not exist", gitExePath);
                     return Tuple.Create(-1, string.Empty);
                 }
             }
@@ -747,7 +714,7 @@ namespace Arbor.X.Core
 
             if (currentDirectory == null)
             {
-                _logger.WriteError("Could not find source root");
+                _logger.Error("Could not find source root");
                 return Tuple.Create(-1, string.Empty);
             }
 
@@ -755,7 +722,7 @@ namespace Arbor.X.Core
 
             if (string.IsNullOrWhiteSpace(branchName))
             {
-                _logger.WriteError("Git branch name was null or empty");
+                _logger.Error("Git branch name was null or empty");
                 return Tuple.Create(-1, string.Empty);
             }
 
@@ -799,18 +766,18 @@ namespace Arbor.X.Core
                             ProcessRunner.ExecuteAsync(
                                 gitExePath,
                                 arguments: argumentsList,
-                                standardErrorAction: _logger.WriteError,
+                                standardErrorAction: _logger.Error,
                                 standardOutLog: (message, prefix) =>
                                 {
-                                    _logger.WriteDebug(message);
+                                    _logger.Debug(message);
                                     gitBranchBuilder.AppendLine(message);
                                 },
-                                toolAction: _logger.Write,
+                                toolAction: _logger.Information,
                                 cancellationToken: _cancellationToken);
 
                     if (!result.IsSuccess)
                     {
-                        _logger.WriteWarning($"Could not get Git branch name. Git process exit code: {result}");
+                        _logger.Warning("Could not get Git branch name. Git process exit code: {Result}", result);
                     }
                     else
                     {
@@ -837,7 +804,7 @@ namespace Arbor.X.Core
 
             if (string.IsNullOrWhiteSpace(branchName))
             {
-                _logger.WriteError("Could not get Git branch name.");
+                _logger.Error("Could not get Git branch name.");
             }
 
             return branchName;

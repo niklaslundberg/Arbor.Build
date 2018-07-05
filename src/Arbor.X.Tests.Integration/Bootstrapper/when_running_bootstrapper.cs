@@ -3,8 +3,9 @@ using System.IO;
 using Arbor.Processing.Core;
 using Arbor.X.Bootstrapper;
 using Arbor.X.Core.IO;
-using Arbor.X.Core.Logging;
+
 using Machine.Specifications;
+using Serilog.Core;
 
 namespace Arbor.X.Tests.Integration.Bootstrapper
 {
@@ -41,7 +42,7 @@ namespace Arbor.X.Tests.Integration.Bootstrapper
             startOptions = new BootstrapStartOptions(baseDirectory.FullName,
                 true,
                 "develop");
-            bootstrapper = new X.Bootstrapper.Bootstrapper(LogLevel.Verbose);
+            bootstrapper = new X.Bootstrapper.Bootstrapper(Logger.None);
         };
 
         Because of = () => { exitCode = bootstrapper.StartAsync(startOptions).Result; };

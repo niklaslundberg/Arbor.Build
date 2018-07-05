@@ -6,12 +6,14 @@ using System.Threading;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
-using Arbor.X.Core.Logging;
+
 using Arbor.X.Core.Tools.Testing;
 using Machine.Specifications;
+using Serilog.Core;
 
 namespace Arbor.X.Tests.Integration.Tests.MSpec
 {
+    [Ignore("Self")]
     [Subject(typeof(MSpecTestRunner))]
     [Tags(MSpecInternalConstants.RecursiveArborXTest)]
     public class when_running_mspec_on_self_with_nunit_xml
@@ -80,7 +82,7 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
         Because of =
             () =>
                 ExitCode =
-                    testRunner.ExecuteAsync(new ConsoleLogger { LogLevel = LogLevel.Verbose },
+                    testRunner.ExecuteAsync(Logger.None,
                             variables,
                             new CancellationToken())
                         .Result;
