@@ -21,7 +21,6 @@ namespace Arbor.X.Tests.Integration.Tests.Xunit
 
         Establish context = () =>
         {
-
             var logger = Logger.None;
             finder = new UnitTestFinder(new List<Type>
                 {

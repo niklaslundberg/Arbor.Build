@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using Arbor.Processing.Core;
-using Arbor.X.Bootstrapper;
+using Arbor.X.Core.Bootstrapper;
 using Arbor.X.Core.IO;
 
 using Machine.Specifications;
@@ -10,10 +10,10 @@ using Serilog.Core;
 namespace Arbor.X.Tests.Integration.Bootstrapper
 {
     [Ignore("Not complete")]
-    [Subject(typeof(X.Bootstrapper.Bootstrapper))]
+    [Subject(typeof(Core.Bootstrapper.Bootstrapper))]
     public class when_running_bootstrapper
     {
-        static X.Bootstrapper.Bootstrapper bootstrapper;
+        static Core.Bootstrapper.Bootstrapper bootstrapper;
 
         static BootstrapStartOptions startOptions;
         static ExitCode exitCode;
@@ -42,7 +42,7 @@ namespace Arbor.X.Tests.Integration.Bootstrapper
             startOptions = new BootstrapStartOptions(baseDirectory.FullName,
                 true,
                 "develop");
-            bootstrapper = new X.Bootstrapper.Bootstrapper(Logger.None);
+            bootstrapper = new Core.Bootstrapper.Bootstrapper(Logger.None);
         };
 
         Because of = () => { exitCode = bootstrapper.StartAsync(startOptions).Result; };

@@ -12,7 +12,6 @@ using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.GenericExtensions;
 
-
 namespace Arbor.X.Core.Tools.Cleanup
 {
     [Priority(1001, runAlways: true)]

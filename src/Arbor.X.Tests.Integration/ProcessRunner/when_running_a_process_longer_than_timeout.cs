@@ -20,6 +20,7 @@ namespace Arbor.X.Tests.Integration.ProcessRunner
         static ExitCode exitCode = new ExitCode(99);
         static TaskCanceledException exception;
         static ILogger logger = Logger.None;
+
         Cleanup after = () =>
         {
             if (File.Exists(testPath))
@@ -41,7 +42,6 @@ EXIT /b 2
 ";
 
             File.WriteAllText(testPath, batchContent, Encoding.Default);
-
         };
 
         Because of = () => RunAsync().Wait();
@@ -63,7 +63,7 @@ EXIT /b 2
                             standardErrorAction: (message, prefix) => logger.Error(message, "ERROR"),
                             toolAction: (message, prefix) => logger.Information(message, "TOOL"),
                             verboseAction: (message, prefix) => logger.Information(message, "VERBOSE"),
-                            cancellationToken: cancellationTokenSource.Token);
+                            cancellationToken: cancellationTokenSource.Token).ConfigureAwait(false);
             }
             catch (TaskCanceledException ex)
             {

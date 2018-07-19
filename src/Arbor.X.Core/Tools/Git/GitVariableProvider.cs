@@ -184,7 +184,7 @@ namespace Arbor.X.Core.Tools.Git
                                 arguments: arguments,
                                 standardOutLog: (message, category) => stringBuilder.Append(message),
                                 toolAction: logger.Information,
-                                cancellationToken: cancellationToken);
+                                cancellationToken: cancellationToken).ConfigureAwait(false);
 
                             if (!exitCode.IsSuccess)
                             {

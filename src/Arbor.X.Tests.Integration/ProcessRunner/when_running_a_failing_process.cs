@@ -33,7 +33,6 @@ namespace Arbor.X.Tests.Integration.ProcessRunner
 EXIT /b 3
 ";
             File.WriteAllText(testPath, batchContent, Encoding.Default);
-
         };
 
         Because of = () => RunAsync().Wait();
@@ -50,7 +49,7 @@ EXIT /b 3
                             standardOutLog: (message, prefix) => logger.Information(message, "STANDARD"),
                             standardErrorAction: (message, prefix) => logger.Error(message, "ERROR"),
                             toolAction: (message, prefix) => logger.Information(message, "TOOL"),
-                            verboseAction: (message, prefix) => logger.Information(message, "VERBOSE"));
+                            verboseAction: (message, prefix) => logger.Information(message, "VERBOSE")).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

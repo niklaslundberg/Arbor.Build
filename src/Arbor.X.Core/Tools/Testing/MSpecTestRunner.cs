@@ -90,7 +90,7 @@ namespace Arbor.X.Core.Tools.Testing
                         FrameworkConstants.NetFramework)
                     .ToList();
 
-            if (!testDlls.Any())
+            if (testDlls.Count == 0)
             {
                 logger.Warning("No DLL files with {MachineSpecificationsName} specifications was found", MachineSpecificationsConstants.MachineSpecificationsName);
                 return ExitCode.Success;
@@ -129,7 +129,7 @@ namespace Arbor.X.Core.Tools.Testing
             bool hasArborTestDll =
                 testDlls.Any(dll => dll.IndexOf("arbor", StringComparison.InvariantCultureIgnoreCase) >= 0);
 
-            if (hasArborTestDll || excludedTags.Any())
+            if (hasArborTestDll || excludedTags.Count > 0)
             {
                 var allExcludedTags = new List<string>();
 
@@ -140,7 +140,7 @@ namespace Arbor.X.Core.Tools.Testing
                     allExcludedTags.Add(MSpecInternalConstants.RecursiveArborXTest);
                 }
 
-                if (excludedTags.Any())
+                if (excludedTags.Count > 0)
                 {
                     allExcludedTags.AddRange(excludedTags);
                 }
@@ -165,7 +165,7 @@ namespace Arbor.X.Core.Tools.Testing
                     toolAction: logger.Information,
                     verboseAction: logger.Verbose,
                     environmentVariables: environmentVariables,
-                    debugAction: logger.Debug);
+                    debugAction: logger.Debug).ConfigureAwait(false);
 
             if (buildVariables.GetBooleanByKey(
                 WellKnownVariables.MSpecJUnitXslTransformationEnabled,
@@ -181,7 +181,7 @@ namespace Arbor.X.Core.Tools.Testing
                     .Where(report => !report.Name.EndsWith(TestReportXslt.JUnitSuffix, StringComparison.Ordinal))
                     .ToReadOnlyCollection();
 
-                if (xmlReports.Any())
+                if (xmlReports.Count > 0)
                 {
                     foreach (FileInfo xmlReport in xmlReports)
                     {

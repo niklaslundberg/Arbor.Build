@@ -20,10 +20,8 @@ using Arbor.X.Core.IO;
 
 using Arbor.X.Core.Parsing;
 using Arbor.X.Core.Tools.NuGet;
-using FubuCsProjFile;
-using FubuCsProjFile.MSBuild;
+using Arbor.Xdt;
 using JetBrains.Annotations;
-using Microsoft.Web.XmlTransform;
 
 namespace Arbor.X.Core.Tools.MSBuild
 {
@@ -31,7 +29,7 @@ namespace Arbor.X.Core.Tools.MSBuild
     [UsedImplicitly]
     public class SolutionBuilder : ITool
     {
-        readonly List<FileAttributes> _blackListedByAttributes = new List<FileAttributes>
+        private readonly List<FileAttributes> _blackListedByAttributes = new List<FileAttributes>
         {
             FileAttributes.Hidden,
             FileAttributes.System,
@@ -39,59 +37,59 @@ namespace Arbor.X.Core.Tools.MSBuild
             FileAttributes.Archive
         };
 
-        readonly List<string> _buildConfigurations = new List<string>();
+        private readonly List<string> _buildConfigurations = new List<string>();
 
-        readonly List<string> _knownPlatforms = new List<string> { "x86", "x64", "Any CPU" };
+        private readonly List<string> _knownPlatforms = new List<string> { "x86", "x64", "Any CPU" };
 
-        readonly PathLookupSpecification _pathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification.AddExcludedDirectorySegments(new[] { "node_modules" });
-        readonly List<string> _platforms = new List<string>();
+        private readonly PathLookupSpecification _pathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification.AddExcludedDirectorySegments(new[] { "node_modules" });
+        private readonly List<string> _platforms = new List<string>();
 
-        bool _appDataJobsEnabled;
+        private bool _appDataJobsEnabled;
 
-        bool _applicationmetadataEnabled;
+        private bool _applicationmetadataEnabled;
 
-        string _artifactsPath;
+        private string _artifactsPath;
 
-        IReadOnlyCollection<IVariable> _buildVariables;
-        CancellationToken _cancellationToken;
+        private IReadOnlyCollection<IVariable> _buildVariables;
+        private CancellationToken _cancellationToken;
 
-        bool _cleanBinXmlFilesForAssembliesEnabled;
+        private bool _cleanBinXmlFilesForAssembliesEnabled;
 
-        bool _cleanWebJobsXmlFilesForAssembliesEnabled;
+        private bool _cleanWebJobsXmlFilesForAssembliesEnabled;
 
-        bool _codeAnalysisEnabled;
-        bool _configurationTransformsEnabled;
+        private bool _codeAnalysisEnabled;
+        private bool _configurationTransformsEnabled;
 
-        bool _createNuGetWebPackage;
-        bool _createWebDeployPackages;
-        string _defaultTarget;
+        private bool _createNuGetWebPackage;
+        private bool _createWebDeployPackages;
+        private string _defaultTarget;
 
-        IReadOnlyCollection<string> _excludedNuGetWebPackageFiles;
-        IReadOnlyCollection<string> _excludedWebJobsDirectorySegments;
+        private IReadOnlyCollection<string> _excludedNuGetWebPackageFiles;
+        private IReadOnlyCollection<string> _excludedWebJobsDirectorySegments;
 
-        IReadOnlyCollection<string> _excludedWebJobsFiles;
+        private IReadOnlyCollection<string> _excludedWebJobsFiles;
 
-        IReadOnlyCollection<string> _filteredNuGetWebPackageProjects;
+        private IReadOnlyCollection<string> _filteredNuGetWebPackageProjects;
 
-        string _gitHash;
-        ILogger _logger;
-        string _msBuildExe;
-        bool _pdbArtifactsEnabled;
-        bool _preCompilationEnabled;
-        int _processorCount;
+        private string _gitHash;
+        private ILogger _logger;
+        private string _msBuildExe;
+        private bool _pdbArtifactsEnabled;
+        private bool _preCompilationEnabled;
+        private int _processorCount;
 
-        string _ruleset;
-        bool _showSummary;
-        string _vcsRoot;
-        bool _webProjectsBuildEnabed;
-        MSBuildVerbositoyLevel _verbosity;
-        ImmutableArray<string> _excludedPlatforms;
+        private string _ruleset;
+        private bool _showSummary;
+        private string _vcsRoot;
+        private bool _webProjectsBuildEnabed;
+        private MSBuildVerbositoyLevel _verbosity;
+        private ImmutableArray<string> _excludedPlatforms;
         private string _AssemblyVersion;
         private string _AssemblyFileVersion;
-        bool _applicationmetadataGitHashEnabled;
-        bool _applicationmetadataGitBranchEnabled;
-        bool _applicationmetadataDotNetCpuPlatformEnabled;
-        bool _applicationmetadataDotNetConfigurationEnabled;
+        private bool _applicationmetadataGitHashEnabled;
+        private bool _applicationmetadataGitBranchEnabled;
+        private bool _applicationmetadataDotNetCpuPlatformEnabled;
+        private bool _applicationmetadataDotNetConfigurationEnabled;
 
         public Guid WebApplicationProjectTypeId { get; } = Guid.Parse("349C5851-65DF-11DA-9384-00065B846F21");
 
@@ -163,7 +161,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                 WellKnownVariables.WebDeployBuildPackages,
                 false);
 
-            logger.Verbose("Using MSBuild verbosity {_verbosity}", _verbosity);
+            logger.Verbose("Using MSBuild verbosity {Verbosity}", _verbosity);
 
             _vcsRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
 
@@ -253,16 +251,16 @@ namespace Arbor.X.Core.Tools.MSBuild
 
             try
             {
-                return await BuildAsync(logger, buildVariables);
+                return await BuildAsync(logger, buildVariables).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                logger.Error(ex.ToString());
+                logger.Error(ex, "Error in solution builder");
                 return ExitCode.Failure;
             }
         }
 
-        static int ProcessorCount(IReadOnlyCollection<IVariable> buildVariables)
+        private static int ProcessorCount(IReadOnlyCollection<IVariable> buildVariables)
         {
             int processorCount = 1;
 
@@ -278,7 +276,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             return processorCount;
         }
 
-        string FindRuleSet()
+        private string FindRuleSet()
         {
             IReadOnlyCollection<FileInfo> fileInfos = new DirectoryInfo(_vcsRoot)
                 .GetFilesRecursive(".ruleset".ValueToImmutableArray(), _pathLookupSpecification, _vcsRoot)
@@ -305,11 +303,11 @@ namespace Arbor.X.Core.Tools.MSBuild
             return foundRuleSet;
         }
 
-        async Task<ExitCode> BuildAsync(ILogger logger, IReadOnlyCollection<IVariable> variables)
+        private async Task<ExitCode> BuildAsync(ILogger logger, IReadOnlyCollection<IVariable> variables)
         {
             AddBuildConfigurations(logger, variables);
 
-            if (!_buildConfigurations.Any())
+            if (_buildConfigurations.Count == 0)
             {
                 logger.Error("No build configurations are defined");
                 return ExitCode.Failure;
@@ -317,7 +315,7 @@ namespace Arbor.X.Core.Tools.MSBuild
 
             AddBuildPlatforms(logger, variables);
 
-            if (!_platforms.Any())
+            if (_platforms.Count == 0)
             {
                 logger.Error("No build platforms are defined");
                 return ExitCode.Failure;
@@ -334,7 +332,7 @@ namespace Arbor.X.Core.Tools.MSBuild
 
             logger.Debug("Finding solutions files took {TotalSeconds:F} seconds", findSolutionFiles.Elapsed.TotalSeconds);
 
-            if (!solutionFiles.Any())
+            if (solutionFiles.Count == 0)
             {
                 LogNoSolutionFilesFound(logger);
 
@@ -342,7 +340,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             }
 
             IDictionary<FileInfo, IReadOnlyList<string>> solutionPlatforms =
-                await GetSolutionPlatformsAsync(solutionFiles);
+                await GetSolutionPlatformsAsync(solutionFiles).ConfigureAwait(false);
 
             logger.Verbose("Found solutions and platforms: {NewLine}{V}", Environment.NewLine, string.Join(Environment.NewLine, solutionPlatforms.Select(item => $"{item.Key}: [{string.Join(", ", item.Value)}]")));
 
@@ -351,7 +349,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                 ExitCode result = await BuildSolutionForPlatformAsync(
                     solutionPlatform.Key,
                     solutionPlatform.Value,
-                    logger);
+                    logger).ConfigureAwait(false);
 
                 if (!result.IsSuccess)
                 {
@@ -362,7 +360,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             return ExitCode.Success;
         }
 
-        async Task<IDictionary<FileInfo, IReadOnlyList<string>>> GetSolutionPlatformsAsync(
+        private async Task<IDictionary<FileInfo, IReadOnlyList<string>>> GetSolutionPlatformsAsync(
             IReadOnlyCollection<FileInfo> solutionFiles)
         {
             IDictionary<FileInfo, IReadOnlyList<string>> solutionPlatforms =
@@ -370,7 +368,7 @@ namespace Arbor.X.Core.Tools.MSBuild
 
             foreach (FileInfo solutionFile in solutionFiles)
             {
-                List<string> platforms = await GetSolutionPlatformsAsync(solutionFile);
+                List<string> platforms = await GetSolutionPlatformsAsync(solutionFile).ConfigureAwait(false);
 
                 solutionPlatforms.Add(solutionFile, platforms);
             }
@@ -378,7 +376,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             return solutionPlatforms;
         }
 
-        void LogNoSolutionFilesFound(ILogger logger)
+        private void LogNoSolutionFilesFound(ILogger logger)
         {
             var messageBuilder = new StringBuilder();
 
@@ -400,10 +398,10 @@ namespace Arbor.X.Core.Tools.MSBuild
 
             string message = messageBuilder.ToString();
 
-            logger.Warning(message);
+            logger.Warning("{Message}", message);
         }
 
-        void AddBuildPlatforms(ILogger logger, IReadOnlyCollection<IVariable> variables)
+        private void AddBuildPlatforms(ILogger logger, IReadOnlyCollection<IVariable> variables)
         {
             string buildPlatform = variables.GetVariableValueOrDefault(
                 WellKnownVariables.ExternalTools_MSBuild_BuildPlatform,
@@ -430,7 +428,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             }
         }
 
-        void AddBuildConfigurations(ILogger logger, IReadOnlyCollection<IVariable> variables)
+        private void AddBuildConfigurations(ILogger logger, IReadOnlyCollection<IVariable> variables)
         {
             string buildConfiguration =
                 variables.GetVariableValueOrDefault(
@@ -469,7 +467,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             }
         }
 
-        bool BuildPlatformOrConfiguration(IReadOnlyCollection<IVariable> variables, string key)
+        private bool BuildPlatformOrConfiguration(IReadOnlyCollection<IVariable> variables, string key)
         {
             bool enabled =
                 variables.GetBooleanByKey(key, true);
@@ -477,7 +475,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             return enabled;
         }
 
-        async Task<List<string>> GetSolutionPlatformsAsync(FileInfo solutionFile)
+        private async Task<List<string>> GetSolutionPlatformsAsync(FileInfo solutionFile)
         {
             var platforms = new List<string>();
 
@@ -489,7 +487,7 @@ namespace Arbor.X.Core.Tools.MSBuild
 
                     while (streamReader.Peek() >= 0)
                     {
-                        string line = await streamReader.ReadLineAsync();
+                        string line = await streamReader.ReadLineAsync().ConfigureAwait(false);
 
                         if (line.IndexOf(
                                 "GlobalSection(SolutionConfigurationPlatforms)",
@@ -519,7 +517,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             return platforms.Distinct().ToList();
         }
 
-        async Task<ExitCode> BuildSolutionForPlatformAsync(
+        private async Task<ExitCode> BuildSolutionForPlatformAsync(
             FileInfo solutionFile,
             IReadOnlyList<string> platforms,
             ILogger logger)
@@ -532,7 +530,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             {
                 if (_excludedPlatforms.Any())
                 {
-                    logger.Debug("Excluding platforms {V}", string.Join(", ", _excludedPlatforms.WrapItems("'")));
+                    logger.Debug("Excluding platforms {Platforms}", string.Join(", ", _excludedPlatforms.WrapItems("'")));
                 }
 
                 logger.Warning("No platforms are found to be built for solution file '{SolutionFile}'", solutionFile);
@@ -560,7 +558,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             {
                 Environment.SetEnvironmentVariable(WellKnownVariables.CurrentBuildConfiguration, configuration);
                 ExitCode result =
-                    await BuildSolutionWithConfigurationAsync(solutionFile, configuration, logger, actualPlatforms);
+                    await BuildSolutionWithConfigurationAsync(solutionFile, configuration, logger, actualPlatforms).ConfigureAwait(false);
 
                 if (!result.IsSuccess)
                 {
@@ -573,7 +571,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             return ExitCode.Success;
         }
 
-        async Task<ExitCode> BuildSolutionWithConfigurationAsync(
+        private async Task<ExitCode> BuildSolutionWithConfigurationAsync(
             FileInfo solutionFile,
             string configuration,
             ILogger logger,
@@ -590,7 +588,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                         solutionFile,
                         configuration,
                         knownPlatform,
-                        logger);
+                        logger).ConfigureAwait(false);
 
                 buildStopwatch.Stop();
 
@@ -606,7 +604,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             return ExitCode.Success;
         }
 
-        async Task<ExitCode> BuildSolutionWithConfigurationAndPlatformAsync(
+        private async Task<ExitCode> BuildSolutionWithConfigurationAndPlatformAsync(
             FileInfo solutionFile,
             string configuration,
             string platform,
@@ -620,7 +618,7 @@ namespace Arbor.X.Core.Tools.MSBuild
 
             if (!File.Exists(_msBuildExe))
             {
-                logger.Error("The MSBuild path '{_msBuildExe}' does not exist", _msBuildExe);
+                logger.Error("The MSBuild path '{MsBuildExe}' does not exist", _msBuildExe);
                 return ExitCode.Failure;
             }
 
@@ -645,7 +643,7 @@ namespace Arbor.X.Core.Tools.MSBuild
 
                 if (!string.IsNullOrWhiteSpace(_ruleset) && File.Exists(_ruleset))
                 {
-                    logger.Information("Using code analysis ruleset '{_ruleset}'", _ruleset);
+                    logger.Information("Using code analysis ruleset '{Ruleset}'", _ruleset);
 
                     argList.Add($"/property:CodeAnalysisRuleSet={_ruleset}");
                 }
@@ -675,7 +673,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                         cancellationToken: _cancellationToken,
                         verboseAction: logger.Verbose,
                         addProcessNameAsLogCategory: true,
-                        addProcessRunnerCategory: true);
+                        addProcessRunnerCategory: true).ConfigureAwait(false);
 
             if (exitCode.IsSuccess)
             {
@@ -684,7 +682,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                     _logger.Information("Web projects build is enabled, key {WebProjectsBuildEnabled}", WellKnownVariables.WebProjectsBuildEnabled);
 
                     ExitCode webAppsExiteCode =
-                        await BuildWebApplicationsAsync(solutionFile, configuration, platform, logger);
+                        await BuildWebApplicationsAsync(solutionFile, configuration, platform, logger).ConfigureAwait(false);
 
                     exitCode = webAppsExiteCode;
                 }
@@ -702,7 +700,7 @@ namespace Arbor.X.Core.Tools.MSBuild
 
             if (exitCode.IsSuccess)
             {
-                exitCode = await PublishPdbFilesAynsc(configuration, platform);
+                exitCode = await PublishPdbFilesAynsc(configuration, platform).ConfigureAwait(false);
             }
             else
             {
@@ -712,7 +710,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             return exitCode;
         }
 
-        void CopyCodeAnalysisReportsToArtifacts(string configuration, string platform, ILogger logger)
+        private void CopyCodeAnalysisReportsToArtifacts(string configuration, string platform, ILogger logger)
         {
             IReadOnlyCollection<FileInfo> analysisLogFiles =
                 new DirectoryInfo(_vcsRoot).GetFiles("*.AnalysisLog.xml", SearchOption.AllDirectories)
@@ -735,11 +733,13 @@ namespace Arbor.X.Core.Tools.MSBuild
             }
         }
 
-        Task<ExitCode> PublishPdbFilesAynsc(string configuration, string platform)
+        private Task<ExitCode> PublishPdbFilesAynsc(string configuration, string platform)
         {
-            _logger.Information(_pdbArtifactsEnabled
+            string message = _pdbArtifactsEnabled
                 ? $"Publishing PDB artificats for configuration {configuration} and platform {platform}"
-                : $"Skipping PDF artifact publising for configuration {configuration} and platform {platform} because PDB artifact publishing is disabled");
+                : $"Skipping PDF artifact publising for configuration {configuration} and platform {platform} because PDB artifact publishing is disabled";
+
+            _logger.Information("{Message}", message);
 
             try
             {
@@ -831,14 +831,14 @@ namespace Arbor.X.Core.Tools.MSBuild
             }
             catch (Exception ex) when (!ex.IsFatal())
             {
-                _logger.Error(ex, "Could not publish PDB artifacts. {Ex}");
+                _logger.Error(ex, "Could not publish PDB artifacts.");
                 return Task.FromResult(ExitCode.Failure);
             }
 
             return Task.FromResult(ExitCode.Success);
         }
 
-        async Task<ExitCode> BuildWebApplicationsAsync(
+        private async Task<ExitCode> BuildWebApplicationsAsync(
             FileInfo solutionFile,
             string configuration,
             string platform,
@@ -848,7 +848,7 @@ namespace Arbor.X.Core.Tools.MSBuild
 
             List<SolutionProject> webProjects =
                 solution.Projects.Where(
-                        project => project.Project.ProjectTypes().Any(type => type == WebApplicationProjectTypeId))
+                        project => project.Project.ProjectTypes.Any(type => type.Id == WebApplicationProjectTypeId))
                     .ToList();
 
             logger.Debug("Finding WebApplications by looking at project type GUID {WebApplicationProjectTypeId}", WebApplicationProjectTypeId);
@@ -861,7 +861,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                 project.Project.FileName,
                 project.Project.ProjectName,
                 project.Project.ProjectDirectory,
-                project.Project.BuildProject,
+                project.Project,
                 Framework.NetFramework)));
 
             ImmutableArray<WebSolutionProject> solutionProjects = solution.Projects
@@ -872,7 +872,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                     project.Project.FileName,
                     project.Project.ProjectName,
                     project.Project.ProjectDirectory,
-                    project.Project.BuildProject,
+                    project.Project,
                     Framework.NetCore))
                 .ToImmutableArray();
 
@@ -898,7 +898,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                     logger,
                     solutionProject,
                     platformName,
-                    siteArtifactDirectory);
+                    siteArtifactDirectory).ConfigureAwait(false);
 
                 if (!buildSiteExitCode.IsSuccess)
                 {
@@ -917,7 +917,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                 if (_applicationmetadataEnabled)
                 {
                     _logger.Information("Application metadata is enabled");
-                    await CreateApplicationMetadataAsync(siteArtifactDirectory, platformName, configuration);
+                    await CreateApplicationMetadataAsync(siteArtifactDirectory, platformName, configuration).ConfigureAwait(false);
                 }
                 else
                 {
@@ -928,7 +928,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                 {
                     logger.Information("AppData Web Jobs are enabled");
 
-                    ExitCode exitCode = await CopyKuduWebJobsAsync(logger, solutionProject, siteArtifactDirectory);
+                    ExitCode exitCode = await CopyKuduWebJobsAsync(logger, solutionProject, siteArtifactDirectory).ConfigureAwait(false);
 
                     if (!exitCode.IsSuccess)
                     {
@@ -952,7 +952,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                                 logger,
                                 platformDirectoryPath,
                                 solutionProject,
-                                platformName);
+                                platformName).ConfigureAwait(false);
 
                     if (!packageSiteExitCode.IsSuccess)
                     {
@@ -973,7 +973,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                         platformDirectoryPath,
                         solutionProject,
                         platformName,
-                        siteArtifactDirectory.FullName);
+                        siteArtifactDirectory.FullName).ConfigureAwait(false);
 
                     if (!packageSiteExitCode.IsSuccess)
                     {
@@ -989,7 +989,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             return ExitCode.Success;
         }
 
-        Task CreateApplicationMetadataAsync(
+        private Task CreateApplicationMetadataAsync(
             DirectoryInfo siteArtifactDirectory,
             string platformName,
             string configuration)
@@ -1068,7 +1068,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             return Task.CompletedTask;
         }
 
-        async Task<ExitCode> BuildWebApplicationAsync(
+        private async Task<ExitCode> BuildWebApplicationAsync(
             FileInfo solutionFile,
             string configuration,
             ILogger logger,
@@ -1140,7 +1140,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                         toolAction: logger.Information,
                         cancellationToken: _cancellationToken,
                         addProcessNameAsLogCategory: true,
-                        addProcessRunnerCategory: true);
+                        addProcessRunnerCategory: true).ConfigureAwait(false);
 
             if (buildSiteExitCode.IsSuccess)
             {
@@ -1169,7 +1169,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             return buildSiteExitCode;
         }
 
-        async Task<ExitCode> CreateNuGetWebPackagesAsync(
+        private async Task<ExitCode> CreateNuGetWebPackagesAsync(
             ILogger logger,
             string platformDirectoryPath,
             WebSolutionProject solutionProject,
@@ -1190,7 +1190,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                 solutionProject.ProjectName.Replace(".", "_").Replace(" ", "_").Replace("-", "_"));
 
             List<MSBuildProperty> msbuildProperties =
-                solutionProject.BuildProject.PropertyGroups.SelectMany(s => s.Properties)
+                solutionProject.Project.PropertyGroups.SelectMany(s => s.Properties)
                     .Where(
                         msBuildProperty =>
                             msBuildProperty.Name.Equals(expectedName, StringComparison.InvariantCultureIgnoreCase))
@@ -1211,7 +1211,7 @@ namespace Arbor.X.Core.Tools.MSBuild
 
             string packageId = solutionProject.ProjectName;
 
-            string excluded = _excludedNuGetWebPackageFiles.Any()
+            string excluded = _excludedNuGetWebPackageFiles.Count > 0
                 ? $";{string.Join(";", _excludedNuGetWebPackageFiles.Select(excludePattern => $"{siteArtifactDirectory}\\{excludePattern}"))}"
                 : string.Empty;
 
@@ -1222,7 +1222,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                 platformDirectoryPath,
                 logger,
                 packageId,
-                files);
+                files).ConfigureAwait(false);
 
             if (!exitCode.IsSuccess)
             {
@@ -1286,7 +1286,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                         platformDirectoryPath,
                         logger,
                         environmentPackageId,
-                        string.Join(Environment.NewLine, elements));
+                        string.Join(Environment.NewLine, elements)).ConfigureAwait(false);
 
                 if (!environmentPackageExitCode.IsSuccess)
                 {
@@ -1300,12 +1300,12 @@ namespace Arbor.X.Core.Tools.MSBuild
             return ExitCode.Success;
         }
 
-        bool ShouldBuildNuGetWebPackageForProject(
+        private bool ShouldBuildNuGetWebPackageForProject(
             WebSolutionProject solutionProject,
             List<MSBuildProperty> msbuildProperties,
             string expectedName)
         {
-            bool packageFilterEnabled = _filteredNuGetWebPackageProjects.Any();
+            bool packageFilterEnabled = _filteredNuGetWebPackageProjects.Count > 0;
 
             if (packageFilterEnabled)
             {
@@ -1317,16 +1317,18 @@ namespace Arbor.X.Core.Tools.MSBuild
                     projectName =>
                         projectName.Equals(normalizedProjectFileName, StringComparison.InvariantCultureIgnoreCase));
 
-                _logger.Debug(isIncluded
+                string message = isIncluded
                     ? $"NuGet Web package for {normalizedProjectFileName} ie enabled by filter"
-                    : $"NuGet Web package for {normalizedProjectFileName} is disabled by filter");
+                    : $"NuGet Web package for {normalizedProjectFileName} is disabled by filter";
+
+                _logger.Debug("{Message}", message);
 
                 return isIncluded;
             }
 
             bool buildNuGetWebPackageForProject = true;
 
-            if (msbuildProperties.Any())
+            if (msbuildProperties.Count > 0)
             {
                 List<ParseResult<bool>> parseResults = msbuildProperties.Select(
                         msBuildProperty =>
@@ -1337,7 +1339,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                     .Where(item => item.Parsed)
                     .ToList();
 
-                if (parseResults.Any())
+                if (parseResults.Count > 0)
                 {
                     bool hasAnyPropertySetToFalse = parseResults.Any(item => !item.Value);
 
@@ -1389,7 +1391,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             return buildNuGetWebPackageForProject;
         }
 
-        async Task<ExitCode> CreateNuGetPackageAsync(
+        private async Task<ExitCode> CreateNuGetPackageAsync(
             string platformDirectoryPath,
             ILogger logger,
             string packageId,
@@ -1478,7 +1480,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                 tags,
                 files);
 
-            logger.Information(nuspecContent);
+            logger.Information("{NuSpec}", nuspecContent);
 
             DirectoryInfo tempDir = new DirectoryInfo(Path.Combine(
                     Path.GetTempPath(),
@@ -1493,7 +1495,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                 nuspecTempFile,
                 packageConfiguration,
                 true,
-                _cancellationToken);
+                _cancellationToken).ConfigureAwait(false);
 
             File.Delete(nuspecTempFile);
 
@@ -1502,7 +1504,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             return exitCode;
         }
 
-        void TransformFiles(
+        private void TransformFiles(
             string configuration,
             ILogger logger,
             WebSolutionProject solutionProject,
@@ -1582,7 +1584,7 @@ namespace Arbor.X.Core.Tools.MSBuild
         }
 
         [NotNull]
-        async Task<ExitCode> CopyKuduWebJobsAsync(
+        private async Task<ExitCode> CopyKuduWebJobsAsync(
             [NotNull] ILogger logger,
             [NotNull] WebSolutionProject solutionProject,
             [NotNull] DirectoryInfo siteArtifactDirectory)
@@ -1641,7 +1643,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                                 pathLookupSpecificationOption:
                                 DefaultPaths.DefaultPathLookupSpecification
                                     .WithIgnoredFileNameParts(ignoredFileNameParts)
-                                    .AddExcludedDirectorySegments(_excludedWebJobsDirectorySegments));
+                                    .AddExcludedDirectorySegments(_excludedWebJobsDirectorySegments)).ConfigureAwait(false);
 
                     if (exitCode.IsSuccess)
                     {
@@ -1685,7 +1687,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             return exitCode;
         }
 
-        async Task<ExitCode> CreateWebDeployPackagesAsync(
+        private async Task<ExitCode> CreateWebDeployPackagesAsync(
             FileInfo solutionFile,
             string configuration,
             ILogger logger,
@@ -1748,7 +1750,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                         toolAction: logger.Information,
                         cancellationToken: _cancellationToken,
                         addProcessNameAsLogCategory: true,
-                        addProcessRunnerCategory: true);
+                        addProcessRunnerCategory: true).ConfigureAwait(false);
 
             webDeployStopwatch.Stop();
 
@@ -1757,7 +1759,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             return packageSiteExitCode;
         }
 
-        IEnumerable<FileInfo> FindSolutionFiles(DirectoryInfo directoryInfo, ILogger logger)
+        private IEnumerable<FileInfo> FindSolutionFiles(DirectoryInfo directoryInfo, ILogger logger)
         {
             (bool, string) isBlacklisted = IsBlacklisted(directoryInfo);
             if (isBlacklisted.Item1)
@@ -1776,7 +1778,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             return solutionFiles;
         }
 
-        (bool, string) IsBlacklisted(DirectoryInfo directoryInfo)
+        private (bool, string) IsBlacklisted(DirectoryInfo directoryInfo)
         {
             (bool, string) isBlacklistedByName =
                 _pathLookupSpecification.IsBlackListed(directoryInfo.FullName, _vcsRoot);
@@ -1789,14 +1791,14 @@ namespace Arbor.X.Core.Tools.MSBuild
             FileAttributes[] blackListedByAttributes = _blackListedByAttributes.Where(
                 blackListed => directoryInfo.Attributes.HasFlag(blackListed)).ToArray();
 
-            bool isBlackListedByAttributes = blackListedByAttributes.Any();
+            bool isBlackListedByAttributes = blackListedByAttributes.Length > 0;
 
             return (isBlackListedByAttributes, isBlackListedByAttributes
                 ? $"Directory has black-listed attributes {string.Join(", ", blackListedByAttributes.Select(_ => Enum.GetName(typeof(FileAttributes), _)))}"
                 : string.Empty);
         }
 
-        void RemoveXmlFilesForAssemblies(DirectoryInfo directoryInfo)
+        private void RemoveXmlFilesForAssemblies(DirectoryInfo directoryInfo)
         {
             if (!directoryInfo.Exists)
             {

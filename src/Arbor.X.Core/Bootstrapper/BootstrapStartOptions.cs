@@ -1,7 +1,7 @@
 using System;
 using JetBrains.Annotations;
 
-namespace Arbor.X.Bootstrapper
+namespace Arbor.X.Core.Bootstrapper
 {
     public class BootstrapStartOptions
     {

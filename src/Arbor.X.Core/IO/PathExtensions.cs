@@ -60,7 +60,7 @@ namespace Arbor.X.Core.IO
                     part => sourceFileInfo.Name.IndexOf(part, StringComparison.InvariantCultureIgnoreCase) >= 0)
                 .SafeToReadOnlyCollection();
 
-            if (ignoredFileNameParts.Any())
+            if (ignoredFileNameParts.Count > 0)
             {
                 string reasonMessage = $"Ignored file name parts of '{sourceFile}' makes it blacklisted: {string.Join(", ", ignoredFileNameParts.Select(item => $"'{item}'"))}";
                 logger?.Debug(reasonMessage);

@@ -5,7 +5,6 @@ using System.Xml;
 using System.Xml.Xsl;
 using Arbor.Processing.Core;
 
-
 namespace Arbor.X.Core.Tools.Testing
 {
     public static class TestReportXslt
@@ -17,7 +16,6 @@ namespace Arbor.X.Core.Tools.Testing
             string xsltTemplate,
             ILogger logger)
         {
-
             Encoding encoding = Encoding.UTF8;
 
             using (Stream stream = new MemoryStream(encoding.GetBytes(xsltTemplate)))
@@ -45,7 +43,7 @@ namespace Arbor.X.Core.Tools.Testing
             return ExitCode.Success;
         }
 
-        static void TransformReport(
+        private static void TransformReport(
             FileInfo xmlReport,
             string junitSuffix,
             Encoding encoding,

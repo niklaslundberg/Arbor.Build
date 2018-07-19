@@ -87,7 +87,7 @@ namespace Arbor.X.Core.Tools.Testing
                         logger,
                         reportPath,
                         runTestsInReleaseConfiguration,
-                        assemblyFilePrefix);
+                        assemblyFilePrefix).ConfigureAwait(false);
 
                     if (exitCode.IsSuccess)
                     {
@@ -106,7 +106,7 @@ namespace Arbor.X.Core.Tools.Testing
                 return ExitCode.Success;
             }
 
-            return await RunNUnitAsync(externalTools, logger, reportPath, runTestsInReleaseConfiguration, assemblyFilePrefix);
+            return await RunNUnitAsync(externalTools, logger, reportPath, runTestsInReleaseConfiguration, assemblyFilePrefix).ConfigureAwait(false);
         }
 
         private static void LogExecution(ILogger logger, IEnumerable<string> nunitArgs, string nunitExe)
@@ -170,7 +170,7 @@ namespace Arbor.X.Core.Tools.Testing
 
             logger.Information("NUnit test assembly lookup took {ElapsedMilliseconds:F2} milliseconds", stopwatch.ElapsedMilliseconds);
 
-            if (!testDlls.Any())
+            if (testDlls.Count == 0)
             {
                 logger.Warning("Could not find any NUnit tests in directory '{FullName}' or any sub-directory", directory.FullName);
                 return ExitCode.Success;
@@ -203,7 +203,7 @@ namespace Arbor.X.Core.Tools.Testing
                     arguments: nunitConsoleArguments,
                     standardOutLog: logger.Information,
                     standardErrorAction: logger.Error,
-                    toolAction: logger.Information);
+                    toolAction: logger.Information).ConfigureAwait(false);
 
                 executionStopwatch.Stop();
 

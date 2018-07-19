@@ -14,7 +14,7 @@ namespace Arbor.X.Core.Configuration.AutofacModules
     {
         protected override void Load(ContainerBuilder builder)
         {
-            Assembly[] assemblies = AssemblyFetcher.GetAssemblies().ToArray();
+            Assembly[] assemblies = AssemblyFetcher.GetFilteredAssemblies().ToArray();
 
             builder.RegisterAssemblyTypes(assemblies)
                 .Where(type => type.IsConcretePublicClassImplementing<ITool>())

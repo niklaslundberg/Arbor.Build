@@ -37,19 +37,19 @@ namespace Arbor.X.Core.BuildVariables
 
             List<EnvironmentVariable> existingVariables = variables.Except(nonExisting).ToList();
 
-            if (existingVariables.Any())
+            if (existingVariables.Count > 0)
             {
                 var builder = new StringBuilder();
 
-                builder.AppendLine(
-                    $"There are {existingVariables} existing variables that will not be overriden by environment variables:");
+                builder.Append(
+"There are ").Append(existingVariables).AppendLine(" existing variables that will not be overriden by environment variables:");
 
                 foreach (EnvironmentVariable environmentVariable in existingVariables)
                 {
-                    builder.AppendLine(environmentVariable.Key + ": " + environmentVariable.Value);
+                    builder.Append(environmentVariable.Key).Append(": ").AppendLine(environmentVariable.Value);
                 }
 
-                logger.Verbose(builder.ToString());
+                logger.Verbose("{Variables}", builder.ToString());
             }
 
             buildVariables.AddRange(nonExisting);
@@ -89,7 +89,7 @@ namespace Arbor.X.Core.BuildVariables
             }
             catch (Exception ex) when (!ex.IsFatal())
             {
-                logger.Error(ex, "Could not parse key value pairs in file '{FullName}', {Ex}", fileInfo.FullName);
+                logger.Error(ex, "Could not parse key value pairs in file '{FullName}'", fileInfo.FullName);
                 return ExitCode.Failure;
             }
 

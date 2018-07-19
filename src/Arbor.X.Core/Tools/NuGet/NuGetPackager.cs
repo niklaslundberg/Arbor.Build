@@ -226,7 +226,7 @@ namespace Arbor.X.Core.Tools.NuGet
                 nuSpecCopy,
                 removedTags,
                 cancellationToken: cancellationToken,
-                ignoreWarnings: ignoreWarnings);
+                ignoreWarnings: ignoreWarnings).ConfigureAwait(false);
 
             return result;
         }
@@ -312,7 +312,7 @@ namespace Arbor.X.Core.Tools.NuGet
                             verboseAction: logger.Verbose,
                             debugAction: logger.Debug,
                             addProcessNameAsLogCategory: true,
-                            addProcessRunnerCategory: true);
+                            addProcessRunnerCategory: true).ConfigureAwait(false);
 
                 var packagesDirectory = new DirectoryInfo(packagesDirectoryPath);
 

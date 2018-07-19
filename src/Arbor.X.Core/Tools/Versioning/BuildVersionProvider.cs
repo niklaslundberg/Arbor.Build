@@ -44,9 +44,7 @@ namespace Arbor.X.Core.Tools.Versioning
                 return false;
             }
 
-            int parsed;
-
-            if (!int.TryParse(s.Value, out parsed) || parsed < 0)
+            if (!int.TryParse(s.Value, out int parsed) || parsed < 0)
             {
                 return false;
             }

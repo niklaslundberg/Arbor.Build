@@ -62,7 +62,7 @@ namespace Arbor.X.Core.Tools.Testing
             {
                 try
                 {
-                    return await RunVsTestAsync(logger, reportPath, vsTestExePath, runTestsInReleaseConfiguration, assemblyFilePrefix);
+                    return await RunVsTestAsync(logger, reportPath, vsTestExePath, runTestsInReleaseConfiguration, assemblyFilePrefix).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -72,7 +72,7 @@ namespace Arbor.X.Core.Tools.Testing
                 return ExitCode.Success;
             }
 
-            return await RunVsTestAsync(logger, reportPath, vsTestExePath, runTestsInReleaseConfiguration, assemblyFilePrefix);
+            return await RunVsTestAsync(logger, reportPath, vsTestExePath, runTestsInReleaseConfiguration, assemblyFilePrefix).ConfigureAwait(false);
         }
 
         private static void LogExecution(ILogger logger, IEnumerable<string> arguments, string exePath)
@@ -105,7 +105,7 @@ namespace Arbor.X.Core.Tools.Testing
                 new UnitTestFinder(typesToFind).GetUnitTestFixtureDlls(directory, runTestsInReleaseConfiguration, assemblyFilePrefix, FrameworkConstants.NetFramework)
                     .ToList();
 
-            if (!vsTestConsoleArguments.Any())
+            if (vsTestConsoleArguments.Count == 0)
             {
                 logger.Warning("Could not find any VSTest tests in directory '{FullName}' or any sub-directory", directory.FullName);
                 return ExitCode.Success;

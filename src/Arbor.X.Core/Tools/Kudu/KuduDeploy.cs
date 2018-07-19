@@ -87,7 +87,7 @@ namespace Arbor.X.Core.Tools.Kudu
 
             DirectoryInfo[] builtWebsites = websitesDirectory.GetDirectories();
 
-            if (!builtWebsites.Any())
+            if (builtWebsites.Length == 0)
             {
                 logger.Information("No websites found. Ignoring Kudu deployment.");
                 return ExitCode.Success;
@@ -123,7 +123,7 @@ namespace Arbor.X.Core.Tools.Kudu
                 }
             }
 
-            if (!websiteToDeploy.GetDirectories().Any())
+            if (websiteToDeploy.GetDirectories().Length == 0)
             {
                 logger.Error("Could not find any platform for website {Name}", websiteToDeploy.Name);
                 return ExitCode.Failure;
@@ -137,7 +137,7 @@ namespace Arbor.X.Core.Tools.Kudu
 
             DirectoryInfo platform = GetPlatform(websiteToDeploy);
 
-            if (!platform.GetDirectories().Any())
+            if (platform.GetDirectories().Length == 0)
             {
                 logger.Error("Could not find any configuration for website {Name}", websiteToDeploy.Name);
                 return ExitCode.Failure;
@@ -208,14 +208,14 @@ namespace Arbor.X.Core.Tools.Kudu
                             fileFilters.Add("app_offline.htm");
                         }
 
-                        if (customDirectoryExcludes.Any())
+                        if (customDirectoryExcludes.Length > 0)
                         {
                             logger.Verbose("Adding directory ignore patterns {V}", string.Join(
                                                     "|",
                                                     $"'{customDirectoryExcludes.Select(item => (object)item)}'"));
                         }
 
-                        if (customFileExcludes.Any())
+                        if (customFileExcludes.Length > 0)
                         {
                             logger.Verbose("Adding file ignore patterns {V}", string.Join(
                                                     "|",
@@ -248,7 +248,7 @@ namespace Arbor.X.Core.Tools.Kudu
                         _deploymentTargetDirectory,
                         logger,
                         rootDir: _vcsRoot,
-                        pathLookupSpecificationOption: new PathLookupSpecification());
+                        pathLookupSpecificationOption: new PathLookupSpecification()).ConfigureAwait(false);
 
                     if (!exitCode.IsSuccess)
                     {

@@ -1,25 +1,23 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net471</TargetFramework>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Arbor.Aesculus" Version="2.1.3" />
-    <PackageReference Include="Arbor.KVConfiguration.JsonConfiguration" Version="0.13.1" />
-    <PackageReference Include="Arbor.KVConfiguration.Schema.Json" Version="0.13.1" />
-    <PackageReference Include="Arbor.KVConfiguration.SystemConfiguration" Version="0.13.1" />
-    <PackageReference Include="Arbor.KVConfiguration.UserConfiguration" Version="0.13.1" />
-    <PackageReference Include="Arbor.Sorbus" Version="1.2.1" />
+    <PackageReference Include="Arbor.Aesculus" Version="3.0.1" />
+    <PackageReference Include="Arbor.KVConfiguration.JsonConfiguration" Version="0.14.0" />
+    <PackageReference Include="Arbor.KVConfiguration.Schema.Json" Version="0.14.0" />
+    <PackageReference Include="Arbor.KVConfiguration.UserConfiguration" Version="0.14.0" />
+    <PackageReference Include="Arbor.Sorbus" Version="3.0.2" />
+    <PackageReference Include="Arbor.Xdt" Version="0.2.3" />
     <PackageReference Include="Autofac" Version="4.8.1" />
-    <PackageReference Include="FubuCore" Version="2.0.1.321" />
-    <PackageReference Include="FubuCsProjFile" Version="1.9.0.229" />
     <PackageReference Include="JetBrains.Annotations" Version="11.1.0" />
     <PackageReference Include="Machine.Specifications" Version="0.12.0" />
     <PackageReference Include="Microsoft.Net.Compilers" Version="2.8.2" />
-    <PackageReference Include="Microsoft.Web.Xdt" Version="2.1.2" />
     <PackageReference Include="Mono.Cecil" Version="0.10.0" />
     <PackageReference Include="MSTest.TestFramework" Version="1.3.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="NuGet.Packaging" Version="4.7.0" />
     <PackageReference Include="NuGet.Versioning" Version="4.7.0" />
     <PackageReference Include="NUnit" Version="3.10.1" />

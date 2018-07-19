@@ -38,7 +38,7 @@ namespace Arbor.X.Core.Tools.ILRepack
 
             FileInfo[] dllArray = dlls.ToArray();
 
-            if (!dllArray.Any())
+            if (dllArray.Length == 0)
             {
                 throw new ArgumentException("DLL list is empty", nameof(dlls));
             }

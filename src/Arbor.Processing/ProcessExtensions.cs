@@ -1,4 +1,4 @@
-﻿using System; 
+﻿using System;
 using System.Diagnostics;
 using System.Management;
 using System.Threading;
@@ -24,7 +24,9 @@ namespace Arbor.Processing
 
                 try
                 {
-                    processHandle = Process.GetProcessById(process.Id).Handle;
+                    Process processById = Process.GetProcessById(process.Id);
+
+                    processHandle = processById.HasExited ? default : processById.Handle;
                 }
                 catch (Exception ex)
                 {

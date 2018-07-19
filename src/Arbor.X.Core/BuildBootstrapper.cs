@@ -12,13 +12,13 @@ using Module = Autofac.Module;
 
 namespace Arbor.X.Core
 {
-    public class BuildBootstrapper
+    public static class BuildBootstrapper
     {
         public static Task<IContainer> StartAsync(ILogger logger)
         {
             var builder = new ContainerBuilder();
 
-            Assembly[] assemblies = AssemblyFetcher.GetAssemblies().ToArray();
+            Assembly[] assemblies = AssemblyFetcher.GetFilteredAssemblies().ToArray();
 
             builder.RegisterModule(new SerilogModule(logger));
 
@@ -41,16 +41,16 @@ namespace Arbor.X.Core
 
         public class SerilogModule : Module
         {
-            readonly ILogger logger;
+            private readonly ILogger _logger;
 
             public SerilogModule(ILogger logger)
             {
-                this.logger = logger;
+                this._logger = logger;
             }
 
             protected override void Load(ContainerBuilder builder)
             {
-                builder.RegisterInstance(logger).AsImplementedInterfaces().SingleInstance();
+                builder.RegisterInstance(_logger).AsImplementedInterfaces().SingleInstance();
             }
         }
     }

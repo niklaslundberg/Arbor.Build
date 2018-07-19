@@ -16,8 +16,7 @@ namespace Arbor.X.Core.Tools.NuGet
             ILogger logger,
             NuGetVersioningSettings nugetVersioningSettings)
         {
-            Version parsedVersion;
-            if (!Version.TryParse(version, out parsedVersion))
+            if (!Version.TryParse(version, out Version parsedVersion))
             {
                 throw new ArgumentException($"The version '{version} is not a valid version format");
             }
@@ -83,9 +82,7 @@ namespace Arbor.X.Core.Tools.NuGet
                 final = buildVersion;
             }
 
-            SemanticVersion semanticVersion;
-
-            if (!SemanticVersion.TryParse(final, out semanticVersion))
+            if (!SemanticVersion.TryParse(final, out SemanticVersion semanticVersion))
             {
                 throw new InvalidOperationException($"The NuGet version '{final}' is not a valid Semver 2.0 version");
             }

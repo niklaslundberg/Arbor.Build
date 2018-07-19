@@ -48,7 +48,7 @@ namespace Arbor.X.Core.Tools.DotNet
                     whereExePath,
                     arguments: new[] { "dotnet.exe" },
                     standardOutLog: (message, _) => sb.Add(message),
-                    cancellationToken: cancellationToken);
+                    cancellationToken: cancellationToken).ConfigureAwait(false);
 
                 if (!exitCode.IsSuccess)
                 {

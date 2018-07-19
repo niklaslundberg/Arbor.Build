@@ -28,7 +28,7 @@ namespace Arbor.X.Core.Tools.NuGet
                         nlogDirectory.FullName,
                         targetDir.FullName,
                         logger,
-                        new PathLookupSpecification());
+                        new PathLookupSpecification()).ConfigureAwait(false);
 
                     if (!exitCode.IsSuccess)
                     {

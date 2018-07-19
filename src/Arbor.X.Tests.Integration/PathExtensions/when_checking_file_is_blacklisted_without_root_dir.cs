@@ -10,6 +10,7 @@ namespace Arbor.X.Tests.Integration.PathExtensions
         static bool isBlackListed;
         static PathLookupSpecification specification;
         static DirectoryInfo root;
+
         Cleanup after = () =>
         {
             root.DeleteIfExists(true);

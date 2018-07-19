@@ -135,7 +135,7 @@ namespace Arbor.X.Core.IO
                 .Where(fileExtension => !fileExtension.StartsWith(".", StringComparison.OrdinalIgnoreCase))
                 .ToReadOnlyCollection();
 
-            if (invalidFileExtensions.Any())
+            if (invalidFileExtensions.Count > 0)
             {
                 throw new ArgumentException("File extensions must start with '.', eg .txt");
             }

@@ -137,8 +137,7 @@ namespace Arbor.X.Core.Tools.Git
             string version =
                 branchName.Split(splitCharacters.ToArray(), StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
 
-            SemanticVersion semver;
-            if (!SemanticVersion.TryParse(version, out semver))
+            if (!SemanticVersion.TryParse(version, out SemanticVersion semver))
             {
                 return new SemanticVersion(0, 0, 0);
             }

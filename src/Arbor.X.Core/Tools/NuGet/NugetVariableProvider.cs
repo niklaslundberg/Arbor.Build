@@ -28,7 +28,7 @@ namespace Arbor.X.Core.Tools.NuGet
                     WellKnownVariables.ExternalTools_NuGet_ExePath_Custom,
                     string.Empty);
 
-            string nuGetExePath = await EnsureNuGetExeExistsAsync(logger, userSpecifiedNuGetExePath);
+            string nuGetExePath = await EnsureNuGetExeExistsAsync(logger, userSpecifiedNuGetExePath).ConfigureAwait(false);
 
             var variables = new List<IVariable>
             {
@@ -68,7 +68,7 @@ namespace Arbor.X.Core.Tools.NuGet
             logger.Verbose("Using default method to ensure NuGet exists");
 
             var helper = new NuGetHelper(logger);
-            string nuGetExePath = await helper.EnsureNuGetExeExistsAsync(nugetExeUri, _cancellationToken);
+            string nuGetExePath = await helper.EnsureNuGetExeExistsAsync(nugetExeUri, _cancellationToken).ConfigureAwait(false);
 
             return nuGetExePath;
         }

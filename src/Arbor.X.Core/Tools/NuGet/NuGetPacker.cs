@@ -58,7 +58,7 @@ namespace Arbor.X.Core.Tools.NuGet
                 vcsRootDir,
                 packageDirectory);
 
-            if (!packageSpecifications.Any())
+            if (packageSpecifications.Count == 0)
             {
                 logger.Information("Could not find any NuGet specifications to create NuGet packages from");
                 return ExitCode.Success;
@@ -67,7 +67,7 @@ namespace Arbor.X.Core.Tools.NuGet
             logger.Information("Found {Count} NuGet specifications to create NuGet packages from", packageSpecifications.Count);
 
             ExitCode result =
-                await ProcessPackagesAsync(packageSpecifications, packageConfiguration, logger, cancellationToken);
+                await ProcessPackagesAsync(packageSpecifications, packageConfiguration, logger, cancellationToken).ConfigureAwait(false);
 
             return result;
         }
@@ -129,7 +129,7 @@ namespace Arbor.X.Core.Tools.NuGet
                     await packager.CreatePackageAsync(
                         packageSpecification,
                         packageConfiguration,
-                        cancellationToken: cancellationToken);
+                        cancellationToken: cancellationToken).ConfigureAwait(false);
 
                 if (!packageResult.IsSuccess)
                 {

@@ -3,7 +3,6 @@ using System.IO;
 using System.Threading.Tasks;
 using Arbor.Processing.Core;
 
-
 namespace Arbor.X.Core.IO
 {
     public static class DirectoryCopy
@@ -82,7 +81,7 @@ namespace Arbor.X.Core.IO
                 ExitCode exitCode = await CopyAsync(
                     directory.FullName,
                     Path.Combine(targetDir, directory.Name),
-                    pathLookupSpecificationOption: pathLookupSpecification);
+                    pathLookupSpecificationOption: pathLookupSpecification).ConfigureAwait(false);
 
                 if (!exitCode.IsSuccess)
                 {

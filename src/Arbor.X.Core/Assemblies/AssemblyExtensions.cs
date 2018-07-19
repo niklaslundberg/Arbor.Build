@@ -1,4 +1,5 @@
-using System; using Serilog;
+using System;
+using Serilog;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -64,16 +65,19 @@ namespace Arbor.X.Core.Assemblies
                 {
                     byte[] assemblyBytes;
 
-                    using (var fs = new FileStream(fileInfo.FullName, FileMode.Open))
+                    using (var fs = new FileStream(fileInfo.FullName, FileMode.Open, FileAccess.Read))
                     {
                         var buffer = new byte[16 * 1024];
+
                         using (var ms = new MemoryStream())
                         {
                             int read;
+
                             while ((read = fs.Read(buffer, 0, buffer.Length)) > 0)
                             {
                                 ms.Write(buffer, 0, read);
                             }
+
                             assemblyBytes = ms.ToArray();
                         }
                     }
@@ -93,7 +97,7 @@ namespace Arbor.X.Core.Assemblies
                 }
                 catch (Exception ex)
                 {
-                    usedLogger.Error(ex, "Error while getting reflected assembly definition from assembly definition {FullName}", assemblyDefinition.FullName);
+                    usedLogger.Verbose(ex, "Error while getting reflected assembly definition from assembly definition {FullName}", assemblyDefinition.FullName);
                     return null;
                 }
             }
@@ -112,7 +116,7 @@ namespace Arbor.X.Core.Assemblies
             }
             catch (Exception ex)
             {
-                usedLogger.Error(ex, "Error while getting is debug from assembly definition {FullName}", assemblyDefinition.FullName);
+                usedLogger.Verbose(ex, "Error while getting is debug from assembly definition {FullName}", assemblyDefinition.FullName);
                 return null;
             }
 
@@ -163,7 +167,7 @@ namespace Arbor.X.Core.Assemblies
                 }
                 catch (Exception ex)
                 {
-                    usedLogger.Error(ex, "Error while getting is debug from reflected assembly {FullName}", assembly.FullName);
+                    usedLogger.Verbose(ex, "Error while getting is debug from reflected assembly {FullName}", assembly.FullName);
 
                     return null;
                 }
@@ -190,7 +194,7 @@ namespace Arbor.X.Core.Assemblies
             }
             catch (Exception ex)
             {
-                usedLogger.Error(ex, "Error while is debug from assembly {FullName}", assembly.FullName);
+                usedLogger.Verbose(ex, "Error while is debug from assembly {FullName}", assembly.FullName);
             }
 
             return isDebugBuild;

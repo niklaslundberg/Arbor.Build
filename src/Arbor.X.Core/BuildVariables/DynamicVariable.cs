@@ -13,13 +13,8 @@ namespace Arbor.X.Core.BuildVariables
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (getValue == null)
-            {
-                throw new ArgumentNullException(nameof(getValue));
-            }
-
             Key = key;
-            _getValue = getValue;
+            _getValue = getValue ?? throw new ArgumentNullException(nameof(getValue));
         }
 
         public string Key { get; }

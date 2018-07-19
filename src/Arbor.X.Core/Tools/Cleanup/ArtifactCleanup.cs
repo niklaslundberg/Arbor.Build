@@ -59,7 +59,7 @@ namespace Arbor.X.Core.Tools.Cleanup
                 else
                 {
                     logger.Verbose("Attempt {AttemptCount} of {MaxAttempts} failed, could not cleanup the artifacts folder, retrying", attemptCount, maxAttempts);
-                    await Task.Delay(TimeSpan.FromMilliseconds(50), cancellationToken);
+                    await Task.Delay(TimeSpan.FromMilliseconds(50), cancellationToken).ConfigureAwait(false);
                 }
 
                 attemptCount++;

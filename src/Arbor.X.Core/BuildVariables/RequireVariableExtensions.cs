@@ -23,7 +23,7 @@ namespace Arbor.X.Core.BuildVariables
                 .Where(var => var.Key.Equals(variableName, StringComparison.InvariantCultureIgnoreCase))
                 .ToList();
 
-            if (foundVariables.Count() > 1)
+            if (foundVariables.Count > 1)
             {
                 throw new InvalidOperationException(
                     $"The are multiple variables with key '{variableName}'");

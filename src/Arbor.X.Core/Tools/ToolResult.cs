@@ -10,18 +10,8 @@ namespace Arbor.X.Core.Tools
             string message = null,
             TimeSpan executionTime = default)
         {
-            if (toolWithPriority == null)
-            {
-                throw new ArgumentNullException(nameof(toolWithPriority));
-            }
-
-            if (resultType == null)
-            {
-                throw new ArgumentNullException(nameof(resultType));
-            }
-
-            ToolWithPriority = toolWithPriority;
-            ResultType = resultType;
+            ToolWithPriority = toolWithPriority ?? throw new ArgumentNullException(nameof(toolWithPriority));
+            ResultType = resultType ?? throw new ArgumentNullException(nameof(resultType));
             Message = message;
             ExecutionTime = executionTime;
         }

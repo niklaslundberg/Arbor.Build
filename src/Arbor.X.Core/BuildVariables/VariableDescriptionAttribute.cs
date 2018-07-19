@@ -3,7 +3,7 @@
 namespace Arbor.X.Core.BuildVariables
 {
     [AttributeUsage(AttributeTargets.Field)]
-    internal class VariableDescriptionAttribute : Attribute
+    internal sealed class VariableDescriptionAttribute : Attribute
     {
         private readonly string _preferUse;
 

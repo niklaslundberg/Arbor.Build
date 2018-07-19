@@ -6,7 +6,6 @@ using Arbor.Processing.Core;
 using Arbor.Sorbus.Core;
 using Arbor.X.Core.BuildVariables;
 using JetBrains.Annotations;
-using DelegateLogger = Arbor.Sorbus.Core.DelegateLogger;
 using ILogger = Serilog.ILogger;
 
 namespace Arbor.X.Core.Tools.Versioning
@@ -31,17 +30,7 @@ namespace Arbor.X.Core.Tools.Versioning
 
             string sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
 
-            var delegateLogger = new DelegateLogger(
-                logger.Error,
-                logger.Warning,
-                logger.Information,
-                logger.Verbose,
-                logger.Debug)
-            {
-                LogLevel = LogLevel.Debug
-            };
-
-            var app = new AssemblyPatcherApp(delegateLogger);
+            var app = new AssemblyPatcherApp();
 
             try
             {
@@ -51,7 +40,7 @@ namespace Arbor.X.Core.Tools.Versioning
             }
             catch (Exception ex)
             {
-                logger.Error(ex, "Could not unpatch. {Ex}");
+                logger.Error(ex, "Could not unpatch.");
                 return Task.FromResult(ExitCode.Failure);
             }
 

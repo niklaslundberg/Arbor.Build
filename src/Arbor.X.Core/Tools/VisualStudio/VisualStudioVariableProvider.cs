@@ -132,8 +132,7 @@ namespace Arbor.X.Core.Tools.VisualStudio
                             .Select(
                                 keyName =>
                                 {
-                                    Version version;
-                                    if (!Version.TryParse(keyName, out version))
+                                    if (!Version.TryParse(keyName, out Version version))
                                     {
                                         if (_allowPreReleaseVersions)
                                         {
@@ -185,7 +184,7 @@ namespace Arbor.X.Core.Tools.VisualStudio
                         {
                             visualStudioVersion = "11.0";
                         }
-                        else if (versions.Any())
+                        else if (versions.Count > 0)
                         {
                             visualStudioVersion = versions.First().ToString(2);
                         }

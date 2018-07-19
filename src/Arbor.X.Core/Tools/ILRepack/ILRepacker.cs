@@ -14,8 +14,7 @@ using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.IO;
 
 using Arbor.X.Core.Parsing;
-using FubuCsProjFile;
-using FubuCsProjFile.MSBuild;
+using Arbor.X.Core.Tools.MSBuild;
 using JetBrains.Annotations;
 
 // ReSharper disable once InconsistentNaming
@@ -132,7 +131,7 @@ namespace Arbor.X.Core.Tools.ILRepack
                             standardOutLog: logger.Information,
                             toolAction: logger.Information,
                             standardErrorAction: logger.Error,
-                            cancellationToken: cancellationToken);
+                            cancellationToken: cancellationToken).ConfigureAwait(false);
 
                 if (!result.IsSuccess)
                 {
@@ -173,11 +172,11 @@ namespace Arbor.X.Core.Tools.ILRepack
                 yield break;
             }
 
-            CsProjFile csProjFile = CsProjFile.LoadFrom(projectFile.FullName);
+            MSBuildProject csProjFile = MSBuildProject.LoadFrom(projectFile.FullName);
 
             const string targetFrameworkVersion = "TargetFrameworkVersion";
 
-            MSBuildProperty msBuildProperty = csProjFile.BuildProject.PropertyGroups.SelectMany(
+            MSBuildProperty msBuildProperty = csProjFile.PropertyGroups.SelectMany(
                     group =>
                         group.Properties.Where(
                             property => property.Name.Equals(
@@ -229,9 +228,7 @@ namespace Arbor.X.Core.Tools.ILRepack
         {
             Assembly assembly = Assembly.LoadFile(Path.GetFullPath(exe.FullName));
             Module manifestModule = assembly.ManifestModule;
-            PortableExecutableKinds peKind;
-            ImageFileMachine machine;
-            manifestModule.GetPEKind(out peKind, out machine);
+            manifestModule.GetPEKind(out PortableExecutableKinds peKind, out ImageFileMachine machine);
 
             if (peKind == PortableExecutableKinds.ILOnly)
             {

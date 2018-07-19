@@ -45,7 +45,7 @@ namespace Arbor.X.Core.Tools.NuGet
 
                 string[] tagsToRemove = packageBuilder.Tags.Where(tag => tag.StartsWith(tagPrefix, StringComparison.Ordinal)).ToArray();
 
-                if (!tagsToRemove.Any())
+                if (tagsToRemove.Length == 0)
                 {
                     logger?.Verbose("No tags to remove from NuSpec '{NuspecFullPath}'", nuspecFullPath);
                 }
@@ -56,7 +56,7 @@ namespace Arbor.X.Core.Tools.NuGet
                     packageBuilder.Tags.Remove(tagToRemove);
                 }
 
-                if (tagsToRemove.Any())
+                if (tagsToRemove.Length > 0)
                 {
                     using (var outStream = new FileStream(tempFile, FileMode.CreateNew))
                     {

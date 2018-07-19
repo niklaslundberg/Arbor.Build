@@ -18,7 +18,6 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
 
         Establish context = () =>
         {
-
             var logger = Logger.None;
             finder = new UnitTestFinder(new List<Type>
                 {

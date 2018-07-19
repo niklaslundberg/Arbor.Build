@@ -7,7 +7,6 @@ using Arbor.Aesculus.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
 
-
 namespace Arbor.X.Core.Tools.Environments
 {
     public class SourcePathVariableProvider : IVariableProvider

@@ -38,7 +38,7 @@ namespace Arbor.X.Core.Tools.Paket
                     .Select(f => f.FullName)
                     .ToList();
 
-            if (!packageSpecifications.Any())
+            if (packageSpecifications.Count == 0)
             {
                 FileInfo normalSearch = sourceRoot.GetFiles("paket.exe", SearchOption.AllDirectories)
                     .OrderBy(file => file.FullName.Length).FirstOrDefault();
@@ -66,7 +66,7 @@ namespace Arbor.X.Core.Tools.Paket
                         .Select(file => new FileInfo(file))
                         .ToReadOnlyCollection();
 
-                if (!filtered.Any())
+                if (filtered.Count == 0)
                 {
                     logger.Information("Could not find paket.exe, filtered out: {V}, skipping paket restore", string.Join(", ", packageSpecifications));
                     return ExitCode.Success;
@@ -102,7 +102,7 @@ namespace Arbor.X.Core.Tools.Paket
                 paketExe.FullName,
                 new List<string> { "restore" },
                 logger,
-                cancellationToken: cancellationToken);
+                cancellationToken: cancellationToken).ConfigureAwait(false);
 
             return exitCode;
         }

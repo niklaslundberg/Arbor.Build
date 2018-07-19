@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net471</TargetFramework>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -9,17 +9,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FubuCore" Version="2.0.1.321" />
-    <PackageReference Include="FubuCsProjFile" Version="1.9.0.229" />
     <PackageReference Include="JetBrains.Annotations" Version="11.1.0" />
     <PackageReference Include="Machine.Specifications" Version="0.12.0" />
     <PackageReference Include="Machine.Specifications.Runner.VisualStudio" Version="2.7.0" />
     <PackageReference Include="Machine.Specifications.Should" Version="0.11.0" />
     <PackageReference Include="Microsoft.Net.Compilers" Version="2.8.2" />
+    <PackageReference Include="NCrunch.Framework" Version="3.17.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Arbor.X.Bootstrapper\Arbor.X.Bootstrapper.csproj" />
     <ProjectReference Include="..\Arbor.X.Core\Arbor.X.Core.csproj" />
   </ItemGroup>
 

@@ -1,4 +1,5 @@
-﻿using Serilog;
+﻿using System;
+using Serilog;
 using System.Threading.Tasks;
 using Arbor.Processing.Core;
 using Serilog.Core;
@@ -7,13 +8,20 @@ namespace Arbor.X.Bootstrapper
 {
     internal class Program
     {
-        private static int Main(string[] args)
+        private static async Task<int> Main(string[] args)
         {
-            Logger logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
+            Logger logger = new LoggerConfiguration()
+                .WriteTo.Console()
+                .CreateLogger();
 
-            Task<ExitCode> startTask = new Bootstrapper(logger).StartAsync(args);
+            var bootstrapper = new Core.Bootstrapper.Bootstrapper(logger);
 
-            ExitCode exitCode = startTask.Result;
+            ExitCode exitCode = await bootstrapper.StartAsync(args);
+
+            if (logger is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
 
             return exitCode.Result;
         }

@@ -4,6 +4,6 @@
     {
         Unknown = 0,
         NetFramework = 1,
-        NetCore
+        NetCore = 2
     }
 }

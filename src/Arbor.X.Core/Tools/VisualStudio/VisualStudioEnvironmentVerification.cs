@@ -41,7 +41,7 @@ namespace Arbor.X.Core.Tools.VisualStudio
 
                 List<FileInfo> projectFiles81 = projectFiles.Where(Contains81).ToList();
 
-                if (projectFiles81.Any())
+                if (projectFiles81.Count > 0)
                 {
                     IEnumerable<string> projectFileNames = projectFiles81.Select(file => file.FullName);
 

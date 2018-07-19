@@ -1,10 +1,11 @@
-﻿using System; using Serilog;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Management;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Aesculus.Core;
@@ -14,15 +15,15 @@ using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.IO;
-
 using Arbor.X.Core.Parsing;
 using Arbor.X.Core.ProcessUtils;
 using Arbor.X.Core.Tools.Git;
 using Arbor.X.Core.Tools.Kudu;
 using JetBrains.Annotations;
+using Serilog;
 using Serilog.Events;
 
-namespace Arbor.X.Bootstrapper
+namespace Arbor.X.Core.Bootstrapper
 {
     public class Bootstrapper
     {
@@ -41,17 +42,20 @@ namespace Arbor.X.Bootstrapper
 
         public async Task<ExitCode> StartAsync(string[] args)
         {
+            _logger.Information("Running Arbor.X Bootstrapper process id {ProcessId}, executable {Executable}", Process.GetCurrentProcess().Id, Assembly.GetExecutingAssembly().Location);
+
             BootstrapStartOptions startOptions;
+
             if (Debugger.IsAttached)
             {
-                startOptions = await StartWithDebuggerAsync(args);
+                startOptions = await StartWithDebuggerAsync(args).ConfigureAwait(false);
             }
             else
             {
                 startOptions = BootstrapStartOptions.Parse(args);
             }
 
-            ExitCode exitCode = await StartAsync(startOptions);
+            ExitCode exitCode = await StartAsync(startOptions).ConfigureAwait(false);
 
             _logger.Information("Bootstrapper exit code: {ExitCode}", exitCode);
 
@@ -74,25 +78,25 @@ namespace Arbor.X.Bootstrapper
             ExitCode exitCode;
             try
             {
-                exitCode = await TryStartAsync();
+                exitCode = await TryStartAsync().ConfigureAwait(false);
                 stopwatch.Stop();
             }
             catch (AggregateException ex)
             {
                 stopwatch.Stop();
                 exitCode = ExitCode.Failure;
-                _logger.Error(ex.ToString(), _Prefix);
+                _logger.Error(ex, "{Prefix}", _Prefix);
 
                 foreach (Exception innerEx in ex.InnerExceptions)
                 {
-                    _logger.Error(innerEx.ToString(), _Prefix);
+                    _logger.Error(innerEx, "{Prefix}", _Prefix);
                 }
             }
             catch (Exception ex)
             {
                 stopwatch.Stop();
                 exitCode = ExitCode.Failure;
-                _logger.Error(ex.ToString(), _Prefix);
+                _logger.Error(ex, "{Prefix} Could not start process", _Prefix);
             }
 
             ParseResult<int> exitDelayInMilliseconds =
@@ -103,7 +107,7 @@ namespace Arbor.X.Bootstrapper
             {
                 _logger.Information("Delaying bootstrapper exit with {ExitDelayInMilliseconds} milliseconds as specified in '{BootstrapperExitDelayInMilliseconds}'",
 exitDelayInMilliseconds, WellKnownVariables.BootstrapperExitDelayInMilliseconds);
-                await Task.Delay(TimeSpan.FromMilliseconds(exitDelayInMilliseconds));
+                await Task.Delay(TimeSpan.FromMilliseconds(exitDelayInMilliseconds)).ConfigureAwait(false);
             }
 
             _logger.Information("Arbor.X.Bootstrapper total inclusive Arbor.X.Build elapsed time in seconds: {V}",
@@ -169,7 +173,7 @@ stopwatch.Elapsed.TotalSeconds.ToString("F"));
 
             WriteDebug($"Using temp directory '{tempDirectory}'");
 
-            await DirectoryCopy.CopyAsync(baseDir, tempDirectory.FullName);
+            await DirectoryCopy.CopyAsync(baseDir, tempDirectory.FullName).ConfigureAwait(false);
 
             Environment.SetEnvironmentVariable(WellKnownVariables.BranchNameVersionOverrideEnabled, "true");
             Environment.SetEnvironmentVariable(WellKnownVariables.VariableOverrideEnabled, "true");
@@ -187,7 +191,7 @@ stopwatch.Elapsed.TotalSeconds.ToString("F"));
         private void WriteDebug(string message)
         {
             Debug.WriteLine(_Prefix + message);
-            _logger.Debug(message, _Prefix);
+            _logger.Debug("{Prefix}{Message}", _Prefix, message);
         }
 
         private void SetEnvironmentVariables()
@@ -225,7 +229,7 @@ stopwatch.Elapsed.TotalSeconds.ToString("F"));
 WellKnownVariables.DirectoryCloneEnabled, directoryCloneValue);
             }
 
-            string baseDir = await GetBaseDirectoryAsync(_startOptions);
+            string baseDir = await GetBaseDirectoryAsync(_startOptions).ConfigureAwait(false);
 
             DirectoryInfo buildDir = new DirectoryInfo(Path.Combine(baseDir, "build")).EnsureExists();
 
@@ -244,7 +248,7 @@ WellKnownVariables.DirectoryCloneEnabled, directoryCloneValue);
             {
                 nugetExePath = Path.Combine(buildDir.FullName, "nuget.exe");
 
-                bool nuGetExists = await TryDownloadNuGetAsync(buildDir.FullName, nugetExePath);
+                bool nuGetExists = await TryDownloadNuGetAsync(buildDir.FullName, nugetExePath).ConfigureAwait(false);
 
                 if (!nuGetExists)
                 {
@@ -254,7 +258,7 @@ nugetExePath);
                 }
             }
 
-            string outputDirectoryPath = await DownloadNuGetPackageAsync(buildDir.FullName, nugetExePath);
+            string outputDirectoryPath = await DownloadNuGetPackageAsync(buildDir.FullName, nugetExePath).ConfigureAwait(false);
 
             if (string.IsNullOrWhiteSpace(outputDirectoryPath))
             {
@@ -264,7 +268,7 @@ nugetExePath);
             ExitCode exitCode;
             try
             {
-                ExitCode buildToolsResult = await RunBuildToolsAsync(buildDir.FullName, outputDirectoryPath);
+                ExitCode buildToolsResult = await RunBuildToolsAsync(buildDir.FullName, outputDirectoryPath).ConfigureAwait(false);
 
                 if (buildToolsResult.IsSuccess)
                 {
@@ -289,7 +293,7 @@ buildToolsResult);
                 }
                 catch (Exception ex) when (!ex.IsFatal())
                 {
-                    _logger.Error(ex.ToString());
+                    _logger.Error(ex, "Could not kill process");
                 }
 
                 _logger.Error("The build timed out");
@@ -412,7 +416,7 @@ WellKnownVariables.AllowPrerelease);
                 verboseAction: _logger.Verbose,
                 addProcessRunnerCategory: true,
                 addProcessNameAsLogCategory: true,
-                parentPrefix: _Prefix);
+                parentPrefix: _Prefix).ConfigureAwait(false);
 
             if (!exitCode.IsSuccess)
             {
@@ -434,15 +438,15 @@ WellKnownVariables.AllowPrerelease);
             }
             else
             {
-                if (IsBetterRunOnLocalTempStorage() && await IsCurrentDirectoryClonableAsync())
+                if (IsBetterRunOnLocalTempStorage() && await IsCurrentDirectoryClonableAsync().ConfigureAwait(false))
                 {
-                    string clonedDirectory = await CloneDirectoryAsync();
+                    string clonedDirectory = await CloneDirectoryAsync().ConfigureAwait(false);
 
                     baseDir = clonedDirectory;
                 }
                 else
                 {
-                    baseDir = VcsPathHelper.FindVcsRootPath();
+                    baseDir = VcsPathHelper.FindVcsRootPath(Directory.GetCurrentDirectory());
                 }
             }
 
@@ -493,7 +497,7 @@ WellKnownVariables.AllowPrerelease);
                 _logger,
                 addProcessNameAsLogCategory: true,
                 addProcessRunnerCategory: true,
-                parentPrefix: _Prefix);
+                parentPrefix: _Prefix).ConfigureAwait(false);
 
             if (!cloneExitCode.IsSuccess)
             {
@@ -530,8 +534,7 @@ WellKnownVariables.AllowPrerelease);
             {
                 string gitDir = Path.Combine(sourceRoot, ".git");
 
-                var statusAllArguments = new[]
-                {
+                string[] statusAllArguments = {
                     $"--git-dir={gitDir}",
                     $"--work-tree={sourceRoot}",
                     "status"
@@ -547,7 +550,7 @@ WellKnownVariables.AllowPrerelease);
                         standardOutLog: _logger.Verbose,
                         standardErrorAction: _logger.Verbose,
                         toolAction: _logger.Information,
-                        verboseAction: _logger.Verbose);
+                        verboseAction: _logger.Verbose).ConfigureAwait(false);
 
                     if (statusExitCode.IsSuccess)
                     {
@@ -605,10 +608,10 @@ WellKnownVariables.AllowPrerelease);
                 buildToolExe.FullName,
                 cancellationTokenSource.Token,
                 arguments,
-                (message, prefix) => _logger.Information(message, buildApplicationPrefix),
-                (message, prefix) => _logger.Error(message, buildApplicationPrefix),
+                (message, prefix) => _logger.Information("{Prefix}{Message}", buildApplicationPrefix, message),
+                (message, prefix) => _logger.Error("{Prefix}{Message}", buildApplicationPrefix, message),
                 _logger.Information,
-                _logger.Verbose);
+                _logger.Verbose).ConfigureAwait(false);
 
             return result;
         }
@@ -618,7 +621,7 @@ WellKnownVariables.AllowPrerelease);
             string multiple =
                 $"Found {exeFiles.Count} such files: {string.Join(", ", exeFiles.Select(file => file.Name))}";
             const string Single = ". Found no such files";
-            string found = exeFiles.Any() ? Single : multiple;
+            string found = exeFiles.Count > 0 ? Single : multiple;
 
             _logger.Error("Expected directory {BuildToolDirectoryPath} to contain exactly one executable file with extensions .exe. {Found}",
 buildToolDirectoryPath, found);
@@ -635,7 +638,7 @@ buildToolDirectoryPath, found);
             {
                 if (!hasNugetExe)
                 {
-                    await DownloadNuGetExeAsync(baseDir, targetFile);
+                    await DownloadNuGetExeAsync(baseDir, targetFile).ConfigureAwait(false);
                     update = false;
                 }
             }
@@ -663,11 +666,11 @@ buildToolDirectoryPath, found);
                         _logger,
                         addProcessNameAsLogCategory: true,
                         addProcessRunnerCategory: true,
-                        parentPrefix: _Prefix);
+                        parentPrefix: _Prefix).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
-                    _logger.Error(ex.ToString());
+                    _logger.Error(ex, "Error updating NuGet");
                 }
             }
 
@@ -678,7 +681,17 @@ buildToolDirectoryPath, found);
 
         private async Task DownloadNuGetExeAsync(string baseDir, string targetFile)
         {
-            string tempFile = Path.Combine(baseDir, "nuget.exe.tmp");
+            var tempFile = new FileInfo(Path.Combine(baseDir, "nuget.exe.tmp"));
+
+            if (tempFile.FullName.IndexOfAny(Path.GetInvalidPathChars()) >= 0)
+            {
+                throw new InvalidOperationException("The temp path contains invalid characters");
+            }
+
+            if (tempFile.Name.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+            {
+                throw new InvalidOperationException("The temp path contains invalid characters");
+            }
 
             const string nugetExeUri = "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe";
 
@@ -701,19 +714,19 @@ nugetDownloadUriEnvironmentVariable);
 
             using (var client = new HttpClient())
             {
-                using (Stream stream = await client.GetStreamAsync(nugetDownloadUri))
+                using (Stream stream = await client.GetStreamAsync(nugetDownloadUri).ConfigureAwait(false))
                 {
-                    using (var fs = new FileStream(tempFile, FileMode.Create))
+                    using (var fs = new FileStream(tempFile.FullName, FileMode.Create))
                     {
-                        await stream.CopyToAsync(fs);
+                        await stream.CopyToAsync(fs).ConfigureAwait(false);
                     }
                 }
 
-                if (File.Exists(tempFile))
+                if (File.Exists(tempFile.FullName))
                 {
-                    File.Copy(tempFile, targetFile, true);
+                    tempFile.CopyTo(targetFile, true);
                     _logger.Verbose("Copied '{TempFile}' to '{TargetFile}'", tempFile, targetFile);
-                    File.Delete(tempFile);
+                    tempFile.Delete();
                     _logger.Verbose("Deleted temp file '{TempFile}'", tempFile);
                 }
             }

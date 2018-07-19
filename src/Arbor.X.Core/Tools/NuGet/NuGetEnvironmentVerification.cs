@@ -10,9 +10,6 @@ using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.ProcessUtils;
 using Arbor.X.Core.Tools.EnvironmentVariables;
 using JetBrains.Annotations;
-using Serilog;
-using Serilog.Core;
-using Serilog.Events;
 using ILogger = Serilog.ILogger;
 
 namespace Arbor.X.Core.Tools.NuGet
@@ -45,7 +42,7 @@ namespace Arbor.X.Core.Tools.NuGet
 
             if (!fileExists)
             {
-                variableBuilder.AppendLine($"NuGet.exe path '{nuGetExePath}' does not exist");
+                variableBuilder.Append("NuGet.exe path '").Append(nuGetExePath).AppendLine("' does not exist");
             }
             else
             {
@@ -56,7 +53,7 @@ namespace Arbor.X.Core.Tools.NuGet
                 {
                     logger.Verbose("NuGet self update is enabled by variable '{NuGetSelfUpdateEnabled}'", WellKnownVariables.NuGetSelfUpdateEnabled);
 
-                    await EnsureMinNuGetVersionAsync(nuGetExePath, logger);
+                    await EnsureMinNuGetVersionAsync(nuGetExePath, logger).ConfigureAwait(false);
                 }
                 else
                 {
@@ -75,7 +72,7 @@ namespace Arbor.X.Core.Tools.NuGet
             try
             {
                 IEnumerable<string> args = new List<string>();
-                ExitCode versionExitCode = await ProcessHelper.ExecuteAsync(nuGetExePath, args, versionLogger);
+                ExitCode versionExitCode = await ProcessHelper.ExecuteAsync(nuGetExePath, args, versionLogger).ConfigureAwait(false);
 
                 if (!versionExitCode.IsSuccess)
                 {
@@ -99,7 +96,7 @@ namespace Arbor.X.Core.Tools.NuGet
                 if (majorNuGetVersion == '2')
                 {
                     IEnumerable<string> updateSelfArgs = new List<string> { "update", "-self" };
-                    ExitCode exitCode = await ProcessHelper.ExecuteAsync(nuGetExePath, updateSelfArgs, logger);
+                    ExitCode exitCode = await ProcessHelper.ExecuteAsync(nuGetExePath, updateSelfArgs, logger).ConfigureAwait(false);
 
                     if (!exitCode.IsSuccess)
                     {
@@ -126,29 +123,6 @@ namespace Arbor.X.Core.Tools.NuGet
                     disposable.Dispose();
                 }
             }
-        }
-    }
-
-    public static class InMemoryLoggerHelper
-    {
-        public static ILogger CreateInMemoryLogger(Action<string> action)
-        {
-            return new LoggerConfiguration().WriteTo.Sink(new InMemorySink(action)).CreateLogger();
-        }
-    }
-
-    public class InMemorySink : ILogEventSink
-    {
-        readonly Action<string> action;
-
-        public InMemorySink(Action<string> action)
-        {
-            this.action = action;
-        }
-
-        public void Emit(LogEvent logEvent)
-        {
-            action.Invoke(logEvent.RenderMessage());
         }
     }
 }

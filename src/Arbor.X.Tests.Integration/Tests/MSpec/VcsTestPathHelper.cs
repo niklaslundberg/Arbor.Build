@@ -1,43 +1,17 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using System.Reflection;
+﻿using System.IO;
 using Arbor.Aesculus.Core;
+using NCrunch.Framework;
 
 namespace Arbor.X.Tests.Integration.Tests.MSpec
 {
-    internal class VcsTestPathHelper
+    static class VcsTestPathHelper
     {
         public static string FindVcsRootPath()
         {
-            try
+            if (NCrunchEnvironment.NCrunchIsResident())
             {
-                Assembly ncrunchAssembly = AppDomain.CurrentDomain.Load("NCrunch.Framework");
-
-                Type ncrunchType =
-                    ncrunchAssembly.GetTypes()
-                        .FirstOrDefault(
-                            type => type.Name.Equals("NCrunchEnvironment",
-                                StringComparison.InvariantCultureIgnoreCase));
-
-                MethodInfo method = ncrunchType?.GetMethod("GetOriginalSolutionPath");
-
-                string originalSolutionPath = method?.Invoke(null, null) as string;
-
-                if (!string.IsNullOrWhiteSpace(originalSolutionPath))
-                {
-                    DirectoryInfo parent = new DirectoryInfo(originalSolutionPath).Parent;
-                    if (parent != null)
-                    {
-                        return VcsPathHelper.FindVcsRootPath(parent.FullName);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-#if DEBUG
-                Console.WriteLine("Could not find NCrunch original solution path, {0}", ex);
-#endif
+                return VcsPathHelper.FindVcsRootPath(new FileInfo(NCrunchEnvironment.GetOriginalSolutionPath())
+                    .Directory?.FullName);
             }
 
             return VcsPathHelper.FindVcsRootPath();

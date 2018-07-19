@@ -77,11 +77,9 @@ namespace Arbor.X.Core.BuildVariables
                 return defaultValue;
             }
 
-            bool parsed;
-
             if (!bool.TryParse(
                 value,
-                out parsed))
+                out bool parsed))
             {
                 return defaultValue;
             }
@@ -117,8 +115,6 @@ namespace Arbor.X.Core.BuildVariables
             return parsed;
         }
 
-
-
         public static int GetInt32ByKey(
             this IReadOnlyCollection<IVariable> buildVariables,
             string key,
@@ -135,8 +131,7 @@ namespace Arbor.X.Core.BuildVariables
 
                 if (!string.IsNullOrWhiteSpace(value))
                 {
-                    int parsed;
-                    if (int.TryParse(value, out parsed))
+                    if (int.TryParse(value, out int parsed))
                     {
                         returnValue = parsed;
                     }
@@ -175,11 +170,9 @@ namespace Arbor.X.Core.BuildVariables
                 return defaultValue;
             }
 
-            long parsed;
-
             if (!long.TryParse(
                 value,
-                out parsed))
+                out long parsed))
             {
                 return defaultValue;
             }
@@ -201,11 +194,9 @@ namespace Arbor.X.Core.BuildVariables
                 return defaultValue;
             }
 
-            bool parsed;
-
             if (!bool.TryParse(
                 variable.Value,
-                out parsed))
+                out bool parsed))
             {
                 return defaultValue;
             }
@@ -227,11 +218,9 @@ namespace Arbor.X.Core.BuildVariables
                 return defaultValue;
             }
 
-            int parsed;
-
             if (!int.TryParse(
                 variable.Value,
-                out parsed))
+                out int parsed))
             {
                 return defaultValue;
             }
@@ -253,11 +242,9 @@ namespace Arbor.X.Core.BuildVariables
                 return defaultValue;
             }
 
-            long parsed;
-
             if (!long.TryParse(
                 variable.Value,
-                out parsed))
+                out long parsed))
             {
                 return defaultValue;
             }

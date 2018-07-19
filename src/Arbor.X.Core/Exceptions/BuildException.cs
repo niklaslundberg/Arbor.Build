@@ -22,5 +22,21 @@ namespace Arbor.X.Core.Exceptions
             return
                 $"{base.ToString()}{Environment.NewLine}Build variables: [{_buildVariables.Count}] {Environment.NewLine}{_buildVariables.Print()}";
         }
+
+        public BuildException()
+        {
+        }
+
+        public BuildException(string message) : base(message)
+        {
+        }
+
+        public BuildException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+
+        private BuildException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) : base(info, context)
+        {
+        }
     }
 }

@@ -52,7 +52,7 @@ namespace Arbor.X.Core.Tools.NuGet
                     dotNetExePath,
                     new[] { "restore", solutionFile.FullName },
                     logger,
-                    cancellationToken: cancellationToken);
+                    cancellationToken: cancellationToken).ConfigureAwait(false);
 
                 if (!result.IsSuccess)
                 {

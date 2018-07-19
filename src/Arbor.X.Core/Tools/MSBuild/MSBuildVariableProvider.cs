@@ -62,7 +62,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                 ExitCode versionExitCode = await ProcessHelper.ExecuteAsync(
                     vsWherePath,
                     new List<string> { "-prerelease" },
-                    cancellationToken: cancellationToken);
+                    cancellationToken: cancellationToken).ConfigureAwait(false);
 
                 var vsWhereArgs = new List<string> { "-requires", "Microsoft.Component.MSBuild", "-format", "json" };
 
@@ -80,13 +80,18 @@ namespace Arbor.X.Core.Tools.MSBuild
 
                 var resultBuilder = new StringBuilder();
 
-                await ProcessRunner.ExecuteAsync(
+                ExitCode exitCode = await ProcessRunner.ExecuteAsync(
                     vsWherePath,
                     arguments: vsWhereArgs,
                     standardOutLog: (message, category) => resultBuilder.Append(message),
                     cancellationToken: cancellationToken,
                     toolAction: logger.Debug,
-                    standardErrorAction: logger.Error);
+                    standardErrorAction: logger.Error).ConfigureAwait(false);
+
+                if (!exitCode.IsSuccess)
+                {
+                    throw new InvalidOperationException("Could not get Visual Studio path");
+                }
 
                 string json = resultBuilder.ToString();
 

@@ -121,7 +121,7 @@ namespace Arbor.X.Core.Tools.Symbols
                         arguments: args,
                         standardOutLog: logger.Information,
                         standardErrorAction: logger.Error,
-                        toolAction: logger.Information);
+                        toolAction: logger.Information).ConfigureAwait(false);
 
             return exitCode;
         }
@@ -166,7 +166,7 @@ namespace Arbor.X.Core.Tools.Symbols
                 string nugetPackage = fileInfo.FullName;
 
                 ExitCode exitCode =
-                    await UploadNugetPackageAsync(nugetExePath, symbolServerUrl, apiKey, nugetPackage, logger, timeout);
+                    await UploadNugetPackageAsync(nugetExePath, symbolServerUrl, apiKey, nugetPackage, logger, timeout).ConfigureAwait(false);
 
                 if (!exitCode.IsSuccess)
                 {

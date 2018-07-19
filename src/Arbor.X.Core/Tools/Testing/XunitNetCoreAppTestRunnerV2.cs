@@ -72,7 +72,7 @@ namespace Arbor.X.Core.Tools.Testing
                 .GetUnitTestFixtureDlls(directory, runTestsInReleaseConfiguration, assemblyFilePrefix: assemblyFilePrefix, targetFrameworkPrefix: FrameworkConstants.NetCoreApp)
                 .ToList();
 
-            if (!testDlls.Any())
+            if (testDlls.Count == 0)
             {
                 logger.Information("Found no .NETCoreApp Assemblies with Xunit tests");
                 return ExitCode.Success;
@@ -98,7 +98,6 @@ namespace Arbor.X.Core.Tools.Testing
                 }
 
                 return null;
-
             }
 
             HashSet<string> GetTestDirectories(IReadOnlyCollection<string> dlls)
@@ -139,7 +138,7 @@ namespace Arbor.X.Core.Tools.Testing
             {
                 string xmlReportName = $"xunit_v2.{Guid.NewGuid()}.xml";
 
-                var arguments = new List<string> { testDirectory, "--no-build" };
+                var arguments = new List<string> { "test", testDirectory, "--no-build" };
 
                 bool xmlEnabled =
                     buildVariables.GetBooleanByKey(WellKnownVariables.XUnitNetCoreAppXmlEnabled, defaultValue: true);
@@ -149,11 +148,11 @@ namespace Arbor.X.Core.Tools.Testing
                 var reportFileInfo = new FileInfo(reportFile);
                 reportFileInfo.Directory.EnsureExists();
 
-                if (xmlEnabled)
-                {
-                    arguments.Add("-xml");
-                    arguments.Add(reportFileInfo.FullName);
-                }
+                //if (xmlEnabled)
+                //{
+                //    arguments.Add("-xml");
+                //    arguments.Add(reportFileInfo.FullName);
+                //}
 
                 ExitCode result = await ProcessRunner.ExecuteAsync(
                     dotNetExePath,
@@ -161,7 +160,7 @@ namespace Arbor.X.Core.Tools.Testing
                     standardOutLog: logger.Information,
                     standardErrorAction: logger.Error,
                     toolAction: logger.Information,
-                    cancellationToken: cancellationToken);
+                    cancellationToken: cancellationToken).ConfigureAwait(false);
 
                 if (!result.IsSuccess)
                 {
@@ -202,7 +201,7 @@ namespace Arbor.X.Core.Tools.Testing
                         .Where(report => !report.Name.EndsWith(TestReportXslt.JUnitSuffix, StringComparison.Ordinal))
                         .ToReadOnlyCollection();
 
-                    if (xmlReports.Any())
+                    if (xmlReports.Count > 0)
                     {
                         foreach (FileInfo xmlReport in xmlReports)
                         {

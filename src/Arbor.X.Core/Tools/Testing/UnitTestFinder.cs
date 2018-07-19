@@ -14,8 +14,8 @@ namespace Arbor.X.Core.Tools.Testing
 {
     public class UnitTestFinder
     {
-        readonly ILogger _logger;
-        readonly IEnumerable<Type> _typesToFind;
+        private readonly ILogger _logger;
+        private readonly IEnumerable<Type> _typesToFind;
 
         public UnitTestFinder(IEnumerable<Type> typesesToFind, bool debugLogEnabled = false, ILogger logger = null)
         {
@@ -24,7 +24,7 @@ namespace Arbor.X.Core.Tools.Testing
             DebugLogEnabled = debugLogEnabled;
         }
 
-        bool DebugLogEnabled { get; }
+        private bool DebugLogEnabled { get; }
 
         public HashSet<string> GetUnitTestFixtureDlls(
             DirectoryInfo currentDirectory,
@@ -177,7 +177,7 @@ namespace Arbor.X.Core.Tools.Testing
         }
 
 // ReSharper disable ReturnTypeCanBeEnumerable.Local
-        IReadOnlyCollection<string> UnitTestFixtureAssemblies(IEnumerable<(AssemblyDefinition, FileInfo)> assemblies)
+        private IReadOnlyCollection<string> UnitTestFixtureAssemblies(IEnumerable<(AssemblyDefinition, FileInfo)> assemblies)
 
             // ReSharper restore ReturnTypeCanBeEnumerable.Local
         {
@@ -190,7 +190,7 @@ namespace Arbor.X.Core.Tools.Testing
             return unitTestFixtureAssemblies;
         }
 
-        bool TryFindAssembly((AssemblyDefinition, FileInfo) assembly)
+        private bool TryFindAssembly((AssemblyDefinition, FileInfo) assembly)
         {
             bool result;
             try
@@ -215,7 +215,7 @@ namespace Arbor.X.Core.Tools.Testing
             return result;
         }
 
-        bool IsTypeUnitTestFixture(TypeDefinition typeToInvestigate)
+        private bool IsTypeUnitTestFixture(TypeDefinition typeToInvestigate)
         {
             IEnumerable<CustomAttribute> customAttributeDatas = typeToInvestigate.CustomAttributes;
 
@@ -226,7 +226,7 @@ namespace Arbor.X.Core.Tools.Testing
             return isTestType;
         }
 
-        bool IsCustomAttributeOfExpectedType(IEnumerable<CustomAttribute> customAttributes)
+        private bool IsCustomAttributeOfExpectedType(IEnumerable<CustomAttribute> customAttributes)
         {
             bool isTypeUnitTestFixture = customAttributes.Any(
                 attributeData =>
@@ -242,7 +242,7 @@ namespace Arbor.X.Core.Tools.Testing
             return isTypeUnitTestFixture;
         }
 
-        bool TypeHasTestMethods(TypeDefinition typeToInvestigate)
+        private bool TypeHasTestMethods(TypeDefinition typeToInvestigate)
         {
             IEnumerable<MethodDefinition> publicInstanceMethods =
                 typeToInvestigate.Methods.Where(method => method.IsPublic && !method.IsStatic);
@@ -298,7 +298,7 @@ namespace Arbor.X.Core.Tools.Testing
             return hasTestMethod;
         }
 
-        bool IsCustomAttributeTypeToFind(CustomAttribute attr)
+        private bool IsCustomAttributeTypeToFind(CustomAttribute attr)
         {
             return
                 _typesToFind.Any(
@@ -308,7 +308,7 @@ namespace Arbor.X.Core.Tools.Testing
                             StringComparison.InvariantCultureIgnoreCase));
         }
 
-        (AssemblyDefinition, FileInfo) GetAssembly(FileInfo dllFile, string targetFrameworkPrefix)
+        private (AssemblyDefinition, FileInfo) GetAssembly(FileInfo dllFile, string targetFrameworkPrefix)
         {
             try
             {

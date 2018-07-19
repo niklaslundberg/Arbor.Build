@@ -186,7 +186,7 @@ namespace Arbor.X.Core.Tools.NuGet
                             },
                             toolAction: logger.Information,
                             addProcessNameAsLogCategory: true,
-                            addProcessRunnerCategory: true);
+                            addProcessRunnerCategory: true).ConfigureAwait(false);
 
                 if (!exitCode.IsSuccess
                     && errorBuilder.ToString().IndexOf("conflict", StringComparison.InvariantCultureIgnoreCase) >= 0)
@@ -281,7 +281,7 @@ namespace Arbor.X.Core.Tools.NuGet
                 nuGetPackageFiles.AddRange(websitePackages);
             }
 
-            if (!nuGetPackageFiles.Any())
+            if (nuGetPackageFiles.Count == 0)
             {
                 string websiteUploadMissingMessage = websitePackagesUploadEnabled
                     ? $" or in folder websites folder '{websitesDirectory.FullName}'"
@@ -311,7 +311,7 @@ namespace Arbor.X.Core.Tools.NuGet
                 foreach (FileInfo fileInfo in sortedPackages)
                 {
                     bool? packageExists =
-                        await CheckPackageExistsAsync(fileInfo, nugetExePath, logger, sourceName);
+                        await CheckPackageExistsAsync(fileInfo, nugetExePath, logger, sourceName).ConfigureAwait(false);
 
                     if (!packageExists.HasValue)
                     {
@@ -344,7 +344,7 @@ namespace Arbor.X.Core.Tools.NuGet
                     logger,
                     timeoutInseconds,
                     checkNuGetPackagesExists,
-                    timeoutIncreaseEnabled);
+                    timeoutIncreaseEnabled).ConfigureAwait(false);
 
                 if (!exitCode.IsSuccess)
                 {
@@ -446,7 +446,7 @@ namespace Arbor.X.Core.Tools.NuGet
                         },
                         toolAction: logger.Information,
                         addProcessNameAsLogCategory: true,
-                        addProcessRunnerCategory: true);
+                        addProcessRunnerCategory: true).ConfigureAwait(false);
 
             if (!exitCode.IsSuccess)
             {

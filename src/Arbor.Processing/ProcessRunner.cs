@@ -90,292 +90,304 @@ namespace Arbor.Processing
 
             string processWithArgs = $"\"{executePath}\" {formattedArguments}".Trim();
 
-            string toolCategory = parentPrefix + ToolName;
-            toolAction($"Executing '{processWithArgs}'", toolCategory);
-
-            bool useShellExecute = standardErrorAction == null && standardOutputLog == null;
-
-            string category = $"[{Path.GetFileNameWithoutExtension(Path.GetFileName(executePath))}] ";
-
-            string outputCategory = parentPrefix + (addProcessRunnerCategory ? ToolName : string.Empty) +
-                                    (addProcessNameAsLogCategory ? category : string.Empty);
-
-            bool redirectStandardError = standardErrorAction != null;
-
-            bool redirectStandardOutput = standardOutputLog != null;
-
-            var processStartInfo = new ProcessStartInfo(executePath)
-            {
-                Arguments = formattedArguments,
-                RedirectStandardError = redirectStandardError,
-                RedirectStandardOutput = redirectStandardOutput,
-                UseShellExecute = useShellExecute
-            };
-
-            if (!useShellExecute)
-            {
-                processStartInfo.CreateNoWindow = noWindow;
-            }
-
-            if (environmentVariables != null)
-            {
-                foreach (KeyValuePair<string, string> environmentVariable in environmentVariables)
-                {
-                    processStartInfo.EnvironmentVariables.Add(environmentVariable.Key, environmentVariable.Value);
-                }
-            }
-
-            var exitCode = new ExitCode(-1);
-
-            var process = new Process
-            {
-                StartInfo = processStartInfo,
-                EnableRaisingEvents = true
-            };
-
-            process.Disposed += (sender, args) =>
-            {
-                if (!taskCompletionSource.Task.IsCompleted)
-                {
-                    verbose($"Task was not completed, but process '{processWithArgs}' was disposed", toolCategory);
-                    taskCompletionSource.TrySetResult(ExitCode.Failure);
-                }
-
-                verbose($"Disposed process '{processWithArgs}'", toolCategory);
-            };
-
-            if (redirectStandardError)
-            {
-                process.ErrorDataReceived += (sender, args) =>
-                {
-                    if (args.Data != null)
-                    {
-                        errorAction(args.Data, outputCategory);
-                    }
-                };
-            }
-
-            if (redirectStandardOutput)
-            {
-                process.OutputDataReceived += (sender, args) =>
-                {
-                    if (args.Data != null)
-                    {
-                        standardAction(args.Data, outputCategory);
-                    }
-                };
-            }
-
-            process.Exited += (sender, args) =>
-            {
-                var proc = (Process)sender;
-
-                try
-                {
-                    exitCode = new ExitCode(proc.ExitCode);
-                }
-                catch (InvalidOperationException ex)
-                {
-                    toolAction($"Could not get exit code for process, {ex}", toolCategory);
-
-                    if (!taskCompletionSource.Task.IsCompleted && !taskCompletionSource.Task.IsCanceled &&
-                        !taskCompletionSource.Task.IsFaulted)
-                    {
-                        taskCompletionSource.SetResult(new ExitCode(1));
-                    }
-
-                    return;
-                }
-
-                toolAction($"Process '{processWithArgs}' exited with code {exitCode}",
-                    toolCategory);
-
-                taskCompletionSource.SetResult(new ExitCode(proc.ExitCode));
-            };
-
-            int processId = -1;
+            var stopwatch = new Stopwatch();
 
             try
             {
-                bool started = process.Start();
+                string toolCategory = parentPrefix + ToolName;
+                toolAction($"Executing '{processWithArgs}'", toolCategory);
 
-                if (!started)
+                bool useShellExecute = standardErrorAction == null && standardOutputLog == null;
+
+                string category = $"[{Path.GetFileNameWithoutExtension(Path.GetFileName(executePath))}] ";
+
+                string outputCategory = parentPrefix + (addProcessRunnerCategory ? ToolName : string.Empty) +
+                                        (addProcessNameAsLogCategory ? category : string.Empty);
+
+                bool redirectStandardError = standardErrorAction != null;
+
+                bool redirectStandardOutput = standardOutputLog != null;
+
+                var processStartInfo = new ProcessStartInfo(executePath)
                 {
-                    errorAction($"Process '{processWithArgs}' could not be started", toolCategory);
-                    return ExitCode.Failure;
+                    Arguments = formattedArguments,
+                    RedirectStandardError = redirectStandardError,
+                    RedirectStandardOutput = redirectStandardOutput,
+                    UseShellExecute = useShellExecute
+                };
+
+                if (!useShellExecute)
+                {
+                    processStartInfo.CreateNoWindow = noWindow;
                 }
+
+                if (environmentVariables != null)
+                {
+                    foreach (KeyValuePair<string, string> environmentVariable in environmentVariables)
+                    {
+                        processStartInfo.EnvironmentVariables.Add(environmentVariable.Key, environmentVariable.Value);
+                    }
+                }
+
+                var exitCode = new ExitCode(-1);
+
+                var process = new Process
+                {
+                    StartInfo = processStartInfo,
+                    EnableRaisingEvents = true
+                };
+
+                process.Disposed += (sender, args) =>
+                {
+                    if (!taskCompletionSource.Task.IsCompleted)
+                    {
+                        verbose($"Task was not completed, but process '{processWithArgs}' was disposed", toolCategory);
+                        taskCompletionSource.TrySetResult(ExitCode.Failure);
+                    }
+
+                    verbose($"Disposed process '{processWithArgs}'", toolCategory);
+                };
 
                 if (redirectStandardError)
                 {
-                    process.BeginErrorReadLine();
+                    process.ErrorDataReceived += (sender, args) =>
+                    {
+                        if (args.Data != null)
+                        {
+                            errorAction(args.Data, outputCategory);
+                        }
+                    };
                 }
 
                 if (redirectStandardOutput)
                 {
-                    process.BeginOutputReadLine();
+                    process.OutputDataReceived += (sender, args) =>
+                    {
+                        if (args.Data != null)
+                        {
+                            standardAction(args.Data, outputCategory);
+                        }
+                    };
                 }
 
-                await Task.Delay(50, cancellationToken);
+                process.Exited += (sender, args) =>
+                {
+                    var proc = (Process)sender;
 
-                bool? isWin64 = process.IsWin64();
+                    try
+                    {
+                        exitCode = new ExitCode(proc.ExitCode);
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        toolAction($"Could not get exit code for process, {ex}", toolCategory);
 
-                int? bits = isWin64.HasValue ? isWin64.Value ? 64 : 32 : default;
+                        if (!taskCompletionSource.Task.IsCompleted && !taskCompletionSource.Task.IsCanceled &&
+                            !taskCompletionSource.Task.IsFaulted)
+                        {
+                            taskCompletionSource.SetResult(new ExitCode(1));
+                        }
+
+                        return;
+                    }
+
+                    toolAction($"Process '{processWithArgs}' exited with code {exitCode}",
+                        toolCategory);
+
+                    taskCompletionSource.SetResult(new ExitCode(proc.ExitCode));
+                };
+
+                int processId = -1;
 
                 try
                 {
-                    processId = process.Id;
+                    stopwatch.Start();
+                    bool started = process.Start();
+
+                    if (!started)
+                    {
+                        errorAction($"Process '{processWithArgs}' could not be started", toolCategory);
+                        return ExitCode.Failure;
+                    }
+
+                    if (redirectStandardError)
+                    {
+                        process.BeginErrorReadLine();
+                    }
+
+                    if (redirectStandardOutput)
+                    {
+                        process.BeginOutputReadLine();
+                    }
+
+                    await Task.Delay(50, cancellationToken).ConfigureAwait(false);
+
+                    bool? isWin64 = process.IsWin64();
+
+                    int? bits = isWin64.HasValue ? isWin64.Value ? 64 : 32 : default;
+
+                    try
+                    {
+                        processId = process.Id;
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        debug($"Could not get process id for process '{processWithArgs}'. {ex}", toolCategory);
+                    }
+
+                    string temp = process.HasExited ? "was" : "is";
+
+                    verbose(
+                        $"The process '{processWithArgs}' {temp} running in {bits?.ToString() ?? "N/A"}-bit mode",
+                        toolCategory);
                 }
-                catch (InvalidOperationException ex)
+                catch (Exception ex)
                 {
-                    debug($"Could not get process id for process '{processWithArgs}'. {ex}", toolCategory);
+                    if (ex.IsFatal())
+                    {
+                        throw;
+                    }
+
+                    errorAction($"An error occured while running process '{processWithArgs}': {ex}", toolCategory);
+                    taskCompletionSource.SetException(ex);
                 }
 
-                string temp = process.HasExited ? "was" : "is";
-
-                verbose(
-                    $"The process '{processWithArgs}' {temp} running in {bits?.ToString() ?? "N/A"}-bit mode",
-                    toolCategory);
-            }
-            catch (Exception ex)
-            {
-                if (ex.IsFatal())
+                bool done = false;
+                try
                 {
-                    throw;
+                    while (process.IsAlive(taskCompletionSource.Task,
+                        cancellationToken,
+                        done,
+                        processWithArgs,
+                        toolAction,
+                        standardAction,
+                        errorAction,
+                        verbose))
+                    {
+                        if (cancellationToken.IsCancellationRequested)
+                        {
+                            break;
+                        }
+
+                        Task delay = Task.Delay(TimeSpan.FromMilliseconds(50), cancellationToken);
+
+                        await delay;
+
+                        if (taskCompletionSource.Task.IsCompleted)
+                        {
+                            done = true;
+                            exitCode = await taskCompletionSource.Task;
+                        }
+                        else if (taskCompletionSource.Task.IsCanceled)
+                        {
+                            exitCode = ExitCode.Failure;
+                        }
+                        else if (taskCompletionSource.Task.IsFaulted)
+                        {
+                            exitCode = ExitCode.Failure;
+                        }
+                    }
                 }
-
-                errorAction($"An error occured while running process '{processWithArgs}': {ex}", toolCategory);
-                taskCompletionSource.SetException(ex);
-            }
-
-            bool done = false;
-            try
-            {
-                while (process.IsAlive(taskCompletionSource.Task,
-                    cancellationToken,
-                    done,
-                    processWithArgs,
-                    toolAction,
-                    standardAction,
-                    errorAction,
-                    verbose))
+                finally
                 {
-                    if (cancellationToken.IsCancellationRequested)
+                    if (!exitCode.IsSuccess)
                     {
-                        break;
+                        if (cancellationToken.IsCancellationRequested)
+                        {
+                            if (process != null && !process.HasExited)
+                            {
+                                try
+                                {
+                                    toolAction($"Cancellation is requested, trying to kill process '{processWithArgs}'",
+                                        toolCategory);
+
+                                    if (processId > 0)
+                                    {
+                                        string args = $"/PID {processId}";
+                                        string killProcessPath =
+                                            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System),
+                                                "taskkill.exe");
+                                        toolAction($"Running {killProcessPath} {args}", toolCategory);
+                                        Process.Start(killProcessPath, args);
+
+                                        errorAction(
+                                            $"Killed process '{processWithArgs}' because cancellation was requested",
+                                            toolCategory);
+                                    }
+                                    else
+                                    {
+                                        debugAction(
+                                            $"Could not kill process '{processWithArgs}', missing process id",
+                                            toolCategory);
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    if (ex.IsFatal())
+                                    {
+                                        throw;
+                                    }
+
+                                    errorAction(
+                                        $"ProcessRunner could not kill process '{processWithArgs}' when cancellation was requested",
+                                        toolCategory);
+                                    errorAction(
+                                        $"Could not kill process '{processWithArgs}' when cancellation was requested",
+                                        toolCategory);
+                                    errorAction(ex.ToString(), toolCategory);
+                                }
+                            }
+                        }
                     }
 
-                    Task delay = Task.Delay(TimeSpan.FromMilliseconds(50), cancellationToken);
-
-                    await delay;
-
-                    if (taskCompletionSource.Task.IsCompleted)
+                    using (process)
                     {
-                        done = true;
-                        exitCode = await taskCompletionSource.Task;
-                    }
-                    else if (taskCompletionSource.Task.IsCanceled)
-                    {
-                        exitCode = ExitCode.Failure;
-                    }
-                    else if (taskCompletionSource.Task.IsFaulted)
-                    {
-                        exitCode = ExitCode.Failure;
+                        verbose(
+                            $"Task status: {taskCompletionSource.Task.Status}, {taskCompletionSource.Task.IsCompleted}",
+                            toolCategory);
+                        verbose($"Disposing process '{processWithArgs}'", toolCategory);
                     }
                 }
+
+                verbose($"Process runner exit code {exitCode} for process '{processWithArgs}'", toolCategory);
+
+                try
+                {
+                    if (processId > 0)
+                    {
+                        Process stillRunningProcess = Process.GetProcesses().SingleOrDefault(p => p.Id == processId);
+
+                        if (stillRunningProcess != null)
+                        {
+                            if (!stillRunningProcess.HasExited)
+                            {
+                                errorAction(
+                                    $"The process with ID {processId.ToString(CultureInfo.InvariantCulture)} '{processWithArgs}' is still running",
+                                    toolCategory);
+
+                                return ExitCode.Failure;
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    if (ex.IsFatal())
+                    {
+                        throw;
+                    }
+
+                    debugAction($"Could not check processes. {ex}", toolCategory);
+                }
+
+                return exitCode;
             }
             finally
             {
-                if (!exitCode.IsSuccess)
-                {
-                    if (cancellationToken.IsCancellationRequested)
-                    {
-                        if (process != null && !process.HasExited)
-                        {
-                            try
-                            {
-                                toolAction($"Cancellation is requested, trying to kill process '{processWithArgs}'",
-                                    toolCategory);
+                stopwatch.Stop();
 
-                                if (processId > 0)
-                                {
-                                    string args = $"/PID {processId}";
-                                    string killProcessPath =
-                                        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System),
-                                            "taskkill.exe");
-                                    toolAction($"Running {killProcessPath} {args}", toolCategory);
-                                    Process.Start(killProcessPath, args);
-
-                                    errorAction(
-                                        $"Killed process '{processWithArgs}' because cancellation was requested",
-                                        toolCategory);
-                                }
-                                else
-                                {
-                                    debugAction(
-                                        $"Could not kill process '{processWithArgs}', missing process id",
-                                        toolCategory);
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                if (ex.IsFatal())
-                                {
-                                    throw;
-                                }
-
-                                errorAction(
-                                    $"ProcessRunner could not kill process '{processWithArgs}' when cancellation was requested",
-                                    toolCategory);
-                                errorAction(
-                                    $"Could not kill process '{processWithArgs}' when cancellation was requested",
-                                    toolCategory);
-                                errorAction(ex.ToString(), toolCategory);
-                            }
-                        }
-                    }
-                }
-
-                using (process)
-                {
-                    verbose(
-                        $"Task status: {taskCompletionSource.Task.Status}, {taskCompletionSource.Task.IsCompleted}",
-                        toolCategory);
-                    verbose($"Disposing process '{processWithArgs}'", toolCategory);
-                }
+                Serilog.Log.Logger.Debug("Process {Process} took {DurationInMilliseconds} to run", processWithArgs, (int)stopwatch.Elapsed.TotalMilliseconds);
             }
-
-            verbose($"Process runner exit code {exitCode} for process '{processWithArgs}'", toolCategory);
-
-            try
-            {
-                if (processId > 0)
-                {
-                    Process stillRunningProcess = Process.GetProcesses().SingleOrDefault(p => p.Id == processId);
-
-                    if (stillRunningProcess != null)
-                    {
-                        if (!stillRunningProcess.HasExited)
-                        {
-                            errorAction(
-                                $"The process with ID {processId.ToString(CultureInfo.InvariantCulture)} '{processWithArgs}' is still running",
-                                toolCategory);
-
-                            return ExitCode.Failure;
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                if (ex.IsFatal())
-                {
-                    throw;
-                }
-
-                debugAction($"Could not check processes. {ex}", toolCategory);
-            }
-
-            return exitCode;
         }
     }
 }

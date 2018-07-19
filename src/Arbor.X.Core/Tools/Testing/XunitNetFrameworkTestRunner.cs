@@ -63,7 +63,7 @@ namespace Arbor.X.Core.Tools.Testing
                 .GetUnitTestFixtureDlls(directory, runTestsInReleaseConfiguration, assemblyFilePrefix, FrameworkConstants.NetFramework)
                 .ToList();
 
-            if (!testDlls.Any())
+            if (testDlls.Count == 0)
             {
                 logger.Information("Could not find any DLL files with Xunit test and target framework .NETFramework, skipping Xunit Net Framework tests");
                 return ExitCode.Success;
@@ -90,7 +90,7 @@ namespace Arbor.X.Core.Tools.Testing
                 standardOutLog: logger.Information,
                 standardErrorAction: logger.Error,
                 toolAction: logger.Information,
-                cancellationToken: cancellationToken);
+                cancellationToken: cancellationToken).ConfigureAwait(false);
 
             return result;
         }

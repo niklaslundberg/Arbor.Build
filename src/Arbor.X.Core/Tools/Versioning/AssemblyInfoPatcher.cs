@@ -34,22 +34,13 @@ namespace Arbor.X.Core.Tools.Versioning
                 return Task.FromResult(ExitCode.Success);
             }
 
-            var delegateLogger = new DelegateLogger(
-                logger.Error,
-                logger.Warning,
-                logger.Information,
-                logger.Verbose,
-                logger.Debug)
-            {
-                LogLevel = LogLevel.Debug};
-
-            var app = new AssemblyPatcherApp(delegateLogger);
+            var app = new AssemblyPatcherApp();
 
             _filePattern = buildVariables.GetVariableValueOrDefault(
                 WellKnownVariables.AssemblyFilePatchingFilePattern,
                 "AssemblyInfo.cs");
 
-            logger.Verbose("Using assembly version file pattern '{_filePattern}' to lookup files to patch", _filePattern);
+            logger.Verbose("Using assembly version file pattern '{FilePattern}' to lookup files to patch", _filePattern);
 
             string sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
 
@@ -138,7 +129,7 @@ namespace Arbor.X.Core.Tools.Versioning
             }
             catch (Exception ex)
             {
-                logger.Error(ex, "Could not patch assembly infos. {Ex}");
+                logger.Error(ex, "Could not patch assembly infos.");
                 return Task.FromResult(ExitCode.Failure);
             }
 

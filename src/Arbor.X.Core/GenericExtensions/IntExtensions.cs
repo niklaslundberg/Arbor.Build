@@ -11,9 +11,7 @@ namespace Arbor.X.Core.GenericExtensions
                 return ParseResult<int>.Create(defaultValue, false, value);
             }
 
-            int parsedValue;
-
-            if (!int.TryParse(value, out parsedValue))
+            if (!int.TryParse(value, out int parsedValue))
             {
                 return ParseResult<int>.Create(defaultValue, false, value);
             }

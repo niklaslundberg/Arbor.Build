@@ -42,8 +42,7 @@ namespace Arbor.X.Core.Tools.NuGet
 
                 var uris = new List<string>();
 
-                Uri userUri;
-                if (!string.IsNullOrWhiteSpace(exeUri) && Uri.TryCreate(exeUri, UriKind.Absolute, out userUri))
+                if (!string.IsNullOrWhiteSpace(exeUri) && Uri.TryCreate(exeUri, UriKind.Absolute, out Uri userUri))
                 {
                     uris.Add(exeUri);
                 }
@@ -58,7 +57,7 @@ namespace Arbor.X.Core.Tools.NuGet
                     {
                         string nugetExeUri = uris[i % uris.Count];
 
-                        await DownloadNuGetExeAsync(baseDir, targetFile, nugetExeUri, cancellationToken);
+                        await DownloadNuGetExeAsync(baseDir, targetFile, nugetExeUri, cancellationToken).ConfigureAwait(false);
 
                         return targetFile;
                     }
@@ -71,7 +70,7 @@ namespace Arbor.X.Core.Tools.NuGet
 
                     _logger.Information("Waiting {WaitTimeInSeconds} seconds to try again", WaitTimeInSeconds);
 
-                    await Task.Delay(TimeSpan.FromSeconds(WaitTimeInSeconds), cancellationToken);
+                    await Task.Delay(TimeSpan.FromSeconds(WaitTimeInSeconds), cancellationToken).ConfigureAwait(false);
                 }
             }
 
@@ -89,7 +88,7 @@ namespace Arbor.X.Core.Tools.NuGet
                         _logger,
                         addProcessNameAsLogCategory: true,
                         addProcessRunnerCategory: true,
-                        cancellationToken: cancellationToken);
+                        cancellationToken: cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -113,11 +112,11 @@ namespace Arbor.X.Core.Tools.NuGet
             {
                 using (var client = new HttpClient())
                 {
-                    using (Stream stream = await client.GetStreamAsync(nugetExeUri))
+                    using (Stream stream = await client.GetStreamAsync(nugetExeUri).ConfigureAwait(false))
                     {
                         using (var fs = new FileStream(tempFile, FileMode.Create))
                         {
-                            await stream.CopyToAsync(fs, 4096, cancellationToken);
+                            await stream.CopyToAsync(fs, 4096, cancellationToken).ConfigureAwait(false);
                         }
                     }
                 }

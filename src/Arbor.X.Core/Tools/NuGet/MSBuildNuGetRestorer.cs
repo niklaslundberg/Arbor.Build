@@ -42,7 +42,7 @@ namespace Arbor.X.Core.Tools.NuGet
                 DefaultPaths.DefaultPathLookupSpecification.AddExcludedDirectorySegments(new[] { "node_modules" });
 
             var blackListStatus = solutionFiles
-                .Select(file => new { File = file, Status = pathLookupSpecification.IsFileBlackListed(file, rootPath=rootPath) })
+                .Select(file => new { File = file, Status = pathLookupSpecification.IsFileBlackListed(file, rootPath) })
                 .ToArray();
 
             string[] included = blackListStatus
@@ -77,7 +77,7 @@ namespace Arbor.X.Core.Tools.NuGet
                 msbuildExePath,
                 new[] { solutionFile, "/t:restore" },
                 logger,
-                cancellationToken: cancellationToken);
+                cancellationToken: cancellationToken).ConfigureAwait(false);
 
             return result;
         }

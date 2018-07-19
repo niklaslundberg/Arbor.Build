@@ -14,7 +14,7 @@ namespace Arbor.X.Core.GenericExtensions
         {
             IReadOnlyCollection<IDictionary<string, string>> materialized = dictionaries.SafeToReadOnlyCollection();
 
-            if (dictionaries == null || !materialized.Any())
+            if (dictionaries == null || materialized.Count == 0)
             {
                 return string.Empty;
             }
@@ -51,7 +51,7 @@ namespace Arbor.X.Core.GenericExtensions
 
                 if (padding > 0)
                 {
-                    builder.Append(title + new string(Separator, padding));
+                    builder.Append(title).Append(new string(Separator, padding));
                 }
             }
 

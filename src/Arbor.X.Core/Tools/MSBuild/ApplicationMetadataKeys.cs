@@ -1,6 +1,6 @@
 namespace Arbor.X.Core.Tools.MSBuild
 {
-    internal class ApplicationMetadataKeys
+    internal static class ApplicationMetadataKeys
     {
         public static readonly string GitHash = "urn:versioning:vcs:git:hash";
 

@@ -15,8 +15,7 @@ using Arbor.X.Core.IO;
 using Arbor.X.Core.Parsing;
 using Arbor.X.Core.ProcessUtils;
 using Arbor.X.Core.Tools.ILRepack;
-using FubuCsProjFile;
-using FubuCsProjFile.MSBuild;
+using Arbor.X.Core.Tools.MSBuild;
 using JetBrains.Annotations;
 
 namespace Arbor.X.Core.Tools.Libz
@@ -85,12 +84,12 @@ namespace Arbor.X.Core.Tools.Libz
             ImmutableArray<ILRepackData> filesToMerge;
             try
             {
-                filesToMerge = (await Task.WhenAll(ilMergeProjects.Select(GetMergeFilesAsync)))
+                filesToMerge = (await Task.WhenAll(ilMergeProjects.Select(GetMergeFilesAsync)).ConfigureAwait(false))
                     .SelectMany(item => item).ToImmutableArray();
             }
             catch (Exception ex)
             {
-                _logger.Error(ex.ToString());
+                _logger.Error(ex, "Error in LibZPacker");
 
                 return ExitCode.Failure;
             }
@@ -149,7 +148,7 @@ namespace Arbor.X.Core.Tools.Libz
                         standardOutLog: logger.Information,
                         toolAction: logger.Information,
                         standardErrorAction: logger.Error,
-                        cancellationToken: cancellationToken);
+                        cancellationToken: cancellationToken).ConfigureAwait(false);
                 }
 
                 if (!result.IsSuccess)
@@ -171,12 +170,6 @@ namespace Arbor.X.Core.Tools.Libz
             return !blacklisted.Any(
                 blacklistedItem => file.Name.IndexOf(blacklistedItem, StringComparison.InvariantCultureIgnoreCase) >=
                                    0);
-        }
-
-        private static bool IsNetSdkProject(FileInfo projectFile)
-        {
-            return File.ReadLines(projectFile.FullName)
-                .Any(line => line.IndexOf("Microsoft.NET.Sdk", StringComparison.OrdinalIgnoreCase) >= 0);
         }
 
         private async Task<ImmutableArray<ILRepackData>> GetMergeFilesAsync(FileInfo projectFile)
@@ -219,11 +212,11 @@ namespace Arbor.X.Core.Tools.Libz
                 return value;
             }
 
-            string targetFrameworkVersionValue = null;
+            string targetFrameworkVersionValue;
 
-            DirectoryInfo releasePlatformDirectory = null;
+            DirectoryInfo releasePlatformDirectory;
 
-            bool useSdkProject = IsNetSdkProject(projectFile);
+            bool useSdkProject = MSBuildProject.IsNetSdkProject(projectFile);
 
             if (useSdkProject)
             {
@@ -231,7 +224,7 @@ namespace Arbor.X.Core.Tools.Libz
 
                 targetFrameworkVersionValue = string.Empty;
 
-                if (!releasePlatformDirectories.Any())
+                if (releasePlatformDirectories.Length == 0)
                 {
                     _logger.Warning("No release platform directories were found in '{V}'", Path.Combine(binDirectory.FullName, configuration));
                     return ImmutableArray<ILRepackData>.Empty;
@@ -270,7 +263,7 @@ namespace Arbor.X.Core.Tools.Libz
                             "dotnet",
                             "dotnet.exe"),
                         args,
-                        _logger);
+                        _logger).ConfigureAwait(false);
 
                     if (!exitCode.IsSuccess)
                     {
@@ -293,11 +286,11 @@ namespace Arbor.X.Core.Tools.Libz
             }
             else
             {
-                CsProjFile csProjFile = CsProjFile.LoadFrom(projectFile.FullName);
+                MSBuildProject csProjFile = MSBuildProject.LoadFrom(projectFile.FullName);
 
                 const string targetFrameworkVersion = "TargetFrameworkVersion";
 
-                MSBuildProperty msBuildProperty = csProjFile.BuildProject.PropertyGroups
+                MSBuildProperty msBuildProperty = csProjFile.PropertyGroups
                     .SelectMany(group =>
                         group.Properties.Where(
                             property => property.Name.Equals(
@@ -327,7 +320,7 @@ namespace Arbor.X.Core.Tools.Libz
                     $"Only one exe can be merged, found {string.Join(", ", exes.Select(file => file.FullName))}");
             }
 
-            if (!exes.Any())
+            if (exes.Count == 0)
             {
                 throw new InvalidOperationException("Could not find any exe files to merge");
             }

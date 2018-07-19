@@ -51,7 +51,7 @@ namespace Arbor.X.Core.Tools.Kudu
                 .Where(project => project.IsKuduWebJobProject)
                 .ToList();
 
-            if (kuduWebJobProjects.Any())
+            if (kuduWebJobProjects.Count > 0)
             {
                 logger.Information(string.Join(
                     Environment.NewLine,

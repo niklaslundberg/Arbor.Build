@@ -9,9 +9,9 @@ namespace Arbor.X.Core.IO
 {
     public class DirectoryDelete
     {
-        readonly List<string> _directoryFilters;
-        readonly List<string> _fileFilters;
-        readonly ILogger _logger;
+        private readonly List<string> _directoryFilters;
+        private readonly List<string> _fileFilters;
+        private readonly ILogger _logger;
 
         public DirectoryDelete(
             IEnumerable<string> directoryFilters,
@@ -25,11 +25,11 @@ namespace Arbor.X.Core.IO
             WriteFilters();
         }
 
-        string DirectoryFilterList
+        private string DirectoryFilterList
         {
             get
             {
-                if (!_directoryFilters.Any())
+                if (_directoryFilters.Count == 0)
                 {
                     return "No directory filters";
                 }
@@ -38,11 +38,11 @@ namespace Arbor.X.Core.IO
             }
         }
 
-        string FileFilterList
+        private string FileFilterList
         {
             get
             {
-                if (!_fileFilters.Any())
+                if (_fileFilters.Count == 0)
                 {
                     return "No files filters";
                 }
@@ -134,7 +134,7 @@ namespace Arbor.X.Core.IO
             }
         }
 
-        void WriteFilters()
+        private void WriteFilters()
         {
             _logger.Verbose("Directory filters: {DirectoryFilterList}", DirectoryFilterList);
             _logger.Verbose("File filters: {FileFilterList}", FileFilterList);
