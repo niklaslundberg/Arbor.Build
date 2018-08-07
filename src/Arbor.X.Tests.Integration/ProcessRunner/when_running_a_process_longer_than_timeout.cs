@@ -1,13 +1,13 @@
-using System; using Serilog;
+using System;
 using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Processing.Core;
 using Arbor.X.Core.IO;
-
 using Arbor.X.Core.Tools.Testing;
 using Machine.Specifications;
+using Serilog;
 using Serilog.Core;
 
 namespace Arbor.X.Tests.Integration.ProcessRunner

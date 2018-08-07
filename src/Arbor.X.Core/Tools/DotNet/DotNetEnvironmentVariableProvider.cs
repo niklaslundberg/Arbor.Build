@@ -1,4 +1,4 @@
-﻿using System; using Serilog;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -6,9 +6,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
-
 using Arbor.X.Core.Tools.Cleanup;
 using JetBrains.Annotations;
+using Serilog;
 
 namespace Arbor.X.Core.Tools.DotNet
 {
@@ -17,7 +17,7 @@ namespace Arbor.X.Core.Tools.DotNet
     {
         public int Order => VariableProviderOrder.Ignored;
 
-        public async Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(
+        public async Task<IEnumerable<IVariable>> GetBuildVariablesAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
@@ -60,11 +60,14 @@ namespace Arbor.X.Core.Tools.DotNet
             }
             else if (!File.Exists(dotNetExePath))
             {
-                logger.Warning("The specified path to dotnet.exe is from variable '{DotNetExePath}' is set to '{DotNetExePath1}' but the file does not exist", WellKnownVariables.DotNetExePath, dotNetExePath);
+                logger.Warning(
+                    "The specified path to dotnet.exe is from variable '{DotNetExePath}' is set to '{DotNetExePath1}' but the file does not exist",
+                    WellKnownVariables.DotNetExePath,
+                    dotNetExePath);
                 return Array.Empty<IVariable>();
             }
 
-            return new[] { new EnvironmentVariable(WellKnownVariables.DotNetExePath, dotNetExePath) };
+            return new[] { new BuildVariable(WellKnownVariables.DotNetExePath, dotNetExePath) };
         }
     }
 }

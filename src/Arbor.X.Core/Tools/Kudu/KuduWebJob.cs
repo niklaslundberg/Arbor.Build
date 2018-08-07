@@ -1,4 +1,4 @@
-using System; using Serilog;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
-
 using JetBrains.Annotations;
+using Serilog;
 
 namespace Arbor.X.Core.Tools.Kudu
 {
@@ -103,7 +103,11 @@ namespace Arbor.X.Core.Tools.Kudu
 
                                         if (!existingValue.Equals(line, StringComparison.InvariantCultureIgnoreCase))
                                         {
-                                            _logger.Warning("A Kudu web job key '{Key}' has already been found with value '{ExistingValue}', new value is different '{Line}', using first value", key, existingValue, line);
+                                            _logger.Warning(
+                                                "A Kudu web job key '{Key}' has already been found with value '{ExistingValue}', new value is different '{Line}', using first value",
+                                                key,
+                                                existingValue,
+                                                line);
                                         }
                                     }
                                 }

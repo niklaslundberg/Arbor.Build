@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Arbor.X.Core.Tools.Testing;
 using Machine.Specifications;
 using Mono.Cecil;
@@ -31,9 +30,11 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
             {
                 Type typeToInvestigate = typeof(when_testing_this_test_type_for_it);
 
-                AssemblyDefinition assemblyDefinition = AssemblyDefinition.ReadAssembly(typeToInvestigate.Assembly.Location);
+                AssemblyDefinition assemblyDefinition =
+                    AssemblyDefinition.ReadAssembly(typeToInvestigate.Assembly.Location);
 
-                TypeDefinition typeDefinition = assemblyDefinition.MainModule.Types.Single(t => t.FullName.Equals(typeToInvestigate.FullName));
+                TypeDefinition typeDefinition =
+                    assemblyDefinition.MainModule.Types.Single(t => t.FullName.Equals(typeToInvestigate.FullName));
 
                 isTestType = finder.TryIsTypeTestFixture(typeDefinition);
             };

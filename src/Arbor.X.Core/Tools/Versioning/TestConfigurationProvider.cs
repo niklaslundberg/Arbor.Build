@@ -1,10 +1,10 @@
-﻿using System; using Serilog;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.X.Core.BuildVariables;
-
 using JetBrains.Annotations;
+using Serilog;
 
 namespace Arbor.X.Core.Tools.Versioning
 {
@@ -13,7 +13,7 @@ namespace Arbor.X.Core.Tools.Versioning
     {
         public int Order => BuildConfigurationProvider.ProviderOrder + 1;
 
-        public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(
+        public Task<IEnumerable<IVariable>> GetBuildVariablesAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
@@ -34,20 +34,24 @@ namespace Arbor.X.Core.Tools.Versioning
 
             if (releaseConfigurationEnabled && !debugConfigurationEnabled)
             {
-                newVariables.Add(new EnvironmentVariable(
+                newVariables.Add(new BuildVariable(
                     WellKnownVariables.RunTestsInReleaseConfigurationEnabled,
                     "true"));
 
-                logger.Debug("Release configuration is enabled but not debug, settings variable '{RunTestsInReleaseConfigurationEnabled}' to true", WellKnownVariables.RunTestsInReleaseConfigurationEnabled);
+                logger.Debug(
+                    "Release configuration is enabled but not debug, settings variable '{RunTestsInReleaseConfigurationEnabled}' to true",
+                    WellKnownVariables.RunTestsInReleaseConfigurationEnabled);
             }
 
             if (!releaseConfigurationEnabled && debugConfigurationEnabled)
             {
-                newVariables.Add(new EnvironmentVariable(
+                newVariables.Add(new BuildVariable(
                     WellKnownVariables.RunTestsInReleaseConfigurationEnabled,
                     "false"));
 
-                logger.Debug("Debug configuration is enabled but not release, settings variable '{RunTestsInReleaseConfigurationEnabled}' to false", WellKnownVariables.RunTestsInReleaseConfigurationEnabled);
+                logger.Debug(
+                    "Debug configuration is enabled but not release, settings variable '{RunTestsInReleaseConfigurationEnabled}' to false",
+                    WellKnownVariables.RunTestsInReleaseConfigurationEnabled);
             }
 
             return Task.FromResult<IEnumerable<IVariable>>(newVariables);

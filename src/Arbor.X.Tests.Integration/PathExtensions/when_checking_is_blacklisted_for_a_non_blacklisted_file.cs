@@ -1,5 +1,4 @@
 using Arbor.X.Core.IO;
-
 using Machine.Specifications;
 using Serilog.Core;
 

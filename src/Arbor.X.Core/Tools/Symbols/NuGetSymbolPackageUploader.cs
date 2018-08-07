@@ -1,4 +1,4 @@
-﻿using System; using Serilog;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 using Arbor.Processing;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
-
 using JetBrains.Annotations;
+using Serilog;
 
 namespace Arbor.X.Core.Tools.Symbols
 {
@@ -70,7 +70,9 @@ namespace Arbor.X.Core.Tools.Symbols
 
             if (!isRunningOnBuildAgent && forceUpload)
             {
-                logger.Information("Symbol package upload is enabled by the flag '{ExternalTools_SymbolServer_ForceUploadEnabled}'", WellKnownVariables.ExternalTools_SymbolServer_ForceUploadEnabled);
+                logger.Information(
+                    "Symbol package upload is enabled by the flag '{ExternalTools_SymbolServer_ForceUploadEnabled}'",
+                    WellKnownVariables.ExternalTools_SymbolServer_ForceUploadEnabled);
             }
 
             if (isRunningOnBuildAgent || forceUpload)
@@ -166,7 +168,8 @@ namespace Arbor.X.Core.Tools.Symbols
                 string nugetPackage = fileInfo.FullName;
 
                 ExitCode exitCode =
-                    await UploadNugetPackageAsync(nugetExePath, symbolServerUrl, apiKey, nugetPackage, logger, timeout).ConfigureAwait(false);
+                    await UploadNugetPackageAsync(nugetExePath, symbolServerUrl, apiKey, nugetPackage, logger, timeout)
+                        .ConfigureAwait(false);
 
                 if (!exitCode.IsSuccess)
                 {

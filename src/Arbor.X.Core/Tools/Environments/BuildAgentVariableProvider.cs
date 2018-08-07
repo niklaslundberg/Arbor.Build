@@ -1,14 +1,14 @@
-using System; using Serilog;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.GenericExtensions;
-
 using Arbor.X.Core.Parsing;
 using Arbor.X.Core.Tools.Cleanup;
 using JetBrains.Annotations;
+using Serilog;
 
 namespace Arbor.X.Core.Tools.Environments
 {
@@ -17,7 +17,7 @@ namespace Arbor.X.Core.Tools.Environments
     {
         public int Order => VariableProviderOrder.Default;
 
-        public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(
+        public Task<IEnumerable<IVariable>> GetBuildVariablesAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
@@ -37,7 +37,11 @@ namespace Arbor.X.Core.Tools.Environments
 
             if (isBuildAgent.Parsed)
             {
-                logger.Verbose("Successfully parsed environment variable '{IsRunningOnBuildAgent}' with value '{OriginalValue}' as boolean with value: {Value}", WellKnownVariables.IsRunningOnBuildAgent, isBuildAgent.OriginalValue, isBuildAgent.Value);
+                logger.Verbose(
+                    "Successfully parsed environment variable '{IsRunningOnBuildAgent}' with value '{OriginalValue}' as boolean with value: {Value}",
+                    WellKnownVariables.IsRunningOnBuildAgent,
+                    isBuildAgent.OriginalValue,
+                    isBuildAgent.Value);
                 isBuildAgentValue = isBuildAgent.Value;
             }
             else
@@ -49,7 +53,7 @@ namespace Arbor.X.Core.Tools.Environments
 
             var variables = new List<IVariable>
             {
-                new EnvironmentVariable(
+                new BuildVariable(
                     WellKnownVariables.IsRunningOnBuildAgent,
                     isBuildAgentValue.ToString().ToLowerInvariant())
             };

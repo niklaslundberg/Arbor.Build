@@ -1,4 +1,4 @@
-﻿using System; 
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 
@@ -15,6 +15,11 @@ namespace Arbor.Defensive.Collections
 
             if (enumerable is ImmutableArray<T> array)
             {
+                if (array.IsDefault)
+                {
+                    return ImmutableArray<T>.Empty;
+                }
+
                 return array;
             }
 
@@ -32,6 +37,11 @@ namespace Arbor.Defensive.Collections
 
             if (enumerable is ImmutableArray<T> array)
             {
+                if (array.IsDefault)
+                {
+                    return ImmutableArray<T>.Empty;
+                }
+
                 return array;
             }
 

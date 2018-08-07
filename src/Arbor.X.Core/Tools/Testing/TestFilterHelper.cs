@@ -8,7 +8,8 @@ namespace Arbor.X.Core.Tools.Testing
 {
     public static class TestFilterHelper
     {
-        public static ImmutableArray<string> AssemblyFilePrefixes([NotNull] this IReadOnlyCollection<IVariable> buildVairables)
+        public static ImmutableArray<string> AssemblyFilePrefixes(
+            [NotNull] this IReadOnlyCollection<IVariable> buildVairables)
         {
             if (buildVairables == null)
             {

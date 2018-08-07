@@ -1,4 +1,4 @@
-﻿using System; using Serilog;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
+using Serilog;
 
 namespace Arbor.X.Core.Tools.EnvironmentVariables
 {

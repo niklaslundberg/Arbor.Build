@@ -17,12 +17,6 @@ namespace Arbor.X.Core.Exceptions
             Data.Add("Arbor.X.Variables", _buildVariables);
         }
 
-        public override string ToString()
-        {
-            return
-                $"{base.ToString()}{Environment.NewLine}Build variables: [{_buildVariables.Count}] {Environment.NewLine}{_buildVariables.Print()}";
-        }
-
         public BuildException()
         {
         }
@@ -35,8 +29,16 @@ namespace Arbor.X.Core.Exceptions
         {
         }
 
-        private BuildException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) : base(info, context)
+        private BuildException(
+            System.Runtime.Serialization.SerializationInfo info,
+            System.Runtime.Serialization.StreamingContext context) : base(info, context)
         {
+        }
+
+        public override string ToString()
+        {
+            return
+                $"{base.ToString()}{Environment.NewLine}Build variables: [{_buildVariables.Count}] {Environment.NewLine}{_buildVariables.Print()}";
         }
     }
 }

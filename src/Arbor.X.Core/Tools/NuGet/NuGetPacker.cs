@@ -1,4 +1,4 @@
-﻿using System; using Serilog;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,8 +8,8 @@ using Arbor.Defensive.Collections;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
-
 using JetBrains.Annotations;
+using Serilog;
 
 namespace Arbor.X.Core.Tools.NuGet
 {
@@ -30,7 +30,8 @@ namespace Arbor.X.Core.Tools.NuGet
 
             if (!enabled)
             {
-                logger.Warning("NuGet Packer is disabled (build variable '{NuGetPackageEnabled}' is set to false", WellKnownVariables.NuGetPackageEnabled);
+                logger.Warning("NuGet Packer is disabled (build variable '{NuGetPackageEnabled}' is set to false",
+                    WellKnownVariables.NuGetPackageEnabled);
                 return ExitCode.Success;
             }
 
@@ -64,10 +65,12 @@ namespace Arbor.X.Core.Tools.NuGet
                 return ExitCode.Success;
             }
 
-            logger.Information("Found {Count} NuGet specifications to create NuGet packages from", packageSpecifications.Count);
+            logger.Information("Found {Count} NuGet specifications to create NuGet packages from",
+                packageSpecifications.Count);
 
             ExitCode result =
-                await ProcessPackagesAsync(packageSpecifications, packageConfiguration, logger, cancellationToken).ConfigureAwait(false);
+                await ProcessPackagesAsync(packageSpecifications, packageConfiguration, logger, cancellationToken)
+                    .ConfigureAwait(false);
 
             return result;
         }
@@ -108,7 +111,10 @@ namespace Arbor.X.Core.Tools.NuGet
                                     StringComparison.InvariantCultureIgnoreCase)))
                     .SafeToReadOnlyCollection();
 
-            logger.Verbose("Found nuspec files [{Count}]: {NewLine}{V}", filtered.Count, Environment.NewLine, string.Join(Environment.NewLine, filtered));
+            logger.Verbose("Found nuspec files [{Count}]: {NewLine}{V}",
+                filtered.Count,
+                Environment.NewLine,
+                string.Join(Environment.NewLine, filtered));
             IReadOnlyCollection<string> allIncluded = notExcluded.Select(file => file.FullName)
                 .SafeToReadOnlyCollection();
 
@@ -133,7 +139,8 @@ namespace Arbor.X.Core.Tools.NuGet
 
                 if (!packageResult.IsSuccess)
                 {
-                    logger.Error("Could not create NuGet package from specification '{PackageSpecification}'", packageSpecification);
+                    logger.Error("Could not create NuGet package from specification '{PackageSpecification}'",
+                        packageSpecification);
                     return packageResult;
                 }
             }

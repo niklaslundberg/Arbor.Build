@@ -1,4 +1,4 @@
-﻿using System; using Serilog;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -11,27 +11,34 @@ using Arbor.Processing;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.GenericExtensions;
+using Serilog;
 
 namespace Arbor.X.Core.Tools.Cleanup
 {
-    [Priority(1001, runAlways: true)]
+    [Priority(1001, true)]
     public class ProcessCleanup : ITool
     {
-        public Task<ExitCode> ExecuteAsync(ILogger logger, IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
+        public Task<ExitCode> ExecuteAsync(
+            ILogger logger,
+            IReadOnlyCollection<IVariable> buildVariables,
+            CancellationToken cancellationToken)
         {
             bool enabled = buildVariables.GetBooleanByKey(
                 WellKnownVariables.CleanupProcessesAfterBuildEnabled,
-                defaultValue: false);
+                false);
 
             if (!enabled)
             {
-                logger.Information("Process cleanup is disabled, enable by setting key {CleanupProcessesAfterBuildEnabled} to true", WellKnownVariables.CleanupProcessesAfterBuildEnabled);
+                logger.Information(
+                    "Process cleanup is disabled, enable by setting key {CleanupProcessesAfterBuildEnabled} to true",
+                    WellKnownVariables.CleanupProcessesAfterBuildEnabled);
                 return ExitCode.Success.AsCompletedTask();
             }
 
-            logger.Information("Process cleanup is enabled, from key {CleanupProcessesAfterBuildEnabled} to true", WellKnownVariables.CleanupProcessesAfterBuildEnabled);
+            logger.Information("Process cleanup is enabled, from key {CleanupProcessesAfterBuildEnabled} to true",
+                WellKnownVariables.CleanupProcessesAfterBuildEnabled);
 
-            string sourceRoot = buildVariables.GetVariableValueOrDefault(WellKnownVariables.SourceRoot, defaultValue: string.Empty);
+            string sourceRoot = buildVariables.GetVariableValueOrDefault(WellKnownVariables.SourceRoot, string.Empty);
 
             if (string.IsNullOrWhiteSpace(sourceRoot))
             {
@@ -66,7 +73,8 @@ namespace Arbor.X.Core.Tools.Cleanup
 
                 string fileName = Path.GetFileName(executablePath);
 
-                if (!procesNamesToKill.Any(processToKill => processToKill.Equals(fileName, StringComparison.OrdinalIgnoreCase)))
+                if (!procesNamesToKill.Any(processToKill =>
+                    processToKill.Equals(fileName, StringComparison.OrdinalIgnoreCase)))
                 {
                     return false;
                 }
@@ -111,7 +119,8 @@ namespace Arbor.X.Core.Tools.Cleanup
                 .Where(ShouldKillProcess)
                 .ToImmutableArray();
 
-            string message = $"Found [{processesToKill.Length}] processes to kill in cleanup: {Environment.NewLine}{string.Join(Environment.NewLine, processesToKill.Select(process => process.ExecutablePath()))}";
+            string message =
+                $"Found [{processesToKill.Length}] processes to kill in cleanup: {Environment.NewLine}{string.Join(Environment.NewLine, processesToKill.Select(process => process.ExecutablePath()))}";
 
             logger.Verbose(message);
 

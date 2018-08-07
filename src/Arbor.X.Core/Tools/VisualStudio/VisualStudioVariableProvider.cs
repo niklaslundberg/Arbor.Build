@@ -1,4 +1,4 @@
-﻿using System; using Serilog;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -6,10 +6,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.X.Core.BuildVariables;
-
 using Arbor.X.Core.Tools.Cleanup;
 using JetBrains.Annotations;
 using Microsoft.Win32;
+using Serilog;
 
 namespace Arbor.X.Core.Tools.VisualStudio
 {
@@ -20,7 +20,7 @@ namespace Arbor.X.Core.Tools.VisualStudio
 
         public int Order => VariableProviderOrder.Ignored;
 
-        public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(
+        public Task<IEnumerable<IVariable>> GetBuildVariablesAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
@@ -37,11 +37,16 @@ namespace Arbor.X.Core.Tools.VisualStudio
 
             int currentProcessBits = Environment.Is64BitProcess ? 64 : 32;
             const int registryLookupBits = 32;
-            logger.Verbose("Running current process [id {Id}] as a {CurrentProcessBits}-bit process", Process.GetCurrentProcess().Id, currentProcessBits);
+            logger.Verbose("Running current process [id {Id}] as a {CurrentProcessBits}-bit process",
+                Process.GetCurrentProcess().Id,
+                currentProcessBits);
 
             const string registryKeyName = @"SOFTWARE\Microsoft\VisualStudio";
 
-            logger.Verbose("Looking for Visual Studio versions in {RegistryLookupBits}-bit registry key 'HKEY_LOCAL_MACHINE\\{RegistryKeyName}'", registryLookupBits, registryKeyName);
+            logger.Verbose(
+                "Looking for Visual Studio versions in {RegistryLookupBits}-bit registry key 'HKEY_LOCAL_MACHINE\\{RegistryKeyName}'",
+                registryLookupBits,
+                registryKeyName);
 
             string visualStudioVersion = GetVisualStudioVersion(logger, registryKeyName);
 
@@ -60,10 +65,10 @@ namespace Arbor.X.Core.Tools.VisualStudio
 
             var environmentVariables = new[]
             {
-                new EnvironmentVariable(
+                new BuildVariable(
                     WellKnownVariables.ExternalTools_VisualStudio_Version,
                     visualStudioVersion),
-                new EnvironmentVariable(WellKnownVariables.ExternalTools_VSTest_ExePath, vsTestExePath)
+                new BuildVariable(WellKnownVariables.ExternalTools_VSTest_ExePath, vsTestExePath)
             };
 
             return Task.FromResult<IEnumerable<IVariable>>(environmentVariables);
@@ -92,7 +97,10 @@ namespace Arbor.X.Core.Tools.VisualStudio
 
                             if (string.IsNullOrWhiteSpace(installDir?.ToString()))
                             {
-                                logger.Warning("Expected key {Name} to contain a value with name {Installdir} and a non-empty value", versionKey.Name, installdir);
+                                logger.Warning(
+                                    "Expected key {Name} to contain a value with name {Installdir} and a non-empty value",
+                                    versionKey.Name,
+                                    installdir);
                                 return null;
                             }
 
@@ -148,7 +156,8 @@ namespace Arbor.X.Core.Tools.VisualStudio
 
                                                 if (Version.TryParse(versionOnly, out version))
                                                 {
-                                                    logger.Debug("Found pre-release Visual Studio version {Version}", version);
+                                                    logger.Debug("Found pre-release Visual Studio version {Version}",
+                                                        version);
                                                 }
                                             }
                                         }
@@ -156,7 +165,9 @@ namespace Arbor.X.Core.Tools.VisualStudio
 
                                     if (version == null)
                                     {
-                                        logger.Debug("Could not parse Visual Studio version from registry key name '{KeyName}', skipping that version.", keyName);
+                                        logger.Debug(
+                                            "Could not parse Visual Studio version from registry key name '{KeyName}', skipping that version.",
+                                            keyName);
                                     }
 
                                     return version;
@@ -165,7 +176,9 @@ namespace Arbor.X.Core.Tools.VisualStudio
                             .OrderByDescending(name => name)
                             .ToList();
 
-                        logger.Verbose("Found {Count} Visual Studio versions: {V}", versions.Count, string.Join(", ", versions.Select(version => version.ToString(2))));
+                        logger.Verbose("Found {Count} Visual Studio versions: {V}",
+                            versions.Count,
+                            string.Join(", ", versions.Select(version => version.ToString(2))));
 
                         if (versions.Any(version => version == new Version(15, 0)))
                         {

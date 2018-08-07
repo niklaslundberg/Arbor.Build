@@ -1,11 +1,11 @@
-﻿using System; using Serilog;
+﻿using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Arbor.Processing.Core;
 using Arbor.X.Core.IO;
-
 using Machine.Specifications;
+using Serilog;
 using Serilog.Core;
 
 namespace Arbor.X.Tests.Integration.ProcessRunner
@@ -46,10 +46,11 @@ EXIT /b 3
                 exitCode =
                     await
                         Processing.ProcessRunner.ExecuteAsync(testPath,
-                            standardOutLog: (message, prefix) => logger.Information(message, "STANDARD"),
-                            standardErrorAction: (message, prefix) => logger.Error(message, "ERROR"),
-                            toolAction: (message, prefix) => logger.Information(message, "TOOL"),
-                            verboseAction: (message, prefix) => logger.Information(message, "VERBOSE")).ConfigureAwait(false);
+                                standardOutLog: (message, prefix) => logger.Information(message, "STANDARD"),
+                                standardErrorAction: (message, prefix) => logger.Error(message, "ERROR"),
+                                toolAction: (message, prefix) => logger.Information(message, "TOOL"),
+                                verboseAction: (message, prefix) => logger.Information(message, "VERBOSE"))
+                            .ConfigureAwait(false);
             }
             catch (Exception ex)
             {

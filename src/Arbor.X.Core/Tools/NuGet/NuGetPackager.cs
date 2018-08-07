@@ -1,4 +1,4 @@
-using System; using Serilog;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -10,8 +10,8 @@ using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.IO;
-
 using Arbor.X.Core.Tools.Git;
+using Serilog;
 using Serilog.Events;
 
 namespace Arbor.X.Core.Tools.NuGet
@@ -68,14 +68,17 @@ namespace Arbor.X.Core.Tools.NuGet
             {
                 if (branchName.Value.Equals("master", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    logger.Warning("NuGet package creation is not supported on 'master' branch. To force NuGet package creation, set environment variable '{NuGetCreatePackagesOnAnyBranchEnabled}' to value 'true'", WellKnownVariables.NuGetCreatePackagesOnAnyBranchEnabled);
+                    logger.Warning(
+                        "NuGet package creation is not supported on 'master' branch. To force NuGet package creation, set environment variable '{NuGetCreatePackagesOnAnyBranchEnabled}' to value 'true'",
+                        WellKnownVariables.NuGetCreatePackagesOnAnyBranchEnabled);
 
                     // return ExitCode.Success;
                 }
             }
             else
             {
-                logger.Verbose("Flag '{NuGetCreatePackagesOnAnyBranchEnabled}' is set to true, creating NuGet packages", WellKnownVariables.NuGetCreatePackagesOnAnyBranchEnabled);
+                logger.Verbose("Flag '{NuGetCreatePackagesOnAnyBranchEnabled}' is set to true, creating NuGet packages",
+                    WellKnownVariables.NuGetCreatePackagesOnAnyBranchEnabled);
             }
 
             Maybe<BranchName> branchNameMayBe = BranchName.TryParse(branchName.Value);
@@ -87,7 +90,10 @@ namespace Arbor.X.Core.Tools.NuGet
 
             bool isReleaseBuild = IsReleaseBuild(releaseBuild.Value, branchNameMayBe.Value);
 
-            logger.Verbose("Based on branch {Value} and release build flags {Value1}, the build is considered {V}", branchName.Value, releaseBuild.Value, (isReleaseBuild ? "release" : "not release"));
+            logger.Verbose("Based on branch {Value} and release build flags {Value1}, the build is considered {V}",
+                branchName.Value,
+                releaseBuild.Value,
+                (isReleaseBuild ? "release" : "not release"));
 
             if (configuration.Equals("debug", StringComparison.InvariantCultureIgnoreCase) && isReleaseBuild)
             {
@@ -103,7 +109,8 @@ namespace Arbor.X.Core.Tools.NuGet
 
             if (!File.Exists(nuGetExePath))
             {
-                logger.Error("The NuGet.exe path {NuGetExePath} was not found or NuGet could not be downloaded", nuGetExePath);
+                logger.Error("The NuGet.exe path {NuGetExePath} was not found or NuGet could not be downloaded",
+                    nuGetExePath);
 
                 // return ExitCode.Failure;
             }
@@ -143,7 +150,8 @@ namespace Arbor.X.Core.Tools.NuGet
 
             if (!string.IsNullOrWhiteSpace(packageConfiguration.PackageIdOverride))
             {
-                _logger.Information("Using NuGet package id override '{PackageIdOverride}'", packageConfiguration.PackageIdOverride);
+                _logger.Information("Using NuGet package id override '{PackageIdOverride}'",
+                    packageConfiguration.PackageIdOverride);
             }
 
             string packageId = !string.IsNullOrWhiteSpace(packageConfiguration.PackageIdOverride)
@@ -160,7 +168,8 @@ namespace Arbor.X.Core.Tools.NuGet
             }
             else
             {
-                _logger.Information("Using NuGet package version override '{PackageIdOverride}'", packageConfiguration.PackageIdOverride);
+                _logger.Information("Using NuGet package version override '{PackageIdOverride}'",
+                    packageConfiguration.PackageIdOverride);
             }
 
             var nuGetVersioningSettings = new NuGetVersioningSettings { MaxZeroPaddingLength = 5, SemVerVersion = 1 };
@@ -215,7 +224,9 @@ namespace Arbor.X.Core.Tools.NuGet
                 _logger.Verbose("Rewriting manifest disabled");
             }
 
-            _logger.Verbose("Created nuspec content: {NewLine}{V}", Environment.NewLine, File.ReadAllText(nuSpecFileCopyPath));
+            _logger.Verbose("Created nuspec content: {NewLine}{V}",
+                Environment.NewLine,
+                File.ReadAllText(nuSpecFileCopyPath));
 
             ExitCode result = await ExecuteNuGetPackAsync(
                 packageConfiguration.NuGetExePath,
@@ -318,7 +329,9 @@ namespace Arbor.X.Core.Tools.NuGet
 
                 if (!keepBinaryAndSourcePackagesTogetherEnabled)
                 {
-                    logger.Information("The flag {NuGetKeepBinaryAndSymbolPackagesTogetherEnabled} is set to false, separating binary packages from symbol packages", WellKnownVariables.NuGetKeepBinaryAndSymbolPackagesTogetherEnabled);
+                    logger.Information(
+                        "The flag {NuGetKeepBinaryAndSymbolPackagesTogetherEnabled} is set to false, separating binary packages from symbol packages",
+                        WellKnownVariables.NuGetKeepBinaryAndSymbolPackagesTogetherEnabled);
                     List<string> nugetPackages = packagesDirectory.GetFiles("*.nupkg", SearchOption.TopDirectoryOnly)
                         .Select(file => file.FullName)
                         .ToList();
@@ -346,7 +359,9 @@ namespace Arbor.X.Core.Tools.NuGet
                             targetBinaryFile.Delete();
                         }
 
-                        logger.Debug("Copying NuGet binary package '{BinaryPackage}' to '{TargetBinaryFile}'", binaryPackage, targetBinaryFile);
+                        logger.Debug("Copying NuGet binary package '{BinaryPackage}' to '{TargetBinaryFile}'",
+                            binaryPackage,
+                            targetBinaryFile);
                         sourceFile.MoveTo(targetBinaryFile.FullName);
                     }
 
@@ -361,7 +376,9 @@ namespace Arbor.X.Core.Tools.NuGet
                             targetSymbolFile.Delete();
                         }
 
-                        logger.Debug("Copying NuGet symbol package '{SourcePackage}' to '{TargetSymbolFile}'", sourcePackage, targetSymbolFile);
+                        logger.Debug("Copying NuGet symbol package '{SourcePackage}' to '{TargetSymbolFile}'",
+                            sourcePackage,
+                            targetSymbolFile);
                         sourceFile.MoveTo(targetSymbolFile.FullName);
                     }
                 }

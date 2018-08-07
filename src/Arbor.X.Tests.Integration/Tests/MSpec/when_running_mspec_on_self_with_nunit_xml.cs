@@ -6,7 +6,6 @@ using System.Threading;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
-
 using Arbor.X.Core.Tools.Testing;
 using Machine.Specifications;
 using Serilog.Core;
@@ -64,19 +63,19 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
                     .Result;
 
             testRunner = new MSpecTestRunner();
-            variables.Add(new EnvironmentVariable(WellKnownVariables.ExternalTools,
+            variables.Add(new BuildVariable(WellKnownVariables.ExternalTools,
                 Path.Combine(VcsTestPathHelper.FindVcsRootPath(), "tools", "external")));
 
-            variables.Add(new EnvironmentVariable(WellKnownVariables.SourceRootOverride, tempDirectory.FullName));
-            variables.Add(new EnvironmentVariable(WellKnownVariables.SourceRoot, tempDirectory.FullName));
-            variables.Add(new EnvironmentVariable(WellKnownVariables.MSpecJUnitXslTransformationEnabled, "true"));
-            variables.Add(new EnvironmentVariable(WellKnownVariables.RunTestsInReleaseConfigurationEnabled, "false"));
+            variables.Add(new BuildVariable(WellKnownVariables.SourceRootOverride, tempDirectory.FullName));
+            variables.Add(new BuildVariable(WellKnownVariables.SourceRoot, tempDirectory.FullName));
+            variables.Add(new BuildVariable(WellKnownVariables.MSpecJUnitXslTransformationEnabled, "true"));
+            variables.Add(new BuildVariable(WellKnownVariables.RunTestsInReleaseConfigurationEnabled, "false"));
 
             mspecReports = Path.Combine(tempDirectory.FullName, "MSpecReports");
 
             new DirectoryInfo(mspecReports).EnsureExists();
 
-            variables.Add(new EnvironmentVariable(WellKnownVariables.ExternalTools_MSpec_ReportPath, mspecReports));
+            variables.Add(new BuildVariable(WellKnownVariables.ExternalTools_MSpec_ReportPath, mspecReports));
         };
 
         Because of =

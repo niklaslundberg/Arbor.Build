@@ -42,7 +42,9 @@ namespace Arbor.X.Core.Bootstrapper
 
         public async Task<ExitCode> StartAsync(string[] args)
         {
-            _logger.Information("Running Arbor.X Bootstrapper process id {ProcessId}, executable {Executable}", Process.GetCurrentProcess().Id, Assembly.GetExecutingAssembly().Location);
+            _logger.Information("Running Arbor.X Bootstrapper process id {ProcessId}, executable {Executable}",
+                Process.GetCurrentProcess().Id,
+                Assembly.GetExecutingAssembly().Location);
 
             BootstrapStartOptions startOptions;
 
@@ -57,7 +59,7 @@ namespace Arbor.X.Core.Bootstrapper
 
             ExitCode exitCode = await StartAsync(startOptions).ConfigureAwait(false);
 
-            _logger.Information("Bootstrapper exit code: {ExitCode}", exitCode);
+            _logger.Debug("Bootstrapper exit code: {ExitCode}", exitCode);
 
             if (_failed)
             {
@@ -75,10 +77,13 @@ namespace Arbor.X.Core.Bootstrapper
 
             var stopwatch = new Stopwatch();
             stopwatch.Start();
+
             ExitCode exitCode;
+
             try
             {
                 exitCode = await TryStartAsync().ConfigureAwait(false);
+
                 stopwatch.Stop();
             }
             catch (AggregateException ex)
@@ -105,13 +110,15 @@ namespace Arbor.X.Core.Bootstrapper
 
             if (exitDelayInMilliseconds > 0)
             {
-                _logger.Information("Delaying bootstrapper exit with {ExitDelayInMilliseconds} milliseconds as specified in '{BootstrapperExitDelayInMilliseconds}'",
-exitDelayInMilliseconds, WellKnownVariables.BootstrapperExitDelayInMilliseconds);
+                _logger.Information(
+                    "Delaying bootstrapper exit with {ExitDelayInMilliseconds} milliseconds as specified in '{BootstrapperExitDelayInMilliseconds}'",
+                    exitDelayInMilliseconds,
+                    WellKnownVariables.BootstrapperExitDelayInMilliseconds);
                 await Task.Delay(TimeSpan.FromMilliseconds(exitDelayInMilliseconds)).ConfigureAwait(false);
             }
 
-            _logger.Information("Arbor.X.Bootstrapper total inclusive Arbor.X.Build elapsed time in seconds: {V}",
-stopwatch.Elapsed.TotalSeconds.ToString("F"));
+            _logger.Information("Arbor.X.Bootstrapper total inclusive Arbor.X.Build elapsed time in seconds: {ElapsedSeconds}",
+                stopwatch.Elapsed.TotalSeconds.ToString("F"));
 
             return exitCode;
         }
@@ -122,14 +129,19 @@ stopwatch.Elapsed.TotalSeconds.ToString("F"));
 
             var searcher =
                 new ManagementObjectSearcher($"SELECT * FROM Win32_Process WHERE ParentProcessId={parentProcessId}");
+
             ManagementObjectCollection collection = searcher.Get();
+
             if (collection.Count > 0)
             {
-                logger.Debug("Killing [{Count}] processes spawned by process with Id [{ParentProcessId}]", collection.Count, parentProcessId);
+                logger.Debug("Killing [{Count}] processes spawned by process with Id [{ParentProcessId}]",
+                    collection.Count,
+                    parentProcessId);
 
                 foreach (ManagementBaseObject item in collection)
                 {
                     uint childProcessId = (uint)item["ProcessId"];
+
                     if ((int)childProcessId != Process.GetCurrentProcess().Id)
                     {
                         KillAllProcessesSpawnedBy(childProcessId, logger);
@@ -137,9 +149,12 @@ stopwatch.Elapsed.TotalSeconds.ToString("F"));
                         try
                         {
                             Process childProcess = Process.GetProcessById((int)childProcessId);
+
                             if (!childProcess.HasExited)
                             {
-                                logger.Debug("Killing child process [{ProcessName}] with Id [{ChildProcessId}]", childProcess.ProcessName, childProcessId);
+                                logger.Debug("Killing child process [{ProcessName}] with Id [{ChildProcessId}]",
+                                    childProcess.ProcessName,
+                                    childProcessId);
                                 childProcess.Kill();
 
                                 logger.Verbose("Child process with id {ChildProcessId} was killed", childProcessId);
@@ -148,7 +163,8 @@ stopwatch.Elapsed.TotalSeconds.ToString("F"));
                         catch (Exception ex) when (!ex.IsFatal() &&
                                                    (ex is ArgumentException || ex is InvalidOperationException))
                         {
-                            logger.Warning("Child process with id {ChildProcessId} could not be killed", childProcessId);
+                            logger.Warning("Child process with id {ChildProcessId} could not be killed",
+                                childProcessId);
                         }
                     }
                 }
@@ -226,7 +242,8 @@ stopwatch.Elapsed.TotalSeconds.ToString("F"));
             if (!_directoryCloneEnabled)
             {
                 _logger.Verbose("Environment variable '{DirectoryCloneEnabled}' has value '{DirectoryCloneValue}'",
-WellKnownVariables.DirectoryCloneEnabled, directoryCloneValue);
+                    WellKnownVariables.DirectoryCloneEnabled,
+                    directoryCloneValue);
             }
 
             string baseDir = await GetBaseDirectoryAsync(_startOptions).ConfigureAwait(false);
@@ -252,13 +269,16 @@ WellKnownVariables.DirectoryCloneEnabled, directoryCloneValue);
 
                 if (!nuGetExists)
                 {
-                    _logger.Error("NuGet.exe could not be downloaded and it does not already exist at path '{NugetExePath}'",
-nugetExePath);
+                    _logger.Error(
+                        "NuGet.exe could not be downloaded and it does not already exist at path '{NugetExePath}'",
+                        nugetExePath);
+
                     return ExitCode.Failure;
                 }
             }
 
-            string outputDirectoryPath = await DownloadNuGetPackageAsync(buildDir.FullName, nugetExePath).ConfigureAwait(false);
+            string outputDirectoryPath =
+                await DownloadNuGetPackageAsync(buildDir.FullName, nugetExePath).ConfigureAwait(false);
 
             if (string.IsNullOrWhiteSpace(outputDirectoryPath))
             {
@@ -268,7 +288,8 @@ nugetExePath);
             ExitCode exitCode;
             try
             {
-                ExitCode buildToolsResult = await RunBuildToolsAsync(buildDir.FullName, outputDirectoryPath).ConfigureAwait(false);
+                ExitCode buildToolsResult =
+                    await RunBuildToolsAsync(buildDir.FullName, outputDirectoryPath).ConfigureAwait(false);
 
                 if (buildToolsResult.IsSuccess)
                 {
@@ -277,7 +298,7 @@ nugetExePath);
                 else
                 {
                     _logger.Error("The build tools process was not successful, exit code {BuildToolsResult}",
-buildToolsResult);
+                        buildToolsResult);
                 }
 
                 exitCode = buildToolsResult;
@@ -361,13 +382,15 @@ buildToolsResult);
                 nugetArguments.Add("-Version");
                 nugetArguments.Add(version);
 
-                _logger.Verbose("'{ArborXNuGetPackageVersion}' flag is set, using specific version of Arbor.X: {Version}",
-WellKnownVariables.ArborXNuGetPackageVersion, version);
+                _logger.Verbose(
+                    "'{ArborXNuGetPackageVersion}' flag is set, using specific version of Arbor.X: {Version}",
+                    WellKnownVariables.ArborXNuGetPackageVersion,
+                    version);
             }
             else
             {
                 _logger.Verbose("'{ArborXNuGetPackageVersion}' flag is not set, using latest version of Arbor.X",
-WellKnownVariables.ArborXNuGetPackageVersion);
+                    WellKnownVariables.ArborXNuGetPackageVersion);
 
                 bool allowPrerelease;
                 if (_startOptions.PrereleaseEnabled.HasValue)
@@ -388,13 +411,14 @@ WellKnownVariables.ArborXNuGetPackageVersion);
 
                     if (allowPrerelease)
                     {
-                        _logger.Verbose("'{AllowPrerelease}' flag is set, using latest version of Arbor.X allowing prerelease versions",
-WellKnownVariables.AllowPrerelease);
+                        _logger.Verbose(
+                            "'{AllowPrerelease}' flag is set, using latest version of Arbor.X allowing prerelease versions",
+                            WellKnownVariables.AllowPrerelease);
                     }
                     else
                     {
                         _logger.Verbose("'{AllowPrerelease}' flag is not set, using latest stable version of Arbor.X",
-WellKnownVariables.AllowPrerelease);
+                            WellKnownVariables.AllowPrerelease);
                     }
                 }
 
@@ -534,7 +558,8 @@ WellKnownVariables.AllowPrerelease);
             {
                 string gitDir = Path.Combine(sourceRoot, ".git");
 
-                string[] statusAllArguments = {
+                string[] statusAllArguments =
+                {
                     $"--git-dir={gitDir}",
                     $"--work-tree={sourceRoot}",
                     "status"
@@ -623,8 +648,10 @@ WellKnownVariables.AllowPrerelease);
             const string Single = ". Found no such files";
             string found = exeFiles.Count > 0 ? Single : multiple;
 
-            _logger.Error("Expected directory {BuildToolDirectoryPath} to contain exactly one executable file with extensions .exe. {Found}",
-buildToolDirectoryPath, found);
+            _logger.Error(
+                "Expected directory {BuildToolDirectoryPath} to contain exactly one executable file with extensions .exe. {Found}",
+                buildToolDirectoryPath,
+                found);
         }
 
         private async Task<bool> TryDownloadNuGetAsync(string baseDir, string targetFile)
@@ -707,7 +734,7 @@ buildToolDirectoryPath, found);
             else
             {
                 _logger.Verbose("Downloading nuget.exe from user specified URI '{NugetDownloadUriEnvironmentVariable}'",
-nugetDownloadUriEnvironmentVariable);
+                    nugetDownloadUriEnvironmentVariable);
             }
 
             _logger.Verbose("Downloading '{NugetDownloadUri}' to '{TempFile}'", nugetDownloadUri, tempFile);

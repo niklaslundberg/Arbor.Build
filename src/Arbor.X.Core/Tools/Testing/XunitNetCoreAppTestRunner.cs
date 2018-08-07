@@ -1,4 +1,4 @@
-﻿using System; using Serilog;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
@@ -11,9 +11,9 @@ using Arbor.Processing;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
-
 using Arbor.X.Core.Properties;
 using JetBrains.Annotations;
+using Serilog;
 using Xunit;
 
 namespace Arbor.X.Core.Tools.Testing
@@ -24,7 +24,10 @@ namespace Arbor.X.Core.Tools.Testing
     {
         private string _sourceRoot;
 
-        public async Task<ExitCode> ExecuteAsync([NotNull] ILogger logger, [NotNull] IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
+        public async Task<ExitCode> ExecuteAsync(
+            [NotNull] ILogger logger,
+            [NotNull] IReadOnlyCollection<IVariable> buildVariables,
+            CancellationToken cancellationToken)
         {
             if (logger == null)
             {
@@ -40,13 +43,20 @@ namespace Arbor.X.Core.Tools.Testing
 
             if (!enabled)
             {
-                logger.Information("Xunit .NET Core App test runner is not enabled, set variable '{XUnitNetCoreAppEnabled}' to true to enable", WellKnownVariables.XUnitNetCoreAppEnabled);
+                logger.Information(
+                    "Xunit .NET Core App test runner is not enabled, set variable '{XUnitNetCoreAppEnabled}' to true to enable",
+                    WellKnownVariables.XUnitNetCoreAppEnabled);
                 return ExitCode.Success;
             }
 
             _sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
             IVariable reportPath = buildVariables.Require(WellKnownVariables.ReportPath).ThrowIfEmptyValue();
-            string xunitDllPath = buildVariables.GetVariableValueOrDefault(WellKnownVariables.XUnitNetCoreAppDllPath, null) ?? Path.Combine(buildVariables.Require(WellKnownVariables.ExternalTools).Value, "xunit", "netcoreapp2.0", "xunit.console.dll");
+            string xunitDllPath =
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.XUnitNetCoreAppDllPath, null) ??
+                Path.Combine(buildVariables.Require(WellKnownVariables.ExternalTools).Value,
+                    "xunit",
+                    "netcoreapp2.0",
+                    "xunit.console.dll");
 
             logger.Debug("Using XUnit dll path '{XunitDllPath}'", xunitDllPath);
 
@@ -61,15 +71,25 @@ namespace Arbor.X.Core.Tools.Testing
                 buildVariables.GetOptionalBooleanByKey(
                     WellKnownVariables.RunTestsInReleaseConfigurationEnabled);
 
-            string configuration = runTestsInReleaseConfiguration.HasValue ? runTestsInReleaseConfiguration.Value ? "release" : "debug" : "[ANY]";
+            string configuration = runTestsInReleaseConfiguration.HasValue
+                ? runTestsInReleaseConfiguration.Value ? "release" : "debug"
+                : "[ANY]";
 
             ImmutableArray<string> assemblyFilePrefix = buildVariables.AssemblyFilePrefixes();
 
-            logger.Information("Finding Xunit test DLL files built with '{Configuration}' configuration in directory '{_sourceRoot}'", configuration, _sourceRoot);
-            logger.Information("Looking for types {V} in directory '{_sourceRoot}'", string.Join(", ", typesToFind.Select(t => t.FullName)), _sourceRoot);
+            logger.Information(
+                "Finding Xunit test DLL files built with '{Configuration}' configuration in directory '{_sourceRoot}'",
+                configuration,
+                _sourceRoot);
+            logger.Information("Looking for types {V} in directory '{_sourceRoot}'",
+                string.Join(", ", typesToFind.Select(t => t.FullName)),
+                _sourceRoot);
 
             List<string> testDlls = new UnitTestFinder(typesToFind, logger: logger, debugLogEnabled: true)
-                .GetUnitTestFixtureDlls(directory, runTestsInReleaseConfiguration, assemblyFilePrefix: assemblyFilePrefix, targetFrameworkPrefix: FrameworkConstants.NetCoreApp)
+                .GetUnitTestFixtureDlls(directory,
+                    runTestsInReleaseConfiguration,
+                    assemblyFilePrefix,
+                    FrameworkConstants.NetCoreApp)
                 .ToList();
 
             if (testDlls.Count == 0)
@@ -78,14 +98,19 @@ namespace Arbor.X.Core.Tools.Testing
                 return ExitCode.Success;
             }
 
-            logger.Debug("Found [{TestDlls}] potential Assembly dll files with tests: {NewLine}: {V}", testDlls, Environment.NewLine, string.Join(Environment.NewLine, testDlls.Select(dll => $" * '{dll}'")));
+            logger.Debug("Found [{TestDlls}] potential Assembly dll files with tests: {NewLine}: {V}",
+                testDlls,
+                Environment.NewLine,
+                string.Join(Environment.NewLine, testDlls.Select(dll => $" * '{dll}'")));
 
             string dotNetExePath =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.DotNetExePath, string.Empty);
 
             if (string.IsNullOrWhiteSpace(dotNetExePath))
             {
-                logger.Information("Path to 'dotnet.exe' has not been specified, set variable '{DotNetExePath}' or ensure the dotnet.exe is installed in its standard location", WellKnownVariables.DotNetExePath);
+                logger.Information(
+                    "Path to 'dotnet.exe' has not been specified, set variable '{DotNetExePath}' or ensure the dotnet.exe is installed in its standard location",
+                    WellKnownVariables.DotNetExePath);
                 return ExitCode.Failure;
             }
 
@@ -104,7 +129,7 @@ namespace Arbor.X.Core.Tools.Testing
             arguments.AddRange(testDlls);
 
             bool xmlEnabled =
-                buildVariables.GetBooleanByKey(WellKnownVariables.XUnitNetCoreAppXmlEnabled, defaultValue: true);
+                buildVariables.GetBooleanByKey(WellKnownVariables.XUnitNetCoreAppXmlEnabled, true);
 
             if (xmlEnabled)
             {
@@ -128,11 +153,14 @@ namespace Arbor.X.Core.Tools.Testing
                 {
                     bool xunitXmlAnalysisEnabled =
                         buildVariables.GetBooleanByKey(WellKnownVariables.XUnitNetCoreAppXmlAnalysisEnabled,
-                            defaultValue: true);
+                            true);
 
                     if (xunitXmlAnalysisEnabled)
                     {
-                        logger.Debug("Feature flag '{XUnitNetCoreAppXmlAnalysisEnabled}' is enabled and the xunit exit code was {Result}, running xml report to find actual result", WellKnownVariables.XUnitNetCoreAppXmlAnalysisEnabled, result);
+                        logger.Debug(
+                            "Feature flag '{XUnitNetCoreAppXmlAnalysisEnabled}' is enabled and the xunit exit code was {Result}, running xml report to find actual result",
+                            WellKnownVariables.XUnitNetCoreAppXmlAnalysisEnabled,
+                            result);
 
                         exitCode = AnalyzeXml(reportFileInfo, message => logger.Debug(message));
                     }
@@ -161,7 +189,8 @@ namespace Arbor.X.Core.Tools.Testing
                         logger.Debug("Transforming '{FullName}' to JUnit XML format", xmlReport.FullName);
                         try
                         {
-                            ExitCode transformExitCode = TestReportXslt.Transform(xmlReport, XUnitV2JUnitXsl.Xml, logger);
+                            ExitCode transformExitCode =
+                                TestReportXslt.Transform(xmlReport, XUnitV2JUnitXsl.Xml, logger);
 
                             if (!transformExitCode.IsSuccess)
                             {
@@ -197,7 +226,8 @@ namespace Arbor.X.Core.Tools.Testing
             {
                 XDocument xdoc = XDocument.Load(fs);
 
-                XElement[] collections = xdoc.Descendants("assemblies").Descendants("assembly").Descendants("collection").ToArray();
+                XElement[] collections = xdoc.Descendants("assemblies").Descendants("assembly")
+                    .Descendants("collection").ToArray();
 
                 int testCount = collections.Count(collection =>
                     int.TryParse(collection.Attribute("total")?.Value, out int total) && total > 0);

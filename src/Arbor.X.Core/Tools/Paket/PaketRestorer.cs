@@ -1,4 +1,4 @@
-﻿using System; using Serilog;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,9 +8,9 @@ using Arbor.Defensive.Collections;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
-
 using Arbor.X.Core.ProcessUtils;
 using JetBrains.Annotations;
+using Serilog;
 
 namespace Arbor.X.Core.Tools.Paket
 {
@@ -28,7 +28,8 @@ namespace Arbor.X.Core.Tools.Paket
 
             logger.Information("Looking for paket.exe in source root {FullName}", sourceRoot.FullName);
 
-            PathLookupSpecification pathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification.WithIgnoredFileNameParts(new List<string>());
+            PathLookupSpecification pathLookupSpecification =
+                DefaultPaths.DefaultPathLookupSpecification.WithIgnoredFileNameParts(new List<string>());
 
             FileInfo paketExe = null;
 
@@ -68,7 +69,8 @@ namespace Arbor.X.Core.Tools.Paket
 
                 if (filtered.Count == 0)
                 {
-                    logger.Information("Could not find paket.exe, filtered out: {V}, skipping paket restore", string.Join(", ", packageSpecifications));
+                    logger.Information("Could not find paket.exe, filtered out: {V}, skipping paket restore",
+                        string.Join(", ", packageSpecifications));
                     return ExitCode.Success;
                 }
 
@@ -77,13 +79,14 @@ namespace Arbor.X.Core.Tools.Paket
 
             logger.Information("Found paket.exe at '{FullName}'", paketExe.FullName);
 
-            string copyFromPath = buildVariables.GetVariableValueOrDefault("Arbor.X.Build.Tools.Paket.CopyExeFromPath", string.Empty);
+            string copyFromPath =
+                buildVariables.GetVariableValueOrDefault("Arbor.X.Build.Tools.Paket.CopyExeFromPath", string.Empty);
 
             if (!string.IsNullOrWhiteSpace(copyFromPath))
             {
                 if (File.Exists(copyFromPath))
                 {
-                    File.Copy(copyFromPath, paketExe.FullName, overwrite: true);
+                    File.Copy(copyFromPath, paketExe.FullName, true);
                     logger.Information("Copied paket.exe to {FullName}", paketExe.FullName);
                 }
                 else

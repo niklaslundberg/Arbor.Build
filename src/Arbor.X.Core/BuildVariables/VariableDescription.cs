@@ -58,6 +58,21 @@ namespace Arbor.X.Core.BuildVariables
             return new VariableDescription(invariantName, description, wellknownName, defaultValue);
         }
 
+        public bool Equals(VariableDescription other)
+        {
+            if (ReferenceEquals(null, other))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return string.Equals(InvariantName, other.InvariantName);
+        }
+
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj))
@@ -81,21 +96,6 @@ namespace Arbor.X.Core.BuildVariables
         public override string ToString()
         {
             return $"{InvariantName} ({WellknownName}) [{DefaultValue}], {Description}";
-        }
-
-        public bool Equals(VariableDescription other)
-        {
-            if (ReferenceEquals(null, other))
-            {
-                return false;
-            }
-
-            if (ReferenceEquals(this, other))
-            {
-                return true;
-            }
-
-            return string.Equals(InvariantName, other.InvariantName);
         }
     }
 }

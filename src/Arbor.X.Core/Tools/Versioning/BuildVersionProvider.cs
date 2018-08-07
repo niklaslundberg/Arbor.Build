@@ -1,4 +1,4 @@
-﻿using System; using Serilog;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -11,9 +11,9 @@ using Arbor.KVConfiguration.Core.Metadata;
 using Arbor.KVConfiguration.JsonConfiguration;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.GenericExtensions;
-
 using Arbor.X.Core.Tools.Cleanup;
 using JetBrains.Annotations;
+using Serilog;
 
 namespace Arbor.X.Core.Tools.Versioning
 {
@@ -22,7 +22,7 @@ namespace Arbor.X.Core.Tools.Versioning
     {
         public int Order => VariableProviderOrder.Ignored;
 
-        public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(
+        public Task<IEnumerable<IVariable>> GetBuildVariablesAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
@@ -30,8 +30,8 @@ namespace Arbor.X.Core.Tools.Versioning
             IEnumerable<KeyValuePair<string, string>> variables =
                 GetVersionVariables(buildVariables, logger);
 
-            List<EnvironmentVariable> environmentVariables = variables
-                .Select(item => new EnvironmentVariable(item.Key, item.Value))
+            List<BuildVariable> environmentVariables = variables
+                .Select(item => new BuildVariable(item.Key, item.Value))
                 .ToList();
 
             return Task.FromResult<IEnumerable<IVariable>>(environmentVariables);
@@ -72,7 +72,9 @@ namespace Arbor.X.Core.Tools.Versioning
 
             if (File.Exists(versionFileName))
             {
-                logger.Verbose("A version file was found with name {VersionFileName} at source root '{SourceRoot}'", versionFileName, sourceRoot);
+                logger.Verbose("A version file was found with name {VersionFileName} at source root '{SourceRoot}'",
+                    versionFileName,
+                    sourceRoot);
                 IReadOnlyCollection<KeyValueConfigurationItem> keyValueConfigurationItems = null;
                 try
                 {
@@ -81,7 +83,8 @@ namespace Arbor.X.Core.Tools.Versioning
                 }
                 catch (Exception ex) when (!ex.IsFatal())
                 {
-                    logger.Warning("Could not read the configuration content in file '{VersionFileName}'", versionFileName);
+                    logger.Warning("Could not read the configuration content in file '{VersionFileName}'",
+                        versionFileName);
                 }
 
                 if (keyValueConfigurationItems != null)
@@ -119,17 +122,24 @@ namespace Arbor.X.Core.Tools.Versioning
                         minor = required[minorKey].TryParseInt32().Value;
                         patch = required[patchKey].TryParseInt32().Value;
 
-                        logger.Verbose("All version numbers from the version file '{VersionFileName}' were parsed successfully", versionFileName);
+                        logger.Verbose(
+                            "All version numbers from the version file '{VersionFileName}' were parsed successfully",
+                            versionFileName);
                     }
                     else
                     {
-                        logger.Verbose("Not all version numbers from the version file '{VersionFileName}' were parsed successfully", versionFileName);
+                        logger.Verbose(
+                            "Not all version numbers from the version file '{VersionFileName}' were parsed successfully",
+                            versionFileName);
                     }
                 }
             }
             else
             {
-                logger.Verbose("No version file found with name {VersionFileName} at source root '{SourceRoot}' was found", versionFileName, sourceRoot);
+                logger.Verbose(
+                    "No version file found with name {VersionFileName} at source root '{SourceRoot}' was found",
+                    versionFileName,
+                    sourceRoot);
             }
 
             int envMajor =
@@ -209,7 +219,10 @@ namespace Arbor.X.Core.Tools.Versioning
                 if (teamCityBuildVersion >= 0)
                 {
                     build = teamCityBuildVersion;
-                    logger.Verbose("Found no build version, using version {Build} from TeamCity ({TeamCityVersionBuild})", build, WellKnownVariables.TeamCity.TeamCityVersionBuild);
+                    logger.Verbose(
+                        "Found no build version, using version {Build} from TeamCity ({TeamCityVersionBuild})",
+                        build,
+                        WellKnownVariables.TeamCity.TeamCityVersionBuild);
                 }
                 else
                 {

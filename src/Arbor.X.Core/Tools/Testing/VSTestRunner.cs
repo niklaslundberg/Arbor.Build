@@ -1,4 +1,4 @@
-﻿using System; using Serilog;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 using Arbor.Processing;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
-
 using Arbor.X.Core.Properties;
 using JetBrains.Annotations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Serilog;
 
 namespace Arbor.X.Core.Tools.Testing
 {
@@ -44,7 +44,8 @@ namespace Arbor.X.Core.Tools.Testing
 
             if (string.IsNullOrWhiteSpace(vsTestExePath))
             {
-                logger.Warning("{ExternalTools_VSTest_ExePath} is not defined, cannot run any VSTests", WellKnownVariables.ExternalTools_VSTest_ExePath);
+                logger.Warning("{ExternalTools_VSTest_ExePath} is not defined, cannot run any VSTests",
+                    WellKnownVariables.ExternalTools_VSTest_ExePath);
                 return ExitCode.Success;
             }
 
@@ -62,7 +63,11 @@ namespace Arbor.X.Core.Tools.Testing
             {
                 try
                 {
-                    return await RunVsTestAsync(logger, reportPath, vsTestExePath, runTestsInReleaseConfiguration, assemblyFilePrefix).ConfigureAwait(false);
+                    return await RunVsTestAsync(logger,
+                        reportPath,
+                        vsTestExePath,
+                        runTestsInReleaseConfiguration,
+                        assemblyFilePrefix).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -72,7 +77,11 @@ namespace Arbor.X.Core.Tools.Testing
                 return ExitCode.Success;
             }
 
-            return await RunVsTestAsync(logger, reportPath, vsTestExePath, runTestsInReleaseConfiguration, assemblyFilePrefix).ConfigureAwait(false);
+            return await RunVsTestAsync(logger,
+                reportPath,
+                vsTestExePath,
+                runTestsInReleaseConfiguration,
+                assemblyFilePrefix).ConfigureAwait(false);
         }
 
         private static void LogExecution(ILogger logger, IEnumerable<string> arguments, string exePath)
@@ -102,16 +111,23 @@ namespace Arbor.X.Core.Tools.Testing
             var typesToFind = new List<Type> { testClassAttribute, testMethodAttribute };
 
             List<string> vsTestConsoleArguments =
-                new UnitTestFinder(typesToFind).GetUnitTestFixtureDlls(directory, runTestsInReleaseConfiguration, assemblyFilePrefix, FrameworkConstants.NetFramework)
+                new UnitTestFinder(typesToFind).GetUnitTestFixtureDlls(directory,
+                        runTestsInReleaseConfiguration,
+                        assemblyFilePrefix,
+                        FrameworkConstants.NetFramework)
                     .ToList();
 
             if (vsTestConsoleArguments.Count == 0)
             {
-                logger.Warning("Could not find any VSTest tests in directory '{FullName}' or any sub-directory", directory.FullName);
+                logger.Warning("Could not find any VSTest tests in directory '{FullName}' or any sub-directory",
+                    directory.FullName);
                 return ExitCode.Success;
             }
 
-            logger.Debug("Found [{VsTestConsoleArguments}] potential Assembly dll files with tests: {NewLine}: {V}", vsTestConsoleArguments, Environment.NewLine, string.Join(Environment.NewLine, vsTestConsoleArguments.Select(dll => $" * '{dll}'")));
+            logger.Debug("Found [{VsTestConsoleArguments}] potential Assembly dll files with tests: {NewLine}: {V}",
+                vsTestConsoleArguments,
+                Environment.NewLine,
+                string.Join(Environment.NewLine, vsTestConsoleArguments.Select(dll => $" * '{dll}'")));
 
             IEnumerable<string> options = GetVsTestConsoleOptions();
 

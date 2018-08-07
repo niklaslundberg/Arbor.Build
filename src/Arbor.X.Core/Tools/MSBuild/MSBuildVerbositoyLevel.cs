@@ -11,6 +11,8 @@ namespace Arbor.X.Core.Tools.MSBuild
             Level = level;
         }
 
+        public string Level { get; }
+
         public static MSBuildVerbositoyLevel Normal => new MSBuildVerbositoyLevel("normal");
 
         public static MSBuildVerbositoyLevel Detailed => new MSBuildVerbositoyLevel("detailed");
@@ -31,8 +33,6 @@ namespace Arbor.X.Core.Tools.MSBuild
                 yield return Quiet;
             }
         }
-
-        public string Level { get; }
 
         public static MSBuildVerbositoyLevel TryParse(string value)
         {

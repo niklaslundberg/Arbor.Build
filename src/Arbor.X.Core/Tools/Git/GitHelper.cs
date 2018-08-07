@@ -1,9 +1,9 @@
-﻿using System; using Serilog;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-
 using JetBrains.Annotations;
+using Serilog;
 
 namespace Arbor.X.Core.Tools.Git
 {
@@ -48,7 +48,9 @@ namespace Arbor.X.Core.Tools.Git
                                  {
                                      bool exists = File.Exists(location);
 
-                                     logger.Debug("Testing Git exe path '{Location}', exists: {Exists}", location, exists);
+                                     logger.Debug("Testing Git exe path '{Location}', exists: {Exists}",
+                                         location,
+                                         exists);
 
                                      return exists;
                                  }) ?? string.Empty;

@@ -1,4 +1,4 @@
-﻿using System; using Serilog;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
@@ -11,12 +11,12 @@ using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.IO;
-
 using Arbor.X.Core.Parsing;
 using Arbor.X.Core.ProcessUtils;
 using Arbor.X.Core.Tools.ILRepack;
 using Arbor.X.Core.Tools.MSBuild;
 using JetBrains.Annotations;
+using Serilog;
 
 namespace Arbor.X.Core.Tools.Libz
 {
@@ -43,7 +43,9 @@ namespace Arbor.X.Core.Tools.Libz
 
             if (!parseResult.Value)
             {
-                _logger.Information("LibZPacker is disabled, to enable it, set the flag {ExternalTools_LibZ_Enabled} to true", WellKnownVariables.ExternalTools_LibZ_Enabled);
+                _logger.Information(
+                    "LibZPacker is disabled, to enable it, set the flag {ExternalTools_LibZ_Enabled} to true",
+                    WellKnownVariables.ExternalTools_LibZ_Enabled);
                 return ExitCode.Success;
             }
 
@@ -79,7 +81,10 @@ namespace Arbor.X.Core.Tools.Libz
 
             string merges = string.Join(Environment.NewLine, ilMergeProjects.Select(item => item.FullName));
 
-            logger.Information("Found {Count} projects marked for merging:{NewLine}{Merges}", ilMergeProjects.Count, Environment.NewLine, merges);
+            logger.Information("Found {Count} projects marked for merging:{NewLine}{Merges}",
+                ilMergeProjects.Count,
+                Environment.NewLine,
+                merges);
 
             ImmutableArray<ILRepackData> filesToMerge;
             try
@@ -190,7 +195,8 @@ namespace Arbor.X.Core.Tools.Libz
 
             if (releaseDir is null)
             {
-                _logger.Warning("The release directory '{V}' does not exist", Path.Combine(binDirectory.FullName, configuration));
+                _logger.Warning("The release directory '{V}' does not exist",
+                    Path.Combine(binDirectory.FullName, configuration));
                 return ImmutableArray<ILRepackData>.Empty;
             }
 
@@ -198,7 +204,8 @@ namespace Arbor.X.Core.Tools.Libz
 
             if (releasePlatformDirectories.Length > 1)
             {
-                _logger.Warning("Multiple release directories were found for  '{V}'", Path.Combine(binDirectory.FullName, configuration));
+                _logger.Warning("Multiple release directories were found for  '{V}'",
+                    Path.Combine(binDirectory.FullName, configuration));
                 return ImmutableArray<ILRepackData>.Empty;
             }
 
@@ -220,13 +227,15 @@ namespace Arbor.X.Core.Tools.Libz
 
             if (useSdkProject)
             {
-                _logger.Warning("Microsoft.NET.Sdk projects are in progress supported '{V}'", Path.Combine(binDirectory.FullName, configuration));
+                _logger.Warning("Microsoft.NET.Sdk projects are in progress supported '{V}'",
+                    Path.Combine(binDirectory.FullName, configuration));
 
                 targetFrameworkVersionValue = string.Empty;
 
                 if (releasePlatformDirectories.Length == 0)
                 {
-                    _logger.Warning("No release platform directories were found in '{V}'", Path.Combine(binDirectory.FullName, configuration));
+                    _logger.Warning("No release platform directories were found in '{V}'",
+                        Path.Combine(binDirectory.FullName, configuration));
                     return ImmutableArray<ILRepackData>.Empty;
                 }
 
@@ -245,7 +254,9 @@ namespace Arbor.X.Core.Tools.Libz
                             { "net48", "4.8" }
                         };
 
-                    targetFrameworkVersionValue = netFrameworkMappings.ContainsKey(releasePlatformDirectories[0].Name) ? releasePlatformDirectories[0].Name : "4.0";
+                    targetFrameworkVersionValue = netFrameworkMappings.ContainsKey(releasePlatformDirectories[0].Name)
+                        ? releasePlatformDirectories[0].Name
+                        : "4.0";
 
                     releasePlatformDirectory = releasePlatformDirectories[0];
                 }
@@ -259,7 +270,7 @@ namespace Arbor.X.Core.Tools.Libz
                     };
 
                     ExitCode exitCode = await ProcessHelper.ExecuteAsync(
-                        Path.Combine(System.Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
+                        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
                             "dotnet",
                             "dotnet.exe"),
                         args,
@@ -277,7 +288,8 @@ namespace Arbor.X.Core.Tools.Libz
 
                     if (publishDirectoryInfo is null)
                     {
-                        _logger.Warning("The publish directory '{V}' does not exist", Path.Combine(platformDirectory.FullName, "publish"));
+                        _logger.Warning("The publish directory '{V}' does not exist",
+                            Path.Combine(platformDirectory.FullName, "publish"));
                         return ImmutableArray<ILRepackData>.Empty;
                     }
 

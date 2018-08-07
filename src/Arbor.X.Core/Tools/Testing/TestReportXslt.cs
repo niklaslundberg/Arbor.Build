@@ -1,9 +1,10 @@
-﻿using System; using Serilog;
+﻿using System;
 using System.IO;
 using System.Text;
 using System.Xml;
 using System.Xml.Xsl;
 using Arbor.Processing.Core;
+using Serilog;
 
 namespace Arbor.X.Core.Tools.Testing
 {
@@ -57,7 +58,10 @@ namespace Arbor.X.Core.Tools.Testing
 
             if (File.Exists(resultFile))
             {
-                logger.Information("Skipping XML transformation for '{FullName}', the transformation result file '{ResultFile}' already exists", xmlReport.FullName, resultFile);
+                logger.Information(
+                    "Skipping XML transformation for '{FullName}', the transformation result file '{ResultFile}' already exists",
+                    xmlReport.FullName,
+                    resultFile);
             }
 
             using (var fileStream = new FileStream(xmlReport.FullName, FileMode.Open, FileAccess.Read))

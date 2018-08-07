@@ -7,7 +7,7 @@ namespace Arbor.X.Tests.Integration.Maybe
         static bool equal;
 
         Because of = () => equal = new Defensive.Maybe<string>("a string") ==
-                                           new Defensive.Maybe<string>("a string");
+                                   new Defensive.Maybe<string>("a string");
 
         It should_return_true = () => equal.ShouldBeTrue();
     }

@@ -1,4 +1,4 @@
-﻿using System; using Serilog;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -9,13 +9,13 @@ using System.Threading.Tasks;
 using Arbor.Processing;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
-
 using Arbor.X.Core.ProcessUtils;
 using Arbor.X.Core.Tools.Cleanup;
 using JetBrains.Annotations;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 using NuGet.Versioning;
+using Serilog;
 
 namespace Arbor.X.Core.Tools.MSBuild
 {
@@ -24,14 +24,16 @@ namespace Arbor.X.Core.Tools.MSBuild
     {
         public int Order => VariableProviderOrder.Ignored;
 
-        public async Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(
+        public async Task<IEnumerable<IVariable>> GetBuildVariablesAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
             int currentProcessBits = Environment.Is64BitProcess ? 64 : 32;
             const int registryLookupBits = 32;
-            logger.Verbose("Running current process [id {Id}] as a {CurrentProcessBits}-bit process", Process.GetCurrentProcess().Id, currentProcessBits);
+            logger.Verbose("Running current process [id {Id}] as a {CurrentProcessBits}-bit process",
+                Process.GetCurrentProcess().Id,
+                currentProcessBits);
 
             List<SemanticVersion> possibleVersions = new List<string> { "15.0.0", "14.0.0", "12.0.0", "4.0.0" }
                 .Select(SemanticVersion.Parse)
@@ -144,7 +146,7 @@ namespace Arbor.X.Core.Tools.MSBuild
 
                             var variables = new[]
                             {
-                                new EnvironmentVariable(
+                                new BuildVariable(
                                     WellKnownVariables.ExternalTools_MSBuild_ExePath,
                                     msbuildPath)
                             };
@@ -214,7 +216,7 @@ namespace Arbor.X.Core.Tools.MSBuild
 
                 var variables = new[]
                 {
-                    new EnvironmentVariable(
+                    new BuildVariable(
                         WellKnownVariables.ExternalTools_MSBuild_ExePath,
                         fileBasedLookupResultPath)
                 };
@@ -231,7 +233,11 @@ namespace Arbor.X.Core.Tools.MSBuild
                 object msBuildPathRegistryKeyValue = null;
                 const string valueKey = "MSBuildOverrideTasksPath";
 
-                logger.Verbose("Looking for MSBuild exe path in {RegistryLookupBits}-bit registry key '{RegistryKeyName}\\{ValueKey}", registryLookupBits, registryKeyName, valueKey);
+                logger.Verbose(
+                    "Looking for MSBuild exe path in {RegistryLookupBits}-bit registry key '{RegistryKeyName}\\{ValueKey}",
+                    registryLookupBits,
+                    registryKeyName,
+                    valueKey);
 
                 using (RegistryKey view32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
                 {
@@ -251,7 +257,12 @@ namespace Arbor.X.Core.Tools.MSBuild
                 if (!string.IsNullOrWhiteSpace(msBuildPath))
                 {
                     foundPath = msBuildPath;
-                    logger.Verbose("Using MSBuild exe path '{FoundPath}' defined in {RegistryLookupBits}-bit registry key {RegistryKeyName}\\{ValueKey}", foundPath, registryLookupBits, registryKeyName, valueKey);
+                    logger.Verbose(
+                        "Using MSBuild exe path '{FoundPath}' defined in {RegistryLookupBits}-bit registry key {RegistryKeyName}\\{ValueKey}",
+                        foundPath,
+                        registryLookupBits,
+                        registryKeyName,
+                        valueKey);
                     break;
                 }
             }
@@ -263,12 +274,15 @@ namespace Arbor.X.Core.Tools.MSBuild
 
                 if (!string.IsNullOrWhiteSpace(fromEnvironmentVariable))
                 {
-                    logger.Information("Using MSBuild exe path '{FoundPath}' from environment variable {MsbuildPath}", foundPath, msbuildPath);
+                    logger.Information("Using MSBuild exe path '{FoundPath}' from environment variable {MsbuildPath}",
+                        foundPath,
+                        msbuildPath);
                     foundPath = fromEnvironmentVariable;
                 }
                 else
                 {
-                    logger.Error("The MSBuild path could not be found in the {RegistryLookupBits}-bit registry keys.", registryLookupBits);
+                    logger.Error("The MSBuild path could not be found in the {RegistryLookupBits}-bit registry keys.",
+                        registryLookupBits);
                     return null;
                 }
             }
@@ -277,7 +291,7 @@ namespace Arbor.X.Core.Tools.MSBuild
 
             var environmentVariables = new[]
             {
-                new EnvironmentVariable(
+                new BuildVariable(
                     WellKnownVariables.ExternalTools_MSBuild_ExePath,
                     foundPath)
             };

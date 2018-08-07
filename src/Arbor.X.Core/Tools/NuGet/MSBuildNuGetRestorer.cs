@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
-
 using Arbor.X.Core.ProcessUtils;
 using JetBrains.Annotations;
 using Serilog;
@@ -56,7 +55,9 @@ namespace Arbor.X.Core.Tools.NuGet
 
             if (included.Length > 1)
             {
-                logger.Error("Expected exactly 1 solution file, found {Length}, {V}", included.Length, string.Join(", ", included));
+                logger.Error("Expected exactly 1 solution file, found {Length}, {V}",
+                    included.Length,
+                    string.Join(", ", included));
                 return ExitCode.Failure;
             }
 
@@ -68,7 +69,9 @@ namespace Arbor.X.Core.Tools.NuGet
 
             if (excluded.Length > 0)
             {
-                logger.Warning("Found blacklisted solution files: {V}", string.Join(", ", excluded.Select(excludedItem => $"{excludedItem.File} ({excludedItem.Status.Item2})")));
+                logger.Warning("Found blacklisted solution files: {V}",
+                    string.Join(", ",
+                        excluded.Select(excludedItem => $"{excludedItem.File} ({excludedItem.Status.Item2})")));
             }
 
             string solutionFile = included.Single();

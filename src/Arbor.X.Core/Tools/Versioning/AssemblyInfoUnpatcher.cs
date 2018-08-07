@@ -6,12 +6,12 @@ using Arbor.Processing.Core;
 using Arbor.Sorbus.Core;
 using Arbor.X.Core.BuildVariables;
 using JetBrains.Annotations;
-using ILogger = Serilog.ILogger;
+using Serilog;
 
 namespace Arbor.X.Core.Tools.Versioning
 {
     [UsedImplicitly]
-    [Priority(1000, runAlways: true)]
+    [Priority(1000, true)]
     public class AssemblyInfoUnpatcher : ITool
     {
         public Task<ExitCode> ExecuteAsync(
@@ -34,7 +34,8 @@ namespace Arbor.X.Core.Tools.Versioning
 
             try
             {
-                logger.Verbose("Un-patching assembly info files for directory source root directory '{SourceRoot}'", sourceRoot);
+                logger.Verbose("Un-patching assembly info files for directory source root directory '{SourceRoot}'",
+                    sourceRoot);
 
                 app.Unpatch(sourceRoot);
             }

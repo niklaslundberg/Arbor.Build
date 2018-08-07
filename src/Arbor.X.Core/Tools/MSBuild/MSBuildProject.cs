@@ -10,27 +10,6 @@ namespace Arbor.X.Core.Tools.MSBuild
 {
     public class MSBuildProject
     {
-        public static bool IsNetSdkProject([NotNull] FileInfo projectFile)
-        {
-            if (projectFile == null)
-            {
-                throw new ArgumentNullException(nameof(projectFile));
-            }
-
-            if (projectFile.FullName.IndexOfAny(Path.GetInvalidPathChars()) >= 0)
-            {
-                throw new InvalidOperationException("The temp path contains invalid characters");
-            }
-
-            if (projectFile.Name.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
-            {
-                throw new InvalidOperationException("The temp path contains invalid characters");
-            }
-
-            return File.ReadLines(projectFile.FullName)
-                .Any(line => line.IndexOf("Microsoft.NET.Sdk", StringComparison.OrdinalIgnoreCase) >= 0);
-        }
-
         private MSBuildProject(
             IReadOnlyList<MSBuildPropertyGroup> propertyGroups,
             string fileName,
@@ -59,6 +38,27 @@ namespace Arbor.X.Core.Tools.MSBuild
 
         public Guid? ProjectId { get; }
 
+        public static bool IsNetSdkProject([NotNull] FileInfo projectFile)
+        {
+            if (projectFile == null)
+            {
+                throw new ArgumentNullException(nameof(projectFile));
+            }
+
+            if (projectFile.FullName.IndexOfAny(Path.GetInvalidPathChars()) >= 0)
+            {
+                throw new InvalidOperationException("The temp path contains invalid characters");
+            }
+
+            if (projectFile.Name.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+            {
+                throw new InvalidOperationException("The temp path contains invalid characters");
+            }
+
+            return File.ReadLines(projectFile.FullName)
+                .Any(line => line.IndexOf("Microsoft.NET.Sdk", StringComparison.OrdinalIgnoreCase) >= 0);
+        }
+
         public static MSBuildProject LoadFrom(string projectFileFullName)
         {
             using (var fs = new FileStream(projectFileFullName, FileMode.Open, FileAccess.Read))
@@ -71,11 +71,13 @@ namespace Arbor.X.Core.Tools.MSBuild
 
                 const string projectElementName = "Project";
 
-                XElement project = document.Elements().SingleOrDefault(element => element.Name.LocalName.Equals(projectElementName, StringComparison.Ordinal));
+                XElement project = document.Elements().SingleOrDefault(element =>
+                    element.Name.LocalName.Equals(projectElementName, StringComparison.Ordinal));
 
                 if (project is null)
                 {
-                    throw new InvalidOperationException($"Could not find element <{projectElementName}> in file '{projectFileFullName}'");
+                    throw new InvalidOperationException(
+                        $"Could not find element <{projectElementName}> in file '{projectFileFullName}'");
                 }
 
                 ImmutableArray<XElement> propertyGroups = project.Elements("PropertyGroup").ToImmutableArray();

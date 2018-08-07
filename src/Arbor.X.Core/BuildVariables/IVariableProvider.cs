@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Serilog;
 
 namespace Arbor.X.Core.BuildVariables
@@ -10,7 +9,7 @@ namespace Arbor.X.Core.BuildVariables
     {
         int Order { get; }
 
-        Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(
+        Task<IEnumerable<IVariable>> GetBuildVariablesAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken);

@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Reflection;
 using Arbor.Defensive.Collections;
-
 using Autofac;
 using Serilog;
 
@@ -12,7 +11,7 @@ namespace Arbor.X.Core.Tools
     {
         public static IReadOnlyCollection<ToolWithPriority> GetTools(ILifetimeScope lifetimeScope, ILogger logger)
         {
-            IReadOnlyCollection<ITool> tools = lifetimeScope.Resolve<IEnumerable<ITool>>().SafeToReadOnlyCollection();
+            var tools = lifetimeScope.Resolve<IReadOnlyCollection<ITool>>();
 
             List<ToolWithPriority> prioritizedTools = tools
                 .Select(tool =>

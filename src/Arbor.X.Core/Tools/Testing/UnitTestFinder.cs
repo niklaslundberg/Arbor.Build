@@ -1,4 +1,4 @@
-﻿using System; using Serilog;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -7,8 +7,8 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Versioning;
 using Arbor.X.Core.Assemblies;
-
 using Mono.Cecil;
+using Serilog;
 
 namespace Arbor.X.Core.Tools.Testing
 {
@@ -171,13 +171,17 @@ namespace Arbor.X.Core.Tools.Testing
             }
             catch (Exception ex)
             {
-                _logger?.Debug("Failed to determine if type {FullName} is {V} {Message}", typeToInvestigate.Module.Assembly.FullName, string.Join(" | ", _typesToFind.Select(type => type.FullName)), ex.Message);
+                _logger?.Debug("Failed to determine if type {FullName} is {V} {Message}",
+                    typeToInvestigate.Module.Assembly.FullName,
+                    string.Join(" | ", _typesToFind.Select(type => type.FullName)),
+                    ex.Message);
                 return false;
             }
         }
 
 // ReSharper disable ReturnTypeCanBeEnumerable.Local
-        private IReadOnlyCollection<string> UnitTestFixtureAssemblies(IEnumerable<(AssemblyDefinition, FileInfo)> assemblies)
+        private IReadOnlyCollection<string> UnitTestFixtureAssemblies(
+                IEnumerable<(AssemblyDefinition, FileInfo)> assemblies)
 
             // ReSharper restore ReturnTypeCanBeEnumerable.Local
         {
@@ -209,7 +213,10 @@ namespace Arbor.X.Core.Tools.Testing
 
             if (DebugLogEnabled || result)
             {
-                _logger?.Debug("Assembly {FullName}, found any class with {V}: {Result}", assembly.Item1.FullName, string.Join(" | ", _typesToFind.Select(type => type.FullName)), result);
+                _logger?.Debug("Assembly {FullName}, found any class with {V}: {Result}",
+                    assembly.Item1.FullName,
+                    string.Join(" | ", _typesToFind.Select(type => type.FullName)),
+                    result);
             }
 
             return result;
@@ -324,7 +331,11 @@ namespace Arbor.X.Core.Tools.Testing
                         if (!targetFrameworkAttribute.FrameworkName.StartsWith(targetFrameworkPrefix,
                             StringComparison.OrdinalIgnoreCase))
                         {
-                            _logger?.Debug("The current assembly '{FullName}' target framework attribute with value '{FrameworkName}' does not match the specified target framework '{TargetFrameworkPrefix}'", dllFile.FullName, targetFrameworkAttribute.FrameworkName, targetFrameworkPrefix);
+                            _logger?.Debug(
+                                "The current assembly '{FullName}' target framework attribute with value '{FrameworkName}' does not match the specified target framework '{TargetFrameworkPrefix}'",
+                                dllFile.FullName,
+                                targetFrameworkAttribute.FrameworkName,
+                                targetFrameworkPrefix);
                             return (null, null);
                         }
                     }

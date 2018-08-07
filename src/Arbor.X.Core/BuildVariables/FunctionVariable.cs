@@ -2,21 +2,24 @@
 
 namespace Arbor.X.Core.BuildVariables
 {
-    public sealed class DynamicVariable : IVariable
+    public class FunctionVariable : IVariable
     {
-        public DynamicVariable(string key, string initialValue = null)
+        private readonly Func<string> _getValue;
+
+        public FunctionVariable(string key, Func<string> getValue)
         {
             if (string.IsNullOrWhiteSpace(key))
             {
                 throw new ArgumentNullException(nameof(key));
             }
 
+            _getValue = getValue;
+
             Key = key;
-            Value = initialValue;
         }
 
         public string Key { get; }
 
-        public string Value { get; set; }
+        public string Value => _getValue.Invoke();
     }
 }

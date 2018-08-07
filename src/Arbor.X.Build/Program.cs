@@ -14,7 +14,7 @@ namespace Arbor.X.Build
     {
         private static BuildApplication _app;
 
-        private static  async Task<int> Main(string[] args)
+        private static async Task<int> Main(string[] args)
         {
             string logLevelArg = args?.FirstOrDefault(arg => arg.StartsWith(WellKnownVariables.LogLevel))?.Split('=')
                                      .LastOrDefault()

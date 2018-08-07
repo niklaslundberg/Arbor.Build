@@ -12,7 +12,14 @@ namespace Arbor.Processing
     {
         public static bool? IsWin64(this Process process)
         {
-            if (process.HasExited)
+            try
+            {
+                if (process.HasExited)
+                {
+                    return default;
+                }
+            }
+            catch (Exception)
             {
                 return default;
             }
@@ -44,7 +51,7 @@ namespace Arbor.Processing
             return false;
         }
 
-        public static bool IsAlive(
+        internal static bool IsAlive(
             this Process process,
             Task<ExitCode> task,
             CancellationToken cancellationToken,

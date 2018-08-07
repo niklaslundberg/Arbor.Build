@@ -1,7 +1,8 @@
-using System; using Serilog;
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using Arbor.Processing.Core;
+using Serilog;
 
 namespace Arbor.X.Core.IO
 {
@@ -39,7 +40,11 @@ namespace Arbor.X.Core.IO
             (bool, string) isBlackListed = pathLookupSpecification.IsBlackListed(sourceDir, rootDir);
             if (isBlackListed.Item1)
             {
-                logger?.Debug("Directory '{SourceDir}' is blacklisted from specification {PathLookupSpecification}, {Item2}", sourceDir, pathLookupSpecification, isBlackListed.Item2);
+                logger?.Debug(
+                    "Directory '{SourceDir}' is blacklisted from specification {PathLookupSpecification}, {Item2}",
+                    sourceDir,
+                    pathLookupSpecification,
+                    isBlackListed.Item2);
                 return ExitCode.Success;
             }
 
@@ -49,15 +54,20 @@ namespace Arbor.X.Core.IO
             {
                 string destFileName = Path.Combine(targetDir, file.Name);
 
-                (bool, string) isFileBlackListed = pathLookupSpecification.IsFileBlackListed(file.FullName, rootDir, logger: optionalLogger);
+                (bool, string) isFileBlackListed =
+                    pathLookupSpecification.IsFileBlackListed(file.FullName, rootDir, logger: optionalLogger);
 
                 if (isFileBlackListed.Item1)
                 {
-                    logger?.Verbose("File '{FullName}' is blacklisted, skipping copying file, {Item2}", file.FullName, isFileBlackListed.Item2);
+                    logger?.Verbose("File '{FullName}' is blacklisted, skipping copying file, {Item2}",
+                        file.FullName,
+                        isFileBlackListed.Item2);
                     continue;
                 }
 
-                logger?.Verbose("Copying file '{FullName}' to destination '{DestFileName}'", file.FullName, destFileName);
+                logger?.Verbose("Copying file '{FullName}' to destination '{DestFileName}'",
+                    file.FullName,
+                    destFileName);
 
                 try
                 {
@@ -65,13 +75,17 @@ namespace Arbor.X.Core.IO
                 }
                 catch (PathTooLongException ex)
                 {
-                    logger.Error(ex, "{V} {Ex}", $"Could not copy file to '{destFileName}', path length is too long ({destFileName.Length})"
-);
+                    logger.Error(ex,
+                        "{V} {Ex}",
+                        $"Could not copy file to '{destFileName}', path length is too long ({destFileName.Length})"
+                    );
                     return ExitCode.Failure;
                 }
                 catch (Exception ex)
                 {
-                    logger.Error(ex, "{V} {Ex}", $"Could not copy file '{file.FullName}' to destination '{destFileName}'");
+                    logger.Error(ex,
+                        "{V} {Ex}",
+                        $"Could not copy file '{file.FullName}' to destination '{destFileName}'");
                     return ExitCode.Failure;
                 }
             }

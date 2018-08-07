@@ -1,8 +1,8 @@
-using System; using Serilog;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Arbor.X.Core.BuildVariables;
-
+using Serilog;
 
 namespace Arbor.X.Core.Tools.Kudu
 {
@@ -26,12 +26,14 @@ namespace Arbor.X.Core.Tools.Kudu
                         }
                         else
                         {
-                            logger?.Verbose("Build variable {ExternalTools_Kudu_Platform} is missing", WellKnownVariables.ExternalTools_Kudu_Platform);
+                            logger?.Verbose("Build variable {ExternalTools_Kudu_Platform} is missing",
+                                WellKnownVariables.ExternalTools_Kudu_Platform);
                         }
                     }
                     else
                     {
-                        logger?.Verbose("Build variable {ExternalTools_Kudu_DeploymentTarget} is missing", WellKnownVariables.ExternalTools_Kudu_DeploymentTarget);
+                        logger?.Verbose("Build variable {ExternalTools_Kudu_DeploymentTarget} is missing",
+                            WellKnownVariables.ExternalTools_Kudu_DeploymentTarget);
                     }
                 }
                 else
@@ -41,7 +43,9 @@ namespace Arbor.X.Core.Tools.Kudu
             }
             else
             {
-                logger?.Verbose("Build varaible {ExternalTools_Kudu_Enabled} is set to {Value}", WellKnownVariables.ExternalTools_Kudu_Enabled, buildVariables.Require(WellKnownVariables.ExternalTools_Kudu_Enabled).Value);
+                logger?.Verbose("Build varaible {ExternalTools_Kudu_Enabled} is set to {Value}",
+                    WellKnownVariables.ExternalTools_Kudu_Enabled,
+                    buildVariables.Require(WellKnownVariables.ExternalTools_Kudu_Enabled).Value);
             }
 
             return isKuduAware;

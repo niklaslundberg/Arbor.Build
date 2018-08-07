@@ -1,4 +1,4 @@
-﻿using System; using Serilog;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
@@ -9,9 +9,9 @@ using Arbor.Processing;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.GenericExtensions;
-
 using JetBrains.Annotations;
 using NuGet.Versioning;
+using Serilog;
 
 namespace Arbor.X.Core.Tools.Git
 {
@@ -20,7 +20,7 @@ namespace Arbor.X.Core.Tools.Git
     {
         public int Order { get; } = -1;
 
-        public async Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(
+        public async Task<IEnumerable<IVariable>> GetBuildVariablesAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
@@ -31,31 +31,34 @@ namespace Arbor.X.Core.Tools.Git
 
             if (branchName.StartsWith("refs/heads/", StringComparison.Ordinal))
             {
-                variables.Add(new EnvironmentVariable(WellKnownVariables.BranchFullName, branchName));
+                variables.Add(new BuildVariable(WellKnownVariables.BranchFullName, branchName));
             }
 
             string logicalName = BranchHelper.GetLogicalName(branchName).Name;
 
-            variables.Add(new EnvironmentVariable(WellKnownVariables.BranchLogicalName, logicalName));
+            variables.Add(new BuildVariable(WellKnownVariables.BranchLogicalName, logicalName));
 
             Maybe<BranchName> maybeBranch = BranchName.TryParse(logicalName);
 
             if (maybeBranch.HasValue && maybeBranch.Value.IsDevelopBranch())
             {
-                logger.Debug("Branch '{Name}' is develop branch, checking if release build is explicitely set", maybeBranch.Value.Name);
+                logger.Debug("Branch '{Name}' is develop branch, checking if release build is explicitely set",
+                    maybeBranch.Value.Name);
                 Maybe<IVariable> releaseBuildEnabled =
                     buildVariables.GetOptionalVariable(WellKnownVariables.ReleaseBuildEnabled);
 
                 if (!releaseBuildEnabled.HasValue ||
                     !bool.TryParse(releaseBuildEnabled.Value.Value, out bool isReleaseBuildEnabled))
                 {
-                    variables.Add(new EnvironmentVariable(WellKnownVariables.ReleaseBuildEnabled, "false"));
+                    variables.Add(new BuildVariable(WellKnownVariables.ReleaseBuildEnabled, "false"));
                     logger.Debug(
                         "Release build is not explicitely set when branch is develop branch, skipping release build");
                 }
                 else
                 {
-                    logger.Debug("Release build is explicitely set when branch is develop branch, value {IsReleaseBuildEnabled}", isReleaseBuildEnabled);
+                    logger.Debug(
+                        "Release build is explicitely set when branch is develop branch, value {IsReleaseBuildEnabled}",
+                        isReleaseBuildEnabled);
                 }
 
                 Maybe<IVariable> isDebugBuildEnabled =
@@ -63,7 +66,7 @@ namespace Arbor.X.Core.Tools.Git
 
                 if (!isDebugBuildEnabled.HasValue)
                 {
-                    variables.Add(new EnvironmentVariable(WellKnownVariables.DebugBuildEnabled, "true"));
+                    variables.Add(new BuildVariable(WellKnownVariables.DebugBuildEnabled, "true"));
                 }
             }
 
@@ -76,13 +79,15 @@ namespace Arbor.X.Core.Tools.Git
                 if (!debugBuildEnabled.HasValue ||
                     !bool.TryParse(debugBuildEnabled.Value.Value, out bool isDebugBuildEnabled))
                 {
-                    variables.Add(new EnvironmentVariable(WellKnownVariables.DebugBuildEnabled, "false"));
+                    variables.Add(new BuildVariable(WellKnownVariables.DebugBuildEnabled, "false"));
                     logger.Debug(
                         "Debug build is not explicitely set when branch is production branch, skipping debug build");
                 }
                 else
                 {
-                    logger.Debug("Debug build is explicitely set when branch is production branch, value {IsDebugBuildEnabled}", isDebugBuildEnabled);
+                    logger.Debug(
+                        "Debug build is explicitely set when branch is production branch, value {IsDebugBuildEnabled}",
+                        isDebugBuildEnabled);
                 }
 
                 Maybe<IVariable> releaseBuildEnabled =
@@ -90,7 +95,7 @@ namespace Arbor.X.Core.Tools.Git
 
                 if (!releaseBuildEnabled.HasValue)
                 {
-                    variables.Add(new EnvironmentVariable(WellKnownVariables.ReleaseBuildEnabled, "true"));
+                    variables.Add(new BuildVariable(WellKnownVariables.ReleaseBuildEnabled, "true"));
                 }
             }
 
@@ -100,34 +105,43 @@ namespace Arbor.X.Core.Tools.Git
 
                 logger.Debug("Branch has version {Version}", version);
 
-                variables.Add(new EnvironmentVariable(WellKnownVariables.BranchNameVersion, version));
+                variables.Add(new BuildVariable(WellKnownVariables.BranchNameVersion, version));
 
                 if (buildVariables.GetBooleanByKey(WellKnownVariables.BranchNameVersionOverrideEnabled, false))
                 {
-                    logger.Verbose("Variable '{BranchNameVersionOverrideEnabled}' is set to true, using version number '{Version}' from branch", WellKnownVariables.BranchNameVersionOverrideEnabled, version);
+                    logger.Verbose(
+                        "Variable '{BranchNameVersionOverrideEnabled}' is set to true, using version number '{Version}' from branch",
+                        WellKnownVariables.BranchNameVersionOverrideEnabled,
+                        version);
 
                     SemanticVersion semVer = SemanticVersion.Parse(version);
 
                     string major = semVer.Major.ToString(CultureInfo.InvariantCulture);
-                    logger.Verbose("Overriding {VersionMajor} from '{V}' to '{Major}'", WellKnownVariables.VersionMajor, Environment.GetEnvironmentVariable(WellKnownVariables.VersionMajor), major);
-                    Environment.SetEnvironmentVariable(
+
+                    logger.Verbose("Overriding {VersionMajor} from '{V}' to '{Major}'",
                         WellKnownVariables.VersionMajor,
+                        Environment.GetEnvironmentVariable(WellKnownVariables.VersionMajor),
                         major);
-                    variables.Add(new EnvironmentVariable(WellKnownVariables.VersionMajor, major));
+
+                    variables.Add(new BuildVariable(WellKnownVariables.VersionMajor, major));
 
                     string minor = semVer.Minor.ToString(CultureInfo.InvariantCulture);
-                    logger.Verbose("Overriding {VersionMinor} from '{V}' to '{Minor}'", WellKnownVariables.VersionMinor, Environment.GetEnvironmentVariable(WellKnownVariables.VersionMinor), minor);
-                    Environment.SetEnvironmentVariable(
+
+                    logger.Verbose("Overriding {VersionMinor} from '{V}' to '{Minor}'",
                         WellKnownVariables.VersionMinor,
+                        Environment.GetEnvironmentVariable(WellKnownVariables.VersionMinor),
                         minor);
-                    variables.Add(new EnvironmentVariable(WellKnownVariables.VersionMinor, minor));
+
+                    variables.Add(new BuildVariable(WellKnownVariables.VersionMinor, minor));
 
                     string patch = semVer.Patch.ToString(CultureInfo.InvariantCulture);
-                    logger.Verbose("Overriding {VersionPatch} from '{V}' to '{Patch}'", WellKnownVariables.VersionPatch, Environment.GetEnvironmentVariable(WellKnownVariables.VersionPatch), patch);
-                    Environment.SetEnvironmentVariable(
+
+                    logger.Verbose("Overriding {VersionPatch} from '{V}' to '{Patch}'",
                         WellKnownVariables.VersionPatch,
+                        Environment.GetEnvironmentVariable(WellKnownVariables.VersionPatch),
                         patch);
-                    variables.Add(new EnvironmentVariable(WellKnownVariables.VersionPatch, patch));
+
+                    variables.Add(new BuildVariable(WellKnownVariables.VersionPatch, patch));
                 }
                 else
                 {
@@ -149,11 +163,15 @@ namespace Arbor.X.Core.Tools.Git
 
                     if (!string.IsNullOrWhiteSpace(gitCommitHash))
                     {
-                        var environmentVariable = new EnvironmentVariable(
+                        var environmentVariable = new BuildVariable(
                             WellKnownVariables.GitHash,
                             gitCommitHash);
 
-                        logger.Debug("Setting commit hash variable '{GitHash}' from TeamCity variable '{TeamCityVcsNumber}', value '{GitCommitHash}'", WellKnownVariables.GitHash, WellKnownVariables.TeamCity.TeamCityVcsNumber, gitCommitHash);
+                        logger.Debug(
+                            "Setting commit hash variable '{GitHash}' from TeamCity variable '{TeamCityVcsNumber}', value '{GitCommitHash}'",
+                            WellKnownVariables.GitHash,
+                            WellKnownVariables.TeamCity.TeamCityVcsNumber,
+                            gitCommitHash);
 
                         variables.Add(environmentVariable);
                     }
@@ -166,9 +184,12 @@ namespace Arbor.X.Core.Tools.Git
                     string environmentVariable = Environment.GetEnvironmentVariable(arborXGitcommithashenabled);
 
                     if (!environmentVariable
-                        .TryParseBool(defaultValue: true).Value)
+                        .TryParseBool(true).Value)
                     {
-                        logger.Information("Git commit hash is disabled by environment variable {ArborXGitcommithashenabled} set to {EnvironmentVariable}", arborXGitcommithashenabled, environmentVariable);
+                        logger.Information(
+                            "Git commit hash is disabled by environment variable {ArborXGitcommithashenabled} set to {EnvironmentVariable}",
+                            arborXGitcommithashenabled,
+                            environmentVariable);
                     }
                     else
                     {
@@ -198,7 +219,7 @@ namespace Arbor.X.Core.Tools.Git
                                 {
                                     logger.Information("Found Git commit hash '{Result}' by asking git", result);
 
-                                    variables.Add(new EnvironmentVariable(WellKnownVariables.GitHash, result));
+                                    variables.Add(new BuildVariable(WellKnownVariables.GitHash, result));
                                 }
                             }
                         }

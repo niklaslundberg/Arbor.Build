@@ -8,7 +8,7 @@ namespace Arbor.X.Tests.Integration.GitBranches
     {
         static BranchName branchName;
         static bool is_develop;
-        Establish context = () => { branchName =new BranchName("refs/heads/develop"); };
+        Establish context = () => { branchName = new BranchName("refs/heads/develop"); };
 
         Because of = () => { is_develop = branchName.IsDevelopBranch(); };
 

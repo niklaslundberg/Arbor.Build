@@ -73,7 +73,9 @@ namespace Arbor.X.Core.IO
                     filter => baseDirectory.Name.Equals(filter, StringComparison.InvariantCultureIgnoreCase)))
             {
                 string filterList = DirectoryFilterList;
-                _logger.Verbose("Directory name '{Name} is in filter list {FilterList}, ignoring deleting directory", baseDirectory.Name, filterList);
+                _logger.Verbose("Directory name '{Name} is in filter list {FilterList}, ignoring deleting directory",
+                    baseDirectory.Name,
+                    filterList);
                 return;
             }
 
@@ -86,7 +88,9 @@ namespace Arbor.X.Core.IO
                             filter => fileToDelete.Name.Equals(filter, StringComparison.InvariantCultureIgnoreCase)))
                     {
                         string filterList = FileFilterList;
-                        _logger.Verbose("File name '{Name} is in filter list {FilterList}, ignoring deleting directory", fileToDelete.Name, filterList);
+                        _logger.Verbose("File name '{Name} is in filter list {FilterList}, ignoring deleting directory",
+                            fileToDelete.Name,
+                            filterList);
                         continue;
                     }
 
@@ -103,7 +107,8 @@ namespace Arbor.X.Core.IO
             }
             else
             {
-                _logger.Verbose("Delete self files is false, skipping deleting files in directory '{BaseDir}'", baseDir);
+                _logger.Verbose("Delete self files is false, skipping deleting files in directory '{BaseDir}'",
+                    baseDir);
             }
 
             foreach (DirectoryInfo directoryToDelete in baseDirectory.EnumerateDirectories())

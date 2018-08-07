@@ -2,7 +2,6 @@ using System.IO;
 using System.Threading.Tasks;
 using Arbor.Processing.Core;
 using Arbor.X.Core.IO;
-
 using JetBrains.Annotations;
 using Serilog;
 
@@ -23,7 +22,9 @@ namespace Arbor.X.Core.Tools.NuGet
 
                 if (!targetDir.Exists)
                 {
-                    logger.Debug("Copying NLog from '{FullName}' to '{FullName1}'", nlogDirectory.FullName, targetDir.FullName);
+                    logger.Debug("Copying NLog from '{FullName}' to '{FullName1}'",
+                        nlogDirectory.FullName,
+                        targetDir.FullName);
                     ExitCode exitCode = await DirectoryCopy.CopyAsync(
                         nlogDirectory.FullName,
                         targetDir.FullName,

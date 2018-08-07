@@ -1,5 +1,4 @@
-﻿using Serilog;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -7,9 +6,9 @@ using System.Threading.Tasks;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
-
 using Arbor.X.Core.ProcessUtils;
 using JetBrains.Annotations;
+using Serilog;
 
 namespace Arbor.X.Core.Tools.NuGet
 {
@@ -36,7 +35,9 @@ namespace Arbor.X.Core.Tools.NuGet
 
             if (string.IsNullOrWhiteSpace(dotNetExePath))
             {
-                logger.Information("Path to 'dotnet.exe' has not been specified, set variable '{DotNetExePath}' or ensure the dotnet.exe is installed in its standard location", WellKnownVariables.DotNetExePath);
+                logger.Information(
+                    "Path to 'dotnet.exe' has not been specified, set variable '{DotNetExePath}' or ensure the dotnet.exe is installed in its standard location",
+                    WellKnownVariables.DotNetExePath);
                 return ExitCode.Failure;
             }
 

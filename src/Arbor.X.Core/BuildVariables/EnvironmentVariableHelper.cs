@@ -1,15 +1,15 @@
-﻿using System; using Serilog;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Text;
 using Arbor.Aesculus.Core;
 using Arbor.Exceptions;
 using Arbor.KVConfiguration.Schema.Json;
-using Arbor.Processing.Core;
-
 using JetBrains.Annotations;
+using Serilog;
 
 namespace Arbor.X.Core.BuildVariables
 {
@@ -24,27 +24,28 @@ namespace Arbor.X.Core.BuildVariables
 
             IDictionary environmentVariables = Environment.GetEnvironmentVariables();
 
-            List<EnvironmentVariable> variables = environmentVariables
+            List<BuildVariable> variables = environmentVariables
                 .OfType<DictionaryEntry>()
-                .Select(entry => new EnvironmentVariable(
+                .Select(entry => new BuildVariable(
                     entry.Key.ToString(),
                     entry.Value.ToString()))
                 .ToList();
 
-            List<EnvironmentVariable> nonExisting = variables
+            List<BuildVariable> nonExisting = variables
                 .Where(bv => !existing.Any(ebv => ebv.Key.Equals(bv.Key, StringComparison.InvariantCultureIgnoreCase)))
                 .ToList();
 
-            List<EnvironmentVariable> existingVariables = variables.Except(nonExisting).ToList();
+            List<BuildVariable> existingVariables = variables.Except(nonExisting).ToList();
 
             if (existingVariables.Count > 0)
             {
                 var builder = new StringBuilder();
 
                 builder.Append(
-"There are ").Append(existingVariables).AppendLine(" existing variables that will not be overriden by environment variables:");
+                        "There are ").Append(existingVariables)
+                    .AppendLine(" existing variables that will not be overriden by environment variables:");
 
-                foreach (EnvironmentVariable environmentVariable in existingVariables)
+                foreach (BuildVariable environmentVariable in existingVariables)
                 {
                     builder.Append(environmentVariable.Key).Append(": ").AppendLine(environmentVariable.Value);
                 }
@@ -57,7 +58,7 @@ namespace Arbor.X.Core.BuildVariables
             return buildVariables;
         }
 
-        public static ExitCode SetEnvironmentVariablesFromFile([NotNull] ILogger logger, string fileName)
+        public static ImmutableArray<KeyValue> GetBuildVariablesFromFile([NotNull] ILogger logger, string fileName)
         {
             if (logger == null)
             {
@@ -69,15 +70,18 @@ namespace Arbor.X.Core.BuildVariables
             if (currentDirectory == null)
             {
                 logger.Error("Could not find source root");
-                return ExitCode.Failure;
+                return ImmutableArray<KeyValue>.Empty;
             }
 
             var fileInfo = new FileInfo(Path.Combine(currentDirectory, fileName));
 
             if (!fileInfo.Exists)
             {
-                logger.Warning("The environment variable file '{FileInfo}' does not exist, skipping setting environment variables from file '{FileName}'", fileInfo, fileName);
-                return ExitCode.Success;
+                logger.Warning(
+                    "The environment variable file '{FileInfo}' does not exist, skipping setting environment variables from file '{FileName}'",
+                    fileInfo,
+                    fileName);
+                return ImmutableArray<KeyValue>.Empty;
             }
 
             ConfigurationItems configurationItems;
@@ -90,32 +94,19 @@ namespace Arbor.X.Core.BuildVariables
             catch (Exception ex) when (!ex.IsFatal())
             {
                 logger.Error(ex, "Could not parse key value pairs in file '{FullName}'", fileInfo.FullName);
-                return ExitCode.Failure;
+
+                return ImmutableArray<KeyValue>.Empty;
             }
 
             if (configurationItems == null)
             {
                 logger.Error("Could not parse key value pairs in file '{FullName}'", fileInfo.FullName);
-                return ExitCode.Failure;
-            }
-
-            foreach (KeyValue keyValuePair in configurationItems.Keys)
-            {
-                try
-                {
-                    Environment.SetEnvironmentVariable(keyValuePair.Key, keyValuePair.Value);
-                    logger.Debug("Set environment variable with key '{Key}' and value '{Value}' from file '{FileName}'", keyValuePair.Key, keyValuePair.Value, fileName);
-                }
-                catch (Exception ex) when (!ex.IsFatal())
-                {
-                    logger.Error("Could not set environment variable with key '{Key}' and value '{Value}' from file '{FileName}'", keyValuePair.Key, keyValuePair.Value, fileName);
-                    return ExitCode.Failure;
-                }
+                return ImmutableArray<KeyValue>.Empty;
             }
 
             logger.Information("Used configuration values from file '{FileName}'", fileName);
 
-            return ExitCode.Success;
+            return configurationItems.Keys;
         }
     }
 }

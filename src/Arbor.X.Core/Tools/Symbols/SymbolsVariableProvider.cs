@@ -2,7 +2,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.X.Core.BuildVariables;
-
 using Arbor.X.Core.Tools.Cleanup;
 using JetBrains.Annotations;
 using Serilog;
@@ -14,7 +13,7 @@ namespace Arbor.X.Core.Tools.Symbols
     {
         public int Order => VariableProviderOrder.Ignored;
 
-        public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(
+        public Task<IEnumerable<IVariable>> GetBuildVariablesAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
@@ -22,10 +21,10 @@ namespace Arbor.X.Core.Tools.Symbols
             // TODO add symbol api and key
             var variables = new List<IVariable>
             {
-                new EnvironmentVariable(
+                new BuildVariable(
                     WellKnownVariables.ExternalTools_SymbolServer_ApiKey,
                     "TODO"),
-                new EnvironmentVariable(
+                new BuildVariable(
                     WellKnownVariables.ExternalTools_SymbolServer_Uri,
                     "TODO")
             };

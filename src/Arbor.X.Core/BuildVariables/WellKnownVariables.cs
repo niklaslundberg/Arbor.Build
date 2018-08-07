@@ -35,344 +35,346 @@ namespace Arbor.X.Core.BuildVariables
         public const string DotNetExePath = "Arbor.X.DotNet.ExePath";
 
         [VariableDescription("Visual Studio version")]
-        public static readonly string ExternalTools_VisualStudio_Version =
+        public const string ExternalTools_VisualStudio_Version =
             "Arbor.X.Tools.External.VisualStudio.Version";
 
         [VariableDescription("Visual Studio version")]
-        public static readonly string ExternalTools_VisualStudio_Version_Allow_PreRelease =
+        public const string ExternalTools_VisualStudio_Version_Allow_PreRelease =
             "Arbor.X.Tools.External.VisualStudio.Version.PreRelease.Enabled";
 
         [VariableDescription("Build arftifacts path")]
-        public static readonly string Artifacts = "Arbor.X.Artifacts";
+        public const string Artifacts = "Arbor.X.Artifacts";
 
         [VariableDescription("Flag to indicate if the build arftifacts should be cleaned up before the build starts")]
-        public static readonly string CleanupArtifactsBeforeBuildEnabled =
+        public const string CleanupArtifactsBeforeBuildEnabled =
             "Arbor.X.Artifacts.CleanupBeforeBuildEnabled";
 
         [VariableDescription("Full build version number")]
-        public static readonly string Version =
-            Arbor.X.Build + ".Version";
+        public const string Version =
+            "Arbor.X.Build.Version";
 
         [VariableDescription("Max number of CPUs for MSBuild to use")]
-        public static readonly string CpuLimit =
+        public const string CpuLimit =
             "Arbor.X.CpuLimit";
 
         [VariableDescription(".NET assembly version")]
-        public static readonly string NetAssemblyVersion =
-            Arbor.X.Build + ".NetAssembly.Version";
+        public const string NetAssemblyVersion =
+            "Arbor.X.Build.NetAssembly.Version";
 
         [VariableDescription(".NET assembly file version")]
-        public static readonly string NetAssemblyFileVersion =
-            Arbor.X.Build + ".NetAssembly.FileVersion";
+        public const string NetAssemblyFileVersion =
+            "Arbor.X.Build.NetAssembly.FileVersion";
 
         [VariableDescription("Enable assembly version patching")]
-        public static readonly string AssemblyFilePatchingEnabled = Arbor.X.Build + ".NetAssembly.PatchingEnabled";
+        public const string AssemblyFilePatchingEnabled = "Arbor.X.Build.NetAssembly.PatchingEnabled";
 
         [VariableDescription("Flag to indicate if the build is consider a release build")]
-        public static readonly string ReleaseBuild = Arbor.X.Build + ".IsReleaseBuild";
+        public const string ReleaseBuild = "Arbor.X.Build.IsReleaseBuild";
 
         [VariableDescription("MSBuild configuration (eg. Debug/Release)")]
-        public static readonly string Configuration =
-            Arbor.X.Build + ".Configuration";
+        public const string Configuration =
+            "Arbor.X.Build.Configuration";
 
         [VariableDescription("Dynamic configuration property")]
-        public static readonly string CurrentBuildConfiguration = Arbor.X.Build + ".CurrentBuild.Configuration";
+        public const string CurrentBuildConfiguration = "Arbor.X.Build.CurrentBuild.Configuration";
 
         [VariableDescription("Temporary directory path")]
-        public static readonly string TempDirectory =
-            Arbor.X.Build + ".TempDirectory";
+        public const string TempDirectory =
+            "Arbor.X.Build.TempDirectory";
 
         [VariableDescription("Symbol server URI for NuGet source package upload")]
-        public static readonly string ExternalTools_SymbolServer_Uri = "Arbor.X.Tools.External.SymbolServer.Uri";
+        public const string ExternalTools_SymbolServer_Uri = "Arbor.X.Tools.External.SymbolServer.Uri";
 
         [VariableDescription("Symbol server API key for NuGet source package upload")]
-        public static readonly string ExternalTools_SymbolServer_ApiKey = "Arbor.X.Tools.External.SymbolServer.ApiKey";
+        public const string ExternalTools_SymbolServer_ApiKey = "Arbor.X.Tools.External.SymbolServer.ApiKey";
 
         [VariableDescription(
             "Flag to indicate that Symbol server package upload is enabled even if not running on a build server")]
-        public static readonly string ExternalTools_SymbolServer_ForceUploadEnabled =
+        public const string ExternalTools_SymbolServer_ForceUploadEnabled =
             "Arbor.X.Tools.External.SymbolServer.ForceUploadEnabled";
 
         [VariableDescription("Flag to indicate that Symbol server package upload is enabled")]
-        public static readonly string ExternalTools_SymbolServer_Enabled =
+        public const string ExternalTools_SymbolServer_Enabled =
             "Arbor.X.Tools.External.SymbolServer.Enabled";
 
         [VariableDescription("Flag to indicate if the build is running on a build agent")]
-        public static readonly string IsRunningOnBuildAgent = Arbor.X.Build + ".IsRunningOnBuildAgent";
+        public const string IsRunningOnBuildAgent = "Arbor.X.Build.IsRunningOnBuildAgent";
 
         [VariableDescription(
             "Flag to indicate if the bootstrapper is allowed to download pre-release versions of Arbor.X NuGet package",
             "false")]
-        public static readonly string AllowPrerelease = Arbor.X.Build + ".Bootstrapper.AllowPrerelease";
+        public const string AllowPrerelease = "Arbor.X.Build.Bootstrapper.AllowPrerelease";
 
         [VariableDescription("Arbor.X NuGet package version for bootstrapper to download")]
-        public static readonly string ArborXNuGetPackageVersion = "Arbor.X.NuGetPackageVersion";
+        public const string ArborXNuGetPackageVersion = "Arbor.X.NuGetPackageVersion";
 
         [VariableDescription("NuGet source to use when downloading Arbor.X NuGet package")]
-        public static readonly string ArborXNuGetPackageSource = "Arbor.X.NuGetPackage.Source";
+        public const string ArborXNuGetPackageSource = "Arbor.X.NuGetPackage.Source";
 
         [VariableDescription(
             "Flag to indicate if the bootstrapper should use -NoCache flag when downloading Arbor.X NuGet package")]
-        public static readonly string ArborXNuGetPackageNoCacheEnabled = "Arbor.X.NuGetPackage.NoCachedEnabled";
+        public const string ArborXNuGetPackageNoCacheEnabled = "Arbor.X.NuGetPackage.NoCachedEnabled";
 
         [VariableDescription("MSBuild executable path (eg. C:\\MSbuild.exe)")]
-        public static readonly string ExternalTools_MSBuild_ExePath = "Arbor.X.Tools.External.MSBuild.ExePath";
+        public const string ExternalTools_MSBuild_ExePath = "Arbor.X.Tools.External.MSBuild.ExePath";
 
         [VariableDescription("MSBuild max version")]
-        public static readonly string ExternalTools_MSBuild_MaxVersion =
+        public const string ExternalTools_MSBuild_MaxVersion =
             "Arbor.X.Tools.External.MSBuild.MaxVersion";
 
         [VariableDescription("MSBuild max version")]
-        public static readonly string ExternalTools_MSBuild_AllowPrereleaseEnabled =
+        public const string ExternalTools_MSBuild_AllowPrereleaseEnabled =
             "Arbor.X.Tools.External.MSBuild.AllowPrerelease.Enabled";
 
         [VariableDescription("MSBuild verbosity level", "normal")]
-        public static readonly string ExternalTools_MSBuild_Verbosity = "Arbor.X.Tools.External.MSBuild.Verbosity";
+        public const string ExternalTools_MSBuild_Verbosity = "Arbor.X.Tools.External.MSBuild.Verbosity";
 
         [VariableDescription("Flag to indicate if MSBuild should display a build summary", "false")]
-        public static readonly string ExternalTools_MSBuild_SummaryEnabled =
+        public const string ExternalTools_MSBuild_SummaryEnabled =
             "Arbor.X.Tools.External.MSBuild.SummaryEnabled";
 
         [VariableDescription(
             "MSBuild build configuration, if not specified, all wellknown configurations will be built")]
-        public static readonly string ExternalTools_MSBuild_BuildConfiguration =
+        public const string ExternalTools_MSBuild_BuildConfiguration =
             "Arbor.X.Tools.External.MSBuild.BuildConfiguration";
 
         [VariableDescription("MSBuild build platform, if not specified, all wellknown platforms will be built")]
-        public static readonly string ExternalTools_MSBuild_BuildPlatform =
+        public const string ExternalTools_MSBuild_BuildPlatform =
             "Arbor.X.Tools.External.MSBuild.BuildPlatform";
 
         [VariableDescription("Flag to indicate if code analysis should be run by MSBuild")]
-        public static readonly string ExternalTools_MSBuild_CodeAnalysisEnabled =
+        public const string ExternalTools_MSBuild_CodeAnalysisEnabled =
             "Arbor.X.Tools.External.MSBuild.CodeAnalysis.Enabled";
 
         [VariableDescription("MSBuild detault target when building")]
-        public static readonly string ExternalTools_MSBuild_DefaultTarget =
+        public const string ExternalTools_MSBuild_DefaultTarget =
             "Arbor.X.Tools.External.MSBuild.DefaultTarget";
 
         [VariableDescription("Directory path for the current version control system repository")]
-        public static readonly string SourceRoot = "SourceRoot";
+        public const string SourceRoot = "SourceRoot";
 
         [VariableDescription("Flag to indicate if build platform AnyCPU is disabled", "false", AnyCpuEnabled)]
-        public static readonly string IgnoreAnyCpu = Arbor.X.Build + ".Platform.AnyCPU.Disabled";
+        public const string IgnoreAnyCpu = "Arbor.X.Build.Platform.AnyCPU.Disabled";
 
         [VariableDescription("Flag to indicate if build configuration Release is enabled", "true")]
-        public static readonly string ReleaseBuildEnabled = Arbor.X.Build + ".Configuration.Release.Enabled";
+        public const string ReleaseBuildEnabled = "Arbor.X.Build.Configuration.Release.Enabled";
 
         [VariableDescription("Flag to indicate if build platform configuration Debug is enabled", "true")]
-        public static readonly string DebugBuildEnabled = Arbor.X.Build + ".Configuration.Debug.Enabled";
+        public const string DebugBuildEnabled = "Arbor.X.Build.Configuration.Debug.Enabled";
 
         [VariableDescription("Flag to indicate if test runner error results are ignored", "false")]
-        public static readonly string IgnoreTestFailures = Arbor.X.Build + ".Tests.IgnoreTestFailures";
+        public const string IgnoreTestFailures = "Arbor.X.Build.Tests.IgnoreTestFailures";
 
-        [VariableDescription("Comma separated list to filter assemblies, to only run tests dlls starting with prefix, case insensitive", "")]
-        public static readonly string TestsAssemblyStartsWith = Arbor.X.Build + ".Tests.AssemblyStartsWith";
+        [VariableDescription(
+            "Comma separated list to filter assemblies, to only run tests dlls starting with prefix, case insensitive",
+            "")]
+        public const string TestsAssemblyStartsWith = "Arbor.X.Build.Tests.AssemblyStartsWith";
 
         [VariableDescription("Test categories and tags to ignore, comma separated")]
-        public static readonly string IgnoredTestCategories = Arbor.X.Build + ".Tests.IgnoredCategories";
+        public const string IgnoredTestCategories = "Arbor.X.Build.Tests.IgnoredCategories";
 
         [VariableDescription("Flag to indicate if tests are enabled", "false")]
-        public static readonly string TestsEnabled = Arbor.X.Build + ".Tests.Enabled";
+        public const string TestsEnabled = "Arbor.X.Build.Tests.Enabled";
 
         [VariableDescription(
             "Visual Studio Test Framework console application path, (eg. C:\\VSTestConsole.exe)",
             "false")]
-        public static readonly string ExternalTools_VSTest_ExePath =
+        public const string ExternalTools_VSTest_ExePath =
             "Arbor.X.Tools.External.VSTest.ExePath";
 
         [VariableDescription("Visual Studio Test Framework test reports directory path")]
-        public static readonly string ExternalTools_VSTest_ReportPath = "Arbor.X.Artifacts.TestReports.VSTest";
+        public const string ExternalTools_VSTest_ReportPath = "Arbor.X.Artifacts.TestReports.VSTest";
 
         [VariableDescription("Machine.Specifications reports directory path")]
-        public static readonly string ExternalTools_MSpec_ReportPath = "Arbor.X.Artifacts.TestReports.MSpec";
+        public const string ExternalTools_MSpec_ReportPath = "Arbor.X.Artifacts.TestReports.MSpec";
 
         [VariableDescription("PDB artifacts enabled")]
-        public static readonly string PublishPdbFilesAsArtifacts =
+        public const string PublishPdbFilesAsArtifacts =
             "Arbor.X.Artifacts.PdbArtifacts.Enabled";
 
         [VariableDescription("ILRepack executable path (eg. C:\\ILRepack.exe)")]
-        public static readonly string ExternalTools_ILRepack_ExePath = "Arbor.X.Tools.External.ILRepack.ExePath";
+        public const string ExternalTools_ILRepack_ExePath = "Arbor.X.Tools.External.ILRepack.ExePath";
 
         [VariableDescription("ILRepack enabled (eg. true|false")]
-        public static readonly string ExternalTools_ILRepack_Enabled = "Arbor.X.Tools.External.ILRepack.Enabled";
+        public const string ExternalTools_ILRepack_Enabled = "Arbor.X.Tools.External.ILRepack.Enabled";
 
         [VariableDescription("ILRepack custom executable path (eg. C:\\ILRepack.exe)")]
-        public static readonly string ExternalTools_ILRepack_Custom_ExePath =
+        public const string ExternalTools_ILRepack_Custom_ExePath =
             "Arbor.X.Tools.External.ILRepack.CustomExePath";
 
         [VariableDescription("LibZ executable path (eg. C:\\LibZ.exe)")]
-        public static readonly string ExternalTools_LibZ_ExePath = "Arbor.X.Tools.External.LibZ.ExePath";
+        public const string ExternalTools_LibZ_ExePath = "Arbor.X.Tools.External.LibZ.ExePath";
 
         [VariableDescription("LibZ custom executable path (eg. C:\\LibZ.exe)")]
-        public static readonly string ExternalTools_LibZ_Custom_ExePath = "Arbor.X.Tools.External.LibZ.CustomExePath";
+        public const string ExternalTools_LibZ_Custom_ExePath = "Arbor.X.Tools.External.LibZ.CustomExePath";
 
         [VariableDescription("LibZ enabled (eg. true|false")]
-        public static readonly string ExternalTools_LibZ_Enabled =
+        public const string ExternalTools_LibZ_Enabled =
             "Arbor.X.Tools.External.LibZ.Enabled";
 
         [VariableDescription("Flag to indicate if Kudu deployment is enabled", "true")]
-        public static readonly string ExternalTools_Kudu_Enabled = "Arbor.X.Tools.External.Kudu.Enabled";
+        public const string ExternalTools_Kudu_Enabled = "Arbor.X.Tools.External.Kudu.Enabled";
 
         [VariableDescription("External, Kudu: deployment target directory path (website public directory)")]
-        public static readonly string ExternalTools_Kudu_DeploymentTarget = "DEPLOYMENT_TARGET";
+        public const string ExternalTools_Kudu_DeploymentTarget = "DEPLOYMENT_TARGET";
 
         [VariableDescription("External, Kudu: site running as x86 or x64 process")]
-        public static readonly string ExternalTools_Kudu_Platform = "REMOTEDEBUGGINGBITVERSION";
+        public const string ExternalTools_Kudu_Platform = "REMOTEDEBUGGINGBITVERSION";
 
         [VariableDescription("Deployment branch to be used in Kudu, overrides value defined in " +
                              ExternalTools_Kudu_DeploymentBranchName)]
-        public static readonly string ExternalTools_Kudu_DeploymentBranchNameOverride =
+        public const string ExternalTools_Kudu_DeploymentBranchNameOverride =
             "Arbor.X.Tools.External.Kudu.DeploymentBranchNameOverride";
 
         [VariableDescription("External, Kudu: number of processors available on the current system")]
-        public static readonly string ExternalTools_Kudu_ProcessorCount = "NUMBER_OF_PROCESSORS";
+        public const string ExternalTools_Kudu_ProcessorCount = "NUMBER_OF_PROCESSORS";
 
         [VariableDescription(
             "Flag to indicate if Kudu WebJobs defined in App_Data directory is to be handled by the Kudu WebJobs aware tools")]
-        public static readonly string AppDataJobsEnabled = "Arbor.X.Tools.External.Kudu.WebJobs.AppData.Enabled";
+        public const string AppDataJobsEnabled = "Arbor.X.Tools.External.Kudu.WebJobs.AppData.Enabled";
 
         [VariableDescription(
             "MSBuild configuration to be used to locate web application artifacts to be deployed, if not found by the tools")]
-        public static readonly string KuduConfigurationFallback = "Arbor.X.Tools.External.Kudu.ConfigurationFallback";
+        public const string KuduConfigurationFallback = "Arbor.X.Tools.External.Kudu.ConfigurationFallback";
 
         [VariableDescription("Flag to indicate if Kudu WebJobs is to be handles by the Kudu WebJobs aware tools")]
-        public static readonly string KuduJobsEnabled = "Arbor.X.Tools.External.Kudu.WebJobs.Enabled";
+        public const string KuduJobsEnabled = "Arbor.X.Tools.External.Kudu.WebJobs.Enabled";
 
         [VariableDescription("Time out in seconds for total build process")]
-        public static readonly string BuildToolTimeoutInSeconds = Arbor.X.Build + ".TimeoutInSeconds";
+        public const string BuildToolTimeoutInSeconds = "Arbor.X.Build.TimeoutInSeconds";
 
         [VariableDescription("Bootstrapper exit delay in milliseconds")]
-        public static readonly string BootstrapperExitDelayInMilliseconds =
+        public const string BootstrapperExitDelayInMilliseconds =
             "Arbor.X.Bootstrapper.ExitDelayInMilliseconds";
 
         [VariableDescription("Build application exit delay in milliseconds")]
-        public static readonly string BuildApplicationExitDelayInMilliseconds =
-            Arbor.X.Build + ".ExitDelayInMilliseconds";
+        public const string BuildApplicationExitDelayInMilliseconds =
+            "Arbor.X.Build.ExitDelayInMilliseconds";
 
         [VariableDescription("Flag to indicate if defined variables can be overriden")]
-        public static readonly string VariableOverrideEnabled = Arbor.X.Build + ".VariableOverrideEnabled";
+        public const string VariableOverrideEnabled = "Arbor.X.Build.VariableOverrideEnabled";
 
         [VariableDescription(
             "Flag to indicate if a file arborx_environmentvariables.json should be used as a source to set environment variables")]
-        public static readonly string VariableFileSourceEnabled = Arbor.X.Build + ".VariableFileSource.Enabled";
+        public const string VariableFileSourceEnabled = "Arbor.X.Build.VariableFileSource.Enabled";
 
         [VariableDescription(
             "Flag to indicate if Kudu target path files and directories should be deleted before deploy")]
-        public static readonly string KuduClearFilesAndDirectories = "Arbor.X.Tools.External.Kudu.ClearEnabled";
+        public const string KuduClearFilesAndDirectories = "Arbor.X.Tools.External.Kudu.ClearEnabled";
 
         [VariableDescription("Flag to indicate if Kudu should use app_offline.htm file when deploying")]
-        public static readonly string KuduUseAppOfflineHtmFile = "Arbor.X.Tools.External.Kudu.UseAppOfflineHtmFile";
+        public const string KuduUseAppOfflineHtmFile = "Arbor.X.Tools.External.Kudu.UseAppOfflineHtmFile";
 
         [VariableDescription("Flag to indicate if Kudu should exclude App_Data directory when deploying")]
-        public static readonly string KuduExcludeDeleteAppData = "Arbor.X.Tools.External.Kudu.ExcludeDeleteApp_Data";
+        public const string KuduExcludeDeleteAppData = "Arbor.X.Tools.External.Kudu.ExcludeDeleteApp_Data";
 
         [VariableDescription("Enable Machine.Specifications")]
-        public static readonly string MSpecEnabled =
+        public const string MSpecEnabled =
             "Arbor.X.Tools.External.MSpec.Enabled";
 
         [VariableDescription("Enable Machine.Specifications XSL transformation to NUnit")]
-        public static readonly string MSpecJUnitXslTransformationEnabled =
+        public const string MSpecJUnitXslTransformationEnabled =
             "Arbor.X.Tools.External.MSpec.JUnitXslTransformation.Enabled";
 
         [VariableDescription("Enable NUnit")]
-        public static readonly string NUnitEnabled =
+        public const string NUnitEnabled =
             "Arbor.X.Tools.External.NUnit.Enabled";
 
         [VariableDescription("NUnitExePathOverride")]
-        public static readonly string NUnitExePathOverride =
+        public const string NUnitExePathOverride =
             "Arbor.X.Tools.External.NUnit.ExePathOverride";
 
         [VariableDescription("NUnit JUnit XSL transform enabled")]
-        public static readonly string NUnitTransformToJunitEnabled =
+        public const string NUnitTransformToJunitEnabled =
             "Arbor.X.Tools.External.NUnit.JUnitXslTransform.Enabled";
 
         [VariableDescription("Enable XUnit .NET Framework")]
-        public static readonly string XUnitNetFrameworkEnabled =
+        public const string XUnitNetFrameworkEnabled =
             "Arbor.X.Tools.External.Xunit.NetFramework.Enabled";
 
         [VariableDescription("Enable XUnit .NET Core App")]
-        public static readonly string XUnitNetCoreAppV2Enabled =
+        public const string XUnitNetCoreAppV2Enabled =
             "Arbor.X.Tools.External.Xunit.NetCoreAppV2.Enabled";
 
         [VariableDescription("Enable XUnit .NET Core App")]
-        public static readonly string XUnitNetCoreAppEnabled =
+        public const string XUnitNetCoreAppEnabled =
             "Arbor.X.Tools.External.Xunit.NetCoreApp.Enabled";
 
         [VariableDescription("Enable XUnit .NET Core App XML report XSLT V2 to Junit")]
-        public static readonly string XUnitNetCoreAppV2XmlXsltToJunitEnabled =
+        public const string XUnitNetCoreAppV2XmlXsltToJunitEnabled =
             "Arbor.X.Tools.External.Xunit.NetCoreApp.Xslt.V2ToJunit.Enabled";
 
         [VariableDescription("Enable XUnit XML analysis for .NET Core App")]
-        public static readonly string XUnitNetCoreAppXmlAnalysisEnabled =
+        public const string XUnitNetCoreAppXmlAnalysisEnabled =
             "Arbor.X.Tools.External.Xunit.NetCoreApp.Xml.Analysis.Enabled";
 
         [VariableDescription("XUnit .NET Core App DLL path")]
-        public static readonly string XUnitNetCoreAppDllPath =
+        public const string XUnitNetCoreAppDllPath =
             "Arbor.X.Tools.External.Xunit.NetCoreApp.DllPath";
 
         [VariableDescription("XUnit .NET Core App XML output enabled")]
-        public static readonly string XUnitNetCoreAppXmlEnabled =
+        public const string XUnitNetCoreAppXmlEnabled =
             "Arbor.X.Tools.External.Xunit.NetCoreApp.Xml.Enabled";
 
         [VariableDescription("XUnit .NET Framework exe path")]
-        public static readonly string XUnitNetFrameworkExePath =
+        public const string XUnitNetFrameworkExePath =
             "Arbor.X.Tools.External.Xunit.NetFramework.ExePath";
 
         [VariableDescription("Enable VSTest")]
-        public static readonly string VSTestEnabled =
+        public const string VSTestEnabled =
             "Arbor.X.Tools.External.VSTest.Enabled";
 
         [VariableDescription("'|' (bar) separated list of file names to not delete when deploying")]
-        public static readonly string KuduIgnoreDeleteFiles =
+        public const string KuduIgnoreDeleteFiles =
             "Arbor.X.Tools.External.Kudu.IgnoreDeleteFilesBarSeparatedList";
 
         [VariableDescription("'|' (bar) separated list of directory names to not delete when deploying")]
-        public static readonly string KuduIgnoreDeleteDirectories =
+        public const string KuduIgnoreDeleteDirectories =
             "Arbor.X.Tools.External.Kudu.IgnoreDeleteDirectoriesBarSeparatedList";
 
         [VariableDescription(
             "Site for Kudu to deploy, needs to be specified if there are multiple web projects. Name of the csproj file exception the extension.")]
-        public static readonly string KuduSiteToDeploy = "Arbor.X.Tools.External.Kudu.SiteToDeploy";
+        public const string KuduSiteToDeploy = "Arbor.X.Tools.External.Kudu.SiteToDeploy";
 
         [VariableDescription("Flag to indicate if Kudu should delete any existing app_offline.htm file when deploying")]
-        public static readonly string KuduDeleteExistingAppOfflineHtmFile =
+        public const string KuduDeleteExistingAppOfflineHtmFile =
             "Arbor.X.Tools.External.Kudu.DeleteExistingAppOfflineHtmFile";
 
         [VariableDescription("Log level")]
-        public static readonly string LogLevel = "Arbor.X.Log.Level";
+        public const string LogLevel = "Arbor.X.Log.Level";
 
         [VariableDescription("Generic XML transformaions enabled")]
-        public static readonly string GenericXmlTransformsEnabled = "Arbor.X.Build.XmlTransformations.Enabled";
+        public const string GenericXmlTransformsEnabled = "Arbor.X.Build.XmlTransformations.Enabled";
 
         [VariableDescription("Run tests in release configuration")]
-        public static readonly string RunTestsInReleaseConfigurationEnabled =
+        public const string RunTestsInReleaseConfigurationEnabled =
             "Arbor.X.Tests.RunTestsInReleaseConfiguration";
 
         [VariableDescription("Flag to indicate if XML files for assemblies in the bin directory should be deleted")]
-        public static readonly string CleanBinXmlFilesForAssembliesEnabled =
+        public const string CleanBinXmlFilesForAssembliesEnabled =
             "Arbor.X.Build.WebApplications.CleanBinXmlFilesForAssembliesEnabled";
 
         [VariableDescription("Flag to indicate if XML files for assemblies in the bin directory should be deleted")]
-        public static readonly string CleanWebJobsXmlFilesForAssembliesEnabled =
+        public const string CleanWebJobsXmlFilesForAssembliesEnabled =
             "Arbor.X.Build.WebApplications.WebJobs.CleanWebJobsXmlFilesForAssembliesEnabled";
 
         [VariableDescription(
             "List of file name parts to be used when excluding files from being copied to web jobs directory, comma separated")]
-        public static readonly string WebJobsExcludedFileNameParts =
+        public const string WebJobsExcludedFileNameParts =
             "Arbor.X.Build.WebApplications.WebJobs.ExcludedFileNameParts";
 
         [VariableDescription(
             "List of file name parts to be used when excluding directories from being copied to web jobs directory, comma separated")]
-        public static readonly string WebJobsExcludedDirectorySegments =
+        public const string WebJobsExcludedDirectorySegments =
             "Arbor.X.Build.WebApplications.WebJobs.ExcludedDirectorySegments";
 
         [VariableDescription(
             "List of file patterns to be used when excluding files to be included in a NuGet Web Package, comma separated")]
-        public static readonly string ExcludedNuGetWebPackageFiles =
+        public const string ExcludedNuGetWebPackageFiles =
             "Arbor.X.NuGet.NuGetWebPackage.ExcludedPatterns";
 
         [VariableDescription("Cleanup known processes after build")]
-        public static readonly string CleanupProcessesAfterBuildEnabled =
+        public const string CleanupProcessesAfterBuildEnabled =
             "Arbor.X.Build.Cleanup.KillProcessesAfterBuild.Enabled";
 
         [VariableDescription("Colon separated list of platforms to be excluded")]
@@ -385,14 +387,14 @@ namespace Arbor.X.Core.BuildVariables
                 var allVariables = new List<VariableDescription>();
 
                 Type item = typeof(WellKnownVariables);
-                var classes = new List<Type>() { item };
+                var classes = new List<Type> { item };
 
                 classes.AddRange(GetNestedClassTypes(item));
 
                 ImmutableArray<FieldInfo> fields = classes
                     .Select(@class => @class
-                    .GetFields()
-                    .Where(field => field.IsPublicConstantOrStatic()))
+                        .GetFields()
+                        .Where(field => field.IsPublicConstantOrStatic()))
                     .SelectMany(_ => _)
                     .ToImmutableArray();
 

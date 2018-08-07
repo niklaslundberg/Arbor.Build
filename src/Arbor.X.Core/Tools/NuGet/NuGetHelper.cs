@@ -1,4 +1,4 @@
-﻿using System; using Serilog;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
@@ -6,8 +6,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.GenericExtensions;
-
 using Arbor.X.Core.ProcessUtils;
+using Serilog;
 
 namespace Arbor.X.Core.Tools.NuGet
 {
@@ -57,7 +57,8 @@ namespace Arbor.X.Core.Tools.NuGet
                     {
                         string nugetExeUri = uris[i % uris.Count];
 
-                        await DownloadNuGetExeAsync(baseDir, targetFile, nugetExeUri, cancellationToken).ConfigureAwait(false);
+                        await DownloadNuGetExeAsync(baseDir, targetFile, nugetExeUri, cancellationToken)
+                            .ConfigureAwait(false);
 
                         return targetFile;
                     }

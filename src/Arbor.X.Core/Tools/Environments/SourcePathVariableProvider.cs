@@ -1,4 +1,4 @@
-﻿using System; using Serilog;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Arbor.Aesculus.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
+using Serilog;
 
 namespace Arbor.X.Core.Tools.Environments
 {
@@ -13,7 +14,7 @@ namespace Arbor.X.Core.Tools.Environments
     {
         public int Order { get; } = -2;
 
-        public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(
+        public Task<IEnumerable<IVariable>> GetBuildVariablesAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
@@ -44,14 +45,14 @@ namespace Arbor.X.Core.Tools.Environments
 
             var variables = new List<IVariable>
             {
-                new EnvironmentVariable(
+                new BuildVariable(
                     WellKnownVariables.TempDirectory,
                     tempPath.FullName)
             };
 
             if (string.IsNullOrWhiteSpace(existingSourceRoot))
             {
-                variables.Add(new EnvironmentVariable(WellKnownVariables.SourceRoot, sourceRoot));
+                variables.Add(new BuildVariable(WellKnownVariables.SourceRoot, sourceRoot));
             }
 
             if (string.IsNullOrWhiteSpace(existingToolsDirectory))
@@ -59,7 +60,7 @@ namespace Arbor.X.Core.Tools.Environments
                 DirectoryInfo externalTools =
                     new DirectoryInfo(Path.Combine(sourceRoot, "build", "Arbor.X", "tools", "external")).EnsureExists();
 
-                variables.Add(new EnvironmentVariable(
+                variables.Add(new BuildVariable(
                     WellKnownVariables.ExternalTools,
                     externalTools.FullName));
             }

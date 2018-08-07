@@ -253,6 +253,7 @@ namespace Arbor.Processing
                 }
 
                 bool done = false;
+
                 try
                 {
                     while (process.IsAlive(taskCompletionSource.Task,
@@ -308,7 +309,10 @@ namespace Arbor.Processing
                                             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System),
                                                 "taskkill.exe");
                                         toolAction($"Running {killProcessPath} {args}", toolCategory);
-                                        Process.Start(killProcessPath, args);
+
+                                        using (Process killProcess = Process.Start(killProcessPath, args))
+                                        {
+                                        }
 
                                         errorAction(
                                             $"Killed process '{processWithArgs}' because cancellation was requested",
@@ -386,7 +390,9 @@ namespace Arbor.Processing
             {
                 stopwatch.Stop();
 
-                Serilog.Log.Logger.Debug("Process {Process} took {DurationInMilliseconds} to run", processWithArgs, (int)stopwatch.Elapsed.TotalMilliseconds);
+                Serilog.Log.Logger.Debug("Process {Process} took {DurationInMilliseconds} to run",
+                    processWithArgs,
+                    (int)stopwatch.Elapsed.TotalMilliseconds);
             }
         }
     }

@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading;
 using Arbor.X.Core.BuildVariables;
-
 using Arbor.X.Core.Tools.Testing;
 using Machine.Specifications;
 using Serilog.Core;
@@ -21,11 +20,11 @@ namespace Arbor.X.Tests.Integration.VisualStudioVariableProvider
 
         Because of = () =>
         {
-            var environmentVariable = new EnvironmentVariable(
+            var environmentVariable = new BuildVariable(
                 WellKnownVariables.ExternalTools_VisualStudio_Version_Allow_PreRelease,
                 "true");
 
-            enumerable = provider.GetEnvironmentVariablesAsync(
+            enumerable = provider.GetBuildVariablesAsync(
                     Logger.None,
                     new List<IVariable> { environmentVariable },
                     CancellationToken.None)

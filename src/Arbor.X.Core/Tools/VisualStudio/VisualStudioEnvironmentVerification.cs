@@ -1,4 +1,4 @@
-﻿using System; using Serilog;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -6,8 +6,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
-
 using JetBrains.Annotations;
+using Serilog;
 
 namespace Arbor.X.Core.Tools.VisualStudio
 {
@@ -45,7 +45,11 @@ namespace Arbor.X.Core.Tools.VisualStudio
                 {
                     IEnumerable<string> projectFileNames = projectFiles81.Select(file => file.FullName);
 
-                    logger.Error("Visual Studio version {VisualStudioVersion} is found on this machine. Visual Studio 12.0 (2013) must be installed in order to build these projects: {NewLine}{V}", visualStudioVersion, Environment.NewLine, string.Join(Environment.NewLine, projectFileNames));
+                    logger.Error(
+                        "Visual Studio version {VisualStudioVersion} is found on this machine. Visual Studio 12.0 (2013) must be installed in order to build these projects: {NewLine}{V}",
+                        visualStudioVersion,
+                        Environment.NewLine,
+                        string.Join(Environment.NewLine, projectFileNames));
                     return Task.FromResult(ExitCode.Failure);
                 }
             }

@@ -70,16 +70,6 @@ namespace Arbor.X.Core.Tools.NuGet
             return new NuSpec(id, version, nuspecFilePath);
         }
 
-        public void Save(string filePath)
-        {
-            if (string.IsNullOrWhiteSpace(filePath))
-            {
-                throw new ArgumentNullException(nameof(filePath));
-            }
-
-            File.WriteAllText(filePath, _xml);
-        }
-
         public override string ToString()
         {
             if (!string.IsNullOrWhiteSpace(_xml))
@@ -88,6 +78,16 @@ namespace Arbor.X.Core.Tools.NuGet
             }
 
             return base.ToString();
+        }
+
+        public void Save(string filePath)
+        {
+            if (string.IsNullOrWhiteSpace(filePath))
+            {
+                throw new ArgumentNullException(nameof(filePath));
+            }
+
+            File.WriteAllText(filePath, _xml);
         }
     }
 }

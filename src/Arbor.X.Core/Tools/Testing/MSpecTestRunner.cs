@@ -1,4 +1,4 @@
-﻿using System; using Serilog;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
@@ -10,9 +10,9 @@ using Arbor.Processing;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
-
 using Arbor.X.Core.Properties;
 using Machine.Specifications;
+using Serilog;
 
 namespace Arbor.X.Core.Tools.Testing
 {
@@ -28,7 +28,8 @@ namespace Arbor.X.Core.Tools.Testing
 
             if (!enabled)
             {
-                logger.Warning("{MachineSpecificationsName} not enabled", MachineSpecificationsConstants.MachineSpecificationsName);
+                logger.Warning("{MachineSpecificationsName} not enabled",
+                    MachineSpecificationsConstants.MachineSpecificationsName);
                 return ExitCode.Success;
             }
 
@@ -73,13 +74,16 @@ namespace Arbor.X.Core.Tools.Testing
                 typeof(Behaves_like<>)
             };
 
-            logger.Verbose("Scanning directory '{FullName}' for assemblies containing Machine.Specifications tests", directory.FullName);
+            logger.Verbose("Scanning directory '{FullName}' for assemblies containing Machine.Specifications tests",
+                directory.FullName);
 
             ImmutableArray<string> assemblyFilePrefix = buildVariables.AssemblyFilePrefixes();
 
             if (assemblyFilePrefix.Any())
             {
-                logger.Information("Scanning source root '{SourceRoot}' for assemblies using prefix {V}", sourceRoot, string.Join(", ", assemblyFilePrefix.Select(prefix => $"'{prefix}'")));
+                logger.Information("Scanning source root '{SourceRoot}' for assemblies using prefix {V}",
+                    sourceRoot,
+                    string.Join(", ", assemblyFilePrefix.Select(prefix => $"'{prefix}'")));
             }
 
             List<string> testDlls =
@@ -92,11 +96,15 @@ namespace Arbor.X.Core.Tools.Testing
 
             if (testDlls.Count == 0)
             {
-                logger.Warning("No DLL files with {MachineSpecificationsName} specifications was found", MachineSpecificationsConstants.MachineSpecificationsName);
+                logger.Warning("No DLL files with {MachineSpecificationsName} specifications was found",
+                    MachineSpecificationsConstants.MachineSpecificationsName);
                 return ExitCode.Success;
             }
 
-            logger.Debug("Found [{TestDlls}] potential Assembly dll files with tests: {NewLine}: {V}", testDlls, Environment.NewLine, string.Join(Environment.NewLine, testDlls.Select(dll => $" * '{dll}'")));
+            logger.Debug("Found [{TestDlls}] potential Assembly dll files with tests: {NewLine}: {V}",
+                testDlls,
+                Environment.NewLine,
+                string.Join(Environment.NewLine, testDlls.Select(dll => $" * '{dll}'")));
 
             var arguments = new List<string>();
 
@@ -171,7 +179,8 @@ namespace Arbor.X.Core.Tools.Testing
                 WellKnownVariables.MSpecJUnitXslTransformationEnabled,
                 false))
             {
-                logger.Verbose("Transforming {MachineSpecificationsName} test reports to JUnit format", MachineSpecificationsConstants.MachineSpecificationsName);
+                logger.Verbose("Transforming {MachineSpecificationsName} test reports to JUnit format",
+                    MachineSpecificationsConstants.MachineSpecificationsName);
 
                 DirectoryInfo xmlReportDirectory = new FileInfo(xmlReportPath).Directory;
 

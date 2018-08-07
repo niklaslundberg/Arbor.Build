@@ -9,19 +9,19 @@
                 "BUILD_NUMBER";
 
             [VariableDescription("Flag to indiciate if running in TeamCity (calculated)")]
-            public static readonly string ExternalTools_TeamCity_IsRunningInTeamCity =
+            public const string ExternalTools_TeamCity_IsRunningInTeamCity =
                 "Arbor.X.Tools.External.TeamCity.IsRunningInTeamCity";
 
             [VariableDescription("TeamCity Version")]
-            public static readonly string ExternalTools_TeamCity_TeamCityVersion =
+            public const string ExternalTools_TeamCity_TeamCityVersion =
                 "TEAMCITY_VERSION";
 
             [VariableDescription("TeamCity Build Version")]
-            public static readonly string TeamCityVcsNumber =
+            public const string TeamCityVcsNumber =
                 "BUILD_VCS_NUMBER";
 
             [VariableDescription("TeamCity build configuration name")]
-            public static readonly string ExternalTools_TeamCity_BuildConfigurationName = "TEAMCITY_BUILDCONF_NAME";
+            public const string ExternalTools_TeamCity_BuildConfigurationName = "TEAMCITY_BUILDCONF_NAME";
         }
     }
 }

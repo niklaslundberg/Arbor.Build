@@ -7,24 +7,29 @@ using Arbor.X.Core.GenericExtensions;
 using Autofac;
 using Autofac.Core;
 using Autofac.Util;
+using JetBrains.Annotations;
 using Serilog;
-using Module = Autofac.Module;
 
 namespace Arbor.X.Core
 {
-    public static class BuildBootstrapper
+    public static partial class BuildBootstrapper
     {
-        public static Task<IContainer> StartAsync(ILogger logger)
+        public static Task<IContainer> StartAsync([NotNull] ILogger logger, string sourceDirectory = null)
         {
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
             var builder = new ContainerBuilder();
 
             Assembly[] assemblies = AssemblyFetcher.GetFilteredAssemblies().ToArray();
 
             builder.RegisterModule(new SerilogModule(logger));
 
-            Type[] moduleTypes = assemblies.SelectMany(a => a.GetLoadableTypes().Where(t =>
-                typeof(IModule).IsAssignableFrom(t) && !t.IsAbstract && t.GetConstructors().Length == 1 &&
-                t.GetConstructor(Array.Empty<Type>())?.GetParameters().Length == 0)).ToArray();
+
+            Type[] moduleTypes = assemblies.SelectMany(assembly => assembly.GetLoadableTypes().Where(type =>
+                typeof(IModule).IsAssignableFrom(type) && !type.IsAbstract && type.HasSingleDefaultConstructor())).ToArray();
 
             foreach (Type moduleType in moduleTypes)
             {
@@ -34,24 +39,14 @@ namespace Arbor.X.Core
                 }
             }
 
+            if (sourceDirectory != null)
+            {
+                builder.RegisterModule(new BuildVariableModule(sourceDirectory));
+            }
+
             IContainer container = builder.Build();
 
             return container.AsCompletedTask();
-        }
-
-        public class SerilogModule : Module
-        {
-            private readonly ILogger _logger;
-
-            public SerilogModule(ILogger logger)
-            {
-                this._logger = logger;
-            }
-
-            protected override void Load(ContainerBuilder builder)
-            {
-                builder.RegisterInstance(_logger).AsImplementedInterfaces().SingleInstance();
-            }
         }
     }
 }

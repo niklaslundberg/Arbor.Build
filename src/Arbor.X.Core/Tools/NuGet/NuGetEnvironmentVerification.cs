@@ -6,11 +6,10 @@ using System.Text;
 using System.Threading.Tasks;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
-
 using Arbor.X.Core.ProcessUtils;
 using Arbor.X.Core.Tools.EnvironmentVariables;
 using JetBrains.Annotations;
-using ILogger = Serilog.ILogger;
+using Serilog;
 
 namespace Arbor.X.Core.Tools.NuGet
 {
@@ -51,13 +50,15 @@ namespace Arbor.X.Core.Tools.NuGet
 
                 if (nuGetUpdateEnabled)
                 {
-                    logger.Verbose("NuGet self update is enabled by variable '{NuGetSelfUpdateEnabled}'", WellKnownVariables.NuGetSelfUpdateEnabled);
+                    logger.Verbose("NuGet self update is enabled by variable '{NuGetSelfUpdateEnabled}'",
+                        WellKnownVariables.NuGetSelfUpdateEnabled);
 
                     await EnsureMinNuGetVersionAsync(nuGetExePath, logger).ConfigureAwait(false);
                 }
                 else
                 {
-                    logger.Verbose("NuGet self update is disabled by variable '{NuGetSelfUpdateEnabled}'", WellKnownVariables.NuGetSelfUpdateEnabled);
+                    logger.Verbose("NuGet self update is disabled by variable '{NuGetSelfUpdateEnabled}'",
+                        WellKnownVariables.NuGetSelfUpdateEnabled);
                 }
             }
 
@@ -72,7 +73,8 @@ namespace Arbor.X.Core.Tools.NuGet
             try
             {
                 IEnumerable<string> args = new List<string>();
-                ExitCode versionExitCode = await ProcessHelper.ExecuteAsync(nuGetExePath, args, versionLogger).ConfigureAwait(false);
+                ExitCode versionExitCode = await ProcessHelper.ExecuteAsync(nuGetExePath, args, versionLogger)
+                    .ConfigureAwait(false);
 
                 if (!versionExitCode.IsSuccess)
                 {
@@ -96,7 +98,8 @@ namespace Arbor.X.Core.Tools.NuGet
                 if (majorNuGetVersion == '2')
                 {
                     IEnumerable<string> updateSelfArgs = new List<string> { "update", "-self" };
-                    ExitCode exitCode = await ProcessHelper.ExecuteAsync(nuGetExePath, updateSelfArgs, logger).ConfigureAwait(false);
+                    ExitCode exitCode = await ProcessHelper.ExecuteAsync(nuGetExePath, updateSelfArgs, logger)
+                        .ConfigureAwait(false);
 
                     if (!exitCode.IsSuccess)
                     {

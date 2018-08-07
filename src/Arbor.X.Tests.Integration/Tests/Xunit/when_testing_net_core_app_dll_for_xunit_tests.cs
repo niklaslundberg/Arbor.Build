@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
-
 using Arbor.X.Core.Tools.Testing;
 using Arbor.X.Tests.Integration.Tests.MSpec;
 using Machine.Specifications;

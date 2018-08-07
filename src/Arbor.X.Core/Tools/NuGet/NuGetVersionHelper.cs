@@ -1,7 +1,7 @@
-﻿using System; using Serilog;
+﻿using System;
 using Arbor.X.Core.GenericExtensions;
-
 using NuGet.Versioning;
+using Serilog;
 
 namespace Arbor.X.Core.Tools.NuGet
 {
@@ -46,13 +46,21 @@ namespace Arbor.X.Core.Tools.NuGet
                     buildVersion =
                         $"{parsedVersion.Major}.{parsedVersion.Minor}.{parsedVersion.Build}-{suffix}{semVer2PreReleaseSeparator}{parsedVersion.Revision.ToString().LeftPad(usePadding, '0')}";
 
-                    logger.Information("Package suffix is {Suffix}, using major.minor.patch-{suffix}build as the version, {BuildVersion}", suffix, null, buildVersion);
+                    logger.Information(
+                        "Package suffix is {Suffix}, using major.minor.patch-{suffix}build as the version, {BuildVersion}",
+                        suffix,
+                        null,
+                        buildVersion);
                 }
                 else
                 {
                     buildVersion = $"{parsedVersion.Major}.{parsedVersion.Minor}.{parsedVersion.Build}-{suffix}";
 
-                    logger.Information("Package suffix is {Suffix}, using major.minor.patch-{suffix} as the version, {BuildVersion}", suffix, null, buildVersion);
+                    logger.Information(
+                        "Package suffix is {Suffix}, using major.minor.patch-{suffix} as the version, {BuildVersion}",
+                        suffix,
+                        null,
+                        buildVersion);
                 }
             }
             else

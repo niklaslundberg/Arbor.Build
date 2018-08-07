@@ -1,12 +1,12 @@
 ﻿using System;
-using Serilog;
 using System.Threading.Tasks;
 using Arbor.Processing.Core;
+using Serilog;
 using Serilog.Core;
 
 namespace Arbor.X.Bootstrapper
 {
-    internal class Program
+    internal static class Program
     {
         private static async Task<int> Main(string[] args)
         {

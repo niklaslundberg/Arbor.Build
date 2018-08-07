@@ -13,6 +13,8 @@ namespace Arbor.X.Core.Tools.MSBuild
             Projects = projects;
         }
 
+        public ImmutableArray<SolutionProject> Projects { get; }
+
         public static Solution LoadFrom([NotNull] string solutionFileFullName)
         {
             if (string.IsNullOrWhiteSpace(solutionFileFullName))
@@ -67,11 +69,15 @@ namespace Arbor.X.Core.Tools.MSBuild
 
             MSBuildProject msBuildProject = MSBuildProject.LoadFrom(projectFullPath);
 
-            Framework framework = MSBuildProject.IsNetSdkProject(new FileInfo(projectFullPath)) ? Framework.NetCore : Framework.NetFramework;
+            Framework framework = MSBuildProject.IsNetSdkProject(new FileInfo(projectFullPath))
+                ? Framework.NetCore
+                : Framework.NetFramework;
 
-            return new SolutionProject(projectFullPath, msBuildProject.ProjectName, msBuildProject.ProjectDirectory, msBuildProject, framework);
+            return new SolutionProject(projectFullPath,
+                msBuildProject.ProjectName,
+                msBuildProject.ProjectDirectory,
+                msBuildProject,
+                framework);
         }
-
-        public ImmutableArray<SolutionProject> Projects { get; private set; }
     }
 }

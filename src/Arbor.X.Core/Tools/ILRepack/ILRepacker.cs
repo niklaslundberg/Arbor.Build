@@ -1,4 +1,4 @@
-﻿using System; using Serilog;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
@@ -12,10 +12,10 @@ using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.IO;
-
 using Arbor.X.Core.Parsing;
 using Arbor.X.Core.Tools.MSBuild;
 using JetBrains.Annotations;
+using Serilog;
 
 // ReSharper disable once InconsistentNaming
 namespace Arbor.X.Core.Tools.ILRepack
@@ -41,7 +41,9 @@ namespace Arbor.X.Core.Tools.ILRepack
 
             if (!parseResult.Value)
             {
-                _logger.Information("ILRepack is disabled, to enable it, set the flag {ExternalTools_ILRepack_Enabled} to true", WellKnownVariables.ExternalTools_ILRepack_Enabled);
+                _logger.Information(
+                    "ILRepack is disabled, to enable it, set the flag {ExternalTools_ILRepack_Enabled} to true",
+                    WellKnownVariables.ExternalTools_ILRepack_Enabled);
                 return ExitCode.Success;
             }
 
@@ -77,7 +79,10 @@ namespace Arbor.X.Core.Tools.ILRepack
 
             string merges = string.Join(Environment.NewLine, ilMergeProjects.Select(item => item.FullName));
 
-            logger.Information("Found {Count} projects marked for ILMerge:{NewLine}{Merges}", ilMergeProjects.Count, Environment.NewLine, merges);
+            logger.Information("Found {Count} projects marked for ILMerge:{NewLine}{Merges}",
+                ilMergeProjects.Count,
+                Environment.NewLine,
+                merges);
 
             IReadOnlyCollection<ILRepackData> mergeDatas = ilMergeProjects.SelectMany(GetIlMergeFiles)
                 .ToReadOnlyCollection();
@@ -115,7 +120,10 @@ namespace Arbor.X.Core.Tools.ILRepack
 
                 if (!Directory.Exists(referenceAssemblyDirectory))
                 {
-                    logger.Error("Could not ILMerge, the reference assembly directory {ReferenceAssemblyDirectory} does not exist, currently only .NET v{DotNetVersion} is supported", referenceAssemblyDirectory, dotNetVersion);
+                    logger.Error(
+                        "Could not ILMerge, the reference assembly directory {ReferenceAssemblyDirectory} does not exist, currently only .NET v{DotNetVersion} is supported",
+                        referenceAssemblyDirectory,
+                        dotNetVersion);
 
                     return ExitCode.Failure;
                 }
@@ -168,7 +176,8 @@ namespace Arbor.X.Core.Tools.ILRepack
 
             if (releaseDir == null)
             {
-                _logger.Warning("A release directory '{V}' was not found", Path.Combine(binDirectory.FullName, configuration));
+                _logger.Warning("A release directory '{V}' was not found",
+                    Path.Combine(binDirectory.FullName, configuration));
                 yield break;
             }
 

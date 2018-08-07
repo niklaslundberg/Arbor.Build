@@ -1,4 +1,4 @@
-﻿using System; using Serilog;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
@@ -9,9 +9,9 @@ using Arbor.Processing;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.IO;
-
 using Arbor.X.Core.Properties;
 using JetBrains.Annotations;
+using Serilog;
 using Xunit;
 
 namespace Arbor.X.Core.Tools.Testing
@@ -22,7 +22,10 @@ namespace Arbor.X.Core.Tools.Testing
     {
         private string _sourceRoot;
 
-        public async Task<ExitCode> ExecuteAsync([NotNull] ILogger logger, [NotNull] IReadOnlyCollection<IVariable> buildVariables, CancellationToken cancellationToken)
+        public async Task<ExitCode> ExecuteAsync(
+            [NotNull] ILogger logger,
+            [NotNull] IReadOnlyCollection<IVariable> buildVariables,
+            CancellationToken cancellationToken)
         {
             if (logger == null)
             {
@@ -44,7 +47,11 @@ namespace Arbor.X.Core.Tools.Testing
 
             _sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
             IVariable reportPath = buildVariables.Require(WellKnownVariables.ReportPath).ThrowIfEmptyValue();
-            string xunitExePath = buildVariables.GetVariableValueOrDefault(WellKnownVariables.XUnitNetFrameworkExePath, Path.Combine(buildVariables.Require(WellKnownVariables.ExternalTools).Value, "xunit", "net452", "xunit.console.exe"));
+            string xunitExePath = buildVariables.GetVariableValueOrDefault(WellKnownVariables.XUnitNetFrameworkExePath,
+                Path.Combine(buildVariables.Require(WellKnownVariables.ExternalTools).Value,
+                    "xunit",
+                    "net452",
+                    "xunit.console.exe"));
 
             Type theoryType = typeof(TheoryAttribute);
             Type factAttribute = typeof(FactAttribute);
@@ -60,16 +67,23 @@ namespace Arbor.X.Core.Tools.Testing
             ImmutableArray<string> assemblyFilePrefix = buildVariables.AssemblyFilePrefixes();
 
             List<string> testDlls = new UnitTestFinder(typesToFind)
-                .GetUnitTestFixtureDlls(directory, runTestsInReleaseConfiguration, assemblyFilePrefix, FrameworkConstants.NetFramework)
+                .GetUnitTestFixtureDlls(directory,
+                    runTestsInReleaseConfiguration,
+                    assemblyFilePrefix,
+                    FrameworkConstants.NetFramework)
                 .ToList();
 
             if (testDlls.Count == 0)
             {
-                logger.Information("Could not find any DLL files with Xunit test and target framework .NETFramework, skipping Xunit Net Framework tests");
+                logger.Information(
+                    "Could not find any DLL files with Xunit test and target framework .NETFramework, skipping Xunit Net Framework tests");
                 return ExitCode.Success;
             }
 
-            logger.Debug("Found [{TestDlls}] potential Assembly dll files with tests: {NewLine}: {V}", testDlls, Environment.NewLine, string.Join(Environment.NewLine, testDlls.Select(dll => $" * '{dll}'")));
+            logger.Debug("Found [{TestDlls}] potential Assembly dll files with tests: {NewLine}: {V}",
+                testDlls,
+                Environment.NewLine,
+                string.Join(Environment.NewLine, testDlls.Select(dll => $" * '{dll}'")));
 
             string xmlReportName = $"{Guid.NewGuid()}.xml";
 

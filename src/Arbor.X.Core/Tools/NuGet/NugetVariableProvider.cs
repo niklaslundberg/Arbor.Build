@@ -1,11 +1,11 @@
-﻿using System; using Serilog;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.X.Core.BuildVariables;
-
 using JetBrains.Annotations;
+using Serilog;
 
 namespace Arbor.X.Core.Tools.NuGet
 {
@@ -16,7 +16,7 @@ namespace Arbor.X.Core.Tools.NuGet
 
         public int Order => 3;
 
-        public async Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(
+        public async Task<IEnumerable<IVariable>> GetBuildVariablesAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
@@ -28,11 +28,12 @@ namespace Arbor.X.Core.Tools.NuGet
                     WellKnownVariables.ExternalTools_NuGet_ExePath_Custom,
                     string.Empty);
 
-            string nuGetExePath = await EnsureNuGetExeExistsAsync(logger, userSpecifiedNuGetExePath).ConfigureAwait(false);
+            string nuGetExePath =
+                await EnsureNuGetExeExistsAsync(logger, userSpecifiedNuGetExePath).ConfigureAwait(false);
 
             var variables = new List<IVariable>
             {
-                new EnvironmentVariable(
+                new BuildVariable(
                     WellKnownVariables.ExternalTools_NuGet_ExePath,
                     nuGetExePath)
             };
@@ -53,22 +54,30 @@ namespace Arbor.X.Core.Tools.NuGet
                 {
                     if (File.Exists(userSpecifiedNuGetExePath))
                     {
-                        logger.Information("Using NuGet '{UserSpecifiedNuGetExePath}' from user specified variable '{ExternalTools_NuGet_ExePath_Custom}'", userSpecifiedNuGetExePath, WellKnownVariables.ExternalTools_NuGet_ExePath_Custom);
+                        logger.Information(
+                            "Using NuGet '{UserSpecifiedNuGetExePath}' from user specified variable '{ExternalTools_NuGet_ExePath_Custom}'",
+                            userSpecifiedNuGetExePath,
+                            WellKnownVariables.ExternalTools_NuGet_ExePath_Custom);
                         return userSpecifiedNuGetExePath;
                     }
 
-                    logger.Warning("User has specified custom NuGet '{UserSpecifiedNuGetExePath}' but the file does not exist, using fallback method to ensure NuGet exists", userSpecifiedNuGetExePath);
+                    logger.Warning(
+                        "User has specified custom NuGet '{UserSpecifiedNuGetExePath}' but the file does not exist, using fallback method to ensure NuGet exists",
+                        userSpecifiedNuGetExePath);
                 }
                 else
                 {
-                    logger.Warning("User has specified custom NuGet '{UserSpecifiedNuGetExePath}' but it does not have name 'nuget.exe', ignoring and using fallback method to ensure NuGet exists", userSpecifiedNuGetExePath);
+                    logger.Warning(
+                        "User has specified custom NuGet '{UserSpecifiedNuGetExePath}' but it does not have name 'nuget.exe', ignoring and using fallback method to ensure NuGet exists",
+                        userSpecifiedNuGetExePath);
                 }
             }
 
             logger.Verbose("Using default method to ensure NuGet exists");
 
             var helper = new NuGetHelper(logger);
-            string nuGetExePath = await helper.EnsureNuGetExeExistsAsync(nugetExeUri, _cancellationToken).ConfigureAwait(false);
+            string nuGetExePath = await helper.EnsureNuGetExeExistsAsync(nugetExeUri, _cancellationToken)
+                .ConfigureAwait(false);
 
             return nuGetExePath;
         }

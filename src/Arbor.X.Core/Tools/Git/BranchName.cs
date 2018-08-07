@@ -32,6 +32,11 @@ namespace Arbor.X.Core.Tools.Git
             return new Maybe<BranchName>(new BranchName(branchName));
         }
 
+        public override string ToString()
+        {
+            return Name;
+        }
+
         public string Normalize()
         {
             var invalidCharacters = new[] { "/", @"\", "\"" };
@@ -44,11 +49,6 @@ namespace Arbor.X.Core.Tools.Git
             string removedFeatureInName = branchNameWithValidCharacters.Replace("feature-", string.Empty);
 
             return removedFeatureInName;
-        }
-
-        public override string ToString()
-        {
-            return Name;
         }
     }
 }

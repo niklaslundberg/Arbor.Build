@@ -1,5 +1,4 @@
 using System;
-using Serilog;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -8,9 +7,9 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Arbor.X.Core.BuildVariables;
-
 using JetBrains.Annotations;
 using Mono.Cecil;
+using Serilog;
 using Serilog.Core;
 
 namespace Arbor.X.Core.Assemblies
@@ -41,7 +40,8 @@ namespace Arbor.X.Core.Assemblies
 
             if (loadedAssembly != null)
             {
-                usedLogger.Debug("Assembly '{FullName}' is already loaded in the app domain", assemblyDefinition.FullName);
+                usedLogger.Debug("Assembly '{FullName}' is already loaded in the app domain",
+                    assemblyDefinition.FullName);
 
                 return IsDebugAssembly(loadedAssembly, usedLogger);
             }
@@ -53,7 +53,8 @@ namespace Arbor.X.Core.Assemblies
 
             if (loadedReflectionOnlyAssembly != null)
             {
-                usedLogger.Debug("Assembly '{FullName}' is already loaded in the app domain with reflection only", assemblyDefinition.FullName);
+                usedLogger.Debug("Assembly '{FullName}' is already loaded in the app domain with reflection only",
+                    assemblyDefinition.FullName);
 
                 return IsDebugAssembly(loadedReflectionOnlyAssembly, usedLogger);
             }
@@ -88,16 +89,20 @@ namespace Arbor.X.Core.Assemblies
                     {
                         bool? isDebugAssembly = IsDebugAssembly(reflectedAssembly, usedLogger);
 
-                        usedLogger.Verbose("Assembly is debug from reflected assembly: {IsDebug}", isDebugAssembly?.ToString(CultureInfo.InvariantCulture) ?? "N/A");
+                        usedLogger.Verbose("Assembly is debug from reflected assembly: {IsDebug}",
+                            isDebugAssembly?.ToString(CultureInfo.InvariantCulture) ?? "N/A");
 
                         return isDebugAssembly;
                     }
 
-                    usedLogger.Verbose("Reflected assembly from assembly definition {FullName} was null", assemblyDefinition.FullName);
+                    usedLogger.Verbose("Reflected assembly from assembly definition {FullName} was null",
+                        assemblyDefinition.FullName);
                 }
                 catch (Exception ex)
                 {
-                    usedLogger.Verbose(ex, "Error while getting reflected assembly definition from assembly definition {FullName}", assemblyDefinition.FullName);
+                    usedLogger.Verbose(ex,
+                        "Error while getting reflected assembly definition from assembly definition {FullName}",
+                        assemblyDefinition.FullName);
                     return null;
                 }
             }
@@ -116,7 +121,9 @@ namespace Arbor.X.Core.Assemblies
             }
             catch (Exception ex)
             {
-                usedLogger.Verbose(ex, "Error while getting is debug from assembly definition {FullName}", assemblyDefinition.FullName);
+                usedLogger.Verbose(ex,
+                    "Error while getting is debug from assembly definition {FullName}",
+                    assemblyDefinition.FullName);
                 return null;
             }
 
@@ -167,7 +174,9 @@ namespace Arbor.X.Core.Assemblies
                 }
                 catch (Exception ex)
                 {
-                    usedLogger.Verbose(ex, "Error while getting is debug from reflected assembly {FullName}", assembly.FullName);
+                    usedLogger.Verbose(ex,
+                        "Error while getting is debug from reflected assembly {FullName}",
+                        assembly.FullName);
 
                     return null;
                 }

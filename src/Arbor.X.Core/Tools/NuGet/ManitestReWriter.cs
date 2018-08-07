@@ -1,9 +1,9 @@
-﻿using System; using Serilog;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-
 using NuGet.Packaging;
+using Serilog;
 
 namespace Arbor.X.Core.Tools.NuGet
 {
@@ -43,7 +43,8 @@ namespace Arbor.X.Core.Tools.NuGet
 
                 logger?.Verbose("Using starts with-pattern '{TagPrefix}' to exclude tags from NuSpec", tagPrefix);
 
-                string[] tagsToRemove = packageBuilder.Tags.Where(tag => tag.StartsWith(tagPrefix, StringComparison.Ordinal)).ToArray();
+                string[] tagsToRemove = packageBuilder.Tags
+                    .Where(tag => tag.StartsWith(tagPrefix, StringComparison.Ordinal)).ToArray();
 
                 if (tagsToRemove.Length == 0)
                 {
@@ -52,7 +53,9 @@ namespace Arbor.X.Core.Tools.NuGet
 
                 foreach (string tagToRemove in tagsToRemove)
                 {
-                    logger?.Verbose("Removing tag '{TagToRemove}' from NuSpec '{NuspecFullPath}'", tagToRemove, nuspecFullPath);
+                    logger?.Verbose("Removing tag '{TagToRemove}' from NuSpec '{NuspecFullPath}'",
+                        tagToRemove,
+                        nuspecFullPath);
                     packageBuilder.Tags.Remove(tagToRemove);
                 }
 
@@ -71,7 +74,9 @@ namespace Arbor.X.Core.Tools.NuGet
                 logger?.Verbose("Deleting NuSpec file '{NuspecFullPath}'", nuspecFullPath);
                 File.Delete(nuspecFullPath);
 
-                logger?.Verbose("Moving NuSpec temp copy '{TempFile}' to file '{NuspecFullPath}'", tempFile, nuspecFullPath);
+                logger?.Verbose("Moving NuSpec temp copy '{TempFile}' to file '{NuspecFullPath}'",
+                    tempFile,
+                    nuspecFullPath);
                 File.Move(tempFile, nuspecFullPath);
             }
 

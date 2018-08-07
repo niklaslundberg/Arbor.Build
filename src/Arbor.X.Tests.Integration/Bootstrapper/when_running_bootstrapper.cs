@@ -3,7 +3,6 @@ using System.IO;
 using Arbor.Processing.Core;
 using Arbor.X.Core.Bootstrapper;
 using Arbor.X.Core.IO;
-
 using Machine.Specifications;
 using Serilog.Core;
 

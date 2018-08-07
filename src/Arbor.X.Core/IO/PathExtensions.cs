@@ -1,8 +1,9 @@
-using System; using Serilog;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Arbor.Defensive.Collections;
+using Serilog;
 
 namespace Arbor.X.Core.IO
 {
@@ -34,7 +35,8 @@ namespace Arbor.X.Core.IO
 
             var sourceFileInfo = new FileInfo(sourceFile);
 
-            (bool, string) directoryBlackListed = pathLookupSpecification.IsBlackListed(sourceFileInfo.Directory.FullName, rootDir);
+            (bool, string) directoryBlackListed =
+                pathLookupSpecification.IsBlackListed(sourceFileInfo.Directory.FullName, rootDir);
 
             if (directoryBlackListed.Item1)
             {
@@ -62,7 +64,8 @@ namespace Arbor.X.Core.IO
 
             if (ignoredFileNameParts.Count > 0)
             {
-                string reasonMessage = $"Ignored file name parts of '{sourceFile}' makes it blacklisted: {string.Join(", ", ignoredFileNameParts.Select(item => $"'{item}'"))}";
+                string reasonMessage =
+                    $"Ignored file name parts of '{sourceFile}' makes it blacklisted: {string.Join(", ", ignoredFileNameParts.Select(item => $"'{item}'"))}";
                 logger?.Debug(reasonMessage);
                 return (true, reasonMessage);
             }
@@ -122,7 +125,8 @@ namespace Arbor.X.Core.IO
 
             if (hasAnyPartStartsWith)
             {
-                string reasonMessage = $"The directory '{sourceDir}' has a path that starts with a pattern that is blacklisted";
+                string reasonMessage =
+                    $"The directory '{sourceDir}' has a path that starts with a pattern that is blacklisted";
                 logger?.Debug(
                     reasonMessage);
                 return (true, reasonMessage);

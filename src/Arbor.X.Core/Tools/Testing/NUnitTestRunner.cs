@@ -1,4 +1,4 @@
-﻿using System; using Serilog;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -13,6 +13,7 @@ using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Properties;
 using JetBrains.Annotations;
 using NUnit.Framework;
+using Serilog;
 
 namespace Arbor.X.Core.Tools.Testing
 {
@@ -20,20 +21,9 @@ namespace Arbor.X.Core.Tools.Testing
     [UsedImplicitly]
     public class NUnitTestRunner : ITool
     {
-        private string _sourceRoot;
         private string _exePathOverride;
+        private string _sourceRoot;
         private bool _transformToJunit;
-
-        private static string GetNUnitXmlReportFilePath(IVariable reportPath, string testDll)
-        {
-            var testDllFile = new FileInfo(testDll);
-
-            string xmlReportName = $"{testDllFile.Name}.xml";
-
-            string reportFile = Path.Combine(reportPath.Value, "nunit", xmlReportName);
-
-            return reportFile;
-        }
 
         public async Task<ExitCode> ExecuteAsync(
             ILogger logger,
@@ -51,7 +41,8 @@ namespace Arbor.X.Core.Tools.Testing
             IVariable externalTools = buildVariables.Require(WellKnownVariables.ExternalTools).ThrowIfEmptyValue();
             IVariable reportPath = buildVariables.Require(WellKnownVariables.ReportPath).ThrowIfEmptyValue();
 
-            _exePathOverride = buildVariables.GetVariableValueOrDefault(WellKnownVariables.NUnitExePathOverride, string.Empty);
+            _exePathOverride =
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.NUnitExePathOverride, string.Empty);
             _transformToJunit = buildVariables.GetBooleanByKey(WellKnownVariables.NUnitTransformToJunitEnabled, false);
 
             IVariable ignoreTestFailuresVariable =
@@ -63,7 +54,8 @@ namespace Arbor.X.Core.Tools.Testing
 
             if (!testsEnabled)
             {
-                logger.Warning("Tests are disabled (build variable '{TestsEnabled}' is false)", WellKnownVariables.TestsEnabled);
+                logger.Warning("Tests are disabled (build variable '{TestsEnabled}' is false)",
+                    WellKnownVariables.TestsEnabled);
                 return ExitCode.Success;
             }
 
@@ -106,7 +98,22 @@ namespace Arbor.X.Core.Tools.Testing
                 return ExitCode.Success;
             }
 
-            return await RunNUnitAsync(externalTools, logger, reportPath, runTestsInReleaseConfiguration, assemblyFilePrefix).ConfigureAwait(false);
+            return await RunNUnitAsync(externalTools,
+                logger,
+                reportPath,
+                runTestsInReleaseConfiguration,
+                assemblyFilePrefix).ConfigureAwait(false);
+        }
+
+        private static string GetNUnitXmlReportFilePath(IVariable reportPath, string testDll)
+        {
+            var testDllFile = new FileInfo(testDll);
+
+            string xmlReportName = $"{testDllFile.Name}.xml";
+
+            string reportFile = Path.Combine(reportPath.Value, "nunit", xmlReportName);
+
+            return reportFile;
         }
 
         private static void LogExecution(ILogger logger, IEnumerable<string> nunitArgs, string nunitExe)
@@ -163,20 +170,28 @@ namespace Arbor.X.Core.Tools.Testing
             Stopwatch stopwatch = Stopwatch.StartNew();
 
             List<string> testDlls = new UnitTestFinder(typesToFind)
-                .GetUnitTestFixtureDlls(directory, runTestsInReleaseConfiguration, assemblyFilePrefix, FrameworkConstants.NetFramework)
+                .GetUnitTestFixtureDlls(directory,
+                    runTestsInReleaseConfiguration,
+                    assemblyFilePrefix,
+                    FrameworkConstants.NetFramework)
                 .ToList();
 
             stopwatch.Stop();
 
-            logger.Information("NUnit test assembly lookup took {ElapsedMilliseconds:F2} milliseconds", stopwatch.ElapsedMilliseconds);
+            logger.Information("NUnit test assembly lookup took {ElapsedMilliseconds:F2} milliseconds",
+                stopwatch.ElapsedMilliseconds);
 
             if (testDlls.Count == 0)
             {
-                logger.Warning("Could not find any NUnit tests in directory '{FullName}' or any sub-directory", directory.FullName);
+                logger.Warning("Could not find any NUnit tests in directory '{FullName}' or any sub-directory",
+                    directory.FullName);
                 return ExitCode.Success;
             }
 
-            logger.Debug("Found [{TestDlls}] potential Assembly dll files with tests: {NewLine}: {V}", testDlls, Environment.NewLine, string.Join(Environment.NewLine, testDlls.Select(dll => $" * '{dll}'")));
+            logger.Debug("Found [{TestDlls}] potential Assembly dll files with tests: {NewLine}: {V}",
+                testDlls,
+                Environment.NewLine,
+                string.Join(Environment.NewLine, testDlls.Select(dll => $" * '{dll}'")));
 
             string nunitExePath = GetNunitExePath(externalTools);
 
@@ -207,7 +222,8 @@ namespace Arbor.X.Core.Tools.Testing
 
                 executionStopwatch.Stop();
 
-                logger.Information("NUnit execution took {ElapsedMilliseconds:F2} milliseconds", executionStopwatch.ElapsedMilliseconds);
+                logger.Information("NUnit execution took {ElapsedMilliseconds:F2} milliseconds",
+                    executionStopwatch.ElapsedMilliseconds);
 
                 results.Add(Tuple.Create(testDll, result));
             }
