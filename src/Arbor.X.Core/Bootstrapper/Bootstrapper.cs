@@ -14,8 +14,8 @@ using Arbor.Processing;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.GenericExtensions;
+using Arbor.X.Core.GenericExtensions.Boolean;
 using Arbor.X.Core.IO;
-using Arbor.X.Core.Parsing;
 using Arbor.X.Core.ProcessUtils;
 using Arbor.X.Core.Tools.Git;
 using Arbor.X.Core.Tools.Kudu;
@@ -104,9 +104,8 @@ namespace Arbor.X.Core.Bootstrapper
                 _logger.Error(ex, "{Prefix} Could not start process", _Prefix);
             }
 
-            ParseResult<int> exitDelayInMilliseconds =
-                Environment.GetEnvironmentVariable(WellKnownVariables.BootstrapperExitDelayInMilliseconds)
-                    .TryParseInt32(0);
+            Environment.GetEnvironmentVariable(WellKnownVariables.BootstrapperExitDelayInMilliseconds)
+                .TryParseInt32(out int exitDelayInMilliseconds, 0);
 
             if (exitDelayInMilliseconds > 0)
             {
@@ -236,8 +235,10 @@ namespace Arbor.X.Core.Bootstrapper
 
             string directoryCloneValue = Environment.GetEnvironmentVariable(WellKnownVariables.DirectoryCloneEnabled);
 
-            _directoryCloneEnabled = directoryCloneValue
-                .TryParseBool(true);
+            directoryCloneValue
+                .TryParseBool(out bool directoryCloneEnabled, true);
+
+            _directoryCloneEnabled = directoryCloneEnabled;
 
             if (!_directoryCloneEnabled)
             {
@@ -307,7 +308,9 @@ namespace Arbor.X.Core.Bootstrapper
             {
                 try
                 {
-                    if (Environment.GetEnvironmentVariable("KillSpawnedProcess").TryParseBool(true))
+                    Environment.GetEnvironmentVariable("KillSpawnedProcess").TryParseBool(out bool enabled, true);
+
+                    if (enabled)
                     {
                         KillAllProcessesSpawnedBy((uint)Process.GetCurrentProcess().Id, _logger);
                     }
@@ -333,9 +336,10 @@ namespace Arbor.X.Core.Bootstrapper
 
             var outputDirectory = new DirectoryInfo(outputDirectoryPath);
 
-            bool reinstall = !outputDirectory.Exists ||
-                             Environment.GetEnvironmentVariable(WellKnownVariables.NuGetReinstallArborPackageEnabled)
-                                 .TryParseBool(true);
+            Environment.GetEnvironmentVariable(WellKnownVariables.NuGetReinstallArborPackageEnabled)
+                .TryParseBool(out bool reinstallEnabled, true);
+
+            bool reinstall = !outputDirectory.Exists || reinstallEnabled;
 
             if (!reinstall)
             {
@@ -372,7 +376,9 @@ namespace Arbor.X.Core.Bootstrapper
 
             string noCache = Environment.GetEnvironmentVariable(WellKnownVariables.ArborXNuGetPackageNoCacheEnabled);
 
-            if (noCache.TryParseBool(false))
+            noCache.TryParseBool(out bool noCacheEnabled, false);
+
+            if (noCacheEnabled)
             {
                 nugetArguments.Add("-NoCache");
             }
@@ -405,9 +411,10 @@ namespace Arbor.X.Core.Bootstrapper
                 }
                 else
                 {
-                    allowPrerelease =
-                        Environment.GetEnvironmentVariable(WellKnownVariables.AllowPrerelease)
-                            .TryParseBool(false);
+                    Environment.GetEnvironmentVariable(WellKnownVariables.AllowPrerelease)
+                        .TryParseBool(out bool allowed, false);
+
+                    allowPrerelease = allowed;
 
                     if (allowPrerelease)
                     {
@@ -612,10 +619,7 @@ namespace Arbor.X.Core.Bootstrapper
             string timeoutKey = WellKnownVariables.BuildToolTimeoutInSeconds;
             string timeoutInSecondsFromEnvironment = Environment.GetEnvironmentVariable(timeoutKey);
 
-            ParseResult<int> parseResult =
-                timeoutInSecondsFromEnvironment.TryParseInt32(MaxBuildTimeInSeconds);
-
-            if (parseResult.Parsed)
+            if (timeoutInSecondsFromEnvironment.TryParseInt32(out int parseResult, MaxBuildTimeInSeconds))
             {
                 _logger.Verbose("Using timeout from environment variable {TimeoutKey}", timeoutKey);
             }
@@ -657,7 +661,7 @@ namespace Arbor.X.Core.Bootstrapper
         private async Task<bool> TryDownloadNuGetAsync(string baseDir, string targetFile)
         {
             bool update = Environment.GetEnvironmentVariable(WellKnownVariables.NuGetVersionUpdatedEnabled)
-                .TryParseBool(false);
+                .ParseOrDefault(false);
 
             bool hasNugetExe = File.Exists(targetFile);
 

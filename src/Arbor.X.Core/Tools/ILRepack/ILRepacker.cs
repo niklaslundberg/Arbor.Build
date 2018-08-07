@@ -11,8 +11,8 @@ using Arbor.Processing;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.GenericExtensions;
+using Arbor.X.Core.GenericExtensions.Boolean;
 using Arbor.X.Core.IO;
-using Arbor.X.Core.Parsing;
 using Arbor.X.Core.Tools.MSBuild;
 using JetBrains.Annotations;
 using Serilog;
@@ -35,11 +35,11 @@ namespace Arbor.X.Core.Tools.ILRepack
         {
             _logger = logger;
 
-            ParseResult<bool> parseResult = buildVariables
+            bool parseResult = buildVariables
                 .GetVariableValueOrDefault(WellKnownVariables.ExternalTools_ILRepack_Enabled, "false")
-                .TryParseBool(false);
+                .ParseOrDefault(false);
 
-            if (!parseResult.Value)
+            if (!parseResult)
             {
                 _logger.Information(
                     "ILRepack is disabled, to enable it, set the flag {ExternalTools_ILRepack_Enabled} to true",

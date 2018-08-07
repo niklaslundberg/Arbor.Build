@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.GenericExtensions;
-using Arbor.X.Core.Parsing;
+using Arbor.X.Core.GenericExtensions.Boolean;
 using Arbor.X.Core.Tools.Cleanup;
 using JetBrains.Annotations;
 using Serilog;
@@ -31,24 +31,18 @@ namespace Arbor.X.Core.Tools.Environments
                 WellKnownVariables.TeamCity.ExternalTools_TeamCity_TeamCityVersion
             };
 
-            ParseResult<bool> isBuildAgent =
-                Environment.GetEnvironmentVariable(WellKnownVariables.IsRunningOnBuildAgent)
-                    .TryParseBool(false);
+            bool isBuildAgent =
+                Environment.GetEnvironmentVariable(WellKnownVariables.IsRunningOnBuildAgent).ParseOrDefault(false);
 
-            if (isBuildAgent.Parsed)
+            if (isBuildAgent)
             {
-                logger.Verbose(
-                    "Successfully parsed environment variable '{IsRunningOnBuildAgent}' with value '{OriginalValue}' as boolean with value: {Value}",
-                    WellKnownVariables.IsRunningOnBuildAgent,
-                    isBuildAgent.OriginalValue,
-                    isBuildAgent.Value);
-                isBuildAgentValue = isBuildAgent.Value;
+                isBuildAgentValue = true;
             }
             else
             {
                 isBuildAgentValue =
                     buildAgentEnvironmentVariables.Any(
-                        buildAgent => Environment.GetEnvironmentVariable(buildAgent).TryParseString().Parsed);
+                        buildAgent => BoolExtensions.ParseOrDefault(Environment.GetEnvironmentVariable(buildAgent)));
             }
 
             var variables = new List<IVariable>

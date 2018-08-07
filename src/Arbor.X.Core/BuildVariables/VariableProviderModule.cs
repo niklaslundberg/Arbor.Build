@@ -22,28 +22,4 @@ namespace Arbor.X.Core.Configuration.AutofacModules
                 .SingleInstance();
         }
     }
-
-    public class BuildContext
-    {
-        public BuildConfiguration CurrentBuildConfiguration { get; set; }
-    }
-
-    public class BuildConfiguration
-    {
-        public string Configuration { get; }
-
-        public BuildConfiguration(string configuration)
-        {
-            Configuration = configuration;
-        }
-    }
-
-    [UsedImplicitly]
-    public class BuildContextModule : Module
-    {
-        protected override void Load(ContainerBuilder builder)
-        {
-            builder.RegisterType<BuildContext>().AsSelf().SingleInstance();
-        }
-    }
 }

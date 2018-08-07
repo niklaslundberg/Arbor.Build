@@ -75,16 +75,16 @@ namespace Arbor.X.Core.IO
                 }
                 catch (PathTooLongException ex)
                 {
-                    logger.Error(ex,
-                        "{V} {Ex}",
+                    logger?.Error(ex,
+                        "{Message}",
                         $"Could not copy file to '{destFileName}', path length is too long ({destFileName.Length})"
                     );
                     return ExitCode.Failure;
                 }
                 catch (Exception ex)
                 {
-                    logger.Error(ex,
-                        "{V} {Ex}",
+                    logger?.Error(ex,
+                        "{Message}",
                         $"Could not copy file '{file.FullName}' to destination '{destFileName}'");
                     return ExitCode.Failure;
                 }

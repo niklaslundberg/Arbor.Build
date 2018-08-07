@@ -10,8 +10,8 @@ using Arbor.Processing;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.GenericExtensions;
+using Arbor.X.Core.GenericExtensions.Boolean;
 using Arbor.X.Core.IO;
-using Arbor.X.Core.Parsing;
 using Arbor.X.Core.ProcessUtils;
 using Arbor.X.Core.Tools.ILRepack;
 using Arbor.X.Core.Tools.MSBuild;
@@ -37,11 +37,11 @@ namespace Arbor.X.Core.Tools.Libz
         {
             _logger = logger;
 
-            ParseResult<bool> parseResult = buildVariables
+           bool parseResult = buildVariables
                 .GetVariableValueOrDefault(WellKnownVariables.ExternalTools_LibZ_Enabled, "false")
-                .TryParseBool(false);
+                .ParseOrDefault(false);
 
-            if (!parseResult.Value)
+            if (!parseResult)
             {
                 _logger.Information(
                     "LibZPacker is disabled, to enable it, set the flag {ExternalTools_LibZ_Enabled} to true",

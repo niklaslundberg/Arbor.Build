@@ -1,4 +1,6 @@
+using System;
 using Autofac;
+using JetBrains.Annotations;
 
 namespace Arbor.X.Core
 {
@@ -6,8 +8,13 @@ namespace Arbor.X.Core
     {
         private readonly string _sourceDirectory;
 
-        public BuildVariableModule(string sourceDirectory)
+        public BuildVariableModule([NotNull] string sourceDirectory)
         {
+            if (string.IsNullOrWhiteSpace(sourceDirectory))
+            {
+                throw new ArgumentException("Value cannot be null or whitespace.", nameof(sourceDirectory));
+            }
+
             _sourceDirectory = sourceDirectory;
         }
 
@@ -16,16 +23,6 @@ namespace Arbor.X.Core
             builder.RegisterInstance(new SourceRootValue(_sourceDirectory))
                 .AsSelf()
                 .SingleInstance();
-        }
-    }
-
-    public class SourceRootValue
-    {
-        public string SourceRoot { get; }
-
-        public SourceRootValue(string sourceRoot)
-        {
-            SourceRoot = sourceRoot;
         }
     }
 }

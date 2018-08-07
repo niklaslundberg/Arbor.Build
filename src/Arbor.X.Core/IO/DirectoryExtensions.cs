@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using Arbor.Defensive.Collections;
@@ -89,6 +90,7 @@ namespace Arbor.X.Core.IO
                     }
 
                     directoryInfo.Refresh();
+
                     if (directoryInfo.Exists)
                     {
                         directoryInfo.Delete(recursive);
@@ -106,7 +108,7 @@ namespace Arbor.X.Core.IO
             }
         }
 
-        public static IReadOnlyCollection<FileInfo> GetFilesRecursive(
+        public static ImmutableArray<FileInfo> GetFilesRecursive(
             this DirectoryInfo directoryInfo,
             IEnumerable<string> fileExtensions = null,
             PathLookupSpecification pathLookupSpecification = null,
@@ -124,11 +126,12 @@ namespace Arbor.X.Core.IO
 
             PathLookupSpecification usedPathLookupSpecification =
                 pathLookupSpecification ?? DefaultPaths.DefaultPathLookupSpecification;
-            IEnumerable<string> usedFileExtensions = fileExtensions ?? new List<string>();
+
+            ImmutableArray<string> usedFileExtensions = fileExtensions.SafeToReadOnlyCollection();
 
             if (usedPathLookupSpecification.IsBlackListed(directoryInfo.FullName, rootDir).Item1)
             {
-                return new List<FileInfo>();
+                return ImmutableArray<FileInfo>.Empty;
             }
 
             IReadOnlyCollection<string> invalidFileExtensions = usedFileExtensions
@@ -159,10 +162,9 @@ namespace Arbor.X.Core.IO
             DirectoryInfo[] subDirectories = directoryInfo.GetDirectories();
 
             files.AddRange(subDirectories
-                .SelectMany(dir => dir.GetFilesRecursive(fileExtensions, usedPathLookupSpecification, rootDir))
-                .ToList());
+                .SelectMany(dir => dir.GetFilesRecursive(usedFileExtensions, usedPathLookupSpecification, rootDir)));
 
-            return files;
+            return files.ToImmutableArray();
         }
     }
 }

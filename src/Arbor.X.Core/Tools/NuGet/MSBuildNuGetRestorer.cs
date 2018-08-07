@@ -23,10 +23,11 @@ namespace Arbor.X.Core.Tools.NuGet
         {
             bool enabled = buildVariables.GetBooleanByKey(
                 WellKnownVariables.MSBuildNuGetRestoreEnabled,
-                false);
+                true);
 
             if (!enabled)
             {
+                logger.Debug("{Tool} is disabled", nameof(MSBuildNuGetRestorer));
                 return ExitCode.Success;
             }
 

@@ -17,8 +17,8 @@ using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.Configuration.AutofacModules;
 using Arbor.X.Core.GenericExtensions;
+using Arbor.X.Core.GenericExtensions.Boolean;
 using Arbor.X.Core.IO;
-using Arbor.X.Core.Parsing;
 using Arbor.X.Core.Tools.NuGet;
 using Arbor.Xdt;
 using JetBrains.Annotations;
@@ -1426,39 +1426,21 @@ namespace Arbor.X.Core.Tools.MSBuild
 
             if (msbuildProperties.Count > 0)
             {
-                List<ParseResult<bool>> parseResults = msbuildProperties.Select(
-                        msBuildProperty =>
-                        {
-                            ParseResult<bool> parseResult = msBuildProperty.Value.TryParseBool(true);
-                            return parseResult;
-                        })
-                    .Where(item => item.Parsed)
-                    .ToList();
+                bool hasAnyPropertySetToFalse =
+                    msbuildProperties.Any(property => bool.TryParse(property.Value, out bool result) && !result);
 
-                if (parseResults.Count > 0)
+                if (hasAnyPropertySetToFalse)
                 {
-                    bool hasAnyPropertySetToFalse = parseResults.Any(item => !item.Value);
-
-                    if (hasAnyPropertySetToFalse)
-                    {
-                        _logger.Verbose(
-                            "Build NuGet web package is disabled in project file '{FullPath}'; property '{ExpectedName}'",
-                            solutionProject.FullPath,
-                            expectedName);
-                        buildNuGetWebPackageForProject = false;
-                    }
-                    else
-                    {
-                        _logger.Verbose(
-                            "Build NuGet web package is enabled via project file '{FullPath}'; property '{ExpectedName}'",
-                            solutionProject.FullPath,
-                            expectedName);
-                    }
+                    _logger.Verbose(
+                        "Build NuGet web package is disabled in project file '{FullPath}'; property '{ExpectedName}'",
+                        solutionProject.FullPath,
+                        expectedName);
+                    buildNuGetWebPackageForProject = false;
                 }
                 else
                 {
-                    _logger.Debug(
-                        "Build NuGet web package is not configured in project file '{FullPath}'; property '{ExpectedName}', invalid value",
+                    _logger.Verbose(
+                        "Build NuGet web package is enabled via project file '{FullPath}'; property '{ExpectedName}'",
                         solutionProject.FullPath,
                         expectedName);
                 }
@@ -1475,15 +1457,15 @@ namespace Arbor.X.Core.Tools.MSBuild
 
             if (!string.IsNullOrWhiteSpace(buildVariable))
             {
-                ParseResult<bool> parseResult = buildVariable.TryParseBool(true);
+                bool parsed = buildVariable.TryParseBool(out bool parseResult, true);
 
-                if (parseResult.Parsed && !parseResult.Value)
+                if (parsed && !parseResult)
                 {
                     _logger.Verbose("Build NuGet web package is turned off in build variable '{ExpectedName}'",
                         expectedName);
                     buildNuGetWebPackageForProject = false;
                 }
-                else if (parseResult.Parsed)
+                else if (parsed)
                 {
                     _logger.Debug("Build NuGet web package is enabled in build variable '{ExpectedName}'",
                         expectedName);

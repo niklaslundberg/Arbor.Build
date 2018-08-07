@@ -5,7 +5,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.GenericExtensions;
+using Arbor.X.Core.GenericExtensions.Boolean;
 using Arbor.X.Core.ProcessUtils;
 using Serilog;
 
@@ -64,7 +64,7 @@ namespace Arbor.X.Core.Tools.NuGet
                     }
                     catch (Exception ex)
                     {
-                        _logger.Error(ex, "Attempt {V}. Could not download nuget.exe. {Ex}", i + 1);
+                        _logger.Error(ex, "Attempt {AttemptCount}. Could not download nuget.exe.", i + 1);
                     }
 
                     const int WaitTimeInSeconds = 1;
@@ -76,7 +76,7 @@ namespace Arbor.X.Core.Tools.NuGet
             }
 
             bool update = Environment.GetEnvironmentVariable(WellKnownVariables.NuGetVersionUpdatedEnabled)
-                .TryParseBool(false);
+                .ParseOrDefault(false);
 
             if (update)
             {

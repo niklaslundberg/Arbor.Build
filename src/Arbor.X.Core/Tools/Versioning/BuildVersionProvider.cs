@@ -118,9 +118,9 @@ namespace Arbor.X.Core.Tools.Versioning
 
                     if (required.All(ValidateVersionNumber))
                     {
-                        major = required[majorKey].TryParseInt32().Value;
-                        minor = required[minorKey].TryParseInt32().Value;
-                        patch = required[patchKey].TryParseInt32().Value;
+                        major = required[majorKey].ParseOrDefault();
+                        minor = required[minorKey].ParseOrDefault();
+                        patch = required[patchKey].ParseOrDefault();
 
                         logger.Verbose(
                             "All version numbers from the version file '{VersionFileName}' were parsed successfully",

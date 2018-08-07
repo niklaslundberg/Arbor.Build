@@ -9,6 +9,7 @@ using Arbor.Processing;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.GenericExtensions;
+using Arbor.X.Core.GenericExtensions.Boolean;
 using JetBrains.Annotations;
 using NuGet.Versioning;
 using Serilog;
@@ -184,7 +185,7 @@ namespace Arbor.X.Core.Tools.Git
                     string environmentVariable = Environment.GetEnvironmentVariable(arborXGitcommithashenabled);
 
                     if (!environmentVariable
-                        .TryParseBool(true).Value)
+                        .ParseOrDefault(true))
                     {
                         logger.Information(
                             "Git commit hash is disabled by environment variable {ArborXGitcommithashenabled} set to {EnvironmentVariable}",

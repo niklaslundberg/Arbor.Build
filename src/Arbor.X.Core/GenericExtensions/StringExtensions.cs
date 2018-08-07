@@ -1,24 +1,20 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Arbor.X.Core.Parsing;
 
 namespace Arbor.X.Core.GenericExtensions
 {
     public static class StringExtensions
     {
-        public static ParseResult<string> TryParseString(this string value, string defaultValue = "")
+        public static bool TryParseString(this string value, out string result, string defaultValue = "")
         {
-            if (value == null)
-            {
-                return ParseResult<string>.Create(defaultValue, false, null);
-            }
-
             if (string.IsNullOrWhiteSpace(value))
             {
-                return ParseResult<string>.Create(defaultValue, false, value);
+                result = defaultValue;
+                return false;
             }
 
-            return ParseResult<string>.Create(value, true, value);
+            result = value;
+            return true;
         }
 
         public static string LeftPad(this string value, int totaltLenght, char character)

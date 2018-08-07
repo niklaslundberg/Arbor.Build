@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -17,8 +16,8 @@ using Arbor.KVConfiguration.UserConfiguration;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.GenericExtensions;
+using Arbor.X.Core.GenericExtensions.Boolean;
 using Arbor.X.Core.IO;
-using Arbor.X.Core.Parsing;
 using Arbor.X.Core.Tools;
 using Autofac;
 using JetBrains.Annotations;
@@ -95,9 +94,8 @@ namespace Arbor.X.Core
             _logger.Information("Arbor.X.Build total elapsed time in seconds: {TotalSeconds:F}",
                 stopwatch.Elapsed.TotalSeconds);
 
-            ParseResult<int> exitDelayInMilliseconds =
-                Environment.GetEnvironmentVariable(WellKnownVariables.BuildApplicationExitDelayInMilliseconds)
-                    .TryParseInt32(50);
+            Environment.GetEnvironmentVariable(WellKnownVariables.BuildApplicationExitDelayInMilliseconds)
+                .TryParseInt32(out int exitDelayInMilliseconds, 50);
 
             if (exitDelayInMilliseconds > 0)
             {
@@ -123,7 +121,7 @@ namespace Arbor.X.Core
             return exitCode;
         }
 
-        private static string BuildResults(IEnumerable<ToolResult> toolResults)
+        private static string BuildResultsAsTable(IEnumerable<ToolResult> toolResults)
         {
             const string NotRun = "Not run";
             const string Succeeded = "Succeeded";
@@ -199,7 +197,7 @@ namespace Arbor.X.Core
 
         private async Task<ExitCode> RunSystemToolsAsync()
         {
-            List<IVariable> buildVariables = (await GetBuildVariablesAsync().ConfigureAwait(false)).ToList();
+            IReadOnlyCollection<IVariable> buildVariables = (await GetBuildVariablesAsync().ConfigureAwait(false));
 
             string variableAsTable = WellKnownVariables.AllVariables
                 .OrderBy(item => item.InvariantName)
@@ -233,7 +231,7 @@ namespace Arbor.X.Core
 
             IReadOnlyCollection<ToolWithPriority> toolWithPriorities = ToolFinder.GetTools(_container, _logger);
 
-            LogTools(toolWithPriorities);
+            LogToolsAsTable(toolWithPriorities);
 
             int result = 0;
 
@@ -314,7 +312,7 @@ namespace Arbor.X.Core
                 }
             }
 
-            string resultTable = BuildResults(toolResults);
+            string resultTable = BuildResultsAsTable(toolResults);
 
             string toolMessage = Environment.NewLine + new string('.', 100) + Environment.NewLine +
                                  Environment.NewLine +
@@ -330,7 +328,7 @@ namespace Arbor.X.Core
             return ExitCode.Success;
         }
 
-        private void LogTools(IReadOnlyCollection<ToolWithPriority> toolWithPriorities)
+        private void LogToolsAsTable(IReadOnlyCollection<ToolWithPriority> toolWithPriorities)
         {
             var sb = new StringBuilder();
 
@@ -360,9 +358,10 @@ namespace Arbor.X.Core
         {
             var buildVariables = new List<IVariable>(500);
 
-            if (
-                Environment.GetEnvironmentVariable(WellKnownVariables.VariableFileSourceEnabled)
-                    .TryParseBool(false))
+            Environment.GetEnvironmentVariable(WellKnownVariables.VariableFileSourceEnabled)
+                .TryParseBool(out bool enabled, false);
+
+            if (enabled)
             {
                 _logger.Information(
                     "The environment variable {VariableFileSourceEnabled} is set to true, using file source to set environment variables",
@@ -373,12 +372,14 @@ namespace Arbor.X.Core
 
                 foreach (string configFile in files)
                 {
-                   ImmutableArray<KeyValue> variables = EnvironmentVariableHelper.GetBuildVariablesFromFile(_logger, configFile);
+                    ImmutableArray<KeyValue> variables =
+                        EnvironmentVariableHelper.GetBuildVariablesFromFile(_logger, configFile);
 
                     if (variables.IsDefaultOrEmpty)
                     {
                         _logger.Warning(
-                            "Could not set environment variables from file, set variable '{Key}' to false to disabled", WellKnownVariables.VariableFileSourceEnabled);
+                            "Could not set environment variables from file, set variable '{Key}' to false to disabled",
+                            WellKnownVariables.VariableFileSourceEnabled);
                     }
                 }
             }
@@ -393,8 +394,8 @@ namespace Arbor.X.Core
 
             buildVariables.AddRange(result);
 
-            //buildVariables.AddRange(
-            //    EnvironmentVariableHelper.GetBuildVariablesFromEnvironmentVariables(_logger, buildVariables));
+            buildVariables.AddRange(
+                EnvironmentVariableHelper.GetBuildVariablesFromEnvironmentVariables(_logger, buildVariables));
 
             IReadOnlyCollection<IVariableProvider> providers = _container.Resolve<IEnumerable<IVariableProvider>>()
                 .OrderBy(provider => provider.Order)
@@ -599,6 +600,5 @@ namespace Arbor.X.Core
 
             return variables.Select(item => new BuildVariable(item.Key, item.Value)).ToImmutableArray();
         }
-
     }
 }

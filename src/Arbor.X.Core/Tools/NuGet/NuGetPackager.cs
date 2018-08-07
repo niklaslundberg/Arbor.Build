@@ -9,6 +9,7 @@ using Arbor.Processing;
 using Arbor.Processing.Core;
 using Arbor.X.Core.BuildVariables;
 using Arbor.X.Core.GenericExtensions;
+using Arbor.X.Core.GenericExtensions.Boolean;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Tools.Git;
 using Serilog;
@@ -192,7 +193,7 @@ namespace Arbor.X.Core.Tools.NuGet
             var nuSpecInfo = new FileInfo(packageSpecificationPath);
 
             // ReSharper disable AssignNullToNotNullAttribute
-            string nuSpecFileCopyPath = Path.Combine(nuSpecInfo.DirectoryName, $"{Guid.NewGuid()}-{nuSpecInfo.Name}");
+            string nuSpecFileCopyPath = Path.Combine(nuSpecInfo.DirectoryName, $"{packageId}-{Guid.NewGuid()}-{nuSpecInfo.Name}");
 
             // ReSharper restore AssignNullToNotNullAttribute
 
@@ -258,7 +259,7 @@ namespace Arbor.X.Core.Tools.NuGet
 
         private static bool IsReleaseBuild(string releaseBuild, BranchName branchName)
         {
-            bool isReleaseBuild = releaseBuild.TryParseBool(false);
+            releaseBuild.TryParseBool(out bool isReleaseBuild, false);
 
             return isReleaseBuild || branchName.IsProductionBranch();
         }
