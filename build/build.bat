@@ -52,7 +52,7 @@ REM SET Arbor.X.Vcs.Branch.Name=develop
 
 REM SET Arbor.X.Tools.External.MSBuild.DefaultTarget=Build
 
-CALL dotnet ArborBuild\Arbor.Build.dll
+CALL dotnet arbor-build
 
 REM Restore variables to default
 
