@@ -850,16 +850,15 @@ namespace Arbor.X.Core.Tools.MSBuild
 
             Solution solution = Solution.LoadFrom(solutionFile.FullName);
 
-            ImmutableArray<SolutionProject> exeProjects = solution.Projects.Where(project => project.Framework == Framework.NetCoreApp
-                                               && project.Project.PropertyGroups.Any(group =>
-                                                   group.Properties.Any(property =>
-                                                       property.Name.Equals("OutputType", StringComparison.Ordinal) &&
-                                                       property.Value.Equals("Exe")))).ToImmutableArray();
-
+            ImmutableArray<SolutionProject> exeProjects = solution.Projects
+                .Where(project =>
+                    project.Framework == Framework.NetCoreApp
+                    && project.Project.HasPropertyWithValue("OutputType", "Exe"))
+                .ToImmutableArray();
 
             foreach (SolutionProject solutionProject in exeProjects)
             {
-                string[] args = { "publish", solutionProject.FullPath, "-c", configuration };
+                string[] args = { "publish", solutionProject.FullPath, "-c", configuration, "--no-build" };
 
                 ExitCode projectExitCode = await ProcessUtils.ProcessHelper.ExecuteAsync(_dotNetExePath, args, logger, cancellationToken: _cancellationToken);
 
@@ -880,64 +879,30 @@ namespace Arbor.X.Core.Tools.MSBuild
                 return ExitCode.Success;
             }
 
+            bool IsToolProject(SolutionProject project)
+            {
+                return project.Framework == Framework.NetCoreApp
+                       && project.Project.HasPropertyWithValue("OutputType", "Exe")
+                       && project.Project.HasPropertyWithValue("PackAsTool", "true");
+            }
+
             Solution solution = Solution.LoadFrom(solutionFile.FullName);
 
-            ImmutableArray<SolutionProject> exeProjects = solution.Projects.Where(project =>
-                project.Framework == Framework.NetCoreApp
-                && project.Project.PropertyGroups.Any(group =>
-                {
-                    return @group
-                               .Properties.Any(
-                                   property =>
-                                       property
-                                           .Name
-                                           .Equals(
-                                               "OutputType",
-                                               StringComparison
-                                                   .Ordinal) &&
-                                       property
-                                           .Value
-                                           .Equals(
-                                               "Exe")
-                               ) && @group
-                               .Properties.Any(
-                                   property =>
-                                       property
-                                           .Name
-                                           .Equals(
-                                               "PackAsTool",
-                                               StringComparison
-                                                   .Ordinal) &&
-                                       property
-                                           .Value
-                                           .Equals(
-                                               "true",
-                                               StringComparison.OrdinalIgnoreCase)
-                               );
-                })).ToImmutableArray();
-
-            string packageVersion =
-                NuGetVersionHelper.GetVersion(_version, true, "", false, "", null, NuGetVersioningSettings.Default);
+            ImmutableArray<SolutionProject> exeProjects = solution.Projects.Where(IsToolProject).ToImmutableArray();
 
             bool isReleaseBuild = configuration.Equals("release", StringComparison.OrdinalIgnoreCase);
 
-            string suffix = SemanticVersion.Parse(NuGetVersionHelper.GetVersion(_version,
+            string packageVersion = SemanticVersion.Parse(NuGetVersionHelper.GetVersion(_version,
                 isReleaseBuild,
                 _buildSuffix,
-                true,
-                "",
-                null,
-                NuGetVersioningSettings.Default)).Suffix();
+                enableBuildNumber: true,
+                packageBuildMetadata: "", // TODO add support for metadata
+                _logger,
+                NuGetVersioningSettings.Default)).ToNormalizedString();
 
             foreach (SolutionProject solutionProject in exeProjects)
             {
-                var args = new List<string> { "pack", solutionProject.FullPath, "--configuration", configuration, $"/p:PackageVersion={packageVersion}", "--output", _packagesDirectory };
-
-                if (!string.IsNullOrWhiteSpace(suffix))
-                {
-                    args.Add("--version-suffix");
-                    args.Add(suffix);
-                }
+                string[] args = { "pack", solutionProject.FullPath, "--configuration", configuration, $"/p:VersionPrefix={packageVersion}", "--output", _packagesDirectory, "--no-build" };
 
                 ExitCode projectExitCode = await ProcessUtils.ProcessHelper.ExecuteAsync(_dotNetExePath, args, logger, cancellationToken: _cancellationToken);
 
