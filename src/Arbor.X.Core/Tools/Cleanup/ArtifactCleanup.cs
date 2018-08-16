@@ -24,7 +24,7 @@ namespace Arbor.X.Core.Tools.Cleanup
             bool cleanupBeforeBuildEnabled =
                 buildVariables.GetBooleanByKey(
                     WellKnownVariables.CleanupArtifactsBeforeBuildEnabled,
-                    false);
+                    true);
 
             if (!cleanupBeforeBuildEnabled)
             {
