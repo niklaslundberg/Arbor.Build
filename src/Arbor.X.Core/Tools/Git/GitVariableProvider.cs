@@ -5,17 +5,16 @@ using System.Globalization;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.GenericExtensions.Boolean;
 using Arbor.Defensive;
 using Arbor.Processing;
 using Arbor.Processing.Core;
-using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.GenericExtensions;
-using Arbor.X.Core.GenericExtensions.Boolean;
 using JetBrains.Annotations;
 using NuGet.Versioning;
 using Serilog;
 
-namespace Arbor.X.Core.Tools.Git
+namespace Arbor.Build.Core.Tools.Git
 {
     [UsedImplicitly]
     public class GitVariableProvider : IVariableProvider

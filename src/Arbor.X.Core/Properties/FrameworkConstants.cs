@@ -1,4 +1,4 @@
-﻿namespace Arbor.X.Core.Properties
+﻿namespace Arbor.Build.Core.Properties
 {
     public static class FrameworkConstants
     {

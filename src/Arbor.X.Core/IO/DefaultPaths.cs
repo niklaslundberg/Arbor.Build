@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Arbor.X.Core.IO
+namespace Arbor.Build.Core.IO
 {
     public static class DefaultPaths
     {

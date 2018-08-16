@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Linq;
 using Arbor.Defensive;
 
-namespace Arbor.X.Core.BuildVariables
+namespace Arbor.Build.Core.BuildVariables
 {
     public static class BuildVariableExtensions
     {

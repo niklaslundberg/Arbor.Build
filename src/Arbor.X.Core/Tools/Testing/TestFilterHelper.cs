@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using Arbor.X.Core.BuildVariables;
+using Arbor.Build.Core.BuildVariables;
 using JetBrains.Annotations;
 
-namespace Arbor.X.Core.Tools.Testing
+namespace Arbor.Build.Core.Tools.Testing
 {
     public static class TestFilterHelper
     {

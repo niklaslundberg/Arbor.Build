@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Arbor.Build.Core.BuildVariables;
 using Arbor.Processing.Core;
 using Arbor.Sorbus.Core;
-using Arbor.X.Core.BuildVariables;
 using JetBrains.Annotations;
 using Serilog;
 
-namespace Arbor.X.Core.Tools.Versioning
+namespace Arbor.Build.Core.Tools.Versioning
 {
     [UsedImplicitly]
     [Priority(1000, true)]

@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
-using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.Configuration.AutofacModules;
-using Arbor.X.Core.Tools.Git;
+using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.Tools.Git;
+using Arbor.Build.Core.Tools.MSBuild;
 using JetBrains.Annotations;
 using Serilog;
 
-namespace Arbor.X.Core.Tools.Versioning
+namespace Arbor.Build.Core.Tools.Versioning
 {
     [UsedImplicitly]
     public class BuildConfigurationProvider : IVariableProvider

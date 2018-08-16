@@ -2,7 +2,7 @@
 using Arbor.Aesculus.Core;
 using NCrunch.Framework;
 
-namespace Arbor.X.Tests.Integration.Tests.MSpec
+namespace Arbor.Build.Tests.Integration.Tests.MSpec
 {
     static class VcsTestPathHelper
     {

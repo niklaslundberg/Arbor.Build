@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Arbor.Defensive.Collections;
 
-namespace Arbor.X.Core.Tools.NuGet
+namespace Arbor.Build.Core.Tools.NuGet
 {
     public class ManifestReWriteResult
     {

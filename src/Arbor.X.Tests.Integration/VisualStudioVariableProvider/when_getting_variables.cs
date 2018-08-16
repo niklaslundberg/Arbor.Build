@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.Tools.Testing;
+using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.Tools.Testing;
 using Machine.Specifications;
 using Serilog.Core;
 
-namespace Arbor.X.Tests.Integration.VisualStudioVariableProvider
+namespace Arbor.Build.Tests.Integration.VisualStudioVariableProvider
 {
     [Tags(MSpecInternalConstants.RecursiveArborXTest)]
     [Subject(typeof(Core.Tools.VisualStudio.VisualStudioVariableProvider))]

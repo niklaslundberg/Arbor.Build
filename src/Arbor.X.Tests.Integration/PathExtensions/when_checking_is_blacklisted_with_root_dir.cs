@@ -1,8 +1,8 @@
 using System.IO;
-using Arbor.X.Core.IO;
+using Arbor.Build.Core.IO;
 using Machine.Specifications;
 
-namespace Arbor.X.Tests.Integration.PathExtensions
+namespace Arbor.Build.Tests.Integration.PathExtensions
 {
     [Subject(typeof(Core.IO.PathExtensions))]
     public class when_checking_is_blacklisted_with_root_dir

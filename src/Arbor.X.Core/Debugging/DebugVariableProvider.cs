@@ -3,11 +3,11 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Arbor.X.Core.BuildVariables;
+using Arbor.Build.Core.BuildVariables;
 using JetBrains.Annotations;
 using Serilog;
 
-namespace Arbor.X.Core
+namespace Arbor.Build.Core.Debugging
 {
     [UsedImplicitly]
     public class DebugVariableProvider : IVariableProvider

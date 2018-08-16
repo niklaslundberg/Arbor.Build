@@ -1,7 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Assert = NUnit.Framework.Assert;
 
-namespace Arbor.X.Tests.Integration.Tests
+namespace Arbor.Build.Tests.Integration.Tests
 {
     [TestClass]
     public class VSTestDummy

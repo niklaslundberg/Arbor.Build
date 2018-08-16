@@ -5,7 +5,7 @@ using System.Linq;
 using Serilog;
 using Serilog.Core;
 
-namespace Arbor.X.Core.IO
+namespace Arbor.Build.Core.IO
 {
     public class DirectoryDelete
     {

@@ -3,7 +3,7 @@ using Autofac;
 using JetBrains.Annotations;
 using Serilog;
 
-namespace Arbor.X.Core
+namespace Arbor.Build.Core.Logging
 {
     public class SerilogModule : Module
     {

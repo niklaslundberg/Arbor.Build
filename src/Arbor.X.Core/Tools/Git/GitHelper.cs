@@ -5,7 +5,7 @@ using System.Linq;
 using JetBrains.Annotations;
 using Serilog;
 
-namespace Arbor.X.Core.Tools.Git
+namespace Arbor.Build.Core.Tools.Git
 {
     public static class GitHelper
     {

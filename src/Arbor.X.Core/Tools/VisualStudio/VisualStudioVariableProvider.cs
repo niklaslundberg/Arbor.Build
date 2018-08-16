@@ -6,13 +6,13 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.Tools.Cleanup;
+using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.Tools.Cleanup;
 using JetBrains.Annotations;
 using Microsoft.Win32;
 using Serilog;
 
-namespace Arbor.X.Core.Tools.VisualStudio
+namespace Arbor.Build.Core.Tools.VisualStudio
 {
     [UsedImplicitly]
     public class VisualStudioVariableProvider : IVariableProvider

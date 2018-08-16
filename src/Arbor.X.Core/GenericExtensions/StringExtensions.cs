@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 
-namespace Arbor.X.Core.GenericExtensions
+namespace Arbor.Build.Core.GenericExtensions
 {
     public static class StringExtensions
     {

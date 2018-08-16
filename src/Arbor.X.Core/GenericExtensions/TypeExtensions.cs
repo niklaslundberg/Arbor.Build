@@ -2,7 +2,7 @@
 using System.Reflection;
 using JetBrains.Annotations;
 
-namespace Arbor.X.Core.GenericExtensions
+namespace Arbor.Build.Core.GenericExtensions
 {
     public static class TypeExtensions
     {

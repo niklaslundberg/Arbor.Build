@@ -6,17 +6,17 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.GenericExtensions.Int;
+using Arbor.Build.Core.Tools.Cleanup;
 using Arbor.Exceptions;
 using Arbor.KVConfiguration.Core.Extensions.StringExtensions;
 using Arbor.KVConfiguration.Core.Metadata;
 using Arbor.KVConfiguration.JsonConfiguration;
-using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.GenericExtensions;
-using Arbor.X.Core.Tools.Cleanup;
 using JetBrains.Annotations;
 using Serilog;
 
-namespace Arbor.X.Core.Tools.Versioning
+namespace Arbor.Build.Core.Tools.Versioning
 {
     [UsedImplicitly]
     public class BuildVersionProvider : IVariableProvider

@@ -4,11 +4,11 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Arbor.X.Core.BuildVariables;
+using Arbor.Build.Core.BuildVariables;
 using JetBrains.Annotations;
 using Serilog;
 
-namespace Arbor.X.Core.Tools.NuGet
+namespace Arbor.Build.Core.Tools.NuGet
 {
     [UsedImplicitly]
     public class NugetVariableProvider : IVariableProvider

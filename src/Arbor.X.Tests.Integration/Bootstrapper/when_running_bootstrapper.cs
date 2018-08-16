@@ -1,12 +1,12 @@
 ﻿using System;
 using System.IO;
+using Arbor.Build.Core.Bootstrapper;
+using Arbor.Build.Core.IO;
 using Arbor.Processing.Core;
-using Arbor.X.Core.Bootstrapper;
-using Arbor.X.Core.IO;
 using Machine.Specifications;
 using Serilog.Core;
 
-namespace Arbor.X.Tests.Integration.Bootstrapper
+namespace Arbor.Build.Tests.Integration.Bootstrapper
 {
     [Ignore("Not complete")]
     [Subject(typeof(Core.Bootstrapper.Bootstrapper))]

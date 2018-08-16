@@ -1,7 +1,7 @@
 ﻿using System;
 using Serilog;
 
-namespace Arbor.X.Core.Tools.NuGet
+namespace Arbor.Build.Core.Tools.NuGet
 {
     public static class InMemoryLoggerHelper
     {

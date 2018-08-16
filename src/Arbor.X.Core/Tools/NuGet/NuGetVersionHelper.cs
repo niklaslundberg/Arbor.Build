@@ -1,9 +1,9 @@
 ﻿using System;
-using Arbor.X.Core.GenericExtensions;
+using Arbor.Build.Core.GenericExtensions;
 using NuGet.Versioning;
 using Serilog;
 
-namespace Arbor.X.Core.Tools.NuGet
+namespace Arbor.Build.Core.Tools.NuGet
 {
     public static class NuGetVersionHelper
     {

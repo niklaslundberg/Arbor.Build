@@ -1,7 +1,7 @@
-using Arbor.X.Core.Tools.Git;
+using Arbor.Build.Core.Tools.Git;
 using Machine.Specifications;
 
-namespace Arbor.X.Tests.Integration.GitBranches
+namespace Arbor.Build.Tests.Integration.GitBranches
 {
     [Subject(typeof(BranchHelper))]
     public class when_parsing_version_from_branch_name_with_slash

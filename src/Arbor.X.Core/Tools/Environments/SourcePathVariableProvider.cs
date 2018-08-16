@@ -5,11 +5,11 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Aesculus.Core;
-using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.IO;
+using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.IO;
 using Serilog;
 
-namespace Arbor.X.Core.Tools.Environments
+namespace Arbor.Build.Core.Tools.Environments
 {
     public class SourcePathVariableProvider : IVariableProvider
     {

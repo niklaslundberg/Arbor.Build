@@ -1,7 +1,7 @@
 using System;
 using Arbor.Defensive;
 
-namespace Arbor.X.Core
+namespace Arbor.Build.Core.Tools.Git
 {
     public static class GitBranchNameExtensions
     {

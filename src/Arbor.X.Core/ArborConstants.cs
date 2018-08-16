@@ -1,4 +1,4 @@
-﻿namespace Arbor.X.Core
+﻿namespace Arbor.Build.Core
 {
     public static class ArborConstants
     {

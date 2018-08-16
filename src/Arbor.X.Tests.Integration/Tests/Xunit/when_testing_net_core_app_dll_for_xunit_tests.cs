@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
-using Arbor.X.Core.Tools.Testing;
-using Arbor.X.Tests.Integration.Tests.MSpec;
+using Arbor.Build.Core.Tools.Testing;
+using Arbor.Build.Tests.Integration.Tests.MSpec;
 using Machine.Specifications;
 using Serilog.Core;
 using Xunit;
 
-namespace Arbor.X.Tests.Integration.Tests.Xunit
+namespace Arbor.Build.Tests.Integration.Tests.Xunit
 {
     [Ignore("local")]
     [Subject(typeof(UnitTestFinder))]

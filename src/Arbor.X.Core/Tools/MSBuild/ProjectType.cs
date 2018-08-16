@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Arbor.X.Core.Tools.MSBuild
+namespace Arbor.Build.Core.Tools.MSBuild
 {
     public class ProjectType
     {

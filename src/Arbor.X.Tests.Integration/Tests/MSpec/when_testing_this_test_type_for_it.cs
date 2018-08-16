@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Arbor.X.Core.Tools.Testing;
+using Arbor.Build.Core.Tools.Testing;
 using Machine.Specifications;
 using Mono.Cecil;
 using Serilog.Core;
 
-namespace Arbor.X.Tests.Integration.Tests.MSpec
+namespace Arbor.Build.Tests.Integration.Tests.MSpec
 {
     [Subject(typeof(UnitTestFinder))]
     [Tags(MSpecInternalConstants.RecursiveArborXTest)]

@@ -6,7 +6,7 @@ using System.Linq;
 using Arbor.Defensive.Collections;
 using Arbor.Exceptions;
 
-namespace Arbor.X.Core.IO
+namespace Arbor.Build.Core.IO
 {
     public static class DirectoryExtensions
     {

@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
-using Arbor.X.Core.Tools.NuGet;
-using Arbor.X.Core.Tools.Versioning;
+using Arbor.Build.Core.Tools.NuGet;
+using Arbor.Build.Core.Tools.Versioning;
 using NuGet.Versioning;
 using Xunit;
 
-namespace Arbor.X.Tests.Integration.Versioning
+namespace Arbor.Build.Tests.Integration.Versioning
 {
     public class SemVerExtensionSpecification
     {

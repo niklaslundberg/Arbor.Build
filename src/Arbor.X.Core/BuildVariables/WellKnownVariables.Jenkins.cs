@@ -1,6 +1,6 @@
 ﻿// ReSharper disable InconsistentNaming
 
-namespace Arbor.X.Core.BuildVariables
+namespace Arbor.Build.Core.BuildVariables
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "StyleCop.CSharp.NamingRules",

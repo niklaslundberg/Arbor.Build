@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Arbor.Processing.Core;
 using Serilog;
 
-namespace Arbor.X.Core.IO
+namespace Arbor.Build.Core.IO
 {
     public static class DirectoryCopy
     {

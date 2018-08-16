@@ -4,14 +4,14 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.ProcessUtils;
+using Arbor.Build.Core.Tools.EnvironmentVariables;
 using Arbor.Processing.Core;
-using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.ProcessUtils;
-using Arbor.X.Core.Tools.EnvironmentVariables;
 using JetBrains.Annotations;
 using Serilog;
 
-namespace Arbor.X.Core.Tools.NuGet
+namespace Arbor.Build.Core.Tools.NuGet
 {
     [Priority(52)]
     [UsedImplicitly]

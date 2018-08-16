@@ -1,6 +1,6 @@
 ﻿using Xunit;
 
-namespace Arbor.X.Tests.SampleXunitNetCoreApp21
+namespace Arbor.Build.Tests.SampleXunitNetCoreApp21
 {
     public class Class1
     {

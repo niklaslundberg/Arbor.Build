@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace Arbor.X.Core
+namespace Arbor.Build.Core.Debugging
 {
     public static class DebugHelper
     {

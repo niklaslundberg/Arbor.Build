@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Arbor.Defensive.Collections;
 
-namespace Arbor.X.Core.GenericExtensions
+namespace Arbor.Build.Core.GenericExtensions
 {
     public static class DisplayExtensions
     {

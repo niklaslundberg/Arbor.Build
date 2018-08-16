@@ -11,7 +11,7 @@ using Arbor.KVConfiguration.Schema.Json;
 using JetBrains.Annotations;
 using Serilog;
 
-namespace Arbor.X.Core.BuildVariables
+namespace Arbor.Build.Core.BuildVariables
 {
     public static class EnvironmentVariableHelper
     {

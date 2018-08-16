@@ -4,14 +4,13 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.GenericExtensions;
-using Arbor.X.Core.GenericExtensions.Boolean;
-using Arbor.X.Core.Tools.Cleanup;
+using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.GenericExtensions.Boolean;
+using Arbor.Build.Core.Tools.Cleanup;
 using JetBrains.Annotations;
 using Serilog;
 
-namespace Arbor.X.Core.Tools.Environments
+namespace Arbor.Build.Core.Tools.Environments
 {
     [UsedImplicitly]
     public class BuildAgentVariableProvider : IVariableProvider

@@ -6,11 +6,11 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Versioning;
-using Arbor.X.Core.Assemblies;
+using Arbor.Build.Core.Assemblies;
 using Mono.Cecil;
 using Serilog;
 
-namespace Arbor.X.Core.Tools.Testing
+namespace Arbor.Build.Core.Tools.Testing
 {
     public class UnitTestFinder
     {

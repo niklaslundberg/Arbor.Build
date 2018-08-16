@@ -1,4 +1,4 @@
-namespace Arbor.X.Core
+namespace Arbor.Build.Core.BuildVariables
 {
     public class SourceRootValue
     {

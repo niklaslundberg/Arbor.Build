@@ -1,5 +1,5 @@
 
-namespace Arbor.X.Core.GenericExtensions
+namespace Arbor.Build.Core.GenericExtensions.Int
 {
     public static class IntExtensions
     {

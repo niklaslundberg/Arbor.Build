@@ -1,6 +1,6 @@
 using Machine.Specifications;
 
-namespace Arbor.X.Tests.Integration.Maybe
+namespace Arbor.Build.Tests.Integration.Maybe
 {
     public class when_converting_a_non_empty_value_to_a_maybe
     {

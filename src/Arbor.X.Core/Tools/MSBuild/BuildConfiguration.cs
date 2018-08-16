@@ -1,7 +1,7 @@
 using System;
 using JetBrains.Annotations;
 
-namespace Arbor.X.Core.Configuration.AutofacModules
+namespace Arbor.Build.Core.Tools.MSBuild
 {
     public class BuildConfiguration
     {

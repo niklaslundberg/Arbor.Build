@@ -7,7 +7,7 @@ using Autofac;
 using JetBrains.Annotations;
 using Serilog;
 
-namespace Arbor.X.Core.Tools
+namespace Arbor.Build.Core.Tools
 {
     public static class ToolFinder
     {

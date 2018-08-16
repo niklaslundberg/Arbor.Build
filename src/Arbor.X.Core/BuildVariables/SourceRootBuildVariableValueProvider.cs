@@ -3,12 +3,11 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.IO;
+using Arbor.Build.Core.IO;
 using JetBrains.Annotations;
 using Serilog;
 
-namespace Arbor.X.Core
+namespace Arbor.Build.Core.BuildVariables
 {
     [UsedImplicitly]
     public class SourceRootBuildVariableValueProvider : IVariableProvider

@@ -1,7 +1,7 @@
-using Arbor.X.Core.Tools.Kudu;
+using Arbor.Build.Core.Tools.Kudu;
 using Machine.Specifications;
 
-namespace Arbor.X.Tests.Integration.KuduWebJobs
+namespace Arbor.Build.Tests.Integration.KuduWebJobs
 {
     [Subject(typeof(KuduWebJobType))]
     public class when_parsing_valid_uppercase

@@ -10,27 +10,27 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Aesculus.Core;
+using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.GenericExtensions.Boolean;
+using Arbor.Build.Core.GenericExtensions.Int;
+using Arbor.Build.Core.IO;
+using Arbor.Build.Core.ProcessUtils;
+using Arbor.Build.Core.Tools.DotNet;
+using Arbor.Build.Core.Tools.Git;
+using Arbor.Build.Core.Tools.Kudu;
 using Arbor.Exceptions;
 using Arbor.Processing;
 using Arbor.Processing.Core;
-using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.GenericExtensions;
-using Arbor.X.Core.GenericExtensions.Boolean;
-using Arbor.X.Core.IO;
-using Arbor.X.Core.ProcessUtils;
-using Arbor.X.Core.Tools.DotNet;
-using Arbor.X.Core.Tools.Git;
-using Arbor.X.Core.Tools.Kudu;
 using JetBrains.Annotations;
 using Serilog;
 using Serilog.Events;
 
-namespace Arbor.X.Core.Bootstrapper
+namespace Arbor.Build.Core.Bootstrapper
 {
     public class Bootstrapper
     {
         private const int MaxBuildTimeInSeconds = 600;
-        private static readonly string _Prefix = $"[{nameof(Arbor)}.{nameof(X)}.{nameof(Bootstrapper)}] ";
+        private static readonly string _Prefix = $"[{ArborConstants.ArborBuild}.{nameof(Bootstrapper)}] ";
         private readonly ILogger _logger;
         private bool _directoryCloneEnabled;
 

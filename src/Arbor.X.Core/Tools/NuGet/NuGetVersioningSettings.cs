@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Arbor.X.Core.Tools.NuGet
+namespace Arbor.Build.Core.Tools.NuGet
 {
     public class NuGetVersioningSettings
     {

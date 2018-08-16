@@ -2,13 +2,13 @@
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Arbor.Build.Core.IO;
 using Arbor.Processing.Core;
-using Arbor.X.Core.IO;
 using Machine.Specifications;
 using Serilog;
 using Serilog.Core;
 
-namespace Arbor.X.Tests.Integration.ProcessRunner
+namespace Arbor.Build.Tests.Integration.ProcessRunner
 {
     [Subject(typeof(Processing.ProcessRunner))]
     [Tags(Core.Tools.Testing.MSpecInternalConstants.RecursiveArborXTest)]

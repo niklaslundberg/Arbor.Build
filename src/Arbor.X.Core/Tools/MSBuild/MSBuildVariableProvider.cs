@@ -7,18 +7,18 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.ProcessUtils;
+using Arbor.Build.Core.Tools.Cleanup;
 using Arbor.Processing;
 using Arbor.Processing.Core;
-using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.ProcessUtils;
-using Arbor.X.Core.Tools.Cleanup;
 using JetBrains.Annotations;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 using NuGet.Versioning;
 using Serilog;
 
-namespace Arbor.X.Core.Tools.MSBuild
+namespace Arbor.Build.Core.Tools.MSBuild
 {
     [UsedImplicitly]
     public class MSBuildVariableProvider : IVariableProvider

@@ -6,14 +6,14 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.GenericExtensions;
 using Arbor.Exceptions;
 using Arbor.Processing;
 using Arbor.Processing.Core;
-using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.GenericExtensions;
 using Serilog;
 
-namespace Arbor.X.Core.Tools.Cleanup
+namespace Arbor.Build.Core.Tools.Cleanup
 {
     [Priority(1001, true)]
     public class ProcessCleanup : ITool

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using Arbor.X.Core.BuildVariables;
+using Arbor.Build.Core.BuildVariables;
 
-namespace Arbor.X.Core.Exceptions
+namespace Arbor.Build.Core.Exceptions
 {
     public sealed class BuildException : Exception
     {

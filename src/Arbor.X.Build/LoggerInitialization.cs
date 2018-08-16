@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Linq;
-using Arbor.X.Core.BuildVariables;
+using Arbor.Build.Core.BuildVariables;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
 
-namespace Arbor.X.Build
+namespace Arbor.Build
 {
     internal static class LoggerInitialization
     {

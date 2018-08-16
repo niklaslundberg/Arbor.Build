@@ -1,6 +1,6 @@
 ﻿using NUnit.Framework;
 
-namespace Arbor.X.Tests.Integration.Tests
+namespace Arbor.Build.Tests.Integration.Tests
 {
     [TestFixture]
     public class NUnitDummy

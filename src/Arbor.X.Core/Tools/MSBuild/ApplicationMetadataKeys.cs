@@ -1,4 +1,4 @@
-namespace Arbor.X.Core.Tools.MSBuild
+namespace Arbor.Build.Core.Tools.MSBuild
 {
     internal static class ApplicationMetadataKeys
     {

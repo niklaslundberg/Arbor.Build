@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Arbor.X.Tests.DummyConsoleApp
+namespace Arbor.Build.Tests.DummyConsoleApp
 {
     internal class Program
     {

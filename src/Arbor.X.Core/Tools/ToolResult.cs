@@ -1,7 +1,7 @@
 using System;
 using JetBrains.Annotations;
 
-namespace Arbor.X.Core.Tools
+namespace Arbor.Build.Core.Tools
 {
     public class ToolResult
     {

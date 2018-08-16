@@ -7,6 +7,11 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.GenericExtensions;
+using Arbor.Build.Core.GenericExtensions.Boolean;
+using Arbor.Build.Core.IO;
+using Arbor.Build.Core.Tools.NuGet;
 using Arbor.Defensive;
 using Arbor.Defensive.Collections;
 using Arbor.Exceptions;
@@ -14,20 +19,13 @@ using Arbor.KVConfiguration.Core.Metadata;
 using Arbor.KVConfiguration.Schema.Json;
 using Arbor.Processing;
 using Arbor.Processing.Core;
-using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.Configuration.AutofacModules;
-using Arbor.X.Core.GenericExtensions;
-using Arbor.X.Core.GenericExtensions.Boolean;
-using Arbor.X.Core.IO;
-using Arbor.X.Core.Tools.NuGet;
-using Arbor.X.Core.Tools.Versioning;
 using Arbor.Xdt;
 using JetBrains.Annotations;
 using NuGet.Versioning;
 using Serilog;
 using Stopwatch = System.Diagnostics.Stopwatch;
 
-namespace Arbor.X.Core.Tools.MSBuild
+namespace Arbor.Build.Core.Tools.MSBuild
 {
     [Priority(300)]
     [UsedImplicitly]

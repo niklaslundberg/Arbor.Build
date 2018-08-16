@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using Arbor.Build.Core.IO;
+using Arbor.Build.Core.Tools.Testing;
 using Arbor.Processing.Core;
-using Arbor.X.Core.IO;
-using Arbor.X.Core.Tools.Testing;
 using Machine.Specifications;
 using Serilog.Core;
 
-namespace Arbor.X.Tests.Integration.Tests.MSpec
+namespace Arbor.Build.Tests.Integration.Tests.MSpec
 {
     [Subject(typeof(UnitTestFinder))]
     [Tags(MSpecInternalConstants.RecursiveArborXTest)]

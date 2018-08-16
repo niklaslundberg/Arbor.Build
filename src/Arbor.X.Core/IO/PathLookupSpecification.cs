@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using Arbor.Defensive.Collections;
 
-namespace Arbor.X.Core.IO
+namespace Arbor.Build.Core.IO
 {
     public class PathLookupSpecification
     {

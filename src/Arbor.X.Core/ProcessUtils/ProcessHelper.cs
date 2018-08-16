@@ -7,7 +7,7 @@ using Arbor.Processing.Core;
 using Serilog;
 using Serilog.Core;
 
-namespace Arbor.X.Core.ProcessUtils
+namespace Arbor.Build.Core.ProcessUtils
 {
     public static class ProcessHelper
     {

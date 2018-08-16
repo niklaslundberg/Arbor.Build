@@ -6,13 +6,13 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Arbor.X.Core.BuildVariables;
+using Arbor.Build.Core.BuildVariables;
 using JetBrains.Annotations;
 using Mono.Cecil;
 using Serilog;
 using Serilog.Core;
 
-namespace Arbor.X.Core.Assemblies
+namespace Arbor.Build.Core.Assemblies
 {
     public static class AssemblyExtensions
     {

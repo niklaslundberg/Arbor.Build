@@ -9,21 +9,23 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Aesculus.Core;
+using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.Debugging;
+using Arbor.Build.Core.GenericExtensions;
+using Arbor.Build.Core.GenericExtensions.Boolean;
+using Arbor.Build.Core.GenericExtensions.Int;
+using Arbor.Build.Core.IO;
+using Arbor.Build.Core.Tools;
 using Arbor.Defensive.Collections;
 using Arbor.KVConfiguration.Core;
 using Arbor.KVConfiguration.Schema.Json;
 using Arbor.KVConfiguration.UserConfiguration;
 using Arbor.Processing.Core;
-using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.GenericExtensions;
-using Arbor.X.Core.GenericExtensions.Boolean;
-using Arbor.X.Core.IO;
-using Arbor.X.Core.Tools;
 using Autofac;
 using JetBrains.Annotations;
 using Serilog;
 
-namespace Arbor.X.Core
+namespace Arbor.Build.Core
 {
     public class BuildApplication
     {

@@ -1,10 +1,10 @@
 ﻿using System;
 using System.IO;
-using Arbor.X.Core.IO;
+using Arbor.Build.Core.IO;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
 
-namespace Arbor.X.Core.Tools.NuGet
+namespace Arbor.Build.Core.Tools.NuGet
 {
     public class NuGetPackageConfiguration
     {

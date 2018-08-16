@@ -1,4 +1,4 @@
-namespace Arbor.X.Core.Tools.Cleanup
+namespace Arbor.Build.Core.Tools.Cleanup
 {
     public static class VariableProviderOrder
     {

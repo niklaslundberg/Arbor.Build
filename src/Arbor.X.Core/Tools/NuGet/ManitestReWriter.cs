@@ -5,7 +5,7 @@ using System.Linq;
 using NuGet.Packaging;
 using Serilog;
 
-namespace Arbor.X.Core.Tools.NuGet
+namespace Arbor.Build.Core.Tools.NuGet
 {
     public class ManitestReWriter
     {

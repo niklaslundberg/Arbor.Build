@@ -1,7 +1,7 @@
 ﻿using System;
 using Machine.Specifications;
 
-namespace Arbor.X.Tests.Integration.KuduWebProjectDetails
+namespace Arbor.Build.Tests.Integration.KuduWebProjectDetails
 {
     [Subject(typeof(Core.Tools.Kudu.KuduWebProjectDetails))]
     public class when_creating_kudu_web_project_details

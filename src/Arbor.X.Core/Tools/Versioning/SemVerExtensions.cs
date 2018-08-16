@@ -2,7 +2,7 @@
 using JetBrains.Annotations;
 using NuGet.Versioning;
 
-namespace Arbor.X.Core.Tools.Versioning
+namespace Arbor.Build.Core.Tools.Versioning
 {
     public static class SemVerExtensions
     {

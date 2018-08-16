@@ -29,7 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Arbor.X.Core\Arbor.X.Core.csproj" />
+    <ProjectReference Include="..\Arbor.X.Core\Arbor.Build.Core.csproj" />
   </ItemGroup>
 
 </Project>

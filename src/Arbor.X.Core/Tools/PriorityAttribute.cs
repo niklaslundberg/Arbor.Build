@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Arbor.X.Core.Tools
+namespace Arbor.Build.Core.Tools
 {
     [AttributeUsage(AttributeTargets.Class, Inherited = false)]
     public sealed class PriorityAttribute : Attribute

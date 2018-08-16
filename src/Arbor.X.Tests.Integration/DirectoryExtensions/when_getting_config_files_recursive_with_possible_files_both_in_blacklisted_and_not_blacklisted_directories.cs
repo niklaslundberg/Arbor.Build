@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Arbor.X.Core.IO;
+using Arbor.Build.Core.IO;
 using Machine.Specifications;
 using Machine.Specifications.Model;
 
-namespace Arbor.X.Tests.Integration.DirectoryExtensions
+namespace Arbor.Build.Tests.Integration.DirectoryExtensions
 {
     [Subject(typeof(Subject))]
     public class

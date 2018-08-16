@@ -4,15 +4,15 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.IO;
 using Arbor.Defensive.Collections;
 using Arbor.Processing.Core;
 using Arbor.Sorbus.Core;
-using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.IO;
 using JetBrains.Annotations;
 using Serilog;
 
-namespace Arbor.X.Core.Tools.Versioning
+namespace Arbor.Build.Core.Tools.Versioning
 {
     [UsedImplicitly]
     [Priority(200)]

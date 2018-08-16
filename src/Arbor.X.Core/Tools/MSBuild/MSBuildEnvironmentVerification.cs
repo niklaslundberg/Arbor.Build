@@ -1,8 +1,8 @@
-﻿using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.Tools.EnvironmentVariables;
+﻿using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.Tools.EnvironmentVariables;
 using JetBrains.Annotations;
 
-namespace Arbor.X.Core.Tools.MSBuild
+namespace Arbor.Build.Core.Tools.MSBuild
 {
     [Priority(51)]
     [UsedImplicitly]

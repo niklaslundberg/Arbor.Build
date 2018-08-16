@@ -6,7 +6,7 @@ using System.Xml.Xsl;
 using Arbor.Processing.Core;
 using Serilog;
 
-namespace Arbor.X.Core.Tools.Testing
+namespace Arbor.Build.Core.Tools.Testing
 {
     public static class TestReportXslt
     {

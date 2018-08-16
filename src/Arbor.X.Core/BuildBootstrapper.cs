@@ -3,15 +3,17 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Arbor.X.Core.Assemblies;
-using Arbor.X.Core.GenericExtensions;
+using Arbor.Build.Core.Assemblies;
+using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.GenericExtensions;
+using Arbor.Build.Core.Logging;
 using Autofac;
 using Autofac.Core;
 using Autofac.Util;
 using JetBrains.Annotations;
 using Serilog;
 
-namespace Arbor.X.Core
+namespace Arbor.Build.Core
 {
     public static class BuildBootstrapper
     {

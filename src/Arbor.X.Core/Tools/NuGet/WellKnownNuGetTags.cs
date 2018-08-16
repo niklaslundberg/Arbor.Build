@@ -1,4 +1,4 @@
-namespace Arbor.X.Core.Tools.NuGet
+namespace Arbor.Build.Core.Tools.NuGet
 {
     internal static class WellKnownNuGetTags
     {

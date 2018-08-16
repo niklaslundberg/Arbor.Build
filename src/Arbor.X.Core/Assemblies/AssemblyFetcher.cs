@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
-using Arbor.X.Core.GenericExtensions;
+using Arbor.Build.Core.GenericExtensions;
 
-namespace Arbor.X.Core.Assemblies
+namespace Arbor.Build.Core.Assemblies
 {
     public static class AssemblyFetcher
     {

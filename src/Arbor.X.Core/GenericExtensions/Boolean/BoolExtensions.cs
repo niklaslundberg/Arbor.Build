@@ -1,5 +1,5 @@
 ﻿
-namespace Arbor.X.Core.GenericExtensions.Boolean
+namespace Arbor.Build.Core.GenericExtensions.Boolean
 {
     public static class BoolExtensions
     {

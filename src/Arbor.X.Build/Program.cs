@@ -1,9 +1,9 @@
 ﻿using System.Threading.Tasks;
+using Arbor.Build.Core;
 using Arbor.Processing.Core;
-using Arbor.X.Core;
 using Serilog;
 
-namespace Arbor.X.Build
+namespace Arbor.Build
 {
     internal static class Program
     {

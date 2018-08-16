@@ -2,7 +2,7 @@
 using System.Linq;
 using Arbor.Defensive;
 
-namespace Arbor.X.Core.Tools.Git
+namespace Arbor.Build.Core.Tools.Git
 {
     public sealed class BranchName
     {

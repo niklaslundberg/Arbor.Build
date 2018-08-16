@@ -7,16 +7,15 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Aesculus.Core;
+using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.Tools.Cleanup;
 using Arbor.Defensive;
 using Arbor.Processing;
 using Arbor.Processing.Core;
-using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.Tools.Cleanup;
-using Arbor.X.Core.Tools.Git;
 using JetBrains.Annotations;
 using Serilog;
 
-namespace Arbor.X.Core
+namespace Arbor.Build.Core.Tools.Git
 {
     [UsedImplicitly]
     public class BranchNameVariableProvider : IVariableProvider

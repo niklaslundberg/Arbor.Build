@@ -1,8 +1,8 @@
-using Arbor.X.Core.IO;
+using Arbor.Build.Core.IO;
 using Machine.Specifications;
 using Serilog.Core;
 
-namespace Arbor.X.Tests.Integration.PathExtensions
+namespace Arbor.Build.Tests.Integration.PathExtensions
 {
     [Tags(Core.Tools.Testing.MSpecInternalConstants.RecursiveArborXTest)]
     public class when_checking_is_blacklisted_for_a_non_blacklisted_file

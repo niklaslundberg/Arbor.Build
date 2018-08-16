@@ -1,8 +1,7 @@
-using Arbor.X.Core.GenericExtensions;
-using Arbor.X.Core.GenericExtensions.Boolean;
+using Arbor.Build.Core.GenericExtensions.Boolean;
 using Machine.Specifications;
 
-namespace Arbor.X.Tests.Integration.BoolExtensions
+namespace Arbor.Build.Tests.Integration.BoolExtensions
 {
     [Subject(typeof(Core.GenericExtensions.Boolean.BoolExtensions))]
     public class when_parsing_null_value_with_default_true

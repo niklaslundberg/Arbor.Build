@@ -4,7 +4,7 @@ using Arbor.Processing.Core;
 using Serilog;
 using Serilog.Core;
 
-namespace Arbor.X.Bootstrapper
+namespace Arbor.Build.Bootstrapper
 {
     internal static class Program
     {

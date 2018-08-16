@@ -2,7 +2,7 @@ using System;
 using Autofac;
 using JetBrains.Annotations;
 
-namespace Arbor.X.Core
+namespace Arbor.Build.Core.BuildVariables
 {
     public class BuildVariableModule : Module
     {

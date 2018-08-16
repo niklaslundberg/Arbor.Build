@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Arbor.X.Core.IO;
+using Arbor.Build.Core.IO;
 using Machine.Specifications;
 using Serilog.Core;
 
-namespace Arbor.X.Tests.Integration.DirectoryDelete
+namespace Arbor.Build.Tests.Integration.DirectoryDelete
 {
     [Subject(typeof(Core.IO.DirectoryDelete))]
     [Tags(Core.Tools.Testing.MSpecInternalConstants.RecursiveArborXTest)]
