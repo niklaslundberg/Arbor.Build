@@ -31,9 +31,9 @@ SET Arbor.X.Build.WebDeploy.PreCompilation.Enabled=true
 SET Arbor.X.Build.Cleanup.KillProcessesAfterBuild.Enabled=true
 SET Arbor.X.NuGet.NuGetWebPackage.ExcludedPatterns=roslyn\**\*.*
 SET Arbor.X.Build.Tests.AssemblyStartsWith=Arbor.X.Tests
-
+SET Arbor.X.Tools.External.NUnit.Enabled=false
 SET Arbor.X.NuGet.Package.ExcludesCommaSeparated=Arbor.X.Bootstrapper.nuspec
-SET Arbor.X.Tools.External.MSBuild.CodeAnalysis.Enabled=true
+SET Arbor.X.Tools.External.MSBuild.CodeAnalysis.Enabled=false
 
 SET Arbor.X.Build.Tests.IgnoredCategories=dummyexcluded,dummyexcluded2,dummyexclude3
 
@@ -52,7 +52,7 @@ REM SET Arbor.X.Vcs.Branch.Name=develop
 
 REM SET Arbor.X.Tools.External.MSBuild.DefaultTarget=Build
 
-CALL "%~dp0\Build.exe"
+CALL dotnet ArborBuild\Arbor.Build.dll
 
 REM Restore variables to default
 

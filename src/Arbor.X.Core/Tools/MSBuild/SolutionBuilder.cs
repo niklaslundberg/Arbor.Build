@@ -20,8 +20,10 @@ using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.GenericExtensions.Boolean;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.Tools.NuGet;
+using Arbor.X.Core.Tools.Versioning;
 using Arbor.Xdt;
 using JetBrains.Annotations;
+using NuGet.Versioning;
 using Serilog;
 using Stopwatch = System.Diagnostics.Stopwatch;
 
@@ -101,6 +103,12 @@ namespace Arbor.X.Core.Tools.MSBuild
         private string _vcsRoot;
         private bool _webProjectsBuildEnabed;
         private MSBuildVerbositoyLevel _verbosity;
+        private bool _dotnetPublishEnabled = true;
+        private string _dotNetExePath;
+        private bool _dotnetPackToolsEnabled;
+        private string _version;
+        private string _packagesDirectory;
+        private string _buildSuffix;
 
         public Guid WebApplicationProjectTypeId { get; } = Guid.Parse("349C5851-65DF-11DA-9384-00065B846F21");
 
@@ -121,8 +129,25 @@ namespace Arbor.X.Core.Tools.MSBuild
                 WellKnownVariables.AppDataJobsEnabled,
                 false);
 
+            _buildSuffix =
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageArtifactsSuffix, "build");
+
+            _version = buildVariables.Require(WellKnownVariables.Version).ThrowIfEmptyValue().Value;
+
+            IVariable artifacts = buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue();
+            _packagesDirectory = Path.Combine(artifacts.Value, "packages");
+
+            _dotnetPackToolsEnabled =
+                buildVariables.GetBooleanByKey(WellKnownVariables.DotNetPackToolProjectsEnabled, true);
+
+            _dotnetPublishEnabled =
+                buildVariables.GetBooleanByKey(WellKnownVariables.DotNetPublishExeProjectsEnabled, true);
+
             _webProjectsBuildEnabed =
                 buildVariables.GetBooleanByKey(WellKnownVariables.WebProjectsBuildEnabled, true);
+
+            _dotNetExePath =
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.DotNetExePath, string.Empty);
 
             _cleanBinXmlFilesForAssembliesEnabled =
                 buildVariables.GetBooleanByKey(
@@ -733,7 +758,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             {
                 if (_webProjectsBuildEnabed)
                 {
-                    _logger.Information("Web projects build is enabled, key {WebProjectsBuildEnabled}",
+                    _logger.Information("Web projects builds are enabled, key {WebProjectsBuildEnabled}",
                         WellKnownVariables.WebProjectsBuildEnabled);
 
                     ExitCode webAppsExiteCode =
@@ -744,13 +769,61 @@ namespace Arbor.X.Core.Tools.MSBuild
                 }
                 else
                 {
-                    _logger.Information("Web projects build is enabled, key {WebProjectsBuildEnabled}",
+                    _logger.Information("Web projects builds are disabled, key {WebProjectsBuildEnabled}",
                         WellKnownVariables.WebProjectsBuildEnabled);
                 }
             }
             else
             {
                 logger.Error("Skipping web site build since solution build failed");
+            }
+
+            if (exitCode.IsSuccess)
+            {
+                if (_dotnetPublishEnabled)
+                {
+                    _logger.Information("Dotnet publish is enabled, key {Key}",
+                        WellKnownVariables.DotNetPublishExeProjectsEnabled);
+
+                    ExitCode webAppsExiteCode =
+                        await PublishDotNetExeProjectsAsync(solutionFile, configuration, platform, logger)
+                            .ConfigureAwait(false);
+
+                    exitCode = webAppsExiteCode;
+                }
+                else
+                {
+                    _logger.Information("Dotnet publish is disabled, key {Key}",
+                        WellKnownVariables.DotNetPublishExeProjectsEnabled);
+                }
+            }
+            else
+            {
+                logger.Error("Skipping dotnet publish exe projects because solution build failed");
+            }
+
+            if (exitCode.IsSuccess)
+            {
+                if (_dotnetPackToolsEnabled)
+                {
+                    _logger.Information("Dotnet pack tools are enabled, key {Key}",
+                        WellKnownVariables.DotNetPackToolProjectsEnabled);
+
+                    ExitCode webAppsExiteCode =
+                        await PackDotNetToolProjectsAsync(solutionFile, configuration, platform, logger)
+                            .ConfigureAwait(false);
+
+                    exitCode = webAppsExiteCode;
+                }
+                else
+                {
+                    _logger.Information("Dotnet pack tools are disabled, key {Key}",
+                        WellKnownVariables.DotNetPackToolProjectsEnabled);
+                }
+            }
+            else
+            {
+                logger.Error("Skipping dotnet publish exe projects because solution build failed");
             }
 
             CopyCodeAnalysisReportsToArtifacts(configuration, platform, logger);
@@ -765,6 +838,116 @@ namespace Arbor.X.Core.Tools.MSBuild
             }
 
             return exitCode;
+        }
+
+        private async Task<ExitCode> PublishDotNetExeProjectsAsync(FileInfo solutionFile, string configuration, string platform, ILogger logger)
+        {
+            if (string.IsNullOrWhiteSpace(_dotNetExePath))
+            {
+                logger.Warning("dotnet could not be found, skipping publishing dotnet exe projects");
+                return ExitCode.Success;
+            }
+
+            Solution solution = Solution.LoadFrom(solutionFile.FullName);
+
+            ImmutableArray<SolutionProject> exeProjects = solution.Projects.Where(project => project.Framework == Framework.NetCoreApp
+                                               && project.Project.PropertyGroups.Any(group =>
+                                                   group.Properties.Any(property =>
+                                                       property.Name.Equals("OutputType", StringComparison.Ordinal) &&
+                                                       property.Value.Equals("Exe")))).ToImmutableArray();
+
+
+            foreach (SolutionProject solutionProject in exeProjects)
+            {
+                string[] args = { "publish", solutionProject.FullPath, "-c", configuration };
+
+                ExitCode projectExitCode = await ProcessUtils.ProcessHelper.ExecuteAsync(_dotNetExePath, args, logger, cancellationToken: _cancellationToken);
+
+                if (!projectExitCode.IsSuccess)
+                {
+                    return projectExitCode;
+                }
+            }
+
+            return ExitCode.Success;
+        }
+
+        private async Task<ExitCode> PackDotNetToolProjectsAsync(FileInfo solutionFile, string configuration, string platform, ILogger logger)
+        {
+            if (string.IsNullOrWhiteSpace(_dotNetExePath))
+            {
+                logger.Warning("dotnet could not be found, skipping publishing dotnet tool projects");
+                return ExitCode.Success;
+            }
+
+            Solution solution = Solution.LoadFrom(solutionFile.FullName);
+
+            ImmutableArray<SolutionProject> exeProjects = solution.Projects.Where(project =>
+                project.Framework == Framework.NetCoreApp
+                && project.Project.PropertyGroups.Any(group =>
+                {
+                    return @group
+                               .Properties.Any(
+                                   property =>
+                                       property
+                                           .Name
+                                           .Equals(
+                                               "OutputType",
+                                               StringComparison
+                                                   .Ordinal) &&
+                                       property
+                                           .Value
+                                           .Equals(
+                                               "Exe")
+                               ) && @group
+                               .Properties.Any(
+                                   property =>
+                                       property
+                                           .Name
+                                           .Equals(
+                                               "PackAsTool",
+                                               StringComparison
+                                                   .Ordinal) &&
+                                       property
+                                           .Value
+                                           .Equals(
+                                               "true",
+                                               StringComparison.OrdinalIgnoreCase)
+                               );
+                })).ToImmutableArray();
+
+            string packageVersion =
+                NuGetVersionHelper.GetVersion(_version, true, "", false, "", null, NuGetVersioningSettings.Default);
+
+            bool isReleaseBuild = configuration.Equals("release", StringComparison.OrdinalIgnoreCase);
+
+            string suffix = SemanticVersion.Parse(NuGetVersionHelper.GetVersion(_version,
+                isReleaseBuild,
+                _buildSuffix,
+                true,
+                "",
+                null,
+                NuGetVersioningSettings.Default)).Suffix();
+
+            foreach (SolutionProject solutionProject in exeProjects)
+            {
+                var args = new List<string> { "pack", solutionProject.FullPath, "--configuration", configuration, $"/p:PackageVersion={packageVersion}", "--output", _packagesDirectory };
+
+                if (!string.IsNullOrWhiteSpace(suffix))
+                {
+                    args.Add("--version-suffix");
+                    args.Add(suffix);
+                }
+
+                ExitCode projectExitCode = await ProcessUtils.ProcessHelper.ExecuteAsync(_dotNetExePath, args, logger, cancellationToken: _cancellationToken);
+
+                if (!projectExitCode.IsSuccess)
+                {
+                    return projectExitCode;
+                }
+            }
+
+            return ExitCode.Success;
         }
 
         private void CopyCodeAnalysisReportsToArtifacts(string configuration, string platform, ILogger logger)
@@ -941,7 +1124,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                     project.Project.ProjectName,
                     project.Project.ProjectDirectory,
                     project.Project,
-                    Framework.NetCore))
+                    Framework.NetCoreApp))
                 .ToImmutableArray();
 
             webSolutionProjects.AddRange(solutionProjects);
@@ -1572,6 +1755,7 @@ namespace Arbor.X.Core.Tools.MSBuild
                 requireLicenseAcceptance,
                 licenseUrl,
                 copyright,
+                copyright,
                 tags,
                 files);
 
@@ -1579,7 +1763,7 @@ namespace Arbor.X.Core.Tools.MSBuild
 
             DirectoryInfo tempDir = new DirectoryInfo(Path.Combine(
                     Path.GetTempPath(),
-                    $"{DefaultPaths.TempPathPrefix}_sb_{DateTime.Now:yyyyMMddHHmmssfff_}{Guid.NewGuid().ToString().Substring(0, 8)}"))
+                    $"{DefaultPaths.TempPathPrefix}_sb_{DateTime.Now.Ticks}"))
                 .EnsureExists();
 
             string nuspecTempFile = Path.Combine(tempDir.FullName, $"{packageId}.nuspec");

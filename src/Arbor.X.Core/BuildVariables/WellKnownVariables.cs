@@ -13,9 +13,17 @@ namespace Arbor.X.Core.BuildVariables
         Justification = "Variables")]
     public static partial class WellKnownVariables
     {
+
         // ReSharper disable InconsistentNaming
 
         // ReSharper disable ConvertToConstant.Global
+
+        [VariableDescription("Flag to enabled dotnet publish for executable netcoreapp projects")]
+        public const string DotNetPublishExeProjectsEnabled = "Arbor.X.Build.PublishDotNetExecutableProjects";
+
+
+        [VariableDescription("Flag to enabled dotnet pack for tool netcoreapp projects")]
+        public const string DotNetPackToolProjectsEnabled = "Arbor.X.Build.PackDotNetToolProjects";
 
         [VariableDescription("Flag to indicate if build platform AnyCPU is enabled")]
         public const string AnyCpuEnabled = "Arbor.X.Build.Platform.AnyCPU.Enabled";

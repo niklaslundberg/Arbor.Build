@@ -70,7 +70,7 @@ namespace Arbor.X.Core.Tools.MSBuild
             MSBuildProject msBuildProject = MSBuildProject.LoadFrom(projectFullPath);
 
             Framework framework = MSBuildProject.IsNetSdkProject(new FileInfo(projectFullPath))
-                ? Framework.NetCore
+                ? Framework.NetCoreApp
                 : Framework.NetFramework;
 
             return new SolutionProject(projectFullPath,

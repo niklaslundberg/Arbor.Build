@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -17,6 +18,7 @@ using Arbor.X.Core.GenericExtensions;
 using Arbor.X.Core.GenericExtensions.Boolean;
 using Arbor.X.Core.IO;
 using Arbor.X.Core.ProcessUtils;
+using Arbor.X.Core.Tools.DotNet;
 using Arbor.X.Core.Tools.Git;
 using Arbor.X.Core.Tools.Kudu;
 using JetBrains.Annotations;
@@ -632,10 +634,21 @@ namespace Arbor.X.Core.Bootstrapper
 
             const string buildApplicationPrefix = "[Arbor.Build] ";
 
+            var variables = await new DotNetEnvironmentVariableProvider().GetBuildVariablesAsync(_logger, ImmutableArray<IVariable>.Empty,
+                cancellationTokenSource.Token);
+
+            string dotnetExePath = variables.SingleOrDefault(variable => variable.Key.Equals(WellKnownVariables.DotNetExePath, StringComparison.OrdinalIgnoreCase))?.Value;
+
+            if (string.IsNullOrWhiteSpace(dotnetExePath))
+            {
+                _logger.Error("Could not find dotnet.exe");
+                return ExitCode.Failure;
+            }
+
             string[] arguments = { buildToolExecutable.FullName };
 
             ExitCode result = await ProcessRunner.ExecuteAsync(
-                "dotnet",
+                dotnetExePath,
                 cancellationTokenSource.Token,
                 arguments,
                 (message, prefix) => _logger.Information("{Prefix}{Message}", buildApplicationPrefix, message),

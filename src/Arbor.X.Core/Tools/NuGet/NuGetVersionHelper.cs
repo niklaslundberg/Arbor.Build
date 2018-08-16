@@ -25,7 +25,7 @@ namespace Arbor.X.Core.Tools.NuGet
             {
                 string parsed = parsedVersion.ToString(3);
 
-                logger.Information("Build is release build, using major.minor.patch as the version, {Parsed}", parsed);
+                logger?.Information("Build is release build, using major.minor.patch as the version, {Parsed}", parsed);
 
                 return parsed;
             }
@@ -46,7 +46,7 @@ namespace Arbor.X.Core.Tools.NuGet
                     buildVersion =
                         $"{parsedVersion.Major}.{parsedVersion.Minor}.{parsedVersion.Build}-{suffix}{semVer2PreReleaseSeparator}{parsedVersion.Revision.ToString().LeftPad(usePadding, '0')}";
 
-                    logger.Information(
+                    logger?.Information(
                         "Package suffix is {Suffix}, using major.minor.patch-{suffix}build as the version, {BuildVersion}",
                         suffix,
                         null,
@@ -56,7 +56,7 @@ namespace Arbor.X.Core.Tools.NuGet
                 {
                     buildVersion = $"{parsedVersion.Major}.{parsedVersion.Minor}.{parsedVersion.Build}-{suffix}";
 
-                    logger.Information(
+                    logger?.Information(
                         "Package suffix is {Suffix}, using major.minor.patch-{suffix} as the version, {BuildVersion}",
                         suffix,
                         null,
@@ -70,12 +70,12 @@ namespace Arbor.X.Core.Tools.NuGet
                     buildVersion =
                         $"{parsedVersion.Major}.{parsedVersion.Minor}.{parsedVersion.Build}-{parsedVersion.Revision.ToString().LeftPad(usePadding, '0')}";
 
-                    logger.Information("Using major.minor.patch-build as the version, {BuildVersion}", buildVersion);
+                    logger?.Information("Using major.minor.patch-build as the version, {BuildVersion}", buildVersion);
                 }
                 else
                 {
                     buildVersion = $"{parsedVersion.Major}.{parsedVersion.Minor}.{parsedVersion.Build}";
-                    logger.Information("Using major.minor.patch as the version, {BuildVersion}", buildVersion);
+                    logger?.Information("Using major.minor.patch as the version, {BuildVersion}", buildVersion);
                 }
             }
 

@@ -173,7 +173,7 @@ namespace Arbor.X.Core.Tools.NuGet
                     packageConfiguration.PackageIdOverride);
             }
 
-            var nuGetVersioningSettings = new NuGetVersioningSettings { MaxZeroPaddingLength = 5, SemVerVersion = 1 };
+            var nuGetVersioningSettings = NuGetVersioningSettings.Default;
             string nuGetPackageVersion = !string.IsNullOrWhiteSpace(packageConfiguration.NuGetPackageVersionOverride)
                 ? packageConfiguration.NuGetPackageVersionOverride
                 : NuGetVersionHelper.GetVersion(
@@ -193,7 +193,7 @@ namespace Arbor.X.Core.Tools.NuGet
             var nuSpecInfo = new FileInfo(packageSpecificationPath);
 
             // ReSharper disable AssignNullToNotNullAttribute
-            string nuSpecFileCopyPath = Path.Combine(nuSpecInfo.DirectoryName, $"{packageId}-{Guid.NewGuid()}-{nuSpecInfo.Name}");
+            string nuSpecFileCopyPath = Path.Combine(nuSpecInfo.DirectoryName, $"{packageId}-{DateTime.Now.Ticks}.nuspec");
 
             // ReSharper restore AssignNullToNotNullAttribute
 
