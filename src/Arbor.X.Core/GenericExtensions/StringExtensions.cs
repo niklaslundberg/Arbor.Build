@@ -1,10 +1,30 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 
 namespace Arbor.X.Core.GenericExtensions
 {
     public static class StringExtensions
     {
+        public static bool StartsWithAny(
+            [NotNull] this string value,
+            [ItemNotNull] [NotNull] IReadOnlyCollection<string> whatToFind,
+            StringComparison stringComparison)
+        {
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            if (whatToFind == null)
+            {
+                throw new ArgumentNullException(nameof(whatToFind));
+            }
+
+            return whatToFind.Any(current => value.StartsWith(current, stringComparison));
+        }
+
         public static bool TryParseString(this string value, out string result, string defaultValue = "")
         {
             if (string.IsNullOrWhiteSpace(value))

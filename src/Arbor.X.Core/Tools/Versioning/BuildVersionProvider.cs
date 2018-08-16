@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -22,7 +23,7 @@ namespace Arbor.X.Core.Tools.Versioning
     {
         public int Order => VariableProviderOrder.Ignored;
 
-        public Task<IEnumerable<IVariable>> GetBuildVariablesAsync(
+        public Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
@@ -30,11 +31,11 @@ namespace Arbor.X.Core.Tools.Versioning
             IEnumerable<KeyValuePair<string, string>> variables =
                 GetVersionVariables(buildVariables, logger);
 
-            List<BuildVariable> environmentVariables = variables
-                .Select(item => new BuildVariable(item.Key, item.Value))
+            List<IVariable> environmentVariables = variables
+                .Select(item => (IVariable) new BuildVariable(item.Key, item.Value))
                 .ToList();
 
-            return Task.FromResult<IEnumerable<IVariable>>(environmentVariables);
+            return Task.FromResult(environmentVariables.ToImmutableArray());
         }
 
         private static bool ValidateVersionNumber(KeyValuePair<string, string> s)

@@ -412,7 +412,7 @@ namespace Arbor.X.Core
 
             foreach (IVariableProvider provider in providers)
             {
-                IEnumerable<IVariable> newVariables =
+                ImmutableArray<IVariable> newVariables =
                     await provider.GetBuildVariablesAsync(_logger, buildVariables, _cancellationToken)
                         .ConfigureAwait(false);
 

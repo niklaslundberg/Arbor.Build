@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,7 +14,7 @@ namespace Arbor.X.Core
     {
         public int Order => int.MinValue + 1;
 
-        public Task<IEnumerable<IVariable>> GetBuildVariablesAsync(
+        public Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
@@ -63,9 +64,9 @@ namespace Arbor.X.Core
                 [WellKnownVariables.MSBuildNuGetRestoreEnabled] = "true"
             };
 
-            Task<IEnumerable<IVariable>> result = Task.FromResult<IEnumerable<IVariable>>(environmentVariables.Select(
-                pair =>
-                    new BuildVariable(pair.Key, pair.Value)));
+           var result = Task.FromResult(environmentVariables.Select(
+                pair => (IVariable)
+                    new BuildVariable(pair.Key, pair.Value)).ToImmutableArray());
 
             return result;
         }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -24,7 +25,7 @@ namespace Arbor.X.Core.Tools.MSBuild
     {
         public int Order => VariableProviderOrder.Ignored;
 
-        public async Task<IEnumerable<IVariable>> GetBuildVariablesAsync(
+        public async Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
@@ -144,14 +145,14 @@ namespace Arbor.X.Core.Tools.MSBuild
                         {
                             logger.Information("Found MSBuild with vswhere.exe at '{MsbuildPath}'", msbuildPath);
 
-                            var variables = new[]
+                            var variables = new IVariable[]
                             {
                                 new BuildVariable(
                                     WellKnownVariables.ExternalTools_MSBuild_ExePath,
                                     msbuildPath)
                             };
 
-                            return variables;
+                            return variables.ToImmutableArray();
                         }
                     }
 
@@ -214,14 +215,14 @@ namespace Arbor.X.Core.Tools.MSBuild
             {
                 logger.Information("Found MSBuild at '{FileBasedLookupResultPath}'", fileBasedLookupResultPath);
 
-                var variables = new[]
+                var variables = new IVariable[]
                 {
                     new BuildVariable(
                         WellKnownVariables.ExternalTools_MSBuild_ExePath,
                         fileBasedLookupResultPath)
                 };
 
-                return variables;
+                return variables.ToImmutableArray();
             }
 
             string foundPath = null;
@@ -283,19 +284,19 @@ namespace Arbor.X.Core.Tools.MSBuild
                 {
                     logger.Error("The MSBuild path could not be found in the {RegistryLookupBits}-bit registry keys.",
                         registryLookupBits);
-                    return null;
+                    return ImmutableArray<IVariable>.Empty;
                 }
             }
 
             logger.Information("Using MSBuild exe path '{FoundPath}'", foundPath);
 
-            var environmentVariables = new[]
+            var environmentVariables = new IVariable[]
             {
                 new BuildVariable(
                     WellKnownVariables.ExternalTools_MSBuild_ExePath,
                     foundPath)
             };
-            return environmentVariables;
+            return environmentVariables.ToImmutableArray();
         }
     }
 }

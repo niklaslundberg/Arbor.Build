@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.X.Core.BuildVariables;
@@ -23,7 +24,7 @@ namespace Arbor.X.Core.Tools.Versioning
 
         public int Order => ProviderOrder;
 
-        public Task<IEnumerable<IVariable>> GetBuildVariablesAsync(
+        public Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
@@ -59,7 +60,7 @@ namespace Arbor.X.Core.Tools.Versioning
             variables.Add(new BuildVariable(WellKnownVariables.ReleaseBuild,
                 isReleaseBuild.ToString().ToLowerInvariant()));
 
-            return Task.FromResult<IEnumerable<IVariable>>(variables);
+            return Task.FromResult(variables.ToImmutableArray());
         }
 
         private static string GetConfiguration([NotNull] string branchName)

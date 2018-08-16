@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -20,7 +21,7 @@ namespace Arbor.X.Core.Tools.VisualStudio
 
         public int Order => VariableProviderOrder.Ignored;
 
-        public Task<IEnumerable<IVariable>> GetBuildVariablesAsync(
+        public Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
@@ -29,7 +30,7 @@ namespace Arbor.X.Core.Tools.VisualStudio
                 WellKnownVariables.ExternalTools_VisualStudio_Version,
                 string.Empty)))
             {
-                return Task.FromResult(new List<IVariable>().AsEnumerable());
+                return Task.FromResult(ImmutableArray<IVariable>.Empty);
             }
 
             _allowPreReleaseVersions =
@@ -63,7 +64,7 @@ namespace Arbor.X.Core.Tools.VisualStudio
                 logger.Warning("Could not find any Visual Studio version");
             }
 
-            var environmentVariables = new[]
+            var environmentVariables = new IVariable[]
             {
                 new BuildVariable(
                     WellKnownVariables.ExternalTools_VisualStudio_Version,
@@ -71,7 +72,7 @@ namespace Arbor.X.Core.Tools.VisualStudio
                 new BuildVariable(WellKnownVariables.ExternalTools_VSTest_ExePath, vsTestExePath)
             };
 
-            return Task.FromResult<IEnumerable<IVariable>>(environmentVariables);
+            return Task.FromResult(environmentVariables.ToImmutableArray());
         }
 
         private static string GetVSTestExePath(ILogger logger, string registryKeyName, string visualStudioVersion)

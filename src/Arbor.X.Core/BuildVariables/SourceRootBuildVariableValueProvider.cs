@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,7 +22,7 @@ namespace Arbor.X.Core
 
         public int Order => int.MinValue;
 
-        public Task<IEnumerable<IVariable>> GetBuildVariablesAsync(
+        public Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
@@ -37,7 +38,7 @@ namespace Arbor.X.Core
                         .FullName));
             }
 
-            return Task.FromResult<IEnumerable<IVariable>>(variables);
+            return Task.FromResult(variables.ToImmutableArray());
         }
     }
 }

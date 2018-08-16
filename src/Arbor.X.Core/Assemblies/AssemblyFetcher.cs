@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
+using Arbor.X.Core.GenericExtensions;
 
 namespace Arbor.X.Core.Assemblies
 {
@@ -22,9 +23,11 @@ namespace Arbor.X.Core.Assemblies
                 assemblies.Add(appDomainAssembly);
             }
 
+            string[] allowed = { ArborConstants.ArborX, ArborConstants.ArborBuild };
+
             IEnumerable<Assembly> filtered = assemblies
                 .Where(assembly =>
-                    !assembly.IsDynamic && assembly.FullName.StartsWith("Arbor.X", StringComparison.Ordinal));
+                    !assembly.IsDynamic && assembly.FullName.StartsWithAny(allowed, StringComparison.Ordinal));
 
             return filtered.ToImmutableHashSet();
         }

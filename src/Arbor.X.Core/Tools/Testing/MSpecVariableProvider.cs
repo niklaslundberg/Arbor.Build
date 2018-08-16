@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,7 +16,7 @@ namespace Arbor.X.Core.Tools.Testing
     {
         public int Order => VariableProviderOrder.Ignored;
 
-        public Task<IEnumerable<IVariable>> GetBuildVariablesAsync(
+        public Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
@@ -30,15 +31,14 @@ namespace Arbor.X.Core.Tools.Testing
 
             testReportPathDirectory.EnsureExists();
 
-            var environmentVariables = new[]
+            var environmentVariables = new IVariable[]
             {
                 new BuildVariable(
                     WellKnownVariables.ExternalTools_MSpec_ReportPath,
                     testReportPathDirectory.FullName)
             };
 
-            return Task.FromResult<
-                IEnumerable<IVariable>>(environmentVariables);
+            return Task.FromResult(environmentVariables.ToImmutableArray());
         }
     }
 }

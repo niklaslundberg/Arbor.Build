@@ -30,7 +30,7 @@ namespace Arbor.X.Core
 
         public int Order => VariableProviderOrder.Priority - 2;
 
-        public async Task<IEnumerable<IVariable>> GetBuildVariablesAsync(
+        public async Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
@@ -59,7 +59,7 @@ namespace Arbor.X.Core
                 variables.Add(WellKnownVariables.BranchName, branchName);
             }
 
-            return variables.Select(pair => new BuildVariable(pair.Key, pair.Value)).ToImmutableArray();
+            return variables.Select(pair => (IVariable) new BuildVariable(pair.Key, pair.Value)).ToImmutableArray();
         }
 
         private async Task<Tuple<int, string>> GetBranchNameByAskingGitExeAsync()

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,7 +17,7 @@ namespace Arbor.X.Core.Tools.NuGet
 
         public int Order => 3;
 
-        public async Task<IEnumerable<IVariable>> GetBuildVariablesAsync(
+        public async Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
@@ -38,7 +39,7 @@ namespace Arbor.X.Core.Tools.NuGet
                     nuGetExePath)
             };
 
-            return variables;
+            return variables.ToImmutableArray();
         }
 
         private async Task<string> EnsureNuGetExeExistsAsync(

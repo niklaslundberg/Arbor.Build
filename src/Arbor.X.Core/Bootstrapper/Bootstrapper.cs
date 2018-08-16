@@ -332,7 +332,7 @@ namespace Arbor.X.Core.Bootstrapper
 
         private async Task<string> DownloadNuGetPackageAsync(string buildDir, string nugetExePath)
         {
-            const string buildToolPackageName = "Arbor.Build";
+            const string buildToolPackageName = ArborConstants.ArborBuild;
 
             string outputDirectoryPath = Path.Combine(buildDir, buildToolPackageName);
 
@@ -634,7 +634,7 @@ namespace Arbor.X.Core.Bootstrapper
 
             const string buildApplicationPrefix = "[Arbor.Build] ";
 
-            var variables = await new DotNetEnvironmentVariableProvider().GetBuildVariablesAsync(_logger, ImmutableArray<IVariable>.Empty,
+            ImmutableArray<IVariable> variables = await new DotNetEnvironmentVariableProvider().GetBuildVariablesAsync(_logger, ImmutableArray<IVariable>.Empty,
                 cancellationTokenSource.Token);
 
             string dotnetExePath = variables.SingleOrDefault(variable => variable.Key.Equals(WellKnownVariables.DotNetExePath, StringComparison.OrdinalIgnoreCase))?.Value;

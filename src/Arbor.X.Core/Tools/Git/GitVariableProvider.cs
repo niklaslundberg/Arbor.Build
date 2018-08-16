@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Globalization;
 using System.Text;
 using System.Threading;
@@ -21,7 +22,7 @@ namespace Arbor.X.Core.Tools.Git
     {
         public int Order { get; } = -1;
 
-        public async Task<IEnumerable<IVariable>> GetBuildVariablesAsync(
+        public async Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
@@ -228,7 +229,7 @@ namespace Arbor.X.Core.Tools.Git
                 }
             }
 
-            return variables;
+            return variables.ToImmutableArray();
         }
     }
 }

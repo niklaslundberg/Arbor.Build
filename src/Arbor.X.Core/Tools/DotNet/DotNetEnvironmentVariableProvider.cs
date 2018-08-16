@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -17,7 +18,7 @@ namespace Arbor.X.Core.Tools.DotNet
     {
         public int Order => VariableProviderOrder.Ignored;
 
-        public async Task<IEnumerable<IVariable>> GetBuildVariablesAsync(
+        public async Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
@@ -27,7 +28,7 @@ namespace Arbor.X.Core.Tools.DotNet
 
             if (!string.IsNullOrWhiteSpace(dotNetExePath))
             {
-                return Array.Empty<IVariable>();
+                return ImmutableArray<IVariable>.Empty;
             }
 
             if (string.IsNullOrWhiteSpace(dotNetExePath))
@@ -39,7 +40,7 @@ namespace Arbor.X.Core.Tools.DotNet
                 if (string.IsNullOrWhiteSpace(winDir))
                 {
                     logger.Warning("Error finding Windows directory");
-                    return Array.Empty<IVariable>();
+                    return ImmutableArray<IVariable>.Empty;
                 }
 
                 string whereExePath = Path.Combine(winDir, "System32", "where.exe");
@@ -64,10 +65,10 @@ namespace Arbor.X.Core.Tools.DotNet
                     "The specified path to dotnet.exe is from variable '{DotNetExePath}' is set to '{DotNetExePath1}' but the file does not exist",
                     WellKnownVariables.DotNetExePath,
                     dotNetExePath);
-                return Array.Empty<IVariable>();
+                return ImmutableArray<IVariable>.Empty;
             }
 
-            return new[] { new BuildVariable(WellKnownVariables.DotNetExePath, dotNetExePath) };
+            return new IVariable[] { new BuildVariable(WellKnownVariables.DotNetExePath, dotNetExePath) }.ToImmutableArray();
         }
     }
 }
