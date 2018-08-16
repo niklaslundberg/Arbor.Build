@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -46,7 +47,7 @@ namespace Arbor.Build.Tests.Integration.Tests.MSpec
             string combine = Path.Combine(root, "Arbor.X.Tests.Integration", "bin", "debug");
 
             string tempPath = Path.Combine(Path.GetTempPath(),
-                $"{DefaultPaths.TempPathPrefix}_mspec_self_rep_{DateTime.Now.ToString("yyyyMMddHHmmssfff_")}{Guid.NewGuid().ToString().Substring(0, 8)}");
+                $"{DefaultPaths.TempPathPrefix}_mspec_self_rep_{DateTime.Now.ToString("yyyyMMddHHmmssfff_", CultureInfo.InvariantCulture)}{Guid.NewGuid().ToString().Substring(0, 8)}");
 
             tempDirectory = new DirectoryInfo(tempPath).EnsureExists();
 

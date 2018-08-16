@@ -19,6 +19,7 @@
     <Rule Id="CA1405" Action="Warning" />
     <Rule Id="CA1410" Action="Warning" />
     <Rule Id="CA1415" Action="Warning" />
+    <Rule Id="CA1707" Action="None" />
     <Rule Id="CA1821" Action="Warning" />
     <Rule Id="CA1900" Action="Warning" />
     <Rule Id="CA1901" Action="Warning" />
@@ -66,7 +67,6 @@
     <Rule Id="CA2242" Action="Warning" />
   </Rules>
   <Rules AnalyzerId="RefactoringEssentials" RuleNamespace="RefactoringEssentials">
-    <Rule Id="RECS0002" Action="None" />
     <Rule Id="RECS0070" Action="None" />
     <Rule Id="RECS0091" Action="None" />
     <Rule Id="RECS0129" Action="None" />
@@ -78,17 +78,11 @@
   </Rules>
   <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers">
     <Rule Id="SA1101" Action="None" />
-    <Rule Id="SA1116" Action="None" />
     <Rule Id="SA1200" Action="None" />
-    <Rule Id="SA1300" Action="None" />
     <Rule Id="SA1309" Action="None" />
-    <Rule Id="SA1310" Action="None" />
-    <Rule Id="SA1311" Action="None" />
-    <Rule Id="SA1400" Action="None" />
     <Rule Id="SA1512" Action="None" />
     <Rule Id="SA1633" Action="None" />
     <Rule Id="SA1652" Action="None" />
-    <Rule Id="SA1649" Action="None" />
   </Rules>
   <Rules AnalyzerId="Wintellect.Analyzers" RuleNamespace="Wintellect.Analyzers">
     <Rule Id="Wintellect004" Action="None" />
@@ -105,8 +99,5 @@
     <Rule Id="RCS1075" Action="None" />
     <Rule Id="RCS1102" Action="None" />
     <Rule Id="RCS1090" Action="None" />
-  </Rules>
-  <Rules AnalyzerId="IDE" RuleNamespace="IDE">
-    <Rule Id="IDE1006" Action="None" />
   </Rules>
 </RuleSet>

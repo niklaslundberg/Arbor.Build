@@ -118,7 +118,8 @@ namespace Arbor.Build.Core.Bootstrapper
                 await Task.Delay(TimeSpan.FromMilliseconds(exitDelayInMilliseconds)).ConfigureAwait(false);
             }
 
-            _logger.Information("Arbor.X.Bootstrapper total inclusive Arbor.X.Build elapsed time in seconds: {ElapsedSeconds}",
+            _logger.Information(
+                "Arbor.X.Bootstrapper total inclusive Arbor.X.Build elapsed time in seconds: {ElapsedSeconds}",
                 stopwatch.Elapsed.TotalSeconds.ToString("F"));
 
             return exitCode;
@@ -618,7 +619,7 @@ namespace Arbor.Build.Core.Bootstrapper
 
             FileInfo buildToolExecutable = arborBuild.Single();
 
-            string timeoutKey = WellKnownVariables.BuildToolTimeoutInSeconds;
+            const string timeoutKey = WellKnownVariables.BuildToolTimeoutInSeconds;
             string timeoutInSecondsFromEnvironment = Environment.GetEnvironmentVariable(timeoutKey);
 
             if (timeoutInSecondsFromEnvironment.TryParseInt32(out int parseResult, MaxBuildTimeInSeconds))
@@ -634,10 +635,13 @@ namespace Arbor.Build.Core.Bootstrapper
 
             const string buildApplicationPrefix = "[Arbor.Build] ";
 
-            ImmutableArray<IVariable> variables = await new DotNetEnvironmentVariableProvider().GetBuildVariablesAsync(_logger, ImmutableArray<IVariable>.Empty,
-                cancellationTokenSource.Token);
+            ImmutableArray<IVariable> variables = await new DotNetEnvironmentVariableProvider().GetBuildVariablesAsync(
+                _logger,
+                ImmutableArray<IVariable>.Empty,
+                cancellationTokenSource.Token).ConfigureAwait(false);
 
-            string dotnetExePath = variables.SingleOrDefault(variable => variable.Key.Equals(WellKnownVariables.DotNetExePath, StringComparison.OrdinalIgnoreCase))?.Value;
+            string dotnetExePath = variables.SingleOrDefault(variable =>
+                variable.Key.Equals(WellKnownVariables.DotNetExePath, StringComparison.OrdinalIgnoreCase))?.Value;
 
             if (string.IsNullOrWhiteSpace(dotnetExePath))
             {

@@ -68,7 +68,8 @@ namespace Arbor.Build.Core.Tools.DotNet
                 return ImmutableArray<IVariable>.Empty;
             }
 
-            return new IVariable[] { new BuildVariable(WellKnownVariables.DotNetExePath, dotNetExePath) }.ToImmutableArray();
+            return new IVariable[] { new BuildVariable(WellKnownVariables.DotNetExePath, dotNetExePath) }
+                .ToImmutableArray();
         }
     }
 }

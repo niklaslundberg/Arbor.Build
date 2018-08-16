@@ -7,7 +7,7 @@ namespace Arbor.Build.Tests.Integration.KuduWebJobs
     public class when_parsing_valid_in_xml
     {
         static KuduWebJobType parsed;
-        Because of = () => { parsed = KuduWebJobType.Parse("<KuduWebJobType>Continuous</KuduWebJobType>"); };
+        Because of = () => parsed = KuduWebJobType.Parse("<KuduWebJobType>Continuous</KuduWebJobType>");
 
         It should_return_a_valid_type = () => parsed.ShouldEqual(KuduWebJobType.Continuous);
     }

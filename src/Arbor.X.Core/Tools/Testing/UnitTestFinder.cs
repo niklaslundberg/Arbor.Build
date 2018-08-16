@@ -75,7 +75,7 @@ namespace Arbor.Build.Core.Tools.Testing
                 return new HashSet<string>();
             }
 
-            string searchPattern = "*.dll";
+            const string searchPattern = "*.dll";
 
             IEnumerable<FileInfo> filteredDllFiles = assemblyFilePrefix.IsDefaultOrEmpty
                 ? currentDirectory.EnumerateFiles(searchPattern)

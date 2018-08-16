@@ -6,7 +6,7 @@ namespace Arbor.Build.Tests.DummyConsoleApp
     {
         private static void Main(string[] args)
         {
-            Console.WriteLine("Hello world " + string.Join(", ", args ?? new string[] { }));
+            Console.WriteLine("Hello world " + string.Join(", ", args ?? Array.Empty<string>()));
         }
     }
 }

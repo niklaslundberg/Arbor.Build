@@ -1,4 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
+
 <Project>
   <PropertyGroup>
     <Deterministic>true</Deterministic>
@@ -7,6 +8,6 @@
     <Features>IOperation</Features>
     <DebugType>embedded</DebugType>
     <DebugSymbols>true</DebugSymbols>
-    <RunCodeAnalysis>False</RunCodeAnalysis>
+    <CodeAnalysisRuleSet>..\ArborBuild.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 </Project>

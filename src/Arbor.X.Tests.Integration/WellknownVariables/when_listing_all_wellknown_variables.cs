@@ -11,7 +11,7 @@ namespace Arbor.Build.Tests.Integration.WellknownVariables
     {
         static IReadOnlyCollection<VariableDescription> readOnlyCollection;
 
-        Because of = () => { readOnlyCollection = WellKnownVariables.AllVariables; };
+        Because of = () => readOnlyCollection = WellKnownVariables.AllVariables;
 
         It should_contain_nested_class_constants = () =>
         {

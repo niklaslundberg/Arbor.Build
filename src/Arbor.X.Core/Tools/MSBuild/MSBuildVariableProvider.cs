@@ -166,7 +166,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 }
             }
 
-            var possiblePaths = new[]
+            string[] possiblePaths = new[]
             {
                 Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
@@ -209,7 +209,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     "MSBuild.exe")
             };
 
-            string fileBasedLookupResultPath = possiblePaths.FirstOrDefault(File.Exists);
+            string fileBasedLookupResultPath = Array.Find(possiblePaths, File.Exists);
 
             if (fileBasedLookupResultPath != null)
             {

@@ -16,7 +16,7 @@ namespace Arbor.Build.Bootstrapper
 
             var bootstrapper = new Core.Bootstrapper.Bootstrapper(logger);
 
-            ExitCode exitCode = await bootstrapper.StartAsync(args);
+            ExitCode exitCode = await bootstrapper.StartAsync(args).ConfigureAwait(false);
 
             if (logger is IDisposable disposable)
             {

@@ -58,7 +58,7 @@ namespace Arbor.Build.Core.Tools.Git
                 variables.Add(WellKnownVariables.BranchName, branchName);
             }
 
-            return variables.Select(pair => (IVariable) new BuildVariable(pair.Key, pair.Value)).ToImmutableArray();
+            return variables.Select(pair => (IVariable)new BuildVariable(pair.Key, pair.Value)).ToImmutableArray();
         }
 
         private async Task<Tuple<int, string>> GetBranchNameByAskingGitExeAsync()

@@ -9,7 +9,7 @@ namespace Arbor.Build.Tests.Integration.KuduWebJobs
     {
         static Exception exception;
 
-        Because of = () => { exception = Catch.Exception(() => KuduWebJobType.Parse(null)); };
+        Because of = () => exception = Catch.Exception(() => KuduWebJobType.Parse(null));
 
         It should_throw_a_format_exception = () => exception.ShouldBeOfExactType<ArgumentNullException>();
     }

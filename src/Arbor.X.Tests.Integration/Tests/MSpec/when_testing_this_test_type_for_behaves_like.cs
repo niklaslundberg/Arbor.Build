@@ -4,6 +4,7 @@ using System.Linq;
 using Arbor.Build.Core.Tools.Testing;
 using Machine.Specifications;
 using Mono.Cecil;
+using Serilog;
 using Serilog.Core;
 
 namespace Arbor.Build.Tests.Integration.Tests.MSpec
@@ -18,7 +19,7 @@ namespace Arbor.Build.Tests.Integration.Tests.MSpec
 
         Establish context = () =>
         {
-            var logger = Logger.None;
+            ILogger logger = Logger.None;
             finder = new UnitTestFinder(new List<Type>
                 {
                     typeof(Behaves_like<>)

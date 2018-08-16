@@ -16,7 +16,7 @@ namespace Arbor.Build.Core.Tools.Git
 
             string name = potentialBranchName.Trim('#').Trim();
 
-            string prefix = "On branch ";
+            const string prefix = "On branch ";
 
             if (name.Trim().StartsWith("HEAD detached", StringComparison.Ordinal))
             {

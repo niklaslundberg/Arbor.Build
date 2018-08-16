@@ -82,7 +82,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                     return;
                 }
 
-                string nugetVersion = "NuGet Version: ";
+                const string nugetVersion = "NuGet Version: ";
                 string versionLine =
                     standardOut.FirstOrDefault(
                         line => line.StartsWith(nugetVersion, StringComparison.InvariantCultureIgnoreCase));

@@ -13,7 +13,6 @@ namespace Arbor.Build.Core.Tools.Versioning
                 throw new ArgumentNullException(nameof(semanticVersion));
             }
 
-
             ReadOnlySpan<char> normalized = semanticVersion.ToNormalizedString().AsSpan();
 
             int dashIndex = normalized.IndexOf('-');

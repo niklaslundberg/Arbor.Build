@@ -10,9 +10,9 @@ namespace Arbor.Build.Tests.Integration.GitBranchNameExtensions
 
         static string name;
 
-        Establish context = () => { name = "## HEAD (no branch)"; };
+        Establish context = () => name = "## HEAD (no branch)";
 
-        Because of = () => { result = name.GetBranchName(); };
+        Because of = () => result = name.GetBranchName();
 
         It should_not_return_a_branch_name = () => result.HasValue.ShouldBeFalse();
     }

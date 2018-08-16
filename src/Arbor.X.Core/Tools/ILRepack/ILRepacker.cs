@@ -169,7 +169,7 @@ namespace Arbor.Build.Core.Tools.ILRepack
                 yield break;
             }
 
-            string configuration = "release"; // TODO support ilmerge for debug
+            const string configuration = "release"; // TODO support ilmerge for debug
 
             DirectoryInfo releaseDir = binDirectory.GetDirectories(configuration).SingleOrDefault();
 

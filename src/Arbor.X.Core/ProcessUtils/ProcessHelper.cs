@@ -18,10 +18,10 @@ namespace Arbor.Build.Core.ProcessUtils
             IEnumerable<string> arguments = null,
             ILogger logger = null,
             IEnumerable<KeyValuePair<string, string>> environmentVariables = null,
-            CancellationToken cancellationToken = default,
             bool addProcessNameAsLogCategory = false,
             bool addProcessRunnerCategory = false,
-            string parentPrefix = null)
+            string parentPrefix = null,
+            CancellationToken cancellationToken = default)
         {
             ILogger usedLogger = logger ?? Logger.None;
 
@@ -31,10 +31,10 @@ namespace Arbor.Build.Core.ProcessUtils
                 executePath,
                 cancellationToken,
                 arguments,
-                (message, category) => usedLogger.Information(message, executingCategory),
+                (message, _) => usedLogger.Information(message, executingCategory),
                 usedLogger.Error,
                 verboseAction: usedLogger.Verbose,
-                toolAction: (message, category) => usedLogger.Information(message, ToolName),
+                toolAction: (message, _) => usedLogger.Information(message, ToolName),
                 environmentVariables: environmentVariables,
                 debugAction: usedLogger.Debug,
                 addProcessNameAsLogCategory: addProcessNameAsLogCategory,

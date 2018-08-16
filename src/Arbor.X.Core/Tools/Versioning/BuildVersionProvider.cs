@@ -32,7 +32,7 @@ namespace Arbor.Build.Core.Tools.Versioning
                 GetVersionVariables(buildVariables, logger);
 
             List<IVariable> environmentVariables = variables
-                .Select(item => (IVariable) new BuildVariable(item.Key, item.Value))
+                .Select(item => (IVariable)new BuildVariable(item.Key, item.Value))
                 .ToList();
 
             return Task.FromResult(environmentVariables.ToImmutableArray());
@@ -67,7 +67,7 @@ namespace Arbor.Build.Core.Tools.Versioning
 
             string sourceRoot = buildVariables.GetVariable(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
 
-            string fileName = "version.json";
+            const string fileName = "version.json";
 
             string versionFileName = Path.Combine(sourceRoot, fileName);
 
@@ -92,11 +92,11 @@ namespace Arbor.Build.Core.Tools.Versioning
                 {
                     var jsonKeyValueConfiguration = new JsonKeyValueConfiguration(keyValueConfigurationItems);
 
-                    string majorKey = "major"; // TODO defined major key
+                    const string majorKey = "major"; // TODO defined major key
 
-                    string minorKey = "minor"; // TODO defined minor key
+                    const string minorKey = "minor"; // TODO defined minor key
 
-                    string patchKey = "patch"; // TODO defined patch key
+                    const string patchKey = "patch"; // TODO defined patch key
 
                     var required = new Dictionary<string, string>
                     {

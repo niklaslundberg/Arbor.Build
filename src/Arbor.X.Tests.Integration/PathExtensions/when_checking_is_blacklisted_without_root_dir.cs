@@ -10,7 +10,7 @@ namespace Arbor.Build.Tests.Integration.PathExtensions
         static bool isBlackListed;
         static PathLookupSpecification specification;
         static DirectoryInfo tempDir;
-        Cleanup after = () => { tempDir.DeleteIfExists(true); };
+        Cleanup after = () => tempDir.DeleteIfExists(true);
 
         Establish context = () =>
         {
@@ -18,7 +18,7 @@ namespace Arbor.Build.Tests.Integration.PathExtensions
             specification = DefaultPaths.DefaultPathLookupSpecification;
         };
 
-        Because of = () => { isBlackListed = specification.IsBlackListed(@"C:\Temp\root\afolder").Item1; };
+        Because of = () => isBlackListed = specification.IsBlackListed(@"C:\Temp\root\afolder").Item1;
         It should_return_true = () => isBlackListed.ShouldBeTrue();
     }
 }

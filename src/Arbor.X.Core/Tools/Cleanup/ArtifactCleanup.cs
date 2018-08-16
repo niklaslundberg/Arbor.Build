@@ -41,7 +41,7 @@ namespace Arbor.Build.Core.Tools.Cleanup
                 return ExitCode.Success;
             }
 
-            int maxAttempts = 5;
+            const int maxAttempts = 5;
 
             int attemptCount = 1;
 

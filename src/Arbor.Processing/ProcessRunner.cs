@@ -60,7 +60,7 @@ namespace Arbor.Processing
                 parentPrefix,
                 noWindow);
 
-            ExitCode exitCode = await task;
+            ExitCode exitCode = await task.ConfigureAwait(false);
 
             return exitCode;
         }
@@ -272,12 +272,12 @@ namespace Arbor.Processing
 
                         Task delay = Task.Delay(TimeSpan.FromMilliseconds(50), cancellationToken);
 
-                        await delay;
+                        await delay.ConfigureAwait(false);
 
                         if (taskCompletionSource.Task.IsCompleted)
                         {
                             done = true;
-                            exitCode = await taskCompletionSource.Task;
+                            exitCode = await taskCompletionSource.Task.ConfigureAwait(false);
                         }
                         else if (taskCompletionSource.Task.IsCanceled)
                         {
@@ -325,13 +325,8 @@ namespace Arbor.Processing
                                             toolCategory);
                                     }
                                 }
-                                catch (Exception ex)
+                                catch (Exception ex) when (!ex.IsFatal())
                                 {
-                                    if (ex.IsFatal())
-                                    {
-                                        throw;
-                                    }
-
                                     errorAction(
                                         $"ProcessRunner could not kill process '{processWithArgs}' when cancellation was requested",
                                         toolCategory);

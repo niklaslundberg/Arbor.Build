@@ -48,8 +48,8 @@ namespace Arbor.Build.Core.Tools.Git
                 Maybe<IVariable> releaseBuildEnabled =
                     buildVariables.GetOptionalVariable(WellKnownVariables.ReleaseBuildEnabled);
 
-                if (!releaseBuildEnabled.HasValue ||
-                    !bool.TryParse(releaseBuildEnabled.Value.Value, out bool isReleaseBuildEnabled))
+                if (!releaseBuildEnabled.HasValue
+                    || !bool.TryParse(releaseBuildEnabled.Value.Value, out bool isReleaseBuildEnabled))
                 {
                     variables.Add(new BuildVariable(WellKnownVariables.ReleaseBuildEnabled, "false"));
                     logger.Debug(
@@ -77,8 +77,8 @@ namespace Arbor.Build.Core.Tools.Git
                 Maybe<IVariable> debugBuildEnabled =
                     buildVariables.GetOptionalVariable(WellKnownVariables.DebugBuildEnabled);
 
-                if (!debugBuildEnabled.HasValue ||
-                    !bool.TryParse(debugBuildEnabled.Value.Value, out bool isDebugBuildEnabled))
+                if (!debugBuildEnabled.HasValue
+                    || !bool.TryParse(debugBuildEnabled.Value.Value, out bool isDebugBuildEnabled))
                 {
                     variables.Add(new BuildVariable(WellKnownVariables.DebugBuildEnabled, "false"));
                     logger.Debug(
@@ -180,7 +180,7 @@ namespace Arbor.Build.Core.Tools.Git
 
                 if (!variables.HasKey(WellKnownVariables.GitHash))
                 {
-                    string arborXGitcommithashenabled = "Arbor.X.GitCommitHashEnabled";
+                    const string arborXGitcommithashenabled = "Arbor.X.GitCommitHashEnabled";
 
                     string environmentVariable = Environment.GetEnvironmentVariable(arborXGitcommithashenabled);
 

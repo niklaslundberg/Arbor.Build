@@ -8,9 +8,9 @@ namespace Arbor.Build.Tests.Integration.GitBranches
     {
         static string branchName;
         static string version;
-        Establish context = () => { branchName = "refs/heads/develop"; };
+        Establish context = () => branchName = "refs/heads/develop";
 
-        Because of = () => { version = BranchHelper.BranchSemVerMajorMinorPatch(branchName).ToString(); };
+        Because of = () => version = BranchHelper.BranchSemVerMajorMinorPatch(branchName).ToString();
 
         It should_not_extract_the_version = () => version.ShouldEqual("0.0.0");
     }

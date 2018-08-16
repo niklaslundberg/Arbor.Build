@@ -26,23 +26,6 @@ namespace Arbor.Build.Core.Tools.MSBuild
             ProjectId = projectId;
         }
 
-        public bool HasPropertyWithValue([NotNull] string name, [NotNull] string value)
-        {
-            if (name == null)
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
-
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-
-            return PropertyGroups.Any(propertyGroup => propertyGroup.Properties.Any(property =>
-                property.Name.Equals(name, StringComparison.Ordinal) &&
-                value.Equals(property.Value, StringComparison.Ordinal)));
-        }
-
         public ImmutableArray<MSBuildPropertyGroup> PropertyGroups { get; }
 
         public string FileName { get; }
@@ -137,6 +120,23 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     projectTypes,
                     projectId);
             }
+        }
+
+        public bool HasPropertyWithValue([NotNull] string name, [NotNull] string value)
+        {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            return PropertyGroups.Any(propertyGroup => propertyGroup.Properties.Any(property =>
+                property.Name.Equals(name, StringComparison.Ordinal) &&
+                value.Equals(property.Value, StringComparison.Ordinal)));
         }
     }
 }

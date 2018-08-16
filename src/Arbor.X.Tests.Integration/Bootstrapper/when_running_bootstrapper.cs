@@ -44,7 +44,7 @@ namespace Arbor.Build.Tests.Integration.Bootstrapper
             bootstrapper = new Core.Bootstrapper.Bootstrapper(Logger.None);
         };
 
-        Because of = () => { exitCode = bootstrapper.StartAsync(startOptions).Result; };
+        Because of = () => exitCode = bootstrapper.StartAsync(startOptions).Result;
 
         It should_return_success_exit_code = () => exitCode.IsSuccess.ShouldBeTrue();
     }

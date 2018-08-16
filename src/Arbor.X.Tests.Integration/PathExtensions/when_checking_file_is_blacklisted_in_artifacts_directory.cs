@@ -14,7 +14,7 @@ namespace Arbor.Build.Tests.Integration.PathExtensions
 
         static string root;
 
-        Cleanup after = () => { new DirectoryInfo(root).DeleteIfExists(true); };
+        Cleanup after = () => new DirectoryInfo(root).DeleteIfExists(true);
 
         Establish context = () =>
         {
@@ -29,7 +29,7 @@ namespace Arbor.Build.Tests.Integration.PathExtensions
         };
 
         Because of =
-            () => { isBlackListed = specification.IsFileBlackListed($@"{root}\artifacts\afile.txt", root).Item1; };
+            () => isBlackListed = specification.IsFileBlackListed($@"{root}\artifacts\afile.txt", root).Item1;
 
         It should_return_false = () => isBlackListed.ShouldBeTrue();
     }

@@ -93,7 +93,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 }
                 catch (Exception ex)
                 {
-                    _logger.Error(ex.ToString());
+                    _logger.Error(ex, "Error updating NuGet");
                 }
             }
 

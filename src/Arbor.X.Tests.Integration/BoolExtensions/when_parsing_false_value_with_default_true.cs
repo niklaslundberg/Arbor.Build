@@ -8,14 +8,16 @@ namespace Arbor.Build.Tests.Integration.BoolExtensions
     {
         static bool parsed;
 
-        Because of = () => { parsed = "false".TryParseBool(out bool result, true);
+        static bool parsed_result;
+
+        Because of = () =>
+        {
+            parsed = "false".TryParseBool(out bool result, true);
             parsed_result = result;
         };
 
-        It should_be_false = () => parsed_result.ShouldBeFalse();
-
         It parsed_should_be_true = () => parsed.ShouldBeTrue();
 
-        static bool parsed_result;
+        It should_be_false = () => parsed_result.ShouldBeFalse();
     }
 }

@@ -64,7 +64,7 @@ namespace Arbor.Build.Core.Debugging
                 [WellKnownVariables.MSBuildNuGetRestoreEnabled] = "true"
             };
 
-           var result = Task.FromResult(environmentVariables.Select(
+            Task<ImmutableArray<IVariable>> result = Task.FromResult(environmentVariables.Select(
                 pair => (IVariable)
                     new BuildVariable(pair.Key, pair.Value)).ToImmutableArray());
 

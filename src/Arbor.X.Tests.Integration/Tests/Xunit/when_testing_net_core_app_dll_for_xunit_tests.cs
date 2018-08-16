@@ -5,6 +5,7 @@ using System.IO;
 using Arbor.Build.Core.Tools.Testing;
 using Arbor.Build.Tests.Integration.Tests.MSpec;
 using Machine.Specifications;
+using Serilog;
 using Serilog.Core;
 using Xunit;
 
@@ -19,7 +20,7 @@ namespace Arbor.Build.Tests.Integration.Tests.Xunit
 
         Establish context = () =>
         {
-            var logger = Logger.None;
+            ILogger logger = Logger.None;
             finder = new UnitTestFinder(new List<Type>
                 {
                     typeof(FactAttribute)

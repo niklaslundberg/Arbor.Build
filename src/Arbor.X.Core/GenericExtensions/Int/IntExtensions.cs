@@ -1,4 +1,3 @@
-
 namespace Arbor.Build.Core.GenericExtensions.Int
 {
     public static class IntExtensions

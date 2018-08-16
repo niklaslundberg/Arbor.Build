@@ -16,7 +16,7 @@ namespace Arbor.Build.Tests.Integration.VisualStudioVariableProvider
 
         static List<IVariable> enumerable;
 
-        Establish context = () => { provider = new Core.Tools.VisualStudio.VisualStudioVariableProvider(); };
+        Establish context = () => provider = new Core.Tools.VisualStudio.VisualStudioVariableProvider();
 
         Because of = () =>
         {

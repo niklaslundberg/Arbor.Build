@@ -150,7 +150,7 @@ namespace Arbor.Build.Core.Tools.Testing
                     standardErrorAction: logger.Error,
                     toolAction: logger.Information);
 
-                ExitCode result = await execute;
+                ExitCode result = await execute.ConfigureAwait(false);
 
                 return result;
             }

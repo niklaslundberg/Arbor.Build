@@ -17,7 +17,7 @@ namespace Arbor.Build
 
             _app = new BuildApplication(logger);
 
-            ExitCode exitCode = await _app.RunAsync(args);
+            ExitCode exitCode = await _app.RunAsync(args).ConfigureAwait(false);
 
             Log.CloseAndFlush();
 

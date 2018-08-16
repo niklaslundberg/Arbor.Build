@@ -36,7 +36,7 @@ namespace Arbor.Build.Core.Tools.Libz
         {
             _logger = logger;
 
-           bool parseResult = buildVariables
+            bool parseResult = buildVariables
                 .GetVariableValueOrDefault(WellKnownVariables.ExternalTools_LibZ_Enabled, "false")
                 .ParseOrDefault(false);
 
@@ -188,7 +188,7 @@ namespace Arbor.Build.Core.Tools.Libz
                 return ImmutableArray<ILRepackData>.Empty;
             }
 
-            string configuration = "release"; // TODO support ilmerge for debug
+            const string configuration = "release"; // TODO support ilmerge for debug
 
             DirectoryInfo releaseDir = binDirectory.GetDirectories(configuration).SingleOrDefault();
 

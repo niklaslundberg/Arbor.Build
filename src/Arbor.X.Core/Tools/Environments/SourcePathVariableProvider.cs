@@ -59,7 +59,11 @@ namespace Arbor.Build.Core.Tools.Environments
             if (string.IsNullOrWhiteSpace(existingToolsDirectory))
             {
                 DirectoryInfo externalTools =
-                    new DirectoryInfo(Path.Combine(sourceRoot, "build", ArborConstants.ArborPackageName, "tools", "external")).EnsureExists();
+                    new DirectoryInfo(Path.Combine(sourceRoot,
+                        "build",
+                        ArborConstants.ArborPackageName,
+                        "tools",
+                        "external")).EnsureExists();
 
                 variables.Add(new BuildVariable(
                     WellKnownVariables.ExternalTools,

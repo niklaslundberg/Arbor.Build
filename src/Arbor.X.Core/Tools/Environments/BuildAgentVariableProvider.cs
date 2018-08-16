@@ -42,7 +42,7 @@ namespace Arbor.Build.Core.Tools.Environments
             {
                 isBuildAgentValue =
                     buildAgentEnvironmentVariables.Any(
-                        buildAgent => BoolExtensions.ParseOrDefault(Environment.GetEnvironmentVariable(buildAgent)));
+                        buildAgent => Environment.GetEnvironmentVariable(buildAgent).ParseOrDefault());
             }
 
             var variables = new List<IVariable>

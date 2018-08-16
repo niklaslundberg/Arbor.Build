@@ -7,30 +7,33 @@ namespace Arbor.Build.Core.IO
     {
         public const string TempPathPrefix = "ABX";
 
-        private static readonly Lazy<PathLookupSpecification> _PathLookupSpecification = new Lazy<PathLookupSpecification>(Initialize);
+        private static readonly Lazy<PathLookupSpecification> _PathLookupSpecification =
+            new Lazy<PathLookupSpecification>(Initialize);
+
+        public static PathLookupSpecification DefaultPathLookupSpecification => _PathLookupSpecification.Value;
 
         private static PathLookupSpecification Initialize()
         {
             var ignoredDirectorySegments = new List<string>(20)
-                {
-                    "bin",
-                    "obj",
-                    ".git",
-                    ".hg",
-                    ".svn",
-                    "TestResults",
-                    "_ReSharper",
-                    ".HistoryData",
-                    "LocalHistory",
-                    "packages",
-                    "temp",
-                    "artifacts",
-                    ".vs",
-                    ".user",
-                    ".userprefs",
-                    "node_modules",
-                    "bower_components"
-                };
+            {
+                "bin",
+                "obj",
+                ".git",
+                ".hg",
+                ".svn",
+                "TestResults",
+                "_ReSharper",
+                ".HistoryData",
+                "LocalHistory",
+                "packages",
+                "temp",
+                "artifacts",
+                ".vs",
+                ".user",
+                ".userprefs",
+                "node_modules",
+                "bower_components"
+            };
 
             var ignoredFileStartsWithPatterns = new List<string>(10) { ".", "_", "ncrunchTemp_" };
 
@@ -44,7 +47,5 @@ namespace Arbor.Build.Core.IO
                 ignoredDirectorySegmentParts,
                 ignoredDirectoryStartsWithPatterns);
         }
-
-        public static PathLookupSpecification DefaultPathLookupSpecification => _PathLookupSpecification.Value;
     }
 }

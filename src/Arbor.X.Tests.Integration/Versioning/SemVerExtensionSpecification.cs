@@ -8,6 +8,15 @@ namespace Arbor.Build.Tests.Integration.Versioning
 {
     public class SemVerExtensionSpecification
     {
+        public static IEnumerable<object[]> Data()
+        {
+            yield return new object[] { "1.2.3-abc", "abc" };
+            yield return new object[] { "1.2.3-build00001", "build00001" };
+            yield return new object[] { "1.2.3-abc+123", "abc+123" };
+            yield return new object[] { "1.2.3-abc.1.2.3+def", "abc.1.2.3+def" };
+            yield return new object[] { "1.2.3-build.4", "build.4" };
+        }
+
         [Theory]
         [MemberData(nameof(Data))]
         public void GetSuffixShouldReturnSuffix(string semver, string expected)
@@ -18,15 +27,6 @@ namespace Arbor.Build.Tests.Integration.Versioning
 
             Assert.Equal(expected, suffix);
         }
-
-        public static IEnumerable<object[]> Data()
-        {
-            yield return new object[] {"1.2.3-abc", "abc"};
-            yield return new object[] {"1.2.3-build00001", "build00001"};
-            yield return new object[] {"1.2.3-abc+123", "abc+123"};
-            yield return new object[] {"1.2.3-abc.1.2.3+def", "abc.1.2.3+def"};
-            yield return new object[] {"1.2.3-build.4", "build.4"};
-        }
     }
 
     public class NuGetVersionHelperTests
@@ -34,10 +34,15 @@ namespace Arbor.Build.Tests.Integration.Versioning
         [Fact]
         public void Should()
         {
-            string version = NuGetVersionHelper.GetVersion("1.2.3.4", false, "build", true, null, null, NuGetVersioningSettings.Default);
+            string version = NuGetVersionHelper.GetVersion("1.2.3.4",
+                false,
+                "build",
+                true,
+                null,
+                null,
+                NuGetVersioningSettings.Default);
 
             Assert.Equal("1.2.3-build.4", version);
         }
-
     }
 }

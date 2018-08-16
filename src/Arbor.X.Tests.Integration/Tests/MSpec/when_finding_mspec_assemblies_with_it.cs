@@ -5,6 +5,7 @@ using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.Testing;
 using Arbor.Processing.Core;
 using Machine.Specifications;
+using Serilog;
 using Serilog.Core;
 
 namespace Arbor.Build.Tests.Integration.Tests.MSpec
@@ -21,7 +22,7 @@ namespace Arbor.Build.Tests.Integration.Tests.MSpec
 
         Establish context = () =>
         {
-            var logger = Logger.None;
+            ILogger logger = Logger.None;
             finder = new UnitTestFinder(new List<Type>
                 {
                     typeof(It)
@@ -39,7 +40,7 @@ namespace Arbor.Build.Tests.Integration.Tests.MSpec
             exitCode = DirectoryCopy.CopyAsync(combine, tempDirectory.FullName).Result;
         };
 
-        Because of = () => { dlls = finder.GetUnitTestFixtureDlls(tempDirectory); };
+        Because of = () => dlls = finder.GetUnitTestFixtureDlls(tempDirectory);
 
         It should_Behaviour = () =>
         {

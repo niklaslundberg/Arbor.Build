@@ -47,7 +47,7 @@ namespace Arbor.Build.Core
 
             StaticKeyValueConfigurationManager.Initialize(multiSourceKeyValueConfiguration);
 
-            bool debugLoggerEnabled = false;
+            const bool debugLoggerEnabled = false;
 
             string sourceDir = null;
 

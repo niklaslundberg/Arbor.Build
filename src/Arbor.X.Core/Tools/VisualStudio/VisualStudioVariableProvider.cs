@@ -145,7 +145,7 @@ namespace Arbor.Build.Core.Tools.VisualStudio
                                     {
                                         if (_allowPreReleaseVersions)
                                         {
-                                            string preReleaseSeparator = "_";
+                                            const string preReleaseSeparator = "_";
 
                                             int indexOf = keyName.IndexOf(
                                                 preReleaseSeparator,

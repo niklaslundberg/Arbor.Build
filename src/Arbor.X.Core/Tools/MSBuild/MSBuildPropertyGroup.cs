@@ -16,6 +16,5 @@ namespace Arbor.Build.Core.Tools.MSBuild
         }
 
         public ImmutableArray<MSBuildProperty> Properties { get; }
-
     }
 }

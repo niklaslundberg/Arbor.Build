@@ -11,7 +11,8 @@ namespace Arbor.Build.Core.Tools
 {
     public static class ToolFinder
     {
-        public static ImmutableArray<ToolWithPriority> GetTools([NotNull] ILifetimeScope lifetimeScope,
+        public static ImmutableArray<ToolWithPriority> GetTools(
+            [NotNull] ILifetimeScope lifetimeScope,
             [NotNull] ILogger logger)
         {
             if (lifetimeScope == null)

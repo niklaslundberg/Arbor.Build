@@ -14,7 +14,7 @@ namespace Arbor.Build.Core.GenericExtensions
             }
 
             return type.GetConstructors().Length == 1 &&
-                type.GetConstructor(Array.Empty<Type>())?.GetParameters().Length == 0;
+                   type.GetConstructor(Array.Empty<Type>())?.GetParameters().Length == 0;
         }
 
         public static bool IsConcretePublicClassImplementing<T>(this Type type)
