@@ -4,6 +4,7 @@ IF "%Arbor.X.Build.Bootstrapper.AllowPrerelease%" == "" (
     SET Arbor.X.Build.Bootstrapper.AllowPrerelease=true
 )
 
+SET Arbor.X.MSBuild.NuGetRestore.Enabled=true
 SET Arbor.X.Tools.External.MSpec.Enabled=true
 SET Arbor.X.NuGet.Package.Artifacts.Suffix=
 SET Arbor.X.NuGet.Package.Artifacts.BuildNumber.Enabled=
