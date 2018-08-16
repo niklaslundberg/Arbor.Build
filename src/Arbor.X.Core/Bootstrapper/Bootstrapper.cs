@@ -231,7 +231,7 @@ namespace Arbor.X.Core.Bootstrapper
 
         private async Task<ExitCode> TryStartAsync()
         {
-            _logger.Information("Starting Arbor.X Bootstrapper");
+            _logger.Information("Starting Arbor.Build Bootstrapper");
 
             string directoryCloneValue = Environment.GetEnvironmentVariable(WellKnownVariables.DirectoryCloneEnabled);
 
@@ -330,7 +330,7 @@ namespace Arbor.X.Core.Bootstrapper
 
         private async Task<string> DownloadNuGetPackageAsync(string buildDir, string nugetExePath)
         {
-            const string buildToolPackageName = "Arbor.X";
+            const string buildToolPackageName = "Arbor.Build";
 
             string outputDirectoryPath = Path.Combine(buildDir, buildToolPackageName);
 
@@ -603,18 +603,18 @@ namespace Arbor.X.Core.Bootstrapper
 
             var buildToolDirectory = new DirectoryInfo(buildToolDirectoryPath);
 
-            List<FileInfo> exeFiles =
-                buildToolDirectory.GetFiles("*.exe", SearchOption.TopDirectoryOnly)
+            List<FileInfo> arborBuild =
+                buildToolDirectory.GetFiles("Arbor.Build.dll", SearchOption.TopDirectoryOnly)
                     .Where(file => !file.Name.Equals("nuget.exe", StringComparison.InvariantCultureIgnoreCase))
                     .ToList();
 
-            if (exeFiles.Count != 1)
+            if (arborBuild.Count != 1)
             {
-                PrintInvalidExeFileCount(exeFiles, buildToolDirectoryPath);
+                PrintInvalidExeFileCount(arborBuild, buildToolDirectoryPath);
                 return ExitCode.Failure;
             }
 
-            FileInfo buildToolExe = exeFiles.Single();
+            FileInfo buildToolExecutable = arborBuild.Single();
 
             string timeoutKey = WellKnownVariables.BuildToolTimeoutInSeconds;
             string timeoutInSecondsFromEnvironment = Environment.GetEnvironmentVariable(timeoutKey);
@@ -630,11 +630,12 @@ namespace Arbor.X.Core.Bootstrapper
 
             var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(usedTimeoutInSeconds));
 
-            const string buildApplicationPrefix = "[Arbor.X] ";
+            const string buildApplicationPrefix = "[Arbor.Build] ";
 
-            IEnumerable<string> arguments = Enumerable.Empty<string>();
+            string[] arguments = { buildToolExecutable.FullName };
+
             ExitCode result = await ProcessRunner.ExecuteAsync(
-                buildToolExe.FullName,
+                "dotnet",
                 cancellationTokenSource.Token,
                 arguments,
                 (message, prefix) => _logger.Information("{Prefix}{Message}", buildApplicationPrefix, message),

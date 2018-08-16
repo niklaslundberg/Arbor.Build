@@ -3,10 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <ApplicationIcon />
-    <PackAsTool>true</PackAsTool>
-    <PackageId>Arbor.X.Bootstrapper</PackageId>
     <OutputType>Exe</OutputType>
-    <AssemblyName>dotnet-arbor-x</AssemblyName>
     <StartupObject />
   </PropertyGroup>
 
@@ -15,16 +12,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Arbor.Aesculus" Version="3.0.1" />
-    <PackageReference Include="JetBrains.Annotations" Version="11.1.0" />
+    <PackageReference Include="JetBrains.Annotations" Version="2018.2.1" />
     <PackageReference Include="Microsoft.Net.Compilers" Version="2.8.2" />
     <PackageReference Include="serilog.sinks.console" Version="3.1.1" />
-    <PackageReference Include="System.Runtime" Version="4.3.0" />
+    <PackageReference Include="System.ComponentModel.Annotations" Version="4.5.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Arbor.Processing.Core\Arbor.Processing.Core.csproj" />
-    <ProjectReference Include="..\Arbor.Processing\Arbor.Processing.csproj" />
     <ProjectReference Include="..\Arbor.X.Core\Arbor.X.Core.csproj" />
   </ItemGroup>
 

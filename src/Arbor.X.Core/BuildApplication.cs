@@ -94,7 +94,7 @@ namespace Arbor.X.Core
             _logger.Information("Arbor.X.Build total elapsed time in seconds: {TotalSeconds:F}",
                 stopwatch.Elapsed.TotalSeconds);
 
-            Environment.GetEnvironmentVariable(WellKnownVariables.BuildApplicationExitDelayInMilliseconds)
+            multiSourceKeyValueConfiguration[WellKnownVariables.BuildApplicationExitDelayInMilliseconds]
                 .TryParseInt32(out int exitDelayInMilliseconds, 50);
 
             if (exitDelayInMilliseconds > 0)
@@ -121,7 +121,7 @@ namespace Arbor.X.Core
             return exitCode;
         }
 
-        private static string BuildResultsAsTable(IEnumerable<ToolResult> toolResults)
+        private static string BuildResultsAsTable(IReadOnlyCollection<ToolResult> toolResults)
         {
             const string NotRun = "Not run";
             const string Succeeded = "Succeeded";

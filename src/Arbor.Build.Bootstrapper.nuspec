@@ -1,18 +1,18 @@
 <?xml version="1.0"?>
 <package >
 	<metadata>
-		<id>Arbor.X.Bootstrapper</id>
+		<id>Arbor.Build.Bootstrapper</id>
 		<version>0.0.1</version>
-		<title>Arbor.X.Bootstrapper</title>
+		<title>Arbor.Build.Bootstrapper</title>
 		<authors>Niklas Lundberg</authors>
 		<owners></owners>
 		<description>
-			Arbor.X - convention-based builds
+			Arbor.Build.Bootstrapper - convention-based builds
 		</description>
 		<releaseNotes>
 		</releaseNotes>
 		<summary>
-			Arbor.X Bootstrapper
+			Arbor.Build Bootstrapper
 		</summary>
 		<language>en-US</language>
 		<projectUrl>https://github.com/niklaslundberg/Arbor.X</projectUrl>

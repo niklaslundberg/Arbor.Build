@@ -1,25 +1,25 @@
 <?xml version="1.0"?>
 <package >
 	<metadata>
-		<id>Arbor.X</id>
+		<id>Arbor.Build</id>
 		<version>0.0.1</version>
-		<title>Arbor.X</title>
+		<title>Arbor.Build</title>
 		<authors>Niklas Lundberg</authors>
 		<owners></owners>
 		<description>
-			Arbor.X - convention-based builds
+			Arbor.Build - convention-based builds
 		</description>
 		<releaseNotes>
 		</releaseNotes>
 		<summary>
-			Arbor.X
+			Arbor.Build
 		</summary>
 		<language>en-US</language>
 		<projectUrl>https://github.com/niklaslundberg/Arbor.X</projectUrl>
 		<iconUrl>https://nuget.org/Content/Images/packageDefaultIcon-50x50.png</iconUrl>
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
 		<licenseUrl>https://github.com/niklaslundberg/Arbor.X/blob/master/LICENSE.txt</licenseUrl>
-		<copyright>Copyright Niklas Lundberg 2014 - 2017</copyright>
+		<copyright>Copyright Niklas Lundberg 2014 - 2018</copyright>
 		<dependencies>
 
 		</dependencies>
@@ -27,7 +27,7 @@
 		<tags>build tools convention</tags>
 	</metadata>
 	<files>
-		<file src="Arbor.X.Build\bin\$configuration$\**\*.*" target="" exclude="*.vshost*;**\*.vshost*;*.trx;**\*.lastcodeanalysissucceeded;*.CodeAnalysisLog.xml;**\roslyn\**\*.*;**\*.xml;**\*.pdb" />
+		<file src="Arbor.X.Build\bin\$configuration$\netcoreapp2.1\publish\**\*.*" target="" exclude="*.vshost*;**\*.vshost*;*.trx;**\*.lastcodeanalysissucceeded;*.CodeAnalysisLog.xml;**\roslyn\**\*.*;**\*.xml;**\*.pdb" />
 		<file src="..\tools\external\**.*" exclude="*.vshost*;**\*.vshost*;*.trx" target="tools\external" />
 	</files>
 </package>

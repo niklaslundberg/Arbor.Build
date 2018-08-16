@@ -12,7 +12,7 @@
     <PackageReference Include="Arbor.Sorbus" Version="3.0.2" />
     <PackageReference Include="Arbor.Xdt" Version="0.2.3" />
     <PackageReference Include="Autofac" Version="4.8.1" />
-    <PackageReference Include="JetBrains.Annotations" Version="11.1.0" />
+    <PackageReference Include="JetBrains.Annotations" Version="2018.2.1" />
     <PackageReference Include="Machine.Specifications" Version="0.12.0" />
     <PackageReference Include="Microsoft.Net.Compilers" Version="2.8.2" />
     <PackageReference Include="Mono.Cecil" Version="0.10.0" />
@@ -24,7 +24,7 @@
     <PackageReference Include="serilog" Version="2.7.1" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="4.5.0" />
     <PackageReference Include="System.Runtime" Version="4.3.0" />
-    <PackageReference Include="xunit" Version="2.3.1" />
+    <PackageReference Include="xunit" Version="2.4.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -32,12 +32,6 @@
     <ProjectReference Include="..\Arbor.Defensive\Arbor.Defensive.csproj" />
     <ProjectReference Include="..\Arbor.Processing.Core\Arbor.Processing.Core.csproj" />
     <ProjectReference Include="..\Arbor.Processing\Arbor.Processing.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="System.ComponentModel.Annotations">
-      <HintPath>..\..\..\..\..\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.netcore.app\2.1.0\ref\netcoreapp2.1\System.ComponentModel.Annotations.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
 </Project>

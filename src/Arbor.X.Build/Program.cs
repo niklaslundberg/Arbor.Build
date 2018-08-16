@@ -5,7 +5,7 @@ using Serilog;
 
 namespace Arbor.X.Build
 {
-    internal class Program
+    internal static class Program
     {
         private static BuildApplication _app;
 
