@@ -68,9 +68,22 @@ namespace Arbor.Build.Core.Tools.NuGet
             logger.Information("Found {Count} NuGet specifications to create NuGet packages from",
                 packageSpecifications.Count);
 
-            ExitCode result =
-                await ProcessPackagesAsync(packageSpecifications, packageConfiguration, logger, cancellationToken)
-                    .ConfigureAwait(false);
+            ExitCode result;
+
+            int timeoutInSeconds = buildVariables.GetInt32ByKey(WellKnownVariables.NuGetPackageTimeoutInSeconds, defaultValue: 60);
+
+            using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeoutInSeconds)))
+            {
+                using (CancellationTokenSource.CreateLinkedTokenSource(cancellationToken,cts.Token))
+                {
+                    result =
+                        await ProcessPackagesAsync(packageSpecifications,
+                                packageConfiguration,
+                                logger,
+                                cancellationToken)
+                            .ConfigureAwait(false);
+                }
+            }
 
             return result;
         }

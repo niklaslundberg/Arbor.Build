@@ -44,6 +44,9 @@
         [VariableDescription("Flag to indicate if NuGet package creation is enabled")]
         public const string NuGetPackageEnabled = "Arbor.X.NuGet.Package.Enabled";
 
+        [VariableDescription("NuGet packaging timeout in seconds")]
+        public const string NuGetPackageTimeoutInSeconds = "Arbor.X.NuGet.Package.TimeoutInSeconds";
+
         [VariableDescription("Specific URI to download nuget.exe from")]
         public const string NuGetExeDownloadUri = "Arbor.X.NuGet.DownloadUri";
 
