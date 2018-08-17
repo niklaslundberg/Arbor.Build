@@ -156,7 +156,7 @@ namespace Arbor.Build.Core.Tools.Testing
 
             foreach (string testDirectory in testDirectories)
             {
-                string xmlReportName = $"xunit_v2.{Guid.NewGuid()}.xml";
+                string xmlReportName = $"xunit_v2.{Guid.NewGuid()}.trx";
 
                 var arguments = new List<string> { "test", testDirectory, "--no-build" };
 
@@ -168,11 +168,10 @@ namespace Arbor.Build.Core.Tools.Testing
                 var reportFileInfo = new FileInfo(reportFile);
                 reportFileInfo.Directory.EnsureExists();
 
-                //if (xmlEnabled)
-                //{
-                //    arguments.Add("-xml");
-                //    arguments.Add(reportFileInfo.FullName);
-                //}
+                if (xmlEnabled)
+                {
+                    arguments.Add($"--logger:trx;LogFileName={reportFileInfo.FullName}");
+                }
 
                 ExitCode result = await ProcessRunner.ExecuteAsync(
                     dotNetExePath,
