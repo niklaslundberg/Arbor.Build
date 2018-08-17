@@ -17,7 +17,7 @@ using Serilog;
 namespace Arbor.Build.Core.Tools.Testing
 {
     [Priority(450)]
-    public class MSpecTestRunner : ITool
+    public class MSpecTestRunner : ITestRunnerTool
     {
         public async Task<ExitCode> ExecuteAsync(
             ILogger logger,

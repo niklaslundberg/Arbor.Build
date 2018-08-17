@@ -430,6 +430,17 @@
             the default value (<see cref="F:Xunit.TestMethodDisplay.ClassAndMethod"/>).
             </summary>
         </member>
+        <member name="P:Xunit.TestAssemblyConfiguration.MethodDisplayOptions">
+            <summary>
+            Gets or sets the default display options for test methods.
+            </summary>
+        </member>
+        <member name="P:Xunit.TestAssemblyConfiguration.MethodDisplayOptionsOrDefault">
+            <summary>
+            Gets the default display options for test methods. If the value is not set, returns
+            the default value (<see cref="F:Xunit.TestMethodDisplayOptions.None"/>).
+            </summary>
+        </member>
         <member name="P:Xunit.TestAssemblyConfiguration.ParallelizeAssembly">
             <summary>
             Gets or sets a flag indicating that this assembly is safe to parallelize against
@@ -1156,9 +1167,19 @@
             Gets the set of trait filters for tests to include.
             </summary>
         </member>
+        <member name="P:Xunit.XunitFilters.ExcludedClasses">
+            <summary>
+            Gets the set of class filters for test classes to exclude.
+            </summary>
+        </member>
         <member name="P:Xunit.XunitFilters.IncludedClasses">
             <summary>
-            Gets the set of method filters for test classes to include.
+            Gets the set of class filters for test classes to include.
+            </summary>
+        </member>
+        <member name="P:Xunit.XunitFilters.ExcludedMethods">
+            <summary>
+            Gets the set of method filters for tests to exclude.
             </summary>
         </member>
         <member name="P:Xunit.XunitFilters.IncludedMethods">
@@ -1166,7 +1187,12 @@
             Gets the set of method filters for tests to include.
             </summary>
         </member>
-        <member name="P:Xunit.XunitFilters.IncludedNameSpaces">
+        <member name="P:Xunit.XunitFilters.ExcludedNamespaces">
+            <summary>
+            Gets the set of assembly filters for tests to exclude.
+            </summary>
+        </member>
+        <member name="P:Xunit.XunitFilters.IncludedNamespaces">
             <summary>
             Gets the set of assembly filters for tests to include.
             </summary>
@@ -1620,7 +1646,7 @@
         <member name="M:Xunit.Runners.AssemblyRunner.Dispose">
             <inheritdoc/>
         </member>
-        <member name="M:Xunit.Runners.AssemblyRunner.Start(System.String,System.Nullable{System.Boolean},System.Nullable{Xunit.TestMethodDisplay},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Int32},System.Nullable{System.Boolean})">
+        <member name="M:Xunit.Runners.AssemblyRunner.Start(System.String,System.Nullable{System.Boolean},System.Nullable{Xunit.TestMethodDisplay},System.Nullable{Xunit.TestMethodDisplayOptions},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Int32},System.Nullable{System.Boolean})">
             <summary>
             Starts running tests from a single type (if provided) or the whole assembly (if not). This call returns
             immediately, and status results are dispatched to the Info>s on this class. Callers can check <see cref="P:Xunit.Runners.AssemblyRunner.Status"/>
@@ -1630,6 +1656,8 @@
             <param name="diagnosticMessages">Set to <c>true</c> to enable diagnostic messages; set to <c>false</c> to disable them.
             By default, uses the value from the assembly configuration file.</param>
             <param name="methodDisplay">Set to choose the default display name style for test methods.
+            By default, uses the value from the assembly configuration file. (This parameter is ignored for xUnit.net v1 tests.)</param>
+            <param name="methodDisplayOptions">Set to choose the default display name style options for test methods.
             By default, uses the value from the assembly configuration file. (This parameter is ignored for xUnit.net v1 tests.)</param>
             <param name="preEnumerateTheories">Set to <c>true</c> to pre-enumerate individual theory tests; set to <c>false</c> to use
             a single test case for the theory. By default, uses the value from the assembly configuration file. (This parameter is ignored
@@ -2416,21 +2444,6 @@
         <member name="M:Xunit.TestMessageSink.OnMessage(Xunit.Abstractions.IMessageSinkMessage)">
             <inheritdoc/>
         </member>
-        <member name="T:Xunit.AssemblyHelper">
-            <summary>
-            This class provides assistance with assembly resolution for missing assemblies. Runners may
-            need to use <see cref="M:Xunit.AssemblyHelper.SubscribeResolveForAssembly(System.String,Xunit.Abstractions.IMessageSink)" /> to help automatically resolve missing assemblies
-            when running tests.
-            </summary>
-        </member>
-        <member name="M:Xunit.AssemblyHelper.SubscribeResolveForAssembly(System.String,Xunit.Abstractions.IMessageSink)">
-            <summary>
-            Subscribes to the default <see cref="T:System.Runtime.Loader.AssemblyLoadContext"/> <see cref="E:System.Runtime.Loader.AssemblyLoadContext.Resolving"/> event, to
-            provide automatic assembly resolution from an assembly which has a .deps.json file from the .NET SDK
-            build process.
-            </summary>
-            <returns>An object which, when disposed, un-subscribes.</returns>
-        </member>
         <member name="T:Xunit.ConsoleRunnerLogger">
             <summary>
             An implementation of <see cref="T:Xunit.IRunnerLogger"/> which logs messages
@@ -2443,6 +2456,14 @@
             </summary>
             <param name="useColors">A flag to indicate whether colors should be used when
             logging messages.</param>
+        </member>
+        <member name="M:Xunit.ConsoleRunnerLogger.#ctor(System.Boolean,System.Object)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Xunit.ConsoleRunnerLogger"/> class.
+            </summary>
+            <param name="useColors">A flag to indicate whether colors should be used when
+            logging messages.</param>
+            <param name="lockObject">The lock object used to prevent console clashes.</param>
         </member>
         <member name="P:Xunit.ConsoleRunnerLogger.LockObject">
             <inheritdoc/>
@@ -2488,39 +2509,6 @@
             <summary>
             Gets or sets the total errors (i.e., cleanup failures) for the tests.
             </summary>
-        </member>
-        <member name="T:Xunit.LongLivedMarshalByRefObject">
-            <summary>
-            Base class for all long-lived objects that may cross over an AppDomain.
-            </summary>
-        </member>
-        <member name="T:Xunit.NetCoreAssemblyDependencyResolver">
-            <summary>
-            A class which encapsulates support for resolving dependencies for .NET core assemblies.
-            This includes support for using the .deps.json file that sits alongside the assembly
-            so that dependencies do not need to be copied locally. It also supports loading native
-            assembly assets.
-            </summary>
-        </member>
-        <member name="M:Xunit.NetCoreAssemblyDependencyResolver.#ctor(System.String)">
-            <summary/>
-        </member>
-        <member name="M:Xunit.NetCoreAssemblyDependencyResolver.#ctor(System.String,Xunit.Abstractions.IMessageSink)">
-            <summary>
-            Initializes a new instance of the <see cref="T:Xunit.NetCoreAssemblyDependencyResolver"/> class.
-            </summary>
-            <param name="assemblyFileName">The path to the assembly</param>
-            <param name="internalDiagnosticsMessageSink">An optional message sink for use with internal diagnostics messages;
-            may pass <c>null</c> for no internal diagnostics messages</param>
-        </member>
-        <member name="M:Xunit.NetCoreAssemblyDependencyResolver.Dispose">
-            <inheritdoc/>
-        </member>
-        <member name="M:Xunit.NetCoreAssemblyDependencyResolver.Load(System.Reflection.AssemblyName)">
-            <inheritdoc/>
-        </member>
-        <member name="M:Xunit.NetCoreAssemblyDependencyResolver.LoadUnmanagedDll(System.String)">
-            <inheritdoc/>
         </member>
         <member name="T:Xunit.RemotingUtility">
             <summary>
@@ -3240,6 +3228,59 @@
             Use just the method name (without class)
             </summary>
         </member>
+        <member name="T:Xunit.TestMethodDisplayOptions">
+            <summary>
+            Indicates the method display options for test methods.
+            </summary>
+        </member>
+        <member name="F:Xunit.TestMethodDisplayOptions.None">
+            <summary>
+            Indicates no additional method display options.
+            </summary>
+            <remarks>This is the default configuration option.</remarks>
+        </member>
+        <member name="F:Xunit.TestMethodDisplayOptions.ReplaceUnderscoreWithSpace">
+            <summary>
+            Replace underscores in display names with a space.
+            </summary>
+        </member>
+        <member name="F:Xunit.TestMethodDisplayOptions.UseOperatorMonikers">
+            <summary>
+            Replace well-known monikers with their equivalent operator.
+            </summary>
+            <list type="bullet">
+            <item><description>lt : &lt;</description></item>
+            <item><description>le : &lt;=</description></item>
+            <item><description>eq : =</description></item>
+            <item><description>ne : !=</description></item>
+            <item><description>gt : &gt;</description></item>
+            <item><description>ge : &gt;=</description></item>
+            </list>
+        </member>
+        <member name="F:Xunit.TestMethodDisplayOptions.UseEscapeSequences">
+            <summary>
+            Replace supported escape sequences with their equivalent character.
+            <list type="table">
+            <listheader>
+             <term>Encoding</term>
+             <description>Format</description>
+            </listheader>
+            <item><term>ASCII</term><description>X hex-digit hex-digit (ex: X2C)</description></item>
+            <item><term>Unicode</term><description>U hex-digit hex-digit hex-digit hex-digit (ex: U00A9)</description></item>
+            </list>
+            </summary>
+        </member>
+        <member name="F:Xunit.TestMethodDisplayOptions.ReplacePeriodWithComma">
+            <summary>
+            Replaces the period delimiter used in namespace and type references with a comma.
+            </summary>
+            <remarks>This option is only honored if the <see cref="F:Xunit.TestMethodDisplay.ClassAndMethod"/> setting is also enabled.</remarks>
+        </member>
+        <member name="F:Xunit.TestMethodDisplayOptions.All">
+            <summary>
+            Enables all method display options.
+            </summary>
+        </member>
         <member name="T:Xunit.Serialization.XunitSerializationInfo">
             <summary>
             A mirror class of the CLR's <see cref="T:System.Runtime.Serialization.SerializationInfo"/> class.
@@ -3322,6 +3363,27 @@
             <param name="key">The triple's key</param>
             <param name="value">The triple's value</param>
             <param name="type">The triple's value type</param>
+        </member>
+        <member name="M:Xunit._DiagnosticMessage.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Xunit.DiagnosticMessage"/> class.
+            </summary>
+        </member>
+        <member name="M:Xunit._DiagnosticMessage.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Xunit.DiagnosticMessage"/> class.
+            </summary>
+            <param name="message">The message to send</param>
+        </member>
+        <member name="M:Xunit._DiagnosticMessage.#ctor(System.String,System.Object[])">
+            <summary>
+            Initializes a new instance of the <see cref="T:Xunit.DiagnosticMessage"/> class.
+            </summary>
+            <param name="format">The format of the message to send</param>
+            <param name="args">The arguments used to format the message</param>
+        </member>
+        <member name="P:Xunit._DiagnosticMessage.Message">
+            <inheritdoc/>
         </member>
         <member name="T:Xunit.AfterTestFinished">
             <summary>
@@ -4246,6 +4308,17 @@
             returns the default value (<see cref="F:Xunit.TestMethodDisplay.ClassAndMethod"/>).
             </summary>
         </member>
+        <member name="M:TestFrameworkOptionsReadWriteExtensions.GetMethodDisplayOptions(Xunit.Abstractions.ITestFrameworkDiscoveryOptions)">
+            <summary>
+            Gets a flag that determines the default display name format options for test methods.
+            </summary>
+        </member>
+        <member name="M:TestFrameworkOptionsReadWriteExtensions.GetMethodDisplayOptionsOrDefault(Xunit.Abstractions.ITestFrameworkDiscoveryOptions)">
+            <summary>
+            Gets a flag that determines the default display name format options for test methods. If the flag is not present,
+            returns the default value (<see cref="F:Xunit.TestMethodDisplayOptions.None"/>).
+            </summary>
+        </member>
         <member name="M:TestFrameworkOptionsReadWriteExtensions.GetPreEnumerateTheories(Xunit.Abstractions.ITestFrameworkDiscoveryOptions)">
             <summary>
             Gets a flag that determines whether theories are pre-enumerated. If they enabled, then the
@@ -4285,6 +4358,11 @@
         <member name="M:TestFrameworkOptionsReadWriteExtensions.SetMethodDisplay(Xunit.Abstractions.ITestFrameworkDiscoveryOptions,System.Nullable{Xunit.TestMethodDisplay})">
             <summary>
             Sets a flag that determines the default display name format for test methods.
+            </summary>
+        </member>
+        <member name="M:TestFrameworkOptionsReadWriteExtensions.SetMethodDisplayOptions(Xunit.Abstractions.ITestFrameworkDiscoveryOptions,System.Nullable{Xunit.TestMethodDisplayOptions})">
+            <summary>
+            Sets the flags that determine the default display options for test methods.
             </summary>
         </member>
         <member name="M:TestFrameworkOptionsReadWriteExtensions.SetPreEnumerateTheories(Xunit.Abstractions.ITestFrameworkDiscoveryOptions,System.Nullable{System.Boolean})">
@@ -4424,16 +4502,6 @@
         <member name="T:NewReflectionExtensions">
             <summary>
             Methods which help bridge and contain the differences between Type and TypeInfo.
-            </summary>
-        </member>
-        <member name="P:Internal.Microsoft.Extensions.DependencyModel.RuntimeAssetGroup.Runtime">
-            <summary>
-            The runtime ID associated with this group (may be empty if the group is runtime-agnostic)
-            </summary>
-        </member>
-        <member name="P:Internal.Microsoft.Extensions.DependencyModel.RuntimeAssetGroup.AssetPaths">
-            <summary>
-            Gets a list of assets provided in this runtime group
             </summary>
         </member>
     </members>

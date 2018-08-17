@@ -4,14 +4,6 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <CodeAnalysisRuleSet />
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <CodeAnalysisRuleSet />
-  </PropertyGroup>
-
   <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
@@ -29,8 +21,8 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Net.Compilers" Version="2.8.2" />
     <PackageReference Include="Microsoft.Windows.Compatibility" Version="2.0.0" />
-    <PackageReference Include="serilog" Version="2.7.1" />
-    <PackageReference Include="serilog.sinks.seq" Version="4.0.0" />
+    <PackageReference Include="Serilog" Version="2.7.1" />
+    <PackageReference Include="Serilog.Sinks.Seq" Version="4.0.0" />
   </ItemGroup>
 
   <ItemGroup>

@@ -17,7 +17,7 @@ namespace Arbor.Build.Core.Tools.Testing
 {
     [Priority(450)]
     [UsedImplicitly]
-    public class VsTestRunner : ITool
+    public class VsTestRunner : ITestRunnerTool
     {
         private string _sourceRoot;
 
@@ -26,7 +26,7 @@ namespace Arbor.Build.Core.Tools.Testing
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.VSTestEnabled, true);
+            bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.VSTestEnabled, false);
 
             if (!enabled)
             {

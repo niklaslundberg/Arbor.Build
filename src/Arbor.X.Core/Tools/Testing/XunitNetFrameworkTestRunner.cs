@@ -18,7 +18,7 @@ namespace Arbor.Build.Core.Tools.Testing
 {
     [Priority(400)]
     [UsedImplicitly]
-    public class XunitNetFrameworkTestRunner : ITool
+    public class XunitNetFrameworkTestRunner : ITestRunnerTool
     {
         private string _sourceRoot;
 

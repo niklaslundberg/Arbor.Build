@@ -20,7 +20,7 @@ namespace Arbor.Build.Core.Tools.Testing
 {
     [Priority(400)]
     [UsedImplicitly]
-    public class XunitNetCoreAppTestRunner : ITool
+    public class XunitNetCoreAppTestRunner : ITestRunnerTool
     {
         private string _sourceRoot;
 
@@ -46,8 +46,13 @@ namespace Arbor.Build.Core.Tools.Testing
                 logger.Information(
                     "Xunit .NET Core App test runner is not enabled, set variable '{XUnitNetCoreAppEnabled}' to true to enable",
                     WellKnownVariables.XUnitNetCoreAppEnabled);
+
                 return ExitCode.Success;
             }
+
+            logger.Information(
+                "Xunit .NET Core App test runner is enabled, defined in variable '{Variable}'",
+                WellKnownVariables.XUnitNetCoreAppEnabled);
 
             _sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
             IVariable reportPath = buildVariables.Require(WellKnownVariables.ReportPath).ThrowIfEmptyValue();
@@ -57,6 +62,12 @@ namespace Arbor.Build.Core.Tools.Testing
                     "xunit",
                     "netcoreapp2.0",
                     "xunit.console.dll");
+
+            if (!File.Exists(xunitDllPath))
+            {
+                logger.Error("Could not find xunit dll file '{DllFile}'", xunitDllPath);
+                return ExitCode.Failure;
+            }
 
             logger.Debug("Using XUnit dll path '{XunitDllPath}'", xunitDllPath);
 

@@ -19,7 +19,7 @@ namespace Arbor.Build.Core.Tools.Testing
 {
     [Priority(400)]
     [UsedImplicitly]
-    public class NUnitTestRunner : ITool
+    public class NUnitTestRunner : ITestRunnerTool
     {
         private string _exePathOverride;
         private string _sourceRoot;
@@ -30,7 +30,7 @@ namespace Arbor.Build.Core.Tools.Testing
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.NUnitEnabled, true);
+            bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.NUnitEnabled, false);
 
             if (!enabled)
             {

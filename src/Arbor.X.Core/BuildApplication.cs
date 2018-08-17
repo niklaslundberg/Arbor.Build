@@ -239,6 +239,8 @@ namespace Arbor.Build.Core
 
             var toolResults = new List<ToolResult>();
 
+            bool testsEnabled = buildVariables.GetBooleanByKey(WellKnownVariables.TestsEnabled, defaultValue: true);
+
             foreach (ToolWithPriority toolWithPriority in toolWithPriorities)
             {
                 if (result != 0)
@@ -248,6 +250,13 @@ namespace Arbor.Build.Core
                         toolResults.Add(new ToolResult(toolWithPriority, ToolResultType.NotRun));
                         continue;
                     }
+                }
+
+                if (!testsEnabled
+                    && toolWithPriority.Tool is ITestRunnerTool)
+                {
+                    toolResults.Add(new ToolResult(toolWithPriority, ToolResultType.NotRun));
+                    continue;
                 }
 
                 const int boxLength = 50;
@@ -497,12 +506,12 @@ namespace Arbor.Build.Core
 
             foreach (IVariable buildVariable in buildVariableArray)
             {
-                if (!buildVariable.Key.StartsWith("Arbor.X", StringComparison.InvariantCultureIgnoreCase))
+                if (!buildVariable.Key.StartsWithAny(new[]{ArborConstants.ArborBuild, ArborConstants.ArborX}, StringComparison.InvariantCultureIgnoreCase))
                 {
                     continue;
                 }
 
-                string compatibilityName = buildVariable.Key.Replace(".", "_");
+                string compatibilityName = buildVariable.Key.Replace(".", "_", StringComparison.InvariantCulture);
 
                 if (
                     buildVariables.Any(

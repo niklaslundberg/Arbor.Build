@@ -70,7 +70,7 @@ namespace Arbor.Build.Core.BuildVariables
 
             string value = buildVariables.GetVariableValueOrDefault(
                 key,
-                defaultValue.ToString());
+                string.Empty);
 
             if (string.IsNullOrWhiteSpace(value))
             {

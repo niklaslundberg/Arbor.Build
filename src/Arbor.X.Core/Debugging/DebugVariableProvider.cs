@@ -19,6 +19,11 @@ namespace Arbor.Build.Core.Debugging
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
+            if (!DebugHelper.IsDebugging)
+            {
+                return Task.FromResult(ImmutableArray<IVariable>.Empty);
+            }
+
             var environmentVariables = new Dictionary<string, string>
             {
                 [WellKnownVariables.BranchNameVersionOverrideEnabled] = "false",
@@ -58,7 +63,7 @@ namespace Arbor.Build.Core.Debugging
                 [WellKnownVariables.TestsAssemblyStartsWith] = "Arbor.X.Tests",
                 [WellKnownVariables.DotNetRestoreEnabled] = "false",
                 [WellKnownVariables.XUnitNetCoreAppV2XmlXsltToJunitEnabled] = "true",
-                [WellKnownVariables.XUnitNetCoreAppEnabled] = "true",
+                [WellKnownVariables.XUnitNetCoreAppEnabled] = "false",
                 [WellKnownVariables.XUnitNetCoreAppXmlAnalysisEnabled] = "true",
                 [WellKnownVariables.AssemblyUseReflectionOnlyMode] = "true",
                 [WellKnownVariables.MSBuildNuGetRestoreEnabled] = "true"

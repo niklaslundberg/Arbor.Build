@@ -20,7 +20,7 @@ namespace Arbor.Build.Core.Tools.Testing
 {
     [Priority(400)]
     [UsedImplicitly]
-    public class XunitNetCoreAppTestRunnerV2 : ITool
+    public class XunitNetCoreAppTestRunnerV2 : ITestRunnerTool
     {
         private string _sourceRoot;
 
