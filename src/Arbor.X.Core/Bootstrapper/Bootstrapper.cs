@@ -232,7 +232,7 @@ namespace Arbor.Build.Core.Bootstrapper
             }
         }
 
-        private async Task<ExitCode> TryStartAsync()
+        private async Task<ExitCode> TryStartAsync(BootstrapStartOptions startOptions)
         {
             _logger.Information("Starting Arbor.Build Bootstrapper");
 
@@ -290,22 +290,30 @@ namespace Arbor.Build.Core.Bootstrapper
             }
 
             ExitCode exitCode;
+
             try
             {
-                ExitCode buildToolsResult =
-                    await RunBuildToolsAsync(buildDir.FullName, outputDirectoryPath).ConfigureAwait(false);
-
-                if (buildToolsResult.IsSuccess)
+                if (startOptions.DownloadOnly)
                 {
-                    _logger.Information("The build tools succeeded");
+                    exitCode = ExitCode.Success;
                 }
                 else
                 {
-                    _logger.Error("The build tools process was not successful, exit code {BuildToolsResult}",
-                        buildToolsResult);
-                }
+                    ExitCode buildToolsResult =
+                        await RunBuildToolsAsync(buildDir.FullName, outputDirectoryPath).ConfigureAwait(false);
 
-                exitCode = buildToolsResult;
+                    if (buildToolsResult.IsSuccess)
+                    {
+                        _logger.Information("The build tools succeeded");
+                    }
+                    else
+                    {
+                        _logger.Error("The build tools process was not successful, exit code {BuildToolsResult}",
+                            buildToolsResult);
+                    }
+
+                    exitCode = buildToolsResult;
+                }
             }
             catch (TaskCanceledException)
             {
