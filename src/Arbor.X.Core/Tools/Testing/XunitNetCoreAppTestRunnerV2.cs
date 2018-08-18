@@ -66,9 +66,22 @@ namespace Arbor.Build.Core.Tools.Testing
                 buildVariables.GetOptionalBooleanByKey(
                     WellKnownVariables.RunTestsInReleaseConfigurationEnabled);
 
-            string configuration = runTestsInReleaseConfiguration.HasValue
-                ? runTestsInReleaseConfiguration.Value ? "release" : "debug"
-                : "[ANY]";
+            bool runTestsInAnyConfiguration =
+                buildVariables.GetBooleanByKey(WellKnownVariables.RunTestsInAnyConfigurationEnabled);
+
+            string configuration;
+
+            if (runTestsInAnyConfiguration)
+            {
+                runTestsInReleaseConfiguration = null;
+                configuration = "[ANY]";
+            }
+            else
+            {
+                configuration = runTestsInReleaseConfiguration == true
+                    ? "release"
+                    : "debug";
+            }
 
             ImmutableArray<string> assemblyFilePrefix = buildVariables.AssemblyFilePrefixes();
 
@@ -76,6 +89,7 @@ namespace Arbor.Build.Core.Tools.Testing
                 "Finding Xunit test DLL files built with '{Configuration}' configuration in directory '{SourceRoot}'",
                 configuration,
                 _sourceRoot);
+
             logger.Information("Looking for types {V} in directory '{SourceRoot}'",
                 string.Join(", ", typesToFind.Select(t => t.FullName)),
                 _sourceRoot);

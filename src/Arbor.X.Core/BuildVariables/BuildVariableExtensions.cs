@@ -93,7 +93,7 @@ namespace Arbor.Build.Core.BuildVariables
         {
             if (!buildVariables.HasKey(key))
             {
-                return default;
+                return null;
             }
 
             string value = buildVariables.GetVariableValueOrDefault(
@@ -102,14 +102,14 @@ namespace Arbor.Build.Core.BuildVariables
 
             if (string.IsNullOrWhiteSpace(value))
             {
-                return default;
+                return null;
             }
 
             if (!bool.TryParse(
                 value,
                 out bool parsed))
             {
-                return default;
+                return null;
             }
 
             return parsed;

@@ -356,6 +356,10 @@ namespace Arbor.Build.Core.BuildVariables
         public const string RunTestsInReleaseConfigurationEnabled =
             "Arbor.X.Tests.RunTestsInReleaseConfiguration";
 
+        [VariableDescription("Run tests in any configuration")]
+        public const string RunTestsInAnyConfigurationEnabled =
+            "Arbor.X.Tests.RunTestsInAnyConfiguration";
+
         [VariableDescription("Flag to indicate if XML files for assemblies in the bin directory should be deleted")]
         public const string CleanBinXmlFilesForAssembliesEnabled =
             "Arbor.X.Build.WebApplications.CleanBinXmlFilesForAssembliesEnabled";

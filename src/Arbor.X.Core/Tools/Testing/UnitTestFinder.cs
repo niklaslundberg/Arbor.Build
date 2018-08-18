@@ -44,7 +44,7 @@ namespace Arbor.Build.Core.Tools.Testing
                 return new HashSet<string>();
             }
 
-            var blacklisted = new List<string>
+            var excluded = new List<string>
             {
                 ".git",
                 ".hg",
@@ -64,14 +64,14 @@ namespace Arbor.Build.Core.Tools.Testing
                 ".vs"
             };
 
-            bool isBlacklisted =
-                blacklisted.Any(
-                    blackListedItem =>
-                        currentDirectory.Name.StartsWith(blackListedItem, StringComparison.InvariantCultureIgnoreCase));
+            bool isExcluded =
+                excluded.Any(
+                    excludedItem =>
+                        currentDirectory.Name.StartsWith(excludedItem, StringComparison.InvariantCultureIgnoreCase));
 
-            if (isBlacklisted)
+            if (isExcluded)
             {
-                _logger?.Debug("Directory '{FullName}' is blacklisted", fullName);
+                _logger?.Debug("Directory '{FullName}' is excluded", fullName);
                 return new HashSet<string>();
             }
 
@@ -96,7 +96,10 @@ namespace Arbor.Build.Core.Tools.Testing
 
             List<(AssemblyDefinition, FileInfo)> configurationFiltered;
 
-            if (releaseBuild.HasValue && releaseBuild.Value)
+            bool isReleaseBuild = releaseBuild.HasValue && releaseBuild.Value;
+            bool isDebugBuild = releaseBuild.HasValue && !releaseBuild.Value;
+
+            if (isReleaseBuild)
             {
                 configurationFiltered = assemblies
                     .Select(assembly => new
@@ -104,23 +107,34 @@ namespace Arbor.Build.Core.Tools.Testing
                         Assembly = assembly,
                         IsDebug = assembly.Item1.IsDebugAssembly(assembly.Item2, _logger)
                     })
-                    .Where(item => (item.IsDebug.HasValue && !item.IsDebug.Value) || !item.IsDebug.HasValue)
+                    .Where(item => item.IsDebug == false || !item.IsDebug.HasValue)
                     .Select(item => item.Assembly)
                     .ToList();
 
-                _logger?.Debug("Filtered to only include release assemblies");
+                string[] debugAssemblies = assemblies
+                    .Except(configurationFiltered)
+                    .Select(a => a.Item2.FullName)
+                    .ToArray();
+
+                _logger?.Debug("Filtered out debug assemblies {DebugAssemblies}", debugAssemblies);
             }
-            else if (releaseBuild.HasValue)
+            else if (isDebugBuild)
             {
                 configurationFiltered = assemblies.Select(assembly => new
                     {
                         Assembly = assembly,
                         IsDebug = assembly.Item1.IsDebugAssembly(assembly.Item2, _logger)
                     })
-                    .Where(item => (item.IsDebug.HasValue && item.IsDebug.Value) || !item.IsDebug.HasValue)
+                    .Where(item => item.IsDebug == true || !item.IsDebug.HasValue)
                     .Select(item => item.Assembly)
                     .ToList();
-                _logger?.Debug("Filtered to only include debug assemblies");
+
+                string[] nonDebugAssemblies = assemblies
+                    .Except(configurationFiltered)
+                    .Select(a => a.Item2.FullName)
+                    .ToArray();
+
+                _logger?.Debug("Filtered out release assemblies {NonDebugAssemblies}", nonDebugAssemblies);
             }
             else
             {
