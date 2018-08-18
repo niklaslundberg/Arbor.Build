@@ -110,7 +110,7 @@ namespace Arbor.Build.Core.Tools.Testing
             }
 
             logger.Debug("Found [{TestDlls}] potential Assembly dll files with tests: {NewLine}: {V}",
-                testDlls,
+                testDlls.Count,
                 Environment.NewLine,
                 string.Join(Environment.NewLine, testDlls.Select(dll => $" * '{dll}'")));
 
