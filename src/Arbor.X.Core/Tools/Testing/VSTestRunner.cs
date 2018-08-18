@@ -71,7 +71,7 @@ namespace Arbor.Build.Core.Tools.Testing
                 }
                 catch (Exception ex)
                 {
-                    logger.Warning(ex, "Ignoring test exception: {Ex}");
+                    logger.Warning(ex, "Ignoring test exception");
                 }
 
                 return ExitCode.Success;

@@ -84,7 +84,7 @@ namespace Arbor.Build.Core.Bootstrapper
 
             try
             {
-                exitCode = await TryStartAsync().ConfigureAwait(false);
+                exitCode = await TryStartAsync(startOptions).ConfigureAwait(false);
 
                 stopwatch.Stop();
             }

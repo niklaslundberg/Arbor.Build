@@ -206,7 +206,7 @@ namespace Arbor.Build.Core.Tools.Testing
                         }
                         catch (Exception ex)
                         {
-                            logger.Error(ex, "Could not transform '{FullName}', {Ex}", xmlReport.FullName);
+                            logger.Error(ex, "Could not transform '{FullName}'", xmlReport.FullName);
                             return ExitCode.Failure;
                         }
 
