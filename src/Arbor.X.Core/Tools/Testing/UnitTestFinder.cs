@@ -115,8 +115,10 @@ namespace Arbor.Build.Core.Tools.Testing
                     .Except(configurationFiltered)
                     .Select(a => a.Item2.FullName)
                     .ToArray();
-
-                _logger?.Debug("Filtered out debug assemblies {DebugAssemblies}", debugAssemblies);
+                if (debugAssemblies.Length > 0)
+                {
+                    _logger?.Debug("Filtered out debug assemblies {DebugAssemblies}", debugAssemblies);
+                }
             }
             else if (isDebugBuild)
             {
@@ -134,7 +136,10 @@ namespace Arbor.Build.Core.Tools.Testing
                     .Select(a => a.Item2.FullName)
                     .ToArray();
 
-                _logger?.Debug("Filtered out release assemblies {NonDebugAssemblies}", nonDebugAssemblies);
+                if (nonDebugAssemblies.Length > 0)
+                {
+                    _logger?.Debug("Filtered out release assemblies {NonDebugAssemblies}", nonDebugAssemblies);
+                }
             }
             else
             {
