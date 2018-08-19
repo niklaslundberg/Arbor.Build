@@ -44,7 +44,7 @@ namespace Arbor.Build.Core.Tools.Testing
                 return new HashSet<string>();
             }
 
-            var excluded = new List<string>
+            ImmutableHashSet<string> excluded = new[]
             {
                 ".git",
                 ".hg",
@@ -62,7 +62,7 @@ namespace Arbor.Build.Core.Tools.Testing
                 ".",
                 "NCrunch",
                 ".vs"
-            };
+            }.ToImmutableHashSet();
 
             bool isExcluded =
                 excluded.Any(
@@ -107,7 +107,7 @@ namespace Arbor.Build.Core.Tools.Testing
                         Assembly = assembly,
                         IsDebug = assembly.Item1.IsDebugAssembly(assembly.Item2, _logger)
                     })
-                    .Where(item => item.IsDebug == false || !item.IsDebug.HasValue)
+                    .Where(item => item.IsDebug == false)
                     .Select(item => item.Assembly)
                     .ToList();
 
@@ -127,7 +127,7 @@ namespace Arbor.Build.Core.Tools.Testing
                         Assembly = assembly,
                         IsDebug = assembly.Item1.IsDebugAssembly(assembly.Item2, _logger)
                     })
-                    .Where(item => item.IsDebug == true || !item.IsDebug.HasValue)
+                    .Where(item => item.IsDebug == true)
                     .Select(item => item.Assembly)
                     .ToList();
 

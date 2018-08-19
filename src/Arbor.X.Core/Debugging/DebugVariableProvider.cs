@@ -60,7 +60,7 @@ namespace Arbor.Build.Core.Debugging
                 [WellKnownVariables.XUnitNetFrameworkEnabled] = "false",
                 [WellKnownVariables.NUnitEnabled] = "false",
                 [WellKnownVariables.MSpecEnabled] = "true",
-                [WellKnownVariables.TestsAssemblyStartsWith] = "Arbor.X.Tests",
+                [WellKnownVariables.TestsAssemblyStartsWith] = "Arbor.Build.Tests",
                 [WellKnownVariables.DotNetRestoreEnabled] = "false",
                 [WellKnownVariables.XUnitNetCoreAppV2XmlXsltToJunitEnabled] = "true",
                 [WellKnownVariables.XUnitNetCoreAppEnabled] = "false",

@@ -40,7 +40,7 @@ namespace Arbor.Build
                 .MinimumLevel.ControlledBy(levelSwitch)
                 .CreateLogger();
 
-            logger.Information("Using logging switch level {LogSwitchLevel}", levelSwitch);
+            logger.Information("Using logging switch level {LogSwitchLevel}", levelSwitch.MinimumLevel);
 
             return logger;
         }

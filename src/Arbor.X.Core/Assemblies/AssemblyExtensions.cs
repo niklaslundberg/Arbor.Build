@@ -6,6 +6,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Loader;
 using Arbor.Build.Core.BuildVariables;
 using JetBrains.Annotations;
 using Mono.Cecil;
@@ -64,26 +65,7 @@ namespace Arbor.Build.Core.Assemblies
             {
                 try
                 {
-                    byte[] assemblyBytes;
-
-                    using (var fs = new FileStream(fileInfo.FullName, FileMode.Open, FileAccess.Read))
-                    {
-                        var buffer = new byte[16 * 1024];
-
-                        using (var ms = new MemoryStream())
-                        {
-                            int read;
-
-                            while ((read = fs.Read(buffer, 0, buffer.Length)) > 0)
-                            {
-                                ms.Write(buffer, 0, read);
-                            }
-
-                            assemblyBytes = ms.ToArray();
-                        }
-                    }
-
-                    Assembly reflectedAssembly = Assembly.ReflectionOnlyLoad(assemblyBytes);
+                    Assembly reflectedAssembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(fileInfo.FullName);;
 
                     if (reflectedAssembly != null)
                     {

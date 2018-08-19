@@ -39,7 +39,7 @@ namespace Arbor.Build.Core.Tools.Testing
                 throw new ArgumentNullException(nameof(buildVariables));
             }
 
-            bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.XUnitNetCoreAppV2Enabled, false);
+            bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.XUnitNetCoreAppV2Enabled, true);
 
             if (!enabled)
             {
@@ -49,11 +49,12 @@ namespace Arbor.Build.Core.Tools.Testing
                 return ExitCode.Success;
             }
 
+            logger.Information(
+                "Xunit .NET Core App test runner is enabled, defined in key {Key}",
+                WellKnownVariables.XUnitNetCoreAppV2Enabled);
+
             _sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
             IVariable reportPath = buildVariables.Require(WellKnownVariables.ReportPath).ThrowIfEmptyValue();
-            //string xunitDllPath = buildVariables.GetVariableValueOrDefault(WellKnownVariables.XUnitNetCoreAppDllPath, null) ?? Path.Combine(buildVariables.Require(WellKnownVariables.ExternalTools).Value, "xunit", "netcoreapp2.0", "xunit.console.dll");
-
-            //logger.Debug($"Using XUnit dll path '{xunitDllPath}'");
 
             Type theoryType = typeof(TheoryAttribute);
             Type factAttribute = typeof(FactAttribute);
@@ -85,12 +86,15 @@ namespace Arbor.Build.Core.Tools.Testing
 
             ImmutableArray<string> assemblyFilePrefix = buildVariables.AssemblyFilePrefixes();
 
-            logger.Information(
-                "Finding Xunit test DLL files built with '{Configuration}' configuration in directory '{SourceRoot}'",
-                configuration,
-                _sourceRoot);
+            object prefixes = assemblyFilePrefix.Length == 0 ? (object) "none" : (object) assemblyFilePrefix;
 
-            logger.Information("Looking for types {V} in directory '{SourceRoot}'",
+            logger.Information(
+                "Finding Xunit test DLL files built with '{Configuration}' configuration in directory '{SourceRoot}', using prefixes {Prefixes}",
+                configuration,
+                _sourceRoot,
+                prefixes);
+
+            logger.Information("Looking for types {TypesToFind} in directory '{SourceRoot}'",
                 string.Join(", ", typesToFind.Select(t => t.FullName)),
                 _sourceRoot);
 
@@ -103,9 +107,11 @@ namespace Arbor.Build.Core.Tools.Testing
 
             if (testDlls.Count == 0)
             {
-                logger.Information("Found no .NETCoreApp Assemblies with Xunit tests");
+                logger.Information("Found no .NETCoreApp Assemblies with Xunit tests using prefixes {Prefixes}", prefixes);
                 return ExitCode.Success;
             }
+
+            logger.Information("Found {AssemblyCount} .NETCoreApp Assemblies with Xunit tests  using prefixes {Prefixes}", testDlls.Count, prefixes);
 
             DirectoryInfo GetProjectDirectoryForDll(DirectoryInfo directoryInfo)
             {
@@ -146,8 +152,8 @@ namespace Arbor.Build.Core.Tools.Testing
                 return directories;
             }
 
-            logger.Debug("Found [{TestDlls}] potential Assembly dll files with tests: {NewLine}: {V}",
-                testDlls,
+            logger.Debug("Found [{TestDlls}] potential Assembly dll files with tests: {NewLine}: {DllFiles}",
+                testDlls.Count,
                 Environment.NewLine,
                 string.Join(Environment.NewLine, testDlls.Select(dll => $" * '{dll}'")));
 
@@ -156,7 +162,7 @@ namespace Arbor.Build.Core.Tools.Testing
 
             if (string.IsNullOrWhiteSpace(dotNetExePath))
             {
-                logger.Information(
+                logger.Error(
                     "Path to 'dotnet.exe' has not been specified, set variable '{DotNetExePath}' or ensure the dotnet.exe is installed in its standard location",
                     WellKnownVariables.DotNetExePath);
                 return ExitCode.Failure;
@@ -170,7 +176,8 @@ namespace Arbor.Build.Core.Tools.Testing
 
             foreach (string testDirectory in testDirectories)
             {
-                string xmlReportName = $"xunit_v2.{Guid.NewGuid()}.trx";
+                var directoryInfo = new DirectoryInfo(testDirectory);
+                string xmlReportName = $"xunit_v2.{directoryInfo.Name}.trx";
 
                 var arguments = new List<string> { "test", testDirectory, "--no-build" };
 
