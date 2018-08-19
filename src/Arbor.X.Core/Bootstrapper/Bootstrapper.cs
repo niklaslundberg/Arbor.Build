@@ -46,7 +46,7 @@ namespace Arbor.Build.Core.Bootstrapper
         {
             _logger.Information("Running Arbor.X Bootstrapper process id {ProcessId}, executable {Executable}",
                 Process.GetCurrentProcess().Id,
-                Assembly.GetExecutingAssembly().Location);
+                typeof(Bootstrapper).Assembly.Location);
 
             BootstrapStartOptions startOptions;
 
@@ -360,7 +360,7 @@ namespace Arbor.Build.Core.Bootstrapper
             outputDirectory.DeleteIfExists();
             outputDirectory.EnsureExists();
 
-            string version = Environment.GetEnvironmentVariable(WellKnownVariables.ArborXNuGetPackageVersion);
+            string version = Environment.GetEnvironmentVariable(WellKnownVariables.ArborBuildNuGetPackageVersion);
 
             var nugetArguments = new List<string>
             {
@@ -400,14 +400,14 @@ namespace Arbor.Build.Core.Bootstrapper
                 nugetArguments.Add(version);
 
                 _logger.Verbose(
-                    "'{ArborXNuGetPackageVersion}' flag is set, using specific version of Arbor.X: {Version}",
-                    WellKnownVariables.ArborXNuGetPackageVersion,
+                    "'{ArborBuildNuGetPackageVersion}' flag is set, using specific version of Arbor.X: {Version}",
+                    WellKnownVariables.ArborBuildNuGetPackageVersion,
                     version);
             }
             else
             {
-                _logger.Verbose("'{ArborXNuGetPackageVersion}' flag is not set, using latest version of Arbor.X",
-                    WellKnownVariables.ArborXNuGetPackageVersion);
+                _logger.Verbose("'{ArborBuildNuGetPackageVersion}' flag is not set, using latest version of Arbor.X",
+                    WellKnownVariables.ArborBuildNuGetPackageVersion);
 
                 bool allowPrerelease;
                 if (_startOptions.PrereleaseEnabled.HasValue)

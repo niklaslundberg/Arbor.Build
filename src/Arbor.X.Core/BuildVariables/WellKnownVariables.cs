@@ -112,7 +112,7 @@ namespace Arbor.Build.Core.BuildVariables
         public const string AllowPrerelease = "Arbor.X.Build.Bootstrapper.AllowPrerelease";
 
         [VariableDescription("Arbor.X NuGet package version for bootstrapper to download")]
-        public const string ArborXNuGetPackageVersion = "Arbor.X.NuGetPackageVersion";
+        public const string ArborBuildNuGetPackageVersion = "Arbor.Build.NuGetPackageVersion";
 
         [VariableDescription("NuGet source to use when downloading Arbor.X NuGet package")]
         public const string ArborXNuGetPackageSource = "Arbor.X.NuGetPackage.Source";
