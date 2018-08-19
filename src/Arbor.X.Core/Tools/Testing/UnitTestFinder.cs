@@ -71,7 +71,7 @@ namespace Arbor.Build.Core.Tools.Testing
 
             if (isExcluded)
             {
-                _logger?.Debug("Directory '{FullName}' is excluded", fullName);
+                _logger?.Verbose("Directory '{FullName}' is excluded", fullName);
                 return new HashSet<string>();
             }
 
@@ -144,7 +144,7 @@ namespace Arbor.Build.Core.Tools.Testing
             else
             {
                 configurationFiltered = assemblies;
-                _logger?.Debug("No debug/release filter is used");
+                _logger?.Verbose("No debug/release filter is used");
             }
 
             IReadOnlyCollection<string> testFixtureAssemblies = UnitTestFixtureAssemblies(configurationFiltered);
