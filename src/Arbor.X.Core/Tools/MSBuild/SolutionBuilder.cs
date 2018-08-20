@@ -1741,7 +1741,6 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 requireLicenseAcceptance,
                 licenseUrl,
                 copyright,
-                copyright,
                 tags,
                 files);
 
