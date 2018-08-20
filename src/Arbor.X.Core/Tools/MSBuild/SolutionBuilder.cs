@@ -854,7 +854,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
             ImmutableArray<SolutionProject> exeProjects = solution.Projects
                 .Where(project =>
                     project.Framework == Framework.NetCoreApp
-                    && project.Project.HasPropertyWithValue("OutputType", "Exe"))
+                    && (project.Project.HasPropertyWithValue("OutputType", "Exe")
+                        || project.Project.Sdk == DotNetSdk.DotnetWeb))
                 .ToImmutableArray();
 
             foreach (SolutionProject solutionProject in exeProjects)

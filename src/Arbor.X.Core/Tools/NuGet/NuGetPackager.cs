@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -11,6 +12,7 @@ using Arbor.Build.Core.Tools.Git;
 using Arbor.Defensive;
 using Arbor.Processing;
 using Arbor.Processing.Core;
+using NuGet.Versioning;
 using Serilog;
 using Serilog.Events;
 
@@ -42,6 +44,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             string suffix =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageArtifactsSuffix, "build");
+
             bool buildNumberEnabled = buildVariables.GetBooleanByKey(
                 WellKnownVariables.BuildNumberInNuGetPackageArtifactsEnabled,
                 true);
@@ -52,12 +55,16 @@ namespace Arbor.Build.Core.Tools.NuGet
                     true);
             bool branchNameEnabled =
                 buildVariables.GetBooleanByKey(WellKnownVariables.NuGetPackageIdBranchNameEnabled, false);
+
             string packageIdOverride =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageIdOverride, null);
+
             bool nuGetSymbolPackagesEnabled =
                 buildVariables.GetBooleanByKey(WellKnownVariables.NuGetSymbolPackagesEnabled, true);
+
             string nuGetPackageVersionOverride =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageVersionOverride, null);
+
             bool allowManifestReWrite =
                 buildVariables.GetBooleanByKey(WellKnownVariables.NuGetAllowManifestReWrite, false);
 
@@ -90,6 +97,16 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             bool isReleaseBuild = IsReleaseBuild(releaseBuild.Value, branchNameMayBe.Value);
 
+            string semVer = NuGetVersionHelper.GetVersion(version.Value,
+                isReleaseBuild,
+                "build",
+                false,
+                null,
+                logger,
+                NuGetVersioningSettings.Default);
+
+            SemanticVersion semanticVersion = SemanticVersion.Parse(semVer);
+
             logger.Verbose("Based on branch {Value} and release build flags {Value1}, the build is considered {V}",
                 branchName.Value,
                 releaseBuild.Value,
@@ -119,7 +136,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             var packageConfiguration = new NuGetPackageConfiguration(
                 configuration,
-                version.Value,
+                semanticVersion.ToNormalizedString(),
                 packagesDirectory,
                 nuGetExePath,
                 suffix,
