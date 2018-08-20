@@ -1661,39 +1661,6 @@ namespace Arbor.Build.Core.Tools.MSBuild
             string packageId,
             string filesList)
         {
-            const string xmlTemplate = @"<?xml version=""1.0""?>
-<package >
-    <metadata>
-        <id>{0}</id>
-        <version>{1}</version>
-        <title>{2}</title>
-        <authors>{3}</authors>
-        <owners>{4}</owners>
-        <description>
-            {5}
-        </description>
-        <releaseNotes>
-        </releaseNotes>
-        <summary>
-            {6}
-        </summary>
-        <language>{7}</language>
-        <projectUrl>{8}</projectUrl>
-        <iconUrl>{9}</iconUrl>
-        <requireLicenseAcceptance>{10}</requireLicenseAcceptance>
-        <licenseUrl>{11}</licenseUrl>
-        <copyright>{12}</copyright>
-        <dependencies>
-
-        </dependencies>
-        <references></references>
-        <tags>{13}</tags>
-    </metadata>
-    <files>
-        {14}
-    </files>
-</package>";
-
             string packageDirectoryPath = Path.Combine(platformDirectoryPath, "NuGet");
 
             DirectoryInfo packageDirectory = new DirectoryInfo(packageDirectoryPath).EnsureExists();
@@ -1726,23 +1693,40 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             string files = filesList;
 
-            string nuspecContent = string.Format(
-                xmlTemplate,
-                name,
-                version,
-                name,
-                authors,
-                owners,
-                description,
-                summary,
-                language,
-                projectUrl,
-                iconUrl,
-                requireLicenseAcceptance,
-                licenseUrl,
-                copyright,
-                tags,
-                files);
+
+
+            string nuspecContent = $@"<?xml version=""1.0""?>
+<package>
+    <metadata>
+        <id>{name}</id>
+        <version>{version}</version>
+        <title>{name}</title>
+        <authors>{authors}</authors>
+        <owners>{owners}</owners>
+        <description>
+            {description}
+        </description>
+        <releaseNotes>
+        </releaseNotes>
+        <summary>
+            {summary}
+        </summary>
+        <language>{language}</language>
+        <projectUrl>{projectUrl}</projectUrl>
+        <iconUrl>{iconUrl}</iconUrl>
+        <requireLicenseAcceptance>{requireLicenseAcceptance}</requireLicenseAcceptance>
+        <licenseUrl>{licenseUrl}</licenseUrl>
+        <copyright>{copyright}</copyright>
+        <dependencies>
+
+        </dependencies>
+        <references></references>
+        <tags>{tags}</tags>
+    </metadata>
+    <files>
+        {files}
+    </files>
+</package>";
 
             logger.Information("{NuSpec}", nuspecContent);
 
