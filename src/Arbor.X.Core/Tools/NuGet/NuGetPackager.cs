@@ -100,7 +100,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             string semVer = NuGetVersionHelper.GetVersion(version.Value,
                 isReleaseBuild,
                 "build",
-                false,
+                true,
                 null,
                 logger,
                 NuGetVersioningSettings.Default);
