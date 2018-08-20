@@ -32,6 +32,15 @@ namespace Arbor.Build.Core.Assemblies
                 throw new ArgumentNullException(nameof(fileInfo));
             }
 
+            string binDebugPath = $"bin{Path.DirectorySeparatorChar}debug";
+
+            if (fileInfo.FullName.Contains(binDebugPath,
+                StringComparison.OrdinalIgnoreCase))
+            {
+                logger?.Debug("Found assembly {Assembly} in {Path}, skipping assembly loading", fileInfo.FullName, binDebugPath);
+                return true;
+            }
+
             ILogger usedLogger = logger ?? Logger.None;
 
             Assembly loadedAssembly = AppDomain.CurrentDomain.GetAssemblies()

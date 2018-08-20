@@ -115,6 +115,7 @@ namespace Arbor.Build.Core.Tools.Testing
                     .Except(configurationFiltered)
                     .Select(a => a.Item2.FullName)
                     .ToArray();
+
                 if (debugAssemblies.Length > 0)
                 {
                     _logger?.Debug("Filtered out debug assemblies {DebugAssemblies}", debugAssemblies);
