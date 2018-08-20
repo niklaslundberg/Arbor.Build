@@ -189,17 +189,27 @@ namespace Arbor.Build.Core.Tools.NuGet
                     packageConfiguration.PackageIdOverride);
             }
 
-            NuGetVersioningSettings nuGetVersioningSettings = NuGetVersioningSettings.Default;
-            string nuGetPackageVersion = !string.IsNullOrWhiteSpace(packageConfiguration.NuGetPackageVersionOverride)
-                ? packageConfiguration.NuGetPackageVersionOverride
-                : NuGetVersionHelper.GetVersion(
-                    packageConfiguration.Version,
-                    packageConfiguration.IsReleaseBuild,
-                    packageConfiguration.Suffix,
-                    packageConfiguration.BuildNumberEnabled,
-                    packageConfiguration.PackageBuildMetadata,
-                    _logger,
-                    nuGetVersioningSettings);
+            string nuGetPackageVersion;
+
+            if (packageConfiguration.SemanticVersion is null)
+            {
+                NuGetVersioningSettings nuGetVersioningSettings = NuGetVersioningSettings.Default;
+                nuGetPackageVersion =
+                    !string.IsNullOrWhiteSpace(packageConfiguration.NuGetPackageVersionOverride)
+                        ? packageConfiguration.NuGetPackageVersionOverride
+                        : NuGetVersionHelper.GetVersion(
+                            packageConfiguration.Version,
+                            packageConfiguration.IsReleaseBuild,
+                            packageConfiguration.Suffix,
+                            packageConfiguration.BuildNumberEnabled,
+                            packageConfiguration.PackageBuildMetadata,
+                            _logger,
+                            nuGetVersioningSettings);
+            }
+            else
+            {
+                nuGetPackageVersion = packageConfiguration.SemanticVersion.ToNormalizedString();
+            }
 
             _logger.Information("{NuGetUsage}",
                 string.IsNullOrWhiteSpace(packageConfiguration.NuGetPackageVersionOverride)

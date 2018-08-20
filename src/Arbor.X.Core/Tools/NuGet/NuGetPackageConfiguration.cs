@@ -3,6 +3,7 @@ using System.IO;
 using Arbor.Build.Core.IO;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
+using NuGet.Versioning;
 
 namespace Arbor.Build.Core.Tools.NuGet
 {
@@ -72,6 +73,9 @@ namespace Arbor.Build.Core.Tools.NuGet
             PackagesDirectory = packagesDirectory;
             NuGetExePath = nugetExePath;
             Suffix = suffix;
+            SemanticVersion = SemanticVersion.TryParse(version, out SemanticVersion semanticVersion)
+                ? semanticVersion
+                : null;
         }
 
         public bool KeepBinaryAndSourcePackagesTogetherEnabled { get; }
@@ -95,7 +99,7 @@ namespace Arbor.Build.Core.Tools.NuGet
         public string Version { get; }
 
         public string Suffix { get; }
-
+        public SemanticVersion SemanticVersion { get; }
         public string TempPath { get; }
 
         public string NuGetExePath { get; }
