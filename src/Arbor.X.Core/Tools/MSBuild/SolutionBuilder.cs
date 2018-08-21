@@ -1673,7 +1673,6 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             string name = packageId;
 
-            string version = packageConfiguration.Version;
             string authors = _buildVariables.GetVariableValueOrDefault(
                 WellKnownVariables.NetAssemblyCompany,
                 "Undefined");
@@ -1699,7 +1698,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 <package>
     <metadata>
         <id>{name}</id>
-        <version>{version}</version>
+        <version>{packageConfiguration.Version.ToNormalizedString()}</version>
         <title>{name}</title>
         <authors>{authors}</authors>
         <owners>{owners}</owners>
@@ -1832,7 +1831,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             transformationStopwatch.Stop();
 
-            logger.Debug("XML transformations took {V} seconds",
+            logger.Debug("XML transformations took {Seconds} seconds",
                 transformationStopwatch.Elapsed.TotalSeconds.ToString("F"));
         }
 

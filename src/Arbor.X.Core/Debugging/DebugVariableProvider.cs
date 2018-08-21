@@ -30,10 +30,10 @@ namespace Arbor.Build.Core.Debugging
                 [WellKnownVariables.VariableOverrideEnabled] = "true",
 
                 [WellKnownVariables.BranchName] = "develop",
-                [WellKnownVariables.VersionMajor] = "2",
-                [WellKnownVariables.VersionMinor] = "1",
+                [WellKnownVariables.VersionMajor] = "3",
+                [WellKnownVariables.VersionMinor] = "0",
                 [WellKnownVariables.VersionPatch] = "0",
-                [WellKnownVariables.VersionBuild] = "0",
+                [WellKnownVariables.VersionBuild] = "286",
                 [WellKnownVariables.GenericXmlTransformsEnabled] = "true",
                 [WellKnownVariables.NuGetPackageExcludesCommaSeparated] = "Arbor.X.Bootstrapper.nuspec",
                 [WellKnownVariables.NuGetAllowManifestReWrite] = "false",
@@ -66,7 +66,8 @@ namespace Arbor.Build.Core.Debugging
                 [WellKnownVariables.XUnitNetCoreAppEnabled] = "false",
                 [WellKnownVariables.XUnitNetCoreAppXmlAnalysisEnabled] = "true",
                 [WellKnownVariables.AssemblyUseReflectionOnlyMode] = "true",
-                [WellKnownVariables.MSBuildNuGetRestoreEnabled] = "true"
+                [WellKnownVariables.MSBuildNuGetRestoreEnabled] = "true",
+                [WellKnownVariables.BranchName] = "develop",
             };
 
             Task<ImmutableArray<IVariable>> result = Task.FromResult(environmentVariables.Select(

@@ -11,7 +11,7 @@ namespace Arbor.Build.Core.Tools.NuGet
     {
         public NuGetPackageConfiguration(
             [NotNull] string configuration,
-            [NotNull] string version,
+            [NotNull] SemanticVersion version,
             [NotNull] string packagesDirectory,
             [NotNull] string nugetExePath,
             string suffix = null,
@@ -30,11 +30,6 @@ namespace Arbor.Build.Core.Tools.NuGet
             if (string.IsNullOrWhiteSpace(configuration))
             {
                 throw new ArgumentNullException(nameof(configuration));
-            }
-
-            if (string.IsNullOrWhiteSpace(version))
-            {
-                throw new ArgumentNullException(nameof(version));
             }
 
             if (string.IsNullOrWhiteSpace(packagesDirectory))
@@ -69,13 +64,10 @@ namespace Arbor.Build.Core.Tools.NuGet
             NuGetPackageVersionOverride = nuGetPackageVersionOverride;
             AllowManifestReWrite = allowManifestReWrite;
             NuGetSymbolPackagesEnabled = nuGetSymbolPackagesEnabled;
-            Version = version;
+            Version = version ?? throw new ArgumentNullException(nameof(version));
             PackagesDirectory = packagesDirectory;
             NuGetExePath = nugetExePath;
             Suffix = suffix;
-            SemanticVersion = SemanticVersion.TryParse(version, out SemanticVersion semanticVersion)
-                ? semanticVersion
-                : null;
         }
 
         public bool KeepBinaryAndSourcePackagesTogetherEnabled { get; }
@@ -96,10 +88,10 @@ namespace Arbor.Build.Core.Tools.NuGet
 
         public string BranchName { get; }
 
-        public string Version { get; }
+        public SemanticVersion Version { get; }
 
         public string Suffix { get; }
-        public SemanticVersion SemanticVersion { get; }
+
         public string TempPath { get; }
 
         public string NuGetExePath { get; }

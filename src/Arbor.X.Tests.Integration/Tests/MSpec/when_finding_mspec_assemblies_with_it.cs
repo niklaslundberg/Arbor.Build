@@ -10,6 +10,7 @@ using Serilog.Core;
 
 namespace Arbor.Build.Tests.Integration.Tests.MSpec
 {
+    [Ignore("Recursive")]
     [Subject(typeof(UnitTestFinder))]
     [Tags(MSpecInternalConstants.RecursiveArborXTest)]
     public class when_finding_mspec_assemblies_with_it

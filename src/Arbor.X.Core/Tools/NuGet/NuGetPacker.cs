@@ -128,6 +128,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 filtered.Count,
                 Environment.NewLine,
                 string.Join(Environment.NewLine, filtered));
+
             IReadOnlyCollection<string> allIncluded = notExcluded.Select(file => file.FullName)
                 .SafeToReadOnlyCollection();
 

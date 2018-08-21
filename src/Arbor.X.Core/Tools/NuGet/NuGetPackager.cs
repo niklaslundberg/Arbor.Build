@@ -53,6 +53,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 buildVariables.GetBooleanByKey(
                     WellKnownVariables.NuGetKeepBinaryAndSymbolPackagesTogetherEnabled,
                     true);
+
             bool branchNameEnabled =
                 buildVariables.GetBooleanByKey(WellKnownVariables.NuGetPackageIdBranchNameEnabled, false);
 
@@ -92,7 +93,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             if (!branchNameMayBe.HasValue)
             {
-                throw new InvalidOperationException("The branchname could not be found");
+                throw new InvalidOperationException("The branch name could not be found");
             }
 
             bool isReleaseBuild = IsReleaseBuild(releaseBuild.Value, branchNameMayBe.Value);
@@ -136,7 +137,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             var packageConfiguration = new NuGetPackageConfiguration(
                 configuration,
-                semanticVersion.ToNormalizedString(),
+                semanticVersion,
                 packagesDirectory,
                 nuGetExePath,
                 suffix,
@@ -189,27 +190,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                     packageConfiguration.PackageIdOverride);
             }
 
-            string nuGetPackageVersion;
-
-            if (packageConfiguration.SemanticVersion is null)
-            {
-                NuGetVersioningSettings nuGetVersioningSettings = NuGetVersioningSettings.Default;
-                nuGetPackageVersion =
-                    !string.IsNullOrWhiteSpace(packageConfiguration.NuGetPackageVersionOverride)
-                        ? packageConfiguration.NuGetPackageVersionOverride
-                        : NuGetVersionHelper.GetVersion(
-                            packageConfiguration.Version,
-                            packageConfiguration.IsReleaseBuild,
-                            packageConfiguration.Suffix,
-                            packageConfiguration.BuildNumberEnabled,
-                            packageConfiguration.PackageBuildMetadata,
-                            _logger,
-                            nuGetVersioningSettings);
-            }
-            else
-            {
-                nuGetPackageVersion = packageConfiguration.SemanticVersion.ToNormalizedString();
-            }
+            string nuGetPackageVersion = packageConfiguration.Version.ToNormalizedString();
 
             _logger.Information("{NuGetUsage}",
                 string.IsNullOrWhiteSpace(packageConfiguration.NuGetPackageVersionOverride)
@@ -224,7 +205,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             // ReSharper restore AssignNullToNotNullAttribute
 
-            var nuSpecCopy = new NuSpec(packageId, nuGetPackageVersion, nuSpecInfo.FullName);
+            var nuSpecCopy = new NuSpec(packageId, packageConfiguration.Version, nuSpecInfo.FullName);
 
             string nuSpecTempDirectory = Path.Combine(packageConfiguration.TempPath, "nuspecs");
 
@@ -320,7 +301,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                     "-OutputDirectory",
                     packagesDirectoryPath,
                     "-Version",
-                    nuSpecCopy.Version
+                    nuSpecCopy.Version.ToNormalizedString()
                 };
 
                 if (!hasRemovedNoSourceTag && nugetSymbolPackageEnabled)
@@ -360,9 +341,11 @@ namespace Arbor.Build.Core.Tools.NuGet
                     logger.Information(
                         "The flag {NuGetKeepBinaryAndSymbolPackagesTogetherEnabled} is set to false, separating binary packages from symbol packages",
                         WellKnownVariables.NuGetKeepBinaryAndSymbolPackagesTogetherEnabled);
+
                     List<string> nugetPackages = packagesDirectory.GetFiles("*.nupkg", SearchOption.TopDirectoryOnly)
                         .Select(file => file.FullName)
                         .ToList();
+
                     List<string> nugetSymbolPackages = packagesDirectory
                         .GetFiles("*.symbols.nupkg", SearchOption.TopDirectoryOnly)
                         .Select(file => file.FullName)

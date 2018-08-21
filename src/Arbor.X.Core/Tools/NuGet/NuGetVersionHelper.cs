@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using Arbor.Build.Core.GenericExtensions;
 using NuGet.Versioning;
 using Serilog;
@@ -44,12 +45,12 @@ namespace Arbor.Build.Core.Tools.NuGet
                 if (enableBuildNumber)
                 {
                     buildVersion =
-                        $"{parsedVersion.Major}.{parsedVersion.Minor}.{parsedVersion.Build}-{suffix}{semVer2PreReleaseSeparator}{parsedVersion.Revision.ToString().LeftPad(usePadding, '0')}";
+                        $"{parsedVersion.Major}.{parsedVersion.Minor}.{parsedVersion.Build}-{suffix}{semVer2PreReleaseSeparator}{parsedVersion.Revision.ToString(CultureInfo.InvariantCulture).LeftPad(usePadding, '0')}";
 
                     logger?.Information(
-                        "Package suffix is {Suffix}, using major.minor.patch-{suffix}build as the version, {BuildVersion}",
+                        "Package suffix is {Suffix}, using major.minor.patch-{UsedSuffix}build as the version, {BuildVersion}",
                         suffix,
-                        null,
+                        suffix,
                         buildVersion);
                 }
                 else
@@ -57,9 +58,9 @@ namespace Arbor.Build.Core.Tools.NuGet
                     buildVersion = $"{parsedVersion.Major}.{parsedVersion.Minor}.{parsedVersion.Build}-{suffix}";
 
                     logger?.Information(
-                        "Package suffix is {Suffix}, using major.minor.patch-{suffix} as the version, {BuildVersion}",
+                        "Package suffix is {Suffix}, using major.minor.patch-{UsedSuffix} as the version, {BuildVersion}",
                         suffix,
-                        null,
+                        suffix,
                         buildVersion);
                 }
             }
@@ -90,7 +91,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 final = buildVersion;
             }
 
-            if (!SemanticVersion.TryParse(final, out SemanticVersion semanticVersion))
+            if (!SemanticVersion.TryParse(final, out SemanticVersion _))
             {
                 throw new InvalidOperationException($"The NuGet version '{final}' is not a valid Semver 2.0 version");
             }
