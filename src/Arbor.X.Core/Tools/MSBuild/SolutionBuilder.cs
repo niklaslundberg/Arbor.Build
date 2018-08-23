@@ -860,7 +860,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             foreach (SolutionProject solutionProject in exeProjects)
             {
-                string[] args = { "publish", solutionProject.FullPath, "-c", configuration, "--no-build" };
+                string[] args = { "publish", solutionProject.FullPath, "-c", configuration };
 
                 ExitCode projectExitCode = await ProcessUtils.ProcessHelper.ExecuteAsync(_dotNetExePath,
                     args,
