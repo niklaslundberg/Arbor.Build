@@ -18,7 +18,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             ImmutableArray<ProjectType> projectTypes,
             Guid? projectId,
             DotNetSdk sdk,
-            ImmutableArray<PackageReferenceElement> packageReferenceElements)
+            ImmutableArray<PackageReferenceElement> packageReferences)
         {
             PropertyGroups = propertyGroups.ToImmutableArray();
             FileName = fileName;
@@ -27,7 +27,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             ProjectTypes = projectTypes;
             ProjectId = projectId;
             Sdk = sdk;
-            PackageReferenceElements = packageReferenceElements;
+            PackageReferences = packageReferences;
         }
 
         public ImmutableArray<MSBuildPropertyGroup> PropertyGroups { get; }
@@ -44,7 +44,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
         public DotNetSdk Sdk { get; }
 
-        public ImmutableArray<PackageReferenceElement> PackageReferenceElements { get; }
+        public ImmutableArray<PackageReferenceElement> PackageReferences { get; }
 
         public static bool IsNetSdkProject([NotNull] FileInfo projectFile)
         {
@@ -126,7 +126,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 DotNetSdk sdk = DotNetSdk.ParseOrDefault(sdkValue);
 
                 ImmutableArray<PackageReferenceElement> packageReferences = propertyGroups
-                    .Descendants("PackageReference")
+                    .Elements("PackageReference")
                     .Select(packageReference => new PackageReferenceElement(
                         packageReference.Attribute("Include")?.Value,
                         packageReference.Attribute("Version")?.Value))

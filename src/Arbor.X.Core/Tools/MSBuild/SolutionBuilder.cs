@@ -858,7 +858,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     project.Framework == Framework.NetCoreApp
                     && (project.Project.HasPropertyWithValue("OutputType", "Exe")
                         || project.Project.Sdk == DotNetSdk.DotnetWeb)
-                    && !project.Project.PackageReferenceElements.Any(reference => sdkTestPackageId.Equals(reference.Package, StringComparison.OrdinalIgnoreCase)))
+                    && !project.Project.PackageReferences.Any(reference => sdkTestPackageId.Equals(reference.Package, StringComparison.OrdinalIgnoreCase)))
                 .ToImmutableArray();
 
             foreach (SolutionProject solutionProject in exeProjects)
