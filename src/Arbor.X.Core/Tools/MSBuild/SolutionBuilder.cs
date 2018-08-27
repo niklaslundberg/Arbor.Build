@@ -832,7 +832,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             }
             else
             {
-                logger.Error("Skipping PDB publising since web site build failed");
+                logger.Error("Skipping PDB publishing since web site build failed");
             }
 
             return exitCode;
@@ -851,11 +851,14 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             Solution solution = Solution.LoadFrom(solutionFile.FullName);
 
+            const string sdkTestPackageId = "Microsoft.NET.Test.Sdk";
+
             ImmutableArray<SolutionProject> exeProjects = solution.Projects
                 .Where(project =>
                     project.Framework == Framework.NetCoreApp
                     && (project.Project.HasPropertyWithValue("OutputType", "Exe")
-                        || project.Project.Sdk == DotNetSdk.DotnetWeb))
+                        || project.Project.Sdk == DotNetSdk.DotnetWeb)
+                    && !project.Project.PackageReferenceElements.Any(reference => sdkTestPackageId.Equals(reference.Package, StringComparison.OrdinalIgnoreCase)))
                 .ToImmutableArray();
 
             foreach (SolutionProject solutionProject in exeProjects)
