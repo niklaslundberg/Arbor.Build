@@ -31,7 +31,7 @@ namespace Arbor.Build
 
             string outputTemplate;
 
-            if (Environment.GetEnvironmentVariable(WellKnownVariables.ConsoleLogTimestampEnabled).TryParseBool(out bool timestampsEnabled) && !timestampsEnabled)
+            if (Environment.GetEnvironmentVariable(WellKnownVariables.ConsoleLogTimestampEnabled).TryParseBool(out bool timestampsEnabled, defaultValue: true) && !timestampsEnabled)
             {
                 outputTemplate = "[{Level:u3}] {Message:lj}{NewLine}{Exception}";
             }
