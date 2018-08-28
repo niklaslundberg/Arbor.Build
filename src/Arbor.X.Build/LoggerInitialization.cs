@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.GenericExtensions.Boolean;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
@@ -28,8 +29,23 @@ namespace Arbor.Build
             string seqUrl = args?.FirstOrDefault(arg => arg.StartsWith("sequrl"))?.Split('=').LastOrDefault()
                             ?? Environment.GetEnvironmentVariable("sequrl");
 
+            string outputTemplate;
+
+            if (Environment.GetEnvironmentVariable(WellKnownVariables.ConsoleLogTimestampEnabled).TryParseBool(out bool timestampsEnabled) && !timestampsEnabled)
+            {
+                outputTemplate = "[{Level:u3}] {Message:lj}{NewLine}{Exception}";
+            }
+            else if (Environment.GetEnvironmentVariable(WellKnownVariables.IsRunningOnBuildAgent).TryParseBool(out bool isRunningOnBuildAgent) && isRunningOnBuildAgent)
+            {
+                outputTemplate = "[{Level:u3}] {Message:lj}{NewLine}{Exception}";
+            }
+            else
+            {
+                outputTemplate = "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}";
+            }
+
             LoggerConfiguration loggerConfiguration = new LoggerConfiguration()
-                .WriteTo.Console();
+                .WriteTo.Console(outputTemplate: outputTemplate);
 
             if (!string.IsNullOrWhiteSpace(seqUrl) && Uri.TryCreate(seqUrl, UriKind.Absolute, out Uri uri))
             {

@@ -106,6 +106,9 @@ namespace Arbor.Build.Core.BuildVariables
         [VariableDescription("Flag to indicate if the build is running on a build agent")]
         public const string IsRunningOnBuildAgent = "Arbor.X.Build.IsRunningOnBuildAgent";
 
+        [VariableDescription("Flag to indicate if the console log should include timestamps")]
+        public const string ConsoleLogTimestampEnabled = "Arbor.X.Build.Logging.Console.Timestamps.Enabled";
+
         [VariableDescription(
             "Flag to indicate if the bootstrapper is allowed to download pre-release versions of Arbor.X NuGet package",
             "false")]
