@@ -86,5 +86,4 @@ namespace Arbor.Build.Core.Tools.NuGet
             return result;
         }
     }
-
-    
+}
