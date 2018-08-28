@@ -96,6 +96,9 @@
         [VariableDescription("NuGet executable path (eg. C:\\nuget.exe)")]
         public const string ExternalTools_NuGet_ExePath = "Arbor.X.Tools.External.NuGet.ExePath";
 
+        [VariableDescription("NuGet restore enabled")]
+        public const string NuGetRestoreEnabled = "Arbor.X.Tools.External.NuGet.Restore.Enabled";
+
         [VariableDescription("NuGet executable path (eg. C:\\nuget.exe)")]
         public const string ExternalTools_NuGet_ExePath_Custom =
             "Arbor.X.Tools.External.NuGet.ExePath.Custom";

@@ -14,7 +14,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 {
     [Priority(101)]
     [UsedImplicitly]
-    public class MSBuildNuGetRestorer : ITool
+    public class NuGetRestorer : ITool
     {
         public async Task<ExitCode> ExecuteAsync(
             ILogger logger,
@@ -22,17 +22,17 @@ namespace Arbor.Build.Core.Tools.NuGet
             CancellationToken cancellationToken)
         {
             bool enabled = buildVariables.GetBooleanByKey(
-                WellKnownVariables.MSBuildNuGetRestoreEnabled,
+                WellKnownVariables.NuGetRestoreEnabled,
                 true);
 
             if (!enabled)
             {
-                logger.Debug("{Tool} is disabled", nameof(MSBuildNuGetRestorer));
+                logger.Debug("{Tool} is disabled", nameof(NuGetRestorer));
                 return ExitCode.Success;
             }
 
-            string msbuildExePath =
-                buildVariables.GetVariable(WellKnownVariables.ExternalTools_MSBuild_ExePath).ThrowIfEmptyValue().Value;
+            string nugetExePath =
+                buildVariables.GetVariable(WellKnownVariables.ExternalTools_NuGet_ExePath).ThrowIfEmptyValue().Value;
 
             string rootPath = buildVariables.GetVariable(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
 
@@ -78,13 +78,13 @@ namespace Arbor.Build.Core.Tools.NuGet
             string solutionFile = included.Single();
 
             ExitCode result = await ProcessHelper.ExecuteAsync(
-                msbuildExePath,
-                new[] { solutionFile, "/t:restore" },
+                nugetExePath,
+                new[] { "restore", solutionFile },
                 logger,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
             return result;
+
         }
     }
-
-    
+}
