@@ -26,7 +26,7 @@ namespace Arbor.Build
                 }
             }
 
-            string seqUrl = args?.FirstOrDefault(arg => arg.StartsWith("sequrl"))?.Split('=').LastOrDefault()
+            string seqUrl = args?.FirstOrDefault(arg => arg.StartsWith("sequrl", StringComparison.OrdinalIgnoreCase))?.Split('=').LastOrDefault()
                             ?? Environment.GetEnvironmentVariable("sequrl");
 
             string outputTemplate;
