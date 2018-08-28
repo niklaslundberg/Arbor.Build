@@ -11,7 +11,7 @@ namespace Arbor.Build.Bootstrapper
         private static async Task<int> Main(string[] args)
         {
             Logger logger = new LoggerConfiguration()
-                .WriteTo.Console()
+                .WriteTo.Console(outputTemplate: "{Message:lj}{NewLine}{Exception}")
                 .CreateLogger();
 
             var bootstrapper = new Core.Bootstrapper.Bootstrapper(logger);
