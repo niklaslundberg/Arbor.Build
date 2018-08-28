@@ -1,11 +1,9 @@
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
-using Arbor.Build.Core.GenericExtensions.Boolean;
 using Arbor.Build.Core.Tools.Cleanup;
 using JetBrains.Annotations;
 using Serilog;
@@ -31,8 +29,7 @@ namespace Arbor.Build.Core.Tools.Environments
                 WellKnownVariables.TeamCity.ExternalTools_TeamCity_TeamCityVersion
             };
 
-            bool isBuildAgent =
-                Environment.GetEnvironmentVariable(WellKnownVariables.IsRunningOnBuildAgent).ParseOrDefault(false);
+            bool isBuildAgent = buildVariables.GetBooleanByKey(WellKnownVariables.IsRunningOnBuildAgent, false);
 
             if (isBuildAgent)
             {
@@ -42,7 +39,7 @@ namespace Arbor.Build.Core.Tools.Environments
             {
                 isBuildAgentValue =
                     buildAgentEnvironmentVariables.Any(
-                        buildAgent => Environment.GetEnvironmentVariable(buildAgent).ParseOrDefault());
+                        buildAgent => buildVariables.GetOptionalBooleanByKey(buildAgent) == true);
             }
 
             var variables = new List<IVariable>
