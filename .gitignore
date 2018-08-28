@@ -193,3 +193,4 @@ _patchedAssemblyInfos
 *.userprefs
 *.log
 **/nCrunchTemp_*/*.*
+**/nCrunchTemp_*.*
