@@ -107,8 +107,6 @@ namespace Arbor.Build.Core.Tools.MSBuild
             _buildContext = buildContext;
         }
 
-        public Guid WebApplicationProjectTypeId { get; } = Guid.Parse("349C5851-65DF-11DA-9384-00065B846F21");
-
         public async Task<ExitCode> ExecuteAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
@@ -1085,13 +1083,13 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             List<SolutionProject> webProjects =
                 solution.Projects.Where(
-                        project => project.Project.ProjectTypes.Any(type => type.Id == WebApplicationProjectTypeId))
+                        project => project.Project.ProjectTypes.Any(type => type == ProjectType.Mvc5))
                     .ToList();
 
             logger.Debug("Finding WebApplications by looking at project type GUID {WebApplicationProjectTypeId}",
-                WebApplicationProjectTypeId);
+                ProjectType.Mvc5);
 
-            logger.Information("WebApplication projects to build [{Count}]: {V}",
+            logger.Information("WebApplication projects to build [{Count}]: {Projects}",
                 webProjects.Count,
                 string.Join(", ", webProjects.Select(wp => wp.Project.FileName)));
 

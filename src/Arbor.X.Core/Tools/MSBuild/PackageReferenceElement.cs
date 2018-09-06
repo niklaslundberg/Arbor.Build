@@ -13,5 +13,10 @@
         public string Version { get; }
 
         public bool IsValid => !string.IsNullOrWhiteSpace(Package) && !string.IsNullOrWhiteSpace(Version);
+
+        public override string ToString()
+        {
+            return $"{nameof(Package)}: {Package}, {nameof(Version)}: {Version}, {nameof(IsValid)}: {IsValid}";
+        }
     }
 }

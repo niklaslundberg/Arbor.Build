@@ -87,5 +87,10 @@ namespace Arbor.Build.Core.Tools.MSBuild
         {
             return SdkName.GetHashCode(StringComparison.Ordinal);
         }
+
+        public override string ToString()
+        {
+            return SdkName;
+        }
     }
 }

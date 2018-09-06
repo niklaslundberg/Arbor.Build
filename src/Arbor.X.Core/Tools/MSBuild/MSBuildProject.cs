@@ -88,18 +88,27 @@ namespace Arbor.Build.Core.Tools.MSBuild
                         $"Could not find element <{projectElementName}> in file '{projectFileFullName}'");
                 }
 
-                ImmutableArray<XElement> propertyGroups = project.Elements("PropertyGroup").ToImmutableArray();
+                ImmutableArray<XElement> propertyGroups = project
+                    .Elements()
+                    .Where(e => e.Name.LocalName.Equals("PropertyGroup", StringComparison.Ordinal))
+                    .ToImmutableArray();
 
-                XElement idElement = propertyGroups.Elements("ProjectGuid").FirstOrDefault();
+                XElement idElement = propertyGroups
+                    .Elements()
+                    .FirstOrDefault(e => e.Name.LocalName.Equals("ProjectGuid", StringComparison.Ordinal));
 
-                if (Guid.TryParse(idElement?.Value, out Guid id))
+                if (idElement?.Value != null)
                 {
-                    projectId = id;
+                    if (Guid.TryParse(idElement.Value, out Guid id))
+                    {
+                        projectId = id;
+                    }
                 }
 
                 foreach (XElement propertyGroup in propertyGroups)
                 {
-                    ImmutableArray<MSBuildProperty> msBuildProperties = propertyGroup?.Elements()
+                    ImmutableArray<MSBuildProperty> msBuildProperties = propertyGroup?
+                                                                            .Elements()
                                                                             .Select(p =>
                                                                                 new MSBuildProperty(p.Name.LocalName,
                                                                                     p.Value))
@@ -113,20 +122,26 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                 var file = new FileInfo(projectFileFullName);
 
-                ImmutableArray<ProjectType> projectTypes = propertyGroups
-                                                               .Elements("ProjectTypeGuids")
-                                                               .FirstOrDefault()?.Value.Split(';')
-                                                               .Select(Guid.Parse)
-                                                               .Select(guid => new ProjectType(guid))
-                                                               .ToImmutableArray()
-                                                           ?? ImmutableArray<ProjectType>.Empty;
+                XElement projectTypeGuidsElement = propertyGroups
+                    .Elements()
+                    .FirstOrDefault(e => e.Name.LocalName.Equals("ProjectTypeGuids", StringComparison.Ordinal));
+
+                ImmutableArray<ProjectType> projectTypes = ImmutableArray<ProjectType>.Empty;
+
+                if (projectTypeGuidsElement != null)
+                {
+                    projectTypes = projectTypeGuidsElement.Value.Split(';')
+                        .Select(Guid.Parse)
+                        .Select(guid => new ProjectType(guid))
+                        .ToImmutableArray();
+                }
 
                 string sdkValue = project.Attribute("Sdk")?.Value;
 
                 DotNetSdk sdk = DotNetSdk.ParseOrDefault(sdkValue);
 
                 ImmutableArray<PackageReferenceElement> packageReferences = propertyGroups
-                    .Elements("PackageReference")
+                    .Where(e => e.Name.LocalName.Equals("PackageReference", StringComparison.Ordinal))
                     .Select(packageReference => new PackageReferenceElement(
                         packageReference.Attribute("Include")?.Value,
                         packageReference.Attribute("Version")?.Value))
@@ -142,6 +157,12 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     sdk,
                     packageReferences);
             }
+        }
+
+        public override string ToString()
+        {
+            return
+                $"{nameof(Properties)} [{PropertyGroups.SelectMany(g => g.Properties).Count()}]:{Environment.NewLine}{string.Join(Environment.NewLine, PropertyGroups.SelectMany(g => g.Properties).Select(p => "\t" + p.ToString()))}{Environment.NewLine}{nameof(FileName)}: {FileName}{Environment.NewLine}{nameof(ProjectName)}: {ProjectName}{Environment.NewLine}{nameof(ProjectDirectory)}: {ProjectDirectory}{nameof(ProjectTypes)}: {string.Join(", ", ProjectTypes.Select(t => t.ToString()))},{Environment.NewLine}{nameof(ProjectId)}: {ProjectId}{Environment.NewLine}{nameof(Sdk)}: {Sdk}{Environment.NewLine}{nameof(PackageReferences)} [{PackageReferences.Length}]:{Environment.NewLine} {string.Join(Environment.NewLine, PackageReferences.Select(r => r.ToString()))}";
         }
 
         public bool HasPropertyWithValue([NotNull] string name, [NotNull] string value)

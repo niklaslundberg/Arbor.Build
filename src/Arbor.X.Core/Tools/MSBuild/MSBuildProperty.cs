@@ -17,6 +17,12 @@ namespace Arbor.Build.Core.Tools.MSBuild
         }
 
         public string Name { get; }
+
         public string Value { get; }
+
+        public override string ToString()
+        {
+            return $"[{Name}] = '{Value}'";
+        }
     }
 }

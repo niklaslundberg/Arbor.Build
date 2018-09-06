@@ -2,7 +2,7 @@
 
 namespace Arbor.Build.Core.Tools.MSBuild
 {
-    public class ProjectType
+    public class ProjectType : IEquatable<ProjectType>
     {
         public static readonly ProjectType Mvc5 = new ProjectType(Guid.Parse("349c5851-65df-11da-9384-00065b846f21"));
 
@@ -22,5 +22,60 @@ namespace Arbor.Build.Core.Tools.MSBuild
         }
 
         public Guid Id { get; }
+
+        public static bool operator ==(ProjectType left, ProjectType right)
+        {
+            return Equals(left, right);
+        }
+
+        public static bool operator !=(ProjectType left, ProjectType right)
+        {
+            return !Equals(left, right);
+        }
+
+        public bool Equals(ProjectType other)
+        {
+            if (ReferenceEquals(null, other))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return Id.Equals(other.Id);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj.GetType() != GetType())
+            {
+                return false;
+            }
+
+            return Equals((ProjectType)obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return Id.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return $"{nameof(Id)}: {Id}";
+        }
     }
 }
