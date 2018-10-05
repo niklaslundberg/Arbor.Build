@@ -179,7 +179,7 @@ namespace Arbor.Build.Core.Tools.Testing
                 var directoryInfo = new DirectoryInfo(testDirectory);
                 string xmlReportName = $"xunit_v2.{directoryInfo.Name}.trx";
 
-                var arguments = new List<string> { "test", testDirectory, "--no-build" };
+                var arguments = new List<string> { "test", testDirectory, "--no-build", "--configuration", configuration };
 
                 bool xmlEnabled =
                     buildVariables.GetBooleanByKey(WellKnownVariables.XUnitNetCoreAppXmlEnabled, true);
