@@ -22,6 +22,7 @@ namespace Arbor.Build.Core.Tools.Testing
     [UsedImplicitly]
     public class XunitNetCoreAppTestRunnerV2 : ITestRunnerTool
     {
+        protected internal const string AnyConfiguration = "[Any]";
         private string _sourceRoot;
 
         public async Task<ExitCode> ExecuteAsync(
@@ -179,7 +180,13 @@ namespace Arbor.Build.Core.Tools.Testing
                 var directoryInfo = new DirectoryInfo(testDirectory);
                 string xmlReportName = $"xunit_v2.{directoryInfo.Name}.trx";
 
-                var arguments = new List<string> { "test", testDirectory, "--no-build", "--configuration", configuration };
+                var arguments = new List<string> { "test", testDirectory, };
+                if (!configuration.Equals(AnyConfiguration, StringComparison.OrdinalIgnoreCase))
+                {
+                   arguments.Add("--no-build");
+                   arguments.Add("--configuration");
+                   arguments.Add(configuration);
+                }
 
                 bool xmlEnabled =
                     buildVariables.GetBooleanByKey(WellKnownVariables.XUnitNetCoreAppXmlEnabled, true);
