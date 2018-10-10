@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <PackageReference Include="Arbor.Aesculus" Version="3.0.2" />
+    <PackageReference Include="Arbor.Tooler" Version="0.1.0" />
     <PackageReference Include="JetBrains.Annotations" Version="2018.2.1" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="2.6.1">
       <PrivateAssets>all</PrivateAssets>

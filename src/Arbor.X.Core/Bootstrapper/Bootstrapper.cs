@@ -21,6 +21,7 @@ using Arbor.Build.Core.Tools.Kudu;
 using Arbor.Exceptions;
 using Arbor.Processing;
 using Arbor.Processing.Core;
+using Arbor.Tooler;
 using JetBrains.Annotations;
 using Serilog;
 using Serilog.Events;
@@ -267,18 +268,18 @@ namespace Arbor.Build.Core.Bootstrapper
             }
             else
             {
-                nugetExePath = Path.Combine(buildDir.FullName, "nuget.exe");
-
-                bool nuGetExists = await TryDownloadNuGetAsync(buildDir.FullName, nugetExePath).ConfigureAwait(false);
-
-                if (!nuGetExists)
+                using (var httpClient = new HttpClient())
                 {
-                    _logger.Error(
-                        "NuGet.exe could not be downloaded and it does not already exist at path '{NugetExePath}'",
-                        nugetExePath);
+                    var nuGetDownloadClient = new NuGetDownloadClient();
+                    NuGetDownloadResult nuGetDownloadResult = await nuGetDownloadClient.DownloadNuGetAsync(NuGetDownloadSettings.Default, _logger, httpClient).ConfigureAwait(false);
 
-                    return ExitCode.Failure;
-                }
+                    if (!nuGetDownloadResult.Succeeded)
+                    {
+                        _logger.Error("Could not download nuget.exe");
+                        return ExitCode.Failure;
+                    }
+
+                    nugetExePath = nuGetDownloadResult.NuGetExePath;}
             }
 
             string outputDirectoryPath =
@@ -682,111 +683,6 @@ namespace Arbor.Build.Core.Bootstrapper
                 "Expected directory {BuildToolDirectoryPath} to contain exactly one executable file with extensions .exe. {Found}",
                 buildToolDirectoryPath,
                 found);
-        }
-
-        private async Task<bool> TryDownloadNuGetAsync(string baseDir, string targetFile)
-        {
-            bool update = Environment.GetEnvironmentVariable(WellKnownVariables.NuGetVersionUpdatedEnabled)
-                .ParseOrDefault(false);
-
-            bool hasNugetExe = File.Exists(targetFile);
-
-            try
-            {
-                if (!hasNugetExe)
-                {
-                    await DownloadNuGetExeAsync(baseDir, targetFile).ConfigureAwait(false);
-                    update = false;
-                }
-            }
-            catch (HttpRequestException ex)
-            {
-                if (!File.Exists(targetFile))
-                {
-                    return false;
-                }
-
-                update = true;
-
-                _logger.Warning(ex, "NuGet.exe could not be downloaded, using existing nuget.exe. {Ex}", _Prefix);
-            }
-
-            if (update)
-            {
-                try
-                {
-                    var arguments = new List<string> { "update", "-self" };
-
-                    await ProcessHelper.ExecuteAsync(
-                        targetFile,
-                        arguments,
-                        _logger,
-                        addProcessNameAsLogCategory: true,
-                        addProcessRunnerCategory: true,
-                        parentPrefix: _Prefix).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.Error(ex, "Error updating NuGet");
-                }
-            }
-
-            bool exists = File.Exists(targetFile);
-
-            return exists;
-        }
-
-        private async Task DownloadNuGetExeAsync(string baseDir, string targetFile)
-        {
-            var tempFile = new FileInfo(Path.Combine(baseDir, "nuget.exe.tmp"));
-
-            if (tempFile.FullName.IndexOfAny(Path.GetInvalidPathChars()) >= 0)
-            {
-                throw new InvalidOperationException("The temp path contains invalid characters");
-            }
-
-            if (tempFile.Name.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
-            {
-                throw new InvalidOperationException("The temp path contains invalid characters");
-            }
-
-            const string nugetExeUri = "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe";
-
-            string nugetDownloadUriEnvironmentVariable =
-                Environment.GetEnvironmentVariable(WellKnownVariables.NuGetExeDownloadUri);
-
-            if (string.IsNullOrWhiteSpace(nugetDownloadUriEnvironmentVariable)
-                || !Uri.TryCreate(nugetDownloadUriEnvironmentVariable, UriKind.Absolute, out Uri nugetDownloadUri))
-            {
-                nugetDownloadUri = new Uri(nugetExeUri, UriKind.Absolute);
-                _logger.Verbose("Downloading nuget.exe from default URI, '{NugetExeUri}'", nugetExeUri);
-            }
-            else
-            {
-                _logger.Verbose("Downloading nuget.exe from user specified URI '{NugetDownloadUriEnvironmentVariable}'",
-                    nugetDownloadUriEnvironmentVariable);
-            }
-
-            _logger.Verbose("Downloading '{NugetDownloadUri}' to '{TempFile}'", nugetDownloadUri, tempFile);
-
-            using (var client = new HttpClient())
-            {
-                using (Stream stream = await client.GetStreamAsync(nugetDownloadUri).ConfigureAwait(false))
-                {
-                    using (var fs = new FileStream(tempFile.FullName, FileMode.Create))
-                    {
-                        await stream.CopyToAsync(fs).ConfigureAwait(false);
-                    }
-                }
-
-                if (File.Exists(tempFile.FullName))
-                {
-                    tempFile.CopyTo(targetFile, true);
-                    _logger.Verbose("Copied '{TempFile}' to '{TargetFile}'", tempFile, targetFile);
-                    tempFile.Delete();
-                    _logger.Verbose("Deleted temp file '{TempFile}'", tempFile);
-                }
-            }
         }
     }
 }

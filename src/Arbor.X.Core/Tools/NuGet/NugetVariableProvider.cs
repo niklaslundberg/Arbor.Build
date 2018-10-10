@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
+using Arbor.Tooler;
 using JetBrains.Annotations;
 using Serilog;
 
@@ -42,45 +44,26 @@ namespace Arbor.Build.Core.Tools.NuGet
             return variables.ToImmutableArray();
         }
 
-        private async Task<string> EnsureNuGetExeExistsAsync(
-            ILogger logger,
-            string userSpecifiedNuGetExePath,
-            string nugetExeUri = null)
+        private async Task<string> EnsureNuGetExeExistsAsync(ILogger logger, string userSpecifiedNuGetExePath)
         {
-            if (!string.IsNullOrWhiteSpace(userSpecifiedNuGetExePath))
+            if (File.Exists(userSpecifiedNuGetExePath))
             {
-                var fileInfo = new FileInfo(userSpecifiedNuGetExePath);
-
-                if (fileInfo.Name.Equals("nuget.exe", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    if (File.Exists(userSpecifiedNuGetExePath))
-                    {
-                        logger.Information(
-                            "Using NuGet '{UserSpecifiedNuGetExePath}' from user specified variable '{ExternalTools_NuGet_ExePath_Custom}'",
-                            userSpecifiedNuGetExePath,
-                            WellKnownVariables.ExternalTools_NuGet_ExePath_Custom);
-                        return userSpecifiedNuGetExePath;
-                    }
-
-                    logger.Warning(
-                        "User has specified custom NuGet '{UserSpecifiedNuGetExePath}' but the file does not exist, using fallback method to ensure NuGet exists",
-                        userSpecifiedNuGetExePath);
-                }
-                else
-                {
-                    logger.Warning(
-                        "User has specified custom NuGet '{UserSpecifiedNuGetExePath}' but it does not have name 'nuget.exe', ignoring and using fallback method to ensure NuGet exists",
-                        userSpecifiedNuGetExePath);
-                }
+                return userSpecifiedNuGetExePath;
             }
 
-            logger.Verbose("Using default method to ensure NuGet exists");
+            using (var httClient = new HttpClient())
+            {
+                var nuGetDownloadClient = new NuGetDownloadClient();
 
-            var helper = new NuGetHelper(logger);
-            string nuGetExePath = await helper.EnsureNuGetExeExistsAsync(nugetExeUri, _cancellationToken)
-                .ConfigureAwait(false);
+                NuGetDownloadResult nuGetDownloadResult = await nuGetDownloadClient.DownloadNuGetAsync(NuGetDownloadSettings.Default, logger, httClient, _cancellationToken).ConfigureAwait(false);
 
-            return nuGetExePath;
+                if (!nuGetDownloadResult.Succeeded)
+                {
+                    throw new InvalidOperationException("Could not download nuget.exe");
+                }
+
+                return nuGetDownloadResult.NuGetExePath;
+            }
         }
     }
 }
