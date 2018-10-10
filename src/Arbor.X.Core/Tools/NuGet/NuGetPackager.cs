@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -223,8 +222,8 @@ namespace Arbor.Build.Core.Tools.NuGet
             {
                 _logger.Verbose("Rewriting manifest in NuSpec '{NuSpecFileCopyPath}'", nuSpecFileCopyPath);
 
-                var manitestReWriter = new ManitestReWriter();
-                ManifestReWriteResult manifestReWriteResult = manitestReWriter.Rewrite(nuSpecFileCopyPath);
+                var manifestReWriter = new ManitestReWriter();
+                ManifestReWriteResult manifestReWriteResult = manifestReWriter.Rewrite(nuSpecFileCopyPath);
 
                 removedTags.AddRange(manifestReWriteResult.RemoveTags);
             }
@@ -257,6 +256,11 @@ namespace Arbor.Build.Core.Tools.NuGet
                 _logger.Error("Could not create NuGet package from nuspec {NewLine}{NuSpec}",
                     Environment.NewLine,
                     content);
+            }
+
+            if (File.Exists(nuSpecFileCopyPath))
+            {
+                File.Delete(nuSpecFileCopyPath);
             }
 
             return result;
@@ -306,119 +310,109 @@ namespace Arbor.Build.Core.Tools.NuGet
                     tag => tag.Equals(WellKnownNuGetTags.NoSource, StringComparison.InvariantCultureIgnoreCase));
 
             ExitCode result;
-            try
+            var arguments = new List<string>
             {
-                var arguments = new List<string>
+                "pack",
+                nuSpecFileCopyPath,
+                "-Properties",
+                properties,
+                "-OutputDirectory",
+                packagesDirectoryPath,
+                "-Version",
+                nuSpecCopy.Version.ToNormalizedString()
+            };
+
+            if (!hasRemovedNoSourceTag && nugetSymbolPackageEnabled)
+            {
+                arguments.Add("-Symbols");
+            }
+
+            if (logger.IsEnabled(LogEventLevel.Verbose))
+            {
+                arguments.Add("-Verbosity");
+                arguments.Add("Detailed");
+            }
+
+            if (ignoreWarnings)
+            {
+                arguments.Add("-NoPackageAnalysis");
+            }
+
+            ExitCode processResult =
+                await
+                    ProcessRunner.ExecuteAsync(
+                        nuGetExePath,
+                        arguments: arguments,
+                        standardOutLog: logger.Information,
+                        standardErrorAction: logger.Error,
+                        toolAction: logger.Information,
+                        cancellationToken: cancellationToken,
+                        verboseAction: logger.Verbose,
+                        debugAction: logger.Debug,
+                        addProcessNameAsLogCategory: true,
+                        addProcessRunnerCategory: true).ConfigureAwait(false);
+
+            var packagesDirectory = new DirectoryInfo(packagesDirectoryPath);
+
+            if (!keepBinaryAndSourcePackagesTogetherEnabled)
+            {
+                logger.Information(
+                    "The flag {NuGetKeepBinaryAndSymbolPackagesTogetherEnabled} is set to false, separating binary packages from symbol packages",
+                    WellKnownVariables.NuGetKeepBinaryAndSymbolPackagesTogetherEnabled);
+
+                List<string> nugetPackages = packagesDirectory.GetFiles("*.nupkg", SearchOption.TopDirectoryOnly)
+                    .Select(file => file.FullName)
+                    .ToList();
+
+                List<string> nugetSymbolPackages = packagesDirectory
+                    .GetFiles("*.symbols.nupkg", SearchOption.TopDirectoryOnly)
+                    .Select(file => file.FullName)
+                    .ToList();
+
+                List<string> binaryPackages = nugetPackages.Except(nugetSymbolPackages).ToList();
+
+                DirectoryInfo binaryPackagesDirectory =
+                    new DirectoryInfo(Path.Combine(packagesDirectory.FullName, "binary")).EnsureExists();
+
+                DirectoryInfo symbolPackagesDirectory =
+                    new DirectoryInfo(Path.Combine(packagesDirectory.FullName, "symbol")).EnsureExists();
+
+                foreach (string binaryPackage in binaryPackages)
                 {
-                    "pack",
-                    nuSpecFileCopyPath,
-                    "-Properties",
-                    properties,
-                    "-OutputDirectory",
-                    packagesDirectoryPath,
-                    "-Version",
-                    nuSpecCopy.Version.ToNormalizedString()
-                };
+                    var sourceFile = new FileInfo(binaryPackage);
+                    var targetBinaryFile =
+                        new FileInfo(Path.Combine(binaryPackagesDirectory.FullName, sourceFile.Name));
 
-                if (!hasRemovedNoSourceTag && nugetSymbolPackageEnabled)
-                {
-                    arguments.Add("-Symbols");
-                }
-
-                if (logger.IsEnabled(LogEventLevel.Verbose))
-                {
-                    arguments.Add("-Verbosity");
-                    arguments.Add("Detailed");
-                }
-
-                if (ignoreWarnings)
-                {
-                    arguments.Add("-NoPackageAnalysis");
-                }
-
-                ExitCode processResult =
-                    await
-                        ProcessRunner.ExecuteAsync(
-                            nuGetExePath,
-                            arguments: arguments,
-                            standardOutLog: logger.Information,
-                            standardErrorAction: logger.Error,
-                            toolAction: logger.Information,
-                            cancellationToken: cancellationToken,
-                            verboseAction: logger.Verbose,
-                            debugAction: logger.Debug,
-                            addProcessNameAsLogCategory: true,
-                            addProcessRunnerCategory: true).ConfigureAwait(false);
-
-                var packagesDirectory = new DirectoryInfo(packagesDirectoryPath);
-
-                if (!keepBinaryAndSourcePackagesTogetherEnabled)
-                {
-                    logger.Information(
-                        "The flag {NuGetKeepBinaryAndSymbolPackagesTogetherEnabled} is set to false, separating binary packages from symbol packages",
-                        WellKnownVariables.NuGetKeepBinaryAndSymbolPackagesTogetherEnabled);
-
-                    List<string> nugetPackages = packagesDirectory.GetFiles("*.nupkg", SearchOption.TopDirectoryOnly)
-                        .Select(file => file.FullName)
-                        .ToList();
-
-                    List<string> nugetSymbolPackages = packagesDirectory
-                        .GetFiles("*.symbols.nupkg", SearchOption.TopDirectoryOnly)
-                        .Select(file => file.FullName)
-                        .ToList();
-
-                    List<string> binaryPackages = nugetPackages.Except(nugetSymbolPackages).ToList();
-
-                    DirectoryInfo binaryPackagesDirectory =
-                        new DirectoryInfo(Path.Combine(packagesDirectory.FullName, "binary")).EnsureExists();
-
-                    DirectoryInfo symbolPackagesDirectory =
-                        new DirectoryInfo(Path.Combine(packagesDirectory.FullName, "symbol")).EnsureExists();
-
-                    foreach (string binaryPackage in binaryPackages)
+                    if (targetBinaryFile.Exists)
                     {
-                        var sourceFile = new FileInfo(binaryPackage);
-                        var targetBinaryFile =
-                            new FileInfo(Path.Combine(binaryPackagesDirectory.FullName, sourceFile.Name));
-
-                        if (targetBinaryFile.Exists)
-                        {
-                            targetBinaryFile.Delete();
-                        }
-
-                        logger.Debug("Copying NuGet binary package '{BinaryPackage}' to '{TargetBinaryFile}'",
-                            binaryPackage,
-                            targetBinaryFile);
-                        sourceFile.MoveTo(targetBinaryFile.FullName);
+                        targetBinaryFile.Delete();
                     }
 
-                    foreach (string sourcePackage in nugetSymbolPackages)
-                    {
-                        var sourceFile = new FileInfo(sourcePackage);
-                        var targetSymbolFile =
-                            new FileInfo(Path.Combine(symbolPackagesDirectory.FullName, sourceFile.Name));
-
-                        if (targetSymbolFile.Exists)
-                        {
-                            targetSymbolFile.Delete();
-                        }
-
-                        logger.Debug("Copying NuGet symbol package '{SourcePackage}' to '{TargetSymbolFile}'",
-                            sourcePackage,
-                            targetSymbolFile);
-                        sourceFile.MoveTo(targetSymbolFile.FullName);
-                    }
+                    logger.Debug("Copying NuGet binary package '{BinaryPackage}' to '{TargetBinaryFile}'",
+                        binaryPackage,
+                        targetBinaryFile);
+                    sourceFile.MoveTo(targetBinaryFile.FullName);
                 }
 
-                result = processResult;
-            }
-            finally
-            {
-                if (File.Exists(nuSpecFileCopyPath))
+                foreach (string sourcePackage in nugetSymbolPackages)
                 {
-                    File.Delete(nuSpecFileCopyPath);
+                    var sourceFile = new FileInfo(sourcePackage);
+                    var targetSymbolFile =
+                        new FileInfo(Path.Combine(symbolPackagesDirectory.FullName, sourceFile.Name));
+
+                    if (targetSymbolFile.Exists)
+                    {
+                        targetSymbolFile.Delete();
+                    }
+
+                    logger.Debug("Copying NuGet symbol package '{SourcePackage}' to '{TargetSymbolFile}'",
+                        sourcePackage,
+                        targetSymbolFile);
+                    sourceFile.MoveTo(targetSymbolFile.FullName);
                 }
             }
+
+            result = processResult;
 
             return result;
         }
