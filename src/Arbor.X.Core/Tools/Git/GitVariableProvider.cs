@@ -43,7 +43,7 @@ namespace Arbor.Build.Core.Tools.Git
 
             if (maybeBranch.HasValue && maybeBranch.Value.IsDevelopBranch())
             {
-                logger.Debug("Branch '{Name}' is develop branch, checking if release build is explicitely set",
+                logger.Debug("Branch '{Name}' is develop branch, checking if release build is explicitly set",
                     maybeBranch.Value.Name);
                 Maybe<IVariable> releaseBuildEnabled =
                     buildVariables.GetOptionalVariable(WellKnownVariables.ReleaseBuildEnabled);

@@ -46,7 +46,7 @@ namespace Arbor.Build.Core.Tools.Git
 
             bool isDevelopBranch =
                 developBranchNames.Any(name => branchName.LogicalName.StartsWith(
-                    branchName.Name,
+                    name,
                     StringComparison.InvariantCultureIgnoreCase));
 
             return isDevelopBranch;

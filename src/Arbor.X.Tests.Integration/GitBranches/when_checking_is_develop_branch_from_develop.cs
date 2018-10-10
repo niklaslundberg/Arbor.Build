@@ -12,6 +12,6 @@ namespace Arbor.Build.Tests.Integration.GitBranches
 
         Because of = () => is_develop = branchName.IsDevelopBranch();
 
-        It should_extract_the_version = () => is_develop.ShouldBeFalse();
+        It should_be_develop_branch = () => is_develop.ShouldBeTrue();
     }
 }
