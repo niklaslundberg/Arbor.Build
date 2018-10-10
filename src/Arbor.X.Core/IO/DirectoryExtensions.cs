@@ -95,6 +95,8 @@ namespace Arbor.Build.Core.IO
                     {
                         directoryInfo.Delete(recursive);
                     }
+
+                    directoryInfo.Refresh();
                 }
             }
             catch (UnauthorizedAccessException ex)

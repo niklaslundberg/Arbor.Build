@@ -7,6 +7,7 @@ using System.Linq;
 using System.Management;
 using System.Net.Http;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Aesculus.Core;
@@ -23,6 +24,7 @@ using Arbor.Processing;
 using Arbor.Processing.Core;
 using Arbor.Tooler;
 using JetBrains.Annotations;
+using NuGet.Versioning;
 using Serilog;
 using Serilog.Events;
 
@@ -30,6 +32,7 @@ namespace Arbor.Build.Core.Bootstrapper
 {
     public class Bootstrapper
     {
+        const string BuildToolPackageName = ArborConstants.ArborBuild;
         private const int MaxBuildTimeInSeconds = 600;
         private static readonly string _Prefix = $"[{ArborConstants.ArborBuild}.{nameof(Bootstrapper)}] ";
         private readonly ILogger _logger;
@@ -151,16 +154,17 @@ namespace Arbor.Build.Core.Bootstrapper
 
                         try
                         {
-                            Process childProcess = Process.GetProcessById((int)childProcessId);
-
-                            if (!childProcess.HasExited)
+                            using (Process childProcess = Process.GetProcessById((int)childProcessId))
                             {
-                                logger.Debug("Killing child process [{ProcessName}] with Id [{ChildProcessId}]",
-                                    childProcess.ProcessName,
-                                    childProcessId);
-                                childProcess.Kill();
+                                if (!childProcess.HasExited)
+                                {
+                                    logger.Debug("Killing child process [{ProcessName}] with Id [{ChildProcessId}]",
+                                        childProcess.ProcessName,
+                                        childProcessId);
+                                    childProcess.Kill();
 
-                                logger.Verbose("Child process with id {ChildProcessId} was killed", childProcessId);
+                                    logger.Verbose("Child process with id {ChildProcessId} was killed", childProcessId);
+                                }
                             }
                         }
                         catch (Exception ex) when (!ex.IsFatal() &&
@@ -342,9 +346,8 @@ namespace Arbor.Build.Core.Bootstrapper
 
         private async Task<string> DownloadNuGetPackageAsync(string buildDir, string nugetExePath)
         {
-            const string buildToolPackageName = ArborConstants.ArborBuild;
 
-            string outputDirectoryPath = Path.Combine(buildDir, buildToolPackageName);
+            string outputDirectoryPath = Path.Combine(buildDir, BuildToolPackageName);
 
             var outputDirectory = new DirectoryInfo(outputDirectoryPath);
 
@@ -363,10 +366,22 @@ namespace Arbor.Build.Core.Bootstrapper
 
             string version = Environment.GetEnvironmentVariable(WellKnownVariables.ArborBuildNuGetPackageVersion);
 
+            string nuGetSource = Environment.GetEnvironmentVariable(WellKnownVariables.ArborXNuGetPackageSource);
+
+            Environment.GetEnvironmentVariable(WellKnownVariables.AllowPrerelease)
+                .TryParseBool(out bool preReleaseIsAllowed, false);
+
+            preReleaseIsAllowed = _startOptions.PrereleaseEnabled ?? preReleaseIsAllowed;
+
+            if (string.IsNullOrWhiteSpace(version))
+            {
+                version = await GetLatestVersionAsync(nugetExePath, nuGetSource, preReleaseIsAllowed).ConfigureAwait(false);
+            }
+
             var nugetArguments = new List<string>
             {
                 "install",
-                buildToolPackageName,
+                BuildToolPackageName,
                 "-ExcludeVersion",
                 "-OutputDirectory",
                 buildDir.TrimEnd('\\')
@@ -377,8 +392,6 @@ namespace Arbor.Build.Core.Bootstrapper
                 nugetArguments.Add("-Verbosity");
                 nugetArguments.Add("detailed");
             }
-
-            string nuGetSource = Environment.GetEnvironmentVariable(WellKnownVariables.ArborXNuGetPackageSource);
 
             if (!string.IsNullOrWhiteSpace(nuGetSource))
             {
@@ -423,10 +436,8 @@ namespace Arbor.Build.Core.Bootstrapper
                 }
                 else
                 {
-                    Environment.GetEnvironmentVariable(WellKnownVariables.AllowPrerelease)
-                        .TryParseBool(out bool allowed, false);
 
-                    allowPrerelease = allowed;
+                    allowPrerelease = preReleaseIsAllowed;
 
                     if (allowPrerelease)
                     {
@@ -447,19 +458,21 @@ namespace Arbor.Build.Core.Bootstrapper
                 }
             }
 
-            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(MaxBuildTimeInSeconds));
-
-            ExitCode exitCode = await ProcessRunner.ExecuteAsync(
-                nugetExePath,
-                arguments: nugetArguments,
-                cancellationToken: cancellationTokenSource.Token,
-                standardOutLog: _logger.Information,
-                standardErrorAction: _logger.Error,
-                toolAction: _logger.Information,
-                verboseAction: _logger.Verbose,
-                addProcessRunnerCategory: true,
-                addProcessNameAsLogCategory: true,
-                parentPrefix: _Prefix).ConfigureAwait(false);
+            ExitCode exitCode;
+            using (var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(MaxBuildTimeInSeconds)))
+            {
+                exitCode = await ProcessRunner.ExecuteAsync(nugetExePath,
+                        arguments: nugetArguments,
+                        cancellationToken: cancellationTokenSource.Token,
+                        standardOutLog: _logger.Information,
+                        standardErrorAction: _logger.Error,
+                        toolAction: _logger.Debug,
+                        verboseAction: _logger.Verbose,
+                        addProcessRunnerCategory: true,
+                        addProcessNameAsLogCategory: true,
+                        parentPrefix: _Prefix)
+                    .ConfigureAwait(false);
+            }
 
             if (!exitCode.IsSuccess)
             {
@@ -467,6 +480,65 @@ namespace Arbor.Build.Core.Bootstrapper
             }
 
             return outputDirectoryPath;
+        }
+
+        private async Task<string> GetLatestVersionAsync(string nugetExePath, string nuGetSource, bool allowPreRelease)
+        {
+            using (var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(MaxBuildTimeInSeconds)))
+            {
+                var nugetArguments = new List<string> { "list", BuildToolPackageName };
+
+                if (!string.IsNullOrWhiteSpace(nuGetSource))
+                {
+                    nugetArguments.Add("-source");
+                    nugetArguments.Add(nuGetSource);
+                }
+
+                if (allowPreRelease)
+                {
+                    nugetArguments.Add("-Prerelease");
+                }
+
+                var lines = new List<string>();
+
+                ExitCode exitCode = await ProcessRunner.ExecuteAsync(nugetExePath,
+                        arguments: nugetArguments,
+                        cancellationToken: cancellationTokenSource.Token,
+                        standardOutLog: (m,_) => lines.Add(m),
+                        standardErrorAction: _logger.Error,
+                        toolAction: _logger.Debug,
+                        verboseAction: _logger.Verbose,
+                        addProcessRunnerCategory: true,
+                        addProcessNameAsLogCategory: true,
+                        parentPrefix: _Prefix)
+                    .ConfigureAwait(false);
+
+                if (!exitCode.IsSuccess)
+                {
+                    return null;
+                }
+
+                const string arborBuildPackageName = BuildToolPackageName + " ";
+                ImmutableArray<SemanticVersion> matchingPackages =
+                    lines.Where(line => line.StartsWith(arborBuildPackageName, StringComparison.OrdinalIgnoreCase))
+                        .Select(line => line.Replace(arborBuildPackageName, "", StringComparison.OrdinalIgnoreCase))
+                        .Select(line => (SemanticVersion.TryParse(line, out SemanticVersion semVer), semVer))
+                        .Where(s => s.Item1)
+                        .Select(s => s.semVer)
+                        .ToImmutableArray();
+
+                if (matchingPackages.Length == 0)
+                {
+                    return null;
+                }
+
+                if (matchingPackages.Length == 1)
+                {
+                    return matchingPackages.Single().ToNormalizedString();
+                }
+
+                return matchingPackages.Max().ToNormalizedString();
+            }
         }
 
         private async Task<string> GetBaseDirectoryAsync(BootstrapStartOptions startOptions)
