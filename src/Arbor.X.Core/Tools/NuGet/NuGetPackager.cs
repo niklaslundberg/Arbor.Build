@@ -233,9 +233,12 @@ namespace Arbor.Build.Core.Tools.NuGet
                 _logger.Verbose("Rewriting manifest disabled");
             }
 
-            _logger.Verbose("Created nuspec content: {NewLine}{V}",
-                Environment.NewLine,
-                File.ReadAllText(nuSpecFileCopyPath));
+            if (_logger.IsEnabled(LogEventLevel.Verbose))
+            {
+                _logger.Verbose("Created nuspec content: {NewLine}{PackageContent}",
+                    Environment.NewLine,
+                    GetNuSpecContent(nuSpecFileCopyPath));
+            }
 
             ExitCode result = await ExecuteNuGetPackAsync(
                 packageConfiguration.NuGetExePath,
@@ -248,7 +251,20 @@ namespace Arbor.Build.Core.Tools.NuGet
                 cancellationToken: cancellationToken,
                 ignoreWarnings: ignoreWarnings).ConfigureAwait(false);
 
+            if (!result.IsSuccess)
+            {
+                string content = GetNuSpecContent(nuSpecFileCopyPath);
+                _logger.Error("Could not create NuGet package from nuspec {NewLine}{NuSpec}",
+                    Environment.NewLine,
+                    content);
+            }
+
             return result;
+        }
+
+        private static string GetNuSpecContent(string nuSpecFileCopyPath)
+        {
+            return File.ReadAllText(nuSpecFileCopyPath);
         }
 
         private static string GetProperties(string configuration)
