@@ -9,19 +9,51 @@ using System.Runtime.Versioning;
 using Arbor.Build.Core.Assemblies;
 using Mono.Cecil;
 using Serilog;
+using Serilog.Events;
 
 namespace Arbor.Build.Core.Tools.Testing
 {
-    public class UnitTestFinder
+    public sealed class UnitTestFinder
     {
+        private const string DllSearchPattern = "*.dll";
+        private const string GenericPartSeparator = "`";
+        private static readonly string[] _IgnoredNames = { "ReSharper", "dotCover", "Microsoft" };
+
+        private static readonly ImmutableHashSet<string> _Excluded = new[]
+        {
+            ".git",
+            ".hg",
+            ".svn",
+            "obj",
+            "build",
+            "packages",
+            "_ReSharper",
+            "external",
+            "artifacts",
+            "temp",
+            ".HistoryData",
+            "LocalHistory",
+            "_",
+            ".",
+            "NCrunch",
+            ".vs",
+            "publish"
+        }.ToImmutableHashSet();
+
         private readonly ILogger _logger;
         private readonly IEnumerable<Type> _typesToFind;
 
-        public UnitTestFinder(IEnumerable<Type> typesesToFind, bool debugLogEnabled = false, ILogger logger = null)
+        private bool _debugLevelEnabled;
+        private bool _verboseLevelEnabled;
+
+        public UnitTestFinder(IEnumerable<Type> typesToFind, bool debugLogEnabled = false, ILogger logger = null)
         {
             _logger = logger;
-            _typesToFind = typesesToFind;
+            _typesToFind = typesToFind;
             DebugLogEnabled = debugLogEnabled;
+
+            _debugLevelEnabled = _logger?.IsEnabled(LogEventLevel.Debug) ?? false;
+            _verboseLevelEnabled = _logger?.IsEnabled(LogEventLevel.Verbose) ?? false;
         }
 
         private bool DebugLogEnabled { get; }
@@ -30,7 +62,7 @@ namespace Arbor.Build.Core.Tools.Testing
             DirectoryInfo currentDirectory,
             bool? releaseBuild = null,
             ImmutableArray<string> assemblyFilePrefix = default,
-            string targetFrameworkPrefix = null)
+            string targetFrameworkPrefix = null, bool strictConfiguration = false)
         {
             if (currentDirectory == null)
             {
@@ -44,130 +76,146 @@ namespace Arbor.Build.Core.Tools.Testing
                 return new HashSet<string>();
             }
 
-            ImmutableHashSet<string> excluded = new[]
-            {
-                ".git",
-                ".hg",
-                ".svn",
-                "obj",
-                "build",
-                "packages",
-                "_ReSharper",
-                "external",
-                "artifacts",
-                "temp",
-                ".HistoryData",
-                "LocalHistory",
-                "_",
-                ".",
-                "NCrunch",
-                ".vs"
-            }.ToImmutableHashSet();
-
             bool isExcluded =
-                excluded.Any(
+                _Excluded.Any(
                     excludedItem =>
                         currentDirectory.Name.StartsWith(excludedItem, StringComparison.InvariantCultureIgnoreCase));
 
             if (isExcluded)
             {
-                _logger?.Verbose("Directory '{FullName}' is excluded", fullName);
+                if (_verboseLevelEnabled)
+                {
+                    _logger?.Verbose("Directory '{FullName}' is excluded", fullName);
+                }
+
                 return new HashSet<string>();
             }
 
-            const string searchPattern = "*.dll";
-
             IEnumerable<FileInfo> filteredDllFiles = assemblyFilePrefix.IsDefaultOrEmpty
-                ? currentDirectory.EnumerateFiles(searchPattern)
-                : currentDirectory.EnumerateFiles(searchPattern)
+                ? currentDirectory.EnumerateFiles(DllSearchPattern)
+                : currentDirectory.EnumerateFiles(DllSearchPattern)
                     .Where(file =>
                         assemblyFilePrefix.Any(prefix =>
                             file.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)));
 
-            var ignoredNames = new List<string> { "ReSharper", "dotCover", "Microsoft" };
-
             List<(AssemblyDefinition, FileInfo)> assemblies = filteredDllFiles
                 .Where(file => !file.Name.StartsWith("System", StringComparison.InvariantCultureIgnoreCase))
-                .Where(file => !ignoredNames.Any(
+                .Where(file => !_IgnoredNames.Any(
                     name => file.Name.IndexOf(name, StringComparison.InvariantCultureIgnoreCase) >= 0))
                 .Select(dllFile => GetAssembly(dllFile, targetFrameworkPrefix))
                 .Where(assembly => assembly.Item1 != null)
                 .ToList();
+            IReadOnlyCollection<string> testFixtureAssemblies;
 
-            List<(AssemblyDefinition, FileInfo)> configurationFiltered;
-
-            bool isReleaseBuild = releaseBuild.HasValue && releaseBuild.Value;
-            bool isDebugBuild = releaseBuild.HasValue && !releaseBuild.Value;
-
-            if (isReleaseBuild)
+            if (assemblies.Count > 0)
             {
-                configurationFiltered = assemblies
-                    .Select(assembly => new
-                    {
-                        Assembly = assembly,
-                        IsDebug = assembly.Item1.IsDebugAssembly(assembly.Item2, _logger)
-                    })
-                    .Where(item => item.IsDebug == false)
-                    .Select(item => item.Assembly)
-                    .ToList();
+                List<(AssemblyDefinition, FileInfo)> configurationFiltered;
 
-                string[] debugAssemblies = assemblies
-                    .Except(configurationFiltered)
-                    .Select(a => a.Item2.FullName)
-                    .ToArray();
+                bool isReleaseBuild = releaseBuild.HasValue && releaseBuild.Value;
+                bool isDebugBuild = releaseBuild.HasValue && !releaseBuild.Value;
 
-                if (debugAssemblies.Length > 0)
+                if (isReleaseBuild)
                 {
-                    _logger?.Debug("Filtered out debug assemblies {DebugAssemblies}", debugAssemblies);
-                }
-            }
-            else if (isDebugBuild)
-            {
-                configurationFiltered = assemblies.Select(assembly => new
+                    var assembliesWithDebugFlag = assemblies
+                        .Select(assembly => new
+                        {
+                            Assembly = assembly,
+                            IsDebug = assembly.Item1.IsDebugAssembly(assembly.Item2, _logger)
+                        }).ToArray();
+
+                    configurationFiltered = assembliesWithDebugFlag
+                        .Where(item => item.IsDebug == false)
+                        .Select(item => item.Assembly)
+                        .ToList();
+
+                    string[] debugAssemblies = assembliesWithDebugFlag
+                        .Where(item => item.IsDebug == true)
+                        .Select(a => a.Assembly.Item1.FullName)
+                        .ToArray();
+
+                    var unknownAssemblies = assembliesWithDebugFlag
+                        .Where(item => item.IsDebug is null)
+                        .Select(a => a.Assembly)
+                        .ToArray();
+
+                    if (!strictConfiguration)
                     {
-                        Assembly = assembly,
-                        IsDebug = assembly.Item1.IsDebugAssembly(assembly.Item2, _logger)
-                    })
-                    .Where(item => item.IsDebug == true)
-                    .Select(item => item.Assembly)
-                    .ToList();
+                        configurationFiltered.AddRange(unknownAssemblies);
+                    }
 
-                string[] nonDebugAssemblies = assemblies
-                    .Except(configurationFiltered)
-                    .Select(a => a.Item2.FullName)
-                    .ToArray();
-
-                if (nonDebugAssemblies.Length > 0)
-                {
-                    _logger?.Debug("Filtered out release assemblies {NonDebugAssemblies}", nonDebugAssemblies);
+                    if (debugAssemblies.Length > 0)
+                    {
+                        if (_debugLevelEnabled)
+                        {
+                            _logger?.Debug("Filtered out debug assemblies {DebugAssemblies}", debugAssemblies);
+                        }
+                    }
                 }
+                else if (isDebugBuild)
+                {
+                    var assembliesWithDebugFlag = assemblies
+                           .Select(assembly => new
+                           {
+                               Assembly = assembly,
+                               IsDebug = assembly.Item1.IsDebugAssembly(assembly.Item2, _logger)
+                           }).ToArray();
+
+                    configurationFiltered = assembliesWithDebugFlag
+                        .Where(item => item.IsDebug == true)
+                        .Select(item => item.Assembly)
+                        .ToList();
+
+                    List<string> nonDebugAssemblies = assembliesWithDebugFlag
+                        .Where(item => item.IsDebug is null || item.IsDebug == false)
+                        .Select(item => item.Assembly.Item1.FullName)
+                        .ToList();
+
+                    (AssemblyDefinition, FileInfo)[] unknownAssemblies = assembliesWithDebugFlag
+                        .Where(item => item.IsDebug is null)
+                        .Select(a => a.Assembly)
+                        .ToArray();
+
+                    if (!strictConfiguration)
+                    {
+                        configurationFiltered.AddRange(unknownAssemblies);
+                    }
+
+
+                    if (nonDebugAssemblies.Count > 0)
+                    {
+                        if (_debugLevelEnabled)
+                        {
+                            _logger?.Debug("Filtered out release assemblies {NonDebugAssemblies}", nonDebugAssemblies);
+                        }
+                    }
+                }
+                else
+                {
+                    configurationFiltered = assemblies;
+                    if (_verboseLevelEnabled)
+                    {
+                        _logger?.Verbose("No debug/release filter is used");
+                    }
+                }
+
+                testFixtureAssemblies = UnitTestFixtureAssemblies(configurationFiltered);
             }
             else
             {
-                configurationFiltered = assemblies;
-                _logger?.Verbose("No debug/release filter is used");
+                testFixtureAssemblies = Array.Empty<string>();
             }
-
-            IReadOnlyCollection<string> testFixtureAssemblies = UnitTestFixtureAssemblies(configurationFiltered);
 
             List<string> subDirAssemblies = currentDirectory
                 .EnumerateDirectories()
                 .SelectMany(dir => GetUnitTestFixtureDlls(dir, releaseBuild, assemblyFilePrefix, targetFrameworkPrefix))
                 .ToList();
 
-            List<string> allUnitFixtureAssemblies = testFixtureAssemblies
+            HashSet<string> allUnitFixtureAssemblies = testFixtureAssemblies
                 .Concat(subDirAssemblies)
                 .Distinct()
-                .ToList();
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-            var hashSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-            foreach (string allUnitFixtureAssembly in allUnitFixtureAssemblies)
-            {
-                hashSet.Add(allUnitFixtureAssembly);
-            }
-
-            return hashSet;
+            return allUnitFixtureAssemblies;
         }
 
         public bool TryIsTypeTestFixture(TypeDefinition typeToInvestigate)
@@ -184,17 +232,24 @@ namespace Arbor.Build.Core.Tools.Testing
 
                 if (any)
                 {
-                    _logger?.Debug("Testing type '{ToInvestigate}': is unit test fixture", toInvestigate);
+                    if (_debugLevelEnabled)
+                    {
+                        _logger?.Debug("Testing type '{ToInvestigate}': is unit test fixture", toInvestigate);
+                    }
                 }
 
                 return any;
             }
             catch (Exception ex)
             {
-                _logger?.Debug("Failed to determine if type {FullName} is {V} {Message}",
-                    typeToInvestigate.Module.Assembly.FullName,
-                    string.Join(" | ", _typesToFind.Select(type => type.FullName)),
-                    ex.Message);
+                if (_debugLevelEnabled)
+                {
+                    _logger?.Debug("Failed to determine if type {FullName} is {V} {Message}",
+                        typeToInvestigate.Module.Assembly.FullName,
+                        string.Join(" | ", _typesToFind.Select(type => type.FullName)),
+                        ex.Message);
+                }
+
                 return false;
             }
         }
@@ -219,7 +274,11 @@ namespace Arbor.Build.Core.Tools.Testing
             bool result;
             try
             {
-                _logger?.Debug("Testing assembly '{Assembly}'", assembly);
+                if (DebugLogEnabled)
+                {
+                    _logger?.Debug("Testing assembly '{Assembly}'", assembly);
+                }
+
                 TypeDefinition[] types = assembly.Item1.MainModule.Types.ToArray();
                 bool anyType = types.Any(TryIsTypeTestFixture);
 
@@ -227,16 +286,23 @@ namespace Arbor.Build.Core.Tools.Testing
             }
             catch (Exception)
             {
-                _logger?.Debug("Could not get types from assembly '{FullName}'", assembly.Item1.FullName);
+                if (DebugLogEnabled)
+                {
+                    _logger?.Debug("Could not get types from assembly '{FullName}'", assembly.Item1.FullName);
+                }
+
                 result = false;
             }
 
             if (DebugLogEnabled || result)
             {
-                _logger?.Debug("Assembly {FullName}, found any class with {V}: {Result}",
-                    assembly.Item1.FullName,
-                    string.Join(" | ", _typesToFind.Select(type => type.FullName)),
-                    result);
+                if (_debugLevelEnabled)
+                {
+                    _logger?.Debug("Assembly {FullName}, found any class with {V}: {Result}",
+                        assembly.Item1.FullName,
+                        string.Join(" | ", _typesToFind.Select(type => type.FullName)),
+                        result);
+                }
             }
 
             return result;
@@ -292,7 +358,6 @@ namespace Arbor.Build.Core.Tools.Testing
 
                         if (field.FieldType.IsGenericInstance && !string.IsNullOrWhiteSpace(fullName))
                         {
-                            const string GenericPartSeparator = "`";
                             int fieldIndex = fullName.IndexOf(
                                 GenericPartSeparator,
                                 StringComparison.InvariantCultureIgnoreCase);
@@ -351,11 +416,15 @@ namespace Arbor.Build.Core.Tools.Testing
                         if (!targetFrameworkAttribute.FrameworkName.StartsWith(targetFrameworkPrefix,
                             StringComparison.OrdinalIgnoreCase))
                         {
-                            _logger?.Debug(
-                                "The current assembly '{FullName}' target framework attribute with value '{FrameworkName}' does not match the specified target framework '{TargetFrameworkPrefix}'",
-                                dllFile.FullName,
-                                targetFrameworkAttribute.FrameworkName,
-                                targetFrameworkPrefix);
+                            if (_debugLevelEnabled)
+                            {
+                                _logger?.Debug(
+                                    "The current assembly '{FullName}' target framework attribute with value '{FrameworkName}' does not match the specified target framework '{TargetFrameworkPrefix}'",
+                                    dllFile.FullName,
+                                    targetFrameworkAttribute.FrameworkName,
+                                    targetFrameworkPrefix);
+                            }
+
                             return (null, null);
                         }
                     }
@@ -367,7 +436,10 @@ namespace Arbor.Build.Core.Tools.Testing
 
                 if (DebugLogEnabled)
                 {
-                    _logger?.Verbose("Found {Count} types in assembly '{FullName}'", count, dllFile.FullName);
+                    if (_verboseLevelEnabled)
+                    {
+                        _logger?.Verbose("Found {Count} types in assembly '{FullName}'", count, dllFile.FullName);
+                    }
                 }
 
                 return (assemblyDefinition, dllFile);
@@ -376,7 +448,10 @@ namespace Arbor.Build.Core.Tools.Testing
             {
                 string message = $"Could not load assembly '{dllFile.FullName}', type load exception. Ignoring.";
 
-                _logger?.Debug(message);
+                if (_debugLevelEnabled)
+                {
+                    _logger?.Debug(message);
+                }
 #if DEBUG
                 Debug.WriteLine("{0}, {1}", message, ex);
 #endif
@@ -386,7 +461,10 @@ namespace Arbor.Build.Core.Tools.Testing
             {
                 string message = $"Could not load assembly '{dllFile.FullName}', bad image format exception. Ignoring.";
 
-                _logger?.Debug(message);
+                if (_debugLevelEnabled)
+                {
+                    _logger?.Debug(message);
+                }
 #if DEBUG
                 Debug.WriteLine("{0}, {1}", message, ex);
 #endif
