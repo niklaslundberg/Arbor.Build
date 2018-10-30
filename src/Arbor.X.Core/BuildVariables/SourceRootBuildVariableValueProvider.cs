@@ -30,6 +30,7 @@ namespace Arbor.Build.Core.BuildVariables
 
             if (!string.IsNullOrWhiteSpace(_sourceDirectory))
             {
+                logger.Verbose("Source directory is specified as {SourceDirectory}", _sourceDirectory.FullName);
                 variables.Add(new BuildVariable(WellKnownVariables.SourceRoot, _sourceDirectory));
                 variables.Add(new BuildVariable(
                     WellKnownVariables.ExternalTools,

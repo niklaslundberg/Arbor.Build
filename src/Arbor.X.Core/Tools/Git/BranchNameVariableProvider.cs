@@ -57,6 +57,14 @@ namespace Arbor.Build.Core.Tools.Git
 
                 variables.Add(WellKnownVariables.BranchName, branchName);
             }
+            else
+            {
+                if (_logger.IsEnabled(Serilog.Events.LogEventLevel.Verbose))
+                _logger.Verbose(
+                    "Branch name is defined as '{BranchName}' from environment variable '{EnvironmentVariable}",
+                    branchName,
+                    WellKnownVariables.BranchName);
+            }
 
             return variables.Select(pair => (IVariable)new BuildVariable(pair.Key, pair.Value)).ToImmutableArray();
         }

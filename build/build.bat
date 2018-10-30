@@ -46,18 +46,9 @@ IF "%Arbor.X.ShowDefinedVariablesEnabled%" == "" (
     SET Arbor.X.ShowDefinedVariablesEnabled=false
 )
 
-REM SET Arbor.X.Vcs.Branch.Name=refs/heads/develop-0.1.26
-REM SET Arbor.X.Vcs.Branch.Name=
-REM SET Arbor.X.Vcs.Branch.Name=develop
-
-REM SET Arbor.X.Tools.External.MSBuild.DefaultTarget=Build
-
 CALL dotnet arbor-build
 
-REM Restore variables to default
-
 SET Arbor.X.Build.Bootstrapper.AllowPrerelease=
-REM SET Arbor.X.Vcs.Branch.Name=
 SET Arbor.X.Tools.External.MSpec.Enabled=
 SET Arbor.X.NuGet.Package.Artifacts.Suffix=
 SET Arbor.X.NuGet.Package.Artifacts.BuildNumber.Enabled=

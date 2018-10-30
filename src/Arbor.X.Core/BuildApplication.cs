@@ -24,6 +24,7 @@ using Arbor.Processing.Core;
 using Autofac;
 using JetBrains.Annotations;
 using Serilog;
+using Serilog.Events;
 
 namespace Arbor.Build.Core
 {
@@ -32,10 +33,12 @@ namespace Arbor.Build.Core
         private readonly ILogger _logger;
         private CancellationToken _cancellationToken;
         private IContainer _container;
+        private bool _verboseEnabled;
 
         public BuildApplication(ILogger logger)
         {
             _logger = logger;
+            _verboseEnabled = _logger.IsEnabled(LogEventLevel.Verbose);
         }
 
         public async Task<ExitCode> RunAsync(string[] args)
@@ -252,7 +255,7 @@ namespace Arbor.Build.Core
 
             var toolResults = new List<ToolResult>();
 
-            bool testsEnabled = buildVariables.GetBooleanByKey(WellKnownVariables.TestsEnabled, defaultValue: true);
+            bool testsEnabled = buildVariables.GetBooleanByKey(WellKnownVariables.TestsEnabled, true);
 
             foreach (ToolWithPriority toolWithPriority in toolWithPriorities)
             {
@@ -425,26 +428,53 @@ namespace Arbor.Build.Core
                 .OrderBy(provider => provider.Order)
                 .ToReadOnlyCollection();
 
-            string displayAsTable =
-                providers.Select(item => new Dictionary<string, string> { { "Provider", item.GetType().Name } })
-                    .DisplayAsTable();
+            if (_verboseEnabled)
+            {
+                string displayAsTable =
+                    providers.Select(item => new Dictionary<string, string> { { "Provider", item.GetType().Name } })
+                        .DisplayAsTable();
 
-            string variablesMessage =
-                $"{Environment.NewLine}Available variable providers: [{providers.Count}]{Environment.NewLine}{Environment.NewLine}{displayAsTable}{Environment.NewLine}";
+                string variablesMessage =
+                    $"{Environment.NewLine}Available variable providers: [{providers.Count}]{Environment.NewLine}{Environment.NewLine}{displayAsTable}{Environment.NewLine}";
 
-            _logger.Verbose("{Variables}", variablesMessage);
+                _logger.Verbose("{Variables}", variablesMessage);
+            }
 
             foreach (IVariableProvider provider in providers)
             {
+                if (_verboseEnabled)
+                {
+                    _logger.Verbose("### Running variable provider {Provider}", provider.GetType().Name);
+                }
+
                 ImmutableArray<IVariable> newVariables =
                     await provider.GetBuildVariablesAsync(_logger, buildVariables, _cancellationToken)
                         .ConfigureAwait(false);
+
+                if (_verboseEnabled)
+                {
+                    string values;
+                    if (newVariables.Length > 0)
+                    {
+                        Dictionary<string, string>[] providerTable = new[]
+                            { newVariables.ToDictionary(s => s.Key, s => s.Value) };
+                        values = providerTable.DisplayAsTable();
+                    }
+                    else
+                    {
+                        values = "[None]";
+                    }
+
+                    _logger.Verbose("Variable provider {Provider} provided variables {Variables}",
+                        provider.GetType().Name,
+                        values);
+                }
 
                 foreach (IVariable var in newVariables)
                 {
                     if (buildVariables.HasKey(var.Key))
                     {
-                        IVariable existing = buildVariables.Single(bv => bv.Key.Equals(var.Key));
+                        IVariable existing = buildVariables.Single(bv => bv.Key.Equals(var.Key, StringComparison.OrdinalIgnoreCase));
 
                         if (string.IsNullOrWhiteSpace(buildVariables.GetVariableValueOrDefault(var.Key, string.Empty)))
                         {
@@ -465,7 +495,7 @@ namespace Arbor.Build.Core
                         }
                         else
                         {
-                            if (existing.Value.Equals(var.Value))
+                            if (existing.Value.Equals(var.Value, StringComparison.OrdinalIgnoreCase))
                             {
                                 continue;
                             }
@@ -519,7 +549,8 @@ namespace Arbor.Build.Core
 
             foreach (IVariable buildVariable in buildVariableArray)
             {
-                if (!buildVariable.Key.StartsWithAny(new[]{ArborConstants.ArborBuild, ArborConstants.ArborX}, StringComparison.InvariantCultureIgnoreCase))
+                if (!buildVariable.Key.StartsWithAny(new[] { ArborConstants.ArborBuild, ArborConstants.ArborX },
+                    StringComparison.InvariantCultureIgnoreCase))
                 {
                     continue;
                 }
