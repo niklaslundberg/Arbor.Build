@@ -913,6 +913,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             ImmutableArray<SolutionProject> exeProjects = solution.Projects
                 .Where(project =>
                     project.Framework == Framework.NetCoreApp
+                    && (project.Project.HasPropertyWithValue("ArborPublishEnabled", "true") || !project.Project.PropertyGroups.Any(msBuildPropertyGroup => msBuildPropertyGroup.Properties.Any(msBuildProperty => msBuildProperty.Name.Equals("ArborPublishEnabled", StringComparison.Ordinal))))
                     && (project.Project.HasPropertyWithValue("OutputType", "Exe")
                         || project.Project.Sdk == DotNetSdk.DotnetWeb)
                     && !project.Project.PackageReferences.Any(reference =>
@@ -921,7 +922,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             foreach (SolutionProject solutionProject in exeProjects)
             {
-                List<string> args =new List<string>{"publish", solutionProject.FullPath, "-c", configuration };
+                var args = new List<string>{"publish", solutionProject.FullPath, "-c", configuration };
 
                 if (!string.IsNullOrWhiteSpace(_publishRuntimeIdentifier))
                 {
