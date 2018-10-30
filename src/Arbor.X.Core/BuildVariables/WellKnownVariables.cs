@@ -390,6 +390,10 @@ namespace Arbor.Build.Core.BuildVariables
         public const string CleanupProcessesAfterBuildEnabled =
             "Arbor.X.Build.Cleanup.KillProcessesAfterBuild.Enabled";
 
+        [VariableDescription(".NET Core publish runtime identifier")]
+        public const string PublishRuntimeIdentifier =
+            "Arbor.X.Build.PublishRuntimeIdentifier";
+
         [VariableDescription("Colon separated list of platforms to be excluded")]
         public const string MSBuildExcludedPlatforms = "Arbor.X.Build.MSBuild.ExcludedPlatforms";
 

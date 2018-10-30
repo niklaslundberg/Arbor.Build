@@ -104,6 +104,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
         private bool _verboseLoggingEnabled;
         private MSBuildVerbositoyLevel _verbosity;
         private string _version;
+        private string _publishRuntimeIdentifier;
 
         public SolutionBuilder(BuildContext buildContext)
         {
@@ -168,6 +169,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 buildVariables.GetBooleanByKey(
                     WellKnownVariables.ExternalTools_MSBuild_CodeAnalysisEnabled,
                     false);
+
+            _publishRuntimeIdentifier = buildVariables.GetVariableValueOrDefault(WellKnownVariables.PublishRuntimeIdentifier, "");
 
             _preCompilationEnabled =
                 buildVariables.GetBooleanByKey(WellKnownVariables.WebDeployPreCompilationEnabled, false);
@@ -918,7 +921,13 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             foreach (SolutionProject solutionProject in exeProjects)
             {
-                string[] args = { "publish", solutionProject.FullPath, "-c", configuration };
+                List<string> args =new List<string>{"publish", solutionProject.FullPath, "-c", configuration };
+
+                if (!string.IsNullOrWhiteSpace(_publishRuntimeIdentifier))
+                {
+                    args.Add("-r");
+                    args.Add(_publishRuntimeIdentifier);
+                }
 
                 ExitCode projectExitCode = await ProcessUtils.ProcessHelper.ExecuteAsync(_dotNetExePath,
                     args,
