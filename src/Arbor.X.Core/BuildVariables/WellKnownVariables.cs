@@ -20,6 +20,9 @@ namespace Arbor.Build.Core.BuildVariables
         [VariableDescription("Flag to enabled dotnet publish for executable netcoreapp projects")]
         public const string DotNetPublishExeProjectsEnabled = "Arbor.X.Build.PublishDotNetExecutableProjects";
 
+        [VariableDescription("Flag to enabled dotnet publish for executable netcoreapp projects")]
+        public const string DotNetPublishExeEnabled = "ArborBuild_PublishDotNetExecutableEnabled";
+
         [VariableDescription("Flag to enabled dotnet pack for tool netcoreapp projects")]
         public const string DotNetPackToolProjectsEnabled = "Arbor.X.Build.PackDotNetToolProjects";
 

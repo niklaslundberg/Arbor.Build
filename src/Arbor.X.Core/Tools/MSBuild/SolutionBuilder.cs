@@ -935,6 +935,15 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             foreach (SolutionProject solutionProject in exeProjects)
             {
+                if (solutionProject.Project.HasPropertyWithValue(WellKnownVariables.DotNetPublishExeEnabled, "false"))
+                {
+                    if (logger.IsEnabled(LogEventLevel.Debug))
+                    {
+                        logger.Debug("Skipping publish of project {Project} because it has property {Property} set to false", solutionProject.FullPath, WellKnownVariables.DotNetPublishExeEnabled);
+                    }
+                    continue;
+                }
+
                 var args = new List<string>{"publish", solutionProject.FullPath, "-c", configuration };
 
                 if (!string.IsNullOrWhiteSpace(_publishRuntimeIdentifier))
@@ -1582,7 +1591,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 solutionProject.Project.PropertyGroups.SelectMany(s => s.Properties)
                     .Where(
                         msBuildProperty =>
-                            msBuildProperty.Name.Equals(expectedName, StringComparison.InvariantCultureIgnoreCase))
+                            msBuildProperty.Name.Equals(expectedName, StringComparison.InvariantCultureIgnoreCase)
+                            || msBuildProperty.Name.Equals(WellKnownVariables.NugetCreateNuGetWebPackageForProjectEnabled, StringComparison.Ordinal))
                     .ToList();
 
             bool buildNuGetWebPackageForProject = ShouldBuildNuGetWebPackageForProject(
@@ -1731,6 +1741,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 bool isIncluded = _filteredNuGetWebPackageProjects.Any(
                     projectName =>
                         projectName.Equals(normalizedProjectFileName, StringComparison.InvariantCultureIgnoreCase));
+
                 if (_debugLoggingEnabled)
                 {
                     string message = isIncluded

@@ -80,6 +80,10 @@
         public const string NugetCreateNuGetWebPackageForProjectEnabledFormat =
             "{0}_Arbor_X_NuGet_Package_CreateNuGetWebPackageForProject_Enabled";
 
+        [VariableDescription("Flag to indicate if creation of NuGet web package is enabled for a project")]
+        public const string NugetCreateNuGetWebPackageForProjectEnabled =
+            "ArborBuild_NuGetWebPackageEnabled";
+
         [VariableDescription(
             "Comma-separated list of web projects files to create NuGet Web packages for. If specified, individual project flags will be ignored. Example: for MyWebProject.csproj enter just MyWebProject")]
         public const string NugetCreateNuGetWebPackageFilter =
