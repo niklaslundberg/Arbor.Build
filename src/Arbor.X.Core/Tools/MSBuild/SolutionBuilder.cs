@@ -1476,7 +1476,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     $"/property:FileVersion={_AssemblyFileVersion}"
                 };
 
-                string rid = solutionProject.Project.GetPropertyValue(WellKnownVariables.PublishRuntimeIdentifiers);
+                string rid = solutionProject.Project.GetPropertyValue(WellKnownVariables.ProjectMSBuildPublishRuntimeIdentifier);
 
                 if (!string.IsNullOrWhiteSpace(rid))
                 {

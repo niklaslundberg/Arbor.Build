@@ -395,8 +395,8 @@ namespace Arbor.Build.Core.BuildVariables
             "Arbor.X.Build.PublishRuntimeIdentifier";
 
         [VariableDescription(".NET Core MSBuild web publish runtime identifiers")]
-        public const string PublishRuntimeIdentifiers =
-            "ArborBuild_PublishRuntimeIdentifiers";
+        public const string ProjectMSBuildPublishRuntimeIdentifier =
+            "ArborBuild_PublishRuntimeIdentifier";
 
         [VariableDescription("Colon separated list of platforms to be excluded")]
         public const string MSBuildExcludedPlatforms = "Arbor.X.Build.MSBuild.ExcludedPlatforms";
