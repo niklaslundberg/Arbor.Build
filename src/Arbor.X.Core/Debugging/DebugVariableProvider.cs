@@ -21,6 +21,7 @@ namespace Arbor.Build.Core.Debugging
         {
             if (!DebugHelper.IsDebugging)
             {
+                logger.Verbose("Skipping debug variables, not running in debug mode");
                 return Task.FromResult(ImmutableArray<IVariable>.Empty);
             }
 
@@ -60,7 +61,7 @@ namespace Arbor.Build.Core.Debugging
                 [WellKnownVariables.XUnitNetFrameworkEnabled] = "false",
                 [WellKnownVariables.NUnitEnabled] = "false",
                 [WellKnownVariables.MSpecEnabled] = "true",
-                [WellKnownVariables.TestsAssemblyStartsWith] = "Arbor.Build.Tests",
+                [WellKnownVariables.TestsAssemblyStartsWith] = "Milou",
                 [WellKnownVariables.DotNetRestoreEnabled] = "false",
                 [WellKnownVariables.XUnitNetCoreAppV2XmlXsltToJunitEnabled] = "true",
                 [WellKnownVariables.XUnitNetCoreAppEnabled] = "false",

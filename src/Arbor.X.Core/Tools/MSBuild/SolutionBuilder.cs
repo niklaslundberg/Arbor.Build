@@ -799,15 +799,28 @@ namespace Arbor.Build.Core.Tools.MSBuild
             ExitCode exitCode =
                 await
                     ProcessRunner.ExecuteAsync(
-                        _msBuildExe,
-                        arguments: argList,
-                        standardOutLog: logger.Information,
-                        standardErrorAction: logger.Error,
-                        toolAction: logger.Information,
-                        cancellationToken: _cancellationToken,
-                        verboseAction: logger.Verbose,
-                        addProcessNameAsLogCategory: true,
-                        addProcessRunnerCategory: true).ConfigureAwait(false);
+                            _msBuildExe,
+                            arguments: argList,
+                            standardOutLog: logger.Information,
+                            standardErrorAction: logger.Error,
+                            toolAction: logger.Information,
+                            cancellationToken: _cancellationToken,
+                            verboseAction: logger.Verbose,
+                            addProcessNameAsLogCategory: true,
+                            addProcessRunnerCategory: true)
+                        .ConfigureAwait(false);
+
+
+            if (exitCode.IsSuccess)
+            {
+                exitCode = await PublishProjectsAsync(solutionFile, configuration, logger)
+                    .ConfigureAwait(false);
+            }
+            else
+            {
+                logger.Error("Skipping dotnet publish exe projects because solution build failed");
+            }
+
 
             if (exitCode.IsSuccess)
             {
@@ -816,11 +829,11 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     _logger.Information("Web projects builds are enabled, key {WebProjectsBuildEnabled}",
                         WellKnownVariables.WebProjectsBuildEnabled);
 
-                    ExitCode webAppsExiteCode =
+                    ExitCode webAppsExitCode =
                         await BuildWebApplicationsAsync(solutionFile, configuration, platform, logger)
                             .ConfigureAwait(false);
 
-                    exitCode = webAppsExiteCode;
+                    exitCode = webAppsExitCode;
                 }
                 else
                 {
@@ -835,40 +848,16 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             if (exitCode.IsSuccess)
             {
-                if (_dotnetPublishEnabled)
-                {
-                    _logger.Information("Dotnet publish is enabled, key {Key}",
-                        WellKnownVariables.DotNetPublishExeProjectsEnabled);
-
-                    ExitCode webAppsExiteCode =
-                        await PublishDotNetExeProjectsAsync(solutionFile, configuration, logger)
-                            .ConfigureAwait(false);
-
-                    exitCode = webAppsExiteCode;
-                }
-                else
-                {
-                    _logger.Information("Dotnet publish is disabled, key {Key}",
-                        WellKnownVariables.DotNetPublishExeProjectsEnabled);
-                }
-            }
-            else
-            {
-                logger.Error("Skipping dotnet publish exe projects because solution build failed");
-            }
-
-            if (exitCode.IsSuccess)
-            {
                 if (_dotnetPackToolsEnabled)
                 {
                     _logger.Information("Dotnet pack tools are enabled, key {Key}",
                         WellKnownVariables.DotNetPackToolProjectsEnabled);
 
-                    ExitCode webAppsExiteCode =
+                    ExitCode webAppsExitCode =
                         await PackDotNetToolProjectsAsync(solutionFile, configuration, logger)
                             .ConfigureAwait(false);
 
-                    exitCode = webAppsExiteCode;
+                    exitCode = webAppsExitCode;
                 }
                 else
                 {
@@ -890,6 +879,30 @@ namespace Arbor.Build.Core.Tools.MSBuild
             else
             {
                 logger.Error("Skipping PDB publishing since web site build failed");
+            }
+
+            return exitCode;
+        }
+
+        private async Task<ExitCode> PublishProjectsAsync(FileInfo solutionFile, string configuration, ILogger logger)
+        {
+            ExitCode exitCode = ExitCode.Success;
+
+            if (_dotnetPublishEnabled)
+            {
+                _logger.Information("Dotnet publish is enabled, key {Key}",
+                    WellKnownVariables.DotNetPublishExeProjectsEnabled);
+
+                ExitCode webAppsExitCode =
+                    await PublishDotNetExeProjectsAsync(solutionFile, configuration, logger)
+                        .ConfigureAwait(false);
+
+                exitCode = webAppsExitCode;
+            }
+            else
+            {
+                _logger.Information("Dotnet publish is disabled, key {Key}",
+                    WellKnownVariables.DotNetPublishExeProjectsEnabled);
             }
 
             return exitCode;
@@ -1319,7 +1332,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 }
                 else
                 {
-                    logger.Information(
+                    logger.Debug(
                         "NuGet web package creation is disabled, build variable '{NugetCreateNuGetWebPackagesEnabled}' is not set or value is other than true",
                         WellKnownVariables.NugetCreateNuGetWebPackagesEnabled);
                 }
@@ -1462,6 +1475,13 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     $"/property:AssemblyVersion={_AssemblyVersion}",
                     $"/property:FileVersion={_AssemblyFileVersion}"
                 };
+
+                string rid = solutionProject.Project.GetPropertyValue(WellKnownVariables.PublishRuntimeIdentifiers);
+
+                if (!string.IsNullOrWhiteSpace(rid))
+                {
+                    buildSiteArguments.Add($"/property:RuntimeIdentifiers={rid}");
+                }
             }
 
             if (_showSummary)
@@ -1880,7 +1900,9 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             string nuspecTempFile = Path.Combine(tempDir.FullName, $"{packageId}.nuspec");
 
-            File.WriteAllText(nuspecTempFile, nuspecContent, Encoding.UTF8);
+            await File
+                .WriteAllTextAsync(nuspecTempFile, nuspecContent, Encoding.UTF8, _cancellationToken)
+                .ConfigureAwait(false);
 
             ExitCode exitCode = await new NuGetPackager(_logger).CreatePackageAsync(
                 nuspecTempFile,

@@ -181,5 +181,31 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 property.Name.Equals(name, StringComparison.Ordinal) &&
                 value.Equals(property.Value, StringComparison.Ordinal)));
         }
+
+        public string GetPropertyValue([NotNull] string name)
+        {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            List<MSBuildProperty> msBuildProperties = PropertyGroups
+                .SelectMany(propertyGroup =>
+                    propertyGroup.Properties.Where(property =>
+                        property.Name.Equals(name, StringComparison.Ordinal)))
+                .ToList();
+
+            if (msBuildProperties.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            if (msBuildProperties.Count > 1)
+            {
+                throw new InvalidOperationException($"Multiple MSBuild properties were found with name '{name}' in project file '{FileName}'");
+            }
+
+            return msBuildProperties[0].Value;
+        }
     }
 }
