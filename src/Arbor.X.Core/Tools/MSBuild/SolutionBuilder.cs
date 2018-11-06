@@ -1435,8 +1435,12 @@ namespace Arbor.Build.Core.Tools.MSBuild
         {
             List<string> buildSiteArguments;
 
+            string target;
+
             if (solutionProject.Framework == Framework.NetFramework)
             {
+                target = "pipelinePreDeployCopyAllFilesToOneFolder";
+
                 buildSiteArguments = new List<string>(15)
                 {
                     solutionProject.FullPath,
@@ -1447,7 +1451,6 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     // ReSharper disable once PossibleNullReferenceException
                     $"/property:SolutionDir={solutionFile.Directory.FullName}",
                     $"/verbosity:{_verbosity.Level}",
-                    "/target:pipelinePreDeployCopyAllFilesToOneFolder",
                     "/property:AutoParameterizationWebConfigConnectionStrings=false",
                     $"/maxcpucount:{_processorCount.ToString(CultureInfo.InvariantCulture)}",
                     "/nodeReuse:false"
@@ -1468,7 +1471,6 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     solutionProject.FullPath,
                     $"/property:configuration={configuration}",
                     $"/verbosity:{_verbosity.Level}",
-                    "/target:publish",
                     $"/property:publishdir={siteArtifactDirectory.FullName}",
                     $"/maxcpucount:{_processorCount.ToString(CultureInfo.InvariantCulture)}",
                     "/nodeReuse:false",
@@ -1480,33 +1482,12 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                 if (!string.IsNullOrWhiteSpace(rid))
                 {
-                    var restoreArgs = new List<string>
-                    {
-                        solutionProject.FullPath,
-                        "/target:restore",
-                        $"/verbosity:{_verbosity.Level}",
-                        $"/property:RuntimeIdentifiers={rid}"
-                    };
-
-                    ExitCode restoreExitCode =
-                        await
-                            ProcessRunner.ExecuteAsync(
-                                _msBuildExe,
-                                arguments: restoreArgs,
-                                standardOutLog: logger.Information,
-                                standardErrorAction: logger.Error,
-                                toolAction: logger.Information,
-                                cancellationToken: _cancellationToken,
-                                addProcessNameAsLogCategory: true,
-                                addProcessRunnerCategory: true).ConfigureAwait(false);
-
-                    if (!restoreExitCode.IsSuccess)
-                    {
-                        logger.Error("MSBuild NuGet package restore failed for project {Project} using runtime identifiers {RuntimeIdentifiers}", solutionProject, rid);
-                        return restoreExitCode;
-                    }
-
                     buildSiteArguments.Add($"/property:RuntimeIdentifiers={rid}");
+                    target = "rebuild;restore";
+                }
+                else
+                {
+                    target = "publish";
                 }
             }
 
@@ -1514,6 +1495,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
             {
                 buildSiteArguments.Add("/detailedsummary");
             }
+
+            buildSiteArguments.Add($"/target:{target}");
 
             if (!_codeAnalysisEnabled)
             {
