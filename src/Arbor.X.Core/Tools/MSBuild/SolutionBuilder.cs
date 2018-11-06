@@ -1480,6 +1480,32 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                 if (!string.IsNullOrWhiteSpace(rid))
                 {
+                    var restoreArgs = new List<string>
+                    {
+                        solutionProject.FullPath,
+                        "/target:restore",
+                        $"/verbosity:{_verbosity.Level}",
+                        $"/property:RuntimeIdentifiers={rid}"
+                    };
+
+                    ExitCode restoreExitCode =
+                        await
+                            ProcessRunner.ExecuteAsync(
+                                _msBuildExe,
+                                arguments: restoreArgs,
+                                standardOutLog: logger.Information,
+                                standardErrorAction: logger.Error,
+                                toolAction: logger.Information,
+                                cancellationToken: _cancellationToken,
+                                addProcessNameAsLogCategory: true,
+                                addProcessRunnerCategory: true).ConfigureAwait(false);
+
+                    if (!restoreExitCode.IsSuccess)
+                    {
+                        logger.Error("MSBuild NuGet package restore failed for project {Project} using runtime identifiers {RuntimeIdentifiers}", solutionProject, rid);
+                        return restoreExitCode;
+                    }
+
                     buildSiteArguments.Add($"/property:RuntimeIdentifiers={rid}");
                 }
             }
@@ -1642,7 +1668,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             if (_verboseLoggingEnabled)
             {
-                _logger.Verbose("Found [{Count}] environnent names in project '{ProjectName}'",
+                _logger.Verbose("Found [{Count}] environment names in project '{ProjectName}'",
                     environmentNames.Count,
                     solutionProject.ProjectName);
             }
