@@ -1492,7 +1492,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 if (!string.IsNullOrWhiteSpace(rid))
                 {
                     buildSiteArguments.Add($"/property:RuntimeIdentifier={rid}");
-                    target = "rebuild;publish";
+                    target = "restore;rebuild;publish";
                 }
                 else
                 {
