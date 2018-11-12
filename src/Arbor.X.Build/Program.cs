@@ -1,20 +1,25 @@
-﻿using System;
+﻿using System.Threading.Tasks;
+using Arbor.Build.Core;
 using Arbor.Processing.Core;
-using Arbor.X.Core;
-using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.Logging;
+using Serilog;
 
-namespace Arbor.X.Build
+namespace Arbor.Build
 {
-    internal class Program
+    internal static class Program
     {
         private static BuildApplication _app;
 
-        private static int Main(string[] args)
+        private static async Task<int> Main(string[] args)
         {
-            LogLevel logLevel = LogLevel.TryParse(Environment.GetEnvironmentVariable(WellKnownVariables.LogLevel));
-            _app = new BuildApplication(new NLogLogger(logLevel));
-            ExitCode exitCode = _app.RunAsync(args).Result;
+            ILogger logger = LoggerInitialization.InitializeLogging(ref args);
+
+            Log.Logger = logger;
+
+            _app = new BuildApplication(logger);
+
+            ExitCode exitCode = await _app.RunAsync(args).ConfigureAwait(false);
+
+            Log.CloseAndFlush();
 
             return exitCode.Result;
         }

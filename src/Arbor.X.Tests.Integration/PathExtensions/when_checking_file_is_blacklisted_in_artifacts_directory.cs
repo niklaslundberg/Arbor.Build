@@ -1,9 +1,9 @@
 using System;
 using System.IO;
-using Arbor.X.Core.IO;
+using Arbor.Build.Core.IO;
 using Machine.Specifications;
 
-namespace Arbor.X.Tests.Integration.PathExtensions
+namespace Arbor.Build.Tests.Integration.PathExtensions
 {
     [Subject(typeof(Core.IO.PathExtensions))]
     public class when_checking_file_is_blacklisted_in_artifacts_directory
@@ -14,7 +14,7 @@ namespace Arbor.X.Tests.Integration.PathExtensions
 
         static string root;
 
-        Cleanup after = () => { new DirectoryInfo(root).DeleteIfExists(true); };
+        Cleanup after = () => new DirectoryInfo(root).DeleteIfExists(true);
 
         Establish context = () =>
         {
@@ -29,7 +29,7 @@ namespace Arbor.X.Tests.Integration.PathExtensions
         };
 
         Because of =
-            () => { isBlackListed = specification.IsFileBlackListed($@"{root}\artifacts\afile.txt", root).Item1; };
+            () => isBlackListed = specification.IsFileBlackListed($@"{root}\artifacts\afile.txt", root).Item1;
 
         It should_return_false = () => isBlackListed.ShouldBeTrue();
     }

@@ -1,6 +1,6 @@
 using Machine.Specifications;
 
-namespace Arbor.X.Tests.Integration.Maybe
+namespace Arbor.Build.Tests.Integration.Maybe
 {
 #pragma warning disable 1718
 

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Arbor.X.Core.Tools.Git;
+using Arbor.Build.Core.Tools.Git;
 
-namespace Arbor.X.Core.Tools.NuGet
+namespace Arbor.Build.Core.Tools.NuGet
 {
     public static class NuGetPackageIdHelper
     {

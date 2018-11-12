@@ -1,29 +1,22 @@
 ﻿using System;
 
-namespace Arbor.X.Core.BuildVariables
+namespace Arbor.Build.Core.BuildVariables
 {
-    public class DynamicVariable : IVariable
+    public sealed class DynamicVariable : IVariable
     {
-        private readonly Func<string> _getValue;
-
-        public DynamicVariable(string key, Func<string> getValue)
+        public DynamicVariable(string key, string initialValue = null)
         {
             if (string.IsNullOrWhiteSpace(key))
             {
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (getValue == null)
-            {
-                throw new ArgumentNullException(nameof(getValue));
-            }
-
             Key = key;
-            _getValue = getValue;
+            Value = initialValue;
         }
 
         public string Key { get; }
 
-        public string Value => _getValue();
+        public string Value { get; set; }
     }
 }

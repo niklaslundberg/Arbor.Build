@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Arbor.X.Core.GenericExtensions;
+using Arbor.Build.Core.GenericExtensions;
 
-namespace Arbor.X.Core.BuildVariables
+namespace Arbor.Build.Core.BuildVariables
 {
     public static class VariablePrintExtensions
     {

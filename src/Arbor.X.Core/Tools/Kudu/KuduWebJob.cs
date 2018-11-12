@@ -4,13 +4,13 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.IO;
 using Arbor.Processing.Core;
-using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.IO;
-using Arbor.X.Core.Logging;
 using JetBrains.Annotations;
+using Serilog;
 
-namespace Arbor.X.Core.Tools.Kudu
+namespace Arbor.Build.Core.Tools.Kudu
 {
     [Priority(1050)]
     [UsedImplicitly]
@@ -25,12 +25,12 @@ namespace Arbor.X.Core.Tools.Kudu
         {
             _logger = logger;
 
-            string kuduJobsEnabledKey = WellKnownVariables.KuduJobsEnabled;
+            const string kuduJobsEnabledKey = WellKnownVariables.KuduJobsEnabled;
             bool kuduWebJobsEnabled = buildVariables.GetBooleanByKey(kuduJobsEnabledKey, false);
 
             if (!kuduWebJobsEnabled)
             {
-                _logger.Write("Kudu web jobs are disabled");
+                _logger.Information("Kudu web jobs are disabled");
                 return Task.FromResult(ExitCode.Success);
             }
 
@@ -38,7 +38,7 @@ namespace Arbor.X.Core.Tools.Kudu
 
             string rootDir = buildVariables.GetVariable(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
 
-            _logger.Write("Kudu web jobs are enabled");
+            _logger.Information("Kudu web jobs are enabled");
 
             string sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
 
@@ -51,16 +51,16 @@ namespace Arbor.X.Core.Tools.Kudu
                 .Where(project => project.IsKuduWebJobProject)
                 .ToList();
 
-            if (kuduWebJobProjects.Any())
+            if (kuduWebJobProjects.Count > 0)
             {
-                logger.Write(string.Join(
+                logger.Information(string.Join(
                     Environment.NewLine,
                     kuduWebJobProjects.Select(
                         webProject => $"Found Kudu web job project: {webProject}")));
             }
             else
             {
-                logger.Write("No Kudu web job projects were found");
+                logger.Information("No Kudu web job projects were found");
             }
 
             return Task.FromResult(ExitCode.Success);
@@ -103,8 +103,11 @@ namespace Arbor.X.Core.Tools.Kudu
 
                                         if (!existingValue.Equals(line, StringComparison.InvariantCultureIgnoreCase))
                                         {
-                                            _logger.WriteWarning(
-                                                $"A Kudu web job key '{key}' has already been found with value '{existingValue}', new value is different '{line}', using first value");
+                                            _logger.Warning(
+                                                "A Kudu web job key '{Key}' has already been found with value '{ExistingValue}', new value is different '{Line}', using first value",
+                                                key,
+                                                existingValue,
+                                                line);
                                         }
                                     }
                                 }

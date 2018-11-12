@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Arbor.X.Core.BuildVariables;
+using Arbor.Build.Core.BuildVariables;
 using Machine.Specifications;
 
-namespace Arbor.X.Tests.Integration.WellknownVariables
+namespace Arbor.Build.Tests.Integration.WellknownVariables
 {
     [Tags(Core.Tools.Testing.MSpecInternalConstants.RecursiveArborXTest)]
     public class when_listing_all_wellknown_variables
     {
         static IReadOnlyCollection<VariableDescription> readOnlyCollection;
 
-        Because of = () => { readOnlyCollection = WellKnownVariables.AllVariables; };
+        Because of = () => readOnlyCollection = WellKnownVariables.AllVariables;
 
         It should_contain_nested_class_constants = () =>
         {

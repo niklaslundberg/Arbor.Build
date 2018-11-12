@@ -1,18 +1,18 @@
-﻿using Arbor.X.Core;
+﻿using Arbor.Build.Core.Tools.Git;
 using Machine.Specifications;
 
-namespace Arbor.X.Tests.Integration.GitBranchNameExtensions
+namespace Arbor.Build.Tests.Integration.GitBranchNameExtensions
 {
-    [Subject(typeof(Core.GitBranchNameExtensions))]
+    [Subject(typeof(Core.Tools.Git.GitBranchNameExtensions))]
     public class when_getting_branch_name_for_branch_with_same_origin_name
     {
         static Defensive.Maybe<string> result;
 
         static string name;
 
-        Establish context = () => { name = "## develop...origin/develop"; };
+        Establish context = () => name = "## develop...origin/develop";
 
-        Because of = () => { result = name.GetBranchName(); };
+        Because of = () => result = name.GetBranchName();
 
         It should_find_the_branch_name = () => result.HasValue.ShouldBeTrue();
 

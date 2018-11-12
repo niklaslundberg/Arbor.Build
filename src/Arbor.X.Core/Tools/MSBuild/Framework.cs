@@ -1,9 +1,9 @@
-﻿namespace Arbor.X.Core.Tools.MSBuild
+﻿namespace Arbor.Build.Core.Tools.MSBuild
 {
     public enum Framework
     {
         Unknown = 0,
         NetFramework = 1,
-        NetCore
+        NetCoreApp = 2
     }
 }

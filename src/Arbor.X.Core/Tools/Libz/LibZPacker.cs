@@ -6,20 +6,18 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.GenericExtensions.Boolean;
+using Arbor.Build.Core.IO;
+using Arbor.Build.Core.ProcessUtils;
+using Arbor.Build.Core.Tools.ILRepack;
+using Arbor.Build.Core.Tools.MSBuild;
 using Arbor.Processing;
 using Arbor.Processing.Core;
-using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.GenericExtensions;
-using Arbor.X.Core.IO;
-using Arbor.X.Core.Logging;
-using Arbor.X.Core.Parsing;
-using Arbor.X.Core.ProcessUtils;
-using Arbor.X.Core.Tools.ILRepack;
-using FubuCsProjFile;
-using FubuCsProjFile.MSBuild;
 using JetBrains.Annotations;
+using Serilog;
 
-namespace Arbor.X.Core.Tools.Libz
+namespace Arbor.Build.Core.Tools.Libz
 {
     [Priority(620)]
     [UsedImplicitly]
@@ -38,14 +36,15 @@ namespace Arbor.X.Core.Tools.Libz
         {
             _logger = logger;
 
-            ParseResult<bool> parseResult = buildVariables
+            bool parseResult = buildVariables
                 .GetVariableValueOrDefault(WellKnownVariables.ExternalTools_LibZ_Enabled, "false")
-                .TryParseBool(false);
+                .ParseOrDefault(false);
 
-            if (!parseResult.Value)
+            if (!parseResult)
             {
-                _logger.Write(
-                    $"LibZPacker is disabled, to enable it, set the flag {WellKnownVariables.ExternalTools_LibZ_Enabled} to true");
+                _logger.Information(
+                    "LibZPacker is disabled, to enable it, set the flag {ExternalTools_LibZ_Enabled} to true",
+                    WellKnownVariables.ExternalTools_LibZ_Enabled);
                 return ExitCode.Success;
             }
 
@@ -59,7 +58,7 @@ namespace Arbor.X.Core.Tools.Libz
 
             if (!string.IsNullOrWhiteSpace(customExePath) && File.Exists(customExePath))
             {
-                logger.Write($"Using custom path for LibZ: '{customExePath}'");
+                logger.Information("Using custom path for LibZ: '{CustomExePath}'", customExePath);
                 _exePath = customExePath;
             }
 
@@ -81,10 +80,23 @@ namespace Arbor.X.Core.Tools.Libz
 
             string merges = string.Join(Environment.NewLine, ilMergeProjects.Select(item => item.FullName));
 
-            logger.Write($"Found {ilMergeProjects.Count} projects marked for merging:{Environment.NewLine}{merges}");
+            logger.Information("Found {Count} projects marked for merging:{NewLine}{Merges}",
+                ilMergeProjects.Count,
+                Environment.NewLine,
+                merges);
 
-            ImmutableArray<ILRepackData> filesToMerge = (await Task.WhenAll(ilMergeProjects.Select(GetMergeFilesAsync)))
-                .SelectMany(item => item).ToImmutableArray();
+            ImmutableArray<ILRepackData> filesToMerge;
+            try
+            {
+                filesToMerge = (await Task.WhenAll(ilMergeProjects.Select(GetMergeFilesAsync)).ConfigureAwait(false))
+                    .SelectMany(item => item).ToImmutableArray();
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Error in LibZPacker");
+
+                return ExitCode.Failure;
+            }
 
             foreach (ILRepackData repackData in filesToMerge)
             {
@@ -137,19 +149,19 @@ namespace Arbor.X.Core.Tools.Libz
                     result = await ProcessRunner.ExecuteAsync(
                         _exePath,
                         arguments: arguments,
-                        standardOutLog: logger.Write,
-                        toolAction: logger.Write,
-                        standardErrorAction: logger.WriteError,
-                        cancellationToken: cancellationToken);
+                        standardOutLog: logger.Information,
+                        toolAction: logger.Information,
+                        standardErrorAction: logger.Error,
+                        cancellationToken: cancellationToken).ConfigureAwait(false);
                 }
 
                 if (!result.IsSuccess)
                 {
-                    logger.WriteError($"Could not LibZ '{fileInfo.FullName}'");
+                    logger.Error("Could not LibZ '{FullName}'", fileInfo.FullName);
                     return result;
                 }
 
-                logger.Write($"LibZ result: {mergedPath}");
+                logger.Information("LibZ result: {MergedPath}", mergedPath);
             }
 
             return ExitCode.Success;
@@ -164,12 +176,6 @@ namespace Arbor.X.Core.Tools.Libz
                                    0);
         }
 
-        private static bool IsNetSdkProject(FileInfo projectFile)
-        {
-            return File.ReadLines(projectFile.FullName)
-                .Any(line => line.Contains("Microsoft.NET.Sdk", StringComparison.OrdinalIgnoreCase));
-        }
-
         private async Task<ImmutableArray<ILRepackData>> GetMergeFilesAsync(FileInfo projectFile)
         {
 // ReSharper disable PossibleNullReferenceException
@@ -182,14 +188,14 @@ namespace Arbor.X.Core.Tools.Libz
                 return ImmutableArray<ILRepackData>.Empty;
             }
 
-            string configuration = "release"; // TODO support ilmerge for debug
+            const string configuration = "release"; // TODO support ilmerge for debug
 
             DirectoryInfo releaseDir = binDirectory.GetDirectories(configuration).SingleOrDefault();
 
             if (releaseDir is null)
             {
-                _logger.WriteWarning(
-                    $"The release directory '{Path.Combine(binDirectory.FullName, configuration)}' does not exist");
+                _logger.Warning("The release directory '{V}' does not exist",
+                    Path.Combine(binDirectory.FullName, configuration));
                 return ImmutableArray<ILRepackData>.Empty;
             }
 
@@ -197,8 +203,8 @@ namespace Arbor.X.Core.Tools.Libz
 
             if (releasePlatformDirectories.Length > 1)
             {
-                _logger.WriteWarning(
-                    $"Multiple release directories were found for  '{Path.Combine(binDirectory.FullName, configuration)}'");
+                _logger.Warning("Multiple release directories were found for  '{V}'",
+                    Path.Combine(binDirectory.FullName, configuration));
                 return ImmutableArray<ILRepackData>.Empty;
             }
 
@@ -216,57 +222,86 @@ namespace Arbor.X.Core.Tools.Libz
 
             DirectoryInfo releasePlatformDirectory;
 
-            if (IsNetSdkProject(projectFile))
+            bool useSdkProject = MSBuildProject.IsNetSdkProject(projectFile);
+
+            if (useSdkProject)
             {
-                _logger.WriteWarning(
-                    $"Microsoft.NET.Sdk projects are in progress supported '{Path.Combine(binDirectory.FullName, configuration)}'");
+                _logger.Warning("Microsoft.NET.Sdk projects are in progress supported '{V}'",
+                    Path.Combine(binDirectory.FullName, configuration));
 
                 targetFrameworkVersionValue = string.Empty;
 
-                if (!releasePlatformDirectories.Any())
+                if (releasePlatformDirectories.Length == 0)
                 {
-                    _logger.WriteWarning(
-                        $"No release platform directories were found in '{Path.Combine(binDirectory.FullName, configuration)}'");
+                    _logger.Warning("No release platform directories were found in '{V}'",
+                        Path.Combine(binDirectory.FullName, configuration));
                     return ImmutableArray<ILRepackData>.Empty;
                 }
 
-                List<string> args = new List<string>
+                if (releasePlatformDirectories.Length == 1 && releasePlatformDirectories[0].Name
+                        .StartsWith("net4", StringComparison.OrdinalIgnoreCase))
                 {
-                    "publish",
-                    projectFile.FullName,
-                    $"/p:configuration={configuration}"
-                };
+                    var netFrameworkMappings =
+                        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                        {
+                            { "net452", "4.5.2" },
+                            { "net461", "4.6.1" },
+                            { "net462", "4.6.2" },
+                            { "net471", "4.7.1" },
+                            { "net47", "4.7" },
+                            { "net472", "4.7.2" },
+                            { "net48", "4.8" }
+                        };
 
-                ExitCode exitCode = await ProcessHelper.ExecuteAsync(
-                    Path.Combine(System.Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "dotnet", "dotnet.exe"),
-                    args,
-                    _logger);
+                    targetFrameworkVersionValue = netFrameworkMappings.ContainsKey(releasePlatformDirectories[0].Name)
+                        ? releasePlatformDirectories[0].Name
+                        : "4.0";
 
-                if (!exitCode.IsSuccess)
-                {
-                    _logger.WriteWarning($"Could not publish project {projectFile.FullName}");
-                    return ImmutableArray<ILRepackData>.Empty;
+                    releasePlatformDirectory = releasePlatformDirectories[0];
                 }
-
-                DirectoryInfo platformDirectory = releasePlatformDirectories.Single();
-
-                DirectoryInfo publishDirectoryInfo = platformDirectory.GetDirectories("publish").SingleOrDefault();
-
-                if (publishDirectoryInfo is null)
+                else
                 {
-                    _logger.WriteWarning($"The publish directory '{Path.Combine(platformDirectory.FullName, "publish")}' does not exist");
-                    return ImmutableArray<ILRepackData>.Empty;
-                }
+                    var args = new List<string>
+                    {
+                        "publish",
+                        projectFile.FullName,
+                        $"/p:configuration={configuration}"
+                    };
 
-                releasePlatformDirectory = publishDirectoryInfo;
+                    ExitCode exitCode = await ProcessHelper.ExecuteAsync(
+                        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
+                            "dotnet",
+                            "dotnet.exe"),
+                        args,
+                        _logger).ConfigureAwait(false);
+
+                    if (!exitCode.IsSuccess)
+                    {
+                        _logger.Warning("Could not publish project {FullName}", projectFile.FullName);
+                        throw new InvalidOperationException("Failed to get merge files for LibZ");
+                    }
+
+                    DirectoryInfo platformDirectory = releasePlatformDirectories.Single();
+
+                    DirectoryInfo publishDirectoryInfo = platformDirectory.GetDirectories("publish").SingleOrDefault();
+
+                    if (publishDirectoryInfo is null)
+                    {
+                        _logger.Warning("The publish directory '{V}' does not exist",
+                            Path.Combine(platformDirectory.FullName, "publish"));
+                        return ImmutableArray<ILRepackData>.Empty;
+                    }
+
+                    releasePlatformDirectory = publishDirectoryInfo;
+                }
             }
             else
             {
-                CsProjFile csProjFile = CsProjFile.LoadFrom(projectFile.FullName);
+                MSBuildProject csProjFile = MSBuildProject.LoadFrom(projectFile.FullName);
 
                 const string targetFrameworkVersion = "TargetFrameworkVersion";
 
-                MSBuildProperty msBuildProperty = csProjFile.BuildProject.PropertyGroups
+                MSBuildProperty msBuildProperty = csProjFile.PropertyGroups
                     .SelectMany(group =>
                         group.Properties.Where(
                             property => property.Name.Equals(
@@ -296,7 +331,7 @@ namespace Arbor.X.Core.Tools.Libz
                     $"Only one exe can be merged, found {string.Join(", ", exes.Select(file => file.FullName))}");
             }
 
-            if (!exes.Any())
+            if (exes.Count == 0)
             {
                 throw new InvalidOperationException("Could not find any exe files to merge");
             }

@@ -5,13 +5,13 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Arbor.Build.Core.BuildVariables;
 using Arbor.Processing;
 using Arbor.Processing.Core;
-using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.Logging;
 using JetBrains.Annotations;
+using Serilog;
 
-namespace Arbor.X.Core.Tools.Symbols
+namespace Arbor.Build.Core.Tools.Symbols
 {
     [Priority(800)]
     [UsedImplicitly]
@@ -28,7 +28,7 @@ namespace Arbor.X.Core.Tools.Symbols
 
             if (!enabled)
             {
-                logger.Write("Symbol package upload is disabled");
+                logger.Information("Symbol package upload is disabled");
                 return Task.FromResult(ExitCode.Success);
             }
 
@@ -38,7 +38,7 @@ namespace Arbor.X.Core.Tools.Symbols
 
             if (!packagesFolder.Exists)
             {
-                logger.WriteWarning("There is no packages folder, skipping package upload");
+                logger.Warning("There is no packages folder, skipping package upload");
                 return Task.FromResult(ExitCode.Success);
             }
 
@@ -65,13 +65,14 @@ namespace Arbor.X.Core.Tools.Symbols
 
             if (isRunningOnBuildAgent)
             {
-                logger.Write("Symbol package upload is enabled");
+                logger.Information("Symbol package upload is enabled");
             }
 
             if (!isRunningOnBuildAgent && forceUpload)
             {
-                logger.Write(
-                    $"Symbol package upload is enabled by the flag '{WellKnownVariables.ExternalTools_SymbolServer_ForceUploadEnabled}'");
+                logger.Information(
+                    "Symbol package upload is enabled by the flag '{ExternalTools_SymbolServer_ForceUploadEnabled}'",
+                    WellKnownVariables.ExternalTools_SymbolServer_ForceUploadEnabled);
             }
 
             if (isRunningOnBuildAgent || forceUpload)
@@ -85,7 +86,7 @@ namespace Arbor.X.Core.Tools.Symbols
                     timeout);
             }
 
-            logger.Write("Not running on build server. Skipped package upload");
+            logger.Information("Not running on build server. Skipped package upload");
 
             return Task.FromResult(ExitCode.Success);
         }
@@ -120,9 +121,9 @@ namespace Arbor.X.Core.Tools.Symbols
                     ProcessRunner.ExecuteAsync(
                         nugetExePath,
                         arguments: args,
-                        standardOutLog: logger.Write,
-                        standardErrorAction: logger.WriteError,
-                        toolAction: logger.Write);
+                        standardOutLog: logger.Information,
+                        standardErrorAction: logger.Error,
+                        toolAction: logger.Information).ConfigureAwait(false);
 
             return exitCode;
         }
@@ -167,7 +168,8 @@ namespace Arbor.X.Core.Tools.Symbols
                 string nugetPackage = fileInfo.FullName;
 
                 ExitCode exitCode =
-                    await UploadNugetPackageAsync(nugetExePath, symbolServerUrl, apiKey, nugetPackage, logger, timeout);
+                    await UploadNugetPackageAsync(nugetExePath, symbolServerUrl, apiKey, nugetPackage, logger, timeout)
+                        .ConfigureAwait(false);
 
                 if (!exitCode.IsSuccess)
                 {

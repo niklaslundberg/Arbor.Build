@@ -2,19 +2,20 @@
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Arbor.Build.Core.IO;
 using Arbor.Processing.Core;
-using Arbor.X.Core.IO;
-using Arbor.X.Core.Logging;
 using Machine.Specifications;
+using Serilog;
+using Serilog.Core;
 
-namespace Arbor.X.Tests.Integration.ProcessRunner
+namespace Arbor.Build.Tests.Integration.ProcessRunner
 {
     [Subject(typeof(Processing.ProcessRunner))]
     [Tags(Core.Tools.Testing.MSpecInternalConstants.RecursiveArborXTest)]
     public class when_running_a_failing_process
     {
         static string testPath;
-        static ConsoleLogger logger;
+        static ILogger logger = Logger.None;
         static ExitCode exitCode;
 
         Cleanup after = () =>
@@ -32,7 +33,6 @@ namespace Arbor.X.Tests.Integration.ProcessRunner
 EXIT /b 3
 ";
             File.WriteAllText(testPath, batchContent, Encoding.Default);
-            logger = new ConsoleLogger("TEST ");
         };
 
         Because of = () => RunAsync().Wait();
@@ -46,10 +46,11 @@ EXIT /b 3
                 exitCode =
                     await
                         Processing.ProcessRunner.ExecuteAsync(testPath,
-                            standardOutLog: (message, prefix) => logger.Write(message, "STANDARD"),
-                            standardErrorAction: (message, prefix) => logger.WriteError(message, "ERROR"),
-                            toolAction: (message, prefix) => logger.Write(message, "TOOL"),
-                            verboseAction: (message, prefix) => logger.Write(message, "VERBOSE"));
+                                standardOutLog: (message, prefix) => logger.Information(message, "STANDARD"),
+                                standardErrorAction: (message, prefix) => logger.Error(message, "ERROR"),
+                                toolAction: (message, prefix) => logger.Information(message, "TOOL"),
+                                verboseAction: (message, prefix) => logger.Information(message, "VERBOSE"))
+                            .ConfigureAwait(false);
             }
             catch (Exception ex)
             {

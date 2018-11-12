@@ -1,31 +1,14 @@
-﻿using FubuCsProjFile.MSBuild;
-
-namespace Arbor.X.Core.Tools.MSBuild
+﻿namespace Arbor.Build.Core.Tools.MSBuild
 {
-    public class WebSolutionProject
+    public class WebSolutionProject : SolutionProject
     {
         public WebSolutionProject(
             string fullPath,
             string projectName,
             string projectDirectory,
             MSBuildProject msbuildProject,
-            Framework framework)
+            Framework framework) : base(fullPath, projectName, projectDirectory, msbuildProject, framework)
         {
-            FullPath = fullPath;
-            ProjectName = projectName;
-            ProjectDirectory = projectDirectory;
-            Framework = framework;
-            BuildProject = msbuildProject;
         }
-
-        public string FullPath { get; }
-
-        public string ProjectName { get; }
-
-        public Framework Framework { get; }
-
-        public string ProjectDirectory { get; }
-
-        public MSBuildProject BuildProject { get; }
     }
 }

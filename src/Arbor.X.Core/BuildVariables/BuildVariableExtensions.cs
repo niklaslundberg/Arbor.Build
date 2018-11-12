@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Linq;
 using Arbor.Defensive;
 
-namespace Arbor.X.Core.BuildVariables
+namespace Arbor.Build.Core.BuildVariables
 {
     public static class BuildVariableExtensions
     {
@@ -70,20 +70,46 @@ namespace Arbor.X.Core.BuildVariables
 
             string value = buildVariables.GetVariableValueOrDefault(
                 key,
-                defaultValue.ToString());
+                string.Empty);
 
             if (string.IsNullOrWhiteSpace(value))
             {
                 return defaultValue;
             }
 
-            bool parsed;
+            if (!bool.TryParse(
+                value,
+                out bool parsed))
+            {
+                return defaultValue;
+            }
+
+            return parsed;
+        }
+
+        public static bool? GetOptionalBooleanByKey(
+            this IReadOnlyCollection<IVariable> buildVariables,
+            string key)
+        {
+            if (!buildVariables.HasKey(key))
+            {
+                return null;
+            }
+
+            string value = buildVariables.GetVariableValueOrDefault(
+                key,
+                default);
+
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return null;
+            }
 
             if (!bool.TryParse(
                 value,
-                out parsed))
+                out bool parsed))
             {
-                return defaultValue;
+                return null;
             }
 
             return parsed;
@@ -105,8 +131,7 @@ namespace Arbor.X.Core.BuildVariables
 
                 if (!string.IsNullOrWhiteSpace(value))
                 {
-                    int parsed;
-                    if (int.TryParse(value, out parsed))
+                    if (int.TryParse(value, out int parsed))
                     {
                         returnValue = parsed;
                     }
@@ -145,11 +170,9 @@ namespace Arbor.X.Core.BuildVariables
                 return defaultValue;
             }
 
-            long parsed;
-
             if (!long.TryParse(
                 value,
-                out parsed))
+                out long parsed))
             {
                 return defaultValue;
             }
@@ -171,11 +194,9 @@ namespace Arbor.X.Core.BuildVariables
                 return defaultValue;
             }
 
-            bool parsed;
-
             if (!bool.TryParse(
                 variable.Value,
-                out parsed))
+                out bool parsed))
             {
                 return defaultValue;
             }
@@ -197,11 +218,9 @@ namespace Arbor.X.Core.BuildVariables
                 return defaultValue;
             }
 
-            int parsed;
-
             if (!int.TryParse(
                 variable.Value,
-                out parsed))
+                out int parsed))
             {
                 return defaultValue;
             }
@@ -223,11 +242,9 @@ namespace Arbor.X.Core.BuildVariables
                 return defaultValue;
             }
 
-            long parsed;
-
             if (!long.TryParse(
                 variable.Value,
-                out parsed))
+                out long parsed))
             {
                 return defaultValue;
             }

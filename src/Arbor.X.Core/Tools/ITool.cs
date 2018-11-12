@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Arbor.Build.Core.BuildVariables;
 using Arbor.Processing.Core;
-using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.Logging;
+using Serilog;
 
-namespace Arbor.X.Core.Tools
+namespace Arbor.Build.Core.Tools
 {
     /// <summary>
     /// ITool represents an arbitrary tool than can execute basically anything.
@@ -23,5 +23,10 @@ namespace Arbor.X.Core.Tools
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken);
+    }
+
+    public interface ITestRunnerTool : ITool
+    {
+
     }
 }

@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.IO;
 using Arbor.Exceptions;
 using Arbor.Processing.Core;
-using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.IO;
-using Arbor.X.Core.Logging;
 using JetBrains.Annotations;
+using Serilog;
 
-namespace Arbor.X.Core.Tools.Cleanup
+namespace Arbor.Build.Core.Tools.Cleanup
 {
     [Priority(41)]
     [UsedImplicitly]
@@ -24,11 +24,11 @@ namespace Arbor.X.Core.Tools.Cleanup
             bool cleanupBeforeBuildEnabled =
                 buildVariables.GetBooleanByKey(
                     WellKnownVariables.CleanupArtifactsBeforeBuildEnabled,
-                    false);
+                    true);
 
             if (!cleanupBeforeBuildEnabled)
             {
-                logger.WriteVerbose("Cleanup before build is disabled");
+                logger.Verbose("Cleanup before build is disabled");
                 return ExitCode.Success;
             }
 
@@ -41,7 +41,7 @@ namespace Arbor.X.Core.Tools.Cleanup
                 return ExitCode.Success;
             }
 
-            int maxAttempts = 5;
+            const int maxAttempts = 5;
 
             int attemptCount = 1;
 
@@ -53,14 +53,16 @@ namespace Arbor.X.Core.Tools.Cleanup
 
                 if (result)
                 {
-                    logger.WriteVerbose($"Cleanup succeeded on attempt {attemptCount}");
+                    logger.Verbose("Cleanup succeeded on attempt {AttemptCount}", attemptCount);
                     cleanupSucceeded = true;
                 }
                 else
                 {
-                    logger.WriteVerbose(
-                        $"Attempt {attemptCount} of {maxAttempts} failed, could not cleanup the artifacts folder, retrying");
-                    await Task.Delay(TimeSpan.FromMilliseconds(50), cancellationToken);
+                    logger.Verbose(
+                        "Attempt {AttemptCount} of {MaxAttempts} failed, could not cleanup the artifacts folder, retrying",
+                        attemptCount,
+                        maxAttempts);
+                    await Task.Delay(TimeSpan.FromMilliseconds(50), cancellationToken).ConfigureAwait(false);
                 }
 
                 attemptCount++;
@@ -98,8 +100,8 @@ namespace Arbor.X.Core.Tools.Cleanup
 
         private static void DoCleanup(ILogger logger, DirectoryInfo artifactsDirectory)
         {
-            logger.Write(
-                $"Artifact cleanup is enabled, removing all files and folders in '{artifactsDirectory.FullName}'");
+            logger.Information("Artifact cleanup is enabled, removing all files and folders in '{FullName}'",
+                artifactsDirectory.FullName);
 
             artifactsDirectory.DeleteIfExists();
             artifactsDirectory.Refresh();

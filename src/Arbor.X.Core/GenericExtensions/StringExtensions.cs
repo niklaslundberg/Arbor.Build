@@ -1,24 +1,40 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using Arbor.X.Core.Parsing;
+using JetBrains.Annotations;
 
-namespace Arbor.X.Core.GenericExtensions
+namespace Arbor.Build.Core.GenericExtensions
 {
     public static class StringExtensions
     {
-        public static ParseResult<string> TryParseString(this string value, string defaultValue = "")
+        public static bool StartsWithAny(
+            [NotNull] this string value,
+            [ItemNotNull] [NotNull] IReadOnlyCollection<string> whatToFind,
+            StringComparison stringComparison)
         {
             if (value == null)
             {
-                return ParseResult<string>.Create(defaultValue, false, null);
+                throw new ArgumentNullException(nameof(value));
             }
 
+            if (whatToFind == null)
+            {
+                throw new ArgumentNullException(nameof(whatToFind));
+            }
+
+            return whatToFind.Any(current => value.StartsWith(current, stringComparison));
+        }
+
+        public static bool TryParseString(this string value, out string result, string defaultValue = "")
+        {
             if (string.IsNullOrWhiteSpace(value))
             {
-                return ParseResult<string>.Create(defaultValue, false, value);
+                result = defaultValue;
+                return false;
             }
 
-            return ParseResult<string>.Create(value, true, value);
+            result = value;
+            return true;
         }
 
         public static string LeftPad(this string value, int totaltLenght, char character)

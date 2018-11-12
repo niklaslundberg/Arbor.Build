@@ -1,6 +1,6 @@
 ﻿using Xunit;
 
-namespace Arbor.X.Tests.Integration.Tests
+namespace Arbor.Build.Tests.Integration.Tests
 {
     public class XunitDummy
     {

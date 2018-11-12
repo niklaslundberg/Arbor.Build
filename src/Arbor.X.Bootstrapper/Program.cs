@@ -1,20 +1,27 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Arbor.Processing.Core;
-using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.Logging;
+using Serilog;
+using Serilog.Core;
 
-namespace Arbor.X.Bootstrapper
+namespace Arbor.Build.Bootstrapper
 {
-    internal class Program
+    internal static class Program
     {
-        private static int Main(string[] args)
+        private static async Task<int> Main(string[] args)
         {
-            LogLevel logLevel = LogLevel.TryParse(Environment.GetEnvironmentVariable(WellKnownVariables.LogLevel));
+            Logger logger = new LoggerConfiguration()
+                .WriteTo.Console(outputTemplate: "{Message:lj}{NewLine}{Exception}")
+                .CreateLogger();
 
-            Task<ExitCode> startTask = new Bootstrapper(logLevel).StartAsync(args);
+            var bootstrapper = new Core.Bootstrapper.Bootstrapper(logger);
 
-            ExitCode exitCode = startTask.Result;
+            ExitCode exitCode = await bootstrapper.StartAsync(args).ConfigureAwait(false);
+
+            if (logger is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
 
             return exitCode.Result;
         }

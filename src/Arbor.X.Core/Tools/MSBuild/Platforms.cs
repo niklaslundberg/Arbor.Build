@@ -1,7 +1,7 @@
 ﻿using System;
 using JetBrains.Annotations;
 
-namespace Arbor.X.Core.Tools.MSBuild
+namespace Arbor.Build.Core.Tools.MSBuild
 {
     public static class Platforms
     {

@@ -1,20 +1,21 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.IO;
-using Arbor.X.Core.Logging;
+using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.IO;
 using JetBrains.Annotations;
+using Serilog;
 
-namespace Arbor.X.Core.Tools.Cleanup
+namespace Arbor.Build.Core.Tools.Cleanup
 {
     [UsedImplicitly]
     public class ArtifactsVariableProvider : IVariableProvider
     {
         public int Order => 2;
 
-        public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(
+        public Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
@@ -27,13 +28,13 @@ namespace Arbor.X.Core.Tools.Cleanup
 
             var variables = new List<IVariable>
             {
-                new EnvironmentVariable(
+                new BuildVariable(
                     WellKnownVariables.Artifacts,
                     artifactsDirectory.FullName),
-                new EnvironmentVariable(WellKnownVariables.ReportPath, testReportsDirectory.FullName)
+                new BuildVariable(WellKnownVariables.ReportPath, testReportsDirectory.FullName)
             };
 
-            return Task.FromResult<IEnumerable<IVariable>>(variables);
+            return Task.FromResult(variables.ToImmutableArray());
         }
     }
 }

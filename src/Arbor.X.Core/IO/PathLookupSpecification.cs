@@ -1,7 +1,8 @@
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using Arbor.Defensive.Collections;
 
-namespace Arbor.X.Core.IO
+namespace Arbor.Build.Core.IO
 {
     public class PathLookupSpecification
     {
@@ -19,14 +20,14 @@ namespace Arbor.X.Core.IO
             IgnoredFileNameParts = ignoredFileNameParts.SafeToReadOnlyCollection();
         }
 
-        public IReadOnlyCollection<string> IgnoredFileStartsWithPatterns { get; }
+        public ImmutableArray<string> IgnoredFileStartsWithPatterns { get; }
 
-        public IReadOnlyCollection<string> IgnoredDirectoryStartsWithPatterns { get; }
+        public ImmutableArray<string> IgnoredDirectoryStartsWithPatterns { get; }
 
-        public IReadOnlyCollection<string> IgnoredDirectorySegments { get; }
+        public ImmutableArray<string> IgnoredDirectorySegments { get; }
 
-        public IReadOnlyCollection<string> IgnoredDirectorySegmentParts { get; }
+        public ImmutableArray<string> IgnoredDirectorySegmentParts { get; }
 
-        public IReadOnlyCollection<string> IgnoredFileNameParts { get; }
+        public ImmutableArray<string> IgnoredFileNameParts { get; }
     }
 }

@@ -4,16 +4,15 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.IO;
 using Arbor.Defensive.Collections;
 using Arbor.Processing.Core;
 using Arbor.Sorbus.Core;
-using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.IO;
 using JetBrains.Annotations;
-using DelegateLogger = Arbor.Sorbus.Core.DelegateLogger;
-using ILogger = Arbor.X.Core.Logging.ILogger;
+using Serilog;
 
-namespace Arbor.X.Core.Tools.Versioning
+namespace Arbor.Build.Core.Tools.Versioning
 {
     [UsedImplicitly]
     [Priority(200)]
@@ -31,27 +30,18 @@ namespace Arbor.X.Core.Tools.Versioning
 
             if (!assemblyVersionPatchingEnabled)
             {
-                logger.WriteWarning("Assembly version patching is disabled");
+                logger.Warning("Assembly version patching is disabled");
                 return Task.FromResult(ExitCode.Success);
             }
 
-            var delegateLogger = new DelegateLogger(
-                logger.WriteError,
-                logger.WriteWarning,
-                logger.Write,
-                logger.WriteVerbose,
-                logger.WriteDebug)
-            {
-                LogLevel = Sorbus.Core.LogLevel.TryParse(logger.LogLevel.Level)
-            };
-
-            var app = new AssemblyPatcherApp(delegateLogger);
+            var app = new AssemblyPatcherApp();
 
             _filePattern = buildVariables.GetVariableValueOrDefault(
                 WellKnownVariables.AssemblyFilePatchingFilePattern,
                 "AssemblyInfo.cs");
 
-            logger.WriteVerbose($"Using assembly version file pattern '{_filePattern}' to lookup files to patch");
+            logger.Verbose("Using assembly version file pattern '{FilePattern}' to lookup files to patch",
+                _filePattern);
 
             string sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
 
@@ -61,11 +51,11 @@ namespace Arbor.X.Core.Tools.Versioning
 
             if (netAssemblyVersionVar == null || string.IsNullOrWhiteSpace(netAssemblyVersionVar.Value))
             {
-                logger.WriteWarning(
-                    $"The build variable {WellKnownVariables.NetAssemblyVersion} is not defined or empty");
+                logger.Warning("The build variable {NetAssemblyVersion} is not defined or empty",
+                    WellKnownVariables.NetAssemblyVersion);
                 netAssemblyVersion = "0.0.1.0";
 
-                logger.WriteWarning($"Using fall-back version {netAssemblyVersion}");
+                logger.Warning("Using fall-back version {NetAssemblyVersion}", netAssemblyVersion);
             }
             else
             {
@@ -80,11 +70,11 @@ namespace Arbor.X.Core.Tools.Versioning
 
             if (string.IsNullOrWhiteSpace(netAssemblyFileVersionVar?.Value))
             {
-                logger.WriteWarning(
-                    $"The build variable {WellKnownVariables.NetAssemblyFileVersion} is not defined or empty");
+                logger.Warning("The build variable {NetAssemblyFileVersion} is not defined or empty",
+                    WellKnownVariables.NetAssemblyFileVersion);
                 netAssemblyFileVersion = "0.0.1.1";
 
-                logger.WriteWarning($"Using fall-back version {netAssemblyFileVersion}");
+                logger.Warning("Using fall-back version {NetAssemblyFileVersion}", netAssemblyFileVersion);
             }
             else
             {
@@ -119,8 +109,11 @@ namespace Arbor.X.Core.Tools.Versioning
 
             try
             {
-                logger.WriteVerbose(
-                    $"Patching assembly info files with assembly version {assemblyVersion}, assembly file version {assemblyFileVersion} for directory source root directory '{sourceRoot}'");
+                logger.Verbose(
+                    "Patching assembly info files with assembly version {AssemblyVersion}, assembly file version {AssemblyFileVersion} for directory source root directory '{SourceRoot}'",
+                    assemblyVersion,
+                    assemblyFileVersion,
+                    sourceRoot);
 
                 var sourceDirectory = new DirectoryInfo(sourceRoot);
 
@@ -132,12 +125,12 @@ namespace Arbor.X.Core.Tools.Versioning
                     .Select(file => new AssemblyInfoFile(file.FullName))
                     .ToReadOnlyCollection();
 
-                logger.WriteDebug(string.Format(
-                    "Using file pattern '{0}' to find assembly info files. Found these files: [{3}] {1}{2}",
+                logger.Debug(
+                    "Using file pattern '{_filePattern}' to find assembly info files. Found these files: [{Count}] {NewLine}{V}",
                     _filePattern,
+                    assemblyFiles.Count,
                     Environment.NewLine,
-                    string.Join(Environment.NewLine, assemblyFiles.Select(item => " * " + item.FullPath)),
-                    assemblyFiles.Count));
+                    string.Join(Environment.NewLine, assemblyFiles.Select(item => " * " + item.FullPath)));
 
                 app.Patch(
                     new AssemblyVersion(assemblyVersion),
@@ -148,7 +141,7 @@ namespace Arbor.X.Core.Tools.Versioning
             }
             catch (Exception ex)
             {
-                logger.WriteError($"Could not patch assembly infos. {ex}");
+                logger.Error(ex, "Could not patch assembly infos.");
                 return Task.FromResult(ExitCode.Failure);
             }
 

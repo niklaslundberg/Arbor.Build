@@ -4,14 +4,14 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.ProcessUtils;
+using Arbor.Build.Core.Tools.EnvironmentVariables;
 using Arbor.Processing.Core;
-using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.Logging;
-using Arbor.X.Core.ProcessUtils;
-using Arbor.X.Core.Tools.EnvironmentVariables;
 using JetBrains.Annotations;
+using Serilog;
 
-namespace Arbor.X.Core.Tools.NuGet
+namespace Arbor.Build.Core.Tools.NuGet
 {
     [Priority(52)]
     [UsedImplicitly]
@@ -41,7 +41,7 @@ namespace Arbor.X.Core.Tools.NuGet
 
             if (!fileExists)
             {
-                variableBuilder.AppendLine($"NuGet.exe path '{nuGetExePath}' does not exist");
+                variableBuilder.Append("NuGet.exe path '").Append(nuGetExePath).AppendLine("' does not exist");
             }
             else
             {
@@ -50,15 +50,15 @@ namespace Arbor.X.Core.Tools.NuGet
 
                 if (nuGetUpdateEnabled)
                 {
-                    logger.WriteVerbose(
-                        $"NuGet self update is enabled by variable '{WellKnownVariables.NuGetSelfUpdateEnabled}'");
+                    logger.Verbose("NuGet self update is enabled by variable '{NuGetSelfUpdateEnabled}'",
+                        WellKnownVariables.NuGetSelfUpdateEnabled);
 
-                    await EnsureMinNuGetVersionAsync(nuGetExePath, logger);
+                    await EnsureMinNuGetVersionAsync(nuGetExePath, logger).ConfigureAwait(false);
                 }
                 else
                 {
-                    logger.WriteVerbose(
-                        $"NuGet self update is disabled by variable '{WellKnownVariables.NuGetSelfUpdateEnabled}'");
+                    logger.Verbose("NuGet self update is disabled by variable '{NuGetSelfUpdateEnabled}'",
+                        WellKnownVariables.NuGetSelfUpdateEnabled);
                 }
             }
 
@@ -67,59 +67,65 @@ namespace Arbor.X.Core.Tools.NuGet
 
         private async Task EnsureMinNuGetVersionAsync(string nuGetExePath, ILogger logger)
         {
-            void NullLogger(string message, string category)
-            {
-            }
-
             var standardOut = new List<string>();
-            ILogger versionLogger = new DelegateLogger(
-                (message, category) => standardOut.Add(message),
-                NullLogger,
-                NullLogger);
+            ILogger versionLogger = InMemoryLoggerHelper.CreateInMemoryLogger(message => standardOut.Add(message));
 
-            IEnumerable<string> args = new List<string>();
-            ExitCode versionExitCode = await ProcessHelper.ExecuteAsync(nuGetExePath, args, versionLogger);
-
-            if (!versionExitCode.IsSuccess)
+            try
             {
-                logger.WriteWarning($"NuGet version exit code was {versionExitCode}");
-                return;
-            }
+                IEnumerable<string> args = new List<string>();
+                ExitCode versionExitCode = await ProcessHelper.ExecuteAsync(nuGetExePath, args, versionLogger)
+                    .ConfigureAwait(false);
 
-            string nugetVersion = "NuGet Version: ";
-            string versionLine =
-                standardOut.FirstOrDefault(
-                    line => line.StartsWith(nugetVersion, StringComparison.InvariantCultureIgnoreCase));
-
-            if (string.IsNullOrWhiteSpace(versionLine))
-            {
-                logger.WriteWarning("Could not ensure NuGet version, no version line in NuGet output");
-                return;
-            }
-
-            char majorNuGetVersion = versionLine.Substring(nugetVersion.Length).FirstOrDefault();
-
-            if (majorNuGetVersion == '2')
-            {
-                IEnumerable<string> updateSelfArgs = new List<string> { "update", "-self" };
-                ExitCode exitCode = await ProcessHelper.ExecuteAsync(nuGetExePath, updateSelfArgs, logger);
-
-                if (!exitCode.IsSuccess)
+                if (!versionExitCode.IsSuccess)
                 {
-                    logger.WriteWarning($"The NuGet version could not be determined, exit code {exitCode}");
+                    logger.Warning("NuGet version exit code was {VersionExitCode}", versionExitCode);
+                    return;
                 }
 
-                return;
-            }
+                const string nugetVersion = "NuGet Version: ";
+                string versionLine =
+                    standardOut.FirstOrDefault(
+                        line => line.StartsWith(nugetVersion, StringComparison.InvariantCultureIgnoreCase));
 
-            if (majorNuGetVersion != '3')
+                if (string.IsNullOrWhiteSpace(versionLine))
+                {
+                    logger.Warning("Could not ensure NuGet version, no version line in NuGet output");
+                    return;
+                }
+
+                char majorNuGetVersion = versionLine.Substring(nugetVersion.Length).FirstOrDefault();
+
+                if (majorNuGetVersion == '2')
+                {
+                    IEnumerable<string> updateSelfArgs = new List<string> { "update", "-self" };
+                    ExitCode exitCode = await ProcessHelper.ExecuteAsync(nuGetExePath, updateSelfArgs, logger)
+                        .ConfigureAwait(false);
+
+                    if (!exitCode.IsSuccess)
+                    {
+                        logger.Warning("The NuGet version could not be determined, exit code {ExitCode}", exitCode);
+                    }
+
+                    return;
+                }
+
+                if (majorNuGetVersion != '3')
+                {
+                    logger.Warning(
+                        "NuGet version could not be determined, major version starts with character {MajorNuGetVersion}",
+                        majorNuGetVersion);
+                    return;
+                }
+
+                logger.Verbose("NuGet major version is {MajorNuGetVersion}", majorNuGetVersion);
+            }
+            finally
             {
-                logger.WriteWarning(
-                    $"NuGet version could not be determined, major version starts with character {majorNuGetVersion}");
-                return;
+                if (versionLogger is IDisposable disposable)
+                {
+                    disposable.Dispose();
+                }
             }
-
-            logger.WriteVerbose($"NuGet major version is {majorNuGetVersion}");
         }
     }
 }

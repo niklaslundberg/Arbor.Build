@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Arbor.X.Core.Tools.MSBuild
+namespace Arbor.Build.Core.Tools.MSBuild
 {
     public sealed class MSBuildVerbositoyLevel
     {
@@ -10,6 +10,8 @@ namespace Arbor.X.Core.Tools.MSBuild
         {
             Level = level;
         }
+
+        public string Level { get; }
 
         public static MSBuildVerbositoyLevel Normal => new MSBuildVerbositoyLevel("normal");
 
@@ -31,8 +33,6 @@ namespace Arbor.X.Core.Tools.MSBuild
                 yield return Quiet;
             }
         }
-
-        public string Level { get; }
 
         public static MSBuildVerbositoyLevel TryParse(string value)
         {

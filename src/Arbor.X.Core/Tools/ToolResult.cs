@@ -1,12 +1,13 @@
 using System;
+using JetBrains.Annotations;
 
-namespace Arbor.X.Core.Tools
+namespace Arbor.Build.Core.Tools
 {
     public class ToolResult
     {
         public ToolResult(
-            ToolWithPriority toolWithPriority,
-            ToolResultType resultType,
+            [NotNull] ToolWithPriority toolWithPriority,
+            [NotNull] ToolResultType resultType,
             string message = null,
             TimeSpan executionTime = default)
         {
@@ -20,8 +21,8 @@ namespace Arbor.X.Core.Tools
                 throw new ArgumentNullException(nameof(resultType));
             }
 
-            ToolWithPriority = toolWithPriority;
-            ResultType = resultType;
+            ToolWithPriority = toolWithPriority ?? throw new ArgumentNullException(nameof(toolWithPriority));
+            ResultType = resultType ?? throw new ArgumentNullException(nameof(resultType));
             Message = message;
             ExecutionTime = executionTime;
         }

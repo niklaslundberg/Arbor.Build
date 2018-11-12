@@ -3,22 +3,23 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Arbor.Build.Core.IO;
+using Arbor.Build.Core.Tools.Testing;
 using Arbor.Processing.Core;
-using Arbor.X.Core.IO;
-using Arbor.X.Core.Logging;
-using Arbor.X.Core.Tools.Testing;
 using Machine.Specifications;
+using Serilog;
+using Serilog.Core;
 
-namespace Arbor.X.Tests.Integration.ProcessRunner
+namespace Arbor.Build.Tests.Integration.ProcessRunner
 {
     [Subject(typeof(Processing.ProcessRunner))]
     [Tags(MSpecInternalConstants.RecursiveArborXTest)]
     public class when_running_a_process_longer_than_timeout
     {
         static string testPath;
-        static ConsoleLogger logger;
         static ExitCode exitCode = new ExitCode(99);
         static TaskCanceledException exception;
+        static ILogger logger = Logger.None;
 
         Cleanup after = () =>
         {
@@ -41,7 +42,6 @@ EXIT /b 2
 ";
 
             File.WriteAllText(testPath, batchContent, Encoding.Default);
-            logger = new ConsoleLogger("TEST ");
         };
 
         Because of = () => RunAsync().Wait();
@@ -59,11 +59,11 @@ EXIT /b 2
                 exitCode =
                     await
                         Processing.ProcessRunner.ExecuteAsync(testPath,
-                            standardOutLog: (message, prefix) => logger.Write(message, "STANDARD"),
-                            standardErrorAction: (message, prefix) => logger.WriteError(message, "ERROR"),
-                            toolAction: (message, prefix) => logger.Write(message, "TOOL"),
-                            verboseAction: (message, prefix) => logger.Write(message, "VERBOSE"),
-                            cancellationToken: cancellationTokenSource.Token);
+                            standardOutLog: (message, prefix) => logger.Information(message, "STANDARD"),
+                            standardErrorAction: (message, prefix) => logger.Error(message, "ERROR"),
+                            toolAction: (message, prefix) => logger.Information(message, "TOOL"),
+                            verboseAction: (message, prefix) => logger.Information(message, "VERBOSE"),
+                            cancellationToken: cancellationTokenSource.Token).ConfigureAwait(false);
             }
             catch (TaskCanceledException ex)
             {

@@ -1,4 +1,4 @@
-﻿namespace Arbor.X.Core.BuildVariables
+﻿namespace Arbor.Build.Core.BuildVariables
 {
     public interface IVariable
     {

@@ -1,15 +1,16 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
-using Arbor.X.Core.Logging;
+using Serilog;
 
-namespace Arbor.X.Core.BuildVariables
+namespace Arbor.Build.Core.BuildVariables
 {
     public interface IVariableProvider
     {
         int Order { get; }
 
-        Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(
+        Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken);

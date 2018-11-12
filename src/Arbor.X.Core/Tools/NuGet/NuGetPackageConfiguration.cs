@@ -1,16 +1,17 @@
 ﻿using System;
 using System.IO;
-using Arbor.X.Core.IO;
+using Arbor.Build.Core.IO;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
+using NuGet.Versioning;
 
-namespace Arbor.X.Core.Tools.NuGet
+namespace Arbor.Build.Core.Tools.NuGet
 {
     public class NuGetPackageConfiguration
     {
         public NuGetPackageConfiguration(
             [NotNull] string configuration,
-            [NotNull] string version,
+            [NotNull] SemanticVersion version,
             [NotNull] string packagesDirectory,
             [NotNull] string nugetExePath,
             string suffix = null,
@@ -29,11 +30,6 @@ namespace Arbor.X.Core.Tools.NuGet
             if (string.IsNullOrWhiteSpace(configuration))
             {
                 throw new ArgumentNullException(nameof(configuration));
-            }
-
-            if (string.IsNullOrWhiteSpace(version))
-            {
-                throw new ArgumentNullException(nameof(version));
             }
 
             if (string.IsNullOrWhiteSpace(packagesDirectory))
@@ -68,7 +64,7 @@ namespace Arbor.X.Core.Tools.NuGet
             NuGetPackageVersionOverride = nuGetPackageVersionOverride;
             AllowManifestReWrite = allowManifestReWrite;
             NuGetSymbolPackagesEnabled = nuGetSymbolPackagesEnabled;
-            Version = version;
+            Version = version ?? throw new ArgumentNullException(nameof(version));
             PackagesDirectory = packagesDirectory;
             NuGetExePath = nugetExePath;
             Suffix = suffix;
@@ -92,7 +88,7 @@ namespace Arbor.X.Core.Tools.NuGet
 
         public string BranchName { get; }
 
-        public string Version { get; }
+        public SemanticVersion Version { get; }
 
         public string Suffix { get; }
 

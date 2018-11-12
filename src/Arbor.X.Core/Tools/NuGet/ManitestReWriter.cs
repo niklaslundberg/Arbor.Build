@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Arbor.X.Core.Logging;
 using NuGet.Packaging;
+using Serilog;
 
-namespace Arbor.X.Core.Tools.NuGet
+namespace Arbor.Build.Core.Tools.NuGet
 {
     public class ManitestReWriter
     {
@@ -41,22 +41,25 @@ namespace Arbor.X.Core.Tools.NuGet
             {
                 var packageBuilder = new PackageBuilder(stream, baseDir.FullName);
 
-                logger?.WriteVerbose("Using starts with-pattern '" + tagPrefix + "' to exclude tags from NuSpec");
+                logger?.Verbose("Using starts with-pattern '{TagPrefix}' to exclude tags from NuSpec", tagPrefix);
 
-                string[] tagsToRemove = packageBuilder.Tags.Where(tag => tag.StartsWith(tagPrefix, StringComparison.Ordinal)).ToArray();
+                string[] tagsToRemove = packageBuilder.Tags
+                    .Where(tag => tag.StartsWith(tagPrefix, StringComparison.Ordinal)).ToArray();
 
-                if (!tagsToRemove.Any())
+                if (tagsToRemove.Length == 0)
                 {
-                    logger?.WriteVerbose($"No tags to remove from NuSpec '{nuspecFullPath}'");
+                    logger?.Verbose("No tags to remove from NuSpec '{NuspecFullPath}'", nuspecFullPath);
                 }
 
                 foreach (string tagToRemove in tagsToRemove)
                 {
-                    logger?.WriteVerbose($"Removing tag '{tagToRemove}' from NuSpec '{nuspecFullPath}'");
+                    logger?.Verbose("Removing tag '{TagToRemove}' from NuSpec '{NuspecFullPath}'",
+                        tagToRemove,
+                        nuspecFullPath);
                     packageBuilder.Tags.Remove(tagToRemove);
                 }
 
-                if (tagsToRemove.Any())
+                if (tagsToRemove.Length > 0)
                 {
                     using (var outStream = new FileStream(tempFile, FileMode.CreateNew))
                     {
@@ -68,10 +71,12 @@ namespace Arbor.X.Core.Tools.NuGet
 
             if (isReWritten)
             {
-                logger?.WriteVerbose($"Deleting NuSpec file '{nuspecFullPath}'");
+                logger?.Verbose("Deleting NuSpec file '{NuspecFullPath}'", nuspecFullPath);
                 File.Delete(nuspecFullPath);
 
-                logger?.WriteVerbose($"Moving NuSpec temp copy '{tempFile}' to file '{nuspecFullPath}'");
+                logger?.Verbose("Moving NuSpec temp copy '{TempFile}' to file '{NuspecFullPath}'",
+                    tempFile,
+                    nuspecFullPath);
                 File.Move(tempFile, nuspecFullPath);
             }
 

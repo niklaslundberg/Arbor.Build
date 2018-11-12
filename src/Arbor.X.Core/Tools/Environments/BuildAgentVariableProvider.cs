@@ -1,23 +1,21 @@
-using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.GenericExtensions;
-using Arbor.X.Core.Logging;
-using Arbor.X.Core.Parsing;
-using Arbor.X.Core.Tools.Cleanup;
+using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.Tools.Cleanup;
 using JetBrains.Annotations;
+using Serilog;
 
-namespace Arbor.X.Core.Tools.Environments
+namespace Arbor.Build.Core.Tools.Environments
 {
     [UsedImplicitly]
     public class BuildAgentVariableProvider : IVariableProvider
     {
         public int Order => VariableProviderOrder.Default;
 
-        public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(
+        public Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
@@ -31,31 +29,27 @@ namespace Arbor.X.Core.Tools.Environments
                 WellKnownVariables.TeamCity.ExternalTools_TeamCity_TeamCityVersion
             };
 
-            ParseResult<bool> isBuildAgent =
-                Environment.GetEnvironmentVariable(WellKnownVariables.IsRunningOnBuildAgent)
-                    .TryParseBool(false);
+            bool isBuildAgent = buildVariables.GetBooleanByKey(WellKnownVariables.IsRunningOnBuildAgent, false);
 
-            if (isBuildAgent.Parsed)
+            if (isBuildAgent)
             {
-                logger.WriteVerbose(
-                    $"Successfully parsed environment variable '{WellKnownVariables.IsRunningOnBuildAgent}' with value '{isBuildAgent.OriginalValue}' as boolean with value: {isBuildAgent.Value}");
-                isBuildAgentValue = isBuildAgent.Value;
+                isBuildAgentValue = true;
             }
             else
             {
                 isBuildAgentValue =
                     buildAgentEnvironmentVariables.Any(
-                        buildAgent => Environment.GetEnvironmentVariable(buildAgent).TryParseString().Parsed);
+                        buildAgent => buildVariables.GetOptionalBooleanByKey(buildAgent) == true);
             }
 
             var variables = new List<IVariable>
             {
-                new EnvironmentVariable(
+                new BuildVariable(
                     WellKnownVariables.IsRunningOnBuildAgent,
                     isBuildAgentValue.ToString().ToLowerInvariant())
             };
 
-            return Task.FromResult<IEnumerable<IVariable>>(variables);
+            return Task.FromResult(variables.ToImmutableArray());
         }
     }
 }

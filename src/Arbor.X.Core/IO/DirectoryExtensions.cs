@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using Arbor.Defensive.Collections;
 using Arbor.Exceptions;
 
-namespace Arbor.X.Core.IO
+namespace Arbor.Build.Core.IO
 {
     public static class DirectoryExtensions
     {
@@ -89,10 +90,13 @@ namespace Arbor.X.Core.IO
                     }
 
                     directoryInfo.Refresh();
+
                     if (directoryInfo.Exists)
                     {
                         directoryInfo.Delete(recursive);
                     }
+
+                    directoryInfo.Refresh();
                 }
             }
             catch (UnauthorizedAccessException ex)
@@ -106,7 +110,7 @@ namespace Arbor.X.Core.IO
             }
         }
 
-        public static IReadOnlyCollection<FileInfo> GetFilesRecursive(
+        public static ImmutableArray<FileInfo> GetFilesRecursive(
             this DirectoryInfo directoryInfo,
             IEnumerable<string> fileExtensions = null,
             PathLookupSpecification pathLookupSpecification = null,
@@ -124,18 +128,19 @@ namespace Arbor.X.Core.IO
 
             PathLookupSpecification usedPathLookupSpecification =
                 pathLookupSpecification ?? DefaultPaths.DefaultPathLookupSpecification;
-            IEnumerable<string> usedFileExtensions = fileExtensions ?? new List<string>();
+
+            ImmutableArray<string> usedFileExtensions = fileExtensions.SafeToReadOnlyCollection();
 
             if (usedPathLookupSpecification.IsBlackListed(directoryInfo.FullName, rootDir).Item1)
             {
-                return new List<FileInfo>();
+                return ImmutableArray<FileInfo>.Empty;
             }
 
             IReadOnlyCollection<string> invalidFileExtensions = usedFileExtensions
                 .Where(fileExtension => !fileExtension.StartsWith(".", StringComparison.OrdinalIgnoreCase))
                 .ToReadOnlyCollection();
 
-            if (invalidFileExtensions.Any())
+            if (invalidFileExtensions.Count > 0)
             {
                 throw new ArgumentException("File extensions must start with '.', eg .txt");
             }
@@ -159,10 +164,9 @@ namespace Arbor.X.Core.IO
             DirectoryInfo[] subDirectories = directoryInfo.GetDirectories();
 
             files.AddRange(subDirectories
-                .SelectMany(dir => dir.GetFilesRecursive(fileExtensions, usedPathLookupSpecification, rootDir))
-                .ToList());
+                .SelectMany(dir => dir.GetFilesRecursive(usedFileExtensions, usedPathLookupSpecification, rootDir)));
 
-            return files;
+            return files.ToImmutableArray();
         }
     }
 }

@@ -1,19 +1,33 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
-using Arbor.Defensive.Collections;
-using Arbor.X.Core.Logging;
 using Autofac;
+using JetBrains.Annotations;
+using Serilog;
 
-namespace Arbor.X.Core.Tools
+namespace Arbor.Build.Core.Tools
 {
     public static class ToolFinder
     {
-        public static IReadOnlyCollection<ToolWithPriority> GetTools(ILifetimeScope lifetimeScope, ILogger logger)
+        public static ImmutableArray<ToolWithPriority> GetTools(
+            [NotNull] ILifetimeScope lifetimeScope,
+            [NotNull] ILogger logger)
         {
-            IReadOnlyCollection<ITool> tools = lifetimeScope.Resolve<IEnumerable<ITool>>().SafeToReadOnlyCollection();
+            if (lifetimeScope == null)
+            {
+                throw new ArgumentNullException(nameof(lifetimeScope));
+            }
 
-            List<ToolWithPriority> prioritizedTools = tools
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            var tools = lifetimeScope.Resolve<IReadOnlyCollection<ITool>>();
+
+            ImmutableArray<ToolWithPriority> prioritizedTools = tools
                 .Select(tool =>
                 {
                     PriorityAttribute priorityAttribute =
@@ -29,9 +43,9 @@ namespace Arbor.X.Core.Tools
                     return new ToolWithPriority(tool, priority, runAlways);
                 })
                 .OrderBy(item => item.Priority)
-                .ToList();
+                .ToImmutableArray();
 
-            logger.WriteVerbose($"Found {prioritizedTools.Count} prioritized tools");
+            logger.Verbose("Found {Count} prioritized tools", prioritizedTools.Length);
 
             return prioritizedTools;
         }

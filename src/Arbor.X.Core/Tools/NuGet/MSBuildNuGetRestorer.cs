@@ -3,13 +3,14 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.IO;
+using Arbor.Build.Core.ProcessUtils;
 using Arbor.Processing.Core;
-using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.Logging;
-using Arbor.X.Core.ProcessUtils;
 using JetBrains.Annotations;
+using Serilog;
 
-namespace Arbor.X.Core.Tools.NuGet
+namespace Arbor.Build.Core.Tools.NuGet
 {
     [Priority(101)]
     [UsedImplicitly]
@@ -22,10 +23,11 @@ namespace Arbor.X.Core.Tools.NuGet
         {
             bool enabled = buildVariables.GetBooleanByKey(
                 WellKnownVariables.MSBuildNuGetRestoreEnabled,
-                false);
+                true);
 
             if (!enabled)
             {
+                logger.Debug("{Tool} is disabled", nameof(MSBuildNuGetRestorer));
                 return ExitCode.Success;
             }
 
@@ -36,18 +38,50 @@ namespace Arbor.X.Core.Tools.NuGet
 
             string[] solutionFiles = Directory.GetFiles(rootPath, "*.sln", SearchOption.AllDirectories);
 
-            if (solutionFiles.Length != 1)
+            PathLookupSpecification pathLookupSpecification =
+                DefaultPaths.DefaultPathLookupSpecification.AddExcludedDirectorySegments(new[] { "node_modules" });
+
+            var blackListStatus = solutionFiles
+                .Select(file => new { File = file, Status = pathLookupSpecification.IsFileBlackListed(file, rootPath) })
+                .ToArray();
+
+            string[] included = blackListStatus
+                .Where(file => !file.Status.Item1)
+                .Select(file => file.File)
+                .ToArray();
+
+            var excluded = blackListStatus
+                .Where(file => file.Status.Item1)
+                .ToArray();
+
+            if (included.Length > 1)
             {
-                logger.WriteError($"Expected exactly 1 solution file, found {solutionFiles.Length}");
+                logger.Error("Expected exactly 1 solution file, found {Length}, {V}",
+                    included.Length,
+                    string.Join(", ", included));
                 return ExitCode.Failure;
             }
 
-            string solutionFile = solutionFiles.Single();
+            if (included.Length == 0)
+            {
+                logger.Error("Expected exactly 1 solution file, found 0");
+                return ExitCode.Failure;
+            }
+
+            if (excluded.Length > 0)
+            {
+                logger.Warning("Found blacklisted solution files: {V}",
+                    string.Join(", ",
+                        excluded.Select(excludedItem => $"{excludedItem.File} ({excludedItem.Status.Item2})")));
+            }
+
+            string solutionFile = included.Single();
 
             ExitCode result = await ProcessHelper.ExecuteAsync(
                 msbuildExePath,
                 new[] { solutionFile, "/t:restore" },
-                logger);
+                logger,
+                cancellationToken: cancellationToken).ConfigureAwait(false);
 
             return result;
         }

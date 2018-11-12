@@ -4,9 +4,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Processing;
 using Arbor.Processing.Core;
-using Arbor.X.Core.Logging;
+using Serilog;
+using Serilog.Core;
 
-namespace Arbor.X.Core.ProcessUtils
+namespace Arbor.Build.Core.ProcessUtils
 {
     public static class ProcessHelper
     {
@@ -17,12 +18,12 @@ namespace Arbor.X.Core.ProcessUtils
             IEnumerable<string> arguments = null,
             ILogger logger = null,
             IEnumerable<KeyValuePair<string, string>> environmentVariables = null,
-            CancellationToken cancellationToken = default,
             bool addProcessNameAsLogCategory = false,
             bool addProcessRunnerCategory = false,
-            string parentPrefix = null)
+            string parentPrefix = null,
+            CancellationToken cancellationToken = default)
         {
-            ILogger usedLogger = logger ?? new NullLogger();
+            ILogger usedLogger = logger ?? Logger.None;
 
             string executingCategory = $"[{Path.GetFileNameWithoutExtension(Path.GetFileName(executePath))}]";
 
@@ -30,12 +31,12 @@ namespace Arbor.X.Core.ProcessUtils
                 executePath,
                 cancellationToken,
                 arguments,
-                (message, category) => usedLogger.Write(message, executingCategory),
-                usedLogger.WriteError,
-                verboseAction: usedLogger.WriteVerbose,
-                toolAction: (message, category) => usedLogger.Write(message, ToolName),
+                (message, _) => usedLogger.Information(message, executingCategory),
+                usedLogger.Error,
+                verboseAction: usedLogger.Verbose,
+                toolAction: (message, _) => usedLogger.Information(message, ToolName),
                 environmentVariables: environmentVariables,
-                debugAction: usedLogger.WriteDebug,
+                debugAction: usedLogger.Debug,
                 addProcessNameAsLogCategory: addProcessNameAsLogCategory,
                 addProcessRunnerCategory: addProcessRunnerCategory,
                 parentPrefix: parentPrefix);

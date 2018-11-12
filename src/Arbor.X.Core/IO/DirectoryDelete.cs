@@ -2,9 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Arbor.X.Core.Logging;
+using Serilog;
+using Serilog.Core;
 
-namespace Arbor.X.Core.IO
+namespace Arbor.Build.Core.IO
 {
     public class DirectoryDelete
     {
@@ -17,7 +18,7 @@ namespace Arbor.X.Core.IO
             IEnumerable<string> fileFilters,
             ILogger logger = null)
         {
-            _logger = logger ?? new NullLogger();
+            _logger = logger ?? Logger.None;
             _directoryFilters = directoryFilters.ToList();
             _fileFilters = fileFilters.ToList();
 
@@ -28,7 +29,7 @@ namespace Arbor.X.Core.IO
         {
             get
             {
-                if (!_directoryFilters.Any())
+                if (_directoryFilters.Count == 0)
                 {
                     return "No directory filters";
                 }
@@ -41,7 +42,7 @@ namespace Arbor.X.Core.IO
         {
             get
             {
-                if (!_fileFilters.Any())
+                if (_fileFilters.Count == 0)
                 {
                     return "No files filters";
                 }
@@ -72,8 +73,9 @@ namespace Arbor.X.Core.IO
                     filter => baseDirectory.Name.Equals(filter, StringComparison.InvariantCultureIgnoreCase)))
             {
                 string filterList = DirectoryFilterList;
-                _logger.WriteVerbose(
-                    $"Directory name '{baseDirectory.Name} is in filter list {filterList}, ignoring deleting directory");
+                _logger.Verbose("Directory name '{Name} is in filter list {FilterList}, ignoring deleting directory",
+                    baseDirectory.Name,
+                    filterList);
                 return;
             }
 
@@ -86,25 +88,27 @@ namespace Arbor.X.Core.IO
                             filter => fileToDelete.Name.Equals(filter, StringComparison.InvariantCultureIgnoreCase)))
                     {
                         string filterList = FileFilterList;
-                        _logger.WriteVerbose(
-                            $"File name '{fileToDelete.Name} is in filter list {filterList}, ignoring deleting directory");
+                        _logger.Verbose("File name '{Name} is in filter list {FilterList}, ignoring deleting directory",
+                            fileToDelete.Name,
+                            filterList);
                         continue;
                     }
 
                     try
                     {
                         fileToDelete.Delete();
-                        _logger.WriteVerbose($"Deleted file '{fileToDelete.FullName}'");
+                        _logger.Verbose("Deleted file '{FullName}'", fileToDelete.FullName);
                     }
                     catch (IOException ex)
                     {
-                        _logger.WriteError($"Could not delete file '{fileToDelete.FullName}', {ex}");
+                        _logger.Error(ex, "Could not delete file '{FullName}'", fileToDelete.FullName);
                     }
                 }
             }
             else
             {
-                _logger.WriteVerbose($"Delete self files is false, skipping deleting files in directory '{baseDir}'");
+                _logger.Verbose("Delete self files is false, skipping deleting files in directory '{BaseDir}'",
+                    baseDir);
             }
 
             foreach (DirectoryInfo directoryToDelete in baseDirectory.EnumerateDirectories())
@@ -114,7 +118,7 @@ namespace Arbor.X.Core.IO
 
             if (!deleteSelf)
             {
-                _logger.WriteVerbose($"Delete self is false, skipping deleting directory '{baseDir}'");
+                _logger.Verbose("Delete self is false, skipping deleting directory '{BaseDir}'", baseDir);
             }
 
             if (!baseDirectory.EnumerateFileSystemInfos().Any())
@@ -122,23 +126,23 @@ namespace Arbor.X.Core.IO
                 try
                 {
                     baseDirectory.Delete();
-                    _logger.WriteVerbose($"Deleted directory '{baseDirectory.FullName}'");
+                    _logger.Verbose("Deleted directory '{FullName}'", baseDirectory.FullName);
                 }
                 catch (IOException ex)
                 {
-                    _logger.WriteError($"Could not delete directory '{baseDirectory.FullName}', {ex}");
+                    _logger.Error(ex, "Could not delete directory '{FullName}'", baseDirectory.FullName);
                 }
             }
             else
             {
-                _logger.WriteVerbose($"Directory '{baseDirectory.FullName}' still has files or directories");
+                _logger.Verbose("Directory '{FullName}' still has files or directories", baseDirectory.FullName);
             }
         }
 
         private void WriteFilters()
         {
-            _logger.WriteVerbose($"Directory filters: {DirectoryFilterList}");
-            _logger.WriteVerbose($"File filters: {FileFilterList}");
+            _logger.Verbose("Directory filters: {DirectoryFilterList}", DirectoryFilterList);
+            _logger.Verbose("File filters: {FileFilterList}", FileFilterList);
         }
     }
 }

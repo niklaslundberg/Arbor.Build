@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Arbor.X.Core.IO;
+using Arbor.Build.Core.IO;
 using Machine.Specifications;
 using Machine.Specifications.Model;
 
-namespace Arbor.X.Tests.Integration.DirectoryExtensions
+namespace Arbor.Build.Tests.Integration.DirectoryExtensions
 {
     [Subject(typeof(Subject))]
     public class
@@ -15,7 +15,7 @@ namespace Arbor.X.Tests.Integration.DirectoryExtensions
         static DirectoryInfo baseDir;
         static IReadOnlyCollection<string> files;
 
-        Cleanup after = () => { baseDir.DeleteIfExists(true); };
+        Cleanup after = () => baseDir.DeleteIfExists(true);
 
         Establish context = () =>
         {
@@ -75,11 +75,11 @@ namespace Arbor.X.Tests.Integration.DirectoryExtensions
         };
 
         It should_contain_not_blacklisted_files =
-            () => { files.ShouldContain("atest.config", "atest.debug.config", "etest.debug.config", "etest.config"); };
+            () => files.ShouldContain("atest.config", "atest.debug.config", "etest.debug.config", "etest.config");
 
-        It should_containt_correct_file_count = () => { files.Count.ShouldEqual(4); };
+        It should_containt_correct_file_count = () => files.Count.ShouldEqual(4);
 
         It should_not_contain_blacklisted_files =
-            () => { files.ShouldNotContain("bower.config", "bower.debug.config", "node.debug.config", "node.config"); };
+            () => files.ShouldNotContain("bower.config", "bower.debug.config", "node.debug.config", "node.config");
     }
 }

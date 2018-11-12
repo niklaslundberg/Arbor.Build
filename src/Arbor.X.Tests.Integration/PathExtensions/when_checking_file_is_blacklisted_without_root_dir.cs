@@ -1,8 +1,8 @@
 using System.IO;
-using Arbor.X.Core.IO;
+using Arbor.Build.Core.IO;
 using Machine.Specifications;
 
-namespace Arbor.X.Tests.Integration.PathExtensions
+namespace Arbor.Build.Tests.Integration.PathExtensions
 {
     [Subject(typeof(Core.IO.PathExtensions))]
     public class when_checking_file_is_blacklisted_without_root_dir
@@ -10,6 +10,9 @@ namespace Arbor.X.Tests.Integration.PathExtensions
         static bool isBlackListed;
         static PathLookupSpecification specification;
         static DirectoryInfo root;
+
+        static DirectoryInfo rootParent;
+
         Cleanup after = () =>
         {
             root.DeleteIfExists(true);
@@ -29,10 +32,8 @@ namespace Arbor.X.Tests.Integration.PathExtensions
             specification = DefaultPaths.DefaultPathLookupSpecification;
         };
 
-        Because of = () => { isBlackListed = specification.IsFileBlackListed(@"C:\Temp\root\afile.txt").Item1; };
+        Because of = () => isBlackListed = specification.IsFileBlackListed(@"C:\Temp\root\afile.txt").Item1;
 
         It should_return_true = () => isBlackListed.ShouldBeTrue();
-
-        static DirectoryInfo rootParent;
     }
 }

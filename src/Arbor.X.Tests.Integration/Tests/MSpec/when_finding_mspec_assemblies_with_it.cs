@@ -1,14 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using Arbor.Build.Core.IO;
+using Arbor.Build.Core.Tools.Testing;
 using Arbor.Processing.Core;
-using Arbor.X.Core.IO;
-using Arbor.X.Core.Logging;
-using Arbor.X.Core.Tools.Testing;
 using Machine.Specifications;
+using Serilog;
+using Serilog.Core;
 
-namespace Arbor.X.Tests.Integration.Tests.MSpec
+namespace Arbor.Build.Tests.Integration.Tests.MSpec
 {
+    [Ignore("Recursive")]
     [Subject(typeof(UnitTestFinder))]
     [Tags(MSpecInternalConstants.RecursiveArborXTest)]
     public class when_finding_mspec_assemblies_with_it
@@ -21,7 +23,7 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
 
         Establish context = () =>
         {
-            var logger = new ConsoleLogger { LogLevel = LogLevel.Verbose };
+            ILogger logger = Logger.None;
             finder = new UnitTestFinder(new List<Type>
                 {
                     typeof(It)
@@ -39,7 +41,7 @@ namespace Arbor.X.Tests.Integration.Tests.MSpec
             exitCode = DirectoryCopy.CopyAsync(combine, tempDirectory.FullName).Result;
         };
 
-        Because of = () => { dlls = finder.GetUnitTestFixtureDlls(tempDirectory); };
+        Because of = () => dlls = finder.GetUnitTestFixtureDlls(tempDirectory);
 
         It should_Behaviour = () =>
         {

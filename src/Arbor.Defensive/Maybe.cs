@@ -9,7 +9,7 @@ namespace Arbor.Defensive
     public struct Maybe<T>
         where T : class
     {
-        private static readonly Lazy<Maybe<T>> empty = new Lazy<Maybe<T>>(() => default);
+        private static readonly Lazy<Maybe<T>> _Empty = new Lazy<Maybe<T>>(() => default);
 
         private readonly T _value;
 
@@ -18,6 +18,9 @@ namespace Arbor.Defensive
             _value = value;
         }
 
+        /// <summary>
+        /// Returns the underlying value of T
+        /// </summary>
         /// <exception cref="NullReferenceException" accessor="get">
         ///     Throws exception if the instance has no value. Use HasValue
         ///     before calling Value.
@@ -115,7 +118,7 @@ namespace Arbor.Defensive
 
         public static Maybe<T> Empty()
         {
-            return empty.Value;
+            return _Empty.Value;
         }
 
         public bool Equals(Maybe<T> other)
@@ -150,7 +153,7 @@ namespace Arbor.Defensive
                 return true;
             }
 
-            return (obj is Maybe<T> maybe && Equals(maybe)) || (obj is T && Equals((T)obj));
+            return obj is Maybe<T> maybe && Equals(maybe) || obj is T t && Equals(t);
         }
 
         public override int GetHashCode()

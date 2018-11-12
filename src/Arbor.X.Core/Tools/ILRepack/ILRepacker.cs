@@ -6,20 +6,18 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.GenericExtensions.Boolean;
+using Arbor.Build.Core.IO;
+using Arbor.Build.Core.Tools.MSBuild;
 using Arbor.Defensive.Collections;
 using Arbor.Processing;
 using Arbor.Processing.Core;
-using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.GenericExtensions;
-using Arbor.X.Core.IO;
-using Arbor.X.Core.Logging;
-using Arbor.X.Core.Parsing;
-using FubuCsProjFile;
-using FubuCsProjFile.MSBuild;
 using JetBrains.Annotations;
+using Serilog;
 
 // ReSharper disable once InconsistentNaming
-namespace Arbor.X.Core.Tools.ILRepack
+namespace Arbor.Build.Core.Tools.ILRepack
 {
     [Priority(620)]
     [UsedImplicitly]
@@ -36,14 +34,15 @@ namespace Arbor.X.Core.Tools.ILRepack
         {
             _logger = logger;
 
-            ParseResult<bool> parseResult = buildVariables
+            bool parseResult = buildVariables
                 .GetVariableValueOrDefault(WellKnownVariables.ExternalTools_ILRepack_Enabled, "false")
-                .TryParseBool(false);
+                .ParseOrDefault(false);
 
-            if (!parseResult.Value)
+            if (!parseResult)
             {
-                _logger.Write(
-                    $"ILRepack is disabled, to enable it, set the flag {WellKnownVariables.ExternalTools_ILRepack_Enabled} to true");
+                _logger.Information(
+                    "ILRepack is disabled, to enable it, set the flag {ExternalTools_ILRepack_Enabled} to true",
+                    WellKnownVariables.ExternalTools_ILRepack_Enabled);
                 return ExitCode.Success;
             }
 
@@ -57,7 +56,7 @@ namespace Arbor.X.Core.Tools.ILRepack
 
             if (!string.IsNullOrWhiteSpace(customILRepackPath) && File.Exists(customILRepackPath))
             {
-                logger.Write($"Using custom path for ILRepack: '{customILRepackPath}'");
+                logger.Information("Using custom path for ILRepack: '{CustomILRepackPath}'", customILRepackPath);
                 _ilRepackExePath = customILRepackPath;
             }
 
@@ -79,7 +78,10 @@ namespace Arbor.X.Core.Tools.ILRepack
 
             string merges = string.Join(Environment.NewLine, ilMergeProjects.Select(item => item.FullName));
 
-            logger.Write($"Found {ilMergeProjects.Count} projects marked for ILMerge:{Environment.NewLine}{merges}");
+            logger.Information("Found {Count} projects marked for ILMerge:{NewLine}{Merges}",
+                ilMergeProjects.Count,
+                Environment.NewLine,
+                merges);
 
             IReadOnlyCollection<ILRepackData> mergeDatas = ilMergeProjects.SelectMany(GetIlMergeFiles)
                 .ToReadOnlyCollection();
@@ -117,8 +119,10 @@ namespace Arbor.X.Core.Tools.ILRepack
 
                 if (!Directory.Exists(referenceAssemblyDirectory))
                 {
-                    logger.WriteError(
-                        $"Could not ILMerge, the reference assembly directory {referenceAssemblyDirectory} does not exist, currently only .NET v{dotNetVersion} is supported");
+                    logger.Error(
+                        "Could not ILMerge, the reference assembly directory {ReferenceAssemblyDirectory} does not exist, currently only .NET v{DotNetVersion} is supported",
+                        referenceAssemblyDirectory,
+                        dotNetVersion);
 
                     return ExitCode.Failure;
                 }
@@ -131,18 +135,18 @@ namespace Arbor.X.Core.Tools.ILRepack
                         ProcessRunner.ExecuteAsync(
                             _ilRepackExePath,
                             arguments: arguments,
-                            standardOutLog: logger.Write,
-                            toolAction: logger.Write,
-                            standardErrorAction: logger.WriteError,
-                            cancellationToken: cancellationToken);
+                            standardOutLog: logger.Information,
+                            toolAction: logger.Information,
+                            standardErrorAction: logger.Error,
+                            cancellationToken: cancellationToken).ConfigureAwait(false);
 
                 if (!result.IsSuccess)
                 {
-                    logger.WriteError($"Could not ILRepack '{fileInfo.FullName}'");
+                    logger.Error("Could not ILRepack '{FullName}'", fileInfo.FullName);
                     return result;
                 }
 
-                logger.Write($"ILMerged result: {ilMergedPath}");
+                logger.Information("ILMerged result: {IlMergedPath}", ilMergedPath);
             }
 
             return ExitCode.Success;
@@ -165,22 +169,22 @@ namespace Arbor.X.Core.Tools.ILRepack
                 yield break;
             }
 
-            string configuration = "release"; // TODO support ilmerge for debug
+            const string configuration = "release"; // TODO support ilmerge for debug
 
             DirectoryInfo releaseDir = binDirectory.GetDirectories(configuration).SingleOrDefault();
 
             if (releaseDir == null)
             {
-                _logger.WriteWarning(
-                    $"A release directory '{Path.Combine(binDirectory.FullName, configuration)}' was not found");
+                _logger.Warning("A release directory '{V}' was not found",
+                    Path.Combine(binDirectory.FullName, configuration));
                 yield break;
             }
 
-            CsProjFile csProjFile = CsProjFile.LoadFrom(projectFile.FullName);
+            MSBuildProject csProjFile = MSBuildProject.LoadFrom(projectFile.FullName);
 
             const string targetFrameworkVersion = "TargetFrameworkVersion";
 
-            MSBuildProperty msBuildProperty = csProjFile.BuildProject.PropertyGroups.SelectMany(
+            MSBuildProperty msBuildProperty = csProjFile.PropertyGroups.SelectMany(
                     group =>
                         group.Properties.Where(
                             property => property.Name.Equals(
@@ -232,9 +236,7 @@ namespace Arbor.X.Core.Tools.ILRepack
         {
             Assembly assembly = Assembly.LoadFile(Path.GetFullPath(exe.FullName));
             Module manifestModule = assembly.ManifestModule;
-            PortableExecutableKinds peKind;
-            ImageFileMachine machine;
-            manifestModule.GetPEKind(out peKind, out machine);
+            manifestModule.GetPEKind(out PortableExecutableKinds peKind, out ImageFileMachine machine);
 
             if (peKind == PortableExecutableKinds.ILOnly)
             {

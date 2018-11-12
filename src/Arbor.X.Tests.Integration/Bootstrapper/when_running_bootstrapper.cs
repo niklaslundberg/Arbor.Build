@@ -1,18 +1,18 @@
 ﻿using System;
 using System.IO;
+using Arbor.Build.Core.Bootstrapper;
+using Arbor.Build.Core.IO;
 using Arbor.Processing.Core;
-using Arbor.X.Bootstrapper;
-using Arbor.X.Core.IO;
-using Arbor.X.Core.Logging;
 using Machine.Specifications;
+using Serilog.Core;
 
-namespace Arbor.X.Tests.Integration.Bootstrapper
+namespace Arbor.Build.Tests.Integration.Bootstrapper
 {
     [Ignore("Not complete")]
-    [Subject(typeof(X.Bootstrapper.Bootstrapper))]
+    [Subject(typeof(Core.Bootstrapper.Bootstrapper))]
     public class when_running_bootstrapper
     {
-        static X.Bootstrapper.Bootstrapper bootstrapper;
+        static Core.Bootstrapper.Bootstrapper bootstrapper;
 
         static BootstrapStartOptions startOptions;
         static ExitCode exitCode;
@@ -41,10 +41,10 @@ namespace Arbor.X.Tests.Integration.Bootstrapper
             startOptions = new BootstrapStartOptions(baseDirectory.FullName,
                 true,
                 "develop");
-            bootstrapper = new X.Bootstrapper.Bootstrapper(LogLevel.Verbose);
+            bootstrapper = new Core.Bootstrapper.Bootstrapper(Logger.None);
         };
 
-        Because of = () => { exitCode = bootstrapper.StartAsync(startOptions).Result; };
+        Because of = () => exitCode = bootstrapper.StartAsync(startOptions).Result;
 
         It should_return_success_exit_code = () => exitCode.IsSuccess.ShouldBeTrue();
     }

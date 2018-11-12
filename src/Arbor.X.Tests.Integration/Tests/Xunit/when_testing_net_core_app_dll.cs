@@ -2,14 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Arbor.X.Core.Logging;
-using Arbor.X.Core.Tools.Testing;
-using Arbor.X.Tests.Integration.Tests.MSpec;
+using Arbor.Build.Core.Tools.Testing;
+using Arbor.Build.Tests.Integration.Tests.MSpec;
 using Machine.Specifications;
 using Mono.Cecil;
+using Serilog;
+using Serilog.Core;
 using Xunit;
 
-namespace Arbor.X.Tests.Integration.Tests.Xunit
+namespace Arbor.Build.Tests.Integration.Tests.Xunit
 {
     [Ignore("local")]
     [Subject(typeof(UnitTestFinder))]
@@ -20,7 +21,7 @@ namespace Arbor.X.Tests.Integration.Tests.Xunit
 
         Establish context = () =>
         {
-            var logger = new ConsoleLogger { LogLevel = LogLevel.Verbose };
+            ILogger logger = Logger.None;
             finder = new UnitTestFinder(new List<Type>
                 {
                     typeof(FactAttribute)
@@ -31,9 +32,15 @@ namespace Arbor.X.Tests.Integration.Tests.Xunit
         Because of =
             () =>
             {
-                AssemblyDefinition assemblyDefinition = AssemblyDefinition.ReadAssembly(Path.Combine(VcsTestPathHelper.FindVcsRootPath(), "src", "Arbor.X.Tests.NetCoreAppSamle", "Arbor.X.Tests.NetCoreAppSamle.dll"));
+                AssemblyDefinition assemblyDefinition = AssemblyDefinition.ReadAssembly(
+                    Path.Combine(VcsTestPathHelper.FindVcsRootPath(),
+                        "src",
+                        "Arbor.X.Tests.NetCoreAppSamle",
+                        "Arbor.X.Tests.NetCoreAppSamle.dll"));
 
-                TypeDefinition typeDefinition = assemblyDefinition.MainModule.Types.Single(t => t.FullName.StartsWith("Arbor", StringComparison.Ordinal));
+                TypeDefinition typeDefinition =
+                    assemblyDefinition.MainModule.Types.Single(t =>
+                        t.FullName.StartsWith("Arbor", StringComparison.Ordinal));
 
                 isTestType = finder.TryIsTypeTestFixture(typeDefinition);
             };

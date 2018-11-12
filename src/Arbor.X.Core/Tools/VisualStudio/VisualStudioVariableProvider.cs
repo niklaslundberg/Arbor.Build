@@ -1,17 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.Logging;
-using Arbor.X.Core.Tools.Cleanup;
+using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.Tools.Cleanup;
 using JetBrains.Annotations;
 using Microsoft.Win32;
+using Serilog;
 
-namespace Arbor.X.Core.Tools.VisualStudio
+namespace Arbor.Build.Core.Tools.VisualStudio
 {
     [UsedImplicitly]
     public class VisualStudioVariableProvider : IVariableProvider
@@ -20,7 +21,7 @@ namespace Arbor.X.Core.Tools.VisualStudio
 
         public int Order => VariableProviderOrder.Ignored;
 
-        public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(
+        public Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
@@ -29,7 +30,7 @@ namespace Arbor.X.Core.Tools.VisualStudio
                 WellKnownVariables.ExternalTools_VisualStudio_Version,
                 string.Empty)))
             {
-                return Task.FromResult(new List<IVariable>().AsEnumerable());
+                return Task.FromResult(ImmutableArray<IVariable>.Empty);
             }
 
             _allowPreReleaseVersions =
@@ -37,13 +38,16 @@ namespace Arbor.X.Core.Tools.VisualStudio
 
             int currentProcessBits = Environment.Is64BitProcess ? 64 : 32;
             const int registryLookupBits = 32;
-            logger.WriteVerbose(
-                $"Running current process [id {Process.GetCurrentProcess().Id}] as a {currentProcessBits}-bit process");
+            logger.Verbose("Running current process [id {Id}] as a {CurrentProcessBits}-bit process",
+                Process.GetCurrentProcess().Id,
+                currentProcessBits);
 
             const string registryKeyName = @"SOFTWARE\Microsoft\VisualStudio";
 
-            logger.WriteVerbose(
-                $"Looking for Visual Studio versions in {registryLookupBits}-bit registry key 'HKEY_LOCAL_MACHINE\\{registryKeyName}'");
+            logger.Verbose(
+                "Looking for Visual Studio versions in {RegistryLookupBits}-bit registry key 'HKEY_LOCAL_MACHINE\\{RegistryKeyName}'",
+                registryLookupBits,
+                registryKeyName);
 
             string visualStudioVersion = GetVisualStudioVersion(logger, registryKeyName);
 
@@ -51,24 +55,24 @@ namespace Arbor.X.Core.Tools.VisualStudio
 
             if (!string.IsNullOrWhiteSpace(visualStudioVersion))
             {
-                logger.WriteVerbose($"Found Visual Studio version {visualStudioVersion}");
+                logger.Verbose("Found Visual Studio version {VisualStudioVersion}", visualStudioVersion);
 
                 vsTestExePath = GetVSTestExePath(logger, registryKeyName, visualStudioVersion);
             }
             else
             {
-                logger.WriteWarning("Could not find any Visual Studio version");
+                logger.Warning("Could not find any Visual Studio version");
             }
 
-            var environmentVariables = new[]
+            var environmentVariables = new IVariable[]
             {
-                new EnvironmentVariable(
+                new BuildVariable(
                     WellKnownVariables.ExternalTools_VisualStudio_Version,
                     visualStudioVersion),
-                new EnvironmentVariable(WellKnownVariables.ExternalTools_VSTest_ExePath, vsTestExePath)
+                new BuildVariable(WellKnownVariables.ExternalTools_VSTest_ExePath, vsTestExePath)
             };
 
-            return Task.FromResult<IEnumerable<IVariable>>(environmentVariables);
+            return Task.FromResult(environmentVariables.ToImmutableArray());
         }
 
         private static string GetVSTestExePath(ILogger logger, string registryKeyName, string visualStudioVersion)
@@ -94,8 +98,10 @@ namespace Arbor.X.Core.Tools.VisualStudio
 
                             if (string.IsNullOrWhiteSpace(installDir?.ToString()))
                             {
-                                logger.WriteWarning(
-                                    $"Expected key {versionKey.Name} to contain a value with name {installdir} and a non-empty value");
+                                logger.Warning(
+                                    "Expected key {Name} to contain a value with name {Installdir} and a non-empty value",
+                                    versionKey.Name,
+                                    installdir);
                                 return null;
                             }
 
@@ -135,12 +141,11 @@ namespace Arbor.X.Core.Tools.VisualStudio
                             .Select(
                                 keyName =>
                                 {
-                                    Version version;
-                                    if (!Version.TryParse(keyName, out version))
+                                    if (!Version.TryParse(keyName, out Version version))
                                     {
                                         if (_allowPreReleaseVersions)
                                         {
-                                            string preReleaseSeparator = "_";
+                                            const string preReleaseSeparator = "_";
 
                                             int indexOf = keyName.IndexOf(
                                                 preReleaseSeparator,
@@ -152,8 +157,8 @@ namespace Arbor.X.Core.Tools.VisualStudio
 
                                                 if (Version.TryParse(versionOnly, out version))
                                                 {
-                                                    logger.WriteDebug(
-                                                        $"Found pre-release Visual Studio version {version}");
+                                                    logger.Debug("Found pre-release Visual Studio version {Version}",
+                                                        version);
                                                 }
                                             }
                                         }
@@ -161,8 +166,9 @@ namespace Arbor.X.Core.Tools.VisualStudio
 
                                     if (version == null)
                                     {
-                                        logger.WriteDebug(
-                                            $"Could not parse Visual Studio version from registry key name '{keyName}', skipping that version.");
+                                        logger.Debug(
+                                            "Could not parse Visual Studio version from registry key name '{KeyName}', skipping that version.",
+                                            keyName);
                                     }
 
                                     return version;
@@ -171,8 +177,9 @@ namespace Arbor.X.Core.Tools.VisualStudio
                             .OrderByDescending(name => name)
                             .ToList();
 
-                        logger.WriteVerbose(
-                            $"Found {versions.Count} Visual Studio versions: {string.Join(", ", versions.Select(version => version.ToString(2)))}");
+                        logger.Verbose("Found {Count} Visual Studio versions: {V}",
+                            versions.Count,
+                            string.Join(", ", versions.Select(version => version.ToString(2))));
 
                         if (versions.Any(version => version == new Version(15, 0)))
                         {
@@ -191,7 +198,7 @@ namespace Arbor.X.Core.Tools.VisualStudio
                         {
                             visualStudioVersion = "11.0";
                         }
-                        else if (versions.Any())
+                        else if (versions.Count > 0)
                         {
                             visualStudioVersion = versions.First().ToString(2);
                         }

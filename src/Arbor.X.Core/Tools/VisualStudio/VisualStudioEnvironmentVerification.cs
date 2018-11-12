@@ -4,12 +4,12 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Arbor.Build.Core.BuildVariables;
 using Arbor.Processing.Core;
-using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.Logging;
 using JetBrains.Annotations;
+using Serilog;
 
-namespace Arbor.X.Core.Tools.VisualStudio
+namespace Arbor.Build.Core.Tools.VisualStudio
 {
     [Priority(53)]
     [UsedImplicitly]
@@ -41,12 +41,15 @@ namespace Arbor.X.Core.Tools.VisualStudio
 
                 List<FileInfo> projectFiles81 = projectFiles.Where(Contains81).ToList();
 
-                if (projectFiles81.Any())
+                if (projectFiles81.Count > 0)
                 {
                     IEnumerable<string> projectFileNames = projectFiles81.Select(file => file.FullName);
 
-                    logger.WriteError(
-                        $"Visual Studio version {visualStudioVersion} is found on this machine. Visual Studio 12.0 (2013) must be installed in order to build these projects: {Environment.NewLine}{string.Join(Environment.NewLine, projectFileNames)}");
+                    logger.Error(
+                        "Visual Studio version {VisualStudioVersion} is found on this machine. Visual Studio 12.0 (2013) must be installed in order to build these projects: {NewLine}{V}",
+                        visualStudioVersion,
+                        Environment.NewLine,
+                        string.Join(Environment.NewLine, projectFileNames));
                     return Task.FromResult(ExitCode.Failure);
                 }
             }

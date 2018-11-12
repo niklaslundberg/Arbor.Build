@@ -1,20 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Aesculus.Core;
-using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.IO;
-using Arbor.X.Core.Logging;
+using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.IO;
+using Serilog;
 
-namespace Arbor.X.Core.Tools.Environments
+namespace Arbor.Build.Core.Tools.Environments
 {
     public class SourcePathVariableProvider : IVariableProvider
     {
-        public int Order { get; } = 0;
+        public int Order { get; } = -2;
 
-        public Task<IEnumerable<IVariable>> GetEnvironmentVariablesAsync(
+        public Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
@@ -45,27 +46,31 @@ namespace Arbor.X.Core.Tools.Environments
 
             var variables = new List<IVariable>
             {
-                new EnvironmentVariable(
+                new BuildVariable(
                     WellKnownVariables.TempDirectory,
                     tempPath.FullName)
             };
 
             if (string.IsNullOrWhiteSpace(existingSourceRoot))
             {
-                variables.Add(new EnvironmentVariable(WellKnownVariables.SourceRoot, sourceRoot));
+                variables.Add(new BuildVariable(WellKnownVariables.SourceRoot, sourceRoot));
             }
 
             if (string.IsNullOrWhiteSpace(existingToolsDirectory))
             {
                 DirectoryInfo externalTools =
-                    new DirectoryInfo(Path.Combine(sourceRoot, "build", "Arbor.X", "tools", "external")).EnsureExists();
+                    new DirectoryInfo(Path.Combine(sourceRoot,
+                        "build",
+                        ArborConstants.ArborPackageName,
+                        "tools",
+                        "external")).EnsureExists();
 
-                variables.Add(new EnvironmentVariable(
+                variables.Add(new BuildVariable(
                     WellKnownVariables.ExternalTools,
                     externalTools.FullName));
             }
 
-            return Task.FromResult<IEnumerable<IVariable>>(variables);
+            return Task.FromResult(variables.ToImmutableArray());
         }
     }
 }

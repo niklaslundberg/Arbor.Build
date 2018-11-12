@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Arbor.Build.Core.BuildVariables;
 using Arbor.Processing.Core;
-using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.Logging;
+using Serilog;
 
-namespace Arbor.X.Core.Tools.EnvironmentVariables
+namespace Arbor.Build.Core.Tools.EnvironmentVariables
 {
     public abstract class EnvironmentVerification : ITool
     {
@@ -40,9 +40,9 @@ namespace Arbor.X.Core.Tools.EnvironmentVariables
 
             var sb = new StringBuilder();
 
-            if (missingKeys.Any())
+            if (missingKeys.Count > 0)
             {
-                sb.AppendLine($"Missing variables: [{missingKeys.Count}]");
+                sb.Append("Missing variables: [").Append(missingKeys.Count).AppendLine("]");
 
                 foreach (string missingKey in missingKeys)
                 {
@@ -50,22 +50,22 @@ namespace Arbor.X.Core.Tools.EnvironmentVariables
                 }
             }
 
-            if (missingValues.Any())
+            if (missingValues.Count > 0)
             {
-                sb.AppendLine($"Variables with empty values: [{missingValues.Count}]");
+                sb.Append("Variables with empty values: [").Append(missingValues.Count).AppendLine("]");
                 foreach (string missingValue in missingValues)
                 {
                     sb.AppendLine(missingValue);
                 }
             }
 
-            bool succeeded = !missingKeys.Any() && !missingValues.Any();
+            bool succeeded = missingKeys.Count == 0 && missingValues.Count == 0;
 
-            succeeded &= await PostVariableVerificationAsync(sb, buildVariables, logger);
+            succeeded &= await PostVariableVerificationAsync(sb, buildVariables, logger).ConfigureAwait(false);
 
             if (!succeeded)
             {
-                logger.WriteError(sb.ToString());
+                logger.Error(sb.ToString());
             }
 
             return succeeded ? ExitCode.Success : ExitCode.Failure;

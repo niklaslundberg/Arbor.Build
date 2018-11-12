@@ -1,48 +1,51 @@
+using System;
 using System.Collections.Generic;
 
-namespace Arbor.X.Core.IO
+namespace Arbor.Build.Core.IO
 {
     public static class DefaultPaths
     {
         public const string TempPathPrefix = "ABX";
 
-        public static PathLookupSpecification DefaultPathLookupSpecification
+        private static readonly Lazy<PathLookupSpecification> _PathLookupSpecification =
+            new Lazy<PathLookupSpecification>(Initialize);
+
+        public static PathLookupSpecification DefaultPathLookupSpecification => _PathLookupSpecification.Value;
+
+        private static PathLookupSpecification Initialize()
         {
-            get
+            var ignoredDirectorySegments = new List<string>(20)
             {
-                var ignoredDirectorySegments = new List<string>(20)
-                {
-                    "bin",
-                    "obj",
-                    ".git",
-                    ".hg",
-                    ".svn",
-                    "TestResults",
-                    "_ReSharper",
-                    ".HistoryData",
-                    "LocalHistory",
-                    "packages",
-                    "temp",
-                    "artifacts",
-                    ".vs",
-                    ".user",
-                    ".userprefs",
-                    "node_modules",
-                    "bower_components"
-                };
+                "bin",
+                "obj",
+                ".git",
+                ".hg",
+                ".svn",
+                "TestResults",
+                "_ReSharper",
+                ".HistoryData",
+                "LocalHistory",
+                "packages",
+                "temp",
+                "artifacts",
+                ".vs",
+                ".user",
+                ".userprefs",
+                "node_modules",
+                "bower_components"
+            };
 
-                var ignoredFileStartsWithPatterns = new List<string>(10) { ".", "_", "ncrunchTemp_" };
+            var ignoredFileStartsWithPatterns = new List<string>(10) { ".", "_", "ncrunchTemp_" };
 
-                var ignoredDirectorySegmentParts = new List<string>(5);
+            var ignoredDirectorySegmentParts = new List<string>(5);
 
-                var ignoredDirectoryStartsWithPatterns = new List<string>(10) { "_" };
+            var ignoredDirectoryStartsWithPatterns = new List<string>(10) { "_" };
 
-                return new PathLookupSpecification(
-                    ignoredDirectorySegments,
-                    ignoredFileStartsWithPatterns,
-                    ignoredDirectorySegmentParts,
-                    ignoredDirectoryStartsWithPatterns);
-            }
+            return new PathLookupSpecification(
+                ignoredDirectorySegments,
+                ignoredFileStartsWithPatterns,
+                ignoredDirectorySegmentParts,
+                ignoredDirectoryStartsWithPatterns);
         }
     }
 }

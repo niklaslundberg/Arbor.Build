@@ -1,9 +1,10 @@
 ﻿using System;
-using Arbor.X.Core.GenericExtensions;
-using Arbor.X.Core.Logging;
+using System.Globalization;
+using Arbor.Build.Core.GenericExtensions;
 using NuGet.Versioning;
+using Serilog;
 
-namespace Arbor.X.Core.Tools.NuGet
+namespace Arbor.Build.Core.Tools.NuGet
 {
     public static class NuGetVersionHelper
     {
@@ -16,8 +17,7 @@ namespace Arbor.X.Core.Tools.NuGet
             ILogger logger,
             NuGetVersioningSettings nugetVersioningSettings)
         {
-            Version parsedVersion;
-            if (!Version.TryParse(version, out parsedVersion))
+            if (!Version.TryParse(version, out Version parsedVersion))
             {
                 throw new ArgumentException($"The version '{version} is not a valid version format");
             }
@@ -26,7 +26,7 @@ namespace Arbor.X.Core.Tools.NuGet
             {
                 string parsed = parsedVersion.ToString(3);
 
-                logger.Write($"Build is release build, using major.minor.patch as the version, {parsed}");
+                logger?.Information("Build is release build, using major.minor.patch as the version, {Parsed}", parsed);
 
                 return parsed;
             }
@@ -45,17 +45,23 @@ namespace Arbor.X.Core.Tools.NuGet
                 if (enableBuildNumber)
                 {
                     buildVersion =
-                        $"{parsedVersion.Major}.{parsedVersion.Minor}.{parsedVersion.Build}-{suffix}{semVer2PreReleaseSeparator}{parsedVersion.Revision.ToString().LeftPad(usePadding, '0')}";
+                        $"{parsedVersion.Major}.{parsedVersion.Minor}.{parsedVersion.Build}-{suffix}{semVer2PreReleaseSeparator}{parsedVersion.Revision.ToString(CultureInfo.InvariantCulture).LeftPad(usePadding, '0')}";
 
-                    logger.Write(
-                        $"Package suffix is {suffix}, using major.minor.patch-{{suffix}}build as the version, {buildVersion}");
+                    logger?.Information(
+                        "Package suffix is {Suffix}, using major.minor.patch-{UsedSuffix}build as the version, {BuildVersion}",
+                        suffix,
+                        suffix,
+                        buildVersion);
                 }
                 else
                 {
                     buildVersion = $"{parsedVersion.Major}.{parsedVersion.Minor}.{parsedVersion.Build}-{suffix}";
 
-                    logger.Write(
-                        $"Package suffix is {suffix}, using major.minor.patch-{{suffix}} as the version, {buildVersion}");
+                    logger?.Information(
+                        "Package suffix is {Suffix}, using major.minor.patch-{UsedSuffix} as the version, {BuildVersion}",
+                        suffix,
+                        suffix,
+                        buildVersion);
                 }
             }
             else
@@ -65,12 +71,12 @@ namespace Arbor.X.Core.Tools.NuGet
                     buildVersion =
                         $"{parsedVersion.Major}.{parsedVersion.Minor}.{parsedVersion.Build}-{parsedVersion.Revision.ToString().LeftPad(usePadding, '0')}";
 
-                    logger.Write($"Using major.minor.patch-build as the version, {buildVersion}");
+                    logger?.Information("Using major.minor.patch-build as the version, {BuildVersion}", buildVersion);
                 }
                 else
                 {
                     buildVersion = $"{parsedVersion.Major}.{parsedVersion.Minor}.{parsedVersion.Build}";
-                    logger.Write($"Using major.minor.patch as the version, {buildVersion}");
+                    logger?.Information("Using major.minor.patch as the version, {BuildVersion}", buildVersion);
                 }
             }
 
@@ -85,9 +91,7 @@ namespace Arbor.X.Core.Tools.NuGet
                 final = buildVersion;
             }
 
-            SemanticVersion semanticVersion;
-
-            if (!SemanticVersion.TryParse(final, out semanticVersion))
+            if (!SemanticVersion.TryParse(final, out SemanticVersion _))
             {
                 throw new InvalidOperationException($"The NuGet version '{final}' is not a valid Semver 2.0 version");
             }

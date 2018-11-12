@@ -2,17 +2,16 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Arbor.Build.Core.BuildVariables;
 using Arbor.Processing.Core;
 using Arbor.Sorbus.Core;
-using Arbor.X.Core.BuildVariables;
 using JetBrains.Annotations;
-using DelegateLogger = Arbor.Sorbus.Core.DelegateLogger;
-using ILogger = Arbor.X.Core.Logging.ILogger;
+using Serilog;
 
-namespace Arbor.X.Core.Tools.Versioning
+namespace Arbor.Build.Core.Tools.Versioning
 {
     [UsedImplicitly]
-    [Priority(1000, runAlways: true)]
+    [Priority(1000, true)]
     public class AssemblyInfoUnpatcher : ITool
     {
         public Task<ExitCode> ExecuteAsync(
@@ -25,33 +24,24 @@ namespace Arbor.X.Core.Tools.Versioning
 
             if (!assemblyVersionPatchingEnabled)
             {
-                logger.WriteWarning("Assembly version pathcing is disabled");
+                logger.Warning("Assembly version pathcing is disabled");
                 return Task.FromResult(ExitCode.Success);
             }
 
             string sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
 
-            var delegateLogger = new DelegateLogger(
-                logger.WriteError,
-                logger.WriteWarning,
-                logger.Write,
-                logger.WriteVerbose,
-                logger.WriteDebug)
-            {
-                LogLevel = Sorbus.Core.LogLevel.TryParse(logger.LogLevel.Level)
-            };
-            var app = new AssemblyPatcherApp(delegateLogger);
+            var app = new AssemblyPatcherApp();
 
             try
             {
-                logger.WriteVerbose(
-                    $"Un-patching assembly info files for directory source root directory '{sourceRoot}'");
+                logger.Verbose("Un-patching assembly info files for directory source root directory '{SourceRoot}'",
+                    sourceRoot);
 
                 app.Unpatch(sourceRoot);
             }
             catch (Exception ex)
             {
-                logger.WriteError($"Could not unpatch. {ex}");
+                logger.Error(ex, "Could not unpatch.");
                 return Task.FromResult(ExitCode.Failure);
             }
 

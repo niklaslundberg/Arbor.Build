@@ -4,14 +4,14 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.IO;
 using Arbor.Defensive.Collections;
 using Arbor.Processing.Core;
-using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.IO;
-using Arbor.X.Core.Logging;
 using JetBrains.Annotations;
+using Serilog;
 
-namespace Arbor.X.Core.Tools.NuGet
+namespace Arbor.Build.Core.Tools.NuGet
 {
     [Priority(650)]
     [UsedImplicitly]
@@ -30,8 +30,8 @@ namespace Arbor.X.Core.Tools.NuGet
 
             if (!enabled)
             {
-                logger.WriteWarning(
-                    $"NuGet Packer is disabled (build variable '{WellKnownVariables.NuGetPackageEnabled}' is set to false");
+                logger.Warning("NuGet Packer is disabled (build variable '{NuGetPackageEnabled}' is set to false",
+                    WellKnownVariables.NuGetPackageEnabled);
                 return ExitCode.Success;
             }
 
@@ -59,16 +59,31 @@ namespace Arbor.X.Core.Tools.NuGet
                 vcsRootDir,
                 packageDirectory);
 
-            if (!packageSpecifications.Any())
+            if (packageSpecifications.Count == 0)
             {
-                logger.Write("Could not find any NuGet specifications to create NuGet packages from");
+                logger.Information("Could not find any NuGet specifications to create NuGet packages from");
                 return ExitCode.Success;
             }
 
-            logger.Write($"Found {packageSpecifications.Count} NuGet specifications to create NuGet packages from");
+            logger.Information("Found {Count} NuGet specifications to create NuGet packages from",
+                packageSpecifications.Count);
 
-            ExitCode result =
-                await ProcessPackagesAsync(packageSpecifications, packageConfiguration, logger, cancellationToken);
+            ExitCode result;
+
+            int timeoutInSeconds = buildVariables.GetInt32ByKey(WellKnownVariables.NuGetPackageTimeoutInSeconds, defaultValue: 60);
+
+            using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeoutInSeconds)))
+            {
+                using (CancellationTokenSource.CreateLinkedTokenSource(cancellationToken,cts.Token))
+                {
+                    result =
+                        await ProcessPackagesAsync(packageSpecifications,
+                                packageConfiguration,
+                                logger,
+                                cancellationToken)
+                            .ConfigureAwait(false);
+                }
+            }
 
             return result;
         }
@@ -109,8 +124,11 @@ namespace Arbor.X.Core.Tools.NuGet
                                     StringComparison.InvariantCultureIgnoreCase)))
                     .SafeToReadOnlyCollection();
 
-            logger.WriteVerbose(
-                $"Found nuspec files [{filtered.Count}]: {Environment.NewLine}{string.Join(Environment.NewLine, filtered)}");
+            logger.Verbose("Found nuspec files [{Count}]: {NewLine}{V}",
+                filtered.Count,
+                Environment.NewLine,
+                string.Join(Environment.NewLine, filtered));
+
             IReadOnlyCollection<string> allIncluded = notExcluded.Select(file => file.FullName)
                 .SafeToReadOnlyCollection();
 
@@ -131,11 +149,12 @@ namespace Arbor.X.Core.Tools.NuGet
                     await packager.CreatePackageAsync(
                         packageSpecification,
                         packageConfiguration,
-                        cancellationToken: cancellationToken);
+                        cancellationToken: cancellationToken).ConfigureAwait(false);
 
                 if (!packageResult.IsSuccess)
                 {
-                    logger.WriteError($"Could not create NuGet package from specification '{packageSpecification}'");
+                    logger.Error("Could not create NuGet package from specification '{PackageSpecification}'",
+                        packageSpecification);
                     return packageResult;
                 }
             }

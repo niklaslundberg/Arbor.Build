@@ -11,4 +11,9 @@
         Scope = "type",
         Target = "Arbor.X.Core.BuildVariables.WellKnownVariables")]
 
-[assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1401:Fields must be private", Justification = "LegacyRule", Scope = "member", Target = "~F:Arbor.X.Core.Tools.EnvironmentVariables.EnvironmentVerification.RequiredValues")]
+[assembly:
+    System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules",
+        "SA1401:Fields must be private",
+        Justification = "LegacyRule",
+        Scope = "member",
+        Target = "~F:Arbor.X.Core.Tools.EnvironmentVariables.EnvironmentVerification.RequiredValues")]

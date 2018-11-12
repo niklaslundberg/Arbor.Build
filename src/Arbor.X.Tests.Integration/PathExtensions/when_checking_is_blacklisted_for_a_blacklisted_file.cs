@@ -1,8 +1,8 @@
-using Arbor.X.Core.IO;
-using Arbor.X.Core.Logging;
+using Arbor.Build.Core.IO;
 using Machine.Specifications;
+using Serilog.Core;
 
-namespace Arbor.X.Tests.Integration.PathExtensions
+namespace Arbor.Build.Tests.Integration.PathExtensions
 {
     [Tags(Core.Tools.Testing.MSpecInternalConstants.RecursiveArborXTest)]
     public class when_checking_is_blacklisted_for_a_blacklisted_file
@@ -19,7 +19,7 @@ namespace Arbor.X.Tests.Integration.PathExtensions
             result = path_lookup_specification.IsFileBlackListed(
                 @"C:\test.vshost.exe",
                 allowNonExistingFiles: true,
-                logger: new ConsoleLogger()).Item1;
+                logger: Logger.None).Item1;
         };
 
         It should_be_true = () => result.ShouldBeTrue();

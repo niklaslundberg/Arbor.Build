@@ -1,22 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.Properties;
 using Arbor.Processing;
 using Arbor.Processing.Core;
-using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.Logging;
-using Arbor.X.Core.Properties;
 using JetBrains.Annotations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Serilog;
 
-namespace Arbor.X.Core.Tools.Testing
+namespace Arbor.Build.Core.Tools.Testing
 {
     [Priority(450)]
     [UsedImplicitly]
-    public class VsTestRunner : ITool
+    public class VsTestRunner : ITestRunnerTool
     {
         private string _sourceRoot;
 
@@ -25,11 +26,11 @@ namespace Arbor.X.Core.Tools.Testing
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.VSTestEnabled, true);
+            bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.VSTestEnabled, false);
 
             if (!enabled)
             {
-                logger.WriteWarning("VSTest not enabled");
+                logger.Warning("VSTest not enabled");
                 return ExitCode.Success;
             }
 
@@ -43,8 +44,8 @@ namespace Arbor.X.Core.Tools.Testing
 
             if (string.IsNullOrWhiteSpace(vsTestExePath))
             {
-                logger.WriteWarning(
-                    $"{WellKnownVariables.ExternalTools_VSTest_ExePath} is not defined, cannot run any VSTests");
+                logger.Warning("{ExternalTools_VSTest_ExePath} is not defined, cannot run any VSTests",
+                    WellKnownVariables.ExternalTools_VSTest_ExePath);
                 return ExitCode.Success;
             }
 
@@ -52,34 +53,41 @@ namespace Arbor.X.Core.Tools.Testing
                 WellKnownVariables.IgnoreTestFailures,
                 false);
 
-            bool runTestsInReleaseConfiguration =
-                buildVariables.GetBooleanByKey(
-                    WellKnownVariables.RunTestsInReleaseConfigurationEnabled,
-                    true);
+            bool? runTestsInReleaseConfiguration =
+                buildVariables.GetOptionalBooleanByKey(
+                    WellKnownVariables.RunTestsInReleaseConfigurationEnabled);
 
-            string assemblyFilePrefix = buildVariables.GetVariableValueOrDefault(WellKnownVariables.TestsAssemblyStartsWith, string.Empty);
+            ImmutableArray<string> assemblyFilePrefix = buildVariables.AssemblyFilePrefixes();
 
             if (ignoreTestFailures)
             {
                 try
                 {
-                    return await RunVsTestAsync(logger, reportPath, vsTestExePath, runTestsInReleaseConfiguration, assemblyFilePrefix);
+                    return await RunVsTestAsync(logger,
+                        reportPath,
+                        vsTestExePath,
+                        runTestsInReleaseConfiguration,
+                        assemblyFilePrefix).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
-                    logger.WriteWarning($"Ignoring test exception: {ex}");
+                    logger.Warning(ex, "Ignoring test exception");
                 }
 
                 return ExitCode.Success;
             }
 
-            return await RunVsTestAsync(logger, reportPath, vsTestExePath, runTestsInReleaseConfiguration, assemblyFilePrefix);
+            return await RunVsTestAsync(logger,
+                reportPath,
+                vsTestExePath,
+                runTestsInReleaseConfiguration,
+                assemblyFilePrefix).ConfigureAwait(false);
         }
 
         private static void LogExecution(ILogger logger, IEnumerable<string> arguments, string exePath)
         {
             string args = string.Join(" ", arguments.Select(item => $"\"{item}\""));
-            logger.Write($"Running VSTest {exePath} {args}");
+            logger.Information("Running VSTest {ExePath} {Args}", exePath, args);
         }
 
         private static IEnumerable<string> GetVsTestConsoleOptions()
@@ -92,8 +100,8 @@ namespace Arbor.X.Core.Tools.Testing
             ILogger logger,
             string vsTestReportDirectoryPath,
             string vsTestExePath,
-            bool runTestsInReleaseConfiguration,
-            string assemblyFilePrefix)
+            bool? runTestsInReleaseConfiguration,
+            ImmutableArray<string> assemblyFilePrefix)
         {
             Type testClassAttribute = typeof(TestClassAttribute);
             Type testMethodAttribute = typeof(TestMethodAttribute);
@@ -103,15 +111,23 @@ namespace Arbor.X.Core.Tools.Testing
             var typesToFind = new List<Type> { testClassAttribute, testMethodAttribute };
 
             List<string> vsTestConsoleArguments =
-                new UnitTestFinder(typesToFind).GetUnitTestFixtureDlls(directory, runTestsInReleaseConfiguration, assemblyFilePrefix, FrameworkConstants.NetFramework)
+                new UnitTestFinder(typesToFind).GetUnitTestFixtureDlls(directory,
+                        runTestsInReleaseConfiguration,
+                        assemblyFilePrefix,
+                        FrameworkConstants.NetFramework)
                     .ToList();
 
-            if (!vsTestConsoleArguments.Any())
+            if (vsTestConsoleArguments.Count == 0)
             {
-                logger.WriteWarning(
-                    $"Could not find any VSTest tests in directory '{directory.FullName}' or any sub-directory");
+                logger.Warning("Could not find any VSTest tests in directory '{FullName}' or any sub-directory",
+                    directory.FullName);
                 return ExitCode.Success;
             }
+
+            logger.Debug("Found [{VsTestConsoleArguments}] potential Assembly dll files with tests: {NewLine}: {V}",
+                vsTestConsoleArguments,
+                Environment.NewLine,
+                string.Join(Environment.NewLine, vsTestConsoleArguments.Select(dll => $" * '{dll}'")));
 
             IEnumerable<string> options = GetVsTestConsoleOptions();
 
@@ -130,11 +146,11 @@ namespace Arbor.X.Core.Tools.Testing
                 Task<ExitCode> execute = ProcessRunner.ExecuteAsync(
                     vsTestExePath,
                     arguments: vsTestConsoleArguments,
-                    standardOutLog: logger.Write,
-                    standardErrorAction: logger.WriteError,
-                    toolAction: logger.Write);
+                    standardOutLog: logger.Information,
+                    standardErrorAction: logger.Error,
+                    toolAction: logger.Information);
 
-                ExitCode result = await execute;
+                ExitCode result = await execute.ConfigureAwait(false);
 
                 return result;
             }

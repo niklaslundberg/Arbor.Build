@@ -1,7 +1,8 @@
 ﻿using NUnit.Framework;
 
-namespace Arbor.X.Tests.Integration.Tests
+namespace Arbor.Build.Tests.Integration.Tests
 {
+    [Ignore("NUnit broken")]
     [TestFixture]
     public class NUnitDummy
     {

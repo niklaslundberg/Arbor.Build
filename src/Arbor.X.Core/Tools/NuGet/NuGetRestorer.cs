@@ -1,225 +1,90 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Arbor.Castanea;
-using Arbor.Defensive.Collections;
+using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.IO;
+using Arbor.Build.Core.ProcessUtils;
 using Arbor.Processing.Core;
-using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.IO;
-using Arbor.X.Core.Logging;
 using JetBrains.Annotations;
-using ExceptionExtensions = Arbor.Exceptions.ExceptionExtensions;
+using Serilog;
 
-namespace Arbor.X.Core.Tools.NuGet
+namespace Arbor.Build.Core.Tools.NuGet
 {
-    [Priority(100)]
+    [Priority(101)]
     [UsedImplicitly]
     public class NuGetRestorer : ITool
     {
-        private readonly IReadOnlyCollection<INuGetPackageRestoreFix> _fixes;
-
-        public NuGetRestorer(IEnumerable<INuGetPackageRestoreFix> fixes)
-        {
-            _fixes = fixes.SafeToReadOnlyCollection();
-        }
-
         public async Task<ExitCode> ExecuteAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            var app = new CastaneaApplication();
+            bool enabled = buildVariables.GetBooleanByKey(
+                WellKnownVariables.NuGetRestoreEnabled,
+                true);
 
-            PathLookupSpecification pathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification;
-
-            string vcsRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
-            string nuGetExetPath = buildVariables.Require(WellKnownVariables.ExternalTools_NuGet_ExePath)
-                .ThrowIfEmptyValue()
-                .Value;
-
-            var rootDirectory = new DirectoryInfo(vcsRoot);
-
-            int listFilesAttempt = 1;
-
-            int listFilesMaxAttempts = 5;
-
-            bool listFilesSucceeded = false;
-
-            IReadOnlyCollection<string> packagesConfigFiles = new List<string>();
-            IReadOnlyCollection<FileInfo> solutionFiles = new List<FileInfo>();
-
-            while (listFilesAttempt <= listFilesMaxAttempts && !listFilesSucceeded)
+            if (!enabled)
             {
-                try
-                {
-                    rootDirectory.Refresh();
-
-                    packagesConfigFiles =
-                        rootDirectory.EnumerateFiles("packages.config", SearchOption.AllDirectories)
-                            .Where(file => !pathLookupSpecification.IsFileBlackListed(file.FullName, vcsRoot).Item1)
-                            .Select(file => file.FullName)
-                            .ToReadOnlyCollection();
-
-                    rootDirectory.Refresh();
-
-                    solutionFiles =
-                        rootDirectory.EnumerateFiles("*.sln", SearchOption.AllDirectories)
-                            .Where(file => !pathLookupSpecification.IsFileBlackListed(file.FullName, vcsRoot).Item1)
-                            .ToReadOnlyCollection();
-
-                    listFilesSucceeded = true;
-                }
-                catch (Exception ex)
-                {
-                    if (listFilesAttempt == listFilesMaxAttempts)
-                    {
-                        logger.WriteError($"Could not enumerable packages.config files or solutions files. {ex}");
-                        return ExitCode.Failure;
-                    }
-
-                    logger.WriteWarning(
-                        $"Attempt {listFilesAttempt} of {listFilesMaxAttempts} failed, retrying. {ex}");
-                    listFilesAttempt++;
-                }
-            }
-
-            if (!packagesConfigFiles.Any())
-            {
-                logger.WriteWarning("Could not find any packages.config files, skipping package restore");
+                logger.Debug("{Tool} is disabled", nameof(NuGetRestorer));
                 return ExitCode.Success;
             }
 
-            if (!solutionFiles.Any())
+            string nugetExePath =
+                buildVariables.GetVariable(WellKnownVariables.ExternalTools_NuGet_ExePath).ThrowIfEmptyValue().Value;
+
+            string rootPath = buildVariables.GetVariable(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
+
+            string[] solutionFiles = Directory.GetFiles(rootPath, "*.sln", SearchOption.AllDirectories);
+
+            PathLookupSpecification pathLookupSpecification =
+                DefaultPaths.DefaultPathLookupSpecification.AddExcludedDirectorySegments(new[] { "node_modules" });
+
+            var blackListStatus = solutionFiles
+                .Select(file => new { File = file, Status = pathLookupSpecification.IsFileBlackListed(file, rootPath) })
+                .ToArray();
+
+            string[] included = blackListStatus
+                .Where(file => !file.Status.Item1)
+                .Select(file => file.File)
+                .ToArray();
+
+            var excluded = blackListStatus
+                .Where(file => file.Status.Item1)
+                .ToArray();
+
+            if (included.Length > 1)
             {
-                logger.WriteError("Could not find any solution file, cannot determine package output directory");
+                logger.Error("Expected exactly 1 solution file, found {Length}, {V}",
+                    included.Length,
+                    string.Join(", ", included));
                 return ExitCode.Failure;
             }
 
-            if (solutionFiles.Count > 1)
+            if (included.Length == 0)
             {
-                logger.WriteError("Found more than one solution file, cannot determine package output directory");
+                logger.Error("Expected exactly 1 solution file, found 0");
                 return ExitCode.Failure;
             }
 
-            FileInfo solutionFile = solutionFiles.Single();
-
-            string allFiles = string.Join(Environment.NewLine, packagesConfigFiles);
-            try
+            if (excluded.Length > 0)
             {
-// ReSharper disable once PossibleNullReferenceException
-                string outputDirectoryPath = Path.Combine(solutionFile.Directory.FullName, "packages");
-
-                new DirectoryInfo(outputDirectoryPath).EnsureExists();
-
-                bool disableParallelProcessing =
-                    buildVariables.GetBooleanByKey(
-                        WellKnownVariables.NuGetRestoreDisableParallelProcessing,
-                        false);
-
-                bool noCache = buildVariables.GetBooleanByKey(
-                    WellKnownVariables.NuGetRestoreNoCache,
-                    false);
-
-                var nuGetConfig = new NuGetConfig
-                {
-                    NuGetExePath = nuGetExetPath,
-                    OutputDirectory = outputDirectoryPath,
-                    DisableParallelProcessing = disableParallelProcessing,
-                    NoCache = noCache
-                };
-
-                nuGetConfig.PackageConfigFiles.AddRange(packagesConfigFiles);
-
-                Action<string> debugAction = null;
-
-                string prefix = typeof(CastaneaApplication).Namespace;
-
-                if (logger.LogLevel.IsLogging(LogLevel.Verbose))
-                {
-                    debugAction = message => logger.WriteVerbose(message, prefix);
-                }
-
-                int restoredPackages = 0;
-
-                int attempt = 1;
-
-                int maxAttempts = 5;
-
-                bool succeeded = false;
-
-                while (attempt <= maxAttempts && !succeeded)
-                {
-                    try
-                    {
-                        restoredPackages = app.RestoreAllSolutionPackages(
-                            nuGetConfig,
-                            message => logger.Write(message, prefix),
-                            message => logger.WriteError(message, prefix),
-                            debugAction);
-
-                        if (restoredPackages == 0)
-                        {
-                            logger.WriteWarning($"No packages was restored as defined in {allFiles}");
-                            return ExitCode.Success;
-                        }
-
-                        succeeded = true;
-                    }
-                    catch (Exception ex)
-                    {
-                        if (attempt < maxAttempts)
-                        {
-                            logger.WriteWarning(
-                                $"Attempt {attempt} of {maxAttempts}: could not restore NuGet packages, trying againg. {ex.Message}");
-                        }
-                        else
-                        {
-                            logger.WriteError($"Could not restore NuGet packages.{ex}");
-                            return ExitCode.Failure;
-                        }
-
-                        attempt++;
-                    }
-                }
-
-                logger.Write($"Restored {restoredPackages} package configurations defined in {allFiles}");
-            }
-            catch (Exception ex)
-            {
-                logger.WriteError($"Could not restore packages defined in '{allFiles}'. {ex}");
-                return ExitCode.Failure;
+                logger.Warning("Found blacklisted solution files: {V}",
+                    string.Join(", ",
+                        excluded.Select(excludedItem => $"{excludedItem.File} ({excludedItem.Status.Item2})")));
             }
 
-            try
-            {
-                foreach (FileInfo fileInfo in solutionFiles)
-                {
-                    // ReSharper disable once PossibleNullReferenceException
-                    string packagesDirectory = Path.Combine(fileInfo.Directory.FullName, "packages");
+            string solutionFile = included.Single();
 
-                    if (Directory.Exists(packagesDirectory))
-                    {
-                        foreach (INuGetPackageRestoreFix nuGetPackageRestoreFix in _fixes)
-                        {
-                            await nuGetPackageRestoreFix.FixAsync(packagesDirectory, logger);
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                if (ExceptionExtensions.IsFatal(ex))
-                {
-                    throw;
-                }
+            ExitCode result = await ProcessHelper.ExecuteAsync(
+                nugetExePath,
+                new[] { "restore", solutionFile },
+                logger,
+                cancellationToken: cancellationToken).ConfigureAwait(false);
 
-                logger.WriteWarning(ex.ToString());
-            }
+            return result;
 
-            return ExitCode.Success;
         }
     }
 }

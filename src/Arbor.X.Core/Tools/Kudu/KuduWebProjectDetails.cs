@@ -1,6 +1,6 @@
 using System;
 
-namespace Arbor.X.Core.Tools.Kudu
+namespace Arbor.Build.Core.Tools.Kudu
 {
     public class KuduWebProjectDetails
     {

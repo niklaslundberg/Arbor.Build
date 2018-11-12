@@ -1,4 +1,4 @@
-namespace Arbor.X.Core.Tools.Testing
+namespace Arbor.Build.Core.Tools.Testing
 {
     public static class MSpecInternalConstants
     {

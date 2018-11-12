@@ -1,9 +1,9 @@
 ﻿using System;
 
-namespace Arbor.X.Core.BuildVariables
+namespace Arbor.Build.Core.BuildVariables
 {
     [AttributeUsage(AttributeTargets.Field)]
-    internal class VariableDescriptionAttribute : Attribute
+    internal sealed class VariableDescriptionAttribute : Attribute
     {
         private readonly string _preferUse;
 

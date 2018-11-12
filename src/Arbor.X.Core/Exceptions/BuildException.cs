@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using Arbor.X.Core.BuildVariables;
+using Arbor.Build.Core.BuildVariables;
 
-namespace Arbor.X.Core.Exceptions
+namespace Arbor.Build.Core.Exceptions
 {
     public sealed class BuildException : Exception
     {
@@ -15,6 +15,24 @@ namespace Arbor.X.Core.Exceptions
 
             // ReSharper disable once RedundantBaseQualifier
             Data.Add("Arbor.X.Variables", _buildVariables);
+        }
+
+        public BuildException()
+        {
+        }
+
+        public BuildException(string message) : base(message)
+        {
+        }
+
+        public BuildException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+
+        private BuildException(
+            System.Runtime.Serialization.SerializationInfo info,
+            System.Runtime.Serialization.StreamingContext context) : base(info, context)
+        {
         }
 
         public override string ToString()

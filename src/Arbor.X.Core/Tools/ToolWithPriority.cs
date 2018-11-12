@@ -1,17 +1,12 @@
 ﻿using System;
 
-namespace Arbor.X.Core.Tools
+namespace Arbor.Build.Core.Tools
 {
     public class ToolWithPriority
     {
         public ToolWithPriority(ITool tool, int priority, bool runAlways)
         {
-            if (tool == null)
-            {
-                throw new ArgumentNullException(nameof(tool));
-            }
-
-            Tool = tool;
+            Tool = tool ?? throw new ArgumentNullException(nameof(tool));
             Priority = priority;
             RunAlways = runAlways;
         }

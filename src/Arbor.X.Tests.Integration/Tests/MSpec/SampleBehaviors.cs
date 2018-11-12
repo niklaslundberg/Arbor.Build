@@ -1,6 +1,6 @@
 using Machine.Specifications;
 
-namespace Arbor.X.Tests.Integration.Tests.MSpec
+namespace Arbor.Build.Tests.Integration.Tests.MSpec
 {
     [Behaviors]
     public class SampleBehaviors

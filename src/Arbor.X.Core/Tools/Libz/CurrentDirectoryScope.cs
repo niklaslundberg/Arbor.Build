@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using JetBrains.Annotations;
 
-namespace Arbor.X.Core.Tools.Libz
+namespace Arbor.Build.Core.Tools.Libz
 {
     public sealed class CurrentDirectoryScope : IDisposable
     {

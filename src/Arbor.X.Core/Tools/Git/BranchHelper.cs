@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Arbor.X.Core.BuildVariables;
+using Arbor.Build.Core.BuildVariables;
 using NuGet.Versioning;
 
-namespace Arbor.X.Core.Tools.Git
+namespace Arbor.Build.Core.Tools.Git
 {
     public static class BranchHelper
     {
@@ -46,7 +46,7 @@ namespace Arbor.X.Core.Tools.Git
 
             bool isDevelopBranch =
                 developBranchNames.Any(name => branchName.LogicalName.StartsWith(
-                    branchName.Name,
+                    name,
                     StringComparison.InvariantCultureIgnoreCase));
 
             return isDevelopBranch;
@@ -137,8 +137,7 @@ namespace Arbor.X.Core.Tools.Git
             string version =
                 branchName.Split(splitCharacters.ToArray(), StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
 
-            SemanticVersion semver;
-            if (!SemanticVersion.TryParse(version, out semver))
+            if (!SemanticVersion.TryParse(version, out SemanticVersion semver))
             {
                 return new SemanticVersion(0, 0, 0);
             }

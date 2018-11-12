@@ -2,13 +2,25 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Arbor.X.Core.Tools.Kudu
+namespace Arbor.Build.Core.Tools.Kudu
 {
     public class KuduWebJobType : IEquatable<KuduWebJobType>
     {
         private KuduWebJobType(string invariantName)
         {
             DisplayName = invariantName;
+        }
+
+        public string DisplayName { get; }
+
+        public static bool operator ==(KuduWebJobType left, KuduWebJobType right)
+        {
+            return Equals(left, right);
+        }
+
+        public static bool operator !=(KuduWebJobType left, KuduWebJobType right)
+        {
+            return !Equals(left, right);
         }
 
         public static KuduWebJobType Continuous => new KuduWebJobType("Continuous");
@@ -24,18 +36,6 @@ namespace Arbor.X.Core.Tools.Kudu
             }
         }
 
-        public string DisplayName { get; }
-
-        public static bool operator ==(KuduWebJobType left, KuduWebJobType right)
-        {
-            return Equals(left, right);
-        }
-
-        public static bool operator !=(KuduWebJobType left, KuduWebJobType right)
-        {
-            return !Equals(left, right);
-        }
-
         public static KuduWebJobType Parse(string type)
         {
             if (string.IsNullOrWhiteSpace(type))
@@ -49,7 +49,9 @@ namespace Arbor.X.Core.Tools.Kudu
 
             var exception = new FormatException(message);
 
-            string valueToParse = type.Trim().StartsWith("<", StringComparison.Ordinal) ? type.ExtractFromTag(typeof(KuduWebJobType).Name) : type;
+            string valueToParse = type.Trim().StartsWith("<", StringComparison.Ordinal)
+                ? type.ExtractFromTag(typeof(KuduWebJobType).Name)
+                : type;
 
             KuduWebJobType foundItem =
                 All.SingleOrDefault(
@@ -61,6 +63,21 @@ namespace Arbor.X.Core.Tools.Kudu
             }
 
             return foundItem;
+        }
+
+        public bool Equals(KuduWebJobType other)
+        {
+            if (ReferenceEquals(null, other))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return string.Equals(DisplayName, other.DisplayName);
         }
 
         public override bool Equals(object obj)
@@ -91,21 +108,6 @@ namespace Arbor.X.Core.Tools.Kudu
         public override string ToString()
         {
             return DisplayName;
-        }
-
-        public bool Equals(KuduWebJobType other)
-        {
-            if (ReferenceEquals(null, other))
-            {
-                return false;
-            }
-
-            if (ReferenceEquals(this, other))
-            {
-                return true;
-            }
-
-            return string.Equals(DisplayName, other.DisplayName);
         }
     }
 }

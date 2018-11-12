@@ -4,15 +4,15 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.IO;
+using Arbor.Build.Core.ProcessUtils;
 using Arbor.Defensive.Collections;
 using Arbor.Processing.Core;
-using Arbor.X.Core.BuildVariables;
-using Arbor.X.Core.IO;
-using Arbor.X.Core.Logging;
-using Arbor.X.Core.ProcessUtils;
 using JetBrains.Annotations;
+using Serilog;
 
-namespace Arbor.X.Core.Tools.Paket
+namespace Arbor.Build.Core.Tools.Paket
 {
     [Priority(100)]
     [UsedImplicitly]
@@ -26,9 +26,10 @@ namespace Arbor.X.Core.Tools.Paket
             var sourceRoot =
                 new DirectoryInfo(buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value);
 
-            logger.Write($"Looking for paket.exe in source root {sourceRoot.FullName}");
+            logger.Information("Looking for paket.exe in source root {FullName}", sourceRoot.FullName);
 
-            PathLookupSpecification pathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification.WithIgnoredFileNameParts(new List<string>());
+            PathLookupSpecification pathLookupSpecification =
+                DefaultPaths.DefaultPathLookupSpecification.WithIgnoredFileNameParts(new List<string>());
 
             FileInfo paketExe = null;
 
@@ -38,7 +39,7 @@ namespace Arbor.X.Core.Tools.Paket
                     .Select(f => f.FullName)
                     .ToList();
 
-            if (!packageSpecifications.Any())
+            if (packageSpecifications.Count == 0)
             {
                 FileInfo normalSearch = sourceRoot.GetFiles("paket.exe", SearchOption.AllDirectories)
                     .OrderBy(file => file.FullName.Length).FirstOrDefault();
@@ -49,7 +50,7 @@ namespace Arbor.X.Core.Tools.Paket
                 }
                 else
                 {
-                    logger.Write("Could not find paket.exe, skipping paket restore");
+                    logger.Information("Could not find paket.exe, skipping paket restore");
                     return ExitCode.Success;
                 }
             }
@@ -66,35 +67,36 @@ namespace Arbor.X.Core.Tools.Paket
                         .Select(file => new FileInfo(file))
                         .ToReadOnlyCollection();
 
-                if (!filtered.Any())
+                if (filtered.Count == 0)
                 {
-                    logger.Write(
-                        $"Could not find paket.exe, filtered out: {string.Join(", ", packageSpecifications)}, skipping paket restore");
+                    logger.Information("Could not find paket.exe, filtered out: {V}, skipping paket restore",
+                        string.Join(", ", packageSpecifications));
                     return ExitCode.Success;
                 }
 
                 paketExe = filtered.First();
             }
 
-            logger.Write($"Found paket.exe at '{paketExe.FullName}'");
+            logger.Information("Found paket.exe at '{FullName}'", paketExe.FullName);
 
-            string copyFromPath = buildVariables.GetVariableValueOrDefault("Arbor.X.Build.Tools.Paket.CopyExeFromPath", string.Empty);
+            string copyFromPath =
+                buildVariables.GetVariableValueOrDefault("Arbor.X.Build.Tools.Paket.CopyExeFromPath", string.Empty);
 
             if (!string.IsNullOrWhiteSpace(copyFromPath))
             {
                 if (File.Exists(copyFromPath))
                 {
-                    File.Copy(copyFromPath, paketExe.FullName, overwrite: true);
-                    logger.Write($"Copied paket.exe to {paketExe.FullName}");
+                    File.Copy(copyFromPath, paketExe.FullName, true);
+                    logger.Information("Copied paket.exe to {FullName}", paketExe.FullName);
                 }
                 else
                 {
-                    logger.Write($"The specified paket.exe path '{copyFromPath}' does not exist");
+                    logger.Information("The specified paket.exe path '{CopyFromPath}' does not exist", copyFromPath);
                 }
             }
             else
             {
-                logger.Write($"Found no paket.exe to copy");
+                logger.Information("Found no paket.exe to copy");
             }
 
             Directory.SetCurrentDirectory(sourceRoot.FullName);
@@ -103,7 +105,7 @@ namespace Arbor.X.Core.Tools.Paket
                 paketExe.FullName,
                 new List<string> { "restore" },
                 logger,
-                cancellationToken: cancellationToken);
+                cancellationToken: cancellationToken).ConfigureAwait(false);
 
             return exitCode;
         }
