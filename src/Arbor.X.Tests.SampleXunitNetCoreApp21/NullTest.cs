@@ -2,7 +2,7 @@
 
 namespace Arbor.Build.Tests.SampleXunitNetCoreApp21
 {
-    public class Class1
+    public class NullTest
     {
         [Fact]
         public void ShouldBeTrue()

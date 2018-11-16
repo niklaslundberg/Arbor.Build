@@ -1611,18 +1611,16 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             string packageId = solutionProject.ProjectName;
 
-            string excluded = _excludedNuGetWebPackageFiles.Count > 0
-                ? $";{string.Join(";", _excludedNuGetWebPackageFiles.Select(excludePattern => $"{siteArtifactDirectory}\\{excludePattern}"))}"
-                : string.Empty;
+            var artifactDirectory = new DirectoryInfo(siteArtifactDirectory);
 
-            string files =
-                $@"<file src=""{siteArtifactDirectory}\**\*.*"" target=""Content"" exclude=""packages.config{excluded}"" />";
+            ImmutableArray<string> allIncludedFiles = artifactDirectory.GetFilesWithWithExclusions(_excludedNuGetWebPackageFiles);
 
             ExitCode exitCode = await CreateNuGetPackageAsync(
                 platformDirectoryPath,
                 logger,
                 packageId,
-                files).ConfigureAwait(false);
+                allIncludedFiles,
+                artifactDirectory).ConfigureAwait(false);
 
             if (!exitCode.IsSuccess)
             {
@@ -1678,16 +1676,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                 List<string> elements = environmentFiles
                     .Where(file => file.EnvironmentName.Equals(environmentName, StringComparison.OrdinalIgnoreCase))
-                    .Select(
-                        file =>
-                        {
-                            string sourceFullPath = file.File.FullName.Trim(Path.DirectorySeparatorChar);
-                            string relativePath =
-                                sourceFullPath.Replace(rootDirectory, string.Empty).Trim(Path.DirectorySeparatorChar);
-                            return new { SourceFullPath = sourceFullPath, RelativePath = relativePath };
-                        })
-                    .Select(environmentFile =>
-                        $"<file src=\"{environmentFile.SourceFullPath}\" target=\"Content\\{environmentFile.RelativePath}\" />")
+                    .Select(file => file.File.FullName)
                     .ToList();
 
                 if (_verboseLoggingEnabled)
@@ -1701,12 +1690,12 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                 string environmentPackageId = $"{packageId}.Environment.{environmentName}";
 
-                ExitCode environmentPackageExitCode
-                    = await CreateNuGetPackageAsync(
+                ExitCode environmentPackageExitCode = await CreateNuGetPackageAsync(
                         platformDirectoryPath,
                         logger,
                         environmentPackageId,
-                        string.Join(Environment.NewLine, elements)).ConfigureAwait(false);
+                        elements,
+                        new DirectoryInfo(rootDirectory)).ConfigureAwait(false);
 
                 if (!environmentPackageExitCode.IsSuccess)
                 {
@@ -1845,7 +1834,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
             string platformDirectoryPath,
             ILogger logger,
             string packageId,
-            string filesList)
+            IReadOnlyCollection<string> filesList,
+            DirectoryInfo baseDirectory)
         {
             string packageDirectoryPath = Path.Combine(platformDirectoryPath, "NuGet");
 
@@ -1876,7 +1866,14 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 "Undefined");
             string tags = string.Empty;
 
-            string files = filesList;
+            string files = string.Join(Environment.NewLine, filesList.Select(file => NuSpecHelper.IncludedFile(file, baseDirectory.FullName)));
+
+            FileListWithChecksumFile contentFilesInfo = ChecksumHelper.CreateFileListForDirectory(baseDirectory);
+
+            string metaDir = new FileInfo(contentFilesInfo.ContentFilesFile).Directory.FullName;
+
+            string contentFileListFile = $@"<file src=""{contentFilesInfo.ContentFilesFile}"" target=""{contentFilesInfo.ContentFilesFile.Substring(metaDir.Length).TrimStart(Path.DirectorySeparatorChar)}"" />";
+            string checksumFile = $@"<file src=""{contentFilesInfo.ChecksumFile}"" target=""{contentFilesInfo.ChecksumFile.Substring(metaDir.Length).TrimStart(Path.DirectorySeparatorChar)}"" />";
 
             string nuspecContent = $@"<?xml version=""1.0""?>
 <package>
@@ -1908,6 +1905,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
     </metadata>
     <files>
         {files}
+        {contentFileListFile}
+        {checksumFile}
     </files>
 </package>";
 
@@ -1929,6 +1928,11 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 packageConfiguration,
                 true,
                 _cancellationToken).ConfigureAwait(false);
+
+            if (Directory.Exists(metaDir))
+            {
+                new DirectoryInfo(metaDir).DeleteIfExists();
+            }
 
             File.Delete(nuspecTempFile);
 
