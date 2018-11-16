@@ -19,7 +19,7 @@ namespace Arbor.Build.Tests.Integration.NuGet
         [Fact]
         public void WhenGettingIncludedFiles()
         {
-            DirectoryInfo tempDirectory = new DirectoryInfo(Path.Combine(Path.GetTempPathT(), Guid.NewGuid().ToString()))
+            DirectoryInfo tempDirectory = new DirectoryInfo(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()))
                 .EnsureExists();
 
             DirectoryInfo subDirectoryA = tempDirectory.CreateSubdirectory("Abc");
