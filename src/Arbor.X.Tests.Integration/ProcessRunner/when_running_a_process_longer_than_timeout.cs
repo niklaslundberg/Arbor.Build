@@ -20,6 +20,7 @@ namespace Arbor.Build.Tests.Integration.ProcessRunner
         static ExitCode exitCode = new ExitCode(99);
         static TaskCanceledException exception;
         static ILogger logger = Logger.None;
+        static string logFile;
 
         Cleanup after = () =>
         {
@@ -27,17 +28,24 @@ namespace Arbor.Build.Tests.Integration.ProcessRunner
             {
                 File.Delete(testPath);
             }
+
+            if (File.Exists(logFile))
+            {
+                File.Delete(logFile);
+            }
         };
 
         Establish context = () =>
         {
             testPath = Path.Combine(Path.GetTempPath(), $"{DefaultPaths.TempPathPrefix}_Test_timeout.tmp.bat");
 
-            const string batchContent = @"@ECHO OFF
+            logFile = @"C:\Temp\test.log";
+
+            string batchContent = $@"@ECHO OFF
 ECHO Waiting for 10 seconds
 ping 127.0.0.1 -r 9
 ECHO After batch file timeout
-ECHO 123 > C:\Temp\test.log
+ECHO 123 > {logFile}
 EXIT /b 2
 ";
 
