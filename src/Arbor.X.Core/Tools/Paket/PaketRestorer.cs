@@ -23,6 +23,12 @@ namespace Arbor.Build.Core.Tools.Paket
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
+            if (buildVariables.GetOptionalBooleanByKey(WellKnownVariables.PaketEnabled) != true)
+            {
+                logger.Information("Paket is disabled by key '{Key}'", WellKnownVariables.PaketEnabled);
+                return ExitCode.Success;
+            }
+
             var sourceRoot =
                 new DirectoryInfo(buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value);
 

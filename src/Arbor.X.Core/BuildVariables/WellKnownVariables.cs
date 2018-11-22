@@ -397,6 +397,10 @@ namespace Arbor.Build.Core.BuildVariables
         public const string PublishRuntimeIdentifier =
             "Arbor.X.Build.PublishRuntimeIdentifier";
 
+        [VariableDescription("Paket Enabled")]
+        public const string PaketEnabled =
+            "Arbor.X.Build.Paket.Enabled";
+
         [VariableDescription(".NET Core MSBuild web publish runtime identifiers")]
         public const string ProjectMSBuildPublishRuntimeIdentifier =
             "ArborBuild_PublishRuntimeIdentifier";
