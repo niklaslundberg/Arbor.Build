@@ -21,6 +21,8 @@ namespace Arbor.Build.Core.Tools.NuGet
     {
         private readonly ILogger _logger;
 
+        public const string SnupkgPackageFormat = "snupkg";
+
         public NuGetPackager(ILogger logger)
         {
             _logger = logger;
@@ -88,6 +90,8 @@ namespace Arbor.Build.Core.Tools.NuGet
                     WellKnownVariables.NuGetCreatePackagesOnAnyBranchEnabled);
             }
 
+            string packageFormat = buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetSymbolPackageFormat, SnupkgPackageFormat);
+
             Maybe<BranchName> branchNameMayBe = BranchName.TryParse(branchName.Value);
 
             if (!branchNameMayBe.HasValue)
@@ -149,7 +153,8 @@ namespace Arbor.Build.Core.Tools.NuGet
                 isReleaseBuild,
                 branchName.Value,
                 buildNumberEnabled,
-                tempDirectory.Value);
+                tempDirectory.Value,
+                nuGetSymbolPackagesFormat: packageFormat);
             return packageConfiguration;
         }
 
@@ -248,6 +253,8 @@ namespace Arbor.Build.Core.Tools.NuGet
                 nuSpecCopy,
                 removedTags,
                 cancellationToken: cancellationToken,
+                nugetSymbolPackageEnabled: packageConfiguration.NuGetSymbolPackagesEnabled,
+                symbolsFormat: packageConfiguration.NuGetSymbolPackagesFormat,
                 ignoreWarnings: ignoreWarnings).ConfigureAwait(false);
 
             if (!result.IsSuccess)
@@ -303,6 +310,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             bool keepBinaryAndSourcePackagesTogetherEnabled = false,
             bool nugetSymbolPackageEnabled = false,
             bool ignoreWarnings = false,
+            string symbolsFormat = "",
             CancellationToken cancellationToken = default)
         {
             bool hasRemovedNoSourceTag =
@@ -325,6 +333,12 @@ namespace Arbor.Build.Core.Tools.NuGet
             if (!hasRemovedNoSourceTag && nugetSymbolPackageEnabled)
             {
                 arguments.Add("-Symbols");
+
+                if (!string.IsNullOrWhiteSpace(symbolsFormat) && symbolsFormat.Equals(SnupkgPackageFormat, StringComparison.OrdinalIgnoreCase))
+                {
+                    arguments.Add("-SymbolPackageFormat");
+                    arguments.Add(SnupkgPackageFormat);
+                }
             }
 
             if (logger.IsEnabled(LogEventLevel.Verbose))

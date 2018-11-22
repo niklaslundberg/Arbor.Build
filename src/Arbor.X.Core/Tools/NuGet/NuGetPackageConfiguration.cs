@@ -25,7 +25,8 @@ namespace Arbor.Build.Core.Tools.NuGet
             string branchName = null,
             bool buildNumberEnabled = true,
             string tempPath = null,
-            string packageBuildMetadata = null)
+            string packageBuildMetadata = null,
+            string nuGetSymbolPackagesFormat = NuGetPackager.SnupkgPackageFormat)
         {
             if (string.IsNullOrWhiteSpace(configuration))
             {
@@ -67,6 +68,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             Version = version ?? throw new ArgumentNullException(nameof(version));
             PackagesDirectory = packagesDirectory;
             NuGetExePath = nugetExePath;
+            NuGetSymbolPackagesFormat = nuGetSymbolPackagesFormat;
             Suffix = suffix;
         }
 
@@ -101,6 +103,8 @@ namespace Arbor.Build.Core.Tools.NuGet
         public bool BuildNumberEnabled { get; }
 
         public string PackageBuildMetadata { get; }
+
+        public string NuGetSymbolPackagesFormat { get; }
 
         public override string ToString()
         {

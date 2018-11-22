@@ -72,6 +72,9 @@
         [VariableDescription("Flag to indicate if creation of NuGet source packages is enabled")]
         public const string NuGetSymbolPackagesEnabled = "Arbor.X.NuGet.Package.Symbols.Enabled";
 
+        [VariableDescription("NuGet symbol package format, default snupkg")]
+        public const string NuGetSymbolPackageFormat = "Arbor.X.NuGet.Package.Symbols.PackageFormat";
+
         [VariableDescription("Flag to indicate if creation of NuGet web packages is enabled")]
         public const string NugetCreateNuGetWebPackagesEnabled =
             "Arbor.X.NuGet.Package.CreateNuGetWebPackages.Enabled";
