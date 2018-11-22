@@ -34,11 +34,13 @@ namespace Arbor.Build.Core
         private CancellationToken _cancellationToken;
         private IContainer _container;
         private bool _verboseEnabled;
+        private bool _debugEnabled;
 
         public BuildApplication(ILogger logger)
         {
             _logger = logger;
             _verboseEnabled = _logger.IsEnabled(LogEventLevel.Verbose);
+            _debugEnabled = _logger.IsEnabled(LogEventLevel.Debug);
         }
 
         public async Task<ExitCode> RunAsync(string[] args)
@@ -104,10 +106,13 @@ namespace Arbor.Build.Core
 
             if (exitDelayInMilliseconds > 0)
             {
-                _logger.Debug(
-                    "Delaying build application exit with {ExitDelayInMilliseconds} milliseconds specified in '{BuildApplicationExitDelayInMilliseconds}'",
-                    exitDelayInMilliseconds,
-                    WellKnownVariables.BuildApplicationExitDelayInMilliseconds);
+                if (_debugEnabled)
+                {
+                    _logger.Debug(
+                        "Delaying build application exit with {ExitDelayInMilliseconds} milliseconds specified in '{BuildApplicationExitDelayInMilliseconds}'",
+                        exitDelayInMilliseconds,
+                        WellKnownVariables.BuildApplicationExitDelayInMilliseconds);
+                }
 
                 await Task.Delay(TimeSpan.FromMilliseconds(exitDelayInMilliseconds), _cancellationToken)
                     .ConfigureAwait(false);
@@ -588,7 +593,7 @@ namespace Arbor.Build.Core
                 _logger.Warning("{AlreadyDefined}", alreadyDefinedMessage);
             }
 
-            if (compatibilities.Count > 0)
+            if (compatibilities.Count > 0 && _verboseEnabled)
             {
                 string compatibility =
                     $"{Environment.NewLine}Compatibility build variables added {Environment.NewLine}{Environment.NewLine}{compatibilities.DisplayAsTable()}{Environment.NewLine}";
@@ -607,11 +612,15 @@ namespace Arbor.Build.Core
 
                 if (!buildVariables.Any(var => var.Key.Equals(BranchKey, StringComparison.InvariantCultureIgnoreCase)))
                 {
-                    _logger.Verbose(
-                        "Build variable with key '{BranchKey}' was not defined, using value from variable key {Key} ('{Value}')",
-                        BranchKey,
-                        arborXBranchName.Key,
-                        arborXBranchName.Value);
+                    if (_verboseEnabled)
+                    {
+                        _logger.Verbose(
+                            "Build variable with key '{BranchKey}' was not defined, using value from variable key {Key} ('{Value}')",
+                            BranchKey,
+                            arborXBranchName.Key,
+                            arborXBranchName.Value);
+                    }
+
                     buildVariables.Add(new BuildVariable(BranchKey, arborXBranchName.Value));
                 }
 
@@ -619,11 +628,15 @@ namespace Arbor.Build.Core
                     !buildVariables.Any(
                         var => var.Key.Equals(BranchNameKey, StringComparison.InvariantCultureIgnoreCase)))
                 {
-                    _logger.Verbose(
-                        "Build variable with key '{BranchNameKey}' was not defined, using value from variable key {Key} ('{Value}')",
-                        BranchNameKey,
-                        arborXBranchName.Key,
-                        arborXBranchName.Value);
+                    if (_verboseEnabled)
+                    {
+                        _logger.Verbose(
+                            "Build variable with key '{BranchNameKey}' was not defined, using value from variable key {Key} ('{Value}')",
+                            BranchNameKey,
+                            arborXBranchName.Key,
+                            arborXBranchName.Value);
+                    }
+
                     buildVariables.Add(new BuildVariable(BranchNameKey, arborXBranchName.Value));
                 }
             }

@@ -111,26 +111,26 @@ namespace Arbor.Processing
         {
             if (process == null)
             {
-                verbose($"Process '{processWithArgs}' does no longer exist", null);
+                verbose?.Invoke($"Process '{processWithArgs}' does no longer exist", null);
                 return false;
             }
 
             if (task.IsCompleted || task.IsFaulted || task.IsCanceled)
             {
                 TaskStatus status = task.Status;
-                verbose($"Task status for process '{processWithArgs}' is {status}", null);
+                verbose?.Invoke($"Task status for process '{processWithArgs}' is {status}", null);
                 return false;
             }
 
             if (cancellationToken.IsCancellationRequested)
             {
-                verbose($"Cancellation is requested for process '{processWithArgs}'", null);
+                verbose?.Invoke($"Cancellation is requested for process '{processWithArgs}'", null);
                 return false;
             }
 
             if (done)
             {
-                verbose($"Process '{processWithArgs}' is flagged as done", null);
+                verbose?.Invoke($"Process '{processWithArgs}' is flagged as done", null);
                 return false;
             }
 

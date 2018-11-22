@@ -820,6 +820,9 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     argList.Select(arg => new Dictionary<string, string> { { "Value", arg } }).DisplayAsTable());
             }
 
+            Action<string, string> verboseAction = _verboseLoggingEnabled ? logger.Verbose : (Action<string, string>)null;
+            Action<string, string> debugAction = _verboseLoggingEnabled ? logger.Debug : (Action<string, string>)null;
+
             ExitCode exitCode =
                 await
                     ProcessRunner.ExecuteAsync(
@@ -827,9 +830,10 @@ namespace Arbor.Build.Core.Tools.MSBuild
                             arguments: argList,
                             standardOutLog: logger.Information,
                             standardErrorAction: logger.Error,
-                            toolAction: logger.Information,
+                            toolAction: debugAction,
+                            debugAction: debugAction,
                             cancellationToken: _cancellationToken,
-                            verboseAction: logger.Verbose,
+                            verboseAction: verboseAction,
                             addProcessNameAsLogCategory: true,
                             addProcessRunnerCategory: true)
                         .ConfigureAwait(false);
@@ -2253,6 +2257,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 buildSitePackageArguments.Add("/property:RunCodeAnalysis=false");
             }
 
+            Action<string, string> toolAction = _debugLoggingEnabled ? logger.Debug : (Action<string, string>)null;
+
             ExitCode packageSiteExitCode =
                 await
                     ProcessRunner.ExecuteAsync(
@@ -2260,7 +2266,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                         arguments: buildSitePackageArguments,
                         standardOutLog: logger.Information,
                         standardErrorAction: logger.Error,
-                        toolAction: logger.Information,
+                        toolAction: toolAction,
                         cancellationToken: _cancellationToken,
                         addProcessNameAsLogCategory: true,
                         addProcessRunnerCategory: true).ConfigureAwait(false);
