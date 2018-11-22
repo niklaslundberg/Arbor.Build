@@ -412,7 +412,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 return ExitCode.Success;
             }
 
-            IDictionary<FileInfo, IReadOnlyList<string>> solutionPlatforms =
+            IDictionary<FileInfo, IList<string>> solutionPlatforms =
                 await GetSolutionPlatformsAsync(solutionFiles).ConfigureAwait(false);
 
             if (_verboseLoggingEnabled)
@@ -423,7 +423,31 @@ namespace Arbor.Build.Core.Tools.MSBuild
                         solutionPlatforms.Select(item => $"{item.Key}: [{string.Join(", ", item.Value)}]")));
             }
 
-            foreach (KeyValuePair<FileInfo, IReadOnlyList<string>> solutionPlatform in solutionPlatforms)
+            foreach (KeyValuePair<FileInfo, IList<string>> solutionPlatform in solutionPlatforms)
+            {
+                string[] platforms = solutionPlatform.Value.ToArray();
+
+                foreach (string platform in platforms)
+                {
+                    if (!_platforms.Contains(platform, StringComparer.OrdinalIgnoreCase))
+                    {
+                        solutionPlatform.Value.Remove(platform);
+                        logger.Debug("Removing found platform {Platform} found in file {SolutionFile}", platform, solutionPlatform.Key.FullName);
+                    }
+                }
+            }
+
+            KeyValuePair<FileInfo, IList<string>>[] filteredPlatforms = solutionPlatforms
+                .Where(s => s.Value.Count > 0)
+                .ToArray();
+
+            if (filteredPlatforms.Length == 0)
+            {
+                logger.Error("Could not find any solution platforms");
+                return ExitCode.Failure;
+            }
+
+            foreach (KeyValuePair<FileInfo, IList<string>> solutionPlatform in filteredPlatforms)
             {
                 ExitCode result = await BuildSolutionForPlatformAsync(
                     solutionPlatform.Key,
@@ -439,11 +463,11 @@ namespace Arbor.Build.Core.Tools.MSBuild
             return ExitCode.Success;
         }
 
-        private async Task<IDictionary<FileInfo, IReadOnlyList<string>>> GetSolutionPlatformsAsync(
+        private async Task<IDictionary<FileInfo, IList<string>>> GetSolutionPlatformsAsync(
             IReadOnlyCollection<FileInfo> solutionFiles)
         {
-            IDictionary<FileInfo, IReadOnlyList<string>> solutionPlatforms =
-                new Dictionary<FileInfo, IReadOnlyList<string>>();
+            IDictionary<FileInfo, IList<string>> solutionPlatforms =
+                new Dictionary<FileInfo, IList<string>>();
 
             foreach (FileInfo solutionFile in solutionFiles)
             {
@@ -601,7 +625,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
         private async Task<ExitCode> BuildSolutionForPlatformAsync(
             FileInfo solutionFile,
-            IReadOnlyList<string> platforms,
+            IList<string> platforms,
             ILogger logger)
         {
             string[] actualPlatforms = platforms
