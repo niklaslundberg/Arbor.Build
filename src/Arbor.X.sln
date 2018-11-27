@@ -39,7 +39,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arbor.Processing", "Arbor.P
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arbor.Processing.Core", "Arbor.Processing.Core\Arbor.Processing.Core.csproj", "{480AFB5E-4282-4B2A-A3BD-BD42830C743A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arbor.Build.Tests.SampleXunitNetCoreApp21", "Arbor.X.Tests.SampleXunitNetCoreApp21\Arbor.Build.Tests.SampleXunitNetCoreApp21.csproj", "{CB9D5FD0-A85A-4BFE-B0D1-37B97AAB6473}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arbor.Build.Sample.Tests.XunitNetCoreApp21", "Arbor.X.Tests.SampleXunitNetCoreApp21\Arbor.Build.Sample.Tests.XunitNetCoreApp21.csproj", "{CB9D5FD0-A85A-4BFE-B0D1-37B97AAB6473}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
