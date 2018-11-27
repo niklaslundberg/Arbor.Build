@@ -4,6 +4,7 @@ using System.Text;
 using System.Xml;
 using System.Xml.Xsl;
 using Arbor.Processing.Core;
+using JetBrains.Annotations;
 using Serilog;
 
 namespace Arbor.Build.Core.Tools.Testing
@@ -13,10 +14,33 @@ namespace Arbor.Build.Core.Tools.Testing
         public const string JUnitSuffix = "_junit.xml";
 
         public static ExitCode Transform(
-            FileInfo xmlReport,
-            string xsltTemplate,
-            ILogger logger)
+            [NotNull] FileInfo xmlReport,
+            [NotNull] string xsltTemplate,
+            [NotNull] ILogger logger,
+            bool deleteOriginal = true)
         {
+            if (xmlReport == null)
+            {
+                throw new ArgumentNullException(nameof(xmlReport));
+            }
+
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            xmlReport.Refresh();
+
+            if (!xmlReport.Exists)
+            {
+                throw new InvalidOperationException($"The report file '{xmlReport}' does not exist");
+            }
+
+            if (string.IsNullOrWhiteSpace(xsltTemplate))
+            {
+                throw new ArgumentException("Value cannot be null or whitespace.", nameof(xsltTemplate));
+            }
+
             Encoding encoding = Encoding.UTF8;
 
             using (Stream stream = new MemoryStream(encoding.GetBytes(xsltTemplate)))
@@ -29,11 +53,11 @@ namespace Arbor.Build.Core.Tools.Testing
                     logger.Debug("Transforming '{FullName}' to JUnit XML format", xmlReport.FullName);
                     try
                     {
-                        TransformReport(xmlReport, JUnitSuffix, encoding, myXslTransform, logger);
+                        TransformReport(xmlReport, JUnitSuffix, encoding, myXslTransform, logger,deleteOriginal);
                     }
                     catch (Exception ex)
                     {
-                        logger.Error(ex, "Could not transform '{FullName}', {Ex}", xmlReport.FullName);
+                        logger.Error(ex, "Could not transform '{FullName}'", xmlReport.FullName);
                         return ExitCode.Failure;
                     }
 
@@ -49,7 +73,7 @@ namespace Arbor.Build.Core.Tools.Testing
             string junitSuffix,
             Encoding encoding,
             XslCompiledTransform myXslTransform,
-            ILogger logger)
+            ILogger logger, bool deleteOriginal)
         {
             // ReSharper disable once PossibleNullReferenceException
             string resultFile = Path.Combine(
@@ -81,7 +105,10 @@ namespace Arbor.Build.Core.Tools.Testing
                 }
             }
 
-            File.Delete(xmlReport.FullName);
+            if (deleteOriginal)
+            {
+                File.Delete(xmlReport.FullName);
+            }
         }
     }
 }

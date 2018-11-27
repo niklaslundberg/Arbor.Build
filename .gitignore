@@ -18,6 +18,9 @@ UpgradeLog*.htm
 *.iml
 src/Arbor.X.Tests.DummyWebApplication/App_Data/jobs/
 paket-files
+**\xunit_v2.Arbor.X.Tests.SampleXunitNetCoreApp21.xml
+src/Arbor.X.Tests.Integration/xunit_v2.Arbor.X.Tests.SampleXunitNetCoreApp21_junit.xml
+
 
 #################
 ## Eclipse

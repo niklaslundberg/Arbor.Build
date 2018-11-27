@@ -278,6 +278,11 @@ namespace Arbor.Build.Core.Tools.Testing
                         }
                     }
                 }
+                else
+                {
+                    logger.Verbose(
+                        "Xunit transformation to JUnit format is disabled, defined in key '{Key}'", WellKnownVariables.XUnitNetCoreAppV2XmlXsltToJunitEnabled);
+                }
             }
 
             return exitCode;

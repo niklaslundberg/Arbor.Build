@@ -316,6 +316,10 @@ namespace Arbor.Build.Core.BuildVariables
         public const string XUnitNetCoreAppV2XmlXsltToJunitEnabled =
             "Arbor.X.Tools.External.Xunit.NetCoreApp.Xslt.V2ToJunit.Enabled";
 
+        [VariableDescription("Enable XUnit .NET Core App XML report XSLT V2 to Junit")]
+        public const string XUnitNetCoreAppV2TrxXsltToJunitEnabled =
+            "Arbor.X.Tools.External.Xunit.NetCoreApp.Xslt.TrxToJunit.Enabled";
+
         [VariableDescription("Enable XUnit XML analysis for .NET Core App")]
         public const string XUnitNetCoreAppXmlAnalysisEnabled =
             "Arbor.X.Tools.External.Xunit.NetCoreApp.Xml.Analysis.Enabled";
