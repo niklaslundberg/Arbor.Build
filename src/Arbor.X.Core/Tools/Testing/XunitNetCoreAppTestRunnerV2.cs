@@ -278,10 +278,51 @@ namespace Arbor.Build.Core.Tools.Testing
                         }
                     }
                 }
+                if (buildVariables.GetBooleanByKey(
+                    WellKnownVariables.XUnitNetCoreAppV2TrxXsltToJunitEnabled,
+                    false))
+                {
+                    logger.Verbose(
+                        "Transforming XUnit net core TRX test reports to JUnit format");
+
+                    DirectoryInfo xmlReportDirectory = reportFileInfo.Directory;
+
+                    // ReSharper disable once PossibleNullReferenceException
+                    IReadOnlyCollection<FileInfo> xmlReports = xmlReportDirectory
+                        .GetFiles("*.trx")
+                        .Where(report => !report.Name.EndsWith(TestReportXslt.JUnitSuffix, StringComparison.Ordinal))
+                        .ToReadOnlyCollection();
+
+                    if (xmlReports.Count > 0)
+                    {
+                        foreach (FileInfo xmlReport in xmlReports)
+                        {
+                            logger.Debug("Transforming '{FullName}' to JUnit XML format", xmlReport.FullName);
+                            try
+                            {
+                                ExitCode transformExitCode =
+                                    TestReportXslt.Transform(xmlReport, XUnitV2JUnitXsl.TrxTemplate, logger);
+
+                                if (!transformExitCode.IsSuccess)
+                                {
+                                    return transformExitCode;
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                logger.Error(ex, "Could not transform '{FullName}'", xmlReport.FullName);
+                                return ExitCode.Failure;
+                            }
+
+                            logger.Debug("Successfully transformed '{FullName}' to JUnit XML format",
+                                xmlReport.FullName);
+                        }
+                    }
+                }
                 else
                 {
                     logger.Verbose(
-                        "Xunit transformation to JUnit format is disabled, defined in key '{Key}'", WellKnownVariables.XUnitNetCoreAppV2XmlXsltToJunitEnabled);
+                        "Xunit transformation to JUnit format is disabled, defined in key '{Key}' and '{TrxKey}'", WellKnownVariables.XUnitNetCoreAppV2XmlXsltToJunitEnabled, WellKnownVariables.XUnitNetCoreAppV2TrxXsltToJunitEnabled);
                 }
             }
 
