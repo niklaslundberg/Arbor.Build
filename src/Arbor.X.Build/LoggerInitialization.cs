@@ -12,11 +12,14 @@ namespace Arbor.Build
     {
         internal static ILogger InitializeLogging(ref string[] args)
         {
-            string logLevelArg = args?.FirstOrDefault(arg => arg.StartsWith(WellKnownVariables.LogLevel))?.Split('=')
+            string logLevelArg = args?.FirstOrDefault(arg => arg.StartsWith(WellKnownVariables.LogLevel, StringComparison.OrdinalIgnoreCase))?.Split('=')
                                      .LastOrDefault()
                                  ?? Environment.GetEnvironmentVariable(WellKnownVariables.LogLevel);
 
-            var levelSwitch = new LoggingLevelSwitch();
+            var levelSwitch = new LoggingLevelSwitch
+            {
+                MinimumLevel = LogEventLevel.Information
+            };
 
             if (!string.IsNullOrWhiteSpace(logLevelArg))
             {
