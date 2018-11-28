@@ -4,12 +4,12 @@ using System.IO;
 using System.Linq;
 using JetBrains.Annotations;
 
-namespace Arbor.Build.Core.Tools.ILRepack
+namespace Arbor.Build.Core.Tools.Libz
 {
     // ReSharper disable once InconsistentNaming
-    public class ILRepackData
+    public class IlMergeData
     {
-        public ILRepackData(
+        public IlMergeData(
             string exe,
             IEnumerable<FileInfo> dlls,
             string configuration,

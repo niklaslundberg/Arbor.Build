@@ -10,7 +10,6 @@ using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.GenericExtensions.Boolean;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.ProcessUtils;
-using Arbor.Build.Core.Tools.ILRepack;
 using Arbor.Build.Core.Tools.MSBuild;
 using Arbor.Processing;
 using Arbor.Processing.Core;
@@ -85,7 +84,7 @@ namespace Arbor.Build.Core.Tools.Libz
                 Environment.NewLine,
                 merges);
 
-            ImmutableArray<ILRepackData> filesToMerge;
+            ImmutableArray<IlMergeData> filesToMerge;
             try
             {
                 filesToMerge = (await Task.WhenAll(ilMergeProjects.Select(GetMergeFilesAsync)).ConfigureAwait(false))
@@ -98,7 +97,7 @@ namespace Arbor.Build.Core.Tools.Libz
                 return ExitCode.Failure;
             }
 
-            foreach (ILRepackData repackData in filesToMerge)
+            foreach (IlMergeData repackData in filesToMerge)
             {
                 var fileInfo = new FileInfo(repackData.Exe);
 
@@ -176,7 +175,7 @@ namespace Arbor.Build.Core.Tools.Libz
                                    0);
         }
 
-        private async Task<ImmutableArray<ILRepackData>> GetMergeFilesAsync(FileInfo projectFile)
+        private async Task<ImmutableArray<IlMergeData>> GetMergeFilesAsync(FileInfo projectFile)
         {
 // ReSharper disable PossibleNullReferenceException
             DirectoryInfo binDirectory = projectFile.Directory.GetDirectories("bin").SingleOrDefault();
@@ -185,7 +184,7 @@ namespace Arbor.Build.Core.Tools.Libz
 
             if (binDirectory == null)
             {
-                return ImmutableArray<ILRepackData>.Empty;
+                return ImmutableArray<IlMergeData>.Empty;
             }
 
             const string configuration = "release"; // TODO support ilmerge for debug
@@ -196,7 +195,7 @@ namespace Arbor.Build.Core.Tools.Libz
             {
                 _logger.Warning("The release directory '{V}' does not exist",
                     Path.Combine(binDirectory.FullName, configuration));
-                return ImmutableArray<ILRepackData>.Empty;
+                return ImmutableArray<IlMergeData>.Empty;
             }
 
             DirectoryInfo[] releasePlatformDirectories = releaseDir.GetDirectories();
@@ -205,7 +204,7 @@ namespace Arbor.Build.Core.Tools.Libz
             {
                 _logger.Warning("Multiple release directories were found for  '{V}'",
                     Path.Combine(binDirectory.FullName, configuration));
-                return ImmutableArray<ILRepackData>.Empty;
+                return ImmutableArray<IlMergeData>.Empty;
             }
 
             string NormalizeVersion(string value)
@@ -235,7 +234,7 @@ namespace Arbor.Build.Core.Tools.Libz
                 {
                     _logger.Warning("No release platform directories were found in '{V}'",
                         Path.Combine(binDirectory.FullName, configuration));
-                    return ImmutableArray<ILRepackData>.Empty;
+                    return ImmutableArray<IlMergeData>.Empty;
                 }
 
                 if (releasePlatformDirectories.Length == 1 && releasePlatformDirectories[0].Name
@@ -289,7 +288,7 @@ namespace Arbor.Build.Core.Tools.Libz
                     {
                         _logger.Warning("The publish directory '{V}' does not exist",
                             Path.Combine(platformDirectory.FullName, "publish"));
-                        return ImmutableArray<ILRepackData>.Empty;
+                        return ImmutableArray<IlMergeData>.Empty;
                     }
 
                     releasePlatformDirectory = publishDirectoryInfo;
@@ -345,8 +344,8 @@ namespace Arbor.Build.Core.Tools.Libz
                 .Where(FileIsStandAloneExe)
                 .ToImmutableArray();
 
-            ImmutableArray<ILRepackData> mergeFiles =
-                new[] { new ILRepackData(exe.FullName, dlls, configuration, platform, targetFrameworkVersionValue) }
+            ImmutableArray<IlMergeData> mergeFiles =
+                new[] { new IlMergeData(exe.FullName, dlls, configuration, platform, targetFrameworkVersionValue) }
                     .ToImmutableArray();
 
             return mergeFiles;

@@ -204,16 +204,6 @@ namespace Arbor.Build.Core.BuildVariables
         public const string PublishPdbFilesAsArtifacts =
             "Arbor.X.Artifacts.PdbArtifacts.Enabled";
 
-        [VariableDescription("ILRepack executable path (eg. C:\\ILRepack.exe)")]
-        public const string ExternalTools_ILRepack_ExePath = "Arbor.X.Tools.External.ILRepack.ExePath";
-
-        [VariableDescription("ILRepack enabled (eg. true|false")]
-        public const string ExternalTools_ILRepack_Enabled = "Arbor.X.Tools.External.ILRepack.Enabled";
-
-        [VariableDescription("ILRepack custom executable path (eg. C:\\ILRepack.exe)")]
-        public const string ExternalTools_ILRepack_Custom_ExePath =
-            "Arbor.X.Tools.External.ILRepack.CustomExePath";
-
         [VariableDescription("LibZ executable path (eg. C:\\LibZ.exe)")]
         public const string ExternalTools_LibZ_ExePath = "Arbor.X.Tools.External.LibZ.ExePath";
 
@@ -324,9 +314,6 @@ namespace Arbor.Build.Core.BuildVariables
         public const string XUnitNetCoreAppXmlAnalysisEnabled =
             "Arbor.X.Tools.External.Xunit.NetCoreApp.Xml.Analysis.Enabled";
 
-        [VariableDescription("XUnit .NET Core App DLL path")]
-        public const string XUnitNetCoreAppDllPath =
-            "Arbor.X.Tools.External.Xunit.NetCoreApp.DllPath";
 
         [VariableDescription("XUnit .NET Core App XML output enabled")]
         public const string XUnitNetCoreAppXmlEnabled =

@@ -42,7 +42,6 @@ namespace Arbor.Build.Core.Debugging
                 [WellKnownVariables.NugetCreateNuGetWebPackagesEnabled] = "true",
                 ["Arbor_X_Tests_DummyWebApplication_Arbor_X_NuGet_Package_CreateNuGetWebPackageForProject_Enabled"] =
                     "true",
-                [WellKnownVariables.ExternalTools_ILRepack_Custom_ExePath] = @"C:\Tools\ILRepack\ILRepack.exe",
                 [WellKnownVariables.NuGetVersionUpdatedEnabled] = "false",
                 [WellKnownVariables.ApplicationMetadataEnabled] = "true",
                 [WellKnownVariables.LogLevel] = "information",
