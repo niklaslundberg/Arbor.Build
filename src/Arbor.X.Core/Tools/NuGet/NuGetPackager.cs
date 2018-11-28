@@ -62,7 +62,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageIdOverride, null);
 
             bool nuGetSymbolPackagesEnabled =
-                buildVariables.GetBooleanByKey(WellKnownVariables.NuGetSymbolPackagesEnabled, true);
+                buildVariables.GetBooleanByKey(WellKnownVariables.NuGetSymbolPackagesEnabled, false);
 
             string nuGetPackageVersionOverride =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageVersionOverride, null);

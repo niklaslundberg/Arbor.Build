@@ -246,7 +246,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             string apiKey,
             bool websitePackagesUploadEnabled,
             DirectoryInfo websitesDirectory,
-            int timeoutInseconds,
+            int timeoutInSeconds,
             bool checkNuGetPackagesExists,
             string sourceName,
             bool timeoutIncreaseEnabled)
@@ -368,7 +368,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                     apiKey,
                     nugetPackage,
                     logger,
-                    timeoutInseconds,
+                    timeoutInSeconds,
                     checkNuGetPackagesExists,
                     timeoutIncreaseEnabled).ConfigureAwait(false);
 
