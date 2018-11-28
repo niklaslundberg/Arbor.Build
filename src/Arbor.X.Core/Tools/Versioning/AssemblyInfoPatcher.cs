@@ -121,7 +121,7 @@ namespace Arbor.Build.Core.Tools.Versioning
 
                 IReadOnlyCollection<AssemblyInfoFile> assemblyFiles = sourceDirectory
                     .GetFilesRecursive(new[] { ".cs" }, defaultPathLookupSpecification, sourceRoot)
-                    .Where(file => file.Name.Equals(_filePattern, StringComparison.InvariantCultureIgnoreCase))
+                    .Where(file => file.Name.Equals(_filePattern, StringComparison.OrdinalIgnoreCase))
                     .Select(file => new AssemblyInfoFile(file.FullName))
                     .ToReadOnlyCollection();
 

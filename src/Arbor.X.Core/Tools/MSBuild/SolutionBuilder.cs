@@ -597,7 +597,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                         if (line.IndexOf(
                                 "GlobalSection(SolutionConfigurationPlatforms)",
-                                StringComparison.InvariantCultureIgnoreCase) >= 0)
+                                StringComparison.OrdinalIgnoreCase) >= 0)
                         {
                             isInGlobalSection = true;
                             continue;
@@ -605,7 +605,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                         if (line.IndexOf(
                                 "EndGlobalSection",
-                                StringComparison.InvariantCultureIgnoreCase) >= 0)
+                                StringComparison.OrdinalIgnoreCase) >= 0)
                         {
                             isInGlobalSection = false;
                             continue;
@@ -1112,11 +1112,11 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     .ToReadOnlyCollection();
 
                 IReadOnlyCollection<FileInfo> pdbFiles =
-                    files.Where(file => file.Extension.Equals(".pdb", StringComparison.InvariantCultureIgnoreCase))
+                    files.Where(file => file.Extension.Equals(".pdb", StringComparison.OrdinalIgnoreCase))
                         .ToReadOnlyCollection();
 
                 IReadOnlyCollection<FileInfo> dllFiles =
-                    files.Where(file => file.Extension.Equals(".dll", StringComparison.InvariantCultureIgnoreCase))
+                    files.Where(file => file.Extension.Equals(".dll", StringComparison.OrdinalIgnoreCase))
                         .ToReadOnlyCollection();
                 if (_debugLoggingEnabled)
                 {
@@ -1134,7 +1134,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                                     Path.Combine(
                                         pdb.Directory.FullName,
                                         $"{Path.GetFileNameWithoutExtension(pdb.Name)}.dll"),
-                                    StringComparison.InvariantCultureIgnoreCase))
+                                    StringComparison.OrdinalIgnoreCase))
                     })
                     .ToReadOnlyCollection();
 
@@ -1602,7 +1602,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             if (
                 !platformName.Equals(
                     Platforms.Normalize(WellKnownPlatforms.AnyCPU),
-                    StringComparison.InvariantCultureIgnoreCase))
+                    StringComparison.OrdinalIgnoreCase))
             {
                 logger.Warning(
                     "Only '{AnyCPU}' platform is supported for NuGet web packages, skipping platform '{PlatformName}'",
@@ -1619,7 +1619,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 solutionProject.Project.PropertyGroups.SelectMany(s => s.Properties)
                     .Where(
                         msBuildProperty =>
-                            msBuildProperty.Name.Equals(expectedName, StringComparison.InvariantCultureIgnoreCase)
+                            msBuildProperty.Name.Equals(expectedName, StringComparison.OrdinalIgnoreCase)
                             || msBuildProperty.Name.Equals(WellKnownVariables.NugetCreateNuGetWebPackageForProjectEnabled, StringComparison.Ordinal))
                     .ToList();
 
@@ -1757,7 +1757,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                 bool isIncluded = _filteredNuGetWebPackageProjects.Any(
                     projectName =>
-                        projectName.Equals(normalizedProjectFileName, StringComparison.InvariantCultureIgnoreCase));
+                        projectName.Equals(normalizedProjectFileName, StringComparison.OrdinalIgnoreCase));
 
                 if (_debugLoggingEnabled)
                 {
@@ -1998,8 +1998,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
                         extensions.Any(
                             extension =>
                                 Path.GetExtension(file.Name)
-                                    .Equals(extension, StringComparison.InvariantCultureIgnoreCase))
-                        && !file.Name.Equals("web.config", StringComparison.InvariantCultureIgnoreCase))
+                                    .Equals(extension, StringComparison.OrdinalIgnoreCase))
+                        && !file.Name.Equals("web.config", StringComparison.OrdinalIgnoreCase))
                 .ToImmutableArray();
 
             string TransformFile(FileInfo file)
@@ -2099,7 +2099,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     appDataDirectory.EnumerateDirectories()
                         .SingleOrDefault(
                             directory =>
-                                directory.Name.Equals("jobs", StringComparison.InvariantCultureIgnoreCase));
+                                directory.Name.Equals("jobs", StringComparison.OrdinalIgnoreCase));
 
                 if (kuduWebJobs?.Exists == true)
                 {

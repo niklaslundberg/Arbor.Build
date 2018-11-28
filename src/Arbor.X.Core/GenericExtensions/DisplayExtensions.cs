@@ -24,7 +24,7 @@ namespace Arbor.Build.Core.GenericExtensions
 
             string[] allKeys =
                 materialized.SelectMany(dictionary => dictionary.Keys)
-                    .Distinct(StringComparer.InvariantCultureIgnoreCase)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
                     .ToArray();
 
             var maxLengths =

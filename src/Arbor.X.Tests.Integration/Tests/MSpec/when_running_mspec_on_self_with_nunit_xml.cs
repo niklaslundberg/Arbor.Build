@@ -91,7 +91,7 @@ namespace Arbor.Build.Tests.Integration.Tests.MSpec
         {
             var reports = new DirectoryInfo(mspecReports);
             DirectoryInfo htmlDirectory = reports.GetDirectories()
-                .SingleOrDefault(dir => dir.Name.Equals("html", StringComparison.InvariantCultureIgnoreCase));
+                .SingleOrDefault(dir => dir.Name.Equals("html", StringComparison.OrdinalIgnoreCase));
 
             FileInfo[] files = reports.GetFiles("*.html", SearchOption.AllDirectories);
 

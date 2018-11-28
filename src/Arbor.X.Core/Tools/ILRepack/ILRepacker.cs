@@ -154,7 +154,7 @@ namespace Arbor.Build.Core.Tools.ILRepack
 
         private static bool FileIsStandAloneExe(FileInfo file)
         {
-            return file.Name.IndexOf(".vshost.", StringComparison.InvariantCultureIgnoreCase) < 0;
+            return file.Name.IndexOf(".vshost.", StringComparison.OrdinalIgnoreCase) < 0;
         }
 
         private IEnumerable<ILRepackData> GetIlMergeFiles(FileInfo projectFile)
@@ -265,7 +265,7 @@ namespace Arbor.Build.Core.Tools.ILRepack
                         if (
                             line?.IndexOf(
                                 "<ILMergeExe>true</ILMergeExe>",
-                                StringComparison.InvariantCultureIgnoreCase) >= 0)
+                                StringComparison.OrdinalIgnoreCase) >= 0)
                         {
                             return true;
                         }

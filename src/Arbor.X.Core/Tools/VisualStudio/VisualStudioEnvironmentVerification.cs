@@ -37,7 +37,7 @@ namespace Arbor.Build.Core.Tools.VisualStudio
                             extensionPatterns.Any(
                                 pattern => file.Extension.Equals(
                                     pattern,
-                                    StringComparison.InvariantCultureIgnoreCase)));
+                                    StringComparison.OrdinalIgnoreCase)));
 
                 List<FileInfo> projectFiles81 = projectFiles.Where(Contains81).ToList();
 

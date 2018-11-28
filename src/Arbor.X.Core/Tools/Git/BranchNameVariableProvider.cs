@@ -94,7 +94,7 @@ namespace Arbor.Build.Core.Tools.Git
                         string pathLine = lines.SingleOrDefault(
                             line => line.IndexOf(
                                         "$env:github_git = ",
-                                        StringComparison.InvariantCultureIgnoreCase) >= 0);
+                                        StringComparison.OrdinalIgnoreCase) >= 0);
 
                         if (!string.IsNullOrWhiteSpace(pathLine))
                         {

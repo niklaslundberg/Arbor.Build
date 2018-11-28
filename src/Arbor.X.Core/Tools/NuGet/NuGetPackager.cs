@@ -75,7 +75,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             if (!buildPackagesOnAnyBranch)
             {
-                if (branchName.Value.Equals("master", StringComparison.InvariantCultureIgnoreCase))
+                if (branchName.Value.Equals("master", StringComparison.OrdinalIgnoreCase))
                 {
                     logger.Warning(
                         "NuGet package creation is not supported on 'master' branch. To force NuGet package creation, set environment variable '{NuGetCreatePackagesOnAnyBranchEnabled}' to value 'true'",
@@ -116,7 +116,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 releaseBuild.Value,
                 (isReleaseBuild ? "release" : "not release"));
 
-            if (configuration.Equals("debug", StringComparison.InvariantCultureIgnoreCase) && isReleaseBuild)
+            if (configuration.Equals("debug", StringComparison.OrdinalIgnoreCase) && isReleaseBuild)
             {
                 logger.Information(
                     "The current configuration is 'debug' but the build indicates that this is a release build, using 'release' configuration instead");
@@ -315,7 +315,7 @@ namespace Arbor.Build.Core.Tools.NuGet
         {
             bool hasRemovedNoSourceTag =
                 removedTags.Any(
-                    tag => tag.Equals(WellKnownNuGetTags.NoSource, StringComparison.InvariantCultureIgnoreCase));
+                    tag => tag.Equals(WellKnownNuGetTags.NoSource, StringComparison.OrdinalIgnoreCase));
 
             ExitCode result;
             var arguments = new List<string>

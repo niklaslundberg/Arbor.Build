@@ -689,7 +689,7 @@ namespace Arbor.Build.Core.Bootstrapper
 
             List<FileInfo> arborBuild =
                 buildToolDirectory.GetFiles("Arbor.Build.dll", SearchOption.TopDirectoryOnly)
-                    .Where(file => !file.Name.Equals("nuget.exe", StringComparison.InvariantCultureIgnoreCase))
+                    .Where(file => !file.Name.Equals("nuget.exe", StringComparison.OrdinalIgnoreCase))
                     .ToList();
 
             if (arborBuild.Count != 1)

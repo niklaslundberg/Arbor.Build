@@ -109,7 +109,7 @@ namespace Arbor.Build.Core.Tools.Kudu
                 if (!string.IsNullOrWhiteSpace(siteToDeploy))
                 {
                     DirectoryInfo foundDir = builtWebsites.SingleOrDefault(
-                        dir => dir.Name.Equals(siteToDeploy, StringComparison.InvariantCultureIgnoreCase));
+                        dir => dir.Name.Equals(siteToDeploy, StringComparison.OrdinalIgnoreCase));
 
                     if (foundDir == null)
                     {
@@ -347,7 +347,7 @@ namespace Arbor.Build.Core.Tools.Kudu
 
                 DirectoryInfo productionConfig =
                     directoryInfos.SingleOrDefault(
-                        di => di.Name.Equals("production", StringComparison.InvariantCultureIgnoreCase));
+                        di => di.Name.Equals("production", StringComparison.OrdinalIgnoreCase));
 
                 if (productionConfig != null)
                 {
@@ -358,7 +358,7 @@ namespace Arbor.Build.Core.Tools.Kudu
 
                 DirectoryInfo releaseConfig =
                     directoryInfos.SingleOrDefault(
-                        di => di.Name.Equals("release", StringComparison.InvariantCultureIgnoreCase));
+                        di => di.Name.Equals("release", StringComparison.OrdinalIgnoreCase));
 
                 if (releaseConfig != null)
                 {
@@ -370,8 +370,8 @@ namespace Arbor.Build.Core.Tools.Kudu
             {
                 DirectoryInfo developConfig =
                     directoryInfos.SingleOrDefault(
-                        di => di.Name.Equals("develop", StringComparison.InvariantCultureIgnoreCase) ||
-                              di.Name.Equals("dev", StringComparison.InvariantCultureIgnoreCase));
+                        di => di.Name.Equals("develop", StringComparison.OrdinalIgnoreCase) ||
+                              di.Name.Equals("dev", StringComparison.OrdinalIgnoreCase));
 
                 if (developConfig != null)
                 {
@@ -381,7 +381,7 @@ namespace Arbor.Build.Core.Tools.Kudu
 
                 DirectoryInfo debugConfig =
                     directoryInfos.SingleOrDefault(
-                        di => di.Name.Equals("debug", StringComparison.InvariantCultureIgnoreCase));
+                        di => di.Name.Equals("debug", StringComparison.OrdinalIgnoreCase));
 
                 if (debugConfig != null)
                 {
@@ -392,7 +392,7 @@ namespace Arbor.Build.Core.Tools.Kudu
             else if (!string.IsNullOrWhiteSpace(_kuduConfigurationFallback))
             {
                 DirectoryInfo configDir = directoryInfos.SingleOrDefault(
-                    dir => dir.Name.Equals(_kuduConfigurationFallback, StringComparison.InvariantCultureIgnoreCase));
+                    dir => dir.Name.Equals(_kuduConfigurationFallback, StringComparison.OrdinalIgnoreCase));
 
                 logger.Information("Kudu fallback is '{_kuduConfigurationFallback}'", _kuduConfigurationFallback);
 

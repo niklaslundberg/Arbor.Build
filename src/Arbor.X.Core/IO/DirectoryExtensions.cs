@@ -156,7 +156,7 @@ namespace Arbor.Build.Core.IO
             List<FileInfo> filtered = (usedFileExtensions.Any()
                     ? directoryFiles.Where(file => usedFileExtensions.Any(extension => file.Extension.Equals(
                         extension,
-                        StringComparison.InvariantCultureIgnoreCase)))
+                        StringComparison.OrdinalIgnoreCase)))
                     : directoryFiles)
                 .ToList();
 

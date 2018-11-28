@@ -197,7 +197,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                             addProcessRunnerCategory: true).ConfigureAwait(false);
 
                 if (!exitCode.IsSuccess
-                    && errorBuilder.ToString().IndexOf("conflict", StringComparison.InvariantCultureIgnoreCase) >= 0)
+                    && errorBuilder.ToString().IndexOf("conflict", StringComparison.OrdinalIgnoreCase) >= 0)
                 {
                     if (checkNuGetPackagesExists)
                     {
@@ -276,7 +276,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             {
                 List<FileInfo> standardPackages =
                     artifactPackagesDirectory.EnumerateFiles("*.nupkg", SearchOption.AllDirectories)
-                        .Where(file => file.Name.IndexOf("symbols", StringComparison.InvariantCultureIgnoreCase) < 0)
+                        .Where(file => file.Name.IndexOf("symbols", StringComparison.OrdinalIgnoreCase) < 0)
                         .ToList();
 
                 nuGetPackageFiles.AddRange(standardPackages);
@@ -294,7 +294,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             {
                 List<FileInfo> websitePackages =
                     websitesDirectory.EnumerateFiles("*.nupkg", SearchOption.AllDirectories)
-                        .Where(file => file.Name.IndexOf("symbols", StringComparison.InvariantCultureIgnoreCase) < 0)
+                        .Where(file => file.Name.IndexOf("symbols", StringComparison.OrdinalIgnoreCase) < 0)
                         .ToList();
 
                 nuGetPackageFiles.AddRange(websitePackages);
@@ -406,7 +406,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                         archive.Entries.SingleOrDefault(
                             entry =>
                                 Path.GetExtension(entry.Name)
-                                    .Equals(".nuspec", StringComparison.InvariantCultureIgnoreCase));
+                                    .Equals(".nuspec", StringComparison.OrdinalIgnoreCase));
 
                     if (nuspecEntry == null)
                     {
@@ -482,7 +482,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             }
 
             bool foundSpecificPackage = standardBuilder.Any(
-                line => line.Equals(expectedNameAndVersion, StringComparison.InvariantCultureIgnoreCase));
+                line => line.Equals(expectedNameAndVersion, StringComparison.OrdinalIgnoreCase));
 
             if (foundSpecificPackage)
             {

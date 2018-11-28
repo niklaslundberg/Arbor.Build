@@ -26,7 +26,7 @@ namespace Arbor.Build.Core.Tools.Git
 
             bool isAStandardBranch =
                 nonFeatureBranchNames.Any(
-                    name => branchName.LogicalName.StartsWith(name, StringComparison.InvariantCultureIgnoreCase));
+                    name => branchName.LogicalName.StartsWith(name, StringComparison.OrdinalIgnoreCase));
 
             return !isAStandardBranch;
         }
@@ -47,7 +47,7 @@ namespace Arbor.Build.Core.Tools.Git
             bool isDevelopBranch =
                 developBranchNames.Any(name => branchName.LogicalName.StartsWith(
                     name,
-                    StringComparison.InvariantCultureIgnoreCase));
+                    StringComparison.OrdinalIgnoreCase));
 
             return isDevelopBranch;
         }
@@ -69,7 +69,7 @@ namespace Arbor.Build.Core.Tools.Git
             bool isProductionBranch =
                 productionBranches.Any(productionBranch => branchName.LogicalName.StartsWith(
                     productionBranch,
-                    StringComparison.InvariantCultureIgnoreCase));
+                    StringComparison.OrdinalIgnoreCase));
 
             return isProductionBranch;
         }

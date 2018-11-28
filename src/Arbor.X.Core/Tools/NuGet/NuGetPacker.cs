@@ -121,7 +121,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                             !_excludedNuSpecFiles.Any(
                                 exludedNuSpec => exludedNuSpec.Equals(
                                     nuspec.Name,
-                                    StringComparison.InvariantCultureIgnoreCase)))
+                                    StringComparison.OrdinalIgnoreCase)))
                     .SafeToReadOnlyCollection();
 
             logger.Verbose("Found nuspec files [{Count}]: {NewLine}{V}",

@@ -91,7 +91,7 @@ namespace Arbor.Build.Core.Tools.Kudu
                             {
                                 if (line.IndexOf(
                                         key,
-                                        StringComparison.InvariantCultureIgnoreCase) >= 0)
+                                        StringComparison.OrdinalIgnoreCase) >= 0)
                                 {
                                     if (!foundItems.ContainsKey(key))
                                     {
@@ -101,7 +101,7 @@ namespace Arbor.Build.Core.Tools.Kudu
                                     {
                                         string existingValue = foundItems[key];
 
-                                        if (!existingValue.Equals(line, StringComparison.InvariantCultureIgnoreCase))
+                                        if (!existingValue.Equals(line, StringComparison.OrdinalIgnoreCase))
                                         {
                                             _logger.Warning(
                                                 "A Kudu web job key '{Key}' has already been found with value '{ExistingValue}', new value is different '{Line}', using first value",

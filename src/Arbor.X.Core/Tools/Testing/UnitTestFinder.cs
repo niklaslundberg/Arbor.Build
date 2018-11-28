@@ -79,7 +79,7 @@ namespace Arbor.Build.Core.Tools.Testing
             bool isExcluded =
                 _Excluded.Any(
                     excludedItem =>
-                        currentDirectory.Name.StartsWith(excludedItem, StringComparison.InvariantCultureIgnoreCase));
+                        currentDirectory.Name.StartsWith(excludedItem, StringComparison.OrdinalIgnoreCase));
 
             if (isExcluded)
             {
@@ -99,9 +99,9 @@ namespace Arbor.Build.Core.Tools.Testing
                             file.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)));
 
             List<(AssemblyDefinition, FileInfo)> assemblies = filteredDllFiles
-                .Where(file => !file.Name.StartsWith("System", StringComparison.InvariantCultureIgnoreCase))
+                .Where(file => !file.Name.StartsWith("System", StringComparison.OrdinalIgnoreCase))
                 .Where(file => !_IgnoredNames.Any(
-                    name => file.Name.IndexOf(name, StringComparison.InvariantCultureIgnoreCase) >= 0))
+                    name => file.Name.IndexOf(name, StringComparison.OrdinalIgnoreCase) >= 0))
                 .Select(dllFile => GetAssembly(dllFile, targetFrameworkPrefix))
                 .Where(assembly => assembly.Item1 != null)
                 .ToList();
@@ -360,7 +360,7 @@ namespace Arbor.Build.Core.Tools.Testing
                         {
                             int fieldIndex = fullName.IndexOf(
                                 GenericPartSeparator,
-                                StringComparison.InvariantCultureIgnoreCase);
+                                StringComparison.OrdinalIgnoreCase);
 
                             string fieldName = fullName.Substring(0, fieldIndex);
 
@@ -369,7 +369,7 @@ namespace Arbor.Build.Core.Tools.Testing
                                 {
                                     int typePosition = type.FullName.IndexOf(
                                         GenericPartSeparator,
-                                        StringComparison.InvariantCultureIgnoreCase);
+                                        StringComparison.OrdinalIgnoreCase);
 
                                     if (typePosition < 0)
                                     {
@@ -397,7 +397,7 @@ namespace Arbor.Build.Core.Tools.Testing
                     typeToFind =>
                         attr.AttributeType.FullName.Equals(
                             typeToFind.FullName,
-                            StringComparison.InvariantCultureIgnoreCase));
+                            StringComparison.OrdinalIgnoreCase));
         }
 
         private (AssemblyDefinition, FileInfo) GetAssembly(FileInfo dllFile, string targetFrameworkPrefix)

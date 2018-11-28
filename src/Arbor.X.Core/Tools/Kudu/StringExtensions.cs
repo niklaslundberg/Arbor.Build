@@ -13,7 +13,7 @@ namespace Arbor.Build.Core.Tools.Kudu
 
             string extracted = value;
 
-            const StringComparison comparisonType = StringComparison.InvariantCultureIgnoreCase;
+            const StringComparison comparisonType = StringComparison.OrdinalIgnoreCase;
 
             string message = $"Could not extract {whatToExtract ?? "value"} from text '{value}'";
 

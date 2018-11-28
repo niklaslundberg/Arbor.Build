@@ -59,7 +59,7 @@ namespace Arbor.Build.Core.IO
             IReadOnlyCollection<string> ignoredFileNameParts = pathLookupSpecification.IgnoredFileNameParts
                 .Where(part => !string.IsNullOrEmpty(part))
                 .Where(
-                    part => sourceFileInfo.Name.IndexOf(part, StringComparison.InvariantCultureIgnoreCase) >= 0)
+                    part => sourceFileInfo.Name.IndexOf(part, StringComparison.OrdinalIgnoreCase) >= 0)
                 .SafeToReadOnlyCollection();
 
             if (ignoredFileNameParts.Count > 0)
@@ -158,7 +158,7 @@ namespace Arbor.Build.Core.IO
         {
             return patterns.Any(pattern =>
             {
-                bool isMatch = segment.Equals(pattern, StringComparison.InvariantCultureIgnoreCase);
+                bool isMatch = segment.Equals(pattern, StringComparison.OrdinalIgnoreCase);
 
                 if (isMatch)
                 {
@@ -176,7 +176,7 @@ namespace Arbor.Build.Core.IO
 
         private static bool HasAnyPathSegmentStartsWith(string segment, IEnumerable<string> patterns)
         {
-            return patterns.Any(pattern => segment.StartsWith(pattern, StringComparison.InvariantCultureIgnoreCase));
+            return patterns.Any(pattern => segment.StartsWith(pattern, StringComparison.OrdinalIgnoreCase));
         }
 
         private static bool HasAnyPathSegmentPart(IEnumerable<string> segments, IEnumerable<string> patterns)
@@ -186,7 +186,7 @@ namespace Arbor.Build.Core.IO
 
         private static bool HasAnyPathSegmentPart(string segment, IEnumerable<string> patterns)
         {
-            return patterns.Any(pattern => segment.IndexOf(pattern, StringComparison.InvariantCultureIgnoreCase) >= 0);
+            return patterns.Any(pattern => segment.IndexOf(pattern, StringComparison.OrdinalIgnoreCase) >= 0);
         }
     }
 }

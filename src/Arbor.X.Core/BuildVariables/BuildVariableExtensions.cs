@@ -15,7 +15,7 @@ namespace Arbor.Build.Core.BuildVariables
             return buildVariables.Any(
                 bv => bv.Key.Equals(
                     key,
-                    StringComparison.InvariantCultureIgnoreCase));
+                    StringComparison.OrdinalIgnoreCase));
         }
 
         public static IVariable GetVariable(
@@ -25,7 +25,7 @@ namespace Arbor.Build.Core.BuildVariables
             return buildVariables.Single(
                 bv => bv.Key.Equals(
                     key,
-                    StringComparison.InvariantCultureIgnoreCase));
+                    StringComparison.OrdinalIgnoreCase));
         }
 
         public static Maybe<IVariable> GetOptionalVariable(
@@ -35,7 +35,7 @@ namespace Arbor.Build.Core.BuildVariables
             IVariable variable = buildVariables.SingleOrDefault(
                 bv => bv.Key.Equals(
                     key,
-                    StringComparison.InvariantCultureIgnoreCase));
+                    StringComparison.OrdinalIgnoreCase));
 
             if (variable is null)
             {

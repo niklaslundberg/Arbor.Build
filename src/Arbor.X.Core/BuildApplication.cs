@@ -555,7 +555,7 @@ namespace Arbor.Build.Core
             foreach (IVariable buildVariable in buildVariableArray)
             {
                 if (!buildVariable.Key.StartsWithAny(new[] { ArborConstants.ArborBuild, ArborConstants.ArborX },
-                    StringComparison.InvariantCultureIgnoreCase))
+                    StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
@@ -564,7 +564,7 @@ namespace Arbor.Build.Core
 
                 if (
                     buildVariables.Any(
-                        bv => bv.Key.Equals(compatibilityName, StringComparison.InvariantCultureIgnoreCase)))
+                        bv => bv.Key.Equals(compatibilityName, StringComparison.OrdinalIgnoreCase)))
                 {
                     alreadyDefined.Add(new Dictionary<string, string>
                     {
@@ -603,14 +603,14 @@ namespace Arbor.Build.Core
 
             IVariable arborXBranchName =
                 buildVariables.SingleOrDefault(
-                    var => var.Key.Equals(WellKnownVariables.BranchName, StringComparison.InvariantCultureIgnoreCase));
+                    var => var.Key.Equals(WellKnownVariables.BranchName, StringComparison.OrdinalIgnoreCase));
 
             if (arborXBranchName != null && !string.IsNullOrWhiteSpace(arborXBranchName.Value))
             {
                 const string BranchKey = "branch";
                 const string BranchNameKey = "branchName";
 
-                if (!buildVariables.Any(var => var.Key.Equals(BranchKey, StringComparison.InvariantCultureIgnoreCase)))
+                if (!buildVariables.Any(var => var.Key.Equals(BranchKey, StringComparison.OrdinalIgnoreCase)))
                 {
                     if (_verboseEnabled)
                     {
@@ -626,7 +626,7 @@ namespace Arbor.Build.Core
 
                 if (
                     !buildVariables.Any(
-                        var => var.Key.Equals(BranchNameKey, StringComparison.InvariantCultureIgnoreCase)))
+                        var => var.Key.Equals(BranchNameKey, StringComparison.OrdinalIgnoreCase)))
                 {
                     if (_verboseEnabled)
                     {

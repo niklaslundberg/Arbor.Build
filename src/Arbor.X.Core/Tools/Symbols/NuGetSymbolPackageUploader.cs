@@ -158,7 +158,7 @@ namespace Arbor.Build.Core.Tools.Symbols
 
             List<FileInfo> files = new DirectoryInfo(packagesFolder)
                 .EnumerateFiles("*.nupkg", SearchOption.AllDirectories)
-                .Where(file => file.Name.IndexOf("symbols", StringComparison.InvariantCultureIgnoreCase) >= 0)
+                .Where(file => file.Name.IndexOf("symbols", StringComparison.OrdinalIgnoreCase) >= 0)
                 .ToList();
 
             bool result = true;

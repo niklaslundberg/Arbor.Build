@@ -135,7 +135,7 @@ namespace Arbor.Build.Core.Tools.Testing
             arguments.Add(htmlPath);
 
             bool hasArborTestDll =
-                testDlls.Any(dll => dll.IndexOf("arbor", StringComparison.InvariantCultureIgnoreCase) >= 0);
+                testDlls.Any(dll => dll.IndexOf("arbor", StringComparison.OrdinalIgnoreCase) >= 0);
 
             if (hasArborTestDll || excludedTags.Count > 0)
             {

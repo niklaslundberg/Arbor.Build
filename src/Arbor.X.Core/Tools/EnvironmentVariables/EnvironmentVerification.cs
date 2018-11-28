@@ -23,7 +23,7 @@ namespace Arbor.Build.Core.Tools.EnvironmentVariables
                 RequiredValues.Where(
                         var =>
                             !buildVariables.Any(
-                                required => required.Key.Equals(var, StringComparison.InvariantCultureIgnoreCase)))
+                                required => required.Key.Equals(var, StringComparison.OrdinalIgnoreCase)))
                     .ToList();
 
             List<string> missingValues =
@@ -32,7 +32,7 @@ namespace Arbor.Build.Core.Tools.EnvironmentVariables
                         {
                             IVariable value =
                                 buildVariables.SingleOrDefault(
-                                    required => required.Key.Equals(var, StringComparison.InvariantCultureIgnoreCase));
+                                    required => required.Key.Equals(var, StringComparison.OrdinalIgnoreCase));
 
                             return value != null && string.IsNullOrWhiteSpace(value.Value);
                         })

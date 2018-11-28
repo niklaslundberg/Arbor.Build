@@ -45,7 +45,7 @@ namespace Arbor.Build.Core.Tools.Kudu
 
             string message = $"Could not parse {typeof(KuduWebJobType).Name} from value '{type}'";
 
-            const StringComparison ComparisonType = StringComparison.InvariantCultureIgnoreCase;
+            const StringComparison ComparisonType = StringComparison.OrdinalIgnoreCase;
 
             var exception = new FormatException(message);
 

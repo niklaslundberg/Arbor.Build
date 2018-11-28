@@ -43,7 +43,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             MSBuildVerbosityLevel found =
                 AllValues.SingleOrDefault(
-                    level => level.Level.Equals(value, StringComparison.InvariantCultureIgnoreCase));
+                    level => level.Level.Equals(value, StringComparison.OrdinalIgnoreCase));
 
             if (found == null)
             {

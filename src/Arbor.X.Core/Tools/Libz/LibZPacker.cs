@@ -172,7 +172,7 @@ namespace Arbor.Build.Core.Tools.Libz
             var blacklisted = new List<string> { ".vshost.", "csc.exe", "csi.exe", "vbc.exe", "VBCSCompiler.exe" };
 
             return !blacklisted.Any(
-                blacklistedItem => file.Name.IndexOf(blacklistedItem, StringComparison.InvariantCultureIgnoreCase) >=
+                blacklistedItem => file.Name.IndexOf(blacklistedItem, StringComparison.OrdinalIgnoreCase) >=
                                    0);
         }
 
@@ -384,7 +384,7 @@ namespace Arbor.Build.Core.Tools.Libz
 
                         if (line?.IndexOf(
                                 "<ILMergeExe>true</ILMergeExe>",
-                                StringComparison.InvariantCultureIgnoreCase) >= 0)
+                                StringComparison.OrdinalIgnoreCase) >= 0)
                         {
                             return true;
                         }

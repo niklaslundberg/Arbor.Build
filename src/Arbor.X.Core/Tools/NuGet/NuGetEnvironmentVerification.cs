@@ -85,7 +85,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 const string nugetVersion = "NuGet Version: ";
                 string versionLine =
                     standardOut.FirstOrDefault(
-                        line => line.StartsWith(nugetVersion, StringComparison.InvariantCultureIgnoreCase));
+                        line => line.StartsWith(nugetVersion, StringComparison.OrdinalIgnoreCase));
 
                 if (string.IsNullOrWhiteSpace(versionLine))
                 {
