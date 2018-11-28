@@ -21,7 +21,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
         public static MSBuildVerbositoyLevel Quiet => new MSBuildVerbositoyLevel("quiet");
 
-        public static MSBuildVerbositoyLevel Default => Normal;
+        public static MSBuildVerbositoyLevel Default => Quiet;
 
         public static IEnumerable<MSBuildVerbositoyLevel> AllValues
         {
