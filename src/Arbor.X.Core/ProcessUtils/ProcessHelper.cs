@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -6,6 +7,7 @@ using Arbor.Processing;
 using Arbor.Processing.Core;
 using Serilog;
 using Serilog.Core;
+using Serilog.Events;
 
 namespace Arbor.Build.Core.ProcessUtils
 {
@@ -27,16 +29,22 @@ namespace Arbor.Build.Core.ProcessUtils
 
             string executingCategory = $"[{Path.GetFileNameWithoutExtension(Path.GetFileName(executePath))}]";
 
+            Action<string, string> toolAction = usedLogger.IsEnabled(LogEventLevel.Debug) ? ((message, _) => usedLogger.Debug("[{Tool}] [{ExecutingCategory}] {Message}", ToolName, executingCategory, message)) : (Action<string, string>) null;
+            Action<string, string> infoAction = usedLogger.IsEnabled(LogEventLevel.Information) ? ((message, _) => usedLogger.Debug("[{Tool}] [{ExecutingCategory}] {Message}", ToolName, executingCategory, message)) : (Action<string, string>) null;
+            Action<string, string> errorAction = usedLogger.IsEnabled(LogEventLevel.Error) ? ((message, _) => usedLogger.Debug("[{Tool}] [{ExecutingCategory}] {Message}", ToolName, executingCategory, message)) : (Action<string, string>) null;
+            Action<string, string> verboseAction = usedLogger.IsEnabled(LogEventLevel.Verbose) ? ((message, _) => usedLogger.Debug("[{Tool}] [{ExecutingCategory}] {Message}", ToolName, executingCategory, message)) : (Action<string, string>) null;
+            Action<string, string> debugAction = usedLogger.IsEnabled(LogEventLevel.Debug) ? ((message, _) => usedLogger.Debug("[{Tool}] [{ExecutingCategory}] {Message}", ToolName, executingCategory, message)) : (Action<string, string>) null;
+
             return ProcessRunner.ExecuteAsync(
                 executePath,
                 cancellationToken,
                 arguments,
-                (message, _) => usedLogger.Information(message, executingCategory),
-                usedLogger.Error,
-                verboseAction: usedLogger.Verbose,
-                toolAction: (message, _) => usedLogger.Information(message, ToolName),
+                infoAction,
+                errorAction,
+                verboseAction: verboseAction,
+                toolAction: toolAction,
                 environmentVariables: environmentVariables,
-                debugAction: usedLogger.Debug,
+                debugAction: debugAction,
                 addProcessNameAsLogCategory: addProcessNameAsLogCategory,
                 addProcessRunnerCategory: addProcessRunnerCategory,
                 parentPrefix: parentPrefix);
