@@ -4,26 +4,26 @@ using System.Linq;
 
 namespace Arbor.Build.Core.Tools.MSBuild
 {
-    public sealed class MSBuildVerbositoyLevel
+    public sealed class MSBuildVerbosityLevel
     {
-        private MSBuildVerbositoyLevel(string level)
+        private MSBuildVerbosityLevel(string level)
         {
             Level = level;
         }
 
         public string Level { get; }
 
-        public static MSBuildVerbositoyLevel Normal => new MSBuildVerbositoyLevel("normal");
+        public static readonly MSBuildVerbosityLevel Normal = new MSBuildVerbosityLevel("normal");
 
-        public static MSBuildVerbositoyLevel Detailed => new MSBuildVerbositoyLevel("detailed");
+        public static readonly MSBuildVerbosityLevel Detailed = new MSBuildVerbosityLevel("detailed");
 
-        public static MSBuildVerbositoyLevel Minimal => new MSBuildVerbositoyLevel("minimal");
+        public static readonly MSBuildVerbosityLevel Minimal = new MSBuildVerbosityLevel("minimal");
 
-        public static MSBuildVerbositoyLevel Quiet => new MSBuildVerbositoyLevel("quiet");
+        public static readonly MSBuildVerbosityLevel Quiet = new MSBuildVerbosityLevel("quiet");
 
-        public static MSBuildVerbositoyLevel Default => Quiet;
+        public static readonly MSBuildVerbosityLevel Default = Quiet;
 
-        public static IEnumerable<MSBuildVerbositoyLevel> AllValues
+        public static IEnumerable<MSBuildVerbosityLevel> AllValues
         {
             get
             {
@@ -34,14 +34,14 @@ namespace Arbor.Build.Core.Tools.MSBuild
             }
         }
 
-        public static MSBuildVerbositoyLevel TryParse(string value)
+        public static MSBuildVerbosityLevel TryParse(string value)
         {
             if (string.IsNullOrWhiteSpace(value))
             {
                 return Default;
             }
 
-            MSBuildVerbositoyLevel found =
+            MSBuildVerbosityLevel found =
                 AllValues.SingleOrDefault(
                     level => level.Level.Equals(value, StringComparison.InvariantCultureIgnoreCase));
 

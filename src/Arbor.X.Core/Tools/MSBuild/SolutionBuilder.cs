@@ -102,7 +102,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
         private string _vcsRoot;
         private bool _webProjectsBuildEnabed;
         private bool _verboseLoggingEnabled;
-        private MSBuildVerbositoyLevel _verbosity;
+        private MSBuildVerbosityLevel _verbosity;
         private string _version;
         private string _publishRuntimeIdentifier;
 
@@ -190,7 +190,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             _processorCount = maxCpuLimit;
 
             _verbosity =
-                MSBuildVerbositoyLevel.TryParse(
+                MSBuildVerbosityLevel.TryParse(
                     buildVariables.GetVariableValueOrDefault(
                         WellKnownVariables.ExternalTools_MSBuild_Verbosity,
                         "minimal"));
