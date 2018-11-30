@@ -181,7 +181,7 @@ namespace Arbor.Processing
                         if (!taskCompletionSource.Task.IsCompleted && !taskCompletionSource.Task.IsCanceled &&
                             !taskCompletionSource.Task.IsFaulted)
                         {
-                            taskCompletionSource.SetResult(new ExitCode(1));
+                            taskCompletionSource.TrySetResult(new ExitCode(1));
                         }
 
                         return;
@@ -190,7 +190,7 @@ namespace Arbor.Processing
                     toolAction?.Invoke($"Process '{processWithArgs}' exited with code {exitCode}",
                         toolCategory);
 
-                    taskCompletionSource.SetResult(new ExitCode(proc.ExitCode));
+                    taskCompletionSource.TrySetResult(new ExitCode(proc.ExitCode));
                 };
 
                 int processId = -1;
@@ -245,7 +245,7 @@ namespace Arbor.Processing
                     }
 
                     errorAction?.Invoke($"An error occured while running process '{processWithArgs}': {ex}", toolCategory);
-                    taskCompletionSource.SetException(ex);
+                    taskCompletionSource.TrySetException(ex);
                 }
 
                 bool done = false;
