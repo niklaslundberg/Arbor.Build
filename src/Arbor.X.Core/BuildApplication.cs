@@ -20,7 +20,7 @@ using Arbor.Defensive.Collections;
 using Arbor.KVConfiguration.Core;
 using Arbor.KVConfiguration.Schema.Json;
 using Arbor.KVConfiguration.UserConfiguration;
-using Arbor.Processing.Core;
+using Arbor.Processing;
 using Autofac;
 using JetBrains.Annotations;
 using Serilog;
@@ -321,7 +321,7 @@ namespace Arbor.Build.Core
                             toolWithPriority,
                             toolResult);
 
-                        result = toolResult.Result;
+                        result = toolResult.Code;
 
                         toolResults.Add(
                             new ToolResult(

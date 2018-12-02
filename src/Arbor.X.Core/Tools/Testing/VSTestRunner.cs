@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.Properties;
 using Arbor.Processing;
-using Arbor.Processing.Core;
+using Arbor.Processing;
 using JetBrains.Annotations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Serilog;
@@ -143,7 +143,7 @@ namespace Arbor.Build.Core.Tools.Testing
 
             try
             {
-                Task<ExitCode> execute = ProcessRunner.ExecuteAsync(
+                Task<ExitCode> execute = ProcessRunner.ExecuteProcessAsync(
                     vsTestExePath,
                     arguments: vsTestConsoleArguments,
                     standardOutLog: logger.Information,

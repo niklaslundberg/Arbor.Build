@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Arbor.Processing.Core;
+using Arbor.Processing;
 using Serilog;
 using Serilog.Core;
 
@@ -23,7 +23,7 @@ namespace Arbor.Build.Bootstrapper
                 disposable.Dispose();
             }
 
-            return exitCode.Result;
+            return exitCode.Code;
         }
     }
 }

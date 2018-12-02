@@ -7,7 +7,7 @@ using System.Threading;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.Testing;
-using Arbor.Processing.Core;
+using Arbor.Processing;
 using Machine.Specifications;
 using Serilog.Core;
 

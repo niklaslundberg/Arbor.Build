@@ -9,7 +9,7 @@ using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.GenericExtensions.Boolean;
 using Arbor.Defensive;
 using Arbor.Processing;
-using Arbor.Processing.Core;
+using Arbor.Processing;
 using JetBrains.Annotations;
 using NuGet.Versioning;
 using Serilog;
@@ -202,7 +202,7 @@ namespace Arbor.Build.Core.Tools.Git
                         {
                             var arguments = new List<string> { "rev-parse", "HEAD" };
 
-                            ExitCode exitCode = await ProcessRunner.ExecuteAsync(gitExePath,
+                            ExitCode exitCode = await ProcessRunner.ExecuteProcessAsync(gitExePath,
                                 arguments: arguments,
                                 standardOutLog: (message, category) => stringBuilder.Append(message),
                                 toolAction: logger.Information,

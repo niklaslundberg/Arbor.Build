@@ -9,6 +9,7 @@
     <PackageReference Include="Arbor.KVConfiguration.JsonConfiguration" Version="0.16.2" />
     <PackageReference Include="Arbor.KVConfiguration.Schema.Json" Version="0.16.2" />
     <PackageReference Include="Arbor.KVConfiguration.UserConfiguration" Version="0.16.2" />
+    <PackageReference Include="Arbor.Processing" Version="0.2.0-build.4" />
     <PackageReference Include="Arbor.Sorbus" Version="3.0.5" />
     <PackageReference Include="Arbor.Tooler" Version="0.2.0" />
     <PackageReference Include="Arbor.Xdt" Version="0.2.4" />
@@ -28,6 +29,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Windows.Compatibility" Version="2.0.1" />
     <PackageReference Include="Mono.Cecil" Version="0.10.1" />
     <PackageReference Include="MSTest.TestFramework" Version="1.4.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
@@ -44,8 +46,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Arbor.Defensive.Collections\Arbor.Defensive.Collections.csproj" />
     <ProjectReference Include="..\Arbor.Defensive\Arbor.Defensive.csproj" />
-    <ProjectReference Include="..\Arbor.Processing.Core\Arbor.Processing.Core.csproj" />
-    <ProjectReference Include="..\Arbor.Processing\Arbor.Processing.csproj" />
+    <ProjectReference Include="..\Arbor.Exceptions\Arbor.Exceptions.csproj" />
   </ItemGroup>
 
 </Project>

@@ -4,7 +4,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Processing;
-using Arbor.Processing.Core;
+using Arbor.Processing;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
@@ -35,19 +35,16 @@ namespace Arbor.Build.Core.ProcessUtils
             Action<string, string> verboseAction = usedLogger.IsEnabled(LogEventLevel.Verbose) ? ((message, _) => usedLogger.Debug("[{Tool}] [{ExecutingCategory}] {Message}", ToolName, executingCategory, message)) : (Action<string, string>) null;
             Action<string, string> debugAction = usedLogger.IsEnabled(LogEventLevel.Debug) ? ((message, _) => usedLogger.Debug("[{Tool}] [{ExecutingCategory}] {Message}", ToolName, executingCategory, message)) : (Action<string, string>) null;
 
-            return ProcessRunner.ExecuteAsync(
+            return ProcessRunner.ExecuteProcessAsync(
                 executePath,
-                cancellationToken,
                 arguments,
-                infoAction,
-                errorAction,
+                standardOutLog: infoAction,
+                standardErrorAction: errorAction,
                 verboseAction: verboseAction,
                 toolAction: toolAction,
                 environmentVariables: environmentVariables,
                 debugAction: debugAction,
-                addProcessNameAsLogCategory: addProcessNameAsLogCategory,
-                addProcessRunnerCategory: addProcessRunnerCategory,
-                parentPrefix: parentPrefix);
+               cancellationToken: cancellationToken);
         }
     }
 }

@@ -2,7 +2,7 @@
 using System.IO;
 using Arbor.Build.Core.Bootstrapper;
 using Arbor.Build.Core.IO;
-using Arbor.Processing.Core;
+using Arbor.Processing;
 using Machine.Specifications;
 using Serilog.Core;
 

@@ -18,7 +18,6 @@ using Arbor.Exceptions;
 using Arbor.KVConfiguration.Core.Metadata;
 using Arbor.KVConfiguration.Schema.Json;
 using Arbor.Processing;
-using Arbor.Processing.Core;
 using Arbor.Xdt;
 using JetBrains.Annotations;
 using NuGet.Versioning;
@@ -825,7 +824,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             ExitCode exitCode =
                 await
-                    ProcessRunner.ExecuteAsync(
+                    ProcessRunner.ExecuteProcessAsync(
                             _msBuildExe,
                             arguments: argList,
                             standardOutLog: logger.Information,
@@ -833,9 +832,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                             toolAction: debugAction,
                             debugAction: debugAction,
                             cancellationToken: _cancellationToken,
-                            verboseAction: verboseAction,
-                            addProcessNameAsLogCategory: true,
-                            addProcessRunnerCategory: true)
+                            verboseAction: verboseAction)
                         .ConfigureAwait(false);
 
 
@@ -1542,15 +1539,13 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             ExitCode buildSiteExitCode =
                 await
-                    ProcessRunner.ExecuteAsync(
+                    ProcessRunner.ExecuteProcessAsync(
                         _msBuildExe,
                         arguments: buildSiteArguments,
                         standardOutLog: logger.Information,
                         standardErrorAction: logger.Error,
                         toolAction: logger.Information,
-                        cancellationToken: _cancellationToken,
-                        addProcessNameAsLogCategory: true,
-                        addProcessRunnerCategory: true).ConfigureAwait(false);
+                        cancellationToken: _cancellationToken).ConfigureAwait(false);
 
             if (buildSiteExitCode.IsSuccess)
             {
@@ -2261,15 +2256,13 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             ExitCode packageSiteExitCode =
                 await
-                    ProcessRunner.ExecuteAsync(
+                    ProcessRunner.ExecuteProcessAsync(
                         _msBuildExe,
                         arguments: buildSitePackageArguments,
                         standardOutLog: logger.Information,
                         standardErrorAction: logger.Error,
                         toolAction: toolAction,
-                        cancellationToken: _cancellationToken,
-                        addProcessNameAsLogCategory: true,
-                        addProcessRunnerCategory: true).ConfigureAwait(false);
+                        cancellationToken: _cancellationToken).ConfigureAwait(false);
 
             webDeployStopwatch.Stop();
 

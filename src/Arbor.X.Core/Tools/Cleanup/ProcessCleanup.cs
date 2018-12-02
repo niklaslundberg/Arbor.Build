@@ -10,7 +10,7 @@ using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.GenericExtensions;
 using Arbor.Exceptions;
 using Arbor.Processing;
-using Arbor.Processing.Core;
+using Arbor.Processing;
 using Serilog;
 
 namespace Arbor.Build.Core.Tools.Cleanup

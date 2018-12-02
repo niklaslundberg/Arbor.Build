@@ -2,7 +2,7 @@
 using System.IO;
 using Arbor.Build.Core.Tools.Testing;
 using Arbor.Build.Tests.Integration.Tests.MSpec;
-using Arbor.Processing.Core;
+using Arbor.Processing;
 using Serilog;
 using Serilog.Core;
 using Xunit;

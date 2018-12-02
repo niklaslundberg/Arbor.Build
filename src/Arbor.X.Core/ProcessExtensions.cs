@@ -4,53 +4,11 @@ using System.Globalization;
 using System.Management;
 using System.Threading;
 using System.Threading.Tasks;
-using Arbor.Exceptions;
-using Arbor.Processing.Core;
 
 namespace Arbor.Processing
 {
     public static class ProcessExtensions
     {
-        public static bool? IsWin64(this Process process)
-        {
-            try
-            {
-                if (process.HasExited)
-                {
-                    return default;
-                }
-            }
-            catch (Exception)
-            {
-                return default;
-            }
-
-            if ((Environment.OSVersion.Version.Major > 5)
-                || ((Environment.OSVersion.Version.Major == 5) && (Environment.OSVersion.Version.Minor >= 1)))
-            {
-                IntPtr processHandle;
-
-                try
-                {
-                    Process processById = Process.GetProcessById(process.Id);
-
-                    processHandle = processById.HasExited ? default : processById.Handle;
-                }
-                catch (Exception ex)
-                {
-                    if (ex.IsFatal())
-                    {
-                        throw;
-                    }
-
-                    return default;
-                }
-
-                return NativeMethods.IsWow64Process(processHandle, out bool retVal) && retVal;
-            }
-
-            return false;
-        }
 
         public static string ExecutablePath(this Process process)
         {

@@ -21,7 +21,6 @@ using Arbor.Build.Core.Tools.Git;
 using Arbor.Build.Core.Tools.Kudu;
 using Arbor.Exceptions;
 using Arbor.Processing;
-using Arbor.Processing.Core;
 using Arbor.Tooler;
 using JetBrains.Annotations;
 using NuGet.Versioning;
@@ -461,16 +460,13 @@ namespace Arbor.Build.Core.Bootstrapper
             ExitCode exitCode;
             using (var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(MaxBuildTimeInSeconds)))
             {
-                exitCode = await ProcessRunner.ExecuteAsync(nugetExePath,
+                exitCode = await ProcessRunner.ExecuteProcessAsync(nugetExePath,
                         arguments: nugetArguments,
                         cancellationToken: cancellationTokenSource.Token,
                         standardOutLog: _logger.Information,
                         standardErrorAction: _logger.Error,
                         toolAction: _logger.Debug,
-                        verboseAction: _logger.Verbose,
-                        addProcessRunnerCategory: true,
-                        addProcessNameAsLogCategory: true,
-                        parentPrefix: _Prefix)
+                        verboseAction: _logger.Verbose)
                     .ConfigureAwait(false);
             }
 
@@ -501,16 +497,13 @@ namespace Arbor.Build.Core.Bootstrapper
 
                 var lines = new List<string>();
 
-                ExitCode exitCode = await ProcessRunner.ExecuteAsync(nugetExePath,
+                ExitCode exitCode = await ProcessRunner.ExecuteProcessAsync(nugetExePath,
                         arguments: nugetArguments,
                         cancellationToken: cancellationTokenSource.Token,
                         standardOutLog: (m,_) => lines.Add(m),
                         standardErrorAction: _logger.Error,
                         toolAction: _logger.Debug,
-                        verboseAction: _logger.Verbose,
-                        addProcessRunnerCategory: true,
-                        addProcessNameAsLogCategory: true,
-                        parentPrefix: _Prefix)
+                        verboseAction: _logger.Verbose)
                     .ConfigureAwait(false);
 
                 if (!exitCode.IsSuccess)
@@ -660,7 +653,7 @@ namespace Arbor.Build.Core.Bootstrapper
 
                 foreach (string[] argumentVariant in argumentVariants)
                 {
-                    ExitCode statusExitCode = await ProcessRunner.ExecuteAsync(
+                    ExitCode statusExitCode = await ProcessRunner.ExecuteProcessAsync(
                         gitExePath,
                         arguments: argumentVariant,
                         standardOutLog: _logger.Verbose,
@@ -732,14 +725,14 @@ namespace Arbor.Build.Core.Bootstrapper
 
             string[] arguments = { buildToolExecutable.FullName };
 
-            ExitCode result = await ProcessRunner.ExecuteAsync(
+            ExitCode result = await ProcessRunner.ExecuteProcessAsync(
                 dotnetExePath,
-                cancellationTokenSource.Token,
+
                 arguments,
                 (message, prefix) => _logger.Information("{Prefix}{Message}", buildApplicationPrefix, message),
                 (message, prefix) => _logger.Error("{Prefix}{Message}", buildApplicationPrefix, message),
                 _logger.Information,
-                _logger.Verbose).ConfigureAwait(false);
+                _logger.Verbose, cancellationToken: cancellationTokenSource.Token).ConfigureAwait(false);
 
             return result;
         }

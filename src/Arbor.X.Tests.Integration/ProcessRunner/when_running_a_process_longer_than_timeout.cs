@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.Testing;
-using Arbor.Processing.Core;
+using Arbor.Processing;
 using Machine.Specifications;
 using Serilog;
 using Serilog.Core;
@@ -54,7 +54,7 @@ EXIT /b 2
 
         Because of = () => RunAsync().Wait();
 
-        It should_not_an_exit_code = () => exitCode.Result.ShouldEqual(99);
+        It should_not_an_exit_code = () => exitCode.Code.ShouldEqual(99);
 
         It should_throw_a_task_canceled_exception = () => exception.ShouldNotBeNull();
 
@@ -66,7 +66,7 @@ EXIT /b 2
             {
                 exitCode =
                     await
-                        Processing.ProcessRunner.ExecuteAsync(testPath,
+                        Processing.ProcessRunner.ExecuteProcessAsync(testPath,
                             standardOutLog: (message, prefix) => logger.Information(message, "STANDARD"),
                             standardErrorAction: (message, prefix) => logger.Error(message, "ERROR"),
                             toolAction: (message, prefix) => logger.Information(message, "TOOL"),

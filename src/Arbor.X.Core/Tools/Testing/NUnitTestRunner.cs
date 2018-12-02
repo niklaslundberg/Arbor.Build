@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.Properties;
 using Arbor.Processing;
-using Arbor.Processing.Core;
+using Arbor.Processing;
 using JetBrains.Annotations;
 using NUnit.Framework;
 using Serilog;
@@ -213,7 +213,7 @@ namespace Arbor.Build.Core.Tools.Testing
 
                 Stopwatch executionStopwatch = Stopwatch.StartNew();
 
-                ExitCode result = await ProcessRunner.ExecuteAsync(
+                ExitCode result = await ProcessRunner.ExecuteProcessAsync(
                     nunitExePath,
                     arguments: nunitConsoleArguments,
                     standardOutLog: logger.Information,

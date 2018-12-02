@@ -10,7 +10,7 @@ using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Properties;
 using Arbor.Defensive.Collections;
 using Arbor.Processing;
-using Arbor.Processing.Core;
+using Arbor.Processing;
 using Machine.Specifications;
 using Serilog;
 
@@ -164,7 +164,7 @@ namespace Arbor.Build.Core.Tools.Testing
             var environmentVariables = new Dictionary<string, string>();
 
             ExitCode exitCode = await
-                ProcessRunner.ExecuteAsync(
+                ProcessRunner.ExecuteProcessAsync(
                     mspecExePath,
                     arguments: arguments,
                     cancellationToken: cancellationToken,

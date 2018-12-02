@@ -3,7 +3,7 @@ using System.IO;
 using System.Text;
 using System.Xml;
 using System.Xml.Xsl;
-using Arbor.Processing.Core;
+using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.Testing;
-using Arbor.Processing.Core;
+using Arbor.Processing;
 using Machine.Specifications;
 using Serilog;
 using Serilog.Core;

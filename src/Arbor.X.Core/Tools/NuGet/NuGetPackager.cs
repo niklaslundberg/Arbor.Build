@@ -10,7 +10,7 @@ using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.Git;
 using Arbor.Defensive;
 using Arbor.Processing;
-using Arbor.Processing.Core;
+using Arbor.Processing;
 using NuGet.Versioning;
 using Serilog;
 using Serilog.Events;
@@ -354,7 +354,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             ExitCode processResult =
                 await
-                    ProcessRunner.ExecuteAsync(
+                    ProcessRunner.ExecuteProcessAsync(
                         nuGetExePath,
                         arguments: arguments,
                         standardOutLog: logger.Information,
@@ -362,9 +362,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                         toolAction: logger.Information,
                         cancellationToken: cancellationToken,
                         verboseAction: logger.Verbose,
-                        debugAction: logger.Debug,
-                        addProcessNameAsLogCategory: true,
-                        addProcessRunnerCategory: true).ConfigureAwait(false);
+                        debugAction: logger.Debug).ConfigureAwait(false);
 
             var packagesDirectory = new DirectoryInfo(packagesDirectoryPath);
 

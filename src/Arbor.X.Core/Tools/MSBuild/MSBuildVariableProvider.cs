@@ -11,7 +11,7 @@ using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.ProcessUtils;
 using Arbor.Build.Core.Tools.Cleanup;
 using Arbor.Processing;
-using Arbor.Processing.Core;
+using Arbor.Processing;
 using JetBrains.Annotations;
 using Microsoft.Win32;
 using Newtonsoft.Json;
@@ -83,7 +83,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                 var resultBuilder = new StringBuilder();
 
-                ExitCode exitCode = await ProcessRunner.ExecuteAsync(
+                ExitCode exitCode = await ProcessRunner.ExecuteProcessAsync(
                     vsWherePath,
                     arguments: vsWhereArgs,
                     standardOutLog: (message, category) => resultBuilder.Append(message),

@@ -12,7 +12,7 @@ using Arbor.Build.Core.IO;
 using Arbor.Build.Core.ProcessUtils;
 using Arbor.Build.Core.Tools.MSBuild;
 using Arbor.Processing;
-using Arbor.Processing.Core;
+using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
 
@@ -145,7 +145,7 @@ namespace Arbor.Build.Core.Tools.Libz
                     new DirectoryInfo(Directory.GetCurrentDirectory()),
                     mergedDirectory))
                 {
-                    result = await ProcessRunner.ExecuteAsync(
+                    result = await ProcessRunner.ExecuteProcessAsync(
                         _exePath,
                         arguments: arguments,
                         standardOutLog: logger.Information,

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Defensive.Collections;
 using Arbor.Processing;
-using Arbor.Processing.Core;
+using Arbor.Processing;
 using JetBrains.Annotations;
 using NuGet.Packaging;
 using NuGet.Versioning;
@@ -183,7 +183,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
                 exitCode =
                     await
-                        ProcessRunner.ExecuteAsync(
+                        ProcessRunner.ExecuteProcessAsync(
                             nugetExePath,
                             arguments: runSpecificArgs,
                             standardOutLog: logger.Information,
@@ -192,9 +192,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                                 errorBuilder.AppendLine(message);
                                 logger.Error(message, prefix);
                             },
-                            toolAction: logger.Information,
-                            addProcessNameAsLogCategory: true,
-                            addProcessRunnerCategory: true).ConfigureAwait(false);
+                            toolAction: logger.Information).ConfigureAwait(false);
 
                 if (!exitCode.IsSuccess
                     && errorBuilder.ToString().IndexOf("conflict", StringComparison.OrdinalIgnoreCase) >= 0)
@@ -456,7 +454,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             ExitCode exitCode =
                 await
-                    ProcessRunner.ExecuteAsync(
+                    ProcessRunner.ExecuteProcessAsync(
                         nugetExePath,
                         arguments: args,
                         standardOutLog:
@@ -470,9 +468,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                             errorBuilder.AppendLine(message);
                             logger.Error(message, prefix);
                         },
-                        toolAction: logger.Information,
-                        addProcessNameAsLogCategory: true,
-                        addProcessRunnerCategory: true).ConfigureAwait(false);
+                        toolAction: logger.Information).ConfigureAwait(false);
 
             if (!exitCode.IsSuccess)
             {

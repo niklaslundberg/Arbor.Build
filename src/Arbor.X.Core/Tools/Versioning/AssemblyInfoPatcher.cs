@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.IO;
 using Arbor.Defensive.Collections;
-using Arbor.Processing.Core;
+using Arbor.Processing;
 using Arbor.Sorbus.Core;
 using JetBrains.Annotations;
 using Serilog;

@@ -11,7 +11,7 @@ using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.Tools.Cleanup;
 using Arbor.Defensive;
 using Arbor.Processing;
-using Arbor.Processing.Core;
+using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
 
@@ -174,7 +174,7 @@ namespace Arbor.Build.Core.Tools.Git
                     {
                         exitCode =
                             await
-                                ProcessRunner.ExecuteAsync(
+                                ProcessRunner.ExecuteProcessAsync(
                                     gitExePath,
                                     arguments: argumentsList,
                                     standardErrorAction: _logger.Error,

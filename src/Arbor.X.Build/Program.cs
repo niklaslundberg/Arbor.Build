@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Arbor.Build.Core;
-using Arbor.Processing.Core;
+using Arbor.Processing;
 using Serilog;
 
 namespace Arbor.Build
@@ -21,7 +21,7 @@ namespace Arbor.Build
 
             Log.CloseAndFlush();
 
-            return exitCode.Result;
+            return exitCode.Code;
         }
     }
 }

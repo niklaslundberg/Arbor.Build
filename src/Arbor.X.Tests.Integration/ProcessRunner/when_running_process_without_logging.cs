@@ -1,7 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Arbor.Processing.Core;
+using Arbor.Processing;
 using Machine.Specifications;
 
 namespace Arbor.Build.Tests.Integration.ProcessRunner
@@ -17,7 +17,7 @@ namespace Arbor.Build.Tests.Integration.ProcessRunner
         {
             exitCode =
                 await
-                    Processing.ProcessRunner.ExecuteAsync(@"C:\Windows\System32\PING.EXE",
+                    Processing.ProcessRunner.ExecuteProcessAsync(@"C:\Windows\System32\PING.EXE",
                         arguments: new[]{"127.0.0.1"},
                         standardOutLog: null,
                         standardErrorAction: null,
