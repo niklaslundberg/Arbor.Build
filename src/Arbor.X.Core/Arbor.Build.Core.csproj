@@ -11,7 +11,7 @@
     <PackageReference Include="Arbor.KVConfiguration.UserConfiguration" Version="0.16.2" />
     <PackageReference Include="Arbor.Processing" Version="0.2.0-build.4" />
     <PackageReference Include="Arbor.Sorbus" Version="3.0.5" />
-    <PackageReference Include="Arbor.Tooler" Version="0.2.0" />
+    <PackageReference Include="Arbor.Tooler" Version="0.3.0-build.33" />
     <PackageReference Include="Arbor.Xdt" Version="0.2.4" />
     <PackageReference Include="Autofac" Version="4.8.1" />
     <PackageReference Include="JetBrains.Annotations" Version="2018.2.1" />

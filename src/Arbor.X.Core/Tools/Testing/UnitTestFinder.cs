@@ -180,7 +180,6 @@ namespace Arbor.Build.Core.Tools.Testing
                         configurationFiltered.AddRange(unknownAssemblies);
                     }
 
-
                     if (nonDebugAssemblies.Count > 0)
                     {
                         if (_debugLevelEnabled)
