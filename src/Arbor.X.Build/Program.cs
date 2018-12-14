@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Arbor.Build.Core;
+using Arbor.Build.Core.Logging;
 using Arbor.Processing;
 using Serilog;
 
@@ -11,7 +12,7 @@ namespace Arbor.Build
 
         private static async Task<int> Main(string[] args)
         {
-            ILogger logger = LoggerInitialization.InitializeLogging(ref args);
+            ILogger logger = LoggerInitialization.InitializeLogging(args);
 
             Log.Logger = logger;
 

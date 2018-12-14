@@ -121,7 +121,8 @@ namespace Arbor.Build.Core.Tools.NuGet
             ILogger logger,
             int timeoutInseconds,
             bool checkNuGetPackagesExists,
-            bool timeoutIncreaseEnabled)
+            bool timeoutIncreaseEnabled,
+            string sourceName)
         {
             if (!File.Exists(nugetPackage))
             {
@@ -142,6 +143,11 @@ namespace Arbor.Build.Core.Tools.NuGet
             {
                 args.Add("-source");
                 args.Add(serverUri);
+            }
+            else if (!string.IsNullOrWhiteSpace(sourceName))
+            {
+                args.Add("-source");
+                args.Add(sourceName);
             }
 
             if (!string.IsNullOrWhiteSpace(apiKey))
@@ -368,7 +374,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                     logger,
                     timeoutInSeconds,
                     checkNuGetPackagesExists,
-                    timeoutIncreaseEnabled).ConfigureAwait(false);
+                    timeoutIncreaseEnabled, sourceName).ConfigureAwait(false);
 
                 if (!exitCode.IsSuccess)
                 {

@@ -4,30 +4,14 @@ using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.GenericExtensions.Boolean;
 using Serilog;
 using Serilog.Core;
-using Serilog.Events;
 
-namespace Arbor.Build
+namespace Arbor.Build.Core.Logging
 {
-    internal static class LoggerInitialization
+    public static class LoggerInitialization
     {
-        internal static ILogger InitializeLogging(ref string[] args)
+        public static ILogger InitializeLogging(string[] args)
         {
-            string logLevelArg = args?.FirstOrDefault(arg => arg.StartsWith(WellKnownVariables.LogLevel, StringComparison.OrdinalIgnoreCase))?.Split('=')
-                                     .LastOrDefault()
-                                 ?? Environment.GetEnvironmentVariable(WellKnownVariables.LogLevel);
-
-            var levelSwitch = new LoggingLevelSwitch
-            {
-                MinimumLevel = LogEventLevel.Information
-            };
-
-            if (!string.IsNullOrWhiteSpace(logLevelArg))
-            {
-                if (Enum.TryParse(logLevelArg, true, out LogEventLevel logLevel))
-                {
-                    levelSwitch.MinimumLevel = logLevel;
-                }
-            }
+            LoggingLevelSwitch levelSwitch = LogLevelHelper.GetLevelSwitch(args);
 
             string seqUrl = args?.FirstOrDefault(arg => arg.StartsWith("sequrl", StringComparison.OrdinalIgnoreCase))?.Split('=').LastOrDefault()
                             ?? Environment.GetEnvironmentVariable("sequrl");
