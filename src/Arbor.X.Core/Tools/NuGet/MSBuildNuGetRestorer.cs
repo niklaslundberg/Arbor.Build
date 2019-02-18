@@ -24,7 +24,7 @@ namespace Arbor.Build.Core.Tools.NuGet
         {
             bool enabled = buildVariables.GetBooleanByKey(
                 WellKnownVariables.MSBuildNuGetRestoreEnabled,
-                true);
+                false);
 
             if (!enabled)
             {
@@ -79,7 +79,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             string solutionFile = included.Single();
 
             Maybe<IVariable> runtimeIdentifier =
-                buildVariables.GetOptionalVariable(WellKnownVariables.ProjectMSBuildPublishRuntimeIdentifier);
+                buildVariables.GetOptionalVariable(WellKnownVariables.PublishRuntimeIdentifier);
 
             var arguments = new List<string> { solutionFile, "/t:restore" };
 
