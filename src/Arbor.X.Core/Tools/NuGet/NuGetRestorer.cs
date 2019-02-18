@@ -23,7 +23,7 @@ namespace Arbor.Build.Core.Tools.NuGet
         {
             bool enabled = buildVariables.GetBooleanByKey(
                 WellKnownVariables.NuGetRestoreEnabled,
-                true);
+                false);
 
             if (!enabled)
             {
@@ -77,14 +77,15 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             string solutionFile = included.Single();
 
+            var arguments = new List<string> { "restore", solutionFile };
+
             ExitCode result = await ProcessHelper.ExecuteAsync(
                 nugetExePath,
-                new[] { "restore", solutionFile },
+                arguments,
                 logger,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
             return result;
-
         }
     }
 }
