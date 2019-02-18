@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.ProcessUtils;
+using Arbor.Defensive;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
@@ -77,9 +78,19 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             string solutionFile = included.Single();
 
+            Maybe<IVariable> runtimeIdentifier =
+                buildVariables.GetOptionalVariable(WellKnownVariables.ProjectMSBuildPublishRuntimeIdentifier);
+
+            var arguments = new List<string> { solutionFile, "/t:restore" };
+
+            if (runtimeIdentifier.HasValue)
+            {
+                arguments.Add($"/p:RuntimeIdentifiers={runtimeIdentifier.Value.Value}");
+            }
+
             ExitCode result = await ProcessHelper.ExecuteAsync(
                 msbuildExePath,
-                new[] { solutionFile, "/t:restore" },
+                arguments,
                 logger,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
