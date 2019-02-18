@@ -12,6 +12,8 @@ namespace Arbor.Build.Tests.Unit
         [Fact]
         public void WhenEmptyArgumentListItShouldInitializeWithInformationLevel()
         {
+            Environment.SetEnvironmentVariable(WellKnownVariables.LogLevel, "");
+
             LoggingLevelSwitch loggingLevelSwitch = LogLevelHelper.GetLevelSwitch(Array.Empty<string>());
 
             Assert.NotNull(loggingLevelSwitch);
@@ -21,6 +23,7 @@ namespace Arbor.Build.Tests.Unit
         [Fact]
         public void WhenNullArgumentListItShouldInitializeWithInformationLevel()
         {
+            Environment.SetEnvironmentVariable(WellKnownVariables.LogLevel, "");
             LoggingLevelSwitch loggingLevelSwitch = LogLevelHelper.GetLevelSwitch(null);
 
             Assert.NotNull(loggingLevelSwitch);
