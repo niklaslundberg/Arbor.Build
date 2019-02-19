@@ -226,7 +226,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             _defaultTarget =
                 buildVariables.GetVariableValueOrDefault(
                     WellKnownVariables.ExternalTools_MSBuild_DefaultTarget,
-                    "rebuild");
+                    "restore;rebuild");
             _pdbArtifactsEnabled = buildVariables.GetBooleanByKey(
                 WellKnownVariables.PublishPdbFilesAsArtifacts,
                 false);
