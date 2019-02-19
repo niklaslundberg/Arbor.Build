@@ -86,6 +86,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             if (runtimeIdentifier.HasValue)
             {
                 arguments.Add($"/p:RuntimeIdentifiers={runtimeIdentifier.Value.Value}");
+                logger.Information("Restoring using runtime identifiers {Identifiers}", runtimeIdentifier.Value.Value);
             }
 
             ExitCode result = await ProcessHelper.ExecuteAsync(

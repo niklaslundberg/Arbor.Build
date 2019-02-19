@@ -4,7 +4,6 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Processing;
-using Arbor.Processing;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
@@ -29,11 +28,11 @@ namespace Arbor.Build.Core.ProcessUtils
 
             string executingCategory = $"[{Path.GetFileNameWithoutExtension(Path.GetFileName(executePath))}]";
 
-            Action<string, string> toolAction = usedLogger.IsEnabled(LogEventLevel.Debug) ? ((message, _) => usedLogger.Debug("[{Tool}] [{ExecutingCategory}] {Message}", ToolName, executingCategory, message)) : (Action<string, string>) null;
-            Action<string, string> infoAction = usedLogger.IsEnabled(LogEventLevel.Information) ? ((message, _) => usedLogger.Debug("[{Tool}] [{ExecutingCategory}] {Message}", ToolName, executingCategory, message)) : (Action<string, string>) null;
-            Action<string, string> errorAction = usedLogger.IsEnabled(LogEventLevel.Error) ? ((message, _) => usedLogger.Debug("[{Tool}] [{ExecutingCategory}] {Message}", ToolName, executingCategory, message)) : (Action<string, string>) null;
-            Action<string, string> verboseAction = usedLogger.IsEnabled(LogEventLevel.Verbose) ? ((message, _) => usedLogger.Debug("[{Tool}] [{ExecutingCategory}] {Message}", ToolName, executingCategory, message)) : (Action<string, string>) null;
-            Action<string, string> debugAction = usedLogger.IsEnabled(LogEventLevel.Debug) ? ((message, _) => usedLogger.Debug("[{Tool}] [{ExecutingCategory}] {Message}", ToolName, executingCategory, message)) : (Action<string, string>) null;
+            Action<string, string> toolAction = usedLogger.IsEnabled(LogEventLevel.Information) ? (message, _) => usedLogger.Information("[{Tool}] [{ExecutingCategory}] {Message}", ToolName, executingCategory, message) : (Action<string, string>) null;
+            Action<string, string> infoAction = usedLogger.IsEnabled(LogEventLevel.Information) ? (message, _) => usedLogger.Debug("[{Tool}] [{ExecutingCategory}] {Message}", ToolName, executingCategory, message) : (Action<string, string>) null;
+            Action<string, string> errorAction = usedLogger.IsEnabled(LogEventLevel.Error) ? (message, _) => usedLogger.Debug("[{Tool}] [{ExecutingCategory}] {Message}", ToolName, executingCategory, message) : (Action<string, string>) null;
+            Action<string, string> verboseAction = usedLogger.IsEnabled(LogEventLevel.Verbose) ? (message, _) => usedLogger.Debug("[{Tool}] [{ExecutingCategory}] {Message}", ToolName, executingCategory, message) : (Action<string, string>) null;
+            Action<string, string> debugAction = usedLogger.IsEnabled(LogEventLevel.Debug) ? (message, _) => usedLogger.Debug("[{Tool}] [{ExecutingCategory}] {Message}", ToolName, executingCategory, message) : (Action<string, string>) null;
 
             return ProcessRunner.ExecuteProcessAsync(
                 executePath,
@@ -44,7 +43,7 @@ namespace Arbor.Build.Core.ProcessUtils
                 toolAction: toolAction,
                 environmentVariables: environmentVariables,
                 debugAction: debugAction,
-               cancellationToken: cancellationToken);
+                cancellationToken: cancellationToken);
         }
     }
 }
