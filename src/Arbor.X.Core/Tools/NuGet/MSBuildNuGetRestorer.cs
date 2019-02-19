@@ -24,7 +24,7 @@ namespace Arbor.Build.Core.Tools.NuGet
         {
             bool enabled = buildVariables.GetBooleanByKey(
                 WellKnownVariables.MSBuildNuGetRestoreEnabled,
-                false);
+                true);
 
             if (!enabled)
             {
