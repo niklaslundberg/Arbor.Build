@@ -1867,6 +1867,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 packageDirectory.FullName,
                 _vcsRoot);
 
+            packageConfiguration.NuGetSymbolPackagesEnabled = false;
+
             string name = packageId;
 
             string authors = _buildVariables.GetVariableValueOrDefault(

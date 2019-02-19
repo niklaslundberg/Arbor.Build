@@ -82,7 +82,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
         public bool AllowManifestReWrite { get; }
 
-        public bool NuGetSymbolPackagesEnabled { get; }
+        public bool NuGetSymbolPackagesEnabled { get; set; }
 
         public string Configuration { get; }
 
