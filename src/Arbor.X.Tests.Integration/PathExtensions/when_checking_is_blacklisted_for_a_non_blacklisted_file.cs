@@ -16,7 +16,7 @@ namespace Arbor.Build.Tests.Integration.PathExtensions
 
         Because of = () =>
         {
-            result = path_lookup_specification.IsFileBlackListed(@"C:\anyrandomfile.txt",
+            result = path_lookup_specification.IsFileExcluded(@"C:\anyrandomfile.txt",
                 allowNonExistingFiles: true,
                 logger: Logger.None).Item1;
         };

@@ -150,7 +150,7 @@ namespace Arbor.Build.Core.IO
 
             List<FileInfo> directoryFiles = directoryInfo
                 .GetFiles()
-                .Where(file => !usedPathLookupSpecification.IsFileBlackListed(file.FullName, rootDir).Item1)
+                .Where(file => !usedPathLookupSpecification.IsFileExcluded(file.FullName, rootDir).Item1)
                 .ToList();
 
             List<FileInfo> filtered = (usedFileExtensions.Any()

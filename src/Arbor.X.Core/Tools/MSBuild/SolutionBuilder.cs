@@ -1986,7 +1986,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 .Where(
                     file =>
                         !_pathLookupSpecification.IsBlackListed(file.DirectoryName).Item1
-                        && !_pathLookupSpecification.IsFileBlackListed(file.FullName, _vcsRoot).Item1)
+                        && !_pathLookupSpecification.IsFileExcluded(file.FullName, _vcsRoot).Item1)
                 .Where(
                     file =>
                         extensions.Any(

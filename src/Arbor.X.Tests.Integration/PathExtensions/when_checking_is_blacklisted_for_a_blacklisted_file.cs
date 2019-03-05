@@ -16,7 +16,7 @@ namespace Arbor.Build.Tests.Integration.PathExtensions
 
         Because of = () =>
         {
-            result = path_lookup_specification.IsFileBlackListed(
+            result = path_lookup_specification.IsFileExcluded(
                 @"C:\test.vshost.exe",
                 allowNonExistingFiles: true,
                 logger: Logger.None).Item1;

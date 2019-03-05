@@ -2,12 +2,17 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.IO;
 using Arbor.Tooler;
+
 using JetBrains.Annotations;
+
 using Serilog;
 
 namespace Arbor.Build.Core.Tools.NuGet
@@ -26,20 +31,32 @@ namespace Arbor.Build.Core.Tools.NuGet
         {
             _cancellationToken = cancellationToken;
 
-            string userSpecifiedNuGetExePath =
-                buildVariables.GetVariableValueOrDefault(
-                    WellKnownVariables.ExternalTools_NuGet_ExePath_Custom,
-                    string.Empty);
+            var userSpecifiedNuGetExePath = buildVariables.GetVariableValueOrDefault(
+                WellKnownVariables.ExternalTools_NuGet_ExePath_Custom,
+                string.Empty);
 
-            string nuGetExePath =
-                await EnsureNuGetExeExistsAsync(logger, userSpecifiedNuGetExePath).ConfigureAwait(false);
+            var nuGetExePath = await EnsureNuGetExeExistsAsync(logger, userSpecifiedNuGetExePath).ConfigureAwait(false);
 
             var variables = new List<IVariable>
+                                {
+                                    new BuildVariable(WellKnownVariables.ExternalTools_NuGet_ExePath, nuGetExePath)
+                                };
+
+            if (string.IsNullOrWhiteSpace(
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetRestoreEnabled, string.Empty)))
             {
-                new BuildVariable(
-                    WellKnownVariables.ExternalTools_NuGet_ExePath,
-                    nuGetExePath)
-            };
+                var sourceDir = buildVariables.Require(WellKnownVariables.SourceRoot).Value;
+
+                var pathLookupSpecification = new PathLookupSpecification();
+                var packageConfigFiles = new DirectoryInfo(sourceDir)
+                    .GetFiles("packages.config", SearchOption.AllDirectories).Where(
+                        file => !pathLookupSpecification.IsFileExcluded(file.FullName, sourceDir).Item1).ToArray();
+
+                if (packageConfigFiles.Any())
+                {
+                    variables.Add(new BuildVariable(WellKnownVariables.NuGetRestoreEnabled, "true"));
+                }
+            }
 
             return variables.ToImmutableArray();
         }
@@ -55,7 +72,11 @@ namespace Arbor.Build.Core.Tools.NuGet
             {
                 var nuGetDownloadClient = new NuGetDownloadClient();
 
-                NuGetDownloadResult nuGetDownloadResult = await nuGetDownloadClient.DownloadNuGetAsync(NuGetDownloadSettings.Default, logger, httClient, _cancellationToken).ConfigureAwait(false);
+                var nuGetDownloadResult = await nuGetDownloadClient.DownloadNuGetAsync(
+                                              NuGetDownloadSettings.Default,
+                                              logger,
+                                              httClient,
+                                              _cancellationToken).ConfigureAwait(false);
 
                 if (!nuGetDownloadResult.Succeeded)
                 {

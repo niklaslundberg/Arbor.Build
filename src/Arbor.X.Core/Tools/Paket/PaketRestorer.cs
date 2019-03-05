@@ -66,7 +66,7 @@ namespace Arbor.Build.Core.Tools.Paket
                 IReadOnlyCollection<FileInfo> filtered =
                     packageSpecifications.Where(
                             packagePath =>
-                                !pathLookupSpecification.IsFileBlackListed(
+                                !pathLookupSpecification.IsFileExcluded(
                                     packagePath,
                                     sourceRoot.FullName,
                                     logger: logger).Item1)

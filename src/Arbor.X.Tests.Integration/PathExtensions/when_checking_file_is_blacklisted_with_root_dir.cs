@@ -29,7 +29,7 @@ namespace Arbor.Build.Tests.Integration.PathExtensions
         };
 
         Because of =
-            () => isBlackListed = specification.IsFileBlackListed($@"{root}\afile.txt", @"C:\Temp\root").Item1;
+            () => isBlackListed = specification.IsFileExcluded($@"{root}\afile.txt", @"C:\Temp\root").Item1;
 
         It should_return_false = () => isBlackListed.ShouldBeFalse();
     }

@@ -42,7 +42,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 DefaultPaths.DefaultPathLookupSpecification.AddExcludedDirectorySegments(new[] { "node_modules" });
 
             var blackListStatus = solutionFiles
-                .Select(file => new { File = file, Status = pathLookupSpecification.IsFileBlackListed(file, rootPath) })
+                .Select(file => new { File = file, Status = pathLookupSpecification.IsFileExcluded(file, rootPath) })
                 .ToArray();
 
             string[] included = blackListStatus

@@ -3,13 +3,18 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.IO;
+using Arbor.Build.Core.Logging;
 using Arbor.Build.Core.ProcessUtils;
-using Arbor.Defensive;
 using Arbor.Processing;
+
 using JetBrains.Annotations;
+
 using Serilog;
+using Serilog.Core;
+using Serilog.Events;
 
 namespace Arbor.Build.Core.Tools.NuGet
 {
@@ -22,9 +27,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            bool enabled = buildVariables.GetBooleanByKey(
-                WellKnownVariables.MSBuildNuGetRestoreEnabled,
-                true);
+            var enabled = buildVariables.GetBooleanByKey(WellKnownVariables.MSBuildNuGetRestoreEnabled, true);
 
             if (!enabled)
             {
@@ -32,32 +35,27 @@ namespace Arbor.Build.Core.Tools.NuGet
                 return ExitCode.Success;
             }
 
-            string msbuildExePath =
-                buildVariables.GetVariable(WellKnownVariables.ExternalTools_MSBuild_ExePath).ThrowIfEmptyValue().Value;
+            var msbuildExePath = buildVariables.GetVariable(WellKnownVariables.ExternalTools_MSBuild_ExePath)
+                .ThrowIfEmptyValue().Value;
 
-            string rootPath = buildVariables.GetVariable(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
+            var rootPath = buildVariables.GetVariable(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
 
-            string[] solutionFiles = Directory.GetFiles(rootPath, "*.sln", SearchOption.AllDirectories);
+            var solutionFiles = Directory.GetFiles(rootPath, "*.sln", SearchOption.AllDirectories);
 
-            PathLookupSpecification pathLookupSpecification =
+            var pathLookupSpecification =
                 DefaultPaths.DefaultPathLookupSpecification.AddExcludedDirectorySegments(new[] { "node_modules" });
 
-            var blackListStatus = solutionFiles
-                .Select(file => new { File = file, Status = pathLookupSpecification.IsFileBlackListed(file, rootPath) })
-                .ToArray();
+            var blackListStatus = solutionFiles.Select(
+                file => new { File = file, Status = pathLookupSpecification.IsFileExcluded(file, rootPath) }).ToArray();
 
-            string[] included = blackListStatus
-                .Where(file => !file.Status.Item1)
-                .Select(file => file.File)
-                .ToArray();
+            var included = blackListStatus.Where(file => !file.Status.Item1).Select(file => file.File).ToArray();
 
-            var excluded = blackListStatus
-                .Where(file => file.Status.Item1)
-                .ToArray();
+            var excluded = blackListStatus.Where(file => file.Status.Item1).ToArray();
 
             if (included.Length > 1)
             {
-                logger.Error("Expected exactly 1 solution file, found {Length}, {V}",
+                logger.Error(
+                    "Expected exactly 1 solution file, found {Length}, {SolutionFiles}",
                     included.Length,
                     string.Join(", ", included));
                 return ExitCode.Failure;
@@ -71,15 +69,16 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             if (excluded.Length > 0)
             {
-                logger.Warning("Found blacklisted solution files: {V}",
-                    string.Join(", ",
+                logger.Warning(
+                    "Found ignored solution files: {IgnoredSolutionFiles}",
+                    string.Join(
+                        ", ",
                         excluded.Select(excludedItem => $"{excludedItem.File} ({excludedItem.Status.Item2})")));
             }
 
-            string solutionFile = included.Single();
+            var solutionFile = included.Single();
 
-            Maybe<IVariable> runtimeIdentifier =
-                buildVariables.GetOptionalVariable(WellKnownVariables.PublishRuntimeIdentifier);
+            var runtimeIdentifier = buildVariables.GetOptionalVariable(WellKnownVariables.PublishRuntimeIdentifier);
 
             var arguments = new List<string> { solutionFile, "/t:restore" };
 
@@ -89,13 +88,53 @@ namespace Arbor.Build.Core.Tools.NuGet
                 logger.Information("Restoring using runtime identifiers {Identifiers}", runtimeIdentifier.Value.Value);
             }
 
-            ExitCode result = await ProcessHelper.ExecuteAsync(
-                msbuildExePath,
-                arguments,
-                logger,
-                cancellationToken: cancellationToken).ConfigureAwait(false);
+            ExitCode exitCode;
 
-            return result;
+            List<(string Message, LogEventLevel Level)> allMessages = new List<(string, LogEventLevel)>();
+            List<(string Message, LogEventLevel Level)> defaultMessages = new List<(string, LogEventLevel)>();
+
+            using (var processLogger = CreateProcessLogger(logger, allMessages, defaultMessages))
+            {
+                exitCode = await ProcessHelper.ExecuteAsync(
+                               msbuildExePath,
+                               arguments,
+                               processLogger,
+                               cancellationToken: cancellationToken).ConfigureAwait(false);
+
+                if (!exitCode.IsSuccess)
+                {
+                    foreach (var verboseLogMessage in allMessages)
+                    {
+                        logger.Log(verboseLogMessage.Message, verboseLogMessage.Level);
+                    }
+
+                    logger.Error("Failed to restore NuGet packages via MSBuild");
+                }
+                else
+                {
+                    foreach (var verboseLogMessage in defaultMessages)
+                    {
+                        logger.Log(verboseLogMessage.Message, verboseLogMessage.Level);
+                    }
+                }
+            }
+
+            return exitCode;
+        }
+
+        private static Logger CreateProcessLogger(
+            ILogger logger,
+            List<(string Message, LogEventLevel Level)> allMessages,
+            List<(string Message, LogEventLevel Level)> defaultMessages)
+        {
+            return new LoggerConfiguration()
+                .WriteTo.Sink(new InMemorySink((message, level) => allMessages.Add((message, level)), LogEventLevel.Verbose))
+                .WriteTo.Sink(
+                    new InMemorySink(
+                        (message, level) => defaultMessages.Add((message, level)),
+                        logger.MostVerboseLoggingCurrentLogLevel()))
+                .MinimumLevel.Verbose()
+                .CreateLogger();
         }
     }
 }

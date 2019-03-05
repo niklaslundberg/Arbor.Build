@@ -68,7 +68,7 @@ namespace Arbor.Build.Core.Tools.NuGet
         private async Task EnsureMinNuGetVersionAsync(string nuGetExePath, ILogger logger)
         {
             var standardOut = new List<string>();
-            ILogger versionLogger = InMemoryLoggerHelper.CreateInMemoryLogger(message => standardOut.Add(message));
+            ILogger versionLogger = InMemoryLoggerHelper.CreateInMemoryLogger((message, level) => standardOut.Add(message));
 
             try
             {

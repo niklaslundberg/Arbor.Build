@@ -9,7 +9,7 @@ namespace Arbor.Build.Core.IO
 {
     public static class PathExtensions
     {
-        public static (bool, string) IsFileBlackListed(
+        public static (bool, string) IsFileExcluded(
             this PathLookupSpecification pathLookupSpecification,
             string sourceFile,
             string rootDir = null,
