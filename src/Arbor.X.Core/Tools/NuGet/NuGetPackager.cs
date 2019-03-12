@@ -37,7 +37,15 @@ namespace Arbor.Build.Core.Tools.NuGet
             IVariable version = buildVariables.Require(WellKnownVariables.Version).ThrowIfEmptyValue();
             IVariable releaseBuild = buildVariables.Require(WellKnownVariables.ReleaseBuild).ThrowIfEmptyValue();
             IVariable branchName = buildVariables.Require(WellKnownVariables.BranchLogicalName).ThrowIfEmptyValue();
-            string configuration = buildVariables.Require(WellKnownVariables.Configuration).ThrowIfEmptyValue().Value;
+
+            string assemblyConfiguration = buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyConfiguration, null);
+            string currentConfiguration = buildVariables.GetVariableValueOrDefault(WellKnownVariables.CurrentBuildConfiguration, null);
+            string staticConfiguration = buildVariables.GetVariableValueOrDefault(WellKnownVariables.Configuration, null);
+
+            var buildConfiguration = assemblyConfiguration
+                                     ?? currentConfiguration
+                                     ?? staticConfiguration;
+
             IVariable tempDirectory = buildVariables.Require(WellKnownVariables.TempDirectory).ThrowIfEmptyValue();
             string nuGetExePath = buildVariables.Require(WellKnownVariables.ExternalTools_NuGet_ExePath)
                 .ThrowIfEmptyValue()
@@ -116,11 +124,11 @@ namespace Arbor.Build.Core.Tools.NuGet
                 releaseBuild.Value,
                 (isReleaseBuild ? "release" : "not release"));
 
-            if (configuration.Equals("debug", StringComparison.OrdinalIgnoreCase) && isReleaseBuild)
+            if (buildConfiguration.Equals("debug", StringComparison.OrdinalIgnoreCase) && isReleaseBuild)
             {
                 logger.Information(
                     "The current configuration is 'debug' but the build indicates that this is a release build, using 'release' configuration instead");
-                configuration = "release";
+                buildConfiguration = "release";
             }
 
             if (!Directory.Exists(packagesDirectory))
@@ -139,7 +147,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             logger.Verbose("Scanning directory '{VcsRootDir}' for .nuspec files", vcsRootDir);
 
             var packageConfiguration = new NuGetPackageConfiguration(
-                configuration,
+                buildConfiguration,
                 semanticVersion,
                 packagesDirectory,
                 nuGetExePath,
