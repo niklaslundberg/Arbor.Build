@@ -46,7 +46,7 @@ namespace Arbor.Build.Core
         public async Task<ExitCode> RunAsync(string[] args)
         {
             MultiSourceKeyValueConfiguration multiSourceKeyValueConfiguration = KeyValueConfigurationManager
-                .Add(new UserConfiguration())
+                .Add(new UserJsonConfiguration())
                 .Add(new EnvironmentVariableKeyValueConfigurationSource())
                 .Build();
 

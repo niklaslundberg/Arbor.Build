@@ -1424,7 +1424,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             var configurationItems = new ConfigurationItems(
                 "1.0",
                 items.Select(i => new KeyValue(i.Key, i.Value, i.ConfigurationMetadata)).ToImmutableArray());
-            string serialize = new JsonConfigurationSerializer().Serialize(configurationItems);
+            string serialize = JsonConfigurationSerializer.Serialize(configurationItems);
 
             string applicationMetadataJsonFilePath;
 
