@@ -969,7 +969,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     continue;
                 }
 
-                var args = new List<string>{"publish", solutionProject.FullPath, "-c", configuration };
+                var args = new List<string>{"publish", Path.GetFullPath(solutionProject.FullPath), "-c", configuration };
 
                 if (!string.IsNullOrWhiteSpace(_publishRuntimeIdentifier))
                 {
