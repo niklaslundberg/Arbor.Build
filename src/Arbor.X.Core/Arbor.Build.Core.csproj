@@ -13,7 +13,7 @@
     <PackageReference Include="Arbor.Sorbus" Version="3.0.5" />
     <PackageReference Include="Arbor.Tooler" Version="0.3.0" />
     <PackageReference Include="Arbor.Xdt" Version="0.2.4" />
-    <PackageReference Include="Autofac" Version="4.9.1" />
+    <PackageReference Include="Autofac" Version="4.9.2" />
     <PackageReference Include="JetBrains.Annotations" Version="2019.1.1" />
     <PackageReference Include="Machine.Specifications" Version="0.12.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="2.9.1">
