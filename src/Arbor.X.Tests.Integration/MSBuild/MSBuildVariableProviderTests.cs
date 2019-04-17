@@ -21,13 +21,15 @@ namespace Arbor.Build.Tests.Integration.MSBuild
         readonly ITestOutputHelper output;
 
         [Fact(Skip = "Requires VS 2019 installed")]
-        public async Task Do()
+        public async Task GetMSbuildVariables()
         {
             var msBuildVariableProvider = new MSBuildVariableProvider();
             var variables = await msBuildVariableProvider.GetBuildVariablesAsync(Logger.None,
                 ImmutableArray<IVariable>.Empty, CancellationToken.None);
 
             output.WriteLine(string.Join(Environment.NewLine, variables.Select(s => s.Key + " " + s.Value)));
+
+            Assert.NotEmpty(variables);
         }
     }
 }
