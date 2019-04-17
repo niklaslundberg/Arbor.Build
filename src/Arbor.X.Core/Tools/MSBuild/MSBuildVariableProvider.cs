@@ -22,54 +22,24 @@ namespace Arbor.Build.Core.Tools.MSBuild
     [UsedImplicitly]
     public class MSBuildVariableProvider : IVariableProvider
     {
-        public int Order => VariableProviderOrder.Ignored;
-
-        public async Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
+        private async Task<ImmutableArray<IVariable>> TryGetWithVsWhereAsync(
+            string vsWherePath,
+            string command,
+            string component,
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            int currentProcessBits = Environment.Is64BitProcess ? 64 : 32;
-            const int registryLookupBits = 32;
-            logger.Verbose("Running current process [id {Id}] as a {CurrentProcessBits}-bit process",
-                Process.GetCurrentProcess().Id,
-                currentProcessBits);
-
-            List<SemanticVersion> possibleVersions = new List<string>
-                {
-                    "16.0.0", "15.0.0", "14.0.0", "12.0.0", "4.0.0"
-                }
-                .Select(SemanticVersion.Parse)
-                .ToList();
-
-            string max = buildVariables.GetVariableValueOrDefault(
-                WellKnownVariables.ExternalTools_MSBuild_MaxVersion,
-                "16.0.0");
-
-            SemanticVersion[] toRemove = possibleVersions.Where(version => version > SemanticVersion.Parse(max))
-                .ToArray();
-
-            foreach (SemanticVersion semVersion in toRemove)
-            {
-                possibleVersions.Remove(semVersion);
-            }
-
-            string vsWherePath = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
-                "Microsoft Visual Studio",
-                "Installer",
-                "vswhere.exe");
-
             if (File.Exists(vsWherePath))
             {
                 logger.Debug("vswhere.exe exists at '{VsWherePath}'", vsWherePath);
 
                 ExitCode versionExitCode = await ProcessHelper.ExecuteAsync(
                     vsWherePath,
-                    new List<string> {"-prerelease"},
+                    new List<string> { "-prerelease" },
                     cancellationToken: cancellationToken).ConfigureAwait(false);
 
-                List<string> vsWhereArgs = new List<string> {"-requires", "Microsoft.Component.MSBuild", "-format", "json"};
+                var vsWhereArgs = new List<string> { command, component, "-format", "json" };
 
                 bool allowPreRelease =
                     buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_MSBuild_AllowPrereleaseEnabled);
@@ -83,7 +53,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     }
                 }
 
-                StringBuilder resultBuilder = new StringBuilder();
+                var resultBuilder = new StringBuilder();
 
                 ExitCode exitCode = await ProcessRunner.ExecuteProcessAsync(
                     vsWherePath,
@@ -128,7 +98,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     }
 
                     var array = candidates
-                        .Select(candidate => new {candidate, version = Version.Parse(candidate.installationVersion)})
+                        .Select(candidate => new { candidate, version = Version.Parse(candidate.installationVersion) })
                         .ToArray();
 
                     var firstOrDefault = array.OrderByDescending(candidateItem => candidateItem.version)
@@ -147,7 +117,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
                         {
                             logger.Information("Found MSBuild with vswhere.exe at '{MsbuildPath}'", msbuild2019Path);
 
-                            IVariable[] variables = {
+                            IVariable[] variables =
+                            {
                                 new BuildVariable(
                                     WellKnownVariables.ExternalTools_MSBuild_ExePath,
                                     msbuild2019Path)
@@ -167,7 +138,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                         {
                             logger.Information("Found MSBuild with vswhere.exe at '{MsbuildPath}'", msbuild2017Path);
 
-                            IVariable[] variables = new IVariable[]
+                            IVariable[] variables =
                             {
                                 new BuildVariable(
                                     WellKnownVariables.ExternalTools_MSBuild_ExePath,
@@ -185,6 +156,74 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     throw new InvalidOperationException(
                         $"Could not deserialize installed Visual Studio versions from json '{json}'",
                         ex);
+                }
+            }
+
+            return ImmutableArray<IVariable>.Empty;
+        }
+
+        public int Order => VariableProviderOrder.Ignored;
+
+        public async Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
+            ILogger logger,
+            IReadOnlyCollection<IVariable> buildVariables,
+            CancellationToken cancellationToken)
+        {
+            int currentProcessBits = Environment.Is64BitProcess ? 64 : 32;
+            const int registryLookupBits = 32;
+            logger.Verbose("Running current process [id {Id}] as a {CurrentProcessBits}-bit process",
+                Process.GetCurrentProcess().Id,
+                currentProcessBits);
+
+            List<SemanticVersion> possibleVersions = new List<string>
+                {
+                    "16.0.0", "15.0.0", "14.0.0", "12.0.0", "4.0.0"
+                }
+                .Select(SemanticVersion.Parse)
+                .ToList();
+
+            string max = buildVariables.GetVariableValueOrDefault(
+                WellKnownVariables.ExternalTools_MSBuild_MaxVersion,
+                "16.0.0");
+
+            SemanticVersion[] toRemove = possibleVersions.Where(version => version > SemanticVersion.Parse(max))
+                .ToArray();
+
+            foreach (SemanticVersion semVersion in toRemove)
+            {
+                possibleVersions.Remove(semVersion);
+            }
+
+            string vsWherePath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                "Microsoft Visual Studio",
+                "Installer",
+                "vswhere.exe");
+
+            if (File.Exists(vsWherePath))
+            {
+                ImmutableArray<IVariable> variables = await TryGetWithVsWhereAsync(vsWherePath,
+                    "-requires",
+                    "Microsoft.Component.MSBuild",
+                    logger,
+                    buildVariables,
+                    cancellationToken);
+
+                if (variables.Any())
+                {
+                    return variables;
+                }
+
+                ImmutableArray<IVariable> variablesForTools = await TryGetWithVsWhereAsync(vsWherePath,
+                    "-products",
+                    "Microsoft.VisualStudio.Product.BuildTools",
+                    logger,
+                    buildVariables,
+                    cancellationToken);
+
+                if (variablesForTools.Any())
+                {
+                    return variablesForTools;
                 }
             }
 
@@ -277,7 +316,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             {
                 logger.Information("Found MSBuild at '{FileBasedLookupResultPath}'", fileBasedLookupResultPath);
 
-                IVariable[] variables = new IVariable[]
+                IVariable[] variables =
                 {
                     new BuildVariable(
                         WellKnownVariables.ExternalTools_MSBuild_ExePath,
@@ -292,7 +331,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             foreach (SemanticVersion possibleVersion in possibleVersions)
             {
                 string registryKeyName = @"SOFTWARE\Microsoft\MSBuild\" + possibleVersion.Major + "." +
-                                      possibleVersion.Minor;
+                                         possibleVersion.Minor;
                 object msBuildPathRegistryKeyValue = null;
                 const string valueKey = "MSBuildOverrideTasksPath";
 
@@ -352,7 +391,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             logger.Information("Using MSBuild exe path '{FoundPath}'", foundPath);
 
-            IVariable[] environmentVariables = {
+            IVariable[] environmentVariables =
+            {
                 new BuildVariable(
                     WellKnownVariables.ExternalTools_MSBuild_ExePath,
                     foundPath)
