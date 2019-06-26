@@ -966,10 +966,11 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     {
                         logger.Debug("Skipping publish of project {Project} because it has property {Property} set to false", solutionProject.FullPath, WellKnownVariables.DotNetPublishExeEnabled);
                     }
+
                     continue;
                 }
 
-                var args = new List<string>{"publish", Path.GetFullPath(solutionProject.FullPath), "-c", configuration };
+                var args = new List<string>{"publish", Path.GetFullPath(solutionProject.FullPath), "-c", configuration, "/nodeReuse:false" };
 
                 if (!string.IsNullOrWhiteSpace(_publishRuntimeIdentifier))
                 {
