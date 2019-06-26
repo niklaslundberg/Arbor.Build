@@ -1882,7 +1882,6 @@ namespace Arbor.Build.Core.Tools.MSBuild
             const string projectUrl = "http://nuget.org";
             const string iconUrl = "http://nuget.org";
             const string requireLicenseAcceptance = "false";
-            const string licenseUrl = "http://nuget.org";
             string copyright = _buildVariables.GetVariableValueOrDefault(
                 WellKnownVariables.NetAssemblyCopyright,
                 "Undefined");
@@ -1917,7 +1916,6 @@ namespace Arbor.Build.Core.Tools.MSBuild
         <projectUrl>{projectUrl}</projectUrl>
         <iconUrl>{iconUrl}</iconUrl>
         <requireLicenseAcceptance>{requireLicenseAcceptance}</requireLicenseAcceptance>
-        <licenseUrl>{licenseUrl}</licenseUrl>
         <copyright>{copyright}</copyright>
         <dependencies>
 
