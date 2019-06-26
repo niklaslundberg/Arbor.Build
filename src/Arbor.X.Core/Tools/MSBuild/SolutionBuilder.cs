@@ -2024,27 +2024,30 @@ namespace Arbor.Build.Core.Tools.MSBuild
             foreach (var configurationFile in transformationPairs)
             {
                 string relativeFilePath =
-                    configurationFile.Original.FullName.Replace(projectDirectoryPath, string.Empty);
+                    configurationFile.Original.FullName.Replace(projectDirectoryPath, string.Empty, StringComparison.InvariantCulture);
 
                 string targetTransformResultPath = $"{siteArtifactDirectory.FullName}{relativeFilePath}";
 
-                var transformable = new XmlTransformableDocument();
-
-                transformable.Load(configurationFile.Original.FullName);
-
-                var transformation = new XmlTransformation(configurationFile.TransformFile);
-                if (_debugLoggingEnabled)
+                using (var transformable = new XmlTransformableDocument())
                 {
-                    logger.Debug(
-                        "Transforming '{FullName}' with transformation file '{TransformFile} to target file '{TargetTransformResultPath}'",
-                        configurationFile.Original.FullName,
-                        configurationFile.TransformFile,
-                        targetTransformResultPath);
-                }
+                    transformable.Load(configurationFile.Original.FullName);
 
-                if (transformation.Apply(transformable))
-                {
-                    transformable.Save(targetTransformResultPath);
+                    using (var transformation = new XmlTransformation(configurationFile.TransformFile))
+                    {
+                        if (_debugLoggingEnabled)
+                        {
+                            logger.Debug(
+                                "Transforming '{FullName}' with transformation file '{TransformFile} to target file '{TargetTransformResultPath}'",
+                                configurationFile.Original.FullName,
+                                configurationFile.TransformFile,
+                                targetTransformResultPath);
+                        }
+
+                        if (transformation.Apply(transformable))
+                        {
+                            transformable.Save(targetTransformResultPath);
+                        }
+                    }
                 }
             }
 
