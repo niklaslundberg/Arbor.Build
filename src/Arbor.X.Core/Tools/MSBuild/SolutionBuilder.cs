@@ -11,6 +11,7 @@ using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.GenericExtensions;
 using Arbor.Build.Core.GenericExtensions.Boolean;
 using Arbor.Build.Core.IO;
+using Arbor.Build.Core.ProcessUtils;
 using Arbor.Build.Core.Tools.NuGet;
 using Arbor.Defensive;
 using Arbor.Defensive.Collections;
@@ -22,6 +23,7 @@ using Arbor.Xdt;
 using JetBrains.Annotations;
 using NuGet.Versioning;
 using Serilog;
+using Serilog.Core;
 using Serilog.Events;
 using Stopwatch = System.Diagnostics.Stopwatch;
 
@@ -50,16 +52,16 @@ namespace Arbor.Build.Core.Tools.MSBuild
         private readonly List<string> _platforms = new List<string>();
 
         private bool _appDataJobsEnabled;
-        private bool _applicationmetadataDotNetConfigurationEnabled;
-        private bool _applicationmetadataDotNetCpuPlatformEnabled;
+        private bool _applicationMetadataDotNetConfigurationEnabled;
+        private bool _applicationMetadataDotNetCpuPlatformEnabled;
 
-        private bool _applicationmetadataEnabled;
-        private bool _applicationmetadataGitBranchEnabled;
-        private bool _applicationmetadataGitHashEnabled;
+        private bool _applicationMetadataEnabled;
+        private bool _applicationMetadataGitBranchEnabled;
+        private bool _applicationMetadataGitHashEnabled;
 
         private string _artifactsPath;
-        private string _AssemblyFileVersion;
-        private string _AssemblyVersion;
+        private string _assemblyFileVersion;
+        private string _assemblyVersion;
         private string _buildSuffix;
 
         private IReadOnlyCollection<IVariable> _buildVariables;
@@ -95,6 +97,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
         private bool _pdbArtifactsEnabled;
         private bool _preCompilationEnabled;
         private int _processorCount;
+        private string _publishRuntimeIdentifier;
 
         private string _ruleset;
         private bool _showSummary;
@@ -103,208 +106,10 @@ namespace Arbor.Build.Core.Tools.MSBuild
         private bool _verboseLoggingEnabled;
         private MSBuildVerbosityLevel _verbosity;
         private string _version;
-        private string _publishRuntimeIdentifier;
 
         public SolutionBuilder(BuildContext buildContext)
         {
             _buildContext = buildContext;
-        }
-
-        public async Task<ExitCode> ExecuteAsync(
-            ILogger logger,
-            IReadOnlyCollection<IVariable> buildVariables,
-            CancellationToken cancellationToken)
-        {
-            _buildVariables = buildVariables;
-            _logger = logger;
-            _debugLoggingEnabled = logger.IsEnabled(LogEventLevel.Debug);
-            _verboseLoggingEnabled = logger.IsEnabled(LogEventLevel.Verbose);
-            _cancellationToken = cancellationToken;
-            _msBuildExe =
-                buildVariables.Require(WellKnownVariables.ExternalTools_MSBuild_ExePath).ThrowIfEmptyValue().Value;
-            _artifactsPath =
-                buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue().Value;
-
-            _appDataJobsEnabled = buildVariables.GetBooleanByKey(
-                WellKnownVariables.AppDataJobsEnabled,
-                false);
-
-            _buildSuffix =
-                buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageArtifactsSuffix, "build");
-
-            _version = buildVariables.Require(WellKnownVariables.Version).ThrowIfEmptyValue().Value;
-
-            IVariable artifacts = buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue();
-            _packagesDirectory = Path.Combine(artifacts.Value, "packages");
-
-            _dotnetPackToolsEnabled =
-                buildVariables.GetBooleanByKey(WellKnownVariables.DotNetPackToolProjectsEnabled, true);
-
-            _dotnetPublishEnabled =
-                buildVariables.GetBooleanByKey(WellKnownVariables.DotNetPublishExeProjectsEnabled, true);
-
-            _webProjectsBuildEnabed =
-                buildVariables.GetBooleanByKey(WellKnownVariables.WebProjectsBuildEnabled, true);
-
-            _dotNetExePath =
-                buildVariables.GetVariableValueOrDefault(WellKnownVariables.DotNetExePath, string.Empty);
-
-            _cleanBinXmlFilesForAssembliesEnabled =
-                buildVariables.GetBooleanByKey(
-                    WellKnownVariables.CleanBinXmlFilesForAssembliesEnabled,
-                    false);
-
-            _excludedPlatforms = buildVariables
-                .GetVariableValueOrDefault(WellKnownVariables.MSBuildExcludedPlatforms, string.Empty)
-                .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                .ToImmutableArray();
-
-            _cleanWebJobsXmlFilesForAssembliesEnabled =
-                buildVariables.GetBooleanByKey(
-                    WellKnownVariables.CleanWebJobsXmlFilesForAssembliesEnabled,
-                    false);
-
-            _codeAnalysisEnabled =
-                buildVariables.GetBooleanByKey(
-                    WellKnownVariables.ExternalTools_MSBuild_CodeAnalysisEnabled,
-                    false);
-
-            _publishRuntimeIdentifier = buildVariables.GetVariableValueOrDefault(WellKnownVariables.PublishRuntimeIdentifier, "");
-
-            _preCompilationEnabled =
-                buildVariables.GetBooleanByKey(WellKnownVariables.WebDeployPreCompilationEnabled, false);
-
-            int maxProcessorCount = ProcessorCount(buildVariables);
-
-            int maxCpuLimit = buildVariables.GetInt32ByKey(
-                WellKnownVariables.CpuLimit,
-                maxProcessorCount,
-                1);
-
-            if (_verboseLoggingEnabled)
-            {
-                logger.Verbose("Using CPU limit: {MaxCpuLimit}", maxCpuLimit);
-            }
-
-            _processorCount = maxCpuLimit;
-
-            _verbosity =
-                MSBuildVerbosityLevel.TryParse(
-                    buildVariables.GetVariableValueOrDefault(
-                        WellKnownVariables.ExternalTools_MSBuild_Verbosity,
-                        "minimal"));
-
-            _showSummary = buildVariables.GetBooleanByKey(
-                WellKnownVariables.ExternalTools_MSBuild_SummaryEnabled,
-                true);
-
-            _createWebDeployPackages = buildVariables.GetBooleanByKey(
-                WellKnownVariables.WebDeployBuildPackages,
-                false);
-
-            if (_verboseLoggingEnabled)
-            {
-                logger.Verbose("Using MSBuild verbosity {Verbosity}", _verbosity);
-            }
-
-            _vcsRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
-
-            if (_codeAnalysisEnabled)
-            {
-                _ruleset = FindRuleSet();
-            }
-            else
-            {
-                if (_verboseLoggingEnabled)
-                {
-                    _logger.Verbose("Code analysis is disabled, skipping ruleset lookup.");
-                }
-            }
-
-            _configurationTransformsEnabled =
-                buildVariables.GetBooleanByKey(WellKnownVariables.GenericXmlTransformsEnabled, false);
-            _defaultTarget =
-                buildVariables.GetVariableValueOrDefault(
-                    WellKnownVariables.ExternalTools_MSBuild_DefaultTarget,
-                    "restore;rebuild");
-            _pdbArtifactsEnabled = buildVariables.GetBooleanByKey(
-                WellKnownVariables.PublishPdbFilesAsArtifacts,
-                false);
-            _createNuGetWebPackage =
-                buildVariables.GetBooleanByKey(
-                    WellKnownVariables.NugetCreateNuGetWebPackagesEnabled,
-                    false);
-            _gitHash = buildVariables.GetVariableValueOrDefault(WellKnownVariables.GitHash, string.Empty);
-            _applicationmetadataEnabled = buildVariables.GetBooleanByKey(
-                WellKnownVariables.ApplicationMetadataEnabled,
-                false);
-
-            _applicationmetadataGitHashEnabled = buildVariables.GetBooleanByKey(
-                WellKnownVariables.ApplicationMetadataGitHashEnabled,
-                false);
-
-            _applicationmetadataGitBranchEnabled = buildVariables.GetBooleanByKey(
-                WellKnownVariables.ApplicationMetadataGitBranchEnabled,
-                false);
-
-            _applicationmetadataDotNetCpuPlatformEnabled = buildVariables.GetBooleanByKey(
-                WellKnownVariables.ApplicationMetadataDotNetCpuPlatformEnabled,
-                false);
-
-            _applicationmetadataDotNetConfigurationEnabled = buildVariables.GetBooleanByKey(
-                WellKnownVariables.ApplicationMetadataDotNetConfigurationEnabled,
-                false);
-
-            _filteredNuGetWebPackageProjects =
-                buildVariables.GetVariableValueOrDefault(
-                        WellKnownVariables.NugetCreateNuGetWebPackageFilter,
-                        string.Empty)
-                    .Split(',')
-                    .Where(item => !string.IsNullOrWhiteSpace(item))
-                    .SafeToReadOnlyCollection();
-
-            _excludedWebJobsFiles =
-                buildVariables.GetVariableValueOrDefault(
-                        WellKnownVariables.WebJobsExcludedFileNameParts,
-                        string.Empty)
-                    .Split(',')
-                    .Where(item => !string.IsNullOrWhiteSpace(item))
-                    .SafeToReadOnlyCollection();
-
-            _excludedNuGetWebPackageFiles =
-                buildVariables.GetVariableValueOrDefault(
-                        WellKnownVariables.ExcludedNuGetWebPackageFiles,
-                        string.Empty)
-                    .Split(',')
-                    .Where(item => !string.IsNullOrWhiteSpace(item))
-                    .SafeToReadOnlyCollection();
-
-            _excludedWebJobsDirectorySegments =
-                buildVariables.GetVariableValueOrDefault(
-                        WellKnownVariables.WebJobsExcludedDirectorySegments,
-                        string.Empty)
-                    .Split(',')
-                    .Where(item => !string.IsNullOrWhiteSpace(item))
-                    .SafeToReadOnlyCollection();
-
-            _AssemblyFileVersion = buildVariables.Require(WellKnownVariables.NetAssemblyFileVersion).Value;
-            _AssemblyVersion = buildVariables.Require(WellKnownVariables.NetAssemblyVersion).Value;
-
-            if (_vcsRoot == null)
-            {
-                logger.Error("Could not find version control root path");
-                return ExitCode.Failure;
-            }
-
-            try
-            {
-                return await BuildAsync(logger, buildVariables).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex, "Error in solution builder");
-                return ExitCode.Failure;
-            }
         }
 
         private static int ProcessorCount(IReadOnlyCollection<IVariable> buildVariables)
@@ -431,7 +236,9 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     if (!_platforms.Contains(platform, StringComparer.OrdinalIgnoreCase))
                     {
                         solutionPlatform.Value.Remove(platform);
-                        logger.Debug("Removing found platform {Platform} found in file {SolutionFile}", platform, solutionPlatform.Key.FullName);
+                        logger.Debug("Removing found platform {Platform} found in file {SolutionFile}",
+                            platform,
+                            solutionPlatform.Key.FullName);
                     }
                 }
             }
@@ -774,8 +581,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 $"/target:{_defaultTarget}",
                 $"/maxcpucount:{_processorCount.ToString(CultureInfo.InvariantCulture)}",
                 "/nodeReuse:false",
-                $"/property:AssemblyVersion={_AssemblyVersion}",
-                $"/property:FileVersion={_AssemblyFileVersion}"
+                $"/property:AssemblyVersion={_assemblyVersion}",
+                $"/property:FileVersion={_assemblyFileVersion}"
             };
 
             if (_codeAnalysisEnabled)
@@ -819,17 +626,18 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     argList.Select(arg => new Dictionary<string, string> { { "Value", arg } }).DisplayAsTable());
             }
 
-            Action<string, string> verboseAction = _verboseLoggingEnabled ? logger.Verbose : (Action<string, string>)null;
-            Action<string, string> debugAction = _verboseLoggingEnabled ? logger.Debug : (Action<string, string>)null;
+            Action<string, string> verboseAction =
+                _verboseLoggingEnabled ? logger.Verbose : (Action<string, string>) null;
+            Action<string, string> debugAction = _verboseLoggingEnabled ? logger.Debug : (Action<string, string>) null;
 
             ExitCode exitCode =
                 await
                     ProcessRunner.ExecuteProcessAsync(
                             _msBuildExe,
-                            arguments: argList,
-                            standardOutLog: logger.Information,
-                            standardErrorAction: logger.Error,
-                            toolAction: debugAction,
+                            argList,
+                            logger.Information,
+                            logger.Error,
+                            debugAction,
                             debugAction: debugAction,
                             cancellationToken: _cancellationToken,
                             verboseAction: verboseAction)
@@ -950,8 +758,11 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             ImmutableArray<SolutionProject> exeProjects = solution.Projects
                 .Where(project =>
-                    project.Framework == Framework.NetCoreApp
-                    && (project.Project.HasPropertyWithValue("ArborPublishEnabled", "true") || !project.Project.PropertyGroups.Any(msBuildPropertyGroup => msBuildPropertyGroup.Properties.Any(msBuildProperty => msBuildProperty.Name.Equals("ArborPublishEnabled", StringComparison.Ordinal))))
+                    project.NetFrameworkGeneration == NetFrameworkGeneration.NetCoreApp
+                    && (project.Project.HasPropertyWithValue("ArborPublishEnabled", "true") ||
+                        !project.Project.PropertyGroups.Any(msBuildPropertyGroup =>
+                            msBuildPropertyGroup.Properties.Any(msBuildProperty =>
+                                msBuildProperty.Name.Equals("ArborPublishEnabled", StringComparison.Ordinal))))
                     && (project.Project.HasPropertyWithValue("OutputType", "Exe")
                         || project.Project.Sdk == DotNetSdk.DotnetWeb)
                     && !project.Project.PackageReferences.Any(reference =>
@@ -964,13 +775,23 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 {
                     if (logger.IsEnabled(LogEventLevel.Debug))
                     {
-                        logger.Debug("Skipping publish of project {Project} because it has property {Property} set to false", solutionProject.FullPath, WellKnownVariables.DotNetPublishExeEnabled);
+                        logger.Debug(
+                            "Skipping publish of project {Project} because it has property {Property} set to false",
+                            solutionProject.FullPath,
+                            WellKnownVariables.DotNetPublishExeEnabled);
                     }
 
                     continue;
                 }
 
-                var args = new List<string>{"publish", Path.GetFullPath(solutionProject.FullPath), "-c", configuration, "/nodeReuse:false" };
+                var args = new List<string>
+                {
+                    "publish",
+                    Path.GetFullPath(solutionProject.FullPath),
+                    "-c",
+                    configuration,
+                    "/nodeReuse:false"
+                };
 
                 if (!string.IsNullOrWhiteSpace(_publishRuntimeIdentifier))
                 {
@@ -978,7 +799,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     args.Add(_publishRuntimeIdentifier);
                 }
 
-                ExitCode projectExitCode = await ProcessUtils.ProcessHelper.ExecuteAsync(_dotNetExePath,
+                ExitCode projectExitCode = await ProcessHelper.ExecuteAsync(_dotNetExePath,
                     args,
                     logger,
                     cancellationToken: _cancellationToken).ConfigureAwait(false);
@@ -1005,7 +826,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             bool IsToolProject(SolutionProject project)
             {
-                return project.Framework == Framework.NetCoreApp
+                return project.NetFrameworkGeneration == NetFrameworkGeneration.NetCoreApp
                        && project.Project.HasPropertyWithValue("OutputType", "Exe")
                        && project.Project.HasPropertyWithValue("PackAsTool", "true");
             }
@@ -1038,7 +859,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     "--no-build"
                 };
 
-                ExitCode projectExitCode = await ProcessUtils.ProcessHelper.ExecuteAsync(_dotNetExePath,
+                ExitCode projectExitCode = await ProcessHelper.ExecuteAsync(_dotNetExePath,
                     args,
                     logger,
                     cancellationToken: _cancellationToken).ConfigureAwait(false);
@@ -1070,7 +891,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             foreach (FileInfo analysisLogFile in analysisLogFiles)
             {
-                string projectName = analysisLogFile.Name.Replace(".CodeAnalysisLog.xml", string.Empty);
+                string projectName = analysisLogFile.Name.Replace(".CodeAnalysisLog.xml", string.Empty, StringComparison.OrdinalIgnoreCase);
 
                 string targetFilePath = Path.Combine(
                     targetReportDirectory.FullName,
@@ -1130,7 +951,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                             .SingleOrDefault(dll => dll.FullName
                                 .Equals(
                                     Path.Combine(
-                                        pdb.Directory.FullName,
+                                        pdb.Directory?.FullName,
                                         $"{Path.GetFileNameWithoutExtension(pdb.Name)}.dll"),
                                     StringComparison.OrdinalIgnoreCase))
                     })
@@ -1239,7 +1060,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 project.Project.ProjectName,
                 project.Project.ProjectDirectory,
                 project.Project,
-                Framework.NetFramework)));
+                NetFrameworkGeneration.NetFramework)));
 
             ImmutableArray<WebSolutionProject> solutionProjects = solution.Projects
                 .Where(project => File.ReadAllLines(project.Project.FileName)
@@ -1250,7 +1071,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     project.Project.ProjectName,
                     project.Project.ProjectDirectory,
                     project.Project,
-                    Framework.NetCoreApp))
+                    NetFrameworkGeneration.NetCoreApp))
                 .ToImmutableArray();
 
             webSolutionProjects.AddRange(solutionProjects);
@@ -1294,7 +1115,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     }
                 }
 
-                if (_applicationmetadataEnabled)
+                if (_applicationMetadataEnabled)
                 {
                     _logger.Information("Application metadata is enabled");
                     await CreateApplicationMetadataAsync(siteArtifactDirectory, platformName, configuration)
@@ -1383,7 +1204,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
         {
             var items = new List<KeyValueConfigurationItem>();
 
-            if (!string.IsNullOrWhiteSpace(_gitHash) && _applicationmetadataGitHashEnabled)
+            if (!string.IsNullOrWhiteSpace(_gitHash) && _applicationMetadataGitHashEnabled)
             {
                 var keyValueConfigurationItem = new KeyValueConfigurationItem(
                     ApplicationMetadataKeys.GitHash,
@@ -1396,7 +1217,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 WellKnownVariables.BranchLogicalName,
                 string.Empty);
 
-            if (!string.IsNullOrWhiteSpace(gitBranchName) && _applicationmetadataGitBranchEnabled)
+            if (!string.IsNullOrWhiteSpace(gitBranchName) && _applicationMetadataGitBranchEnabled)
             {
                 var keyValueConfigurationItem = new KeyValueConfigurationItem(
                     ApplicationMetadataKeys.GitBranch,
@@ -1410,14 +1231,14 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 configuration,
                 null);
 
-            if (!string.IsNullOrWhiteSpace(gitBranchName) && _applicationmetadataDotNetConfigurationEnabled)
+            if (!string.IsNullOrWhiteSpace(gitBranchName) && _applicationMetadataDotNetConfigurationEnabled)
             {
                 items.Add(configurationItem);
             }
 
             var cpu = new KeyValueConfigurationItem(ApplicationMetadataKeys.DotNetCpuPlatform, platformName, null);
 
-            if (!string.IsNullOrWhiteSpace(gitBranchName) && _applicationmetadataDotNetCpuPlatformEnabled)
+            if (!string.IsNullOrWhiteSpace(gitBranchName) && _applicationMetadataDotNetCpuPlatformEnabled)
             {
                 items.Add(cpu);
             }
@@ -1472,7 +1293,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             string target;
 
-            if (solutionProject.Framework == Framework.NetFramework)
+            if (solutionProject.NetFrameworkGeneration == NetFrameworkGeneration.NetFramework)
             {
                 target = "pipelinePreDeployCopyAllFilesToOneFolder";
 
@@ -1509,11 +1330,12 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     $"/property:publishdir={siteArtifactDirectory.FullName}",
                     $"/maxcpucount:{_processorCount.ToString(CultureInfo.InvariantCulture)}",
                     "/nodeReuse:false",
-                    $"/property:AssemblyVersion={_AssemblyVersion}",
-                    $"/property:FileVersion={_AssemblyFileVersion}"
+                    $"/property:AssemblyVersion={_assemblyVersion}",
+                    $"/property:FileVersion={_assemblyFileVersion}"
                 };
 
-                string rid = solutionProject.Project.GetPropertyValue(WellKnownVariables.ProjectMSBuildPublishRuntimeIdentifier);
+                string rid =
+                    solutionProject.Project.GetPropertyValue(WellKnownVariables.ProjectMSBuildPublishRuntimeIdentifier);
 
                 if (!string.IsNullOrWhiteSpace(rid))
                 {
@@ -1539,10 +1361,10 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 await
                     ProcessRunner.ExecuteProcessAsync(
                         _msBuildExe,
-                        arguments: buildSiteArguments,
-                        standardOutLog: logger.Information,
-                        standardErrorAction: logger.Error,
-                        toolAction: logger.Information,
+                        buildSiteArguments,
+                        logger.Information,
+                        logger.Error,
+                        logger.Information,
                         cancellationToken: _cancellationToken).ConfigureAwait(false);
 
             if (buildSiteExitCode.IsSuccess)
@@ -1604,16 +1426,21 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 return ExitCode.Success;
             }
 
-            string expectedName = string.Format(
+            string expectedName = string.Format(CultureInfo.InvariantCulture,
                 WellKnownVariables.NugetCreateNuGetWebPackageForProjectEnabledFormat,
-                solutionProject.ProjectName.Replace(".", "_").Replace(" ", "_").Replace("-", "_"));
+                solutionProject.ProjectName
+                    .Replace(".", "_", StringComparison.InvariantCulture)
+                    .Replace(" ", "_", StringComparison.InvariantCulture)
+                    .Replace("-", "_", StringComparison.InvariantCulture));
 
             List<MSBuildProperty> msbuildProperties =
                 solutionProject.Project.PropertyGroups.SelectMany(s => s.Properties)
                     .Where(
                         msBuildProperty =>
                             msBuildProperty.Name.Equals(expectedName, StringComparison.OrdinalIgnoreCase)
-                            || msBuildProperty.Name.Equals(WellKnownVariables.NugetCreateNuGetWebPackageForProjectEnabled, StringComparison.Ordinal))
+                            || msBuildProperty.Name.Equals(
+                                WellKnownVariables.NugetCreateNuGetWebPackageForProjectEnabled,
+                                StringComparison.Ordinal))
                     .ToList();
 
             bool buildNuGetWebPackageForProject = ShouldBuildNuGetWebPackageForProject(
@@ -1634,7 +1461,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             var artifactDirectory = new DirectoryInfo(siteArtifactDirectory);
 
-            ImmutableArray<string> allIncludedFiles = artifactDirectory.GetFilesWithWithExclusions(_excludedNuGetWebPackageFiles);
+            ImmutableArray<string> allIncludedFiles =
+                artifactDirectory.GetFilesWithWithExclusions(_excludedNuGetWebPackageFiles);
 
             ExitCode exitCode = await CreateNuGetPackageAsync(
                 platformDirectoryPath,
@@ -1712,11 +1540,11 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 string environmentPackageId = $"{packageId}.Environment.{environmentName}";
 
                 ExitCode environmentPackageExitCode = await CreateNuGetPackageAsync(
-                        platformDirectoryPath,
-                        logger,
-                        environmentPackageId,
-                        elements,
-                        new DirectoryInfo(rootDirectory)).ConfigureAwait(false);
+                    platformDirectoryPath,
+                    logger,
+                    environmentPackageId,
+                    elements,
+                    new DirectoryInfo(rootDirectory)).ConfigureAwait(false);
 
                 if (!environmentPackageExitCode.IsSuccess)
                 {
@@ -1888,14 +1716,18 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 "Undefined");
             string tags = string.Empty;
 
-            string files = string.Join(Environment.NewLine, filesList.Select(file => NuSpecHelper.IncludedFile(file, baseDirectory.FullName)));
+            string files = string.Join(Environment.NewLine,
+                filesList.Select(file => NuSpecHelper.IncludedFile(file, baseDirectory.FullName)));
 
             FileListWithChecksumFile contentFilesInfo = ChecksumHelper.CreateFileListForDirectory(baseDirectory);
 
-            string metaDir = new FileInfo(contentFilesInfo.ContentFilesFile).Directory.FullName;
+            string metaDir = new FileInfo(contentFilesInfo.ContentFilesFile).Directory?.FullName ??
+                             throw new InvalidOperationException(Resources.ContentFullPathIsNull);
 
-            string contentFileListFile = $@"<file src=""{contentFilesInfo.ContentFilesFile}"" target=""{contentFilesInfo.ContentFilesFile.Substring(metaDir.Length).TrimStart(Path.DirectorySeparatorChar)}"" />";
-            string checksumFile = $@"<file src=""{contentFilesInfo.ChecksumFile}"" target=""{contentFilesInfo.ChecksumFile.Substring(metaDir.Length).TrimStart(Path.DirectorySeparatorChar)}"" />";
+            string contentFileListFile =
+                $@"<file src=""{contentFilesInfo.ContentFilesFile}"" target=""{contentFilesInfo.ContentFilesFile.Substring(metaDir.Length).TrimStart(Path.DirectorySeparatorChar)}"" />";
+            string checksumFile =
+                $@"<file src=""{contentFilesInfo.ChecksumFile}"" target=""{contentFilesInfo.ChecksumFile.Substring(metaDir.Length).TrimStart(Path.DirectorySeparatorChar)}"" />";
 
             string nuspecContent = $@"<?xml version=""1.0""?>
 <package>
@@ -1957,7 +1789,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             File.Delete(nuspecTempFile);
 
-            tempDir.DeleteIfExists(true);
+            tempDir.DeleteIfExists();
 
             return exitCode;
         }
@@ -2023,7 +1855,9 @@ namespace Arbor.Build.Core.Tools.MSBuild
             foreach (var configurationFile in transformationPairs)
             {
                 string relativeFilePath =
-                    configurationFile.Original.FullName.Replace(projectDirectoryPath, string.Empty, StringComparison.InvariantCulture);
+                    configurationFile.Original.FullName.Replace(projectDirectoryPath,
+                        string.Empty,
+                        StringComparison.InvariantCulture);
 
                 string targetTransformResultPath = $"{siteArtifactDirectory.FullName}{relativeFilePath}";
 
@@ -2064,7 +1898,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             [NotNull] WebSolutionProject solutionProject,
             [NotNull] DirectoryInfo siteArtifactDirectory)
         {
-            if (solutionProject.Framework != Framework.NetFramework)
+            if (solutionProject.NetFrameworkGeneration != NetFrameworkGeneration.NetFramework)
             {
                 logger.Information("Skipping Kudu web job, only .NET Framework projects supported");
                 return ExitCode.Success;
@@ -2191,7 +2025,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
             webJobStopwatch.Stop();
             if (_debugLoggingEnabled)
             {
-                logger.Debug("Web jobs took {V} seconds", webJobStopwatch.Elapsed.TotalSeconds.ToString("F"));
+                logger.Debug("Web jobs took {V} seconds",
+                    webJobStopwatch.Elapsed.TotalSeconds.ToString("F", CultureInfo.InvariantCulture));
             }
 
             return exitCode;
@@ -2205,7 +2040,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             WebSolutionProject solutionProject,
             string platformName)
         {
-            if (solutionProject.Framework != Framework.NetFramework)
+            if (solutionProject.NetFrameworkGeneration != NetFrameworkGeneration.NetFramework)
             {
                 logger.Information("Skipping web deploy package, only .NET Framework projects supported");
                 return ExitCode.Success;
@@ -2239,8 +2074,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 "/target:Package",
                 $"/maxcpucount:{_processorCount.ToString(CultureInfo.InvariantCulture)}",
                 "/nodeReuse:false",
-                $"/property:AssemblyVersion={_AssemblyVersion}",
-                $"/property:FileVersion={_AssemblyFileVersion}"
+                $"/property:AssemblyVersion={_assemblyVersion}",
+                $"/property:FileVersion={_assemblyFileVersion}"
             };
 
             if (_showSummary)
@@ -2253,16 +2088,16 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 buildSitePackageArguments.Add("/property:RunCodeAnalysis=false");
             }
 
-            Action<string, string> toolAction = _debugLoggingEnabled ? logger.Debug : (Action<string, string>)null;
+            Action<string, string> toolAction = _debugLoggingEnabled ? logger.Debug : (Action<string, string>) null;
 
             ExitCode packageSiteExitCode =
                 await
                     ProcessRunner.ExecuteProcessAsync(
                         _msBuildExe,
-                        arguments: buildSitePackageArguments,
-                        standardOutLog: logger.Information,
-                        standardErrorAction: logger.Error,
-                        toolAction: toolAction,
+                        buildSitePackageArguments,
+                        logger.Information,
+                        logger.Error,
+                        toolAction,
                         cancellationToken: _cancellationToken).ConfigureAwait(false);
 
             webDeployStopwatch.Stop();
@@ -2340,7 +2175,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             foreach (FileInfo fileInfo in dllFiles)
             {
                 var xmlFile = new FileInfo(Path.Combine(
-                    fileInfo.Directory.FullName,
+                    fileInfo.Directory?.FullName,
                     $"{Path.GetFileNameWithoutExtension(fileInfo.Name)}.xml"));
 
                 if (xmlFile.Exists)
@@ -2357,6 +2192,197 @@ namespace Arbor.Build.Core.Tools.MSBuild
                         _logger.Verbose("Deleted XML file '{FullName}'", xmlFile.FullName);
                     }
                 }
+            }
+        }
+
+        public async Task<ExitCode> ExecuteAsync(
+            ILogger logger,
+            IReadOnlyCollection<IVariable> buildVariables,
+            CancellationToken cancellationToken)
+        {
+            _buildVariables = buildVariables;
+            _logger = logger ?? Logger.None??throw new ArgumentNullException(nameof(logger));
+            _debugLoggingEnabled = _logger.IsEnabled(LogEventLevel.Debug);
+            _verboseLoggingEnabled = _logger.IsEnabled(LogEventLevel.Verbose);
+            _cancellationToken = cancellationToken;
+            _msBuildExe =
+                buildVariables.Require(WellKnownVariables.ExternalTools_MSBuild_ExePath).ThrowIfEmptyValue().Value;
+            _artifactsPath =
+                buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue().Value;
+
+            _appDataJobsEnabled = buildVariables.GetBooleanByKey(
+                WellKnownVariables.AppDataJobsEnabled);
+
+            _buildSuffix =
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageArtifactsSuffix, "build");
+
+            _version = buildVariables.Require(WellKnownVariables.Version).ThrowIfEmptyValue().Value;
+
+            IVariable artifacts = buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue();
+            _packagesDirectory = Path.Combine(artifacts.Value, "packages");
+
+            _dotnetPackToolsEnabled =
+                buildVariables.GetBooleanByKey(WellKnownVariables.DotNetPackToolProjectsEnabled, true);
+
+            _dotnetPublishEnabled =
+                buildVariables.GetBooleanByKey(WellKnownVariables.DotNetPublishExeProjectsEnabled, true);
+
+            _webProjectsBuildEnabed =
+                buildVariables.GetBooleanByKey(WellKnownVariables.WebProjectsBuildEnabled, true);
+
+            _dotNetExePath =
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.DotNetExePath, string.Empty);
+
+            _cleanBinXmlFilesForAssembliesEnabled =
+                buildVariables.GetBooleanByKey(
+                    WellKnownVariables.CleanBinXmlFilesForAssembliesEnabled);
+
+            _excludedPlatforms = buildVariables
+                .GetVariableValueOrDefault(WellKnownVariables.MSBuildExcludedPlatforms, string.Empty)
+                .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                .ToImmutableArray();
+
+            _cleanWebJobsXmlFilesForAssembliesEnabled =
+                buildVariables.GetBooleanByKey(
+                    WellKnownVariables.CleanWebJobsXmlFilesForAssembliesEnabled);
+
+            _codeAnalysisEnabled =
+                buildVariables.GetBooleanByKey(
+                    WellKnownVariables.ExternalTools_MSBuild_CodeAnalysisEnabled);
+
+            _publishRuntimeIdentifier =
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.PublishRuntimeIdentifier, "");
+
+            _preCompilationEnabled =
+                buildVariables.GetBooleanByKey(WellKnownVariables.WebDeployPreCompilationEnabled);
+
+            int maxProcessorCount = ProcessorCount(buildVariables);
+
+            int maxCpuLimit = buildVariables.GetInt32ByKey(
+                WellKnownVariables.CpuLimit,
+                maxProcessorCount,
+                1);
+
+            if (_verboseLoggingEnabled)
+            {
+                _logger.Verbose("Using CPU limit: {MaxCpuLimit}", maxCpuLimit);
+            }
+
+            _processorCount = maxCpuLimit;
+
+            _verbosity =
+                MSBuildVerbosityLevel.TryParse(
+                    buildVariables.GetVariableValueOrDefault(
+                        WellKnownVariables.ExternalTools_MSBuild_Verbosity,
+                        "minimal"));
+
+            _showSummary = buildVariables.GetBooleanByKey(
+                WellKnownVariables.ExternalTools_MSBuild_SummaryEnabled,
+                true);
+
+            _createWebDeployPackages = buildVariables.GetBooleanByKey(
+                WellKnownVariables.WebDeployBuildPackages);
+
+            if (_verboseLoggingEnabled)
+            {
+                _logger.Verbose("Using MSBuild verbosity {Verbosity}", _verbosity);
+            }
+
+            _vcsRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
+
+            if (_codeAnalysisEnabled)
+            {
+                _ruleset = FindRuleSet();
+            }
+            else
+            {
+                if (_verboseLoggingEnabled)
+                {
+                    _logger.Verbose("Code analysis is disabled, skipping ruleset lookup.");
+                }
+            }
+
+            _configurationTransformsEnabled =
+                buildVariables.GetBooleanByKey(WellKnownVariables.GenericXmlTransformsEnabled);
+
+            _defaultTarget =
+                buildVariables.GetVariableValueOrDefault(
+                    WellKnownVariables.ExternalTools_MSBuild_DefaultTarget,
+                    "restore;rebuild");
+
+            _pdbArtifactsEnabled = buildVariables.GetBooleanByKey(
+                WellKnownVariables.PublishPdbFilesAsArtifacts);
+
+            _createNuGetWebPackage =
+                buildVariables.GetBooleanByKey(
+                    WellKnownVariables.NugetCreateNuGetWebPackagesEnabled);
+
+            _gitHash = buildVariables.GetVariableValueOrDefault(WellKnownVariables.GitHash, string.Empty);
+
+            _applicationMetadataEnabled = buildVariables.GetBooleanByKey(
+                WellKnownVariables.ApplicationMetadataEnabled);
+
+            _applicationMetadataGitHashEnabled = buildVariables.GetBooleanByKey(
+                WellKnownVariables.ApplicationMetadataGitHashEnabled);
+
+            _applicationMetadataGitBranchEnabled = buildVariables.GetBooleanByKey(
+                WellKnownVariables.ApplicationMetadataGitBranchEnabled);
+
+            _applicationMetadataDotNetCpuPlatformEnabled = buildVariables.GetBooleanByKey(
+                WellKnownVariables.ApplicationMetadataDotNetCpuPlatformEnabled);
+
+            _applicationMetadataDotNetConfigurationEnabled = buildVariables.GetBooleanByKey(
+                WellKnownVariables.ApplicationMetadataDotNetConfigurationEnabled);
+
+            _filteredNuGetWebPackageProjects =
+                buildVariables.GetVariableValueOrDefault(
+                        WellKnownVariables.NugetCreateNuGetWebPackageFilter,
+                        string.Empty)
+                    .Split(',')
+                    .Where(item => !string.IsNullOrWhiteSpace(item))
+                    .SafeToReadOnlyCollection();
+
+            _excludedWebJobsFiles =
+                buildVariables.GetVariableValueOrDefault(
+                        WellKnownVariables.WebJobsExcludedFileNameParts,
+                        string.Empty)
+                    .Split(',')
+                    .Where(item => !string.IsNullOrWhiteSpace(item))
+                    .SafeToReadOnlyCollection();
+
+            _excludedNuGetWebPackageFiles =
+                buildVariables.GetVariableValueOrDefault(
+                        WellKnownVariables.ExcludedNuGetWebPackageFiles,
+                        string.Empty)
+                    .Split(',')
+                    .Where(item => !string.IsNullOrWhiteSpace(item))
+                    .SafeToReadOnlyCollection();
+
+            _excludedWebJobsDirectorySegments =
+                buildVariables.GetVariableValueOrDefault(
+                        WellKnownVariables.WebJobsExcludedDirectorySegments,
+                        string.Empty)
+                    .Split(',')
+                    .Where(item => !string.IsNullOrWhiteSpace(item))
+                    .SafeToReadOnlyCollection();
+
+            _assemblyFileVersion = buildVariables.Require(WellKnownVariables.NetAssemblyFileVersion).Value;
+            _assemblyVersion = buildVariables.Require(WellKnownVariables.NetAssemblyVersion).Value;
+
+            if (_vcsRoot == null)
+            {
+                _logger.Error("Could not find version control root path");
+                return ExitCode.Failure;
+            }
+
+            try
+            {
+                return await BuildAsync(logger, buildVariables).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Error in solution builder");
+                return ExitCode.Failure;
             }
         }
     }

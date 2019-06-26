@@ -14,7 +14,7 @@ namespace Arbor.Build.Tests.Integration.PathExtensions
 
         static string root;
 
-        Cleanup after = () => new DirectoryInfo(root).DeleteIfExists(true);
+        Cleanup after = () => new DirectoryInfo(root).DeleteIfExists();
 
         Establish context = () =>
         {

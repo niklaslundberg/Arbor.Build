@@ -8,6 +8,7 @@ using Arbor.Build.Core.BuildVariables;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
+using Serilog.Core;
 
 namespace Arbor.Build.Core.Tools.VisualStudio
 {
@@ -20,6 +21,8 @@ namespace Arbor.Build.Core.Tools.VisualStudio
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
+            logger = logger ?? Logger.None;
+
             string sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
 
             string visualStudioVersion =

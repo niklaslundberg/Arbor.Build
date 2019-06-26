@@ -15,7 +15,7 @@ namespace Arbor.Build.Tests.Integration.PathExtensions
 
         Cleanup after = () =>
         {
-            root.DeleteIfExists(true);
+            root.DeleteIfExists();
             rootParent.DeleteIfExists();
         };
 

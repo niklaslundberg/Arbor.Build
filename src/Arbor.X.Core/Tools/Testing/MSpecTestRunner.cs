@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -10,9 +11,9 @@ using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Properties;
 using Arbor.Defensive.Collections;
 using Arbor.Processing;
-using Arbor.Processing;
 using Machine.Specifications;
 using Serilog;
+using Serilog.Core;
 
 namespace Arbor.Build.Core.Tools.Testing
 {
@@ -24,6 +25,8 @@ namespace Arbor.Build.Core.Tools.Testing
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
+            logger = logger ?? Logger.None;
+
             bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.MSpecEnabled, true);
 
             if (!enabled)
@@ -111,7 +114,7 @@ namespace Arbor.Build.Core.Tools.Testing
             arguments.AddRange(testDlls);
 
             arguments.Add("--xml");
-            string timestamp = DateTime.UtcNow.ToString("O").Replace(":", ".");
+            string timestamp = DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture).Replace(":", ".", StringComparison.InvariantCulture);
             string fileName = "MSpec_" + timestamp + ".xml";
             string xmlReportPath = Path.Combine(testReportDirectoryPath, "Xml", fileName);
 
@@ -176,8 +179,7 @@ namespace Arbor.Build.Core.Tools.Testing
                     debugAction: logger.Debug).ConfigureAwait(false);
 
             if (buildVariables.GetBooleanByKey(
-                WellKnownVariables.MSpecJUnitXslTransformationEnabled,
-                false))
+                WellKnownVariables.MSpecJUnitXslTransformationEnabled))
             {
                 logger.Verbose("Transforming {MachineSpecificationsName} test reports to JUnit format",
                     MachineSpecificationsConstants.MachineSpecificationsName);

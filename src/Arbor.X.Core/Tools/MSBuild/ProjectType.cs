@@ -35,7 +35,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
         public bool Equals(ProjectType other)
         {
-            if (ReferenceEquals(null, other))
+            if (other is null)
             {
                 return false;
             }
@@ -50,7 +50,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj))
+            if (obj is null)
             {
                 return false;
             }

@@ -24,7 +24,7 @@ namespace Arbor.Build.Tests.Integration.ProcessRunner
                         toolAction: null,
                         verboseAction: null,
                         debugAction:null,
-                        cancellationToken: CancellationToken.None);
+                        cancellationToken: CancellationToken.None).ConfigureAwait(false);
         }
 
         It should_return_exit_code_0 = () => { exitCode.ShouldEqual(ExitCode.Success); };

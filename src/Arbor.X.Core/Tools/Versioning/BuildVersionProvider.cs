@@ -161,7 +161,7 @@ namespace Arbor.Build.Core.Tools.Versioning
                     .SingleOrDefault() ?? -1;
 
             int teamCityBuildVersion =
-                environmentVariables.Where(item => item.Key == WellKnownVariables.TeamCity.TeamCityVersionBuild)
+                environmentVariables.Where(item => item.Key == WellKnownVariables.TeamCityVersionBuild)
                     .Select(item =>
                     {
                         if (int.TryParse(item.Value, out int buildVersion) && buildVersion >= 0)
@@ -223,7 +223,7 @@ namespace Arbor.Build.Core.Tools.Versioning
                     logger.Verbose(
                         "Found no build version, using version {Build} from TeamCity ({TeamCityVersionBuild})",
                         build,
-                        WellKnownVariables.TeamCity.TeamCityVersionBuild);
+                        WellKnownVariables.TeamCityVersionBuild);
                 }
                 else
                 {

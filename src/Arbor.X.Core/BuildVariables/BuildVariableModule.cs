@@ -12,7 +12,7 @@ namespace Arbor.Build.Core.BuildVariables
         {
             if (string.IsNullOrWhiteSpace(sourceDirectory))
             {
-                throw new ArgumentException("Value cannot be null or whitespace.", nameof(sourceDirectory));
+                throw new ArgumentException(Resources.ValueCannotBeNullOrWhitespace, nameof(sourceDirectory));
             }
 
             _sourceDirectory = sourceDirectory;

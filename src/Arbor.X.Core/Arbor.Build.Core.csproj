@@ -10,7 +10,7 @@
     <PackageReference Include="Arbor.KVConfiguration.Schema.Json" Version="0.18.0" />
     <PackageReference Include="Arbor.KVConfiguration.UserConfiguration" Version="0.18.0" />
     <PackageReference Include="Arbor.Processing" Version="0.2.0" />
-    <PackageReference Include="Arbor.Sorbus" Version="3.0.5" />
+    <PackageReference Include="Arbor.Sorbus" Version="3.1.0" />
     <PackageReference Include="Arbor.Tooler" Version="0.4.0" />
     <PackageReference Include="Arbor.Xdt" Version="0.2.4" />
     <PackageReference Include="Autofac" Version="4.9.2" />
@@ -49,6 +49,21 @@
     <ProjectReference Include="..\Arbor.Defensive.Collections\Arbor.Defensive.Collections.csproj" />
     <ProjectReference Include="..\Arbor.Defensive\Arbor.Defensive.csproj" />
     <ProjectReference Include="..\Arbor.Exceptions\Arbor.Exceptions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
 
 </Project>

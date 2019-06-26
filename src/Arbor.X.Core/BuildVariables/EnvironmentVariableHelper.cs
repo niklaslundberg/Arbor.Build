@@ -10,6 +10,7 @@ using Arbor.Exceptions;
 using Arbor.KVConfiguration.Schema.Json;
 using JetBrains.Annotations;
 using Serilog;
+using Serilog.Core;
 
 namespace Arbor.Build.Core.BuildVariables
 {
@@ -19,6 +20,7 @@ namespace Arbor.Build.Core.BuildVariables
             ILogger logger,
             List<IVariable> existingItems = null)
         {
+            logger = logger ?? Logger.None;
             List<IVariable> existing = existingItems ?? new List<IVariable>();
             var buildVariables = new List<IVariable>();
 

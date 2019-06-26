@@ -7,7 +7,7 @@
             string projectName,
             string projectDirectory,
             MSBuildProject msbuildProject,
-            Framework framework) : base(fullPath, projectName, projectDirectory, msbuildProject, framework)
+            NetFrameworkGeneration netFrameworkGeneration) : base(fullPath, projectName, projectDirectory, msbuildProject, netFrameworkGeneration)
         {
         }
     }

@@ -9,7 +9,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
         {
             if (string.IsNullOrWhiteSpace(configuration))
             {
-                throw new ArgumentException("Value cannot be null or whitespace.", nameof(configuration));
+                throw new ArgumentException(Resources.ValueCannotBeNullOrWhitespace, nameof(configuration));
             }
 
             Configuration = configuration;

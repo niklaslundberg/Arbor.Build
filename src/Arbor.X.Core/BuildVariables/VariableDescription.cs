@@ -1,4 +1,5 @@
 using System;
+using JetBrains.Annotations;
 
 namespace Arbor.Build.Core.BuildVariables
 {
@@ -29,8 +30,13 @@ namespace Arbor.Build.Core.BuildVariables
 
         public string Description => _description ?? string.Empty;
 
-        public static implicit operator string(VariableDescription variableDescription)
+        public static implicit operator string([NotNull] VariableDescription variableDescription)
         {
+            if (variableDescription == null)
+            {
+                throw new ArgumentNullException(nameof(variableDescription));
+            }
+
             return variableDescription.InvariantName;
         }
 
@@ -60,7 +66,7 @@ namespace Arbor.Build.Core.BuildVariables
 
         public bool Equals(VariableDescription other)
         {
-            if (ReferenceEquals(null, other))
+            if (other is null)
             {
                 return false;
             }
@@ -75,7 +81,7 @@ namespace Arbor.Build.Core.BuildVariables
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj))
+            if (obj is null)
             {
                 return false;
             }
@@ -90,7 +96,7 @@ namespace Arbor.Build.Core.BuildVariables
 
         public override int GetHashCode()
         {
-            return InvariantName != null ? InvariantName.GetHashCode() : 0;
+            return InvariantName != null ? InvariantName.GetHashCode(StringComparison.InvariantCulture) : 0;
         }
 
         public override string ToString()

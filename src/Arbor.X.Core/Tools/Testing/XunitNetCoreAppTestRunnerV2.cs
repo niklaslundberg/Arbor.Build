@@ -11,7 +11,6 @@ using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Properties;
 using Arbor.Defensive.Collections;
 using Arbor.Processing;
-using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
 using Xunit;
@@ -238,8 +237,7 @@ namespace Arbor.Build.Core.Tools.Testing
                 }
 
                 if (buildVariables.GetBooleanByKey(
-                    WellKnownVariables.XUnitNetCoreAppV2XmlXsltToJunitEnabled,
-                    false))
+                    WellKnownVariables.XUnitNetCoreAppV2XmlXsltToJunitEnabled))
                 {
                     logger.Verbose(
                         "Transforming XUnit net core app test reports to JUnit format");
@@ -279,8 +277,7 @@ namespace Arbor.Build.Core.Tools.Testing
                     }
                 }
                 if (buildVariables.GetBooleanByKey(
-                    WellKnownVariables.XUnitNetCoreAppV2TrxXsltToJunitEnabled,
-                    false))
+                    WellKnownVariables.XUnitNetCoreAppV2TrxXsltToJunitEnabled))
                 {
                     logger.Verbose(
                         "Transforming XUnit net core TRX test reports to JUnit format");

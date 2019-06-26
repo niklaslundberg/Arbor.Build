@@ -2,7 +2,7 @@ using System;
 
 namespace Arbor.Build.Core.Tools.Kudu
 {
-    public static class StringExtensions
+    internal static class KuduStringExtensions
     {
         public static string ExtractFromTag(this string value, string whatToExtract = null)
         {

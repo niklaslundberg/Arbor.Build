@@ -12,9 +12,9 @@ using Arbor.Build.Core.IO;
 using Arbor.Build.Core.ProcessUtils;
 using Arbor.Build.Core.Tools.MSBuild;
 using Arbor.Processing;
-using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
+using Serilog.Core;
 
 namespace Arbor.Build.Core.Tools.Libz
 {
@@ -33,11 +33,11 @@ namespace Arbor.Build.Core.Tools.Libz
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            _logger = logger;
+            _logger = logger ?? Logger.None;
 
             bool parseResult = buildVariables
                 .GetVariableValueOrDefault(WellKnownVariables.ExternalTools_LibZ_Enabled, "false")
-                .ParseOrDefault(false);
+                .ParseOrDefault();
 
             if (!parseResult)
             {
@@ -332,7 +332,7 @@ namespace Arbor.Build.Core.Tools.Libz
 
             if (exes.Count == 0)
             {
-                throw new InvalidOperationException("Could not find any exe files to merge");
+                throw new InvalidOperationException(Resources.CouldNotFindAnyExeFileToMerge);
             }
 
             FileInfo exe = exes.Single();

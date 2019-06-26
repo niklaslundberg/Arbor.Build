@@ -143,7 +143,7 @@ namespace Arbor.Build.Core.IO
 
             if (invalidFileExtensions.Count > 0)
             {
-                throw new ArgumentException("File extensions must start with '.', eg .txt");
+                throw new ArgumentException(Resources.FileExtensionMustStartWithDot);
             }
 
             var files = new List<FileInfo>();

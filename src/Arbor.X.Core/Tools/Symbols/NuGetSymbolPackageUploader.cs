@@ -7,9 +7,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Processing;
-using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
+using Serilog.Core;
 
 namespace Arbor.Build.Core.Tools.Symbols
 {
@@ -22,9 +22,10 @@ namespace Arbor.Build.Core.Tools.Symbols
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
+            logger = logger ?? Logger.None;
+
             bool enabled = buildVariables.GetBooleanByKey(
-                WellKnownVariables.ExternalTools_SymbolServer_Enabled,
-                false);
+                WellKnownVariables.ExternalTools_SymbolServer_Enabled);
 
             if (!enabled)
             {
@@ -55,8 +56,7 @@ namespace Arbor.Build.Core.Tools.Symbols
             bool isRunningOnBuildAgent = isRunningOnBuildAgentVariable.GetValueOrDefault(false);
             bool forceUpload =
                 buildVariables.GetBooleanByKey(
-                    WellKnownVariables.ExternalTools_SymbolServer_ForceUploadEnabled,
-                    false);
+                    WellKnownVariables.ExternalTools_SymbolServer_ForceUploadEnabled);
 
             int timeout =
                 buildVariables.GetInt32ByKey(

@@ -3,7 +3,7 @@ using Machine.Specifications;
 
 namespace Arbor.Build.Tests.Integration.BoolExtensions
 {
-    [Subject(typeof(Core.GenericExtensions.Boolean.BoolExtensions))]
+    [Subject(typeof(Core.GenericExtensions.Boolean.BoolParseExtensions))]
     public class when_parsing_empty_value_with_default_true
     {
         static bool parsed;

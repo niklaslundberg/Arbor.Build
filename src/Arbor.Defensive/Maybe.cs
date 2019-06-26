@@ -160,5 +160,10 @@ namespace Arbor.Defensive
         {
             return _value?.GetHashCode() ?? 0;
         }
+
+        public T ToT()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

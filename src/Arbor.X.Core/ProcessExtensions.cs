@@ -2,8 +2,6 @@
 using System.Diagnostics;
 using System.Globalization;
 using System.Management;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Arbor.Processing
 {
@@ -19,26 +17,27 @@ namespace Arbor.Processing
 
             try
             {
-                return process.MainModule.FileName;
+                return process.MainModule?.FileName;
             }
             catch
             {
                 const string query = "SELECT ExecutablePath, ProcessID FROM Win32_Process";
-                var searcher = new ManagementObjectSearcher(query);
-
-                foreach (ManagementBaseObject item in searcher.Get())
+                using (var searcher = new ManagementObjectSearcher(query))
                 {
-                    object idObject = item["ProcessID"];
-                    if (!(idObject is int id))
+                    foreach (ManagementBaseObject item in searcher.Get())
                     {
-                        id = int.Parse(idObject.ToString(), CultureInfo.InvariantCulture);
-                    }
+                        object idObject = item["ProcessID"];
+                        if (!(idObject is int id))
+                        {
+                            id = int.Parse(idObject.ToString(), CultureInfo.InvariantCulture);
+                        }
 
-                    object path = item["ExecutablePath"];
+                        object path = item["ExecutablePath"];
 
-                    if (path != null && id == process.Id)
-                    {
-                        return path.ToString();
+                        if (path != null && id == process.Id)
+                        {
+                            return path.ToString();
+                        }
                     }
                 }
             }
@@ -54,45 +53,6 @@ namespace Arbor.Processing
             }
 
             return $"{process.Id} {process}";
-        }
-
-        internal static bool IsAlive(
-            this Process process,
-            Task<ExitCode> task,
-            CancellationToken cancellationToken,
-            bool done,
-            string processWithArgs,
-            Action<string, string> toolAction,
-            Action<string, string> standardAction,
-            Action<string, string> errorAction,
-            Action<string, string> verbose)
-        {
-            if (process == null)
-            {
-                verbose?.Invoke($"Process '{processWithArgs}' does no longer exist", null);
-                return false;
-            }
-
-            if (task.IsCompleted || task.IsFaulted || task.IsCanceled)
-            {
-                TaskStatus status = task.Status;
-                verbose?.Invoke($"Task status for process '{processWithArgs}' is {status}", null);
-                return false;
-            }
-
-            if (cancellationToken.IsCancellationRequested)
-            {
-                verbose?.Invoke($"Cancellation is requested for process '{processWithArgs}'", null);
-                return false;
-            }
-
-            if (done)
-            {
-                verbose?.Invoke($"Process '{processWithArgs}' is flagged as done", null);
-                return false;
-            }
-
-            return true;
         }
     }
 }

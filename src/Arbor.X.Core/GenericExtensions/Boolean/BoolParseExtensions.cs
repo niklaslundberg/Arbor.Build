@@ -1,6 +1,6 @@
 ﻿namespace Arbor.Build.Core.GenericExtensions.Boolean
 {
-    public static class BoolExtensions
+    public static class BoolParseExtensions
     {
         public static bool ParseOrDefault(this string value, bool defaultValue = false)
         {

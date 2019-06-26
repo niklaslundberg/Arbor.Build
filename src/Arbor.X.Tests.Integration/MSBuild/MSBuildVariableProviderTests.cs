@@ -25,7 +25,7 @@ namespace Arbor.Build.Tests.Integration.MSBuild
         {
             var msBuildVariableProvider = new MSBuildVariableProvider();
             var variables = await msBuildVariableProvider.GetBuildVariablesAsync(Logger.None,
-                ImmutableArray<IVariable>.Empty, CancellationToken.None);
+                ImmutableArray<IVariable>.Empty, CancellationToken.None).ConfigureAwait(false);
 
             output.WriteLine(string.Join(Environment.NewLine, variables.Select(s => s.Key + " " + s.Value)));
 

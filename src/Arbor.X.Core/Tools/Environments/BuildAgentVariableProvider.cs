@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,10 +27,10 @@ namespace Arbor.Build.Core.Tools.Environments
             {
                 WellKnownVariables.ExternalTools_Hudson_HudsonHome,
                 WellKnownVariables.ExternalTools_Jenkins_JenkinsHome,
-                WellKnownVariables.TeamCity.ExternalTools_TeamCity_TeamCityVersion
+                WellKnownVariables.ExternalTools_TeamCity_TeamCityVersion
             };
 
-            bool isBuildAgent = buildVariables.GetBooleanByKey(WellKnownVariables.IsRunningOnBuildAgent, false);
+            bool isBuildAgent = buildVariables.GetBooleanByKey(WellKnownVariables.IsRunningOnBuildAgent);
 
             if (isBuildAgent)
             {
@@ -46,7 +47,7 @@ namespace Arbor.Build.Core.Tools.Environments
             {
                 new BuildVariable(
                     WellKnownVariables.IsRunningOnBuildAgent,
-                    isBuildAgentValue.ToString().ToLowerInvariant())
+                    isBuildAgentValue.ToString(CultureInfo.InvariantCulture).ToLowerInvariant())
             };
 
             return Task.FromResult(variables.ToImmutableArray());

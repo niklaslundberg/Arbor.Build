@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using JetBrains.Annotations;
 using Serilog;
+using Serilog.Core;
 
 namespace Arbor.Build.Core.Debugging
 {
@@ -19,6 +20,8 @@ namespace Arbor.Build.Core.Debugging
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
+            logger = logger ?? Logger.None;
+
             if (!DebugHelper.IsDebugging)
             {
                 logger.Verbose("Skipping debug variables, not running in debug mode");
@@ -67,7 +70,6 @@ namespace Arbor.Build.Core.Debugging
                 [WellKnownVariables.XUnitNetCoreAppXmlAnalysisEnabled] = "true",
                 [WellKnownVariables.AssemblyUseReflectionOnlyMode] = "true",
                 [WellKnownVariables.MSBuildNuGetRestoreEnabled] = "true",
-                [WellKnownVariables.BranchName] = "develop",
                 [WellKnownVariables.DotNetPublishExeProjectsEnabled] = "false",
             };
 

@@ -11,7 +11,7 @@ namespace Arbor.Build.Tests.Integration.TrxTransform
 {
     public sealed class WhenTransformingTrxToJunit : IDisposable
     {
-        Logger _logger;
+        readonly Logger _logger;
 
         public WhenTransformingTrxToJunit()
         {

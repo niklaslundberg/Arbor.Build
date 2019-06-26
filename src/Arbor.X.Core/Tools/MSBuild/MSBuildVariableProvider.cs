@@ -16,6 +16,7 @@ using Microsoft.Win32;
 using Newtonsoft.Json;
 using NuGet.Versioning;
 using Serilog;
+using Serilog.Core;
 
 namespace Arbor.Build.Core.Tools.MSBuild
 {
@@ -65,7 +66,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                 if (!exitCode.IsSuccess)
                 {
-                    throw new InvalidOperationException("Could not get Visual Studio path");
+                    throw new InvalidOperationException(Resources.CouldNotGetVisualStudioPath);
                 }
 
                 string json = resultBuilder.ToString();
@@ -169,9 +170,11 @@ namespace Arbor.Build.Core.Tools.MSBuild
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
+            logger = logger ?? Logger.None;
+
             int currentProcessBits = Environment.Is64BitProcess ? 64 : 32;
             const int registryLookupBits = 32;
-            logger.Verbose("Running current process [id {Id}] as a {CurrentProcessBits}-bit process",
+            logger?.Verbose("Running current process [id {Id}] as a {CurrentProcessBits}-bit process",
                 Process.GetCurrentProcess().Id,
                 currentProcessBits);
 
@@ -207,7 +210,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     "Microsoft.Component.MSBuild",
                     logger,
                     buildVariables,
-                    cancellationToken);
+                    cancellationToken).ConfigureAwait(false);
 
                 if (variables.Any())
                 {
@@ -219,7 +222,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     "Microsoft.VisualStudio.Product.BuildTools",
                     logger,
                     buildVariables,
-                    cancellationToken);
+                    cancellationToken).ConfigureAwait(false);
 
                 if (variablesForTools.Any())
                 {

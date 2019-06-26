@@ -43,8 +43,8 @@ namespace Arbor.Build.Core.Tools.Testing
         private readonly ILogger _logger;
         private readonly IEnumerable<Type> _typesToFind;
 
-        private bool _debugLevelEnabled;
-        private bool _verboseLevelEnabled;
+        private readonly bool _debugLevelEnabled;
+        private readonly bool _verboseLevelEnabled;
 
         public UnitTestFinder(IEnumerable<Type> typesToFind, bool debugLogEnabled = false, ILogger logger = null)
         {
@@ -377,7 +377,7 @@ namespace Arbor.Build.Core.Tools.Testing
 
                                     string typeName = type.FullName.Substring(0, typePosition);
 
-                                    return typeName.Equals(fieldName);
+                                    return typeName.Equals(fieldName, StringComparison.Ordinal);
                                 });
                         }
 
@@ -449,7 +449,7 @@ namespace Arbor.Build.Core.Tools.Testing
 
                 if (_debugLevelEnabled)
                 {
-                    _logger?.Debug(message);
+                    _logger?.Debug("{Message}", message);
                 }
 #if DEBUG
                 Debug.WriteLine("{0}, {1}", message, ex);
@@ -462,7 +462,7 @@ namespace Arbor.Build.Core.Tools.Testing
 
                 if (_debugLevelEnabled)
                 {
-                    _logger?.Debug(message);
+                    _logger?.Debug("{Message}", message);
                 }
 #if DEBUG
                 Debug.WriteLine("{0}, {1}", message, ex);

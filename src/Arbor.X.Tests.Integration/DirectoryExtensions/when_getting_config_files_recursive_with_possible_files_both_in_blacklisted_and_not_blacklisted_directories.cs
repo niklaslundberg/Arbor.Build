@@ -15,7 +15,7 @@ namespace Arbor.Build.Tests.Integration.DirectoryExtensions
         static DirectoryInfo baseDir;
         static IReadOnlyCollection<string> files;
 
-        Cleanup after = () => baseDir.DeleteIfExists(true);
+        Cleanup after = () => baseDir.DeleteIfExists();
 
         Establish context = () =>
         {

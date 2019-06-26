@@ -9,3 +9,5 @@
         Justification = "Optimization",
         Scope = "member",
         Target = "~F:Arbor.Defensive.Maybe`1.empty")]
+[assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1000:Do not declare static members on generic types", Justification = "Optimization", Scope = "member", Target = "~M:Arbor.Defensive.Maybe`1.Empty~Arbor.Defensive.Maybe`1")]
+

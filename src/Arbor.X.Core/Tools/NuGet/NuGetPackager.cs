@@ -10,9 +10,10 @@ using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.Git;
 using Arbor.Defensive;
 using Arbor.Processing;
-using Arbor.Processing;
+using JetBrains.Annotations;
 using NuGet.Versioning;
 using Serilog;
+using Serilog.Core;
 using Serilog.Events;
 
 namespace Arbor.Build.Core.Tools.NuGet
@@ -34,6 +35,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             string packagesDirectory,
             string vcsRootDir)
         {
+            logger = logger ?? Logger.None;
             IVariable version = buildVariables.Require(WellKnownVariables.Version).ThrowIfEmptyValue();
             IVariable releaseBuild = buildVariables.Require(WellKnownVariables.ReleaseBuild).ThrowIfEmptyValue();
             IVariable branchName = buildVariables.Require(WellKnownVariables.BranchLogicalName).ThrowIfEmptyValue();
@@ -64,22 +66,22 @@ namespace Arbor.Build.Core.Tools.NuGet
                     true);
 
             bool branchNameEnabled =
-                buildVariables.GetBooleanByKey(WellKnownVariables.NuGetPackageIdBranchNameEnabled, false);
+                buildVariables.GetBooleanByKey(WellKnownVariables.NuGetPackageIdBranchNameEnabled);
 
             string packageIdOverride =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageIdOverride, null);
 
             bool nuGetSymbolPackagesEnabled =
-                buildVariables.GetBooleanByKey(WellKnownVariables.NuGetSymbolPackagesEnabled, false);
+                buildVariables.GetBooleanByKey(WellKnownVariables.NuGetSymbolPackagesEnabled);
 
             string nuGetPackageVersionOverride =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageVersionOverride, null);
 
             bool allowManifestReWrite =
-                buildVariables.GetBooleanByKey(WellKnownVariables.NuGetAllowManifestReWrite, false);
+                buildVariables.GetBooleanByKey(WellKnownVariables.NuGetAllowManifestReWrite);
 
             bool buildPackagesOnAnyBranch =
-                buildVariables.GetBooleanByKey(WellKnownVariables.NuGetCreatePackagesOnAnyBranchEnabled, false);
+                buildVariables.GetBooleanByKey(WellKnownVariables.NuGetCreatePackagesOnAnyBranchEnabled);
 
             if (!buildPackagesOnAnyBranch)
             {
@@ -104,7 +106,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             if (!branchNameMayBe.HasValue)
             {
-                throw new InvalidOperationException("The branch name could not be found");
+                throw new InvalidOperationException(Resources.TheBranchNameCouldNotBeFound);
             }
 
             bool isReleaseBuild = IsReleaseBuild(releaseBuild.Value, branchNameMayBe.Value);
@@ -167,11 +169,21 @@ namespace Arbor.Build.Core.Tools.NuGet
         }
 
         public async Task<ExitCode> CreatePackageAsync(
-            string packageSpecificationPath,
-            NuGetPackageConfiguration packageConfiguration,
+            [NotNull] string packageSpecificationPath,
+            [NotNull] NuGetPackageConfiguration packageConfiguration,
             bool ignoreWarnings = false,
             CancellationToken cancellationToken = default)
         {
+            if (packageConfiguration == null)
+            {
+                throw new ArgumentNullException(nameof(packageConfiguration));
+            }
+
+            if (string.IsNullOrWhiteSpace(packageSpecificationPath))
+            {
+                throw new ArgumentException(Resources.ValueCannotBeNullOrWhitespace, nameof(packageSpecificationPath));
+            }
+
             _logger.Debug("Using NuGet package configuration {PackageConfiguration}", packageConfiguration);
 
             NuSpec nuSpec = NuSpec.Parse(packageSpecificationPath);
@@ -302,7 +314,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
         private static bool IsReleaseBuild(string releaseBuild, BranchName branchName)
         {
-            releaseBuild.TryParseBool(out bool isReleaseBuild, false);
+            _ = releaseBuild.TryParseBool(out bool isReleaseBuild);
 
             return isReleaseBuild || branchName.IsProductionBranch();
         }

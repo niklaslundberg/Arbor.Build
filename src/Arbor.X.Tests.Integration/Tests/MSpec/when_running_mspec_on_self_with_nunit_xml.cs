@@ -32,7 +32,7 @@ namespace Arbor.Build.Tests.Integration.Tests.MSpec
 
             try
             {
-                tempDirectory.DeleteIfExists(true);
+                tempDirectory.DeleteIfExists();
             }
             catch (Exception ex)
             {

@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.Properties;
 using Arbor.Processing;
-using Arbor.Processing;
 using JetBrains.Annotations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Serilog;
+using Serilog.Core;
 
 namespace Arbor.Build.Core.Tools.Testing
 {
@@ -26,7 +26,9 @@ namespace Arbor.Build.Core.Tools.Testing
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.VSTestEnabled, false);
+            logger = logger ?? Logger.None;
+
+            bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.VSTestEnabled);
 
             if (!enabled)
             {
@@ -50,8 +52,7 @@ namespace Arbor.Build.Core.Tools.Testing
             }
 
             bool ignoreTestFailures = buildVariables.GetBooleanByKey(
-                WellKnownVariables.IgnoreTestFailures,
-                false);
+                WellKnownVariables.IgnoreTestFailures);
 
             bool? runTestsInReleaseConfiguration =
                 buildVariables.GetOptionalBooleanByKey(
@@ -160,12 +161,12 @@ namespace Arbor.Build.Core.Tools.Testing
             }
         }
 
-        private void RestoreCurrentDirectory(string currentDirectory)
+        private static void RestoreCurrentDirectory(string currentDirectory)
         {
             Directory.SetCurrentDirectory(currentDirectory);
         }
 
-        private string SaveCurrentDirectory()
+        private static string SaveCurrentDirectory()
         {
             return Directory.GetCurrentDirectory();
         }

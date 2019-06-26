@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Processing;
 using Serilog;
+using Serilog.Core;
 
 namespace Arbor.Build.Core.Tools.EnvironmentVariables
 {
@@ -19,6 +20,8 @@ namespace Arbor.Build.Core.Tools.EnvironmentVariables
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
+            logger = logger ?? Logger.None;
+
             List<string> missingKeys =
                 RequiredValues.Where(
                         var =>
@@ -65,7 +68,7 @@ namespace Arbor.Build.Core.Tools.EnvironmentVariables
 
             if (!succeeded)
             {
-                logger.Error(sb.ToString());
+                logger.Error("{Message}", sb.ToString());
             }
 
             return succeeded ? ExitCode.Success : ExitCode.Failure;

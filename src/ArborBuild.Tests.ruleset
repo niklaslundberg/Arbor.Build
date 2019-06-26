@@ -5,6 +5,7 @@
     <Rule Id="CA1001" Action="Warning" />
     <Rule Id="CA1009" Action="Warning" />
     <Rule Id="CA1016" Action="Warning" />
+    <Rule Id="CA1031" Action="None" />
     <Rule Id="CA1033" Action="Warning" />
     <Rule Id="CA1049" Action="Warning" />
     <Rule Id="CA1060" Action="Warning" />
@@ -12,6 +13,9 @@
     <Rule Id="CA1063" Action="Warning" />
     <Rule Id="CA1065" Action="Warning" />
     <Rule Id="CA1301" Action="Warning" />
+    <Rule Id="CA1303" Action="None" />
+    <Rule Id="CA1305" Action="None" />
+    <Rule Id="CA1307" Action="None" />
     <Rule Id="CA1400" Action="Warning" />
     <Rule Id="CA1401" Action="Warning" />
     <Rule Id="CA1403" Action="Warning" />
@@ -108,6 +112,7 @@
   </Rules>
   <Rules AnalyzerId="IDE" RuleNamespace="IDE">
     <Rule Id="IDE0044" Action="None" />
+    <Rule Id="IDE0052" Action="None" />
     <Rule Id="IDE1006" Action="None" />
   </Rules>
 </RuleSet>

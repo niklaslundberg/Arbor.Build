@@ -26,7 +26,7 @@ namespace Arbor.Build.Core.Tools.Kudu
             _logger = logger;
 
             const string kuduJobsEnabledKey = WellKnownVariables.KuduJobsEnabled;
-            bool kuduWebJobsEnabled = buildVariables.GetBooleanByKey(kuduJobsEnabledKey, false);
+            bool kuduWebJobsEnabled = buildVariables.GetBooleanByKey(kuduJobsEnabledKey);
 
             if (!kuduWebJobsEnabled)
             {

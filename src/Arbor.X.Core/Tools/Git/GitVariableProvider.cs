@@ -9,10 +9,10 @@ using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.GenericExtensions.Boolean;
 using Arbor.Defensive;
 using Arbor.Processing;
-using Arbor.Processing;
 using JetBrains.Annotations;
 using NuGet.Versioning;
 using Serilog;
+using Serilog.Core;
 
 namespace Arbor.Build.Core.Tools.Git
 {
@@ -26,6 +26,7 @@ namespace Arbor.Build.Core.Tools.Git
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
+            logger = logger ?? Logger.None;
             var variables = new List<IVariable>();
 
             string branchName = buildVariables.Require(WellKnownVariables.BranchName).ThrowIfEmptyValue().Value;
@@ -53,12 +54,12 @@ namespace Arbor.Build.Core.Tools.Git
                 {
                     variables.Add(new BuildVariable(WellKnownVariables.ReleaseBuildEnabled, "false"));
                     logger.Debug(
-                        "Release build is not explicitely set when branch is develop branch, skipping release build");
+                        "Release build is not explicitly set when branch is develop branch, skipping release build");
                 }
                 else
                 {
                     logger.Debug(
-                        "Release build is explicitely set when branch is develop branch, value {IsReleaseBuildEnabled}",
+                        "Release build is explicitly set when branch is develop branch, value {IsReleaseBuildEnabled}",
                         isReleaseBuildEnabled);
                 }
 
@@ -73,7 +74,7 @@ namespace Arbor.Build.Core.Tools.Git
 
             if (maybeBranch.HasValue && maybeBranch.Value.IsProductionBranch())
             {
-                logger.Debug("Branch is production branch, checking if release build is explicitely set");
+                logger.Debug("Branch is production branch, checking if release build is explicitly set");
                 Maybe<IVariable> debugBuildEnabled =
                     buildVariables.GetOptionalVariable(WellKnownVariables.DebugBuildEnabled);
 
@@ -82,12 +83,12 @@ namespace Arbor.Build.Core.Tools.Git
                 {
                     variables.Add(new BuildVariable(WellKnownVariables.DebugBuildEnabled, "false"));
                     logger.Debug(
-                        "Debug build is not explicitely set when branch is production branch, skipping debug build");
+                        "Debug build is not explicitly set when branch is production branch, skipping debug build");
                 }
                 else
                 {
                     logger.Debug(
-                        "Debug build is explicitely set when branch is production branch, value {IsDebugBuildEnabled}",
+                        "Debug build is explicitly set when branch is production branch, value {IsDebugBuildEnabled}",
                         isDebugBuildEnabled);
                 }
 
@@ -108,7 +109,7 @@ namespace Arbor.Build.Core.Tools.Git
 
                 variables.Add(new BuildVariable(WellKnownVariables.BranchNameVersion, version));
 
-                if (buildVariables.GetBooleanByKey(WellKnownVariables.BranchNameVersionOverrideEnabled, false))
+                if (buildVariables.GetBooleanByKey(WellKnownVariables.BranchNameVersionOverrideEnabled))
                 {
                     logger.Verbose(
                         "Variable '{BranchNameVersionOverrideEnabled}' is set to true, using version number '{Version}' from branch",
@@ -156,10 +157,10 @@ namespace Arbor.Build.Core.Tools.Git
 
             if (!buildVariables.HasKey(WellKnownVariables.GitHash))
             {
-                if (buildVariables.HasKey(WellKnownVariables.TeamCity.TeamCityVcsNumber))
+                if (buildVariables.HasKey(WellKnownVariables.TeamCityVcsNumber))
                 {
                     string gitCommitHash = buildVariables.GetVariableValueOrDefault(
-                        WellKnownVariables.TeamCity.TeamCityVcsNumber,
+                        WellKnownVariables.TeamCityVcsNumber,
                         string.Empty);
 
                     if (!string.IsNullOrWhiteSpace(gitCommitHash))
@@ -171,7 +172,7 @@ namespace Arbor.Build.Core.Tools.Git
                         logger.Debug(
                             "Setting commit hash variable '{GitHash}' from TeamCity variable '{TeamCityVcsNumber}', value '{GitCommitHash}'",
                             WellKnownVariables.GitHash,
-                            WellKnownVariables.TeamCity.TeamCityVcsNumber,
+                            WellKnownVariables.TeamCityVcsNumber,
                             gitCommitHash);
 
                         variables.Add(environmentVariable);

@@ -9,6 +9,7 @@ using Arbor.Exceptions;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
+using Serilog.Core;
 
 namespace Arbor.Build.Core.Tools.Cleanup
 {
@@ -21,6 +22,8 @@ namespace Arbor.Build.Core.Tools.Cleanup
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
+            logger = logger ?? Logger.None;
+
             bool cleanupBeforeBuildEnabled =
                 buildVariables.GetBooleanByKey(
                     WellKnownVariables.CleanupArtifactsBeforeBuildEnabled,

@@ -38,7 +38,7 @@ namespace Arbor.Build.Core.Tools.Testing
 
             if (string.IsNullOrWhiteSpace(xsltTemplate))
             {
-                throw new ArgumentException("Value cannot be null or whitespace.", nameof(xsltTemplate));
+                throw new ArgumentException(Resources.ValueCannotBeNullOrWhitespace, nameof(xsltTemplate));
             }
 
             Encoding encoding = Encoding.UTF8;

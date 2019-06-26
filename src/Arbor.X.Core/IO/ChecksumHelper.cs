@@ -67,7 +67,7 @@ namespace Arbor.Build.Core.IO
         {
             if (string.IsNullOrWhiteSpace(contentFilesFile))
             {
-                throw new ArgumentException("Value cannot be null or whitespace.", nameof(contentFilesFile));
+                throw new ArgumentException(Resources.ValueCannotBeNullOrWhitespace, nameof(contentFilesFile));
             }
 
             ContentFilesFile = contentFilesFile;

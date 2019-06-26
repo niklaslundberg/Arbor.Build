@@ -10,6 +10,7 @@ using Arbor.Defensive;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
+using Serilog.Core;
 
 namespace Arbor.Build.Core.Tools.NuGet
 {
@@ -22,7 +23,8 @@ namespace Arbor.Build.Core.Tools.NuGet
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.DotNetRestoreEnabled, false);
+            logger = logger ?? Logger.None;
+            bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.DotNetRestoreEnabled);
 
             if (!enabled)
             {

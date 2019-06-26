@@ -11,6 +11,7 @@ using Arbor.Build.Core.Tools.Cleanup;
 using JetBrains.Annotations;
 using Microsoft.Win32;
 using Serilog;
+using Serilog.Core;
 
 namespace Arbor.Build.Core.Tools.VisualStudio
 {
@@ -26,6 +27,7 @@ namespace Arbor.Build.Core.Tools.VisualStudio
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
+            logger = logger ?? Logger.None;
             if (!string.IsNullOrWhiteSpace(buildVariables.GetVariableValueOrDefault(
                 WellKnownVariables.ExternalTools_VisualStudio_Version,
                 string.Empty)))

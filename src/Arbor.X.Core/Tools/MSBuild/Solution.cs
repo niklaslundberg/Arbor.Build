@@ -19,7 +19,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
         {
             if (string.IsNullOrWhiteSpace(solutionFileFullName))
             {
-                throw new ArgumentException("Value cannot be null or whitespace.", nameof(solutionFileFullName));
+                throw new ArgumentException(Resources.ValueCannotBeNullOrWhitespace, nameof(solutionFileFullName));
             }
 
             if (!File.Exists(solutionFileFullName))
@@ -69,15 +69,15 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             MSBuildProject msBuildProject = MSBuildProject.LoadFrom(projectFullPath);
 
-            Framework framework = MSBuildProject.IsNetSdkProject(new FileInfo(projectFullPath))
-                ? Framework.NetCoreApp
-                : Framework.NetFramework;
+            NetFrameworkGeneration netFrameworkGeneration = MSBuildProject.IsNetSdkProject(new FileInfo(projectFullPath))
+                ? NetFrameworkGeneration.NetCoreApp
+                : NetFrameworkGeneration.NetFramework;
 
             return new SolutionProject(projectFullPath,
                 msBuildProject.ProjectName,
                 msBuildProject.ProjectDirectory,
                 msBuildProject,
-                framework);
+                netFrameworkGeneration);
         }
     }
 }

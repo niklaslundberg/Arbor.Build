@@ -24,6 +24,7 @@ using Arbor.Processing;
 using Autofac;
 using JetBrains.Annotations;
 using Serilog;
+using Serilog.Core;
 using Serilog.Events;
 
 namespace Arbor.Build.Core
@@ -33,12 +34,12 @@ namespace Arbor.Build.Core
         private readonly ILogger _logger;
         private CancellationToken _cancellationToken;
         private IContainer _container;
-        private bool _verboseEnabled;
-        private bool _debugEnabled;
+        private readonly bool _verboseEnabled;
+        private readonly bool _debugEnabled;
 
         public BuildApplication(ILogger logger)
         {
-            _logger = logger;
+            _logger = logger ?? Logger.None;
             _verboseEnabled = _logger.IsEnabled(LogEventLevel.Verbose);
             _debugEnabled = _logger.IsEnabled(LogEventLevel.Debug);
         }
@@ -101,7 +102,7 @@ namespace Arbor.Build.Core
             _logger.Information("Arbor.X.Build total elapsed time in seconds: {TotalSeconds:F}",
                 stopwatch.Elapsed.TotalSeconds);
 
-            multiSourceKeyValueConfiguration[WellKnownVariables.BuildApplicationExitDelayInMilliseconds]
+            _ = multiSourceKeyValueConfiguration[WellKnownVariables.BuildApplicationExitDelayInMilliseconds]
                 .TryParseInt32(out int exitDelayInMilliseconds, 50);
 
             if (exitDelayInMilliseconds > 0)
@@ -155,7 +156,7 @@ namespace Arbor.Build.Core
                                 "Execution time",
                                 result.ExecutionTime == default
                                     ? "N/A"
-                                    : ((int)result.ExecutionTime.TotalMilliseconds).ToString("D") + " ms"
+                                    : ((int)result.ExecutionTime.TotalMilliseconds).ToString("D", CultureInfo.InvariantCulture) + " ms"
                             },
                             {
                                 "Message",
@@ -194,7 +195,7 @@ namespace Arbor.Build.Core
             var tempDirectory = new DirectoryInfo(Path.Combine(
                 tempPath,
                 "D",
-                DateTime.UtcNow.ToFileTimeUtc().ToString()));
+                DateTime.UtcNow.ToFileTimeUtc().ToString(CultureInfo.InvariantCulture)));
 
             tempDirectory.EnsureExists();
 
@@ -285,7 +286,7 @@ namespace Arbor.Build.Core
                 const char boxCharacter = '#';
                 string boxLine = new string(boxCharacter, boxLength);
 
-                string message = string.Format(
+                string message = string.Format(CultureInfo.InvariantCulture,
                     "{0}{1}{2}{1}{2} Running tool {3}{1}{2}{1}{0}",
                     boxLine,
                     Environment.NewLine,
@@ -390,8 +391,8 @@ namespace Arbor.Build.Core
         {
             var buildVariables = new List<IVariable>(500);
 
-            Environment.GetEnvironmentVariable(WellKnownVariables.VariableFileSourceEnabled)
-                .TryParseBool(out bool enabled, false);
+            _ = Environment.GetEnvironmentVariable(WellKnownVariables.VariableFileSourceEnabled)
+                .TryParseBool(out bool enabled);
 
             if (enabled)
             {
@@ -647,7 +648,7 @@ namespace Arbor.Build.Core
             var variables = new Dictionary<string, string>();
 
             List<KeyValuePair<string, string>> newLines =
-                variables.Where(item => item.Value.Contains(Environment.NewLine)).ToList();
+                variables.Where(item => item.Value.Contains(Environment.NewLine, StringComparison.Ordinal)).ToList();
 
             if (newLines.Count > 0)
             {

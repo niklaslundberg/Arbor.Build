@@ -16,14 +16,14 @@ namespace Arbor.Build.Tests.Integration.WellknownVariables
         It should_contain_nested_class_constants = () =>
         {
             readOnlyCollection
-                .Any(variable => variable.InvariantName.Equals(WellKnownVariables.TeamCity.TeamCityVcsNumber))
+                .Any(variable => variable.InvariantName.Equals(WellKnownVariables.TeamCityVcsNumber, StringComparison.OrdinalIgnoreCase))
                 .ShouldBeTrue();
         };
 
         It should_contain_non_nested_class_constants = () =>
         {
             readOnlyCollection
-                .Any(variable => variable.InvariantName.Equals(WellKnownVariables.ExternalTools_NuGetServer_Enabled))
+                .Any(variable => variable.InvariantName.Equals(WellKnownVariables.ExternalTools_NuGetServer_Enabled, StringComparison.OrdinalIgnoreCase))
                 .ShouldBeTrue();
         };
 

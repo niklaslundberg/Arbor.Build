@@ -55,7 +55,7 @@ namespace Arbor.Build.Tests.Integration.MSBuildProjects
             try
             {
                 tempFile = Path.GetTempFileName();
-                await File.WriteAllTextAsync(tempFile, xml, Encoding.UTF8);
+                await File.WriteAllTextAsync(tempFile, xml, Encoding.UTF8).ConfigureAwait(false);
 
                 MSBuildProject msBuildProject = MSBuildProject.LoadFrom(tempFile);
 

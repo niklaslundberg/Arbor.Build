@@ -56,8 +56,8 @@ namespace Arbor.Build.Core.Tools.Kudu
                 ? buildVariables.Require(WellKnownVariables.KuduConfigurationFallback).Value
                 : string.Empty;
 
-            _clearTarget = buildVariables.GetBooleanByKey(WellKnownVariables.KuduClearFilesAndDirectories, false);
-            _useAppOfflineFile = buildVariables.GetBooleanByKey(WellKnownVariables.KuduUseAppOfflineHtmFile, false);
+            _clearTarget = buildVariables.GetBooleanByKey(WellKnownVariables.KuduClearFilesAndDirectories);
+            _useAppOfflineFile = buildVariables.GetBooleanByKey(WellKnownVariables.KuduUseAppOfflineHtmFile);
             _excludeAppData = buildVariables.GetBooleanByKey(WellKnownVariables.KuduExcludeDeleteAppData, true);
             _deleteExistingAppOfflineHtm =
                 buildVariables.GetBooleanByKey(WellKnownVariables.KuduDeleteExistingAppOfflineHtmFile, true);
@@ -251,7 +251,7 @@ namespace Arbor.Build.Core.Tools.Kudu
 
                         var deleter = new DirectoryDelete(directoryFilters, fileFilters, logger);
 
-                        deleter.Delete(_deploymentTargetDirectory, false, true);
+                        deleter.Delete(_deploymentTargetDirectory);
                     }
                     catch (IOException ex)
                     {

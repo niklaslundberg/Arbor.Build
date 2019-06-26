@@ -9,7 +9,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
         {
             if (properties.IsDefault)
             {
-                throw new ArgumentException("Immutable array cannot be default", nameof(properties));
+                throw new ArgumentException(Resources.ImmutableArrayCannotBeDefault, nameof(properties));
             }
 
             Properties = properties;

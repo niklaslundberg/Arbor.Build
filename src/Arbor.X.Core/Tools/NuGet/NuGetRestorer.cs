@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -9,6 +10,7 @@ using Arbor.Build.Core.ProcessUtils;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
+using Serilog.Core;
 
 namespace Arbor.Build.Core.Tools.NuGet
 {
@@ -21,9 +23,10 @@ namespace Arbor.Build.Core.Tools.NuGet
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
+            logger = logger ?? Logger.None ?? throw new ArgumentNullException(nameof(logger));
+
             bool enabled = buildVariables.GetBooleanByKey(
-                WellKnownVariables.NuGetRestoreEnabled,
-                false);
+                WellKnownVariables.NuGetRestoreEnabled);
 
             if (!enabled)
             {

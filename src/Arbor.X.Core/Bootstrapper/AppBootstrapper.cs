@@ -2,12 +2,11 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Management;
 using System.Net.Http;
-using System.Reflection;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Aesculus.Core;
@@ -29,18 +28,18 @@ using Serilog.Events;
 
 namespace Arbor.Build.Core.Bootstrapper
 {
-    public class Bootstrapper
+    public class AppBootstrapper
     {
         const string BuildToolPackageName = ArborConstants.ArborBuild;
         private const int MaxBuildTimeInSeconds = 600;
-        private static readonly string _Prefix = $"[{ArborConstants.ArborBuild}.{nameof(Bootstrapper)}] ";
+        private static readonly string _Prefix = $"[{ArborConstants.ArborBuild}.{nameof(AppBootstrapper)}] ";
         private readonly ILogger _logger;
         private bool _directoryCloneEnabled;
 
         private bool _failed;
         private BootstrapStartOptions _startOptions;
 
-        public Bootstrapper(ILogger logger)
+        public AppBootstrapper(ILogger logger)
         {
             _logger = logger;
         }
@@ -49,7 +48,7 @@ namespace Arbor.Build.Core.Bootstrapper
         {
             _logger.Information("Running Arbor.X Bootstrapper process id {ProcessId}, executable {Executable}",
                 Process.GetCurrentProcess().Id,
-                typeof(Bootstrapper).Assembly.Location);
+                typeof(AppBootstrapper).Assembly.Location);
 
             BootstrapStartOptions startOptions;
 
@@ -87,7 +86,7 @@ namespace Arbor.Build.Core.Bootstrapper
 
             try
             {
-                exitCode = await TryStartAsync(startOptions).ConfigureAwait(false);
+                exitCode = await TryStartAsync(_startOptions).ConfigureAwait(false);
 
                 stopwatch.Stop();
             }
@@ -109,8 +108,8 @@ namespace Arbor.Build.Core.Bootstrapper
                 _logger.Error(ex, "{Prefix} Could not start process", _Prefix);
             }
 
-            Environment.GetEnvironmentVariable(WellKnownVariables.BootstrapperExitDelayInMilliseconds)
-                .TryParseInt32(out int exitDelayInMilliseconds, 0);
+            _ = Environment.GetEnvironmentVariable(WellKnownVariables.BootstrapperExitDelayInMilliseconds)
+                .TryParseInt32(out int exitDelayInMilliseconds);
 
             if (exitDelayInMilliseconds > 0)
             {
@@ -123,7 +122,7 @@ namespace Arbor.Build.Core.Bootstrapper
 
             _logger.Information(
                 "Arbor.X.Bootstrapper total inclusive Arbor.X.Build elapsed time in seconds: {ElapsedSeconds}",
-                stopwatch.Elapsed.TotalSeconds.ToString("F"));
+                stopwatch.Elapsed.TotalSeconds.ToString("F", CultureInfo.InvariantCulture));
 
             return exitCode;
         }
@@ -132,10 +131,11 @@ namespace Arbor.Build.Core.Bootstrapper
         {
             logger.Debug("Finding processes spawned by process with Id [{ParentProcessId}]", parentProcessId);
 
-            var searcher =
-                new ManagementObjectSearcher($"SELECT * FROM Win32_Process WHERE ParentProcessId={parentProcessId}");
-
-            ManagementObjectCollection collection = searcher.Get();
+            ManagementObjectCollection collection;
+            using (var searcher = new ManagementObjectSearcher($"SELECT * FROM Win32_Process WHERE ParentProcessId={parentProcessId}"))
+            {
+                collection = searcher.Get();
+            }
 
             if (collection.Count > 0)
             {
@@ -189,7 +189,7 @@ namespace Arbor.Build.Core.Bootstrapper
             var tempDirectory = new DirectoryInfo(Path.Combine(
                 Path.GetTempPath(),
                 $"{DefaultPaths.TempPathPrefix}_Boot_Debug",
-                DateTime.Now.ToString("yyyyMMddHHmmssfff")));
+                DateTime.Now.ToString("yyyyMMddHHmmssfff", CultureInfo.InvariantCulture)));
 
             tempDirectory.EnsureExists();
 
@@ -227,7 +227,7 @@ namespace Arbor.Build.Core.Bootstrapper
             {
                 Environment.SetEnvironmentVariable(
                     WellKnownVariables.AllowPrerelease,
-                    _startOptions.PrereleaseEnabled.Value.ToString().ToLowerInvariant());
+                    _startOptions.PrereleaseEnabled.Value.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
             }
 
             if (!string.IsNullOrWhiteSpace(_startOptions.BranchName))
@@ -242,7 +242,7 @@ namespace Arbor.Build.Core.Bootstrapper
 
             string directoryCloneValue = Environment.GetEnvironmentVariable(WellKnownVariables.DirectoryCloneEnabled);
 
-            directoryCloneValue
+            _ = directoryCloneValue
                 .TryParseBool(out bool directoryCloneEnabled, true);
 
             _directoryCloneEnabled = directoryCloneEnabled;
@@ -323,7 +323,7 @@ namespace Arbor.Build.Core.Bootstrapper
             {
                 try
                 {
-                    Environment.GetEnvironmentVariable("KillSpawnedProcess").TryParseBool(out bool enabled, true);
+                    _ = Environment.GetEnvironmentVariable("KillSpawnedProcess").TryParseBool(out bool enabled, true);
 
                     if (enabled)
                     {
@@ -345,12 +345,11 @@ namespace Arbor.Build.Core.Bootstrapper
 
         private async Task<string> DownloadNuGetPackageAsync(string buildDir, string nugetExePath)
         {
-
             string outputDirectoryPath = Path.Combine(buildDir, BuildToolPackageName);
 
             var outputDirectory = new DirectoryInfo(outputDirectoryPath);
 
-            Environment.GetEnvironmentVariable(WellKnownVariables.NuGetReinstallArborPackageEnabled)
+            _ = Environment.GetEnvironmentVariable(WellKnownVariables.NuGetReinstallArborPackageEnabled)
                 .TryParseBool(out bool reinstallEnabled, true);
 
             bool reinstall = !outputDirectory.Exists || reinstallEnabled;
@@ -367,8 +366,8 @@ namespace Arbor.Build.Core.Bootstrapper
 
             string nuGetSource = Environment.GetEnvironmentVariable(WellKnownVariables.ArborXNuGetPackageSource);
 
-            Environment.GetEnvironmentVariable(WellKnownVariables.AllowPrerelease)
-                .TryParseBool(out bool preReleaseIsAllowed, false);
+            _ = Environment.GetEnvironmentVariable(WellKnownVariables.AllowPrerelease)
+                .TryParseBool(out bool preReleaseIsAllowed);
 
             preReleaseIsAllowed = _startOptions.PrereleaseEnabled ?? preReleaseIsAllowed;
 
@@ -400,7 +399,7 @@ namespace Arbor.Build.Core.Bootstrapper
 
             string noCache = Environment.GetEnvironmentVariable(WellKnownVariables.ArborXNuGetPackageNoCacheEnabled);
 
-            noCache.TryParseBool(out bool noCacheEnabled, false);
+            _ = noCache.TryParseBool(out bool noCacheEnabled);
 
             if (noCacheEnabled)
             {
@@ -423,6 +422,7 @@ namespace Arbor.Build.Core.Bootstrapper
                     WellKnownVariables.ArborBuildNuGetPackageVersion);
 
                 bool allowPrerelease;
+
                 if (_startOptions.PrereleaseEnabled.HasValue)
                 {
                     allowPrerelease = _startOptions.PrereleaseEnabled.Value;
@@ -430,7 +430,7 @@ namespace Arbor.Build.Core.Bootstrapper
                     if (allowPrerelease)
                     {
                         _logger.Verbose(
-                            "Prerelease option is set via start options, using latest version of Arbor.X allowing prerelease versions");
+                            "Pre-release option is set via start options, using latest version of Arbor.X allowing prerelease versions");
                     }
                 }
                 else
@@ -705,34 +705,36 @@ namespace Arbor.Build.Core.Bootstrapper
 
             _logger.Information("Using build timeout {UsedTimeoutInSeconds} seconds", usedTimeoutInSeconds);
 
-            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(usedTimeoutInSeconds));
-
-            const string buildApplicationPrefix = "[Arbor.Build] ";
-
-            ImmutableArray<IVariable> variables = await new DotNetEnvironmentVariableProvider().GetBuildVariablesAsync(
-                _logger,
-                ImmutableArray<IVariable>.Empty,
-                cancellationTokenSource.Token).ConfigureAwait(false);
-
-            string dotnetExePath = variables.SingleOrDefault(variable =>
-                variable.Key.Equals(WellKnownVariables.DotNetExePath, StringComparison.OrdinalIgnoreCase))?.Value;
-
-            if (string.IsNullOrWhiteSpace(dotnetExePath))
+            ExitCode result;
+            using (var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(usedTimeoutInSeconds)))
             {
-                _logger.Error("Could not find dotnet.exe");
-                return ExitCode.Failure;
+                const string buildApplicationPrefix = "[Arbor.Build] ";
+
+                ImmutableArray<IVariable> variables = await new DotNetEnvironmentVariableProvider().GetBuildVariablesAsync(
+                    _logger,
+                    ImmutableArray<IVariable>.Empty,
+                    cancellationTokenSource.Token).ConfigureAwait(false);
+
+                string dotnetExePath = variables.SingleOrDefault(variable =>
+                    variable.Key.Equals(WellKnownVariables.DotNetExePath, StringComparison.OrdinalIgnoreCase))?.Value;
+
+                if (string.IsNullOrWhiteSpace(dotnetExePath))
+                {
+                    _logger.Error("Could not find dotnet.exe");
+                    return ExitCode.Failure;
+                }
+
+                string[] arguments = { buildToolExecutable.FullName };
+
+                result = await ProcessRunner.ExecuteProcessAsync(dotnetExePath,
+                        arguments,
+                        (message, prefix) => _logger.Information("{Prefix}{Message}", buildApplicationPrefix, message),
+                        (message, prefix) => _logger.Error("{Prefix}{Message}", buildApplicationPrefix, message),
+                        _logger.Information,
+                        _logger.Verbose,
+                        cancellationToken: cancellationTokenSource.Token)
+                    .ConfigureAwait(false);
             }
-
-            string[] arguments = { buildToolExecutable.FullName };
-
-            ExitCode result = await ProcessRunner.ExecuteProcessAsync(
-                dotnetExePath,
-
-                arguments,
-                (message, prefix) => _logger.Information("{Prefix}{Message}", buildApplicationPrefix, message),
-                (message, prefix) => _logger.Error("{Prefix}{Message}", buildApplicationPrefix, message),
-                _logger.Information,
-                _logger.Verbose, cancellationToken: cancellationTokenSource.Token).ConfigureAwait(false);
 
             return result;
         }

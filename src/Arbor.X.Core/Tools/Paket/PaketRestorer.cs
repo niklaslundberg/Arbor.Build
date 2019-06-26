@@ -11,6 +11,7 @@ using Arbor.Defensive.Collections;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
+using Serilog.Core;
 
 namespace Arbor.Build.Core.Tools.Paket
 {
@@ -23,6 +24,8 @@ namespace Arbor.Build.Core.Tools.Paket
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
+            logger = logger ?? Logger.None;
+
             if (buildVariables.GetOptionalBooleanByKey(WellKnownVariables.PaketEnabled) != true)
             {
                 logger.Information("Paket is disabled by key '{Key}'", WellKnownVariables.PaketEnabled);

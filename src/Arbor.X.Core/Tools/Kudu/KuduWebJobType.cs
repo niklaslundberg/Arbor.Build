@@ -45,7 +45,7 @@ namespace Arbor.Build.Core.Tools.Kudu
 
             string message = $"Could not parse {typeof(KuduWebJobType).Name} from value '{type}'";
 
-            const StringComparison ComparisonType = StringComparison.OrdinalIgnoreCase;
+            const StringComparison comparisonType = StringComparison.OrdinalIgnoreCase;
 
             var exception = new FormatException(message);
 
@@ -55,7 +55,7 @@ namespace Arbor.Build.Core.Tools.Kudu
 
             KuduWebJobType foundItem =
                 All.SingleOrDefault(
-                    item => item.DisplayName.Equals(valueToParse, ComparisonType));
+                    item => item.DisplayName.Equals(valueToParse, comparisonType));
 
             if (foundItem == null)
             {
@@ -67,7 +67,7 @@ namespace Arbor.Build.Core.Tools.Kudu
 
         public bool Equals(KuduWebJobType other)
         {
-            if (ReferenceEquals(null, other))
+            if (other is null)
             {
                 return false;
             }
@@ -77,12 +77,12 @@ namespace Arbor.Build.Core.Tools.Kudu
                 return true;
             }
 
-            return string.Equals(DisplayName, other.DisplayName);
+            return string.Equals(DisplayName, other.DisplayName, StringComparison.OrdinalIgnoreCase);
         }
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj))
+            if (obj is null)
             {
                 return false;
             }
@@ -102,7 +102,7 @@ namespace Arbor.Build.Core.Tools.Kudu
 
         public override int GetHashCode()
         {
-            return DisplayName?.GetHashCode() ?? 0;
+            return DisplayName?.GetHashCode(StringComparison.InvariantCulture) ?? 0;
         }
 
         public override string ToString()

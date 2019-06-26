@@ -85,7 +85,7 @@ namespace Arbor.Build.Core.Tools.Versioning
 
             AssemblyMetaData assemblyMetadata = null;
 
-            if (buildVariables.GetBooleanByKey(WellKnownVariables.NetAssemblyMetadataEnabled, false))
+            if (buildVariables.GetBooleanByKey(WellKnownVariables.NetAssemblyMetadataEnabled))
             {
                 string company = buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyCompany, null);
                 string description =

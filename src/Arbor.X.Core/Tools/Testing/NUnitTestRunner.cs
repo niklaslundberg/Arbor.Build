@@ -10,10 +10,10 @@ using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.Properties;
 using Arbor.Processing;
-using Arbor.Processing;
 using JetBrains.Annotations;
 using NUnit.Framework;
 using Serilog;
+using Serilog.Core;
 
 namespace Arbor.Build.Core.Tools.Testing
 {
@@ -30,7 +30,9 @@ namespace Arbor.Build.Core.Tools.Testing
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.NUnitEnabled, false);
+            logger = logger ?? Logger.None;
+
+            bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.NUnitEnabled);
 
             if (!enabled)
             {
@@ -43,7 +45,7 @@ namespace Arbor.Build.Core.Tools.Testing
 
             _exePathOverride =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.NUnitExePathOverride, string.Empty);
-            _transformToJunit = buildVariables.GetBooleanByKey(WellKnownVariables.NUnitTransformToJunitEnabled, false);
+            _transformToJunit = buildVariables.GetBooleanByKey(WellKnownVariables.NUnitTransformToJunitEnabled);
 
             IVariable ignoreTestFailuresVariable =
                 buildVariables.SingleOrDefault(key => key.Key == WellKnownVariables.IgnoreTestFailures);

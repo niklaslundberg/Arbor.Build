@@ -10,7 +10,6 @@ using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.GenericExtensions;
 using Arbor.Exceptions;
 using Arbor.Processing;
-using Arbor.Processing;
 using Serilog;
 
 namespace Arbor.Build.Core.Tools.Cleanup
@@ -24,8 +23,7 @@ namespace Arbor.Build.Core.Tools.Cleanup
             CancellationToken cancellationToken)
         {
             bool enabled = buildVariables.GetBooleanByKey(
-                WellKnownVariables.CleanupProcessesAfterBuildEnabled,
-                false);
+                WellKnownVariables.CleanupProcessesAfterBuildEnabled);
 
             if (!enabled)
             {

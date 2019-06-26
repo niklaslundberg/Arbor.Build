@@ -2,12 +2,12 @@ namespace Arbor.Build.Core.Tools.MSBuild
 {
     internal static class ApplicationMetadataKeys
     {
-        public static readonly string GitHash = "urn:versioning:vcs:git:hash";
+        public const string GitHash = "urn:versioning:vcs:git:hash";
 
-        public static readonly string GitBranch = "urn:versioning:vcs:git:branch";
+        public const string GitBranch = "urn:versioning:vcs:git:branch";
 
-        public static readonly string DotNetCpuPlatform = "urn:dotnet:runtime:cpu-platform";
+        public const string DotNetCpuPlatform = "urn:dotnet:runtime:cpu-platform";
 
-        public static readonly string DotNetConfiguration = "urn:dotnet:compilation:configuration";
+        public const string DotNetConfiguration = "urn:dotnet:compilation:configuration";
     }
 }

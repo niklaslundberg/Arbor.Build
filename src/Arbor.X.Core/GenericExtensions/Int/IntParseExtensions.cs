@@ -1,6 +1,6 @@
 namespace Arbor.Build.Core.GenericExtensions.Int
 {
-    public static class IntExtensions
+    public static class IntParseExtensions
     {
         public static int ParseOrDefault(this string value, int defaultValue = default)
         {

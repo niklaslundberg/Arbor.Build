@@ -55,12 +55,12 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             if (projectFile.FullName.IndexOfAny(Path.GetInvalidPathChars()) >= 0)
             {
-                throw new InvalidOperationException("The temp path contains invalid characters");
+                throw new InvalidOperationException(Resources.ThePathContainsInvalidCharacters);
             }
 
             if (projectFile.Name.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
             {
-                throw new InvalidOperationException("The temp path contains invalid characters");
+                throw new InvalidOperationException(Resources.ThePathContainsInvalidCharacters);
             }
 
             return File.ReadLines(projectFile.FullName)

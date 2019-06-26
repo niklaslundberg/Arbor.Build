@@ -9,7 +9,7 @@ namespace Arbor.Build.Core.BuildVariables
         {
             if (string.IsNullOrWhiteSpace(key))
             {
-                throw new ArgumentException("Value cannot be null or whitespace.", nameof(key));
+                throw new ArgumentException(Resources.ValueCannotBeNullOrWhitespace, nameof(key));
             }
 
             Key = key;

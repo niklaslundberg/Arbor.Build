@@ -9,12 +9,12 @@ namespace Arbor.Build.Core.Tools.NuGet
         {
             if (string.IsNullOrWhiteSpace(fileName))
             {
-                throw new ArgumentException("Value cannot be null or whitespace.", nameof(fileName));
+                throw new ArgumentException(Resources.ValueCannotBeNullOrWhitespace, nameof(fileName));
             }
 
             if (string.IsNullOrWhiteSpace(baseDirectory))
             {
-                throw new ArgumentException("Value cannot be null or whitespace.", nameof(baseDirectory));
+                throw new ArgumentException(Resources.ValueCannotBeNullOrWhitespace, nameof(baseDirectory));
             }
 
             if (!fileName.StartsWith(baseDirectory, StringComparison.OrdinalIgnoreCase))

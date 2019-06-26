@@ -14,7 +14,7 @@ namespace Arbor.Build.Bootstrapper
                 .WriteTo.Console(outputTemplate: "{Message:lj}{NewLine}{Exception}")
                 .CreateLogger();
 
-            var bootstrapper = new Core.Bootstrapper.Bootstrapper(logger);
+            var bootstrapper = new Core.Bootstrapper.AppBootstrapper(logger);
 
             ExitCode exitCode = await bootstrapper.StartAsync(args).ConfigureAwait(false);
 

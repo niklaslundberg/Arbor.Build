@@ -9,7 +9,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
         {
             if (string.IsNullOrWhiteSpace(name))
             {
-                throw new ArgumentException("Value cannot be null or whitespace.", nameof(name));
+                throw new ArgumentException(Resources.ValueCannotBeNullOrWhitespace, nameof(name));
             }
 
             Name = name;

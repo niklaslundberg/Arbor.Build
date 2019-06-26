@@ -23,7 +23,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
         {
             if (string.IsNullOrWhiteSpace(sdkName))
             {
-                throw new ArgumentException("Value cannot be null or whitespace.", nameof(sdkName));
+                throw new ArgumentException(Resources.ValueCannotBeNullOrWhitespace, nameof(sdkName));
             }
 
             SdkName = sdkName;
@@ -55,7 +55,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
         public bool Equals(DotNetSdk other)
         {
-            if (ReferenceEquals(null, other))
+            if (other is null)
             {
                 return false;
             }
@@ -70,7 +70,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj))
+            if (obj is null)
             {
                 return false;
             }

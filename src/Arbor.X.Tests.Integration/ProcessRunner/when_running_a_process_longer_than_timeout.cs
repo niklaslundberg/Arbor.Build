@@ -60,22 +60,27 @@ EXIT /b 2
 
         static async Task RunAsync()
         {
-            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-
-            try
+            using (var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(2)))
             {
-                exitCode =
-                    await
-                        Processing.ProcessRunner.ExecuteProcessAsync(testPath,
-                            standardOutLog: (message, prefix) => logger.Information(message, "STANDARD"),
-                            standardErrorAction: (message, prefix) => logger.Error(message, "ERROR"),
-                            toolAction: (message, prefix) => logger.Information(message, "TOOL"),
-                            verboseAction: (message, prefix) => logger.Information(message, "VERBOSE"),
-                            cancellationToken: cancellationTokenSource.Token).ConfigureAwait(false);
-            }
-            catch (TaskCanceledException ex)
-            {
-                exception = ex;
+                try
+                {
+                    exitCode =
+                        await
+                            Processing.ProcessRunner.ExecuteProcessAsync(testPath,
+                                standardOutLog: (message, prefix) =>
+                                    logger.Information("[{Level}] {Message}", "STANDARD", message),
+                                standardErrorAction: (message, prefix) =>
+                                    logger.Error("[{Level}] {Message}", "ERROR", message),
+                                toolAction: (message, prefix) =>
+                                    logger.Information("[{Level}] {Message}", "TOOL", message),
+                                verboseAction: (message, prefix) =>
+                                    logger.Information("[{Level}] {Message}", "VERBOSE", message),
+                                cancellationToken: cancellationTokenSource.Token).ConfigureAwait(false);
+                }
+                catch (TaskCanceledException ex)
+                {
+                    exception = ex;
+                }
             }
         }
     }

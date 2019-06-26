@@ -10,11 +10,11 @@ using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Defensive.Collections;
 using Arbor.Processing;
-using Arbor.Processing;
 using JetBrains.Annotations;
 using NuGet.Packaging;
 using NuGet.Versioning;
 using Serilog;
+using Serilog.Core;
 
 namespace Arbor.Build.Core.Tools.NuGet
 {
@@ -27,11 +27,11 @@ namespace Arbor.Build.Core.Tools.NuGet
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_NuGetServer_Enabled, false);
+            logger = logger ?? Logger.None ?? throw new ArgumentNullException(nameof(logger));
+            bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_NuGetServer_Enabled);
             bool websitePackagesUploadEnabled =
                 buildVariables.GetBooleanByKey(
-                    WellKnownVariables.ExternalTools_NuGetServer_WebSitePackagesUploadEnabled,
-                    false);
+                    WellKnownVariables.ExternalTools_NuGetServer_WebSitePackagesUploadEnabled);
 
             if (!enabled)
             {
@@ -61,18 +61,17 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             bool isRunningOnBuildAgent = isRunningOnBuildAgentVariable.GetValueOrDefault(false);
             bool forceUpload =
-                buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_NuGetServer_ForceUploadEnabled, false);
+                buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_NuGetServer_ForceUploadEnabled);
 
             bool timeoutIncreaseEnabled =
                 buildVariables.GetBooleanByKey(
-                    WellKnownVariables.ExternalTools_NuGetServer_UploadTimeoutIncreaseEnabled,
-                    false);
+                    WellKnownVariables.ExternalTools_NuGetServer_UploadTimeoutIncreaseEnabled);
 
             int timeoutInSeconds =
                 buildVariables.GetInt32ByKey(WellKnownVariables.ExternalTools_NuGetServer_UploadTimeoutInSeconds, -1);
 
             bool checkNuGetPackagesExists =
-                buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_NuGetServer_CheckPackageExists, false);
+                buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_NuGetServer_CheckPackageExists);
             string sourceName =
                 buildVariables.GetVariableValueOrDefault(
                     WellKnownVariables.ExternalTools_NuGetServer_SourceName,
@@ -196,7 +195,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                             standardErrorAction: (message, prefix) =>
                             {
                                 errorBuilder.AppendLine(message);
-                                logger.Error(message, prefix);
+                                logger.Error("{Prefix} {Message}",prefix,message);
                             },
                             toolAction: logger.Information).ConfigureAwait(false);
 
@@ -414,7 +413,8 @@ namespace Arbor.Build.Core.Tools.NuGet
 
                     if (nuspecEntry == null)
                     {
-                        throw new InvalidOperationException("The nuget package does not contain any nuspec");
+                        throw new InvalidOperationException(
+                            string.Format(CultureInfo.InvariantCulture, Resources.TheNuGetPackageIsMissingANuSpec, nugetPackage.FullName));
                     }
 
                     var nuspecReader = new NuspecReader(nuspecEntry.Open());
@@ -467,12 +467,12 @@ namespace Arbor.Build.Core.Tools.NuGet
                         (message, prefix) =>
                         {
                             standardBuilder.Add(message);
-                            logger.Information(message, prefix);
+                            logger.Information("{Prefix} {Message}", prefix,message);
                         },
                         standardErrorAction: (message, prefix) =>
                         {
                             errorBuilder.AppendLine(message);
-                            logger.Error(message, prefix);
+                            logger.Error("{Prefix} {Message}", prefix,message);
                         },
                         toolAction: logger.Information).ConfigureAwait(false);
 

@@ -1,6 +1,6 @@
 ﻿namespace Arbor.Build.Core.Tools.MSBuild
 {
-    public enum Framework
+    public enum NetFrameworkGeneration
     {
         Unknown = 0,
         NetFramework = 1,

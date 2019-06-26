@@ -7,6 +7,11 @@ namespace Arbor.Build.Core.Logging
     {
         public static void Log(this ILogger logger, string message, LogEventLevel level)
         {
+            if (logger is null)
+            {
+                return;
+            }
+
             switch (level)
             {
                 case LogEventLevel.Verbose:
