@@ -1,0 +1,17 @@
+name: CI
+
+on:
+  push:
+    branches:
+    - develop
+    - release/*
+
+jobs:
+  build:
+
+    runs-on: windows-2019
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: Build
+      run: build\build.bat
