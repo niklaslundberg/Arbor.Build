@@ -412,9 +412,6 @@ namespace Arbor.Build.Core.Tools.Kudu
             return null;
         }
 
-        private DirectoryInfo GetPlatform(DirectoryInfo websiteToDeploy)
-        {
-            return websiteToDeploy.GetDirectories().Single();
-        }
+        private DirectoryInfo GetPlatform(DirectoryInfo websiteToDeploy) => websiteToDeploy.GetDirectories().Single();
     }
 }

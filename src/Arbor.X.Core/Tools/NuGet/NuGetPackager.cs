@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
-using Arbor.Build.Core.GenericExtensions.Boolean;
+using Arbor.Build.Core.GenericExtensions.Bools;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.Git;
 using Arbor.Defensive;
@@ -24,10 +24,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
         public const string SnupkgPackageFormat = "snupkg";
 
-        public NuGetPackager(ILogger logger)
-        {
-            _logger = logger;
-        }
+        public NuGetPackager(ILogger logger) => _logger = logger;
 
         public static NuGetPackageConfiguration GetNuGetPackageConfiguration(
             ILogger logger,
@@ -293,10 +290,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             return result;
         }
 
-        private static string GetNuSpecContent(string nuSpecFileCopyPath)
-        {
-            return File.ReadAllText(nuSpecFileCopyPath);
-        }
+        private static string GetNuSpecContent(string nuSpecFileCopyPath) => File.ReadAllText(nuSpecFileCopyPath);
 
         private static string GetProperties(string configuration)
         {

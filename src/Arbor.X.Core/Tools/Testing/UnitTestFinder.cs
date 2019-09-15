@@ -389,15 +389,11 @@ namespace Arbor.Build.Core.Tools.Testing
             return hasTestMethod;
         }
 
-        private bool IsCustomAttributeTypeToFind(CustomAttribute attr)
-        {
-            return
-                _typesToFind.Any(
+        private bool IsCustomAttributeTypeToFind(CustomAttribute attr) => _typesToFind.Any(
                     typeToFind =>
                         attr.AttributeType.FullName.Equals(
                             typeToFind.FullName,
                             StringComparison.OrdinalIgnoreCase));
-        }
 
         private (AssemblyDefinition, FileInfo) GetAssembly(FileInfo dllFile, string targetFrameworkPrefix)
         {

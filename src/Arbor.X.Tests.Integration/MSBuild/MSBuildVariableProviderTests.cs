@@ -13,10 +13,7 @@ namespace Arbor.Build.Tests.Integration.MSBuild
 {
     public class MSBuildVariableProviderTests
     {
-        public MSBuildVariableProviderTests(ITestOutputHelper output)
-        {
-            this.output = output;
-        }
+        public MSBuildVariableProviderTests(ITestOutputHelper output) => this.output = output;
 
         readonly ITestOutputHelper output;
 

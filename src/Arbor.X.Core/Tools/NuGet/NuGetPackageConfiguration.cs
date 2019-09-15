@@ -106,9 +106,6 @@ namespace Arbor.Build.Core.Tools.NuGet
 
         public string NuGetSymbolPackagesFormat { get; }
 
-        public override string ToString()
-        {
-            return JsonConvert.SerializeObject(this, Formatting.Indented);
-        }
+        public override string ToString() => JsonConvert.SerializeObject(this, Formatting.Indented);
     }
 }

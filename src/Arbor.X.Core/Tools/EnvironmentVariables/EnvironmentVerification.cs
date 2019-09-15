@@ -77,9 +77,6 @@ namespace Arbor.Build.Core.Tools.EnvironmentVariables
         protected virtual Task<bool> PostVariableVerificationAsync(
             StringBuilder variableBuilder,
             IReadOnlyCollection<IVariable> buildVariables,
-            ILogger logger)
-        {
-            return Task.FromResult(true);
-        }
+            ILogger logger) => Task.FromResult(true);
     }
 }

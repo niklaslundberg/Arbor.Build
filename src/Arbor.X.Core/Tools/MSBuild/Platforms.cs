@@ -12,7 +12,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 throw new ArgumentNullException(nameof(platform));
             }
 
-            return platform.Replace(" ", string.Empty);
+            return platform.Replace(" ", string.Empty, StringComparison.InvariantCultureIgnoreCase);
         }
     }
 }

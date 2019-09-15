@@ -6,10 +6,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 {
     public sealed class MSBuildVerbosityLevel
     {
-        private MSBuildVerbosityLevel(string level)
-        {
-            Level = level;
-        }
+        private MSBuildVerbosityLevel(string level) => Level = level;
 
         public string Level { get; }
 
@@ -53,9 +50,6 @@ namespace Arbor.Build.Core.Tools.MSBuild
             return found;
         }
 
-        public override string ToString()
-        {
-            return Level;
-        }
+        public override string ToString() => Level;
     }
 }

@@ -10,10 +10,7 @@ namespace Arbor.Build.Tests.Integration.MSBuildProjects
 {
     public class FinWebApplicationProjectTypeId
     {
-        public FinWebApplicationProjectTypeId(ITestOutputHelper output)
-        {
-            this.output = output;
-        }
+        public FinWebApplicationProjectTypeId(ITestOutputHelper output) => this.output = output;
 
         readonly ITestOutputHelper output;
 

@@ -50,21 +50,12 @@ namespace Arbor.Build.Core.Tools.Kudu
             return webJobProject;
         }
 
-        public static KuduWebProjectDetails NotAKuduWebJobProject()
-        {
-            return new KuduWebProjectDetails(false);
-        }
+        public static KuduWebProjectDetails NotAKuduWebJobProject() => new KuduWebProjectDetails(false);
 
-        public override string ToString()
-        {
-            return IsKuduWebJobProject
+        public override string ToString() => IsKuduWebJobProject
                 ? $"{WebJobName} ({KuduWebJobType}), path '{ProjectFilePath}'"
                 : "Not a Kudu web project";
-        }
 
-        private static string ParseName(string name)
-        {
-            return name.ExtractFromTag("KuduWebJobName");
-        }
+        private static string ParseName(string name) => name.ExtractFromTag("KuduWebJobName");
     }
 }

@@ -31,15 +31,9 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
         public string SdkName { get; }
 
-        public static bool operator ==(DotNetSdk left, DotNetSdk right)
-        {
-            return Equals(left, right);
-        }
+        public static bool operator ==(DotNetSdk left, DotNetSdk right) => Equals(left, right);
 
-        public static bool operator !=(DotNetSdk left, DotNetSdk right)
-        {
-            return !Equals(left, right);
-        }
+        public static bool operator !=(DotNetSdk left, DotNetSdk right) => !Equals(left, right);
 
         public static ImmutableArray<DotNetSdk> All => _LazyAll.Value;
 
@@ -83,14 +77,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
             return obj is DotNetSdk sdk && Equals(sdk);
         }
 
-        public override int GetHashCode()
-        {
-            return SdkName.GetHashCode(StringComparison.Ordinal);
-        }
+        public override int GetHashCode() => SdkName.GetHashCode(StringComparison.Ordinal);
 
-        public override string ToString()
-        {
-            return SdkName;
-        }
+        public override string ToString() => SdkName;
     }
 }

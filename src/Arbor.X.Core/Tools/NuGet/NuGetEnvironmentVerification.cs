@@ -17,10 +17,7 @@ namespace Arbor.Build.Core.Tools.NuGet
     [UsedImplicitly]
     public class NuGetEnvironmentVerification : EnvironmentVerification
     {
-        public NuGetEnvironmentVerification()
-        {
-            RequiredValues.Add(WellKnownVariables.ExternalTools_NuGet_ExePath);
-        }
+        public NuGetEnvironmentVerification() => RequiredValues.Add(WellKnownVariables.ExternalTools_NuGet_ExePath);
 
         protected override async Task<bool> PostVariableVerificationAsync(
             StringBuilder variableBuilder,

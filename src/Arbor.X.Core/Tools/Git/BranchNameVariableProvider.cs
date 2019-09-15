@@ -21,10 +21,7 @@ namespace Arbor.Build.Core.Tools.Git
     {
         private readonly ILogger _logger;
 
-        public BranchNameVariableProvider(ILogger logger)
-        {
-            _logger = logger;
-        }
+        public BranchNameVariableProvider(ILogger logger) => _logger = logger;
 
         public int Order => VariableProviderOrder.Priority - 2;
 

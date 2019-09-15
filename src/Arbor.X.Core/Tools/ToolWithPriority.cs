@@ -17,9 +17,6 @@ namespace Arbor.Build.Core.Tools
 
         public bool RunAlways { get; }
 
-        public override string ToString()
-        {
-            return $"{Tool} (priority={Priority}, run always={RunAlways})";
-        }
+        public override string ToString() => $"{Tool} (priority={Priority}, run always={RunAlways})";
     }
 }

@@ -6,17 +6,13 @@ using JetBrains.Annotations;
 namespace Arbor.Defensive
 {
     [ImmutableObject(true)]
-    public struct Maybe<T>
-        where T : class
+    public struct Maybe<T> : IEquatable<Maybe<T>> where T : class
     {
         private static readonly Lazy<Maybe<T>> _Empty = new Lazy<Maybe<T>>(() => default);
 
         private readonly T _value;
 
-        public Maybe([CanBeNull] T value = null)
-        {
-            _value = value;
-        }
+        public Maybe([CanBeNull] T value = null) => _value = value;
 
         /// <summary>
         /// Returns the underlying value of T
@@ -30,13 +26,18 @@ namespace Arbor.Defensive
         {
             get
             {
-                if (_value == null)
-                {
-                    throw new NullReferenceException(
-                        $"Cannot get the instance of type {typeof(T)} because it has value null. Make sure to call {nameof(HasValue)} property before access the {nameof(Value)} property");
-                }
+                CheckForNull();
 
                 return _value;
+            }
+        }
+
+        private void CheckForNull()
+        {
+            if (_value == null)
+            {
+                throw new NullReferenceException(
+                    $"Cannot get the instance of type {typeof(T)} because it has value null. Make sure to call {nameof(HasValue)} property before access the {nameof(Value)} property");
             }
         }
 
@@ -81,10 +82,7 @@ namespace Arbor.Defensive
             return left.Value.Equals(right);
         }
 
-        public static bool operator !=(Maybe<T> maybe, T value)
-        {
-            return !(maybe == value);
-        }
+        public static bool operator !=(Maybe<T> maybe, T value) => !(maybe == value);
 
         public static bool operator ==(Maybe<T> left, Maybe<T> right)
         {
@@ -116,10 +114,7 @@ namespace Arbor.Defensive
             return !left.Value.Equals(right.Value);
         }
 
-        public static Maybe<T> Empty()
-        {
-            return _Empty.Value;
-        }
+        public static Maybe<T> Empty() => _Empty.Value;
 
         public bool Equals(Maybe<T> other)
         {
@@ -153,17 +148,11 @@ namespace Arbor.Defensive
                 return true;
             }
 
-            return obj is Maybe<T> maybe && Equals(maybe) || obj is T t && Equals(t);
+            return (obj is Maybe<T> maybe && Equals(maybe)) || (obj is T t && Equals(t));
         }
 
-        public override int GetHashCode()
-        {
-            return _value?.GetHashCode() ?? 0;
-        }
+        public override int GetHashCode() => _value?.GetHashCode() ?? 0;
 
-        public T ToT()
-        {
-            throw new NotImplementedException();
-        }
+        public T ToT() => throw new NotImplementedException();
     }
 }

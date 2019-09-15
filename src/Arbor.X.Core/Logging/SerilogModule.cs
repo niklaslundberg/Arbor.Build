@@ -9,16 +9,10 @@ namespace Arbor.Build.Core.Logging
     {
         private readonly ILogger _logger;
 
-        public SerilogModule([NotNull] ILogger logger)
-        {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        }
+        public SerilogModule([NotNull] ILogger logger) => _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-        protected override void Load(ContainerBuilder builder)
-        {
-            builder.RegisterInstance(_logger)
+        protected override void Load(ContainerBuilder builder) => builder.RegisterInstance(_logger)
                 .AsImplementedInterfaces()
                 .SingleInstance();
-        }
     }
 }

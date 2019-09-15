@@ -8,10 +8,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 {
     internal class Solution
     {
-        public Solution(ImmutableArray<SolutionProject> projects)
-        {
-            Projects = projects;
-        }
+        public Solution(ImmutableArray<SolutionProject> projects) => Projects = projects;
 
         public ImmutableArray<SolutionProject> Projects { get; }
 

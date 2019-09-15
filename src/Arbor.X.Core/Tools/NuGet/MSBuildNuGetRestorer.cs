@@ -24,9 +24,7 @@ namespace Arbor.Build.Core.Tools.NuGet
         private static Logger CreateProcessLogger(
             ILogger logger,
             List<(string Message, LogEventLevel Level)> allMessages,
-            List<(string Message, LogEventLevel Level)> defaultMessages)
-        {
-            return new LoggerConfiguration()
+            List<(string Message, LogEventLevel Level)> defaultMessages) => new LoggerConfiguration()
                 .WriteTo.Sink(new InMemorySink((message, level) => allMessages.Add((message, level)),
                     LogEventLevel.Verbose))
                 .WriteTo.Sink(
@@ -35,7 +33,6 @@ namespace Arbor.Build.Core.Tools.NuGet
                         logger.MostVerboseLoggingCurrentLogLevel()))
                 .MinimumLevel.Verbose()
                 .CreateLogger();
-        }
 
         public async Task<ExitCode> ExecuteAsync(
             ILogger logger,

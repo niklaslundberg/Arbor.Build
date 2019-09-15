@@ -55,10 +55,7 @@ namespace Arbor.Build.Core
             }
         }
 
-        private static void RegisterLogging(ILogger logger, ContainerBuilder builder)
-        {
-            builder.RegisterModule(new SerilogModule(logger));
-        }
+        private static void RegisterLogging(ILogger logger, ContainerBuilder builder) => builder.RegisterModule(new SerilogModule(logger));
 
         private static IModule[] GetModulesFromAssemblies()
         {

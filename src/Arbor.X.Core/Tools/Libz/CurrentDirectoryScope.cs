@@ -46,9 +46,6 @@ namespace Arbor.Build.Core.Tools.Libz
             return new CurrentDirectoryScope(originalDirectory, newDirectoryInfo);
         }
 
-        public void Dispose()
-        {
-            Directory.SetCurrentDirectory(_originalDirectory.FullName);
-        }
+        public void Dispose() => Directory.SetCurrentDirectory(_originalDirectory.FullName);
     }
 }

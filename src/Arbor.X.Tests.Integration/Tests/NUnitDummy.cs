@@ -7,9 +7,6 @@ namespace Arbor.Build.Tests.Integration.Tests
     public class NUnitDummy
     {
         [Test]
-        public void DoNothing()
-        {
-            Assert.That(true, "This is a dummy test for NUnit");
-        }
+        public void DoNothing() => Assert.That(true, "This is a dummy test for NUnit");
     }
 }

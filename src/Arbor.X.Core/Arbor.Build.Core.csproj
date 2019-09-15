@@ -66,4 +66,8 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="GenericExtensions\Boolean\" />
+  </ItemGroup>
+
 </Project>

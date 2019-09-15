@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Arbor.Build.Core.BuildVariables;
-using Arbor.Build.Core.GenericExtensions.Boolean;
+using Arbor.Build.Core.GenericExtensions.Bools;
 using Serilog;
 using Serilog.Core;
 

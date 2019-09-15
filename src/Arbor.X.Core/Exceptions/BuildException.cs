@@ -35,10 +35,6 @@ namespace Arbor.Build.Core.Exceptions
         {
         }
 
-        public override string ToString()
-        {
-            return
-                $"{base.ToString()}{Environment.NewLine}Build variables: [{_buildVariables.Count}] {Environment.NewLine}{_buildVariables.Print()}";
-        }
+        public override string ToString() => $"{base.ToString()}{Environment.NewLine}Build variables: [{_buildVariables.Count}] {Environment.NewLine}{_buildVariables.Print()}";
     }
 }

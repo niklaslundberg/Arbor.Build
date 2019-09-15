@@ -14,10 +14,7 @@ namespace Arbor.Build.Core.BuildVariables
     {
         private readonly string _sourceDirectory;
 
-        public SourceRootBuildVariableValueProvider(SourceRootValue sourceDirectory = null)
-        {
-            _sourceDirectory = sourceDirectory?.SourceRoot;
-        }
+        public SourceRootBuildVariableValueProvider(SourceRootValue sourceDirectory = null) => _sourceDirectory = sourceDirectory?.SourceRoot;
 
         public int Order => int.MinValue;
 

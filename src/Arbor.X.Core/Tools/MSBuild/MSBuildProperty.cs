@@ -20,9 +20,6 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
         public string Value { get; }
 
-        public override string ToString()
-        {
-            return $"[{Name}] = '{Value}'";
-        }
+        public override string ToString() => $"[{Name}] = '{Value}'";
     }
 }

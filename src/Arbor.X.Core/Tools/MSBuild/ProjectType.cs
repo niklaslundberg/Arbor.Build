@@ -23,15 +23,9 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
         public Guid Id { get; }
 
-        public static bool operator ==(ProjectType left, ProjectType right)
-        {
-            return Equals(left, right);
-        }
+        public static bool operator ==(ProjectType left, ProjectType right) => Equals(left, right);
 
-        public static bool operator !=(ProjectType left, ProjectType right)
-        {
-            return !Equals(left, right);
-        }
+        public static bool operator !=(ProjectType left, ProjectType right) => !Equals(left, right);
 
         public bool Equals(ProjectType other)
         {
@@ -68,14 +62,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
             return Equals((ProjectType)obj);
         }
 
-        public override int GetHashCode()
-        {
-            return Id.GetHashCode();
-        }
+        public override int GetHashCode() => Id.GetHashCode();
 
-        public override string ToString()
-        {
-            return $"{nameof(Id)}: {Id}";
-        }
+        public override string ToString() => $"{nameof(Id)}: {Id}";
     }
 }

@@ -10,23 +10,17 @@ namespace Arbor.Build.Core.BuildVariables
     {
         public static bool HasKey(
             this IReadOnlyCollection<IVariable> buildVariables,
-            string key)
-        {
-            return buildVariables.Any(
+            string key) => buildVariables.Any(
                 bv => bv.Key.Equals(
                     key,
                     StringComparison.OrdinalIgnoreCase));
-        }
 
         public static IVariable GetVariable(
             this IReadOnlyCollection<IVariable> buildVariables,
-            string key)
-        {
-            return buildVariables.Single(
+            string key) => buildVariables.Single(
                 bv => bv.Key.Equals(
                     key,
                     StringComparison.OrdinalIgnoreCase));
-        }
 
         public static Maybe<IVariable> GetOptionalVariable(
             this IReadOnlyCollection<IVariable> buildVariables,

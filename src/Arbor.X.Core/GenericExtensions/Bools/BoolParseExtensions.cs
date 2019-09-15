@@ -1,4 +1,4 @@
-﻿namespace Arbor.Build.Core.GenericExtensions.Boolean
+﻿namespace Arbor.Build.Core.GenericExtensions.Bools
 {
     public static class BoolParseExtensions
     {

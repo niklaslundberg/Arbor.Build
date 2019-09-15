@@ -11,7 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Aesculus.Core;
 using Arbor.Build.Core.BuildVariables;
-using Arbor.Build.Core.GenericExtensions.Boolean;
+using Arbor.Build.Core.GenericExtensions.Bools;
 using Arbor.Build.Core.GenericExtensions.Int;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.ProcessUtils;
@@ -30,7 +30,7 @@ namespace Arbor.Build.Core.Bootstrapper
 {
     public class AppBootstrapper
     {
-        const string BuildToolPackageName = ArborConstants.ArborBuild;
+        private const string BuildToolPackageName = ArborConstants.ArborBuild;
         private const int MaxBuildTimeInSeconds = 600;
         private static readonly string _Prefix = $"[{ArborConstants.ArborBuild}.{nameof(AppBootstrapper)}] ";
         private readonly ILogger _logger;
@@ -39,10 +39,7 @@ namespace Arbor.Build.Core.Bootstrapper
         private bool _failed;
         private BootstrapStartOptions _startOptions;
 
-        public AppBootstrapper(ILogger logger)
-        {
-            _logger = logger;
-        }
+        public AppBootstrapper(ILogger logger) => _logger = logger;
 
         public async Task<ExitCode> StartAsync(string[] args)
         {

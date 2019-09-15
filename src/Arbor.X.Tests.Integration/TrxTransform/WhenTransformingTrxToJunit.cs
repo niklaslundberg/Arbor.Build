@@ -13,10 +13,7 @@ namespace Arbor.Build.Tests.Integration.TrxTransform
     {
         readonly Logger _logger;
 
-        public WhenTransformingTrxToJunit()
-        {
-            _logger = new LoggerConfiguration().WriteTo.Debug().MinimumLevel.Verbose().CreateLogger();
-        }
+        public WhenTransformingTrxToJunit() => _logger = new LoggerConfiguration().WriteTo.Debug().MinimumLevel.Verbose().CreateLogger();
 
         [Fact]
         public void ThenItShouldCreateAJunitReport()
@@ -31,9 +28,6 @@ namespace Arbor.Build.Tests.Integration.TrxTransform
             Assert.Equal(ExitCode.Success, exitCode);
         }
 
-        public void Dispose()
-        {
-            _logger?.Dispose();
-        }
+        public void Dispose() => _logger?.Dispose();
     }
 }

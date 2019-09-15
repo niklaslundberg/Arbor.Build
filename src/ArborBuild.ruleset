@@ -5,13 +5,14 @@
     <Rule Id="CA1001" Action="Warning" />
     <Rule Id="CA1009" Action="Warning" />
     <Rule Id="CA1016" Action="Warning" />
+    <Rule Id="CA1031" Action="None" />
     <Rule Id="CA1033" Action="Warning" />
     <Rule Id="CA1049" Action="Warning" />
     <Rule Id="CA1060" Action="Warning" />
+    <Rule Id="CA1065" Action="None" />
     <Rule Id="CA1066" Action="None" />
     <Rule Id="CA1061" Action="Warning" />
     <Rule Id="CA1063" Action="Warning" />
-    <Rule Id="CA1065" Action="Warning" />
     <Rule Id="CA1301" Action="Warning" />
     <Rule Id="CA1308" Action="None" />
     <Rule Id="CA1400" Action="Warning" />
@@ -102,5 +103,8 @@
     <Rule Id="RCS1075" Action="None" />
     <Rule Id="RCS1102" Action="None" />
     <Rule Id="RCS1090" Action="None" />
+  </Rules>
+  <Rules AnalyzerId="VS" RuleNamespace="VS">
+    <Rule Id="IDE0007" Action="None" />
   </Rules>
 </RuleSet>

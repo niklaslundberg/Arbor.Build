@@ -161,20 +161,11 @@ namespace Arbor.Build.Core.Tools.Testing
             }
         }
 
-        private static void RestoreCurrentDirectory(string currentDirectory)
-        {
-            Directory.SetCurrentDirectory(currentDirectory);
-        }
+        private static void RestoreCurrentDirectory(string currentDirectory) => Directory.SetCurrentDirectory(currentDirectory);
 
-        private static string SaveCurrentDirectory()
-        {
-            return Directory.GetCurrentDirectory();
-        }
+        private static string SaveCurrentDirectory() => Directory.GetCurrentDirectory();
 
-        private void SetCurrentDirectory(string vsTestReportDirectoryPath)
-        {
-            Directory.SetCurrentDirectory(vsTestReportDirectoryPath);
-        }
+        private void SetCurrentDirectory(string vsTestReportDirectoryPath) => Directory.SetCurrentDirectory(vsTestReportDirectoryPath);
 
         private void EnsureTestReportDirectoryExists(string vsTestReportDirectoryPath)
         {

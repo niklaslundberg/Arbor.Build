@@ -13,19 +13,16 @@ namespace Arbor.Build.Tests.Integration.ProcessRunner
         static ExitCode exitCode;
 
 
-        private static async Task RunAsync()
-        {
-            exitCode =
+        private static async Task RunAsync() => exitCode =
                 await
                     Processing.ProcessRunner.ExecuteProcessAsync(@"C:\Windows\System32\PING.EXE",
-                        arguments: new[]{"127.0.0.1"},
+                        arguments: new[] { "127.0.0.1" },
                         standardOutLog: null,
                         standardErrorAction: null,
                         toolAction: null,
                         verboseAction: null,
-                        debugAction:null,
+                        debugAction: null,
                         cancellationToken: CancellationToken.None).ConfigureAwait(false);
-        }
 
         It should_return_exit_code_0 = () => { exitCode.ShouldEqual(ExitCode.Success); };
     }

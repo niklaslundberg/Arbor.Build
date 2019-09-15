@@ -5,7 +5,7 @@ using JetBrains.Annotations;
 
 namespace Arbor.Build.Core.GenericExtensions
 {
-    public static class StringExtensions
+    public static class BuildStringExtensions
     {
         public static bool StartsWithAny(
             [NotNull] this string value,
@@ -59,14 +59,8 @@ namespace Arbor.Build.Core.GenericExtensions
             return value.PadLeft(totaltLenght, character);
         }
 
-        public static string Wrap(this string text, string wrap)
-        {
-            return wrap + text + wrap;
-        }
+        public static string Wrap(this string text, string wrap) => wrap + text + wrap;
 
-        public static IEnumerable<string> WrapItems(this IEnumerable<string> enumerable, string wrap)
-        {
-            return enumerable.Select(item => item.Wrap(wrap));
-        }
+        public static IEnumerable<string> WrapItems(this IEnumerable<string> enumerable, string wrap) => enumerable.Select(item => item.Wrap(wrap));
     }
 }

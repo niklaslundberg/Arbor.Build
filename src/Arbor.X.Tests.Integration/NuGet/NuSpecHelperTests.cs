@@ -9,10 +9,7 @@ namespace Arbor.Build.Tests.Integration.NuGet
 {
     public class NuSpecHelperTests
     {
-        public NuSpecHelperTests(ITestOutputHelper output)
-        {
-            _output = output;
-        }
+        public NuSpecHelperTests(ITestOutputHelper output) => _output = output;
 
         readonly ITestOutputHelper _output;
 

@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.GenericExtensions;
-using Arbor.Build.Core.GenericExtensions.Boolean;
+using Arbor.Build.Core.GenericExtensions.Bools;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.ProcessUtils;
 using Arbor.Build.Core.Tools.NuGet;
@@ -107,10 +107,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
         private MSBuildVerbosityLevel _verbosity;
         private string _version;
 
-        public SolutionBuilder(BuildContext buildContext)
-        {
-            _buildContext = buildContext;
-        }
+        public SolutionBuilder(BuildContext buildContext) => _buildContext = buildContext;
 
         private static int ProcessorCount(IReadOnlyCollection<IVariable> buildVariables)
         {
