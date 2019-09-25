@@ -28,7 +28,7 @@
     <tags>build tools convention</tags>
   </metadata>
   <files>
-    <file src="Arbor.X.Build\bin\$configuration$\netcoreapp2.1\publish\**\*.*" target="" exclude="*.pdb;*.xml;cs\*.*;de\*.*;es\*.*;fr\*.*;en\*.*;it\*.*;ja\*.*;ko\*.*;pl\*.*;pt-BR\*.*;ru\*.*;tr\*.*;zh-Hans\*.*;zh-Hant\*.*;runtimes\linux\*.*;runtimes\unix\*.*;runtimes\osx\*.*" />
+    <file src="Arbor.X.Build\bin\$configuration$\netcoreapp3.0\publish\**\*.*" target="" exclude="*.pdb;*.xml;cs\*.*;de\*.*;es\*.*;fr\*.*;en\*.*;it\*.*;ja\*.*;ko\*.*;pl\*.*;pt-BR\*.*;ru\*.*;tr\*.*;zh-Hans\*.*;zh-Hant\*.*;runtimes\linux\*.*;runtimes\unix\*.*;runtimes\osx\*.*" />
     <file src="..\tools\external\**.*" exclude="*.vshost*;**\*.vshost*;*.trx" target="tools\external" />
   </files>
 </package>
