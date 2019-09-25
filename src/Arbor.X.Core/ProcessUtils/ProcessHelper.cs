@@ -16,9 +16,9 @@ namespace Arbor.Build.Core.ProcessUtils
 
         public static Task<ExitCode> ExecuteAsync(
             string executePath,
-            IEnumerable<string> arguments = null,
-            ILogger logger = null,
-            IEnumerable<KeyValuePair<string, string>> environmentVariables = null,
+            IEnumerable<string>? arguments = null,
+            ILogger? logger = null,
+            IEnumerable<KeyValuePair<string, string>>? environmentVariables = null,
             bool addProcessNameAsLogCategory = false,
             bool addProcessRunnerCategory = false,
             string parentPrefix = null,

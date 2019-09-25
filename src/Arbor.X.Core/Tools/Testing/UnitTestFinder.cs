@@ -62,7 +62,8 @@ namespace Arbor.Build.Core.Tools.Testing
             DirectoryInfo currentDirectory,
             bool? releaseBuild = null,
             ImmutableArray<string> assemblyFilePrefix = default,
-            string targetFrameworkPrefix = null, bool strictConfiguration = false)
+            string targetFrameworkPrefix = null,
+            bool strictConfiguration = false)
         {
             if (currentDirectory == null)
             {
@@ -154,11 +155,11 @@ namespace Arbor.Build.Core.Tools.Testing
                 else if (isDebugBuild)
                 {
                     var assembliesWithDebugFlag = assemblies
-                           .Select(assembly => new
-                           {
-                               Assembly = assembly,
-                               IsDebug = assembly.Item1.IsDebugAssembly(assembly.Item2, _logger)
-                           }).ToArray();
+                        .Select(assembly => new
+                        {
+                            Assembly = assembly,
+                            IsDebug = assembly.Item1.IsDebugAssembly(assembly.Item2, _logger)
+                        }).ToArray();
 
                     configurationFiltered = assembliesWithDebugFlag
                         .Where(item => item.IsDebug == true)
@@ -366,16 +367,16 @@ namespace Arbor.Build.Core.Tools.Testing
                             return _typesToFind.Any(
                                 type =>
                                 {
-                                    int typePosition = type.FullName.IndexOf(
-                                        GenericPartSeparator,
-                                        StringComparison.OrdinalIgnoreCase);
+                                    int typePosition = type.FullName?.IndexOf(
+                                                           GenericPartSeparator,
+                                                           StringComparison.OrdinalIgnoreCase) ?? -1;
 
                                     if (typePosition < 0)
                                     {
                                         return false;
                                     }
 
-                                    string typeName = type.FullName.Substring(0, typePosition);
+                                    string typeName = type.FullName?.Substring(0, typePosition) ?? "";
 
                                     return typeName.Equals(fieldName, StringComparison.Ordinal);
                                 });
@@ -390,10 +391,10 @@ namespace Arbor.Build.Core.Tools.Testing
         }
 
         private bool IsCustomAttributeTypeToFind(CustomAttribute attr) => _typesToFind.Any(
-                    typeToFind =>
-                        attr.AttributeType.FullName.Equals(
-                            typeToFind.FullName,
-                            StringComparison.OrdinalIgnoreCase));
+            typeToFind =>
+                attr.AttributeType.FullName.Equals(
+                    typeToFind.FullName,
+                    StringComparison.OrdinalIgnoreCase));
 
         private (AssemblyDefinition, FileInfo) GetAssembly(FileInfo dllFile, string targetFrameworkPrefix)
         {

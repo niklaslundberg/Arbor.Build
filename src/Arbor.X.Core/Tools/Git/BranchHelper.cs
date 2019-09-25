@@ -81,7 +81,7 @@ namespace Arbor.Build.Core.Tools.Git
                 throw new ArgumentNullException(nameof(branchName));
             }
 
-            string logicalName = branchName.Replace("refs/heads/", string.Empty);
+            string logicalName = branchName.Replace("refs/heads/", string.Empty, StringComparison.Ordinal);
 
             return new BranchName(logicalName);
         }
@@ -122,7 +122,7 @@ namespace Arbor.Build.Core.Tools.Git
 
             if (!string.IsNullOrWhiteSpace(splitCharactersVariable))
             {
-                List<string> splitts =
+                var parts =
                     splitCharactersVariable.Split(
                             new[]
                             {
@@ -131,7 +131,7 @@ namespace Arbor.Build.Core.Tools.Git
                             StringSplitOptions.RemoveEmptyEntries)
                         .ToList();
 
-                splitCharacters = splitts;
+                splitCharacters = parts;
             }
 
             string version =

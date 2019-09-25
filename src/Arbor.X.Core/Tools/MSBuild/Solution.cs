@@ -34,11 +34,11 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 .ToImmutableArray());
         }
 
-        private static SolutionProject GetProject(string line, FileInfo fileInfo)
+        private static SolutionProject? GetProject(string line, FileInfo fileInfo)
         {
             //Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NCinema.Web.IisHost", "NCinema.Web.IisHost\NCinema.Web.IisHost.csproj", "{04854B5C-247C-4F59-834D-9ACF5048F29C}"
 
-            if (!line.StartsWith("Project(\""))
+            if (!line.StartsWith("Project(\"", StringComparison.Ordinal))
             {
                 return null;
             }
@@ -48,7 +48,12 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 return null;
             }
 
-            string projectFile = line.Split(',').Skip(1).FirstOrDefault()?.Trim().Trim('\"');
+            string? projectFile = line.Split(',').Skip(1).FirstOrDefault()?.Trim().Trim('\"');
+
+            if (string.IsNullOrWhiteSpace(projectFile))
+            {
+                return null;
+            }
 
             string typeId = line.Substring(10, 36);
 
@@ -60,6 +65,11 @@ namespace Arbor.Build.Core.Tools.MSBuild
             if (idGuid == ProjectType.SolutionFolder.Id)
             {
                 return null;
+            }
+
+            if (fileInfo.Directory is null)
+            {
+                throw new InvalidOperationException("Directory property is null");
             }
 
             string projectFullPath = Path.Combine(fileInfo.Directory.FullName, projectFile);
