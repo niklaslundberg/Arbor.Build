@@ -41,9 +41,9 @@ namespace Arbor.Build.Core.Tools.NuGet
             string currentConfiguration = buildVariables.GetVariableValueOrDefault(WellKnownVariables.CurrentBuildConfiguration, null);
             string staticConfiguration = buildVariables.GetVariableValueOrDefault(WellKnownVariables.Configuration, null);
 
-            var buildConfiguration = assemblyConfiguration
-                                     ?? currentConfiguration
-                                     ?? staticConfiguration;
+            string buildConfiguration = assemblyConfiguration
+                                        ?? currentConfiguration
+                                        ?? staticConfiguration;
 
             IVariable tempDirectory = buildVariables.Require(WellKnownVariables.TempDirectory).ThrowIfEmptyValue();
             string nuGetExePath = buildVariables.Require(WellKnownVariables.ExternalTools_NuGet_ExePath)

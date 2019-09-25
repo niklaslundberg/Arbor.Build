@@ -88,7 +88,7 @@ namespace Arbor.Build.Core.Tools.Testing
                         return exitCode;
                     }
 
-                    logger.Warning(message);
+                    logger.Warning("{Message}", message);
 
                     return ExitCode.Success;
                 }

@@ -1885,7 +1885,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             if (_debugLoggingEnabled)
             {
                 logger.Debug("XML transformations took {Seconds} seconds",
-                    transformationStopwatch.Elapsed.TotalSeconds.ToString("F"));
+                    transformationStopwatch.Elapsed.TotalSeconds.ToString("F", CultureInfo.InvariantCulture));
             }
         }
 
