@@ -178,23 +178,27 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 Process.GetCurrentProcess().Id,
                 currentProcessBits);
 
-            List<SemanticVersion> possibleVersions = new List<string>
+            List<SemanticVersion> possibleMajorVersions = new List<string>
                 {
-                    "16.0.0", "15.0.0", "14.0.0", "12.0.0", "4.0.0"
+                    "16.0.0",
+                    "15.0.0",
+                    "14.0.0",
+                    "12.0.0",
+                    "4.0.0"
                 }
                 .Select(SemanticVersion.Parse)
                 .ToList();
 
             string max = buildVariables.GetVariableValueOrDefault(
                 WellKnownVariables.ExternalTools_MSBuild_MaxVersion,
-                "16.0.0");
+                "16.99.0");
 
-            SemanticVersion[] toRemove = possibleVersions.Where(version => version > SemanticVersion.Parse(max))
+            SemanticVersion[] toRemove = possibleMajorVersions.Where(version => version > SemanticVersion.Parse(max))
                 .ToArray();
 
             foreach (SemanticVersion semVersion in toRemove)
             {
-                possibleVersions.Remove(semVersion);
+                possibleMajorVersions.Remove(semVersion);
             }
 
             string vsWherePath = Path.Combine(
@@ -235,46 +239,6 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
                     "Microsoft Visual Studio",
-                    "2017",
-                    "Enterprise",
-                    "MSBuild",
-                    "15.0",
-                    "bin",
-                    "MSBuild.exe"),
-
-                Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
-                    "Microsoft Visual Studio",
-                    "2017",
-                    "Profesional",
-                    "MSBuild",
-                    "15.0",
-                    "bin",
-                    "MSBuild.exe"),
-
-                Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
-                    "Microsoft Visual Studio",
-                    "2017",
-                    "Community",
-                    "MSBuild",
-                    "15.0",
-                    "bin",
-                    "MSBuild.exe"),
-
-                Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
-                    "Microsoft Visual Studio",
-                    "2017",
-                    "BuildTools",
-                    "MSBuild",
-                    "15.0",
-                    "bin",
-                    "MSBuild.exe"),
-
-                Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
-                    "Microsoft Visual Studio",
                     "2019",
                     "Enterprise",
                     "MSBuild",
@@ -286,7 +250,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
                     "Microsoft Visual Studio",
                     "2019",
-                    "Profesional",
+                    "Professional",
                     "MSBuild",
                     "Current",
                     "bin",
@@ -309,11 +273,51 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     "BuildTools",
                     "MSBuild",
                     "Current",
+                    "bin",
+                    "MSBuild.exe"),
+
+                Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                    "Microsoft Visual Studio",
+                    "2017",
+                    "Enterprise",
+                    "MSBuild",
+                    "15.0",
+                    "bin",
+                    "MSBuild.exe"),
+
+                Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                    "Microsoft Visual Studio",
+                    "2017",
+                    "Professional",
+                    "MSBuild",
+                    "15.0",
+                    "bin",
+                    "MSBuild.exe"),
+
+                Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                    "Microsoft Visual Studio",
+                    "2017",
+                    "Community",
+                    "MSBuild",
+                    "15.0",
+                    "bin",
+                    "MSBuild.exe"),
+
+                Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                    "Microsoft Visual Studio",
+                    "2017",
+                    "BuildTools",
+                    "MSBuild",
+                    "15.0",
                     "bin",
                     "MSBuild.exe")
             };
 
-            string fileBasedLookupResultPath = Array.Find(possiblePaths, File.Exists);
+            string fileBasedLookupResultPath = possiblePaths.FirstOrDefault(File.Exists);
 
             if (fileBasedLookupResultPath != null)
             {
@@ -329,46 +333,53 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 return variables.ToImmutableArray();
             }
 
+            logger.Debug("Could not find MSBuild.exe in any of paths {Paths}", possiblePaths);
+
             string foundPath = null;
 
-            foreach (SemanticVersion possibleVersion in possibleVersions)
+            foreach (SemanticVersion possibleVersion in possibleMajorVersions)
             {
-                string registryKeyName = @"SOFTWARE\Microsoft\MSBuild\" + possibleVersion.Major + "." +
-                                         possibleVersion.Minor;
-                object msBuildPathRegistryKeyValue = null;
-                const string valueKey = "MSBuildOverrideTasksPath";
-
-                logger.Verbose(
-                    "Looking for MSBuild exe path in {RegistryLookupBits}-bit registry key '{RegistryKeyName}\\{ValueKey}",
-                    registryLookupBits,
-                    registryKeyName,
-                    valueKey);
-
-                using (RegistryKey view32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
+                for (int i = 99; i >= 0; i--)
                 {
-                    using (RegistryKey key = view32.OpenSubKey(registryKeyName))
-                    {
-                        if (key != null)
-                        {
-                            msBuildPathRegistryKeyValue = key.GetValue(valueKey, null);
-                        }
-                    }
-                }
+                    int minorVersion = i;
+                    string registryKeyName =
+                        $@"SOFTWARE\Microsoft\MSBuild\{possibleVersion.Major}.{minorVersion}";
+                    object msBuildPathRegistryKeyValue = null;
+                    const string valueKey = "MSBuildOverrideTasksPath";
 
-                string msBuildPath = msBuildPathRegistryKeyValue != null
-                    ? $"{msBuildPathRegistryKeyValue}MSBuild.exe"
-                    : null;
-
-                if (!string.IsNullOrWhiteSpace(msBuildPath))
-                {
-                    foundPath = msBuildPath;
                     logger.Verbose(
-                        "Using MSBuild exe path '{FoundPath}' defined in {RegistryLookupBits}-bit registry key {RegistryKeyName}\\{ValueKey}",
-                        foundPath,
+                        "Looking for MSBuild exe path in {RegistryLookupBits}-bit registry key '{RegistryKeyName}\\{ValueKey}",
                         registryLookupBits,
                         registryKeyName,
                         valueKey);
-                    break;
+
+                    using (RegistryKey view32 =
+                        RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
+                    {
+                        using (RegistryKey key = view32.OpenSubKey(registryKeyName))
+                        {
+                            if (key != null)
+                            {
+                                msBuildPathRegistryKeyValue = key.GetValue(valueKey, null);
+                            }
+                        }
+                    }
+
+                    string msBuildPath = msBuildPathRegistryKeyValue != null
+                        ? $"{msBuildPathRegistryKeyValue}MSBuild.exe"
+                        : null;
+
+                    if (!string.IsNullOrWhiteSpace(msBuildPath))
+                    {
+                        foundPath = msBuildPath;
+                        logger.Verbose(
+                            "Using MSBuild exe path '{FoundPath}' defined in {RegistryLookupBits}-bit registry key {RegistryKeyName}\\{ValueKey}",
+                            foundPath,
+                            registryLookupBits,
+                            registryKeyName,
+                            valueKey);
+                        break;
+                    }
                 }
             }
 
