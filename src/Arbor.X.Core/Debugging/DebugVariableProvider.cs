@@ -70,7 +70,7 @@ namespace Arbor.Build.Core.Debugging
                 [WellKnownVariables.XUnitNetCoreAppXmlAnalysisEnabled] = "true",
                 [WellKnownVariables.AssemblyUseReflectionOnlyMode] = "true",
                 [WellKnownVariables.MSBuildNuGetRestoreEnabled] = "true",
-                [WellKnownVariables.DotNetPublishExeProjectsEnabled] = "false",
+                [WellKnownVariables.DotNetPublishExeProjectsEnabled] = "true",
             };
 
             Task<ImmutableArray<IVariable>> result = Task.FromResult(environmentVariables.Select(

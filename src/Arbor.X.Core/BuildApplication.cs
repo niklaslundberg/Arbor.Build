@@ -462,8 +462,7 @@ namespace Arbor.Build.Core
                     string values;
                     if (newVariables.Length > 0)
                     {
-                        Dictionary<string, string>[] providerTable = new[]
-                            { newVariables.ToDictionary(s => s.Key, s => s.Value) };
+                        Dictionary<string, string>[] providerTable = { newVariables.ToDictionary(s => s.Key, s => s.Value) };
                         values = providerTable.DisplayAsTable();
                     }
                     else
@@ -476,32 +475,32 @@ namespace Arbor.Build.Core
                         values);
                 }
 
-                foreach (IVariable var in newVariables)
+                foreach (IVariable variable in newVariables)
                 {
-                    if (buildVariables.HasKey(var.Key))
+                    if (buildVariables.HasKey(variable.Key))
                     {
-                        IVariable existing = buildVariables.Single(bv => bv.Key.Equals(var.Key, StringComparison.OrdinalIgnoreCase));
+                        IVariable existing = buildVariables.Single(bv => bv.Key.Equals(variable.Key, StringComparison.OrdinalIgnoreCase));
 
-                        if (string.IsNullOrWhiteSpace(buildVariables.GetVariableValueOrDefault(var.Key, string.Empty)))
+                        if (string.IsNullOrWhiteSpace(buildVariables.GetVariableValueOrDefault(variable.Key, string.Empty)))
                         {
-                            if (string.IsNullOrWhiteSpace(var.Value))
+                            if (string.IsNullOrWhiteSpace(variable.Value))
                             {
                                 _logger.Warning(
                                     "The build variable {Key} already exists with empty value, new value is also empty",
-                                    var.Key);
+                                    variable.Key);
                                 continue;
                             }
 
                             _logger.Warning(
                                 "The build variable {Key} already exists with empty value, using new value '{Value}'",
-                                var.Key,
-                                var.Value);
+                                variable.Key,
+                                variable.Value);
 
                             buildVariables.Remove(existing);
                         }
                         else
                         {
-                            if (existing.Value.Equals(var.Value, StringComparison.OrdinalIgnoreCase))
+                            if (existing.Value.Equals(variable.Value, StringComparison.OrdinalIgnoreCase))
                             {
                                 continue;
                             }
@@ -518,22 +517,22 @@ namespace Arbor.Build.Core
                                     "Flag '{VariableOverrideEnabled}' is set to true, existing variable with key '{Key}' and value '{Value}', replacing the value with '{Value1}'",
                                     WellKnownVariables.VariableOverrideEnabled,
                                     existing.Key,
-                                    existing.Value,
-                                    var.Value);
+                                    existing.Key.GetDisplayValue(existing.Value),
+                                    existing.Key.GetDisplayValue(variable.Value));
                             }
                             else
                             {
                                 _logger.Warning(
                                     "The build variable '{Key}' already exists with value '{Value}'. To override variables, set flag '{VariableOverrideEnabled}' to true",
-                                    var.Key,
-                                    var.Value,
+                                    variable.Key,
+                                    variable.Value,
                                     WellKnownVariables.VariableOverrideEnabled);
                                 continue;
                             }
                         }
                     }
 
-                    buildVariables.Add(var);
+                    buildVariables.Add(variable);
                 }
             }
 
@@ -570,7 +569,7 @@ namespace Arbor.Build.Core
                     alreadyDefined.Add(new Dictionary<string, string>
                     {
                         { "Name", buildVariable.Key },
-                        { "Value", buildVariable.Value }
+                        { "Value", buildVariable.Key.GetDisplayValue(buildVariable.Value) }
                     });
                 }
                 else
@@ -579,7 +578,7 @@ namespace Arbor.Build.Core
                     {
                         { "Name", buildVariable.Key },
                         { "Compatibility name", compatibilityName },
-                        { "Value", buildVariable.Value }
+                        { "Value", buildVariable.Key.GetDisplayValue(buildVariable.Value) }
                     });
 
                     buildVariables.Add(new BuildVariable(compatibilityName, buildVariable.Value));

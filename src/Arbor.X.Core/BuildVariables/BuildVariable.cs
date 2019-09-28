@@ -20,6 +20,6 @@ namespace Arbor.Build.Core.BuildVariables
 
         public string Value { get; }
 
-        public override string ToString() => this.DisplayValue();
+        public override string ToString() => this.DisplayPair();
     }
 }

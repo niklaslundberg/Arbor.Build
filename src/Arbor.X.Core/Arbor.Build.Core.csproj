@@ -10,7 +10,7 @@
     <PackageReference Include="Arbor.KVConfiguration.JsonConfiguration" Version="0.18.0" />
     <PackageReference Include="Arbor.KVConfiguration.Schema.Json" Version="0.18.0" />
     <PackageReference Include="Arbor.KVConfiguration.UserConfiguration" Version="0.18.0" />
-    <PackageReference Include="Arbor.Processing" Version="0.2.0" />
+    <PackageReference Include="Arbor.Processing" Version="0.3.0-build.10" />
     <PackageReference Include="Arbor.Sorbus" Version="3.1.0" />
     <PackageReference Include="Arbor.Tooler" Version="0.4.0" />
     <PackageReference Include="Arbor.Xdt" Version="0.2.4" />

@@ -19,20 +19,34 @@ namespace Arbor.Build.Core.BuildVariables
                     variable => new Dictionary<string, string>
                     {
                         { "Name", variable.Key },
-                        { "Value", variable.Value }
+                        { "Value", variable.Key.GetDisplayValue(variable.Value) }
                     });
 
             return dictionaries.DisplayAsTable();
         }
 
-        public static string DisplayValue(this IVariable variable)
+        private static readonly string[] SensitiveValues = { "password", "apikey", "username", "pw", "token", "jwt" };
+
+        public static string DisplayPair(this IVariable variable)
         {
             if (variable == null)
             {
                 throw new ArgumentNullException(nameof(variable));
             }
 
-            return $"\t{variable.Key}: {variable.Value}";
+            string value = GetDisplayValue(variable.Key, variable.Value);
+
+            return $"\t{variable.Key}: {value}";
+        }
+
+        public static string GetDisplayValue(this string key, string value)
+        {
+            if (SensitiveValues.Any(sensitive => key.IndexOf(sensitive, StringComparison.OrdinalIgnoreCase) >= 0))
+            {
+                value = "*****";
+            }
+
+            return value;
         }
     }
 }

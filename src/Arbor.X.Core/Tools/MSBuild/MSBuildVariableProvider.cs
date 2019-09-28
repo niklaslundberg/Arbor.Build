@@ -105,7 +105,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     var firstOrDefault = array.OrderByDescending(candidateItem => candidateItem.version)
                         .FirstOrDefault();
 
-                    logger.Debug("Found VS candidate version with vswhere: {Paths}", candidates.Select(s => s.installationPath).ToArray());
+                    logger.Debug("Found VS candidate version with vswhere.exe: {Paths}", candidates.Select(s => s.installationPath).ToArray());
 
                     if (firstOrDefault != null)
                     {
