@@ -51,10 +51,8 @@ namespace Arbor.Build.Core.IO
             byte[] fileHash;
             using (SHA512 hashAlgorithm = SHA512.Create())
             {
-                using (var fs = new FileStream(fileName, FileMode.Open))
-                {
-                    fileHash = hashAlgorithm.ComputeHash(fs);
-                }
+                using var fs = new FileStream(fileName, FileMode.Open);
+                fileHash = hashAlgorithm.ComputeHash(fs);
             }
 
             return Convert.ToBase64String(fileHash);

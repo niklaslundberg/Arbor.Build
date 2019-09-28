@@ -388,37 +388,35 @@ namespace Arbor.Build.Core.Tools.MSBuild
         {
             var platforms = new List<string>();
 
-            using (var fs = new FileStream(solutionFile.FullName, FileMode.Open, FileAccess.Read))
+            await using (var fs = new FileStream(solutionFile.FullName, FileMode.Open, FileAccess.Read))
             {
-                using (var streamReader = new StreamReader(fs))
+                using var streamReader = new StreamReader(fs);
+                bool isInGlobalSection = false;
+
+                while (streamReader.Peek() >= 0)
                 {
-                    bool isInGlobalSection = false;
+                    string line = await streamReader.ReadLineAsync().ConfigureAwait(false);
 
-                    while (streamReader.Peek() >= 0)
+                    if (line.IndexOf(
+                            "GlobalSection(SolutionConfigurationPlatforms)",
+                            StringComparison.OrdinalIgnoreCase) >= 0)
                     {
-                        string line = await streamReader.ReadLineAsync().ConfigureAwait(false);
+                        isInGlobalSection = true;
+                        continue;
+                    }
 
-                        if (line.IndexOf(
-                                "GlobalSection(SolutionConfigurationPlatforms)",
-                                StringComparison.OrdinalIgnoreCase) >= 0)
-                        {
-                            isInGlobalSection = true;
-                            continue;
-                        }
+                    if (line.IndexOf(
+                            "EndGlobalSection",
+                            StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        isInGlobalSection = false;
+                        continue;
+                    }
 
-                        if (line.IndexOf(
-                                "EndGlobalSection",
-                                StringComparison.OrdinalIgnoreCase) >= 0)
-                        {
-                            isInGlobalSection = false;
-                            continue;
-                        }
-
-                        if (isInGlobalSection)
-                        {
-                            platforms.AddRange(_platforms.Where(knownPlatform =>
-                                line.IndexOf(knownPlatform, StringComparison.InvariantCulture) >= 0));
-                        }
+                    if (isInGlobalSection)
+                    {
+                        platforms.AddRange(_platforms.Where(knownPlatform =>
+                            line.IndexOf(knownPlatform, StringComparison.InvariantCulture) >= 0));
                     }
                 }
             }
@@ -1858,26 +1856,22 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                 string targetTransformResultPath = $"{siteArtifactDirectory.FullName}{relativeFilePath}";
 
-                using (var transformable = new XmlTransformableDocument())
+                using var transformable = new XmlTransformableDocument();
+                transformable.Load(configurationFile.Original.FullName);
+
+                using var transformation = new XmlTransformation(configurationFile.TransformFile);
+                if (_debugLoggingEnabled)
                 {
-                    transformable.Load(configurationFile.Original.FullName);
+                    logger.Debug(
+                        "Transforming '{FullName}' with transformation file '{TransformFile} to target file '{TargetTransformResultPath}'",
+                        configurationFile.Original.FullName,
+                        configurationFile.TransformFile,
+                        targetTransformResultPath);
+                }
 
-                    using (var transformation = new XmlTransformation(configurationFile.TransformFile))
-                    {
-                        if (_debugLoggingEnabled)
-                        {
-                            logger.Debug(
-                                "Transforming '{FullName}' with transformation file '{TransformFile} to target file '{TargetTransformResultPath}'",
-                                configurationFile.Original.FullName,
-                                configurationFile.TransformFile,
-                                targetTransformResultPath);
-                        }
-
-                        if (transformation.Apply(transformable))
-                        {
-                            transformable.Save(targetTransformResultPath);
-                        }
-                    }
+                if (transformation.Apply(transformable))
+                {
+                    transformable.Save(targetTransformResultPath);
                 }
             }
 

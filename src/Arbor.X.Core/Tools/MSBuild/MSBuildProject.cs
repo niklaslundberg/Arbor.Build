@@ -69,94 +69,92 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
         public static MSBuildProject LoadFrom(string projectFileFullName)
         {
-            using (var fs = new FileStream(projectFileFullName, FileMode.Open, FileAccess.Read))
+            using var fs = new FileStream(projectFileFullName, FileMode.Open, FileAccess.Read);
+            var msbuildPropertyGroups = new List<MSBuildPropertyGroup>();
+
+            Guid? projectId = default;
+
+            XDocument document = XDocument.Load(fs);
+
+            const string projectElementName = "Project";
+
+            XElement project = document.Elements().SingleOrDefault(element =>
+                element.Name.LocalName.Equals(projectElementName, StringComparison.Ordinal));
+
+            if (project is null)
             {
-                var msbuildPropertyGroups = new List<MSBuildPropertyGroup>();
-
-                Guid? projectId = default;
-
-                XDocument document = XDocument.Load(fs);
-
-                const string projectElementName = "Project";
-
-                XElement project = document.Elements().SingleOrDefault(element =>
-                    element.Name.LocalName.Equals(projectElementName, StringComparison.Ordinal));
-
-                if (project is null)
-                {
-                    throw new InvalidOperationException(
-                        $"Could not find element <{projectElementName}> in file '{projectFileFullName}'");
-                }
-
-                ImmutableArray<XElement> propertyGroups = project
-                    .Elements()
-                    .Where(e => e.Name.LocalName.Equals("PropertyGroup", StringComparison.Ordinal))
-                    .ToImmutableArray();
-
-                XElement idElement = propertyGroups
-                    .Elements()
-                    .FirstOrDefault(e => e.Name.LocalName.Equals("ProjectGuid", StringComparison.Ordinal));
-
-                if (idElement?.Value != null)
-                {
-                    if (Guid.TryParse(idElement.Value, out Guid id))
-                    {
-                        projectId = id;
-                    }
-                }
-
-                foreach (XElement propertyGroup in propertyGroups)
-                {
-                    ImmutableArray<MSBuildProperty> msBuildProperties = propertyGroup?
-                                                                            .Elements()
-                                                                            .Select(p =>
-                                                                                new MSBuildProperty(p.Name.LocalName,
-                                                                                    p.Value))
-                                                                            .ToImmutableArray()
-                                                                        ?? ImmutableArray<MSBuildProperty>.Empty;
-
-                    msbuildPropertyGroups.Add(new MSBuildPropertyGroup(msBuildProperties));
-                }
-
-                string name = Path.GetFileNameWithoutExtension(projectFileFullName);
-
-                var file = new FileInfo(projectFileFullName);
-
-                XElement projectTypeGuidsElement = propertyGroups
-                    .Elements()
-                    .FirstOrDefault(e => e.Name.LocalName.Equals("ProjectTypeGuids", StringComparison.Ordinal));
-
-                ImmutableArray<ProjectType> projectTypes = ImmutableArray<ProjectType>.Empty;
-
-                if (projectTypeGuidsElement != null)
-                {
-                    projectTypes = projectTypeGuidsElement.Value.Split(';')
-                        .Select(Guid.Parse)
-                        .Select(guid => new ProjectType(guid))
-                        .ToImmutableArray();
-                }
-
-                string sdkValue = project.Attribute("Sdk")?.Value;
-
-                DotNetSdk sdk = DotNetSdk.ParseOrDefault(sdkValue);
-
-                ImmutableArray<PackageReferenceElement> packageReferences = propertyGroups
-                    .Where(e => e.Name.LocalName.Equals("PackageReference", StringComparison.Ordinal))
-                    .Select(packageReference => new PackageReferenceElement(
-                        packageReference.Attribute("Include")?.Value,
-                        packageReference.Attribute("Version")?.Value))
-                    .Where(reference => reference.IsValid)
-                    .ToImmutableArray();
-
-                return new MSBuildProject(msbuildPropertyGroups,
-                    projectFileFullName,
-                    name,
-                    file.Directory?.FullName,
-                    projectTypes,
-                    projectId,
-                    sdk,
-                    packageReferences);
+                throw new InvalidOperationException(
+                    $"Could not find element <{projectElementName}> in file '{projectFileFullName}'");
             }
+
+            ImmutableArray<XElement> propertyGroups = project
+                .Elements()
+                .Where(e => e.Name.LocalName.Equals("PropertyGroup", StringComparison.Ordinal))
+                .ToImmutableArray();
+
+            XElement idElement = propertyGroups
+                .Elements()
+                .FirstOrDefault(e => e.Name.LocalName.Equals("ProjectGuid", StringComparison.Ordinal));
+
+            if (idElement?.Value != null)
+            {
+                if (Guid.TryParse(idElement.Value, out Guid id))
+                {
+                    projectId = id;
+                }
+            }
+
+            foreach (XElement propertyGroup in propertyGroups)
+            {
+                ImmutableArray<MSBuildProperty> msBuildProperties = propertyGroup?
+                                                                        .Elements()
+                                                                        .Select(p =>
+                                                                            new MSBuildProperty(p.Name.LocalName,
+                                                                                p.Value))
+                                                                        .ToImmutableArray()
+                                                                    ?? ImmutableArray<MSBuildProperty>.Empty;
+
+                msbuildPropertyGroups.Add(new MSBuildPropertyGroup(msBuildProperties));
+            }
+
+            string name = Path.GetFileNameWithoutExtension(projectFileFullName);
+
+            var file = new FileInfo(projectFileFullName);
+
+            XElement projectTypeGuidsElement = propertyGroups
+                .Elements()
+                .FirstOrDefault(e => e.Name.LocalName.Equals("ProjectTypeGuids", StringComparison.Ordinal));
+
+            ImmutableArray<ProjectType> projectTypes = ImmutableArray<ProjectType>.Empty;
+
+            if (projectTypeGuidsElement != null)
+            {
+                projectTypes = projectTypeGuidsElement.Value.Split(';')
+                    .Select(Guid.Parse)
+                    .Select(guid => new ProjectType(guid))
+                    .ToImmutableArray();
+            }
+
+            string sdkValue = project.Attribute("Sdk")?.Value;
+
+            DotNetSdk sdk = DotNetSdk.ParseOrDefault(sdkValue);
+
+            ImmutableArray<PackageReferenceElement> packageReferences = propertyGroups
+                .Where(e => e.Name.LocalName.Equals("PackageReference", StringComparison.Ordinal))
+                .Select(packageReference => new PackageReferenceElement(
+                    packageReference.Attribute("Include")?.Value,
+                    packageReference.Attribute("Version")?.Value))
+                .Where(reference => reference.IsValid)
+                .ToImmutableArray();
+
+            return new MSBuildProject(msbuildPropertyGroups,
+                projectFileFullName,
+                name,
+                file.Directory?.FullName,
+                projectTypes,
+                projectId,
+                sdk,
+                packageReferences);
         }
 
         public override string ToString() => $"{nameof(Properties)} [{PropertyGroups.SelectMany(g => g.Properties).Count()}]:{Environment.NewLine}{string.Join(Environment.NewLine, PropertyGroups.SelectMany(g => g.Properties).Select(p => "\t" + p.ToString()))}{Environment.NewLine}{nameof(FileName)}: {FileName}{Environment.NewLine}{nameof(ProjectName)}: {ProjectName}{Environment.NewLine}{nameof(ProjectDirectory)}: {ProjectDirectory}{nameof(ProjectTypes)}: {string.Join(", ", ProjectTypes.Select(t => t.ToString()))},{Environment.NewLine}{nameof(ProjectId)}: {ProjectId}{Environment.NewLine}{nameof(Sdk)}: {Sdk}{Environment.NewLine}{nameof(PackageReferences)} [{PackageReferences.Length}]:{Environment.NewLine} {string.Join(Environment.NewLine, PackageReferences.Select(r => r.ToString()))}";

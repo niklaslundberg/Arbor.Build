@@ -20,7 +20,7 @@ namespace Arbor.Build.Core.Debugging
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            logger = logger ?? Logger.None;
+            logger ??= Logger.None;
 
             if (!DebugHelper.IsDebugging)
             {

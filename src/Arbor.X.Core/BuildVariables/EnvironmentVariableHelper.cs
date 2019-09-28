@@ -20,7 +20,7 @@ namespace Arbor.Build.Core.BuildVariables
             ILogger logger,
             List<IVariable> existingItems = null)
         {
-            logger = logger ?? Logger.None;
+            logger ??= Logger.None;
             List<IVariable> existing = existingItems ?? new List<IVariable>();
             var buildVariables = new List<IVariable>();
 

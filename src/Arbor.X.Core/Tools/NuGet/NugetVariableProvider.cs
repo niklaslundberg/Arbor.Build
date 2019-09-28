@@ -68,23 +68,21 @@ namespace Arbor.Build.Core.Tools.NuGet
                 return userSpecifiedNuGetExePath;
             }
 
-            using (var httClient = new HttpClient())
+            using var httClient = new HttpClient();
+            var nuGetDownloadClient = new NuGetDownloadClient();
+
+            var nuGetDownloadResult = await nuGetDownloadClient.DownloadNuGetAsync(
+                                          NuGetDownloadSettings.Default,
+                                          logger,
+                                          httClient,
+                                          _cancellationToken).ConfigureAwait(false);
+
+            if (!nuGetDownloadResult.Succeeded)
             {
-                var nuGetDownloadClient = new NuGetDownloadClient();
-
-                var nuGetDownloadResult = await nuGetDownloadClient.DownloadNuGetAsync(
-                                              NuGetDownloadSettings.Default,
-                                              logger,
-                                              httClient,
-                                              _cancellationToken).ConfigureAwait(false);
-
-                if (!nuGetDownloadResult.Succeeded)
-                {
-                    throw new InvalidOperationException("Could not download nuget.exe");
-                }
-
-                return nuGetDownloadResult.NuGetExePath;
+                throw new InvalidOperationException("Could not download nuget.exe");
             }
+
+            return nuGetDownloadResult.NuGetExePath;
         }
     }
 }

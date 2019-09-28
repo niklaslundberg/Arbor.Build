@@ -150,17 +150,15 @@ namespace Arbor.Build.Core.Bootstrapper
 
                         try
                         {
-                            using (Process childProcess = Process.GetProcessById((int)childProcessId))
+                            using Process childProcess = Process.GetProcessById((int)childProcessId);
+                            if (!childProcess.HasExited)
                             {
-                                if (!childProcess.HasExited)
-                                {
-                                    logger.Debug("Killing child process [{ProcessName}] with Id [{ChildProcessId}]",
-                                        childProcess.ProcessName,
-                                        childProcessId);
-                                    childProcess.Kill();
+                                logger.Debug("Killing child process [{ProcessName}] with Id [{ChildProcessId}]",
+                                    childProcess.ProcessName,
+                                    childProcessId);
+                                childProcess.Kill();
 
-                                    logger.Verbose("Child process with id {ChildProcessId} was killed", childProcessId);
-                                }
+                                logger.Verbose("Child process with id {ChildProcessId} was killed", childProcessId);
                             }
                         }
                         catch (Exception ex) when (!ex.IsFatal() &&
@@ -268,18 +266,17 @@ namespace Arbor.Build.Core.Bootstrapper
             }
             else
             {
-                using (var httpClient = new HttpClient())
+                using var httpClient = new HttpClient();
+                var nuGetDownloadClient = new NuGetDownloadClient();
+                NuGetDownloadResult nuGetDownloadResult = await nuGetDownloadClient.DownloadNuGetAsync(NuGetDownloadSettings.Default, _logger, httpClient).ConfigureAwait(false);
+
+                if (!nuGetDownloadResult.Succeeded)
                 {
-                    var nuGetDownloadClient = new NuGetDownloadClient();
-                    NuGetDownloadResult nuGetDownloadResult = await nuGetDownloadClient.DownloadNuGetAsync(NuGetDownloadSettings.Default, _logger, httpClient).ConfigureAwait(false);
+                    _logger.Error("Could not download nuget.exe");
+                    return ExitCode.Failure;
+                }
 
-                    if (!nuGetDownloadResult.Succeeded)
-                    {
-                        _logger.Error("Could not download nuget.exe");
-                        return ExitCode.Failure;
-                    }
-
-                    nugetExePath = nuGetDownloadResult.NuGetExePath;}
+                nugetExePath = nuGetDownloadResult.NuGetExePath;
             }
 
             string outputDirectoryPath =
@@ -359,9 +356,9 @@ namespace Arbor.Build.Core.Bootstrapper
             outputDirectory.DeleteIfExists();
             outputDirectory.EnsureExists();
 
-            string version = Environment.GetEnvironmentVariable(WellKnownVariables.ArborBuildNuGetPackageVersion);
+            string? version = Environment.GetEnvironmentVariable(WellKnownVariables.ArborBuildNuGetPackageVersion);
 
-            string nuGetSource = Environment.GetEnvironmentVariable(WellKnownVariables.ArborXNuGetPackageSource);
+            string? nuGetSource = Environment.GetEnvironmentVariable(WellKnownVariables.ArborXNuGetPackageSource);
 
             _ = Environment.GetEnvironmentVariable(WellKnownVariables.AllowPrerelease)
                 .TryParseBool(out bool preReleaseIsAllowed);
@@ -477,58 +474,56 @@ namespace Arbor.Build.Core.Bootstrapper
 
         private async Task<string> GetLatestVersionAsync(string nugetExePath, string nuGetSource, bool allowPreRelease)
         {
-            using (var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(MaxBuildTimeInSeconds)))
+            using var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(MaxBuildTimeInSeconds));
+            var nugetArguments = new List<string> { "list", BuildToolPackageName };
+
+            if (!string.IsNullOrWhiteSpace(nuGetSource))
             {
-                var nugetArguments = new List<string> { "list", BuildToolPackageName };
-
-                if (!string.IsNullOrWhiteSpace(nuGetSource))
-                {
-                    nugetArguments.Add("-source");
-                    nugetArguments.Add(nuGetSource);
-                }
-
-                if (allowPreRelease)
-                {
-                    nugetArguments.Add("-Prerelease");
-                }
-
-                var lines = new List<string>();
-
-                ExitCode exitCode = await ProcessRunner.ExecuteProcessAsync(nugetExePath,
-                        arguments: nugetArguments,
-                        cancellationToken: cancellationTokenSource.Token,
-                        standardOutLog: (m,_) => lines.Add(m),
-                        standardErrorAction: _logger.Error,
-                        toolAction: _logger.Debug,
-                        verboseAction: _logger.Verbose)
-                    .ConfigureAwait(false);
-
-                if (!exitCode.IsSuccess)
-                {
-                    return null;
-                }
-
-                const string arborBuildPackageName = BuildToolPackageName + " ";
-                ImmutableArray<SemanticVersion> matchingPackages =
-                    lines.Where(line => line.StartsWith(arborBuildPackageName, StringComparison.OrdinalIgnoreCase))
-                        .Select(line => line.Replace(arborBuildPackageName, "", StringComparison.OrdinalIgnoreCase))
-                        .Select(line => (SemanticVersion.TryParse(line, out SemanticVersion semVer), semVer))
-                        .Where(s => s.Item1)
-                        .Select(s => s.semVer)
-                        .ToImmutableArray();
-
-                if (matchingPackages.Length == 0)
-                {
-                    return null;
-                }
-
-                if (matchingPackages.Length == 1)
-                {
-                    return matchingPackages.Single().ToNormalizedString();
-                }
-
-                return matchingPackages.Max().ToNormalizedString();
+                nugetArguments.Add("-source");
+                nugetArguments.Add(nuGetSource);
             }
+
+            if (allowPreRelease)
+            {
+                nugetArguments.Add("-Prerelease");
+            }
+
+            var lines = new List<string>();
+
+            ExitCode exitCode = await ProcessRunner.ExecuteProcessAsync(nugetExePath,
+                    arguments: nugetArguments,
+                    cancellationToken: cancellationTokenSource.Token,
+                    standardOutLog: (m, _) => lines.Add(m),
+                    standardErrorAction: _logger.Error,
+                    toolAction: _logger.Debug,
+                    verboseAction: _logger.Verbose)
+                .ConfigureAwait(false);
+
+            if (!exitCode.IsSuccess)
+            {
+                return null;
+            }
+
+            const string arborBuildPackageName = BuildToolPackageName + " ";
+            ImmutableArray<SemanticVersion> matchingPackages =
+                lines.Where(line => line.StartsWith(arborBuildPackageName, StringComparison.OrdinalIgnoreCase))
+                    .Select(line => line.Replace(arborBuildPackageName, "", StringComparison.OrdinalIgnoreCase))
+                    .Select(line => (SemanticVersion.TryParse(line, out SemanticVersion semVer), semVer))
+                    .Where(s => s.Item1)
+                    .Select(s => s.semVer)
+                    .ToImmutableArray();
+
+            if (matchingPackages.Length == 0)
+            {
+                return null;
+            }
+
+            if (matchingPackages.Length == 1)
+            {
+                return matchingPackages.Single().ToNormalizedString();
+            }
+
+            return matchingPackages.Max().ToNormalizedString();
         }
 
         private async Task<string> GetBaseDirectoryAsync(BootstrapStartOptions startOptions)

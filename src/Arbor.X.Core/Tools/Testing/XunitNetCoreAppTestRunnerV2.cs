@@ -337,35 +337,33 @@ namespace Arbor.Build.Core.Tools.Testing
 
             string fullName = reportFileInfo.FullName;
 
-            using (var fs = new FileStream(fullName, FileMode.Open))
+            using var fs = new FileStream(fullName, FileMode.Open);
+            XDocument xdoc = XDocument.Load(fs);
+
+            XElement[] collections = xdoc.Descendants("assemblies").Descendants("assembly")
+                .Descendants("collection").ToArray();
+
+            int testCount = collections.Count(collection =>
+                int.TryParse(collection.Attribute("total")?.Value, out int total) && total > 0);
+
+            if (testCount == 0)
             {
-                XDocument xdoc = XDocument.Load(fs);
-
-                XElement[] collections = xdoc.Descendants("assemblies").Descendants("assembly")
-                    .Descendants("collection").ToArray();
-
-                int testCount = collections.Count(collection =>
-                    int.TryParse(collection.Attribute("total")?.Value, out int total) && total > 0);
-
-                if (testCount == 0)
-                {
-                    logger?.Invoke($"Found no tests in '{fullName}'");
-                    return ExitCode.Failure;
-                }
-
-                logger?.Invoke($"Found {testCount} tests in '{fullName}'");
-
-                int failedTests = collections.Count(collection =>
-                    int.TryParse(collection.Attribute("failed")?.Value, out int failed) && failed > 0);
-
-                if (failedTests > 0)
-                {
-                    logger?.Invoke($"Found {failedTests} failing tests in '{fullName}'");
-                    return ExitCode.Failure;
-                }
-
-                return ExitCode.Success;
+                logger?.Invoke($"Found no tests in '{fullName}'");
+                return ExitCode.Failure;
             }
+
+            logger?.Invoke($"Found {testCount} tests in '{fullName}'");
+
+            int failedTests = collections.Count(collection =>
+                int.TryParse(collection.Attribute("failed")?.Value, out int failed) && failed > 0);
+
+            if (failedTests > 0)
+            {
+                logger?.Invoke($"Found {failedTests} failing tests in '{fullName}'");
+                return ExitCode.Failure;
+            }
+
+            return ExitCode.Success;
         }
     }
 }

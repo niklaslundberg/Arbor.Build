@@ -24,7 +24,7 @@ namespace Arbor.Build.Core.Tools.Paket
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            logger = logger ?? Logger.None;
+            logger ??= Logger.None;
 
             if (buildVariables.GetOptionalBooleanByKey(WellKnownVariables.PaketEnabled) != true)
             {

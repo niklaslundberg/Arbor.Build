@@ -176,26 +176,22 @@ namespace Arbor.Build.Core.Tools.Kudu
                         WellKnownVariables.KuduUseAppOfflineHtmFile);
                     try
                     {
-                        using (var fs = new FileStream(appOfflinePath, FileMode.Create, FileAccess.Write))
-                        {
-                            using (var streamWriter = new StreamWriter(fs, Encoding.UTF8))
-                            {
-                                streamWriter.WriteLine(
-                                    "File created by Arbor.X Kudu at {0} (UTC)",
-                                    DateTime.UtcNow.ToString("O"));
-                            }
-                        }
+                        await using var fs = new FileStream(appOfflinePath, FileMode.Create, FileAccess.Write);
+                        await using var streamWriter = new StreamWriter(fs, Encoding.UTF8);
+                        streamWriter.WriteLine(
+"File created by Arbor.X Kudu at {0} (UTC)",
+DateTime.UtcNow.ToString("O"));
                     }
                     catch (UnauthorizedAccessException ex)
                     {
                         logger.Warning(ex,
-                            "Could not create app_offline.htm file in '{_deploymentTargetDirectory}', {Ex}",
+                            "Could not create app_offline.htm file in '{DeploymentTargetDirectory}'",
                             _deploymentTargetDirectory);
                     }
                     catch (IOException ex)
                     {
                         logger.Warning(ex,
-                            "Could not create app_offline.htm file in '{_deploymentTargetDirectory}', {Ex}",
+                            "Could not create app_offline.htm file in '{DeploymentTargetDirectory}'",
                             _deploymentTargetDirectory);
                     }
                 }
@@ -256,14 +252,14 @@ namespace Arbor.Build.Core.Tools.Kudu
                     catch (IOException ex)
                     {
                         logger.Warning(ex,
-                            "Could not clear all files and directories from target '{_deploymentTargetDirectory}', {Ex}",
+                            "Could not clear all files and directories from target '{DeploymentTargetDirectory}'",
                             _deploymentTargetDirectory);
                     }
                 }
                 else
                 {
                     logger.Verbose(
-                        "Flag '{KuduClearFilesAndDirectories}' is not set, skipping deleting files and directories from target '{_deploymentTargetDirectory}'",
+                        "Flag '{KuduClearFilesAndDirectories}' is not set, skipping deleting files and directories from target '{DeploymentTargetDirectory}'",
                         WellKnownVariables.KuduClearFilesAndDirectories,
                         _deploymentTargetDirectory);
                 }
@@ -288,7 +284,7 @@ namespace Arbor.Build.Core.Tools.Kudu
                 }
                 catch (Exception ex)
                 {
-                    logger.Error(ex, "Kudu deploy could not copy files {Ex}");
+                    logger.Error(ex, "Kudu deploy could not copy files");
                     return ExitCode.Failure;
                 }
             }
@@ -305,7 +301,7 @@ namespace Arbor.Build.Core.Tools.Kudu
                         catch (IOException ex)
                         {
                             logger.Warning(ex,
-                                "Could not delete app_offline.htm file in '{_deploymentTargetDirectory}', {Ex}",
+                                "Could not delete app_offline.htm file in '{DeploymentTargetDirectory}'",
                                 _deploymentTargetDirectory);
                         }
                     }

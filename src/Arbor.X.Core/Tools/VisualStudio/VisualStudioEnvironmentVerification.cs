@@ -21,7 +21,7 @@ namespace Arbor.Build.Core.Tools.VisualStudio
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            logger = logger ?? Logger.None;
+            logger ??= Logger.None;
 
             string sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
 
@@ -70,20 +70,18 @@ namespace Arbor.Build.Core.Tools.VisualStudio
 
             using (FileStream fs = file.OpenRead())
             {
-                using (var sr = new StreamReader(fs))
+                using var sr = new StreamReader(fs);
+                while (sr.Peek() >= 0)
                 {
-                    while (sr.Peek() >= 0)
-                    {
-                        string line = sr.ReadLine();
+                    string line = sr.ReadLine();
 
-                        if (!string.IsNullOrWhiteSpace(line))
+                    if (!string.IsNullOrWhiteSpace(line))
+                    {
+                        if (
+                            lookupPatterns.Any(
+                                pattern => line.IndexOf(pattern, StringComparison.InvariantCulture) >= 0))
                         {
-                            if (
-                                lookupPatterns.Any(
-                                    pattern => line.IndexOf(pattern, StringComparison.InvariantCulture) >= 0))
-                            {
-                                return true;
-                            }
+                            return true;
                         }
                     }
                 }

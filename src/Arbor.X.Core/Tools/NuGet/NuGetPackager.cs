@@ -32,7 +32,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             string packagesDirectory,
             string vcsRootDir)
         {
-            logger = logger ?? Logger.None;
+            logger ??= Logger.None;
             IVariable version = buildVariables.Require(WellKnownVariables.Version).ThrowIfEmptyValue();
             IVariable releaseBuild = buildVariables.Require(WellKnownVariables.ReleaseBuild).ThrowIfEmptyValue();
             IVariable branchName = buildVariables.Require(WellKnownVariables.BranchLogicalName).ThrowIfEmptyValue();

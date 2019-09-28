@@ -22,22 +22,20 @@ namespace Arbor.Processing
             catch
             {
                 const string query = "SELECT ExecutablePath, ProcessID FROM Win32_Process";
-                using (var searcher = new ManagementObjectSearcher(query))
+                using var searcher = new ManagementObjectSearcher(query);
+                foreach (ManagementBaseObject item in searcher.Get())
                 {
-                    foreach (ManagementBaseObject item in searcher.Get())
+                    object idObject = item["ProcessID"];
+                    if (!(idObject is int id))
                     {
-                        object idObject = item["ProcessID"];
-                        if (!(idObject is int id))
-                        {
-                            id = int.Parse(idObject.ToString(), CultureInfo.InvariantCulture);
-                        }
+                        id = int.Parse(idObject.ToString(), CultureInfo.InvariantCulture);
+                    }
 
-                        object path = item["ExecutablePath"];
+                    object path = item["ExecutablePath"];
 
-                        if (path != null && id == process.Id)
-                        {
-                            return path.ToString();
-                        }
+                    if (path != null && id == process.Id)
+                    {
+                        return path.ToString();
                     }
                 }
             }

@@ -20,7 +20,7 @@ namespace Arbor.Build.Core.Tools.EnvironmentVariables
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            logger = logger ?? Logger.None;
+            logger ??= Logger.None;
 
             List<string> missingKeys =
                 RequiredValues.Where(

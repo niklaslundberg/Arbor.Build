@@ -22,7 +22,7 @@ namespace Arbor.Build.Core.Tools.Cleanup
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            logger = logger ?? Logger.None;
+            logger ??= Logger.None;
 
             bool cleanupBeforeBuildEnabled =
                 buildVariables.GetBooleanByKey(

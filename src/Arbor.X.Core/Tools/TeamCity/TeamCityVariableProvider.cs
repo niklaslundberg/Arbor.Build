@@ -21,7 +21,7 @@ namespace Arbor.Build.Core.Tools.TeamCity
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            logger = logger ?? Logger.None;
+            logger ??= Logger.None;
             var variables = new List<IVariable>();
 
             bool isRunningInTeamCity =

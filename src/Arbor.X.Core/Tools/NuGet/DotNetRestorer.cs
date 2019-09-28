@@ -23,7 +23,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            logger = logger ?? Logger.None;
+            logger ??= Logger.None;
             bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.DotNetRestoreEnabled);
 
             if (!enabled)

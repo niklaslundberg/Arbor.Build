@@ -27,7 +27,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            logger = logger ?? Logger.None ?? throw new ArgumentNullException(nameof(logger));
+            logger ??= Logger.None ?? throw new ArgumentNullException(nameof(logger));
             bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_NuGetServer_Enabled);
             bool websitePackagesUploadEnabled =
                 buildVariables.GetBooleanByKey(
@@ -118,7 +118,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             string apiKey,
             string nugetPackage,
             ILogger logger,
-            int timeoutInseconds,
+            int timeoutInSeconds,
             bool checkNuGetPackagesExists,
             bool timeoutIncreaseEnabled,
             string sourceName)
@@ -149,9 +149,11 @@ namespace Arbor.Build.Core.Tools.NuGet
                 args.Add(sourceName);
             }
 
+            string apiEnvironmentVariableName = "NuGetPushApiKey";
+
             if (!string.IsNullOrWhiteSpace(apiKey))
             {
-                args.Add(apiKey);
+                args.Add($"%{apiEnvironmentVariableName}%");
             }
 
             args.Add("-verbosity");
@@ -168,7 +170,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
                 List<string> runSpecificArgs = args.ToList();
 
-                if (timeoutInseconds > 0)
+                if (timeoutInSeconds > 0)
                 {
                     runSpecificArgs.Add("-timeout");
 
@@ -176,14 +178,21 @@ namespace Arbor.Build.Core.Tools.NuGet
 
                     if (timeoutIncreaseEnabled)
                     {
-                        timeout = timeoutInseconds * attemptCount;
+                        timeout = timeoutInSeconds * attemptCount;
                     }
                     else
                     {
-                        timeout = timeoutInseconds;
+                        timeout = timeoutInSeconds;
                     }
 
                     runSpecificArgs.Add(timeout.ToString(CultureInfo.InvariantCulture));
+                }
+
+                var environmentVariables = new Dictionary<string, string>();
+
+                if (!string.IsNullOrWhiteSpace(apiKey))
+                {
+                    environmentVariables.Add(apiEnvironmentVariableName, apiKey);
                 }
 
                 exitCode =
@@ -195,9 +204,10 @@ namespace Arbor.Build.Core.Tools.NuGet
                             standardErrorAction: (message, prefix) =>
                             {
                                 errorBuilder.AppendLine(message);
-                                logger.Error("{Prefix} {Message}",prefix,message);
+                                logger.Error("{Prefix} {Message}", prefix, message);
                             },
-                            toolAction: logger.Information).ConfigureAwait(false);
+                            toolAction: logger.Information,
+                            environmentVariables: environmentVariables).ConfigureAwait(false);
 
                 if (!exitCode.IsSuccess
                     && errorBuilder.ToString().IndexOf("conflict", StringComparison.OrdinalIgnoreCase) >= 0)
@@ -401,28 +411,26 @@ namespace Arbor.Build.Core.Tools.NuGet
             string packageVersion;
             string packageId;
 
-            using (var fs = new FileStream(nugetPackage.FullName, FileMode.Open, FileAccess.Read))
+            await using (var fs = new FileStream(nugetPackage.FullName, FileMode.Open, FileAccess.Read))
             {
-                using (var archive = new ZipArchive(fs))
+                using var archive = new ZipArchive(fs);
+                ZipArchiveEntry nuspecEntry =
+archive.Entries.SingleOrDefault(
+entry =>
+Path.GetExtension(entry.Name)
+.Equals(".nuspec", StringComparison.OrdinalIgnoreCase));
+
+                if (nuspecEntry == null)
                 {
-                    ZipArchiveEntry nuspecEntry =
-                        archive.Entries.SingleOrDefault(
-                            entry =>
-                                Path.GetExtension(entry.Name)
-                                    .Equals(".nuspec", StringComparison.OrdinalIgnoreCase));
-
-                    if (nuspecEntry == null)
-                    {
-                        throw new InvalidOperationException(
-                            string.Format(CultureInfo.InvariantCulture, Resources.TheNuGetPackageIsMissingANuSpec, nugetPackage.FullName));
-                    }
-
-                    var nuspecReader = new NuspecReader(nuspecEntry.Open());
-                    NuGetVersion nuGetVersion = nuspecReader.GetVersion();
-
-                    packageVersion = nuGetVersion.ToNormalizedString();
-                    packageId = nuspecReader.GetIdentity().Id;
+                    throw new InvalidOperationException(
+                        string.Format(CultureInfo.InvariantCulture, Resources.TheNuGetPackageIsMissingANuSpec, nugetPackage.FullName));
                 }
+
+                var nuspecReader = new NuspecReader(nuspecEntry.Open());
+                NuGetVersion nuGetVersion = nuspecReader.GetVersion();
+
+                packageVersion = nuGetVersion.ToNormalizedString();
+                packageId = nuspecReader.GetIdentity().Id;
             }
 
             SemanticVersion expectedVersion = SemanticVersion.Parse(packageVersion);

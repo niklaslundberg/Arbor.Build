@@ -105,6 +105,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     var firstOrDefault = array.OrderByDescending(candidateItem => candidateItem.version)
                         .FirstOrDefault();
 
+                    logger.Debug("Found VS candidate version with vswhere: {Paths}", candidates.Select(s => s.installationPath).ToArray());
+
                     if (firstOrDefault != null)
                     {
                         string msbuild2019Path = Path.Combine(
@@ -148,6 +150,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                             return variables.ToImmutableArray();
                         }
+
+                        logger.Debug("Could not find VS 2017 or 2019 MSBuild path for candidate {Candidate}", firstOrDefault.candidate.installationPath);
                     }
 
                     logger.Information("Could not find any version of MSBuild.exe with vswhere.exe");
@@ -170,7 +174,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            logger = logger ?? Logger.None;
+            logger ??= Logger.None;
 
             int currentProcessBits = Environment.Is64BitProcess ? 64 : 32;
             const int registryLookupBits = 32;
@@ -356,12 +360,10 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     using (RegistryKey view32 =
                         RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
                     {
-                        using (RegistryKey key = view32.OpenSubKey(registryKeyName))
+                        using RegistryKey key = view32.OpenSubKey(registryKeyName);
+                        if (key != null)
                         {
-                            if (key != null)
-                            {
-                                msBuildPathRegistryKeyValue = key.GetValue(valueKey, null);
-                            }
+                            msBuildPathRegistryKeyValue = key.GetValue(valueKey, null);
                         }
                     }
 

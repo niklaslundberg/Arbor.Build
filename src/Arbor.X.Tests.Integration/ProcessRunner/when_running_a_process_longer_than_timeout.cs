@@ -60,27 +60,25 @@ EXIT /b 2
 
         static async Task RunAsync()
         {
-            using (var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(2)))
+            using var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+            try
             {
-                try
-                {
-                    exitCode =
-                        await
-                            Processing.ProcessRunner.ExecuteProcessAsync(testPath,
-                                standardOutLog: (message, prefix) =>
-                                    logger.Information("[{Level}] {Message}", "STANDARD", message),
-                                standardErrorAction: (message, prefix) =>
-                                    logger.Error("[{Level}] {Message}", "ERROR", message),
-                                toolAction: (message, prefix) =>
-                                    logger.Information("[{Level}] {Message}", "TOOL", message),
-                                verboseAction: (message, prefix) =>
-                                    logger.Information("[{Level}] {Message}", "VERBOSE", message),
-                                cancellationToken: cancellationTokenSource.Token).ConfigureAwait(false);
-                }
-                catch (TaskCanceledException ex)
-                {
-                    exception = ex;
-                }
+                exitCode =
+                    await
+                        Processing.ProcessRunner.ExecuteProcessAsync(testPath,
+                            standardOutLog: (message, prefix) =>
+                                logger.Information("[{Level}] {Message}", "STANDARD", message),
+                            standardErrorAction: (message, prefix) =>
+                                logger.Error("[{Level}] {Message}", "ERROR", message),
+                            toolAction: (message, prefix) =>
+                                logger.Information("[{Level}] {Message}", "TOOL", message),
+                            verboseAction: (message, prefix) =>
+                                logger.Information("[{Level}] {Message}", "VERBOSE", message),
+                            cancellationToken: cancellationTokenSource.Token).ConfigureAwait(false);
+            }
+            catch (TaskCanceledException ex)
+            {
+                exception = ex;
             }
         }
     }

@@ -26,7 +26,7 @@ namespace Arbor.Build.Core.Tools.Testing
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            logger = logger ?? Logger.None;
+            logger ??= Logger.None;
 
             bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.VSTestEnabled);
 

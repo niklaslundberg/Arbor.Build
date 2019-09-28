@@ -26,7 +26,7 @@ namespace Arbor.Build.Core.Tools.Git
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            logger = logger ?? Logger.None;
+            logger ??= Logger.None;
             var variables = new List<IVariable>();
 
             string branchName = buildVariables.Require(WellKnownVariables.BranchName).ThrowIfEmptyValue().Value;

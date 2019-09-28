@@ -45,24 +45,22 @@ namespace Arbor.Build.Core.Tools.Testing
 
             using (Stream stream = new MemoryStream(encoding.GetBytes(xsltTemplate)))
             {
-                using (XmlReader xmlReader = new XmlTextReader(stream))
+                using XmlReader xmlReader = new XmlTextReader(stream);
+                var myXslTransform = new XslCompiledTransform();
+                myXslTransform.Load(xmlReader);
+
+                logger.Debug("Transforming '{FullName}' to JUnit XML format", xmlReport.FullName);
+                try
                 {
-                    var myXslTransform = new XslCompiledTransform();
-                    myXslTransform.Load(xmlReader);
-
-                    logger.Debug("Transforming '{FullName}' to JUnit XML format", xmlReport.FullName);
-                    try
-                    {
-                        TransformReport(xmlReport, JUnitSuffix, encoding, myXslTransform, logger,deleteOriginal);
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.Error(ex, "Could not transform '{FullName}'", xmlReport.FullName);
-                        return ExitCode.Failure;
-                    }
-
-                    logger.Debug("Successfully transformed '{FullName}' to JUnit XML format", xmlReport.FullName);
+                    TransformReport(xmlReport, JUnitSuffix, encoding, myXslTransform, logger, deleteOriginal);
                 }
+                catch (Exception ex)
+                {
+                    logger.Error(ex, "Could not transform '{FullName}'", xmlReport.FullName);
+                    return ExitCode.Failure;
+                }
+
+                logger.Debug("Successfully transformed '{FullName}' to JUnit XML format", xmlReport.FullName);
             }
 
             return ExitCode.Success;
@@ -90,19 +88,11 @@ namespace Arbor.Build.Core.Tools.Testing
 
             using (var fileStream = new FileStream(xmlReport.FullName, FileMode.Open, FileAccess.Read))
             {
-                using (var streamReader = new StreamReader(fileStream, encoding))
-                {
-                    using (XmlReader reportReader = XmlReader.Create(streamReader))
-                    {
-                        using (var outStream = new FileStream(resultFile, FileMode.Create, FileAccess.Write))
-                        {
-                            using (XmlWriter reportWriter = new XmlTextWriter(outStream, encoding))
-                            {
-                                myXslTransform.Transform(reportReader, reportWriter);
-                            }
-                        }
-                    }
-                }
+                using var streamReader = new StreamReader(fileStream, encoding);
+                using XmlReader reportReader = XmlReader.Create(streamReader);
+                using var outStream = new FileStream(resultFile, FileMode.Create, FileAccess.Write);
+                using XmlWriter reportWriter = new XmlTextWriter(outStream, encoding);
+                myXslTransform.Transform(reportReader, reportWriter);
             }
 
             if (deleteOriginal)

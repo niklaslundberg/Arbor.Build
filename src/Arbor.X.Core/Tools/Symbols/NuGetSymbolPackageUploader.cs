@@ -22,7 +22,7 @@ namespace Arbor.Build.Core.Tools.Symbols
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            logger = logger ?? Logger.None;
+            logger ??= Logger.None;
 
             bool enabled = buildVariables.GetBooleanByKey(
                 WellKnownVariables.ExternalTools_SymbolServer_Enabled);

@@ -90,7 +90,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
         private static string PackageDirectory()
         {
-            string packageDirectory = string.Format("{0}packages{0}", Path.DirectorySeparatorChar);
+            string packageDirectory = $"{Path.DirectorySeparatorChar}packages{Path.DirectorySeparatorChar}";
             return packageDirectory;
         }
 
@@ -119,7 +119,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 filtered.Where(
                         nuspec =>
                             !_excludedNuSpecFiles.Any(
-                                exludedNuSpec => exludedNuSpec.Equals(
+                                excludedNuSpec => excludedNuSpec.Equals(
                                     nuspec.Name,
                                     StringComparison.OrdinalIgnoreCase)))
                     .SafeToReadOnlyCollection();

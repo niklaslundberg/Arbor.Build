@@ -61,11 +61,9 @@ namespace Arbor.Build.Core.Tools.NuGet
 
                 if (tagsToRemove.Length > 0)
                 {
-                    using (var outStream = new FileStream(tempFile, FileMode.CreateNew))
-                    {
-                        packageBuilder.Save(outStream);
-                        isReWritten = true;
-                    }
+                    using var outStream = new FileStream(tempFile, FileMode.CreateNew);
+                    packageBuilder.Save(outStream);
+                    isReWritten = true;
                 }
             }
 

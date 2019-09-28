@@ -375,18 +375,16 @@ namespace Arbor.Build.Core.Tools.Libz
         {
             using (FileStream fs = file.OpenRead())
             {
-                using (var streamReader = new StreamReader(fs))
+                using var streamReader = new StreamReader(fs);
+                while (streamReader.Peek() >= 0)
                 {
-                    while (streamReader.Peek() >= 0)
-                    {
-                        string line = streamReader.ReadLine();
+                    string line = streamReader.ReadLine();
 
-                        if (line?.IndexOf(
-                                "<ILMergeExe>true</ILMergeExe>",
-                                StringComparison.OrdinalIgnoreCase) >= 0)
-                        {
-                            return true;
-                        }
+                    if (line?.IndexOf(
+                            "<ILMergeExe>true</ILMergeExe>",
+                            StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        return true;
                     }
                 }
             }

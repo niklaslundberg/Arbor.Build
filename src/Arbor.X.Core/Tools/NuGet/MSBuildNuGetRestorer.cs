@@ -39,7 +39,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            logger = logger ?? Logger.None??throw new ArgumentNullException(nameof(logger));
+            logger ??= Logger.None??throw new ArgumentNullException(nameof(logger));
 
             bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.MSBuildNuGetRestoreEnabled, true);
 
