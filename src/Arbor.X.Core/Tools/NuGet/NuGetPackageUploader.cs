@@ -24,14 +24,14 @@ namespace Arbor.Build.Core.Tools.NuGet
     {
         private static async Task<ExitCode> UploadNugetPackageAsync(
             string nugetExePath,
-            string serverUri,
-            string apiKey,
+            string? serverUri,
+            string? apiKey,
             string nugetPackage,
             ILogger logger,
             int timeoutInSeconds,
             bool checkNuGetPackagesExists,
             bool timeoutIncreaseEnabled,
-            string sourceName)
+            string? sourceName)
         {
             if (!File.Exists(nugetPackage))
             {
@@ -55,7 +55,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 args.Add(sourceName);
             }
 
-            string apiEnvironmentVariableName = "NuGetPushApiKey";
+            const string apiEnvironmentVariableName = "NuGetPushApiKey";
 
             if (!string.IsNullOrWhiteSpace(apiKey))
             {
@@ -74,7 +74,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             {
                 var errorBuilder = new StringBuilder();
 
-                List<string> runSpecificArgs = args.ToList();
+                var runSpecificArgs = args.ToList();
 
                 if (timeoutInSeconds > 0)
                 {
@@ -435,11 +435,13 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             IVariable nugetExe = buildVariables.Require(WellKnownVariables.ExternalTools_NuGet_ExePath)
                 .ThrowIfEmptyValue();
-            string nugetServer =
+
+            string? nugetServer =
                 buildVariables.GetVariableValueOrDefault(
                     WellKnownVariables.ExternalTools_NuGetServer_Uri,
                     string.Empty);
-            string nuGetServerApiKey =
+
+            string? nuGetServerApiKey =
                 buildVariables.GetVariableValueOrDefault(
                     WellKnownVariables.ExternalTools_NuGetServer_ApiKey,
                     string.Empty);
@@ -460,7 +462,8 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             bool checkNuGetPackagesExists =
                 buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_NuGetServer_CheckPackageExists);
-            string sourceName =
+
+            string? sourceName =
                 buildVariables.GetVariableValueOrDefault(
                     WellKnownVariables.ExternalTools_NuGetServer_SourceName,
                     string.Empty);

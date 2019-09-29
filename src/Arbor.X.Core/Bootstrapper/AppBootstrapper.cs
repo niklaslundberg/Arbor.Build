@@ -266,6 +266,7 @@ namespace Arbor.Build.Core.Bootstrapper
             }
             else
             {
+                _logger.Debug("Downloading NuGet");
                 using var httpClient = new HttpClient();
                 var nuGetDownloadClient = new NuGetDownloadClient();
                 NuGetDownloadResult nuGetDownloadResult = await nuGetDownloadClient.DownloadNuGetAsync(NuGetDownloadSettings.Default, _logger, httpClient).ConfigureAwait(false);
@@ -279,6 +280,7 @@ namespace Arbor.Build.Core.Bootstrapper
                 nugetExePath = nuGetDownloadResult.NuGetExePath;
             }
 
+            _logger.Debug("Downloading nuget package {Package}", BuildToolPackageName);
             string outputDirectoryPath =
                 await DownloadNuGetPackageAsync(buildDir.FullName, nugetExePath).ConfigureAwait(false);
 
