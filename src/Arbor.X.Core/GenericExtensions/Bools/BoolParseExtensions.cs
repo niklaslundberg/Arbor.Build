@@ -2,7 +2,7 @@
 {
     public static class BoolParseExtensions
     {
-        public static bool ParseOrDefault(this string value, bool defaultValue = false)
+        public static bool ParseOrDefault(this string? value, bool defaultValue = false)
         {
             if (!bool.TryParse(value, out bool result))
             {
@@ -12,7 +12,7 @@
             return result;
         }
 
-        public static bool TryParseBool(this string value, out bool result, bool defaultValue = false)
+        public static bool TryParseBool(this string? value, out bool result, bool defaultValue = false)
         {
             if (string.IsNullOrWhiteSpace(value))
             {

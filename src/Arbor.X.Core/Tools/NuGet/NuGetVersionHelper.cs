@@ -11,13 +11,13 @@ namespace Arbor.Build.Core.Tools.NuGet
         public static string GetVersion(
             string version,
             bool isReleaseBuild,
-            string suffix,
+            string? suffix,
             bool enableBuildNumber,
-            string packageBuildMetadata,
+            string? packageBuildMetadata,
             ILogger logger,
             NuGetVersioningSettings nugetVersioningSettings)
         {
-            if (!Version.TryParse(version, out Version parsedVersion))
+            if (!Version.TryParse(version, out Version? parsedVersion))
             {
                 throw new ArgumentException($"The version '{version} is not a valid version format");
             }

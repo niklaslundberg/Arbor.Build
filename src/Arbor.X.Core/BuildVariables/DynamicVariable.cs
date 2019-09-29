@@ -4,7 +4,7 @@ namespace Arbor.Build.Core.BuildVariables
 {
     public sealed class DynamicVariable : IVariable
     {
-        public DynamicVariable(string key, string initialValue = null)
+        public DynamicVariable(string key, string? initialValue = null)
         {
             if (string.IsNullOrWhiteSpace(key))
             {
@@ -17,6 +17,6 @@ namespace Arbor.Build.Core.BuildVariables
 
         public string Key { get; }
 
-        public string Value { get; set; }
+        public string? Value { get; set; }
     }
 }

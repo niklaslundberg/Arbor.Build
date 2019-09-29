@@ -31,7 +31,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             }
         }
 
-        public static MSBuildVerbosityLevel TryParse(string value)
+        public static MSBuildVerbosityLevel TryParse(string? value)
         {
             if (string.IsNullOrWhiteSpace(value))
             {

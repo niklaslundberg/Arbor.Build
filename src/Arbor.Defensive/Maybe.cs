@@ -10,9 +10,9 @@ namespace Arbor.Defensive
     {
         private static readonly Lazy<Maybe<T>> _Empty = new Lazy<Maybe<T>>(() => default);
 
-        private readonly T _value;
+        private readonly T? _value;
 
-        public Maybe([CanBeNull] T value = null) => _value = value;
+        public Maybe(T? value = null) => _value = value;
 
         /// <summary>
         /// Returns the underlying value of T

@@ -21,7 +21,7 @@ namespace Arbor.Build.Core.Assemblies
         public static bool? IsDebugAssembly(
             [NotNull] this AssemblyDefinition assemblyDefinition,
             [NotNull] FileInfo fileInfo,
-            ILogger logger = null)
+            ILogger? logger = null)
         {
             if (assemblyDefinition == null)
             {
@@ -42,7 +42,7 @@ namespace Arbor.Build.Core.Assemblies
                 return true;
             }
 
-            ILogger usedLogger = logger ?? Logger.None;
+            ILogger usedLogger = logger ?? Logger.None ?? throw new ArgumentNullException(nameof(logger));
 
             Assembly loadedAssembly = AppDomain.CurrentDomain.GetAssemblies()
                 .SingleOrDefault(assembly => !assembly.IsDynamic

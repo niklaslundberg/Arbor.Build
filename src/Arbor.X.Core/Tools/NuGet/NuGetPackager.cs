@@ -37,11 +37,11 @@ namespace Arbor.Build.Core.Tools.NuGet
             IVariable releaseBuild = buildVariables.Require(WellKnownVariables.ReleaseBuild).ThrowIfEmptyValue();
             IVariable branchName = buildVariables.Require(WellKnownVariables.BranchLogicalName).ThrowIfEmptyValue();
 
-            string assemblyConfiguration = buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyConfiguration, null);
-            string currentConfiguration = buildVariables.GetVariableValueOrDefault(WellKnownVariables.CurrentBuildConfiguration, null);
-            string staticConfiguration = buildVariables.GetVariableValueOrDefault(WellKnownVariables.Configuration, null);
+            string? assemblyConfiguration = buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyConfiguration, null);
+            string? currentConfiguration = buildVariables.GetVariableValueOrDefault(WellKnownVariables.CurrentBuildConfiguration, null);
+            string? staticConfiguration = buildVariables.GetVariableValueOrDefault(WellKnownVariables.Configuration, null);
 
-            string buildConfiguration = assemblyConfiguration
+            string? buildConfiguration = assemblyConfiguration
                                         ?? currentConfiguration
                                         ?? staticConfiguration;
 
@@ -50,7 +50,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 .ThrowIfEmptyValue()
                 .Value;
 
-            string suffix =
+            string? suffix =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageArtifactsSuffix, "build");
 
             bool buildNumberEnabled = buildVariables.GetBooleanByKey(
@@ -65,13 +65,13 @@ namespace Arbor.Build.Core.Tools.NuGet
             bool branchNameEnabled =
                 buildVariables.GetBooleanByKey(WellKnownVariables.NuGetPackageIdBranchNameEnabled);
 
-            string packageIdOverride =
+            string? packageIdOverride =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageIdOverride, null);
 
             bool nuGetSymbolPackagesEnabled =
                 buildVariables.GetBooleanByKey(WellKnownVariables.NuGetSymbolPackagesEnabled);
 
-            string nuGetPackageVersionOverride =
+            string? nuGetPackageVersionOverride =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageVersionOverride, null);
 
             bool allowManifestReWrite =
@@ -97,7 +97,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                     WellKnownVariables.NuGetCreatePackagesOnAnyBranchEnabled);
             }
 
-            string packageFormat = buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetSymbolPackageFormat, SnupkgPackageFormat);
+            string? packageFormat = buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetSymbolPackageFormat, SnupkgPackageFormat);
 
             Maybe<BranchName> branchNameMayBe = BranchName.TryParse(branchName.Value);
 

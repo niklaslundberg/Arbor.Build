@@ -62,7 +62,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
         private string _artifactsPath;
         private string _assemblyFileVersion;
         private string _assemblyVersion;
-        private string _buildSuffix;
+        private string? _buildSuffix;
 
         private IReadOnlyCollection<IVariable> _buildVariables;
         private CancellationToken _cancellationToken;
@@ -77,8 +77,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
         private bool _createNuGetWebPackage;
         private bool _createWebDeployPackages;
         private bool _debugLoggingEnabled;
-        private string _defaultTarget;
-        private string _dotNetExePath;
+        private string? _defaultTarget;
+        private string? _dotNetExePath;
         private bool _dotnetPackToolsEnabled;
         private bool _dotnetPublishEnabled = true;
 
@@ -90,19 +90,19 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
         private IReadOnlyCollection<string> _filteredNuGetWebPackageProjects;
 
-        private string _gitHash;
+        private string? _gitHash;
         private ILogger _logger;
         private string _msBuildExe;
         private string _packagesDirectory;
         private bool _pdbArtifactsEnabled;
         private bool _preCompilationEnabled;
         private int _processorCount;
-        private string _publishRuntimeIdentifier;
+        private string? _publishRuntimeIdentifier;
 
-        private string _ruleset;
+        private string? _ruleset;
         private bool _showSummary;
         private string _vcsRoot;
-        private bool _webProjectsBuildEnabed;
+        private bool _webProjectsBuildEnabled;
         private bool _verboseLoggingEnabled;
         private MSBuildVerbosityLevel _verbosity;
         private string _version;
@@ -133,7 +133,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             return enabled;
         }
 
-        private string FindRuleSet()
+        private string? FindRuleSet()
         {
             IReadOnlyCollection<FileInfo> fileInfos = new DirectoryInfo(_vcsRoot)
                 .GetFilesRecursive(".ruleset".ValueToImmutableArray(), _pathLookupSpecification, _vcsRoot)
@@ -309,7 +309,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
         private void AddBuildPlatforms(ILogger logger, IReadOnlyCollection<IVariable> variables)
         {
-            string buildPlatform = variables.GetVariableValueOrDefault(
+            string? buildPlatform = variables.GetVariableValueOrDefault(
                 WellKnownVariables.ExternalTools_MSBuild_BuildPlatform,
                 string.Empty);
 
@@ -337,7 +337,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
         private void AddBuildConfigurations(ILogger logger, IReadOnlyCollection<IVariable> variables)
         {
-            string buildConfiguration =
+            string? buildConfiguration =
                 variables.GetVariableValueOrDefault(
                     WellKnownVariables.ExternalTools_MSBuild_BuildConfiguration,
                     string.Empty);
@@ -395,7 +395,12 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                 while (streamReader.Peek() >= 0)
                 {
-                    string line = await streamReader.ReadLineAsync().ConfigureAwait(false);
+                    string? line = await streamReader.ReadLineAsync().ConfigureAwait(false);
+
+                    if (string.IsNullOrWhiteSpace(line))
+                    {
+                        continue;
+                    }
 
                     if (line.IndexOf(
                             "GlobalSection(SolutionConfigurationPlatforms)",
@@ -621,9 +626,9 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     argList.Select(arg => new Dictionary<string, string> { { "Value", arg } }).DisplayAsTable());
             }
 
-            Action<string, string> verboseAction =
-                _verboseLoggingEnabled ? logger.Verbose : (Action<string, string>) null;
-            Action<string, string> debugAction = _verboseLoggingEnabled ? logger.Debug : (Action<string, string>) null;
+            Action<string, string>? verboseAction =
+                _verboseLoggingEnabled ? logger.Verbose : (Action<string, string>?) null;
+            Action<string, string>? debugAction = _verboseLoggingEnabled ? logger.Debug : (Action<string, string>?)null;
 
             ExitCode exitCode =
                 await
@@ -652,7 +657,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             if (exitCode.IsSuccess)
             {
-                if (_webProjectsBuildEnabed)
+                if (_webProjectsBuildEnabled)
                 {
                     _logger.Information("Web projects builds are enabled, key {WebProjectsBuildEnabled}",
                         WellKnownVariables.WebProjectsBuildEnabled);
@@ -1208,7 +1213,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 items.Add(keyValueConfigurationItem);
             }
 
-            string gitBranchName = _buildVariables.GetVariableValueOrDefault(
+            string? gitBranchName = _buildVariables.GetVariableValueOrDefault(
                 WellKnownVariables.BranchLogicalName,
                 string.Empty);
 
@@ -1628,7 +1633,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 }
             }
 
-            string buildVariable = _buildVariables.GetVariableValueOrDefault(expectedName, string.Empty);
+            string? buildVariable = _buildVariables.GetVariableValueOrDefault(expectedName, string.Empty);
 
             if (!string.IsNullOrWhiteSpace(buildVariable))
             {
@@ -1695,10 +1700,10 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             string name = packageId;
 
-            string authors = _buildVariables.GetVariableValueOrDefault(
+            string? authors = _buildVariables.GetVariableValueOrDefault(
                 WellKnownVariables.NetAssemblyCompany,
                 "Undefined");
-            string owners =
+            string? owners =
                 _buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyCompany, "Undefined");
             string description = packageId;
             string summary = packageId;
@@ -1706,7 +1711,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             const string projectUrl = "http://nuget.org";
             const string iconUrl = "http://nuget.org";
             const string requireLicenseAcceptance = "false";
-            string copyright = _buildVariables.GetVariableValueOrDefault(
+            string? copyright = _buildVariables.GetVariableValueOrDefault(
                 WellKnownVariables.NetAssemblyCopyright,
                 "Undefined");
             string tags = string.Empty;
@@ -2079,7 +2084,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 buildSitePackageArguments.Add("/property:RunCodeAnalysis=false");
             }
 
-            Action<string, string> toolAction = _debugLoggingEnabled ? logger.Debug : (Action<string, string>) null;
+            Action<string, string>? toolAction = _debugLoggingEnabled ? logger.Debug : (Action<string, string>?) null;
 
             ExitCode packageSiteExitCode =
                 await
@@ -2218,7 +2223,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             _dotnetPublishEnabled =
                 buildVariables.GetBooleanByKey(WellKnownVariables.DotNetPublishExeProjectsEnabled, true);
 
-            _webProjectsBuildEnabed =
+            _webProjectsBuildEnabled =
                 buildVariables.GetBooleanByKey(WellKnownVariables.WebProjectsBuildEnabled, true);
 
             _dotNetExePath =
@@ -2368,7 +2373,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             try
             {
-                return await BuildAsync(logger, buildVariables).ConfigureAwait(false);
+                return await BuildAsync(_logger, buildVariables).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

@@ -174,11 +174,9 @@ namespace Arbor.Build.Core.Tools.MSBuild
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            logger ??= Logger.None;
-
             int currentProcessBits = Environment.Is64BitProcess ? 64 : 32;
             const int registryLookupBits = 32;
-            logger?.Verbose("Running current process [id {Id}] as a {CurrentProcessBits}-bit process",
+            logger.Verbose("Running current process [id {Id}] as a {CurrentProcessBits}-bit process",
                 Process.GetCurrentProcess().Id,
                 currentProcessBits);
 
@@ -193,7 +191,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 .Select(SemanticVersion.Parse)
                 .ToList();
 
-            string max = buildVariables.GetVariableValueOrDefault(
+            string? max = buildVariables.GetVariableValueOrDefault(
                 WellKnownVariables.ExternalTools_MSBuild_MaxVersion,
                 "16.99.0");
 
@@ -339,7 +337,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             logger.Debug("Could not find MSBuild.exe in any of paths {Paths}", possiblePaths);
 
-            string foundPath = null;
+            string? foundPath = null;
 
             foreach (SemanticVersion possibleVersion in possibleMajorVersions)
             {
@@ -348,7 +346,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     int minorVersion = i;
                     string registryKeyName =
                         $@"SOFTWARE\Microsoft\MSBuild\{possibleVersion.Major}.{minorVersion}";
-                    object msBuildPathRegistryKeyValue = null;
+                    object? msBuildPathRegistryKeyValue = null;
                     const string valueKey = "MSBuildOverrideTasksPath";
 
                     logger.Verbose(
@@ -367,7 +365,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                         }
                     }
 
-                    string msBuildPath = msBuildPathRegistryKeyValue != null
+                    string? msBuildPath = msBuildPathRegistryKeyValue != null
                         ? $"{msBuildPathRegistryKeyValue}MSBuild.exe"
                         : null;
 
@@ -388,7 +386,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             if (string.IsNullOrWhiteSpace(foundPath))
             {
                 const string msbuildPath = "MSBUILD_PATH";
-                string fromEnvironmentVariable = Environment.GetEnvironmentVariable(msbuildPath);
+                string? fromEnvironmentVariable = Environment.GetEnvironmentVariable(msbuildPath);
 
                 if (!string.IsNullOrWhiteSpace(fromEnvironmentVariable))
                 {

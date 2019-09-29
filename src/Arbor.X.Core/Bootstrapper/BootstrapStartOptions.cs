@@ -7,22 +7,22 @@ namespace Arbor.Build.Core.Bootstrapper
     public class BootstrapStartOptions
     {
         public BootstrapStartOptions(
-            string baseDir = null,
-            bool? prereleaseEnabled = null,
-            string branchName = null,
+            string? baseDir = null,
+            bool? preReleaseEnabled = null,
+            string? branchName = null,
             bool downloadOnly = false)
         {
             BaseDir = baseDir;
-            PrereleaseEnabled = prereleaseEnabled;
+            PreReleaseEnabled = preReleaseEnabled;
             BranchName = branchName;
             DownloadOnly = downloadOnly;
         }
 
-        public bool? PrereleaseEnabled { get; }
+        public bool? PreReleaseEnabled { get; }
 
-        public string BaseDir { get; }
+        public string? BaseDir { get; }
 
-        public string BranchName { get; }
+        public string? BranchName { get; }
 
         public bool DownloadOnly { get; }
 

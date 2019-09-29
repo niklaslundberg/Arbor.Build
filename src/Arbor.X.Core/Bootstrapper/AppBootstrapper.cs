@@ -218,11 +218,11 @@ namespace Arbor.Build.Core.Bootstrapper
                 Environment.SetEnvironmentVariable(WellKnownVariables.SourceRoot, _startOptions.BaseDir);
             }
 
-            if (_startOptions.PrereleaseEnabled.HasValue)
+            if (_startOptions.PreReleaseEnabled.HasValue)
             {
                 Environment.SetEnvironmentVariable(
                     WellKnownVariables.AllowPrerelease,
-                    _startOptions.PrereleaseEnabled.Value.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
+                    _startOptions.PreReleaseEnabled.Value.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
             }
 
             if (!string.IsNullOrWhiteSpace(_startOptions.BranchName))
@@ -363,7 +363,7 @@ namespace Arbor.Build.Core.Bootstrapper
             _ = Environment.GetEnvironmentVariable(WellKnownVariables.AllowPrerelease)
                 .TryParseBool(out bool preReleaseIsAllowed);
 
-            preReleaseIsAllowed = _startOptions.PrereleaseEnabled ?? preReleaseIsAllowed;
+            preReleaseIsAllowed = _startOptions.PreReleaseEnabled ?? preReleaseIsAllowed;
 
             if (string.IsNullOrWhiteSpace(version))
             {
@@ -417,9 +417,9 @@ namespace Arbor.Build.Core.Bootstrapper
 
                 bool allowPrerelease;
 
-                if (_startOptions.PrereleaseEnabled.HasValue)
+                if (_startOptions.PreReleaseEnabled.HasValue)
                 {
-                    allowPrerelease = _startOptions.PrereleaseEnabled.Value;
+                    allowPrerelease = _startOptions.PreReleaseEnabled.Value;
 
                     if (allowPrerelease)
                     {

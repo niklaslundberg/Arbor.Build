@@ -33,13 +33,13 @@ namespace Arbor.Build.Core
     {
         private readonly ILogger _logger;
         private CancellationToken _cancellationToken;
-        private IContainer _container;
+        private IContainer? _container;
         private readonly bool _verboseEnabled;
         private readonly bool _debugEnabled;
 
         public BuildApplication(ILogger logger)
         {
-            _logger = logger ?? Logger.None;
+            _logger = logger ?? Logger.None ?? throw new ArgumentNullException(nameof(logger));
             _verboseEnabled = _logger.IsEnabled(LogEventLevel.Verbose);
             _debugEnabled = _logger.IsEnabled(LogEventLevel.Debug);
         }
@@ -55,7 +55,7 @@ namespace Arbor.Build.Core
 
             const bool debugLoggerEnabled = false;
 
-            string sourceDir = null;
+            string? sourceDir = null;
 
             if (DebugHelper.IsDebugging)
             {
