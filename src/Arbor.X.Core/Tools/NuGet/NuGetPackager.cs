@@ -116,14 +116,15 @@ namespace Arbor.Build.Core.Tools.NuGet
                 logger,
                 NuGetVersioningSettings.Default);
 
-            SemanticVersion semanticVersion = SemanticVersion.Parse(semVer);
+            var semanticVersion = SemanticVersion.Parse(semVer);
 
             logger.Verbose("Based on branch {Value} and release build flags {Value1}, the build is considered {V}",
                 branchName.Value,
                 releaseBuild.Value,
-                (isReleaseBuild ? "release" : "not release"));
+                isReleaseBuild ? "release" : "not release");
 
-            if (buildConfiguration.Equals("debug", StringComparison.OrdinalIgnoreCase) && isReleaseBuild)
+            if (!string.IsNullOrWhiteSpace(buildConfiguration)
+                && buildConfiguration.Equals("debug", StringComparison.OrdinalIgnoreCase) && isReleaseBuild)
             {
                 logger.Information(
                     "The current configuration is 'debug' but the build indicates that this is a release build, using 'release' configuration instead");
@@ -139,8 +140,6 @@ namespace Arbor.Build.Core.Tools.NuGet
             {
                 logger.Error("The NuGet.exe path {NuGetExePath} was not found or NuGet could not be downloaded",
                     nuGetExePath);
-
-                // return ExitCode.Failure;
             }
 
             logger.Verbose("Scanning directory '{VcsRootDir}' for .nuspec files", vcsRootDir);
@@ -386,16 +385,16 @@ namespace Arbor.Build.Core.Tools.NuGet
                     "The flag {NuGetKeepBinaryAndSymbolPackagesTogetherEnabled} is set to false, separating binary packages from symbol packages",
                     WellKnownVariables.NuGetKeepBinaryAndSymbolPackagesTogetherEnabled);
 
-                List<string> nugetPackages = packagesDirectory.GetFiles("*.nupkg", SearchOption.TopDirectoryOnly)
+                var nugetPackages = packagesDirectory.GetFiles("*.nupkg", SearchOption.TopDirectoryOnly)
                     .Select(file => file.FullName)
                     .ToList();
 
-                List<string> nugetSymbolPackages = packagesDirectory
+                var nugetSymbolPackages = packagesDirectory
                     .GetFiles("*.symbols.nupkg", SearchOption.TopDirectoryOnly)
                     .Select(file => file.FullName)
                     .ToList();
 
-                List<string> binaryPackages = nugetPackages.Except(nugetSymbolPackages).ToList();
+                var binaryPackages = nugetPackages.Except(nugetSymbolPackages).ToList();
 
                 DirectoryInfo binaryPackagesDirectory =
                     new DirectoryInfo(Path.Combine(packagesDirectory.FullName, "binary")).EnsureExists();

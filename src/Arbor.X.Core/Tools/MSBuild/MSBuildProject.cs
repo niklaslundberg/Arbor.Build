@@ -135,15 +135,15 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     .ToImmutableArray();
             }
 
-            string sdkValue = project.Attribute("Sdk")?.Value;
+            string? sdkValue = project.Attribute("Sdk")?.Value;
 
             DotNetSdk sdk = DotNetSdk.ParseOrDefault(sdkValue);
 
             ImmutableArray<PackageReferenceElement> packageReferences = propertyGroups
                 .Where(e => e.Name.LocalName.Equals("PackageReference", StringComparison.Ordinal))
                 .Select(packageReference => new PackageReferenceElement(
-                    packageReference.Attribute("Include")?.Value,
-                    packageReference.Attribute("Version")?.Value))
+                    packageReference?.Attribute("Include")?.Value,
+                    packageReference?.Attribute("Version")?.Value))
                 .Where(reference => reference.IsValid)
                 .ToImmutableArray();
 

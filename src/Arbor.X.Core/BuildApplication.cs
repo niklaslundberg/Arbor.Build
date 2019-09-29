@@ -221,7 +221,7 @@ namespace Arbor.Build.Core
 
         private async Task<ExitCode> RunSystemToolsAsync()
         {
-            IReadOnlyCollection<IVariable> buildVariables = (await GetBuildVariablesAsync().ConfigureAwait(false));
+            IReadOnlyCollection<IVariable> buildVariables = await GetBuildVariablesAsync().ConfigureAwait(false);
 
             string variableAsTable = WellKnownVariables.AllVariables
                 .OrderBy(item => item.InvariantName)

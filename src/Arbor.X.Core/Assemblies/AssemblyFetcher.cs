@@ -27,7 +27,9 @@ namespace Arbor.Build.Core.Assemblies
 
             IEnumerable<Assembly> filtered = assemblies
                 .Where(assembly =>
-                    !assembly.IsDynamic && assembly.FullName.StartsWithAny(allowed, StringComparison.Ordinal));
+                    !assembly.IsDynamic
+                    && assembly.FullName is object
+                    && assembly.FullName.StartsWithAny(allowed, StringComparison.Ordinal));
 
             return filtered.ToImmutableHashSet();
         }

@@ -18,26 +18,27 @@ namespace Arbor.Build.Core.BuildVariables
     {
         public static IReadOnlyCollection<IVariable> GetBuildVariablesFromEnvironmentVariables(
             ILogger logger,
-            List<IVariable> existingItems = null)
+            List<IVariable>? existingItems = null)
         {
-            logger ??= Logger.None;
+            logger ??= Logger.None ?? throw new ArgumentNullException(nameof(logger));
             List<IVariable> existing = existingItems ?? new List<IVariable>();
             var buildVariables = new List<IVariable>();
 
             IDictionary environmentVariables = Environment.GetEnvironmentVariables();
 
-            List<BuildVariable> variables = environmentVariables
+            var variables = environmentVariables
                 .OfType<DictionaryEntry>()
+                .Where(item => item.Key is object)
                 .Select(entry => new BuildVariable(
-                    entry.Key.ToString(),
-                    entry.Value.ToString()))
+                    entry.Key?.ToString() ?? throw new InvalidOperationException("Build variable key cannot be null"),
+                    entry.Value?.ToString()))
                 .ToList();
 
-            List<BuildVariable> nonExisting = variables
+            var nonExisting = variables
                 .Where(bv => !existing.Any(ebv => ebv.Key.Equals(bv.Key, StringComparison.OrdinalIgnoreCase)))
                 .ToList();
 
-            List<BuildVariable> existingVariables = variables.Except(nonExisting).ToList();
+            var existingVariables = variables.Except(nonExisting).ToList();
 
             if (existingVariables.Count > 0)
             {

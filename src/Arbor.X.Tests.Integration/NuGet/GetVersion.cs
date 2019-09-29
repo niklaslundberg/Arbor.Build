@@ -32,7 +32,7 @@ namespace Arbor.Build.Tests.Integration.NuGet
                 Logger.None,
                 NuGetVersioningSettings.Default);
 
-            SemanticVersion semver = SemanticVersion.Parse(version);
+            var semver = SemanticVersion.Parse(version);
 
             Assert.Equal("1.2.3-build.4", semver.ToNormalizedString());
         }

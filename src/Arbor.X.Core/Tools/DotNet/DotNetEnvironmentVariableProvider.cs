@@ -23,7 +23,7 @@ namespace Arbor.Build.Core.Tools.DotNet
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            string dotNetExePath =
+            string? dotNetExePath =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.DotNetExePath, string.Empty);
 
             if (!string.IsNullOrWhiteSpace(dotNetExePath))
@@ -35,7 +35,7 @@ namespace Arbor.Build.Core.Tools.DotNet
             {
                 var sb = new List<string>(10);
 
-                string winDir = Environment.GetEnvironmentVariable("WINDIR");
+                string? winDir = Environment.GetEnvironmentVariable("WINDIR");
 
                 if (string.IsNullOrWhiteSpace(winDir))
                 {

@@ -47,14 +47,14 @@ namespace Arbor.Build.Tests.Integration.MSBuildProjects
 </Project>
 ";
 
-            string tempFile = null;
+            string? tempFile = null;
 
             try
             {
                 tempFile = Path.GetTempFileName();
                 await File.WriteAllTextAsync(tempFile, xml, Encoding.UTF8).ConfigureAwait(false);
 
-                MSBuildProject msBuildProject = MSBuildProject.LoadFrom(tempFile);
+                var msBuildProject = MSBuildProject.LoadFrom(tempFile);
 
                 output.WriteLine(msBuildProject.ToString());
 

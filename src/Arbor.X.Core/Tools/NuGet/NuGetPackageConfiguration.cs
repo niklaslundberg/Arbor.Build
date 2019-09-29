@@ -14,15 +14,15 @@ namespace Arbor.Build.Core.Tools.NuGet
             [NotNull] SemanticVersion version,
             [NotNull] string packagesDirectory,
             [NotNull] string nugetExePath,
-            string suffix = null,
+            string? suffix = null,
             bool branchNameEnabled = false,
-            string packageIdOverride = null,
-            string nuGetPackageVersionOverride = null,
+            string? packageIdOverride = null,
+            string? nuGetPackageVersionOverride = null,
             bool allowManifestReWrite = false,
             bool nuGetSymbolPackagesEnabled = false,
             bool keepBinaryAndSourcePackagesTogetherEnabled = false,
             bool isReleaseBuild = false,
-            string branchName = null,
+            string? branchName = null,
             bool buildNumberEnabled = true,
             string tempPath = null,
             string packageBuildMetadata = null,
@@ -76,9 +76,9 @@ namespace Arbor.Build.Core.Tools.NuGet
 
         public bool BranchNameEnabled { get; }
 
-        public string PackageIdOverride { get; }
+        public string? PackageIdOverride { get; }
 
-        public string NuGetPackageVersionOverride { get; }
+        public string? NuGetPackageVersionOverride { get; }
 
         public bool AllowManifestReWrite { get; }
 
@@ -92,7 +92,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
         public SemanticVersion Version { get; }
 
-        public string Suffix { get; }
+        public string? Suffix { get; }
 
         public string TempPath { get; }
 
@@ -102,7 +102,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
         public bool BuildNumberEnabled { get; }
 
-        public string PackageBuildMetadata { get; }
+        public string? PackageBuildMetadata { get; }
 
         public string NuGetSymbolPackagesFormat { get; }
 

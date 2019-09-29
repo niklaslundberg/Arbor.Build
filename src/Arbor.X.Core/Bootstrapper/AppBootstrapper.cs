@@ -472,7 +472,7 @@ namespace Arbor.Build.Core.Bootstrapper
             return outputDirectoryPath;
         }
 
-        private async Task<string> GetLatestVersionAsync(string nugetExePath, string nuGetSource, bool allowPreRelease)
+        private async Task<string?> GetLatestVersionAsync(string nugetExePath, string nuGetSource, bool allowPreRelease)
         {
             using var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(MaxBuildTimeInSeconds));
             var nugetArguments = new List<string> { "list", BuildToolPackageName };

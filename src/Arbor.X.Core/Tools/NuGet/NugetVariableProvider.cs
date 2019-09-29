@@ -6,13 +6,10 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.IO;
 using Arbor.Tooler;
-
 using JetBrains.Annotations;
-
 using Serilog;
 
 namespace Arbor.Build.Core.Tools.NuGet
@@ -21,6 +18,30 @@ namespace Arbor.Build.Core.Tools.NuGet
     public class NugetVariableProvider : IVariableProvider
     {
         private CancellationToken _cancellationToken;
+
+        private async Task<string> EnsureNuGetExeExistsAsync(ILogger logger, string? userSpecifiedNuGetExePath)
+        {
+            if (userSpecifiedNuGetExePath is object && File.Exists(userSpecifiedNuGetExePath))
+            {
+                return userSpecifiedNuGetExePath;
+            }
+
+            using var httClient = new HttpClient();
+            var nuGetDownloadClient = new NuGetDownloadClient();
+
+            var nuGetDownloadResult = await nuGetDownloadClient.DownloadNuGetAsync(
+                NuGetDownloadSettings.Default,
+                logger,
+                httClient,
+                _cancellationToken).ConfigureAwait(false);
+
+            if (!nuGetDownloadResult.Succeeded)
+            {
+                throw new InvalidOperationException("Could not download nuget.exe");
+            }
+
+            return nuGetDownloadResult.NuGetExePath;
+        }
 
         public int Order => 3;
 
@@ -31,21 +52,22 @@ namespace Arbor.Build.Core.Tools.NuGet
         {
             _cancellationToken = cancellationToken;
 
-            var userSpecifiedNuGetExePath = buildVariables.GetVariableValueOrDefault(
+            string? userSpecifiedNuGetExePath = buildVariables.GetVariableValueOrDefault(
                 WellKnownVariables.ExternalTools_NuGet_ExePath_Custom,
                 string.Empty);
 
-            var nuGetExePath = await EnsureNuGetExeExistsAsync(logger, userSpecifiedNuGetExePath).ConfigureAwait(false);
+            string? nuGetExePath =
+                await EnsureNuGetExeExistsAsync(logger, userSpecifiedNuGetExePath).ConfigureAwait(false);
 
             var variables = new List<IVariable>
-                                {
-                                    new BuildVariable(WellKnownVariables.ExternalTools_NuGet_ExePath, nuGetExePath)
-                                };
+            {
+                new BuildVariable(WellKnownVariables.ExternalTools_NuGet_ExePath, nuGetExePath)
+            };
 
             if (string.IsNullOrWhiteSpace(
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetRestoreEnabled, string.Empty)))
             {
-                var sourceDir = buildVariables.Require(WellKnownVariables.SourceRoot).Value;
+                string sourceDir = buildVariables.Require(WellKnownVariables.SourceRoot).Value;
 
                 var pathLookupSpecification = new PathLookupSpecification();
                 var packageConfigFiles = new DirectoryInfo(sourceDir)
@@ -59,30 +81,6 @@ namespace Arbor.Build.Core.Tools.NuGet
             }
 
             return variables.ToImmutableArray();
-        }
-
-        private async Task<string> EnsureNuGetExeExistsAsync(ILogger logger, string userSpecifiedNuGetExePath)
-        {
-            if (File.Exists(userSpecifiedNuGetExePath))
-            {
-                return userSpecifiedNuGetExePath;
-            }
-
-            using var httClient = new HttpClient();
-            var nuGetDownloadClient = new NuGetDownloadClient();
-
-            var nuGetDownloadResult = await nuGetDownloadClient.DownloadNuGetAsync(
-                                          NuGetDownloadSettings.Default,
-                                          logger,
-                                          httClient,
-                                          _cancellationToken).ConfigureAwait(false);
-
-            if (!nuGetDownloadResult.Succeeded)
-            {
-                throw new InvalidOperationException("Could not download nuget.exe");
-            }
-
-            return nuGetDownloadResult.NuGetExePath;
         }
     }
 }

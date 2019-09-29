@@ -824,7 +824,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 return ExitCode.Success;
             }
 
-            bool IsToolProject(SolutionProject project)
+            static bool IsToolProject(SolutionProject project)
             {
                 return project.NetFrameworkGeneration == NetFrameworkGeneration.NetCoreApp
                        && project.Project.HasPropertyWithValue("OutputType", "Exe")
