@@ -223,19 +223,19 @@ namespace Arbor.Build.Core
         {
             IReadOnlyCollection<IVariable> buildVariables = await GetBuildVariablesAsync().ConfigureAwait(false);
 
-            string variableAsTable = WellKnownVariables.AllVariables
-                .OrderBy(item => item.InvariantName)
-                .Select(
-                    variable => new Dictionary<string, string>
-                    {
-                        { "Name", variable.InvariantName },
-                        { "Description", variable.Description },
-                        { "Default value", variable.DefaultValue }
-                    })
-                .DisplayAsTable();
-
             if (buildVariables.GetBooleanByKey(WellKnownVariables.ShowAvailableVariablesEnabled, true))
             {
+                string variableAsTable = WellKnownVariables.AllVariables
+                    .OrderBy(item => item.InvariantName)
+                    .Select(
+                        variable => new Dictionary<string, string>
+                        {
+                            { "Name", variable.InvariantName },
+                            { "Description", variable.Description },
+                            { "Default value", variable.DefaultValue }
+                        })
+                    .DisplayAsTable();
+
                 _logger.Information("{NewLine}Available wellknown variables: {NewLine1}{NewLine2}{VariableAsTable}",
                     Environment.NewLine,
                     Environment.NewLine,
@@ -295,7 +295,7 @@ namespace Arbor.Build.Core
 
                 _logger.Information("{Message}", message);
 
-                Stopwatch stopwatch = Stopwatch.StartNew();
+                var stopwatch = Stopwatch.StartNew();
 
                 try
                 {
@@ -646,7 +646,7 @@ namespace Arbor.Build.Core
         {
             var variables = new Dictionary<string, string>();
 
-            List<KeyValuePair<string, string>> newLines =
+            var newLines =
                 variables.Where(item => item.Value.Contains(Environment.NewLine, StringComparison.Ordinal)).ToList();
 
             if (newLines.Count > 0)
