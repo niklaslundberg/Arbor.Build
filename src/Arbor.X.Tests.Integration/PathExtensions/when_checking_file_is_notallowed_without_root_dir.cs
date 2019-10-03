@@ -5,9 +5,9 @@ using Machine.Specifications;
 namespace Arbor.Build.Tests.Integration.PathExtensions
 {
     [Subject(typeof(Core.IO.PathExtensions))]
-    public class when_checking_file_is_blacklisted_without_root_dir
+    public class when_checking_file_is_notallowed_without_root_dir
     {
-        static bool isBlackListed;
+        static bool isNotAllowed;
         static PathLookupSpecification specification;
         static DirectoryInfo root;
 
@@ -32,8 +32,8 @@ namespace Arbor.Build.Tests.Integration.PathExtensions
             specification = DefaultPaths.DefaultPathLookupSpecification;
         };
 
-        Because of = () => isBlackListed = specification.IsFileExcluded(@"C:\Temp\root\afile.txt").Item1;
+        Because of = () => isNotAllowed = specification.IsFileExcluded(@"C:\Temp\root\afile.txt").Item1;
 
-        It should_return_true = () => isBlackListed.ShouldBeTrue();
+        It should_return_true = () => isNotAllowed.ShouldBeTrue();
     }
 }

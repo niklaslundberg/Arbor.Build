@@ -36,22 +36,22 @@ namespace Arbor.Build.Core.IO
             var sourceFileInfo = new FileInfo(sourceFile);
 
             (bool, string) directoryBlackListed =
-                pathLookupSpecification.IsBlackListed(sourceFileInfo.Directory?.FullName, rootDir);
+                pathLookupSpecification.IsNotAllowed(sourceFileInfo.Directory?.FullName, rootDir);
 
             if (directoryBlackListed.Item1)
             {
-                string reasonMessage = $"Directory of '{sourceFile}' is blacklisted, {directoryBlackListed.Item2}";
+                string reasonMessage = $"Directory of '{sourceFile}' is notallowed, {directoryBlackListed.Item2}";
                 logger?.Debug("{Reason}", reasonMessage);
                 return (true, reasonMessage);
             }
 
-            bool isBlackListed = HasAnyPathSegmentStartsWith(
+            bool isNotAllowed = HasAnyPathSegmentStartsWith(
                 sourceFileInfo.Name,
                 pathLookupSpecification.IgnoredFileStartsWithPatterns);
 
-            if (isBlackListed)
+            if (isNotAllowed)
             {
-                string reasonMessage = $"Path segments of '{sourceFile}' makes it blacklisted";
+                string reasonMessage = $"Path segments of '{sourceFile}' makes it notallowed";
                 logger?.Debug("{Reason}", reasonMessage);
                 return (true, reasonMessage);
             }
@@ -65,7 +65,7 @@ namespace Arbor.Build.Core.IO
             if (ignoredFileNameParts.Count > 0)
             {
                 string reasonMessage =
-                    $"Ignored file name parts of '{sourceFile}' makes it blacklisted: {string.Join(", ", ignoredFileNameParts.Select(item => $"'{item}'"))}";
+                    $"Ignored file name parts of '{sourceFile}' makes it notallowed: {string.Join(", ", ignoredFileNameParts.Select(item => $"'{item}'"))}";
                 logger?.Debug("{Reason}", reasonMessage);
                 return (true, reasonMessage);
             }
@@ -73,7 +73,7 @@ namespace Arbor.Build.Core.IO
             return (false, string.Empty);
         }
 
-        public static (bool, string) IsBlackListed(
+        public static (bool, string) IsNotAllowed(
             this PathLookupSpecification pathLookupSpecification,
             string sourceDir,
             string rootDir = null,
@@ -103,7 +103,7 @@ namespace Arbor.Build.Core.IO
 
             if (hasAnyPathSegment)
             {
-                string reasonMessage = $"The directory '{sourceDir}' has a path segment that is blacklisted";
+                string reasonMessage = $"The directory '{sourceDir}' has a path segment that is notallowed";
                 logger?.Debug("{Reason}", reasonMessage);
                 return (true, reasonMessage);
             }
@@ -114,7 +114,7 @@ namespace Arbor.Build.Core.IO
 
             if (hasAnyPathSegmentPart)
             {
-                string reasonMessage = $"The directory '{sourceDir}' has a path segment part that is blacklisted";
+                string reasonMessage = $"The directory '{sourceDir}' has a path segment part that is notallowed";
                 logger?.Debug("{Reason}", reasonMessage);
                 return (true, reasonMessage);
             }
@@ -126,12 +126,12 @@ namespace Arbor.Build.Core.IO
             if (hasAnyPartStartsWith)
             {
                 string reasonMessage =
-                    $"The directory '{sourceDir}' has a path that starts with a pattern that is blacklisted";
+                    $"The directory '{sourceDir}' has a path that starts with a pattern that is notallowed";
                 logger?.Debug("{Reason}", reasonMessage);
                 return (true, reasonMessage);
             }
 
-            logger?.Debug("The directory '{SourceDir}' is not blacklisted", sourceDir);
+            logger?.Debug("The directory '{SourceDir}' is not notallowed", sourceDir);
 
             return (false, string.Empty);
         }

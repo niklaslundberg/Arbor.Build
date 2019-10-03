@@ -168,10 +168,10 @@ namespace Arbor.Build.Core.Tools.Libz
 
         private static bool FileIsStandAloneExe(FileInfo file)
         {
-            var blacklisted = new List<string> { ".vshost.", "csc.exe", "csi.exe", "vbc.exe", "VBCSCompiler.exe" };
+            var notallowed = new List<string> { ".vshost.", "csc.exe", "csi.exe", "vbc.exe", "VBCSCompiler.exe" };
 
-            return !blacklisted.Any(
-                blacklistedItem => file.Name.IndexOf(blacklistedItem, StringComparison.OrdinalIgnoreCase) >=
+            return !notallowed.Any(
+                notallowedItem => file.Name.IndexOf(notallowedItem, StringComparison.OrdinalIgnoreCase) >=
                                    0);
         }
 

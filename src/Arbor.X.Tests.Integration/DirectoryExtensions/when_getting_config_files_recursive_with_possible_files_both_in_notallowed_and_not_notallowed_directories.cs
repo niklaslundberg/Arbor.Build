@@ -10,7 +10,7 @@ namespace Arbor.Build.Tests.Integration.DirectoryExtensions
 {
     [Subject(typeof(Subject))]
     public class
-        when_getting_config_files_recursive_with_possible_files_both_in_blacklisted_and_not_blacklisted_directories
+        when_getting_config_files_recursive_with_possible_files_both_in_notallowed_and_not_notallowed_directories
     {
         static DirectoryInfo baseDir;
         static IReadOnlyCollection<string> files;
@@ -74,12 +74,12 @@ namespace Arbor.Build.Tests.Integration.DirectoryExtensions
                 .ToList();
         };
 
-        It should_contain_not_blacklisted_files =
+        It should_contain_not_notallowed_files =
             () => files.ShouldContain("atest.config", "atest.debug.config", "etest.debug.config", "etest.config");
 
         It should_containt_correct_file_count = () => files.Count.ShouldEqual(4);
 
-        It should_not_contain_blacklisted_files =
+        It should_not_contain_notallowed_files =
             () => files.ShouldNotContain("bower.config", "bower.debug.config", "node.debug.config", "node.config");
     }
 }

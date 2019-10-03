@@ -37,14 +37,14 @@ namespace Arbor.Build.Core.IO
                 throw new ArgumentException($"Source directory '{sourceDir}' does not exist");
             }
 
-            (bool, string) isBlackListed = pathLookupSpecification.IsBlackListed(sourceDir, rootDir);
-            if (isBlackListed.Item1)
+            (bool, string) isNotAllowed = pathLookupSpecification.IsNotAllowed(sourceDir, rootDir);
+            if (isNotAllowed.Item1)
             {
                 logger?.Debug(
-                    "Directory '{SourceDir}' is blacklisted from specification {PathLookupSpecification}, {Item2}",
+                    "Directory '{SourceDir}' is notallowed from specification {PathLookupSpecification}, {Item2}",
                     sourceDir,
                     pathLookupSpecification,
-                    isBlackListed.Item2);
+                    isNotAllowed.Item2);
                 return ExitCode.Success;
             }
 
@@ -59,7 +59,7 @@ namespace Arbor.Build.Core.IO
 
                 if (isFileBlackListed.Item1)
                 {
-                    logger?.Verbose("File '{FullName}' is blacklisted, skipping copying file, {Item2}",
+                    logger?.Verbose("File '{FullName}' is notallowed, skipping copying file, {Item2}",
                         file.FullName,
                         isFileBlackListed.Item2);
                     continue;

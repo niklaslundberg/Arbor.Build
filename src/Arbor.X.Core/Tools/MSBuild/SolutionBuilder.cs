@@ -1816,7 +1816,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 .GetFilesRecursive(extensions)
                 .Where(
                     file =>
-                        !_pathLookupSpecification.IsBlackListed(file.DirectoryName).Item1
+                        !_pathLookupSpecification.IsNotAllowed(file.DirectoryName).Item1
                         && !_pathLookupSpecification.IsFileExcluded(file.FullName, _vcsRoot).Item1)
                 .Where(
                     file =>
@@ -2115,7 +2115,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 if (_debugLoggingEnabled)
                 {
                     logger.Debug(
-                        "Skipping directory '{FullName}' when searching for solution files because the directory is blacklisted, {Item2}",
+                        "Skipping directory '{FullName}' when searching for solution files because the directory is notallowed, {Item2}",
                         directoryInfo.FullName,
                         isBlacklisted.Item2);
                 }
@@ -2136,7 +2136,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
         private (bool, string) IsBlacklisted(DirectoryInfo directoryInfo)
         {
             (bool, string) isBlacklistedByName =
-                _pathLookupSpecification.IsBlackListed(directoryInfo.FullName, _vcsRoot);
+                _pathLookupSpecification.IsNotAllowed(directoryInfo.FullName, _vcsRoot);
 
             if (isBlacklistedByName.Item1)
             {
@@ -2146,9 +2146,9 @@ namespace Arbor.Build.Core.Tools.MSBuild
             FileAttributes[] blackListedByAttributes = _blackListedByAttributes.Where(
                 blackListed => (directoryInfo.Attributes & blackListed) != 0).ToArray();
 
-            bool isBlackListedByAttributes = blackListedByAttributes.Length > 0;
+            bool isNotAllowedByAttributes = blackListedByAttributes.Length > 0;
 
-            return (isBlackListedByAttributes, isBlackListedByAttributes
+            return (isNotAllowedByAttributes, isNotAllowedByAttributes
                 ? $"Directory has black-listed attributes {string.Join(", ", blackListedByAttributes.Select(_ => Enum.GetName(typeof(FileAttributes), _)))}"
                 : string.Empty);
         }

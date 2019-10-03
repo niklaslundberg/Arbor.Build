@@ -132,7 +132,7 @@ namespace Arbor.Build.Core.IO
 
             ImmutableArray<string> usedFileExtensions = fileExtensions.SafeToReadOnlyCollection();
 
-            if (usedPathLookupSpecification.IsBlackListed(directoryInfo.FullName, rootDir).Item1)
+            if (usedPathLookupSpecification.IsNotAllowed(directoryInfo.FullName, rootDir).Item1)
             {
                 return ImmutableArray<FileInfo>.Empty;
             }

@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Arbor.Build.Core.Tools.NuGet;
 using Arbor.Build.Core.Tools.Versioning;
 using NuGet.Versioning;
 using Xunit;
@@ -26,23 +25,6 @@ namespace Arbor.Build.Tests.Integration.Versioning
             string suffix = semanticVersion.Suffix();
 
             Assert.Equal(expected, suffix);
-        }
-    }
-
-    public class NuGetVersionHelperTests
-    {
-        [Fact]
-        public void Should()
-        {
-            string version = NuGetVersionHelper.GetVersion("1.2.3.4",
-                false,
-                "build",
-                true,
-                null,
-                null,
-                NuGetVersioningSettings.Default);
-
-            Assert.Equal("1.2.3-build.4", version);
         }
     }
 }

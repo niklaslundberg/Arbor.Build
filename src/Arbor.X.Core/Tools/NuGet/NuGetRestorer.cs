@@ -73,7 +73,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             if (excluded.Length > 0)
             {
-                logger.Warning("Found blacklisted solution files: {V}",
+                logger.Warning("Found notallowed solution files: {V}",
                     string.Join(", ",
                         excluded.Select(excludedItem => $"{excludedItem.File} ({excludedItem.Status.Item2})")));
             }
