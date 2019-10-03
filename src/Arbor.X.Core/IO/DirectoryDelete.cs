@@ -70,7 +70,7 @@ namespace Arbor.Build.Core.IO
 
             if (
                 _directoryFilters.Any(
-                    filter => baseDirectory.Name.Equals(filter, StringComparison.InvariantCultureIgnoreCase)))
+                    filter => baseDirectory.Name.Equals(filter, StringComparison.OrdinalIgnoreCase)))
             {
                 string filterList = DirectoryFilterList;
                 _logger.Verbose("Directory name '{Name} is in filter list {FilterList}, ignoring deleting directory",
@@ -85,7 +85,7 @@ namespace Arbor.Build.Core.IO
                 {
                     if (
                         _fileFilters.Any(
-                            filter => fileToDelete.Name.Equals(filter, StringComparison.InvariantCultureIgnoreCase)))
+                            filter => fileToDelete.Name.Equals(filter, StringComparison.OrdinalIgnoreCase)))
                     {
                         string filterList = FileFilterList;
                         _logger.Verbose("File name '{Name} is in filter list {FilterList}, ignoring deleting directory",

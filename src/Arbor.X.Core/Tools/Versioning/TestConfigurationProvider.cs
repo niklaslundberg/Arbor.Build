@@ -19,10 +19,10 @@ namespace Arbor.Build.Core.Tools.Versioning
             CancellationToken cancellationToken)
         {
             bool releaseConfigurationEnabled =
-                buildVariables.GetBooleanByKey(WellKnownVariables.ReleaseBuildEnabled, false);
+                buildVariables.GetBooleanByKey(WellKnownVariables.ReleaseBuildEnabled);
 
             bool debugConfigurationEnabled =
-                buildVariables.GetBooleanByKey(WellKnownVariables.DebugBuildEnabled, false);
+                buildVariables.GetBooleanByKey(WellKnownVariables.DebugBuildEnabled);
 
             var newVariables = new List<IVariable>();
 

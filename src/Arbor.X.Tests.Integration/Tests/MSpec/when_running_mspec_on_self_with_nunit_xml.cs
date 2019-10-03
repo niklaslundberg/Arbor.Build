@@ -7,7 +7,7 @@ using System.Threading;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.Testing;
-using Arbor.Processing.Core;
+using Arbor.Processing;
 using Machine.Specifications;
 using Serilog.Core;
 
@@ -32,7 +32,7 @@ namespace Arbor.Build.Tests.Integration.Tests.MSpec
 
             try
             {
-                tempDirectory.DeleteIfExists(true);
+                tempDirectory.DeleteIfExists();
             }
             catch (Exception ex)
             {
@@ -91,7 +91,7 @@ namespace Arbor.Build.Tests.Integration.Tests.MSpec
         {
             var reports = new DirectoryInfo(mspecReports);
             DirectoryInfo htmlDirectory = reports.GetDirectories()
-                .SingleOrDefault(dir => dir.Name.Equals("html", StringComparison.InvariantCultureIgnoreCase));
+                .SingleOrDefault(dir => dir.Name.Equals("html", StringComparison.OrdinalIgnoreCase));
 
             FileInfo[] files = reports.GetFiles("*.html", SearchOption.AllDirectories);
 

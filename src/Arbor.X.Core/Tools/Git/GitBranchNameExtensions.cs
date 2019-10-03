@@ -42,7 +42,7 @@ namespace Arbor.Build.Core.Tools.Git
                 return new Maybe<string>(branchName);
             }
 
-            if (name.StartsWith(prefix, StringComparison.InvariantCultureIgnoreCase))
+            if (name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
             {
                 branchName = name.Substring(prefix.Length);
 

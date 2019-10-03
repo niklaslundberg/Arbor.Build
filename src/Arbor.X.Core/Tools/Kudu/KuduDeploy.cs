@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.Git;
-using Arbor.Processing.Core;
+using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
 
@@ -56,8 +56,8 @@ namespace Arbor.Build.Core.Tools.Kudu
                 ? buildVariables.Require(WellKnownVariables.KuduConfigurationFallback).Value
                 : string.Empty;
 
-            _clearTarget = buildVariables.GetBooleanByKey(WellKnownVariables.KuduClearFilesAndDirectories, false);
-            _useAppOfflineFile = buildVariables.GetBooleanByKey(WellKnownVariables.KuduUseAppOfflineHtmFile, false);
+            _clearTarget = buildVariables.GetBooleanByKey(WellKnownVariables.KuduClearFilesAndDirectories);
+            _useAppOfflineFile = buildVariables.GetBooleanByKey(WellKnownVariables.KuduUseAppOfflineHtmFile);
             _excludeAppData = buildVariables.GetBooleanByKey(WellKnownVariables.KuduExcludeDeleteAppData, true);
             _deleteExistingAppOfflineHtm =
                 buildVariables.GetBooleanByKey(WellKnownVariables.KuduDeleteExistingAppOfflineHtmFile, true);
@@ -109,7 +109,7 @@ namespace Arbor.Build.Core.Tools.Kudu
                 if (!string.IsNullOrWhiteSpace(siteToDeploy))
                 {
                     DirectoryInfo foundDir = builtWebsites.SingleOrDefault(
-                        dir => dir.Name.Equals(siteToDeploy, StringComparison.InvariantCultureIgnoreCase));
+                        dir => dir.Name.Equals(siteToDeploy, StringComparison.OrdinalIgnoreCase));
 
                     if (foundDir == null)
                     {
@@ -176,26 +176,22 @@ namespace Arbor.Build.Core.Tools.Kudu
                         WellKnownVariables.KuduUseAppOfflineHtmFile);
                     try
                     {
-                        using (var fs = new FileStream(appOfflinePath, FileMode.Create, FileAccess.Write))
-                        {
-                            using (var streamWriter = new StreamWriter(fs, Encoding.UTF8))
-                            {
-                                streamWriter.WriteLine(
-                                    "File created by Arbor.X Kudu at {0} (UTC)",
-                                    DateTime.UtcNow.ToString("O"));
-                            }
-                        }
+                        await using var fs = new FileStream(appOfflinePath, FileMode.Create, FileAccess.Write);
+                        await using var streamWriter = new StreamWriter(fs, Encoding.UTF8);
+                        streamWriter.WriteLine(
+"File created by Arbor.X Kudu at {0} (UTC)",
+DateTime.UtcNow.ToString("O"));
                     }
                     catch (UnauthorizedAccessException ex)
                     {
                         logger.Warning(ex,
-                            "Could not create app_offline.htm file in '{_deploymentTargetDirectory}', {Ex}",
+                            "Could not create app_offline.htm file in '{DeploymentTargetDirectory}'",
                             _deploymentTargetDirectory);
                     }
                     catch (IOException ex)
                     {
                         logger.Warning(ex,
-                            "Could not create app_offline.htm file in '{_deploymentTargetDirectory}', {Ex}",
+                            "Could not create app_offline.htm file in '{DeploymentTargetDirectory}'",
                             _deploymentTargetDirectory);
                     }
                 }
@@ -251,19 +247,19 @@ namespace Arbor.Build.Core.Tools.Kudu
 
                         var deleter = new DirectoryDelete(directoryFilters, fileFilters, logger);
 
-                        deleter.Delete(_deploymentTargetDirectory, false, true);
+                        deleter.Delete(_deploymentTargetDirectory);
                     }
                     catch (IOException ex)
                     {
                         logger.Warning(ex,
-                            "Could not clear all files and directories from target '{_deploymentTargetDirectory}', {Ex}",
+                            "Could not clear all files and directories from target '{DeploymentTargetDirectory}'",
                             _deploymentTargetDirectory);
                     }
                 }
                 else
                 {
                     logger.Verbose(
-                        "Flag '{KuduClearFilesAndDirectories}' is not set, skipping deleting files and directories from target '{_deploymentTargetDirectory}'",
+                        "Flag '{KuduClearFilesAndDirectories}' is not set, skipping deleting files and directories from target '{DeploymentTargetDirectory}'",
                         WellKnownVariables.KuduClearFilesAndDirectories,
                         _deploymentTargetDirectory);
                 }
@@ -288,7 +284,7 @@ namespace Arbor.Build.Core.Tools.Kudu
                 }
                 catch (Exception ex)
                 {
-                    logger.Error(ex, "Kudu deploy could not copy files {Ex}");
+                    logger.Error(ex, "Kudu deploy could not copy files");
                     return ExitCode.Failure;
                 }
             }
@@ -305,7 +301,7 @@ namespace Arbor.Build.Core.Tools.Kudu
                         catch (IOException ex)
                         {
                             logger.Warning(ex,
-                                "Could not delete app_offline.htm file in '{_deploymentTargetDirectory}', {Ex}",
+                                "Could not delete app_offline.htm file in '{DeploymentTargetDirectory}'",
                                 _deploymentTargetDirectory);
                         }
                     }
@@ -347,7 +343,7 @@ namespace Arbor.Build.Core.Tools.Kudu
 
                 DirectoryInfo productionConfig =
                     directoryInfos.SingleOrDefault(
-                        di => di.Name.Equals("production", StringComparison.InvariantCultureIgnoreCase));
+                        di => di.Name.Equals("production", StringComparison.OrdinalIgnoreCase));
 
                 if (productionConfig != null)
                 {
@@ -358,7 +354,7 @@ namespace Arbor.Build.Core.Tools.Kudu
 
                 DirectoryInfo releaseConfig =
                     directoryInfos.SingleOrDefault(
-                        di => di.Name.Equals("release", StringComparison.InvariantCultureIgnoreCase));
+                        di => di.Name.Equals("release", StringComparison.OrdinalIgnoreCase));
 
                 if (releaseConfig != null)
                 {
@@ -370,8 +366,8 @@ namespace Arbor.Build.Core.Tools.Kudu
             {
                 DirectoryInfo developConfig =
                     directoryInfos.SingleOrDefault(
-                        di => di.Name.Equals("develop", StringComparison.InvariantCultureIgnoreCase) ||
-                              di.Name.Equals("dev", StringComparison.InvariantCultureIgnoreCase));
+                        di => di.Name.Equals("develop", StringComparison.OrdinalIgnoreCase) ||
+                              di.Name.Equals("dev", StringComparison.OrdinalIgnoreCase));
 
                 if (developConfig != null)
                 {
@@ -381,7 +377,7 @@ namespace Arbor.Build.Core.Tools.Kudu
 
                 DirectoryInfo debugConfig =
                     directoryInfos.SingleOrDefault(
-                        di => di.Name.Equals("debug", StringComparison.InvariantCultureIgnoreCase));
+                        di => di.Name.Equals("debug", StringComparison.OrdinalIgnoreCase));
 
                 if (debugConfig != null)
                 {
@@ -392,7 +388,7 @@ namespace Arbor.Build.Core.Tools.Kudu
             else if (!string.IsNullOrWhiteSpace(_kuduConfigurationFallback))
             {
                 DirectoryInfo configDir = directoryInfos.SingleOrDefault(
-                    dir => dir.Name.Equals(_kuduConfigurationFallback, StringComparison.InvariantCultureIgnoreCase));
+                    dir => dir.Name.Equals(_kuduConfigurationFallback, StringComparison.OrdinalIgnoreCase));
 
                 logger.Information("Kudu fallback is '{_kuduConfigurationFallback}'", _kuduConfigurationFallback);
 
@@ -412,9 +408,6 @@ namespace Arbor.Build.Core.Tools.Kudu
             return null;
         }
 
-        private DirectoryInfo GetPlatform(DirectoryInfo websiteToDeploy)
-        {
-            return websiteToDeploy.GetDirectories().Single();
-        }
+        private DirectoryInfo GetPlatform(DirectoryInfo websiteToDeploy) => websiteToDeploy.GetDirectories().Single();
     }
 }

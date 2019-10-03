@@ -17,7 +17,7 @@ namespace Arbor.Build.Core
 {
     public static class BuildBootstrapper
     {
-        public static Task<IContainer> StartAsync([NotNull] ILogger logger, string sourceDirectory = null)
+        public static Task<IContainer> StartAsync([NotNull] ILogger logger, string? sourceDirectory = null)
         {
             if (logger == null)
             {
@@ -37,7 +37,7 @@ namespace Arbor.Build.Core
             return container.AsCompletedTask();
         }
 
-        private static void RegisterSourceRootConditionally(string sourceDirectory, ContainerBuilder builder)
+        private static void RegisterSourceRootConditionally(string? sourceDirectory, ContainerBuilder builder)
         {
             if (sourceDirectory != null)
             {
@@ -55,10 +55,7 @@ namespace Arbor.Build.Core
             }
         }
 
-        private static void RegisterLogging(ILogger logger, ContainerBuilder builder)
-        {
-            builder.RegisterModule(new SerilogModule(logger));
-        }
+        private static void RegisterLogging(ILogger logger, ContainerBuilder builder) => builder.RegisterModule(new SerilogModule(logger));
 
         private static IModule[] GetModulesFromAssemblies()
         {
@@ -72,6 +69,7 @@ namespace Arbor.Build.Core
                 .Select(type => Activator.CreateInstance(type) as IModule)
                 .Where(module => module != null)
                 .ToArray();
+
             return modules;
         }
     }

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.IO;
 using Arbor.Defensive.Collections;
-using Arbor.Processing.Core;
+using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
 
@@ -90,7 +90,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
         private static string PackageDirectory()
         {
-            string packageDirectory = string.Format("{0}packages{0}", Path.DirectorySeparatorChar);
+            string packageDirectory = $"{Path.DirectorySeparatorChar}packages{Path.DirectorySeparatorChar}";
             return packageDirectory;
         }
 
@@ -111,7 +111,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             IReadOnlyCollection<FileInfo> filtered =
                 packageSpecifications.Where(
-                        packagePath => !pathLookupSpecification.IsFileBlackListed(packagePath, vcsRootDir).Item1)
+                        packagePath => !pathLookupSpecification.IsFileExcluded(packagePath, vcsRootDir).Item1)
                     .Select(file => new FileInfo(file))
                     .ToReadOnlyCollection();
 
@@ -119,9 +119,9 @@ namespace Arbor.Build.Core.Tools.NuGet
                 filtered.Where(
                         nuspec =>
                             !_excludedNuSpecFiles.Any(
-                                exludedNuSpec => exludedNuSpec.Equals(
+                                excludedNuSpec => excludedNuSpec.Equals(
                                     nuspec.Name,
-                                    StringComparison.InvariantCultureIgnoreCase)))
+                                    StringComparison.OrdinalIgnoreCase)))
                     .SafeToReadOnlyCollection();
 
             logger.Verbose("Found nuspec files [{Count}]: {NewLine}{V}",

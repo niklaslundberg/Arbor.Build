@@ -5,11 +5,11 @@ namespace Arbor.Build.Core.BuildVariables
 {
     public class BuildVariable : IVariable
     {
-        public BuildVariable([NotNull] string key, string value)
+        public BuildVariable([NotNull] string key, string? value)
         {
             if (string.IsNullOrWhiteSpace(key))
             {
-                throw new ArgumentException("Value cannot be null or whitespace.", nameof(key));
+                throw new ArgumentException(Resources.ValueCannotBeNullOrWhitespace, nameof(key));
             }
 
             Key = key;
@@ -18,11 +18,8 @@ namespace Arbor.Build.Core.BuildVariables
 
         public string Key { get; }
 
-        public string Value { get; }
+        public string? Value { get; }
 
-        public override string ToString()
-        {
-            return this.DisplayValue();
-        }
+        public override string ToString() => this.DisplayPair();
     }
 }

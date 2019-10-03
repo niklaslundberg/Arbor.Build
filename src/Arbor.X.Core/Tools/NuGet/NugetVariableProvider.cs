@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.IO;
 using Arbor.Tooler;
 using JetBrains.Annotations;
 using Serilog;
@@ -17,6 +19,30 @@ namespace Arbor.Build.Core.Tools.NuGet
     {
         private CancellationToken _cancellationToken;
 
+        private async Task<string> EnsureNuGetExeExistsAsync(ILogger logger, string? userSpecifiedNuGetExePath)
+        {
+            if (userSpecifiedNuGetExePath is object && File.Exists(userSpecifiedNuGetExePath))
+            {
+                return userSpecifiedNuGetExePath;
+            }
+
+            using var httClient = new HttpClient();
+            var nuGetDownloadClient = new NuGetDownloadClient();
+
+            var nuGetDownloadResult = await nuGetDownloadClient.DownloadNuGetAsync(
+                NuGetDownloadSettings.Default,
+                logger,
+                httClient,
+                _cancellationToken).ConfigureAwait(false);
+
+            if (!nuGetDownloadResult.Succeeded)
+            {
+                throw new InvalidOperationException("Could not download nuget.exe");
+            }
+
+            return nuGetDownloadResult.NuGetExePath;
+        }
+
         public int Order => 3;
 
         public async Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
@@ -26,44 +52,35 @@ namespace Arbor.Build.Core.Tools.NuGet
         {
             _cancellationToken = cancellationToken;
 
-            string userSpecifiedNuGetExePath =
-                buildVariables.GetVariableValueOrDefault(
-                    WellKnownVariables.ExternalTools_NuGet_ExePath_Custom,
-                    string.Empty);
+            string? userSpecifiedNuGetExePath = buildVariables.GetVariableValueOrDefault(
+                WellKnownVariables.ExternalTools_NuGet_ExePath_Custom,
+                string.Empty);
 
-            string nuGetExePath =
+            string? nuGetExePath =
                 await EnsureNuGetExeExistsAsync(logger, userSpecifiedNuGetExePath).ConfigureAwait(false);
 
             var variables = new List<IVariable>
             {
-                new BuildVariable(
-                    WellKnownVariables.ExternalTools_NuGet_ExePath,
-                    nuGetExePath)
+                new BuildVariable(WellKnownVariables.ExternalTools_NuGet_ExePath, nuGetExePath)
             };
 
-            return variables.ToImmutableArray();
-        }
-
-        private async Task<string> EnsureNuGetExeExistsAsync(ILogger logger, string userSpecifiedNuGetExePath)
-        {
-            if (File.Exists(userSpecifiedNuGetExePath))
+            if (string.IsNullOrWhiteSpace(
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetRestoreEnabled, string.Empty)))
             {
-                return userSpecifiedNuGetExePath;
-            }
+                string sourceDir = buildVariables.Require(WellKnownVariables.SourceRoot).Value;
 
-            using (var httClient = new HttpClient())
-            {
-                var nuGetDownloadClient = new NuGetDownloadClient();
+                var pathLookupSpecification = new PathLookupSpecification();
+                var packageConfigFiles = new DirectoryInfo(sourceDir)
+                    .GetFiles("packages.config", SearchOption.AllDirectories).Where(
+                        file => !pathLookupSpecification.IsFileExcluded(file.FullName, sourceDir).Item1).ToArray();
 
-                NuGetDownloadResult nuGetDownloadResult = await nuGetDownloadClient.DownloadNuGetAsync(NuGetDownloadSettings.Default, logger, httClient, _cancellationToken).ConfigureAwait(false);
-
-                if (!nuGetDownloadResult.Succeeded)
+                if (packageConfigFiles.Any())
                 {
-                    throw new InvalidOperationException("Could not download nuget.exe");
+                    variables.Add(new BuildVariable(WellKnownVariables.NuGetRestoreEnabled, "true"));
                 }
-
-                return nuGetDownloadResult.NuGetExePath;
             }
+
+            return variables.ToImmutableArray();
         }
     }
 }

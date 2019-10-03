@@ -14,18 +14,19 @@ namespace Arbor.Build.Core.Tools.NuGet
             [NotNull] SemanticVersion version,
             [NotNull] string packagesDirectory,
             [NotNull] string nugetExePath,
-            string suffix = null,
+            string? suffix = null,
             bool branchNameEnabled = false,
-            string packageIdOverride = null,
-            string nuGetPackageVersionOverride = null,
+            string? packageIdOverride = null,
+            string? nuGetPackageVersionOverride = null,
             bool allowManifestReWrite = false,
             bool nuGetSymbolPackagesEnabled = false,
             bool keepBinaryAndSourcePackagesTogetherEnabled = false,
             bool isReleaseBuild = false,
-            string branchName = null,
+            string? branchName = null,
             bool buildNumberEnabled = true,
             string tempPath = null,
-            string packageBuildMetadata = null)
+            string packageBuildMetadata = null,
+            string nuGetSymbolPackagesFormat = NuGetPackager.SnupkgPackageFormat)
         {
             if (string.IsNullOrWhiteSpace(configuration))
             {
@@ -67,6 +68,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             Version = version ?? throw new ArgumentNullException(nameof(version));
             PackagesDirectory = packagesDirectory;
             NuGetExePath = nugetExePath;
+            NuGetSymbolPackagesFormat = nuGetSymbolPackagesFormat;
             Suffix = suffix;
         }
 
@@ -74,13 +76,13 @@ namespace Arbor.Build.Core.Tools.NuGet
 
         public bool BranchNameEnabled { get; }
 
-        public string PackageIdOverride { get; }
+        public string? PackageIdOverride { get; }
 
-        public string NuGetPackageVersionOverride { get; }
+        public string? NuGetPackageVersionOverride { get; }
 
         public bool AllowManifestReWrite { get; }
 
-        public bool NuGetSymbolPackagesEnabled { get; }
+        public bool NuGetSymbolPackagesEnabled { get; set; }
 
         public string Configuration { get; }
 
@@ -90,7 +92,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
         public SemanticVersion Version { get; }
 
-        public string Suffix { get; }
+        public string? Suffix { get; }
 
         public string TempPath { get; }
 
@@ -100,11 +102,10 @@ namespace Arbor.Build.Core.Tools.NuGet
 
         public bool BuildNumberEnabled { get; }
 
-        public string PackageBuildMetadata { get; }
+        public string? PackageBuildMetadata { get; }
 
-        public override string ToString()
-        {
-            return JsonConvert.SerializeObject(this, Formatting.Indented);
-        }
+        public string NuGetSymbolPackagesFormat { get; }
+
+        public override string ToString() => JsonConvert.SerializeObject(this, Formatting.Indented);
     }
 }

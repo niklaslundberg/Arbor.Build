@@ -12,17 +12,14 @@ namespace Arbor.Build.Core.BuildVariables
         {
             if (string.IsNullOrWhiteSpace(sourceDirectory))
             {
-                throw new ArgumentException("Value cannot be null or whitespace.", nameof(sourceDirectory));
+                throw new ArgumentException(Resources.ValueCannotBeNullOrWhitespace, nameof(sourceDirectory));
             }
 
             _sourceDirectory = sourceDirectory;
         }
 
-        protected override void Load(ContainerBuilder builder)
-        {
-            builder.RegisterInstance(new SourceRootValue(_sourceDirectory))
+        protected override void Load(ContainerBuilder builder) => builder.RegisterInstance(new SourceRootValue(_sourceDirectory))
                 .AsSelf()
                 .SingleInstance();
-        }
     }
 }

@@ -11,7 +11,6 @@ using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.Tools.Cleanup;
 using Arbor.Defensive;
 using Arbor.Processing;
-using Arbor.Processing.Core;
 using JetBrains.Annotations;
 using Serilog;
 
@@ -22,10 +21,7 @@ namespace Arbor.Build.Core.Tools.Git
     {
         private readonly ILogger _logger;
 
-        public BranchNameVariableProvider(ILogger logger)
-        {
-            _logger = logger;
-        }
+        public BranchNameVariableProvider(ILogger logger) => _logger = logger;
 
         public int Order => VariableProviderOrder.Priority - 2;
 
@@ -45,14 +41,14 @@ namespace Arbor.Build.Core.Tools.Git
 
                 if (branchNameResult.Item1 != 0)
                 {
-                    throw new InvalidOperationException("Could not find the branch name");
+                    throw new InvalidOperationException(Resources.TheBranchNameCouldNotBeFound);
                 }
 
                 branchName = branchNameResult.Item2;
 
                 if (string.IsNullOrWhiteSpace(branchName))
                 {
-                    throw new InvalidOperationException("Could not find the branch name after asking Git");
+                    throw new InvalidOperationException(Resources.TheBranchNameCouldNotBeFoundByAskingGit);
                 }
 
                 variables.Add(WellKnownVariables.BranchName, branchName);
@@ -60,10 +56,12 @@ namespace Arbor.Build.Core.Tools.Git
             else
             {
                 if (_logger.IsEnabled(Serilog.Events.LogEventLevel.Verbose))
-                _logger.Verbose(
-                    "Branch name is defined as '{BranchName}' from environment variable '{EnvironmentVariable}",
-                    branchName,
-                    WellKnownVariables.BranchName);
+                {
+                    _logger.Verbose(
+                        "Branch name is defined as '{BranchName}' from environment variable '{EnvironmentVariable}",
+                        branchName,
+                        WellKnownVariables.BranchName);
+                }
             }
 
             return variables.Select(pair => (IVariable)new BuildVariable(pair.Key, pair.Value)).ToImmutableArray();
@@ -94,17 +92,17 @@ namespace Arbor.Build.Core.Tools.Git
                         string pathLine = lines.SingleOrDefault(
                             line => line.IndexOf(
                                         "$env:github_git = ",
-                                        StringComparison.InvariantCultureIgnoreCase) >= 0);
+                                        StringComparison.OrdinalIgnoreCase) >= 0);
 
                         if (!string.IsNullOrWhiteSpace(pathLine))
                         {
-                            string directory = pathLine.Split('=').Last().Replace("\"", string.Empty);
+                            string directory = pathLine.Split('=').Last().Replace("\"", string.Empty, StringComparison.Ordinal);
 
-                            string githPath = Path.Combine(directory, "bin", "git.exe");
+                            string gitPath = Path.Combine(directory, "bin", "git.exe");
 
-                            if (File.Exists(githPath))
+                            if (File.Exists(gitPath))
                             {
-                                gitExePath = githPath;
+                                gitExePath = gitPath;
                             }
                         }
                     }
@@ -154,7 +152,7 @@ namespace Arbor.Build.Core.Tools.Git
 
             if (string.IsNullOrWhiteSpace(gitExePath))
             {
-                throw new ArgumentException("Value cannot be null or whitespace.", nameof(gitExePath));
+                throw new ArgumentException(Resources.ValueCannotBeNullOrWhitespace, nameof(gitExePath));
             }
 
             string branchName = string.Empty;
@@ -174,7 +172,7 @@ namespace Arbor.Build.Core.Tools.Git
                     {
                         exitCode =
                             await
-                                ProcessRunner.ExecuteAsync(
+                                ProcessRunner.ExecuteProcessAsync(
                                     gitExePath,
                                     arguments: argumentsList,
                                     standardErrorAction: _logger.Error,

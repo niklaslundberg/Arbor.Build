@@ -5,8 +5,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
-using Arbor.Processing.Core;
+using Arbor.Processing;
 using Serilog;
+using Serilog.Core;
 
 namespace Arbor.Build.Core.Tools.EnvironmentVariables
 {
@@ -19,11 +20,13 @@ namespace Arbor.Build.Core.Tools.EnvironmentVariables
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
+            logger ??= Logger.None;
+
             List<string> missingKeys =
                 RequiredValues.Where(
                         var =>
                             !buildVariables.Any(
-                                required => required.Key.Equals(var, StringComparison.InvariantCultureIgnoreCase)))
+                                required => required.Key.Equals(var, StringComparison.OrdinalIgnoreCase)))
                     .ToList();
 
             List<string> missingValues =
@@ -32,7 +35,7 @@ namespace Arbor.Build.Core.Tools.EnvironmentVariables
                         {
                             IVariable value =
                                 buildVariables.SingleOrDefault(
-                                    required => required.Key.Equals(var, StringComparison.InvariantCultureIgnoreCase));
+                                    required => required.Key.Equals(var, StringComparison.OrdinalIgnoreCase));
 
                             return value != null && string.IsNullOrWhiteSpace(value.Value);
                         })
@@ -65,7 +68,7 @@ namespace Arbor.Build.Core.Tools.EnvironmentVariables
 
             if (!succeeded)
             {
-                logger.Error(sb.ToString());
+                logger.Error("{Message}", sb.ToString());
             }
 
             return succeeded ? ExitCode.Success : ExitCode.Failure;
@@ -74,9 +77,6 @@ namespace Arbor.Build.Core.Tools.EnvironmentVariables
         protected virtual Task<bool> PostVariableVerificationAsync(
             StringBuilder variableBuilder,
             IReadOnlyCollection<IVariable> buildVariables,
-            ILogger logger)
-        {
-            return Task.FromResult(true);
-        }
+            ILogger logger) => Task.FromResult(true);
     }
 }

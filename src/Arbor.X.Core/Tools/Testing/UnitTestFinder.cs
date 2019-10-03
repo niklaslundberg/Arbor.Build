@@ -43,8 +43,8 @@ namespace Arbor.Build.Core.Tools.Testing
         private readonly ILogger _logger;
         private readonly IEnumerable<Type> _typesToFind;
 
-        private bool _debugLevelEnabled;
-        private bool _verboseLevelEnabled;
+        private readonly bool _debugLevelEnabled;
+        private readonly bool _verboseLevelEnabled;
 
         public UnitTestFinder(IEnumerable<Type> typesToFind, bool debugLogEnabled = false, ILogger logger = null)
         {
@@ -62,7 +62,8 @@ namespace Arbor.Build.Core.Tools.Testing
             DirectoryInfo currentDirectory,
             bool? releaseBuild = null,
             ImmutableArray<string> assemblyFilePrefix = default,
-            string targetFrameworkPrefix = null, bool strictConfiguration = false)
+            string targetFrameworkPrefix = null,
+            bool strictConfiguration = false)
         {
             if (currentDirectory == null)
             {
@@ -79,7 +80,7 @@ namespace Arbor.Build.Core.Tools.Testing
             bool isExcluded =
                 _Excluded.Any(
                     excludedItem =>
-                        currentDirectory.Name.StartsWith(excludedItem, StringComparison.InvariantCultureIgnoreCase));
+                        currentDirectory.Name.StartsWith(excludedItem, StringComparison.OrdinalIgnoreCase));
 
             if (isExcluded)
             {
@@ -99,9 +100,9 @@ namespace Arbor.Build.Core.Tools.Testing
                             file.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)));
 
             List<(AssemblyDefinition, FileInfo)> assemblies = filteredDllFiles
-                .Where(file => !file.Name.StartsWith("System", StringComparison.InvariantCultureIgnoreCase))
+                .Where(file => !file.Name.StartsWith("System", StringComparison.OrdinalIgnoreCase))
                 .Where(file => !_IgnoredNames.Any(
-                    name => file.Name.IndexOf(name, StringComparison.InvariantCultureIgnoreCase) >= 0))
+                    name => file.Name.IndexOf(name, StringComparison.OrdinalIgnoreCase) >= 0))
                 .Select(dllFile => GetAssembly(dllFile, targetFrameworkPrefix))
                 .Where(assembly => assembly.Item1 != null)
                 .ToList();
@@ -154,11 +155,11 @@ namespace Arbor.Build.Core.Tools.Testing
                 else if (isDebugBuild)
                 {
                     var assembliesWithDebugFlag = assemblies
-                           .Select(assembly => new
-                           {
-                               Assembly = assembly,
-                               IsDebug = assembly.Item1.IsDebugAssembly(assembly.Item2, _logger)
-                           }).ToArray();
+                        .Select(assembly => new
+                        {
+                            Assembly = assembly,
+                            IsDebug = assembly.Item1.IsDebugAssembly(assembly.Item2, _logger)
+                        }).ToArray();
 
                     configurationFiltered = assembliesWithDebugFlag
                         .Where(item => item.IsDebug == true)
@@ -179,7 +180,6 @@ namespace Arbor.Build.Core.Tools.Testing
                     {
                         configurationFiltered.AddRange(unknownAssemblies);
                     }
-
 
                     if (nonDebugAssemblies.Count > 0)
                     {
@@ -360,25 +360,25 @@ namespace Arbor.Build.Core.Tools.Testing
                         {
                             int fieldIndex = fullName.IndexOf(
                                 GenericPartSeparator,
-                                StringComparison.InvariantCultureIgnoreCase);
+                                StringComparison.OrdinalIgnoreCase);
 
                             string fieldName = fullName.Substring(0, fieldIndex);
 
                             return _typesToFind.Any(
                                 type =>
                                 {
-                                    int typePosition = type.FullName.IndexOf(
-                                        GenericPartSeparator,
-                                        StringComparison.InvariantCultureIgnoreCase);
+                                    int typePosition = type.FullName?.IndexOf(
+                                                           GenericPartSeparator,
+                                                           StringComparison.OrdinalIgnoreCase) ?? -1;
 
                                     if (typePosition < 0)
                                     {
                                         return false;
                                     }
 
-                                    string typeName = type.FullName.Substring(0, typePosition);
+                                    string typeName = type.FullName?.Substring(0, typePosition) ?? "";
 
-                                    return typeName.Equals(fieldName);
+                                    return typeName.Equals(fieldName, StringComparison.Ordinal);
                                 });
                         }
 
@@ -390,15 +390,11 @@ namespace Arbor.Build.Core.Tools.Testing
             return hasTestMethod;
         }
 
-        private bool IsCustomAttributeTypeToFind(CustomAttribute attr)
-        {
-            return
-                _typesToFind.Any(
-                    typeToFind =>
-                        attr.AttributeType.FullName.Equals(
-                            typeToFind.FullName,
-                            StringComparison.InvariantCultureIgnoreCase));
-        }
+        private bool IsCustomAttributeTypeToFind(CustomAttribute attr) => _typesToFind.Any(
+            typeToFind =>
+                attr.AttributeType.FullName.Equals(
+                    typeToFind.FullName,
+                    StringComparison.OrdinalIgnoreCase));
 
         private (AssemblyDefinition, FileInfo) GetAssembly(FileInfo dllFile, string targetFrameworkPrefix)
         {
@@ -450,7 +446,7 @@ namespace Arbor.Build.Core.Tools.Testing
 
                 if (_debugLevelEnabled)
                 {
-                    _logger?.Debug(message);
+                    _logger?.Debug("{Message}", message);
                 }
 #if DEBUG
                 Debug.WriteLine("{0}, {1}", message, ex);
@@ -463,7 +459,7 @@ namespace Arbor.Build.Core.Tools.Testing
 
                 if (_debugLevelEnabled)
                 {
-                    _logger?.Debug(message);
+                    _logger?.Debug("{Message}", message);
                 }
 #if DEBUG
                 Debug.WriteLine("{0}, {1}", message, ex);

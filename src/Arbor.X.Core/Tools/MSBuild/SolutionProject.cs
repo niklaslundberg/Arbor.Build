@@ -7,12 +7,12 @@
             string projectName,
             string projectDirectory,
             MSBuildProject msbuildProject,
-            Framework framework)
+            NetFrameworkGeneration netFrameworkGeneration)
         {
             FullPath = fullPath;
             ProjectName = projectName;
             ProjectDirectory = projectDirectory;
-            Framework = framework;
+            NetFrameworkGeneration = netFrameworkGeneration;
             Project = msbuildProject;
         }
 
@@ -20,7 +20,7 @@
 
         public string ProjectName { get; }
 
-        public Framework Framework { get; }
+        public NetFrameworkGeneration NetFrameworkGeneration { get; }
 
         public string ProjectDirectory { get; }
 

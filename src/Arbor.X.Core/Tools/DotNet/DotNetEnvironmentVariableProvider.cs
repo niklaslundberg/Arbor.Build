@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.Tools.Cleanup;
-using Arbor.Processing.Core;
+using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
 
@@ -23,7 +23,7 @@ namespace Arbor.Build.Core.Tools.DotNet
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            string dotNetExePath =
+            string? dotNetExePath =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.DotNetExePath, string.Empty);
 
             if (!string.IsNullOrWhiteSpace(dotNetExePath))
@@ -35,7 +35,7 @@ namespace Arbor.Build.Core.Tools.DotNet
             {
                 var sb = new List<string>(10);
 
-                string winDir = Environment.GetEnvironmentVariable("WINDIR");
+                string? winDir = Environment.GetEnvironmentVariable("WINDIR");
 
                 if (string.IsNullOrWhiteSpace(winDir))
                 {
@@ -45,7 +45,7 @@ namespace Arbor.Build.Core.Tools.DotNet
 
                 string whereExePath = Path.Combine(winDir, "System32", "where.exe");
 
-                ExitCode exitCode = await Processing.ProcessRunner.ExecuteAsync(
+                ExitCode exitCode = await Processing.ProcessRunner.ExecuteProcessAsync(
                     whereExePath,
                     arguments: new[] { "dotnet.exe" },
                     standardOutLog: (message, _) => sb.Add(message),

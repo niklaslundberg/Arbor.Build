@@ -7,9 +7,6 @@ namespace Arbor.Build.Tests.Integration.Tests
     public class VSTestDummy
     {
         [TestMethod]
-        public void DoNothing()
-        {
-            Assert.IsTrue(true, "This is a dummy test for VSTest");
-        }
+        public void DoNothing() => Assert.IsTrue(true, "This is a dummy test for VSTest");
     }
 }

@@ -20,7 +20,7 @@
     <iconUrl>https://nuget.org/Content/Images/packageDefaultIcon-50x50.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://github.com/niklaslundberg/Arbor.X/blob/master/LICENSE.txt</licenseUrl>
-    <copyright>Copyright Niklas Lundberg 2014 - 2018</copyright>
+    <copyright>Copyright Niklas Lundberg 2014 - 2019</copyright>
     <dependencies>
 
     </dependencies>
@@ -28,8 +28,7 @@
     <tags>build tools convention</tags>
   </metadata>
   <files>
-    <file src="Arbor.X.Build\bin\$configuration$\netcoreapp2.1\publish\**\*.*" target=""
-          exclude="*.vshost*;**\*.vshost*;*.trx;**\*.lastcodeanalysissucceeded;*.CodeAnalysisLog.xml;**\roslyn\**\*.*;**\*.xml;**\*.pdb" />
+    <file src="Arbor.X.Build\bin\$configuration$\netcoreapp3.0\publish\**\*.*" target="" exclude="*.pdb;*.xml;cs\*.*;de\*.*;es\*.*;fr\*.*;en\*.*;it\*.*;ja\*.*;ko\*.*;pl\*.*;pt-BR\*.*;ru\*.*;tr\*.*;zh-Hans\*.*;zh-Hant\*.*;runtimes\linux\*.*;runtimes\unix\*.*;runtimes\osx\*.*" />
     <file src="..\tools\external\**.*" exclude="*.vshost*;**\*.vshost*;*.trx" target="tools\external" />
   </files>
 </package>

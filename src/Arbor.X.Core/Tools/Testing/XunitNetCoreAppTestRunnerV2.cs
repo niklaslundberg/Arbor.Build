@@ -11,7 +11,6 @@ using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Properties;
 using Arbor.Defensive.Collections;
 using Arbor.Processing;
-using Arbor.Processing.Core;
 using JetBrains.Annotations;
 using Serilog;
 using Xunit;
@@ -201,7 +200,7 @@ namespace Arbor.Build.Core.Tools.Testing
                     arguments.Add($"--logger:trx;LogFileName={reportFileInfo.FullName}");
                 }
 
-                ExitCode result = await ProcessRunner.ExecuteAsync(
+                ExitCode result = await ProcessRunner.ExecuteProcessAsync(
                     dotNetExePath,
                     arguments: arguments,
                     standardOutLog: logger.Information,
@@ -238,8 +237,7 @@ namespace Arbor.Build.Core.Tools.Testing
                 }
 
                 if (buildVariables.GetBooleanByKey(
-                    WellKnownVariables.XUnitNetCoreAppV2XmlXsltToJunitEnabled,
-                    false))
+                    WellKnownVariables.XUnitNetCoreAppV2XmlXsltToJunitEnabled))
                 {
                     logger.Verbose(
                         "Transforming XUnit net core app test reports to JUnit format");
@@ -278,6 +276,51 @@ namespace Arbor.Build.Core.Tools.Testing
                         }
                     }
                 }
+                if (buildVariables.GetBooleanByKey(
+                    WellKnownVariables.XUnitNetCoreAppV2TrxXsltToJunitEnabled))
+                {
+                    logger.Verbose(
+                        "Transforming XUnit net core TRX test reports to JUnit format");
+
+                    DirectoryInfo xmlReportDirectory = reportFileInfo.Directory;
+
+                    // ReSharper disable once PossibleNullReferenceException
+                    IReadOnlyCollection<FileInfo> xmlReports = xmlReportDirectory
+                        .GetFiles("*.trx")
+                        .Where(report => !report.Name.EndsWith(TestReportXslt.JUnitSuffix, StringComparison.Ordinal))
+                        .ToReadOnlyCollection();
+
+                    if (xmlReports.Count > 0)
+                    {
+                        foreach (FileInfo xmlReport in xmlReports)
+                        {
+                            logger.Debug("Transforming '{FullName}' to JUnit XML format", xmlReport.FullName);
+                            try
+                            {
+                                ExitCode transformExitCode =
+                                    TestReportXslt.Transform(xmlReport, XUnitV2JUnitXsl.TrxTemplate, logger);
+
+                                if (!transformExitCode.IsSuccess)
+                                {
+                                    return transformExitCode;
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                logger.Error(ex, "Could not transform '{FullName}'", xmlReport.FullName);
+                                return ExitCode.Failure;
+                            }
+
+                            logger.Debug("Successfully transformed '{FullName}' to JUnit XML format",
+                                xmlReport.FullName);
+                        }
+                    }
+                }
+                else
+                {
+                    logger.Verbose(
+                        "Xunit transformation to JUnit format is disabled, defined in key '{Key}' and '{TrxKey}'", WellKnownVariables.XUnitNetCoreAppV2XmlXsltToJunitEnabled, WellKnownVariables.XUnitNetCoreAppV2TrxXsltToJunitEnabled);
+                }
             }
 
             return exitCode;
@@ -294,35 +337,33 @@ namespace Arbor.Build.Core.Tools.Testing
 
             string fullName = reportFileInfo.FullName;
 
-            using (var fs = new FileStream(fullName, FileMode.Open))
+            using var fs = new FileStream(fullName, FileMode.Open);
+            XDocument xdoc = XDocument.Load(fs);
+
+            XElement[] collections = xdoc.Descendants("assemblies").Descendants("assembly")
+                .Descendants("collection").ToArray();
+
+            int testCount = collections.Count(collection =>
+                int.TryParse(collection.Attribute("total")?.Value, out int total) && total > 0);
+
+            if (testCount == 0)
             {
-                XDocument xdoc = XDocument.Load(fs);
-
-                XElement[] collections = xdoc.Descendants("assemblies").Descendants("assembly")
-                    .Descendants("collection").ToArray();
-
-                int testCount = collections.Count(collection =>
-                    int.TryParse(collection.Attribute("total")?.Value, out int total) && total > 0);
-
-                if (testCount == 0)
-                {
-                    logger?.Invoke($"Found no tests in '{fullName}'");
-                    return ExitCode.Failure;
-                }
-
-                logger?.Invoke($"Found {testCount} tests in '{fullName}'");
-
-                int failedTests = collections.Count(collection =>
-                    int.TryParse(collection.Attribute("failed")?.Value, out int failed) && failed > 0);
-
-                if (failedTests > 0)
-                {
-                    logger?.Invoke($"Found {failedTests} failing tests in '{fullName}'");
-                    return ExitCode.Failure;
-                }
-
-                return ExitCode.Success;
+                logger?.Invoke($"Found no tests in '{fullName}'");
+                return ExitCode.Failure;
             }
+
+            logger?.Invoke($"Found {testCount} tests in '{fullName}'");
+
+            int failedTests = collections.Count(collection =>
+                int.TryParse(collection.Attribute("failed")?.Value, out int failed) && failed > 0);
+
+            if (failedTests > 0)
+            {
+                logger?.Invoke($"Found {failedTests} failing tests in '{fullName}'");
+                return ExitCode.Failure;
+            }
+
+            return ExitCode.Success;
         }
     }
 }

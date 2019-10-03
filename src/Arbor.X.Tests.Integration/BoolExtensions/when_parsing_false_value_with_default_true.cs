@@ -1,9 +1,9 @@
-using Arbor.Build.Core.GenericExtensions.Boolean;
+using Arbor.Build.Core.GenericExtensions.Bools;
 using Machine.Specifications;
 
 namespace Arbor.Build.Tests.Integration.BoolExtensions
 {
-    [Subject(typeof(Core.GenericExtensions.Boolean.BoolExtensions))]
+    [Subject(typeof(Core.GenericExtensions.Bools.BoolParseExtensions))]
     public class when_parsing_false_value_with_default_true
     {
         static bool parsed;

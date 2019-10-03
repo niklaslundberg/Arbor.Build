@@ -204,16 +204,6 @@ namespace Arbor.Build.Core.BuildVariables
         public const string PublishPdbFilesAsArtifacts =
             "Arbor.X.Artifacts.PdbArtifacts.Enabled";
 
-        [VariableDescription("ILRepack executable path (eg. C:\\ILRepack.exe)")]
-        public const string ExternalTools_ILRepack_ExePath = "Arbor.X.Tools.External.ILRepack.ExePath";
-
-        [VariableDescription("ILRepack enabled (eg. true|false")]
-        public const string ExternalTools_ILRepack_Enabled = "Arbor.X.Tools.External.ILRepack.Enabled";
-
-        [VariableDescription("ILRepack custom executable path (eg. C:\\ILRepack.exe)")]
-        public const string ExternalTools_ILRepack_Custom_ExePath =
-            "Arbor.X.Tools.External.ILRepack.CustomExePath";
-
         [VariableDescription("LibZ executable path (eg. C:\\LibZ.exe)")]
         public const string ExternalTools_LibZ_ExePath = "Arbor.X.Tools.External.LibZ.ExePath";
 
@@ -316,13 +306,14 @@ namespace Arbor.Build.Core.BuildVariables
         public const string XUnitNetCoreAppV2XmlXsltToJunitEnabled =
             "Arbor.X.Tools.External.Xunit.NetCoreApp.Xslt.V2ToJunit.Enabled";
 
+        [VariableDescription("Enable XUnit .NET Core App XML report XSLT V2 to Junit")]
+        public const string XUnitNetCoreAppV2TrxXsltToJunitEnabled =
+            "Arbor.X.Tools.External.Xunit.NetCoreApp.Xslt.TrxToJunit.Enabled";
+
         [VariableDescription("Enable XUnit XML analysis for .NET Core App")]
         public const string XUnitNetCoreAppXmlAnalysisEnabled =
             "Arbor.X.Tools.External.Xunit.NetCoreApp.Xml.Analysis.Enabled";
 
-        [VariableDescription("XUnit .NET Core App DLL path")]
-        public const string XUnitNetCoreAppDllPath =
-            "Arbor.X.Tools.External.Xunit.NetCoreApp.DllPath";
 
         [VariableDescription("XUnit .NET Core App XML output enabled")]
         public const string XUnitNetCoreAppXmlEnabled =
@@ -396,6 +387,10 @@ namespace Arbor.Build.Core.BuildVariables
         [VariableDescription(".NET Core publish runtime identifier")]
         public const string PublishRuntimeIdentifier =
             "Arbor.X.Build.PublishRuntimeIdentifier";
+
+        [VariableDescription("Paket Enabled")]
+        public const string PaketEnabled =
+            "Arbor.X.Build.Paket.Enabled";
 
         [VariableDescription(".NET Core MSBuild web publish runtime identifiers")]
         public const string ProjectMSBuildPublishRuntimeIdentifier =

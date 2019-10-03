@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.Testing;
-using Arbor.Processing.Core;
+using Arbor.Processing;
 using Machine.Specifications;
 using Serilog;
 using Serilog.Core;
@@ -20,6 +20,7 @@ namespace Arbor.Build.Tests.Integration.ProcessRunner
         static ExitCode exitCode = new ExitCode(99);
         static TaskCanceledException exception;
         static ILogger logger = Logger.None;
+        static string logFile;
 
         Cleanup after = () =>
         {
@@ -27,17 +28,24 @@ namespace Arbor.Build.Tests.Integration.ProcessRunner
             {
                 File.Delete(testPath);
             }
+
+            if (File.Exists(logFile))
+            {
+                File.Delete(logFile);
+            }
         };
 
         Establish context = () =>
         {
             testPath = Path.Combine(Path.GetTempPath(), $"{DefaultPaths.TempPathPrefix}_Test_timeout.tmp.bat");
 
-            const string batchContent = @"@ECHO OFF
+            logFile = @"C:\Temp\test.log";
+
+            string batchContent = $@"@ECHO OFF
 ECHO Waiting for 10 seconds
 ping 127.0.0.1 -r 9
 ECHO After batch file timeout
-ECHO 123 > C:\Temp\test.log
+ECHO 123 > {logFile}
 EXIT /b 2
 ";
 
@@ -46,23 +54,26 @@ EXIT /b 2
 
         Because of = () => RunAsync().Wait();
 
-        It should_not_an_exit_code = () => exitCode.Result.ShouldEqual(99);
+        It should_not_an_exit_code = () => exitCode.Code.ShouldEqual(99);
 
         It should_throw_a_task_canceled_exception = () => exception.ShouldNotBeNull();
 
         static async Task RunAsync()
         {
-            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-
+            using var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(2));
             try
             {
                 exitCode =
                     await
-                        Processing.ProcessRunner.ExecuteAsync(testPath,
-                            standardOutLog: (message, prefix) => logger.Information(message, "STANDARD"),
-                            standardErrorAction: (message, prefix) => logger.Error(message, "ERROR"),
-                            toolAction: (message, prefix) => logger.Information(message, "TOOL"),
-                            verboseAction: (message, prefix) => logger.Information(message, "VERBOSE"),
+                        Processing.ProcessRunner.ExecuteProcessAsync(testPath,
+                            standardOutLog: (message, prefix) =>
+                                logger.Information("[{Level}] {Message}", "STANDARD", message),
+                            standardErrorAction: (message, prefix) =>
+                                logger.Error("[{Level}] {Message}", "ERROR", message),
+                            toolAction: (message, prefix) =>
+                                logger.Information("[{Level}] {Message}", "TOOL", message),
+                            verboseAction: (message, prefix) =>
+                                logger.Information("[{Level}] {Message}", "VERBOSE", message),
                             cancellationToken: cancellationTokenSource.Token).ConfigureAwait(false);
             }
             catch (TaskCanceledException ex)

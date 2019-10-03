@@ -20,7 +20,7 @@ namespace Arbor.Build.Core.BuildVariables
             }
 
             List<IVariable> foundVariables = variables
-                .Where(var => var.Key.Equals(variableName, StringComparison.InvariantCultureIgnoreCase))
+                .Where(var => var.Key.Equals(variableName, StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
             if (foundVariables.Count > 1)
@@ -31,13 +31,13 @@ namespace Arbor.Build.Core.BuildVariables
 
             IVariable variable = foundVariables.SingleOrDefault();
 
-            if (variable == null)
+            if (variable is null)
             {
                 string message = $"The key '{variableName}' was not found in the variable collection";
                 VariableDescription property = WellKnownVariables.AllVariables.SingleOrDefault(
-                    item => item.InvariantName.Equals(variableName, StringComparison.InvariantCultureIgnoreCase));
+                    item => item.InvariantName.Equals(variableName, StringComparison.OrdinalIgnoreCase));
 
-                if (property != null)
+                if (property is object)
                 {
                     message +=
                         $". (The variable is a wellknown property {typeof(WellKnownVariables)}.{property.WellknownName})";

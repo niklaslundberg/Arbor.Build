@@ -10,23 +10,17 @@ namespace Arbor.Build.Core.BuildVariables
     {
         public static bool HasKey(
             this IReadOnlyCollection<IVariable> buildVariables,
-            string key)
-        {
-            return buildVariables.Any(
+            string key) => buildVariables.Any(
                 bv => bv.Key.Equals(
                     key,
-                    StringComparison.InvariantCultureIgnoreCase));
-        }
+                    StringComparison.OrdinalIgnoreCase));
 
         public static IVariable GetVariable(
             this IReadOnlyCollection<IVariable> buildVariables,
-            string key)
-        {
-            return buildVariables.Single(
+            string key) => buildVariables.Single(
                 bv => bv.Key.Equals(
                     key,
-                    StringComparison.InvariantCultureIgnoreCase));
-        }
+                    StringComparison.OrdinalIgnoreCase));
 
         public static Maybe<IVariable> GetOptionalVariable(
             this IReadOnlyCollection<IVariable> buildVariables,
@@ -35,7 +29,7 @@ namespace Arbor.Build.Core.BuildVariables
             IVariable variable = buildVariables.SingleOrDefault(
                 bv => bv.Key.Equals(
                     key,
-                    StringComparison.InvariantCultureIgnoreCase));
+                    StringComparison.OrdinalIgnoreCase));
 
             if (variable is null)
             {
@@ -45,10 +39,10 @@ namespace Arbor.Build.Core.BuildVariables
             return new Maybe<IVariable>(variable);
         }
 
-        public static string GetVariableValueOrDefault(
+        public static string? GetVariableValueOrDefault(
             this IReadOnlyCollection<IVariable> buildVariables,
             string key,
-            string defaultValue)
+            string? defaultValue)
         {
             if (!buildVariables.HasKey(key))
             {
@@ -68,7 +62,7 @@ namespace Arbor.Build.Core.BuildVariables
                 return defaultValue;
             }
 
-            string value = buildVariables.GetVariableValueOrDefault(
+            string? value = buildVariables.GetVariableValueOrDefault(
                 key,
                 string.Empty);
 
@@ -96,7 +90,7 @@ namespace Arbor.Build.Core.BuildVariables
                 return null;
             }
 
-            string value = buildVariables.GetVariableValueOrDefault(
+            string? value = buildVariables.GetVariableValueOrDefault(
                 key,
                 default);
 
@@ -125,7 +119,7 @@ namespace Arbor.Build.Core.BuildVariables
 
             if (buildVariables.HasKey(key))
             {
-                string value = buildVariables.GetVariableValueOrDefault(
+                string? value = buildVariables.GetVariableValueOrDefault(
                     key,
                     defaultValue.ToString(CultureInfo.InvariantCulture));
 
@@ -161,7 +155,7 @@ namespace Arbor.Build.Core.BuildVariables
                 return defaultValue;
             }
 
-            string value = buildVariables.GetVariableValueOrDefault(
+            string? value = buildVariables.GetVariableValueOrDefault(
                 key,
                 defaultValue.ToString(CultureInfo.InvariantCulture));
 

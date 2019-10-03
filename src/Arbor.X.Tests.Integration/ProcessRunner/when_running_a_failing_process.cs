@@ -3,7 +3,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Arbor.Build.Core.IO;
-using Arbor.Processing.Core;
+using Arbor.Processing;
 using Machine.Specifications;
 using Serilog;
 using Serilog.Core;
@@ -37,7 +37,7 @@ EXIT /b 3
 
         Because of = () => RunAsync().Wait();
 
-        It should_return_exit_code_from_process = () => exitCode.Result.ShouldEqual(3);
+        It should_return_exit_code_from_process = () => exitCode.Code.ShouldEqual(3);
 
         static async Task RunAsync()
         {
@@ -45,7 +45,7 @@ EXIT /b 3
             {
                 exitCode =
                     await
-                        Processing.ProcessRunner.ExecuteAsync(testPath,
+                        Processing.ProcessRunner.ExecuteProcessAsync(testPath,
                                 standardOutLog: (message, prefix) => logger.Information(message, "STANDARD"),
                                 standardErrorAction: (message, prefix) => logger.Error(message, "ERROR"),
                                 toolAction: (message, prefix) => logger.Information(message, "TOOL"),

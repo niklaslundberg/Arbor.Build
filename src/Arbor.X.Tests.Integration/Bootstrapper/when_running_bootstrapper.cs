@@ -2,17 +2,17 @@
 using System.IO;
 using Arbor.Build.Core.Bootstrapper;
 using Arbor.Build.Core.IO;
-using Arbor.Processing.Core;
+using Arbor.Processing;
 using Machine.Specifications;
 using Serilog.Core;
 
 namespace Arbor.Build.Tests.Integration.Bootstrapper
 {
     [Ignore("Not complete")]
-    [Subject(typeof(Core.Bootstrapper.Bootstrapper))]
+    [Subject(typeof(Core.Bootstrapper.AppBootstrapper))]
     public class when_running_bootstrapper
     {
-        static Core.Bootstrapper.Bootstrapper bootstrapper;
+        static Core.Bootstrapper.AppBootstrapper _appBootstrapper;
 
         static BootstrapStartOptions startOptions;
         static ExitCode exitCode;
@@ -22,7 +22,7 @@ namespace Arbor.Build.Tests.Integration.Bootstrapper
         {
             try
             {
-                baseDirectory.DeleteIfExists(true);
+                baseDirectory.DeleteIfExists();
             }
             catch (IOException ex)
             {
@@ -41,10 +41,10 @@ namespace Arbor.Build.Tests.Integration.Bootstrapper
             startOptions = new BootstrapStartOptions(baseDirectory.FullName,
                 true,
                 "develop");
-            bootstrapper = new Core.Bootstrapper.Bootstrapper(Logger.None);
+            _appBootstrapper = new Core.Bootstrapper.AppBootstrapper(Logger.None);
         };
 
-        Because of = () => exitCode = bootstrapper.StartAsync(startOptions).Result;
+        Because of = () => exitCode = _appBootstrapper.StartAsync(startOptions).Result;
 
         It should_return_success_exit_code = () => exitCode.IsSuccess.ShouldBeTrue();
     }

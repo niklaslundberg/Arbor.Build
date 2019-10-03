@@ -23,7 +23,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
         {
             if (string.IsNullOrWhiteSpace(sdkName))
             {
-                throw new ArgumentException("Value cannot be null or whitespace.", nameof(sdkName));
+                throw new ArgumentException(Resources.ValueCannotBeNullOrWhitespace, nameof(sdkName));
             }
 
             SdkName = sdkName;
@@ -31,19 +31,13 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
         public string SdkName { get; }
 
-        public static bool operator ==(DotNetSdk left, DotNetSdk right)
-        {
-            return Equals(left, right);
-        }
+        public static bool operator ==(DotNetSdk left, DotNetSdk right) => Equals(left, right);
 
-        public static bool operator !=(DotNetSdk left, DotNetSdk right)
-        {
-            return !Equals(left, right);
-        }
+        public static bool operator !=(DotNetSdk left, DotNetSdk right) => !Equals(left, right);
 
         public static ImmutableArray<DotNetSdk> All => _LazyAll.Value;
 
-        public static DotNetSdk ParseOrDefault(string sdkValue)
+        public static DotNetSdk ParseOrDefault(string? sdkValue)
         {
             if (string.IsNullOrWhiteSpace(sdkValue))
             {
@@ -55,7 +49,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
         public bool Equals(DotNetSdk other)
         {
-            if (ReferenceEquals(null, other))
+            if (other is null)
             {
                 return false;
             }
@@ -70,7 +64,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj))
+            if (obj is null)
             {
                 return false;
             }
@@ -83,14 +77,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
             return obj is DotNetSdk sdk && Equals(sdk);
         }
 
-        public override int GetHashCode()
-        {
-            return SdkName.GetHashCode(StringComparison.Ordinal);
-        }
+        public override int GetHashCode() => SdkName.GetHashCode(StringComparison.Ordinal);
 
-        public override string ToString()
-        {
-            return SdkName;
-        }
+        public override string ToString() => SdkName;
     }
 }

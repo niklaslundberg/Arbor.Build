@@ -16,7 +16,7 @@ namespace Arbor.Build.Core.Tools.Kudu
             {
                 const string Pattern = "kudu_";
 
-                if (buildVariables.Any(bv => bv.Key.StartsWith(Pattern, StringComparison.InvariantCultureIgnoreCase)))
+                if (buildVariables.Any(bv => bv.Key.StartsWith(Pattern, StringComparison.OrdinalIgnoreCase)))
                 {
                     if (buildVariables.HasKey(WellKnownVariables.ExternalTools_Kudu_DeploymentTarget))
                     {

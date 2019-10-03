@@ -10,7 +10,7 @@ namespace Arbor.Build.Tests.Integration.PathExtensions
         static bool isBlackListed;
         static PathLookupSpecification specification;
         static DirectoryInfo tempDir;
-        Cleanup after = () => tempDir.DeleteIfExists(true);
+        Cleanup after = () => tempDir.DeleteIfExists();
 
         Establish context = () =>
         {

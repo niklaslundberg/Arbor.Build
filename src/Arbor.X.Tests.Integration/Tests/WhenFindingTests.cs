@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.IO;
-using Arbor.Build.Core.Tools.Testing;
-using Serilog;
-using Serilog.Core;
-using Serilog.Events;
-using Xunit;
+﻿using Xunit;
 
 namespace Arbor.Build.Tests.Integration.Tests
 {

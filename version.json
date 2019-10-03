@@ -3,15 +3,15 @@
     "keys": [
         {
             "key": "major",
-            "value": 3
+            "value": 4
         },
         {
             "key": "minor",
-            "value": 1
+            "value": 0
         },
         {
             "key": "patch",
-            "value": 10
+            "value": 0
         }
     ]
 }

@@ -15,7 +15,7 @@ namespace Arbor.Build.Tests.Integration.PathExtensions
 
         Cleanup after = () =>
         {
-            root.DeleteIfExists(true);
+            root.DeleteIfExists();
             rootParent.DeleteIfExists();
         };
 
@@ -32,7 +32,7 @@ namespace Arbor.Build.Tests.Integration.PathExtensions
             specification = DefaultPaths.DefaultPathLookupSpecification;
         };
 
-        Because of = () => isBlackListed = specification.IsFileBlackListed(@"C:\Temp\root\afile.txt").Item1;
+        Because of = () => isBlackListed = specification.IsFileExcluded(@"C:\Temp\root\afile.txt").Item1;
 
         It should_return_true = () => isBlackListed.ShouldBeTrue();
     }

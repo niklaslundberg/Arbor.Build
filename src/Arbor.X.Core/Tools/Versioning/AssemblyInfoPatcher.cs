@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.IO;
 using Arbor.Defensive.Collections;
-using Arbor.Processing.Core;
+using Arbor.Processing;
 using Arbor.Sorbus.Core;
 using JetBrains.Annotations;
 using Serilog;
@@ -85,7 +85,7 @@ namespace Arbor.Build.Core.Tools.Versioning
 
             AssemblyMetaData assemblyMetadata = null;
 
-            if (buildVariables.GetBooleanByKey(WellKnownVariables.NetAssemblyMetadataEnabled, false))
+            if (buildVariables.GetBooleanByKey(WellKnownVariables.NetAssemblyMetadataEnabled))
             {
                 string company = buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyCompany, null);
                 string description =
@@ -121,7 +121,7 @@ namespace Arbor.Build.Core.Tools.Versioning
 
                 IReadOnlyCollection<AssemblyInfoFile> assemblyFiles = sourceDirectory
                     .GetFilesRecursive(new[] { ".cs" }, defaultPathLookupSpecification, sourceRoot)
-                    .Where(file => file.Name.Equals(_filePattern, StringComparison.InvariantCultureIgnoreCase))
+                    .Where(file => file.Name.Equals(_filePattern, StringComparison.OrdinalIgnoreCase))
                     .Select(file => new AssemblyInfoFile(file.FullName))
                     .ToReadOnlyCollection();
 

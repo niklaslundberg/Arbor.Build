@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -6,9 +7,10 @@ using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.ProcessUtils;
-using Arbor.Processing.Core;
+using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
+using Serilog.Core;
 
 namespace Arbor.Build.Core.Tools.NuGet
 {
@@ -21,9 +23,10 @@ namespace Arbor.Build.Core.Tools.NuGet
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
+            logger ??= Logger.None ?? throw new ArgumentNullException(nameof(logger));
+
             bool enabled = buildVariables.GetBooleanByKey(
-                WellKnownVariables.NuGetRestoreEnabled,
-                true);
+                WellKnownVariables.NuGetRestoreEnabled);
 
             if (!enabled)
             {
@@ -42,7 +45,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 DefaultPaths.DefaultPathLookupSpecification.AddExcludedDirectorySegments(new[] { "node_modules" });
 
             var blackListStatus = solutionFiles
-                .Select(file => new { File = file, Status = pathLookupSpecification.IsFileBlackListed(file, rootPath) })
+                .Select(file => new { File = file, Status = pathLookupSpecification.IsFileExcluded(file, rootPath) })
                 .ToArray();
 
             string[] included = blackListStatus
@@ -77,14 +80,15 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             string solutionFile = included.Single();
 
+            var arguments = new List<string> { "restore", solutionFile };
+
             ExitCode result = await ProcessHelper.ExecuteAsync(
                 nugetExePath,
-                new[] { "restore", solutionFile },
+                arguments,
                 logger,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
             return result;
-
         }
     }
 }

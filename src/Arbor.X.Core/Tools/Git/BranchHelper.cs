@@ -26,7 +26,7 @@ namespace Arbor.Build.Core.Tools.Git
 
             bool isAStandardBranch =
                 nonFeatureBranchNames.Any(
-                    name => branchName.LogicalName.StartsWith(name, StringComparison.InvariantCultureIgnoreCase));
+                    name => branchName.LogicalName.StartsWith(name, StringComparison.OrdinalIgnoreCase));
 
             return !isAStandardBranch;
         }
@@ -47,7 +47,7 @@ namespace Arbor.Build.Core.Tools.Git
             bool isDevelopBranch =
                 developBranchNames.Any(name => branchName.LogicalName.StartsWith(
                     name,
-                    StringComparison.InvariantCultureIgnoreCase));
+                    StringComparison.OrdinalIgnoreCase));
 
             return isDevelopBranch;
         }
@@ -69,7 +69,7 @@ namespace Arbor.Build.Core.Tools.Git
             bool isProductionBranch =
                 productionBranches.Any(productionBranch => branchName.LogicalName.StartsWith(
                     productionBranch,
-                    StringComparison.InvariantCultureIgnoreCase));
+                    StringComparison.OrdinalIgnoreCase));
 
             return isProductionBranch;
         }
@@ -81,7 +81,7 @@ namespace Arbor.Build.Core.Tools.Git
                 throw new ArgumentNullException(nameof(branchName));
             }
 
-            string logicalName = branchName.Replace("refs/heads/", string.Empty);
+            string logicalName = branchName.Replace("refs/heads/", string.Empty, StringComparison.Ordinal);
 
             return new BranchName(logicalName);
         }
@@ -122,7 +122,7 @@ namespace Arbor.Build.Core.Tools.Git
 
             if (!string.IsNullOrWhiteSpace(splitCharactersVariable))
             {
-                List<string> splitts =
+                var parts =
                     splitCharactersVariable.Split(
                             new[]
                             {
@@ -131,7 +131,7 @@ namespace Arbor.Build.Core.Tools.Git
                             StringSplitOptions.RemoveEmptyEntries)
                         .ToList();
 
-                splitCharacters = splitts;
+                splitCharacters = parts;
             }
 
             string version =

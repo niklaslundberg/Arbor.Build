@@ -1,11 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.Tools.Cleanup;
 using JetBrains.Annotations;
 using Serilog;
+using Serilog.Core;
 
 namespace Arbor.Build.Core.Tools.TeamCity
 {
@@ -19,23 +21,23 @@ namespace Arbor.Build.Core.Tools.TeamCity
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
+            logger ??= Logger.None;
             var variables = new List<IVariable>();
 
             bool isRunningInTeamCity =
                 buildVariables.GetBooleanByKey(
-                    WellKnownVariables.TeamCity.ExternalTools_TeamCity_BuildConfigurationName,
-                    false);
+                    WellKnownVariables.ExternalTools_TeamCity_BuildConfigurationName);
 
-            if (buildVariables.HasKey(WellKnownVariables.TeamCity.ExternalTools_TeamCity_IsRunningInTeamCity))
+            if (buildVariables.HasKey(WellKnownVariables.ExternalTools_TeamCity_IsRunningInTeamCity))
             {
                 logger.Warning("The build variable '{ExternalTools_TeamCity_IsRunningInTeamCity}' is already defined",
-                    WellKnownVariables.TeamCity.ExternalTools_TeamCity_IsRunningInTeamCity);
+                    WellKnownVariables.ExternalTools_TeamCity_IsRunningInTeamCity);
             }
             else
             {
                 variables.Add(new BuildVariable(
-                    WellKnownVariables.TeamCity.ExternalTools_TeamCity_IsRunningInTeamCity,
-                    isRunningInTeamCity.ToString()));
+                    WellKnownVariables.ExternalTools_TeamCity_IsRunningInTeamCity,
+                    isRunningInTeamCity.ToString(CultureInfo.InvariantCulture)));
             }
 
             return Task.FromResult(variables.ToImmutableArray());

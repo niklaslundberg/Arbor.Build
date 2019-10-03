@@ -12,7 +12,7 @@ using Arbor.Aesculus.Core;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.Debugging;
 using Arbor.Build.Core.GenericExtensions;
-using Arbor.Build.Core.GenericExtensions.Boolean;
+using Arbor.Build.Core.GenericExtensions.Bools;
 using Arbor.Build.Core.GenericExtensions.Int;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools;
@@ -20,10 +20,11 @@ using Arbor.Defensive.Collections;
 using Arbor.KVConfiguration.Core;
 using Arbor.KVConfiguration.Schema.Json;
 using Arbor.KVConfiguration.UserConfiguration;
-using Arbor.Processing.Core;
+using Arbor.Processing;
 using Autofac;
 using JetBrains.Annotations;
 using Serilog;
+using Serilog.Core;
 using Serilog.Events;
 
 namespace Arbor.Build.Core
@@ -32,19 +33,21 @@ namespace Arbor.Build.Core
     {
         private readonly ILogger _logger;
         private CancellationToken _cancellationToken;
-        private IContainer _container;
-        private bool _verboseEnabled;
+        private IContainer? _container;
+        private readonly bool _verboseEnabled;
+        private readonly bool _debugEnabled;
 
         public BuildApplication(ILogger logger)
         {
-            _logger = logger;
+            _logger = logger ?? Logger.None ?? throw new ArgumentNullException(nameof(logger));
             _verboseEnabled = _logger.IsEnabled(LogEventLevel.Verbose);
+            _debugEnabled = _logger.IsEnabled(LogEventLevel.Debug);
         }
 
         public async Task<ExitCode> RunAsync(string[] args)
         {
             MultiSourceKeyValueConfiguration multiSourceKeyValueConfiguration = KeyValueConfigurationManager
-                .Add(new UserConfiguration())
+                .Add(new UserJsonConfiguration())
                 .Add(new EnvironmentVariableKeyValueConfigurationSource())
                 .Build();
 
@@ -52,7 +55,7 @@ namespace Arbor.Build.Core
 
             const bool debugLoggerEnabled = false;
 
-            string sourceDir = null;
+            string? sourceDir = null;
 
             if (DebugHelper.IsDebugging)
             {
@@ -99,15 +102,18 @@ namespace Arbor.Build.Core
             _logger.Information("Arbor.X.Build total elapsed time in seconds: {TotalSeconds:F}",
                 stopwatch.Elapsed.TotalSeconds);
 
-            multiSourceKeyValueConfiguration[WellKnownVariables.BuildApplicationExitDelayInMilliseconds]
+            _ = multiSourceKeyValueConfiguration[WellKnownVariables.BuildApplicationExitDelayInMilliseconds]
                 .TryParseInt32(out int exitDelayInMilliseconds, 50);
 
             if (exitDelayInMilliseconds > 0)
             {
-                _logger.Debug(
-                    "Delaying build application exit with {ExitDelayInMilliseconds} milliseconds specified in '{BuildApplicationExitDelayInMilliseconds}'",
-                    exitDelayInMilliseconds,
-                    WellKnownVariables.BuildApplicationExitDelayInMilliseconds);
+                if (_debugEnabled)
+                {
+                    _logger.Debug(
+                        "Delaying build application exit with {ExitDelayInMilliseconds} milliseconds specified in '{BuildApplicationExitDelayInMilliseconds}'",
+                        exitDelayInMilliseconds,
+                        WellKnownVariables.BuildApplicationExitDelayInMilliseconds);
+                }
 
                 await Task.Delay(TimeSpan.FromMilliseconds(exitDelayInMilliseconds), _cancellationToken)
                     .ConfigureAwait(false);
@@ -150,7 +156,7 @@ namespace Arbor.Build.Core
                                 "Execution time",
                                 result.ExecutionTime == default
                                     ? "N/A"
-                                    : ((int)result.ExecutionTime.TotalMilliseconds).ToString("D") + " ms"
+                                    : ((int)result.ExecutionTime.TotalMilliseconds).ToString("D", CultureInfo.InvariantCulture) + " ms"
                             },
                             {
                                 "Message",
@@ -189,7 +195,7 @@ namespace Arbor.Build.Core
             var tempDirectory = new DirectoryInfo(Path.Combine(
                 tempPath,
                 "D",
-                DateTime.UtcNow.ToFileTimeUtc().ToString()));
+                DateTime.UtcNow.ToFileTimeUtc().ToString(CultureInfo.InvariantCulture)));
 
             tempDirectory.EnsureExists();
 
@@ -215,7 +221,7 @@ namespace Arbor.Build.Core
 
         private async Task<ExitCode> RunSystemToolsAsync()
         {
-            IReadOnlyCollection<IVariable> buildVariables = (await GetBuildVariablesAsync().ConfigureAwait(false));
+            IReadOnlyCollection<IVariable> buildVariables = await GetBuildVariablesAsync().ConfigureAwait(false);
 
             string variableAsTable = WellKnownVariables.AllVariables
                 .OrderBy(item => item.InvariantName)
@@ -280,7 +286,7 @@ namespace Arbor.Build.Core
                 const char boxCharacter = '#';
                 string boxLine = new string(boxCharacter, boxLength);
 
-                string message = string.Format(
+                string message = string.Format(CultureInfo.InvariantCulture,
                     "{0}{1}{2}{1}{2} Running tool {3}{1}{2}{1}{0}",
                     boxLine,
                     Environment.NewLine,
@@ -316,7 +322,7 @@ namespace Arbor.Build.Core
                             toolWithPriority,
                             toolResult);
 
-                        result = toolResult.Result;
+                        result = toolResult.Code;
 
                         toolResults.Add(
                             new ToolResult(
@@ -385,8 +391,8 @@ namespace Arbor.Build.Core
         {
             var buildVariables = new List<IVariable>(500);
 
-            Environment.GetEnvironmentVariable(WellKnownVariables.VariableFileSourceEnabled)
-                .TryParseBool(out bool enabled, false);
+            _ = Environment.GetEnvironmentVariable(WellKnownVariables.VariableFileSourceEnabled)
+                .TryParseBool(out bool enabled);
 
             if (enabled)
             {
@@ -456,8 +462,7 @@ namespace Arbor.Build.Core
                     string values;
                     if (newVariables.Length > 0)
                     {
-                        Dictionary<string, string>[] providerTable = new[]
-                            { newVariables.ToDictionary(s => s.Key, s => s.Value) };
+                        Dictionary<string, string>[] providerTable = { newVariables.ToDictionary(s => s.Key, s => s.Value) };
                         values = providerTable.DisplayAsTable();
                     }
                     else
@@ -470,32 +475,32 @@ namespace Arbor.Build.Core
                         values);
                 }
 
-                foreach (IVariable var in newVariables)
+                foreach (IVariable variable in newVariables)
                 {
-                    if (buildVariables.HasKey(var.Key))
+                    if (buildVariables.HasKey(variable.Key))
                     {
-                        IVariable existing = buildVariables.Single(bv => bv.Key.Equals(var.Key, StringComparison.OrdinalIgnoreCase));
+                        IVariable existing = buildVariables.Single(bv => bv.Key.Equals(variable.Key, StringComparison.OrdinalIgnoreCase));
 
-                        if (string.IsNullOrWhiteSpace(buildVariables.GetVariableValueOrDefault(var.Key, string.Empty)))
+                        if (string.IsNullOrWhiteSpace(buildVariables.GetVariableValueOrDefault(variable.Key, string.Empty)))
                         {
-                            if (string.IsNullOrWhiteSpace(var.Value))
+                            if (string.IsNullOrWhiteSpace(variable.Value))
                             {
                                 _logger.Warning(
                                     "The build variable {Key} already exists with empty value, new value is also empty",
-                                    var.Key);
+                                    variable.Key);
                                 continue;
                             }
 
                             _logger.Warning(
                                 "The build variable {Key} already exists with empty value, using new value '{Value}'",
-                                var.Key,
-                                var.Value);
+                                variable.Key,
+                                variable.Value);
 
                             buildVariables.Remove(existing);
                         }
                         else
                         {
-                            if (existing.Value.Equals(var.Value, StringComparison.OrdinalIgnoreCase))
+                            if (existing.Value.Equals(variable.Value, StringComparison.OrdinalIgnoreCase))
                             {
                                 continue;
                             }
@@ -512,22 +517,22 @@ namespace Arbor.Build.Core
                                     "Flag '{VariableOverrideEnabled}' is set to true, existing variable with key '{Key}' and value '{Value}', replacing the value with '{Value1}'",
                                     WellKnownVariables.VariableOverrideEnabled,
                                     existing.Key,
-                                    existing.Value,
-                                    var.Value);
+                                    existing.Key.GetDisplayValue(existing.Value),
+                                    existing.Key.GetDisplayValue(variable.Value));
                             }
                             else
                             {
                                 _logger.Warning(
                                     "The build variable '{Key}' already exists with value '{Value}'. To override variables, set flag '{VariableOverrideEnabled}' to true",
-                                    var.Key,
-                                    var.Value,
+                                    variable.Key,
+                                    variable.Value,
                                     WellKnownVariables.VariableOverrideEnabled);
                                 continue;
                             }
                         }
                     }
 
-                    buildVariables.Add(var);
+                    buildVariables.Add(variable);
                 }
             }
 
@@ -550,7 +555,7 @@ namespace Arbor.Build.Core
             foreach (IVariable buildVariable in buildVariableArray)
             {
                 if (!buildVariable.Key.StartsWithAny(new[] { ArborConstants.ArborBuild, ArborConstants.ArborX },
-                    StringComparison.InvariantCultureIgnoreCase))
+                    StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
@@ -559,12 +564,12 @@ namespace Arbor.Build.Core
 
                 if (
                     buildVariables.Any(
-                        bv => bv.Key.Equals(compatibilityName, StringComparison.InvariantCultureIgnoreCase)))
+                        bv => bv.Key.Equals(compatibilityName, StringComparison.OrdinalIgnoreCase)))
                 {
                     alreadyDefined.Add(new Dictionary<string, string>
                     {
                         { "Name", buildVariable.Key },
-                        { "Value", buildVariable.Value }
+                        { "Value", buildVariable.Key.GetDisplayValue(buildVariable.Value) }
                     });
                 }
                 else
@@ -573,7 +578,7 @@ namespace Arbor.Build.Core
                     {
                         { "Name", buildVariable.Key },
                         { "Compatibility name", compatibilityName },
-                        { "Value", buildVariable.Value }
+                        { "Value", buildVariable.Key.GetDisplayValue(buildVariable.Value) }
                     });
 
                     buildVariables.Add(new BuildVariable(compatibilityName, buildVariable.Value));
@@ -588,7 +593,7 @@ namespace Arbor.Build.Core
                 _logger.Warning("{AlreadyDefined}", alreadyDefinedMessage);
             }
 
-            if (compatibilities.Count > 0)
+            if (compatibilities.Count > 0 && _verboseEnabled)
             {
                 string compatibility =
                     $"{Environment.NewLine}Compatibility build variables added {Environment.NewLine}{Environment.NewLine}{compatibilities.DisplayAsTable()}{Environment.NewLine}";
@@ -598,32 +603,40 @@ namespace Arbor.Build.Core
 
             IVariable arborXBranchName =
                 buildVariables.SingleOrDefault(
-                    var => var.Key.Equals(WellKnownVariables.BranchName, StringComparison.InvariantCultureIgnoreCase));
+                    var => var.Key.Equals(WellKnownVariables.BranchName, StringComparison.OrdinalIgnoreCase));
 
             if (arborXBranchName != null && !string.IsNullOrWhiteSpace(arborXBranchName.Value))
             {
                 const string BranchKey = "branch";
                 const string BranchNameKey = "branchName";
 
-                if (!buildVariables.Any(var => var.Key.Equals(BranchKey, StringComparison.InvariantCultureIgnoreCase)))
+                if (!buildVariables.Any(var => var.Key.Equals(BranchKey, StringComparison.OrdinalIgnoreCase)))
                 {
-                    _logger.Verbose(
-                        "Build variable with key '{BranchKey}' was not defined, using value from variable key {Key} ('{Value}')",
-                        BranchKey,
-                        arborXBranchName.Key,
-                        arborXBranchName.Value);
+                    if (_verboseEnabled)
+                    {
+                        _logger.Verbose(
+                            "Build variable with key '{BranchKey}' was not defined, using value from variable key {Key} ('{Value}')",
+                            BranchKey,
+                            arborXBranchName.Key,
+                            arborXBranchName.Value);
+                    }
+
                     buildVariables.Add(new BuildVariable(BranchKey, arborXBranchName.Value));
                 }
 
                 if (
                     !buildVariables.Any(
-                        var => var.Key.Equals(BranchNameKey, StringComparison.InvariantCultureIgnoreCase)))
+                        var => var.Key.Equals(BranchNameKey, StringComparison.OrdinalIgnoreCase)))
                 {
-                    _logger.Verbose(
-                        "Build variable with key '{BranchNameKey}' was not defined, using value from variable key {Key} ('{Value}')",
-                        BranchNameKey,
-                        arborXBranchName.Key,
-                        arborXBranchName.Value);
+                    if (_verboseEnabled)
+                    {
+                        _logger.Verbose(
+                            "Build variable with key '{BranchNameKey}' was not defined, using value from variable key {Key} ('{Value}')",
+                            BranchNameKey,
+                            arborXBranchName.Key,
+                            arborXBranchName.Value);
+                    }
+
                     buildVariables.Add(new BuildVariable(BranchNameKey, arborXBranchName.Value));
                 }
             }
@@ -634,7 +647,7 @@ namespace Arbor.Build.Core
             var variables = new Dictionary<string, string>();
 
             List<KeyValuePair<string, string>> newLines =
-                variables.Where(item => item.Value.Contains(Environment.NewLine)).ToList();
+                variables.Where(item => item.Value.Contains(Environment.NewLine, StringComparison.Ordinal)).ToList();
 
             if (newLines.Count > 0)
             {

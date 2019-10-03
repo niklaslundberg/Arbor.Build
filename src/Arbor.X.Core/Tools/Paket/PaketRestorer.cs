@@ -8,9 +8,10 @@ using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.ProcessUtils;
 using Arbor.Defensive.Collections;
-using Arbor.Processing.Core;
+using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
+using Serilog.Core;
 
 namespace Arbor.Build.Core.Tools.Paket
 {
@@ -23,6 +24,14 @@ namespace Arbor.Build.Core.Tools.Paket
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
+            logger ??= Logger.None;
+
+            if (buildVariables.GetOptionalBooleanByKey(WellKnownVariables.PaketEnabled) != true)
+            {
+                logger.Information("Paket is disabled by key '{Key}'", WellKnownVariables.PaketEnabled);
+                return ExitCode.Success;
+            }
+
             var sourceRoot =
                 new DirectoryInfo(buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value);
 
@@ -60,7 +69,7 @@ namespace Arbor.Build.Core.Tools.Paket
                 IReadOnlyCollection<FileInfo> filtered =
                     packageSpecifications.Where(
                             packagePath =>
-                                !pathLookupSpecification.IsFileBlackListed(
+                                !pathLookupSpecification.IsFileExcluded(
                                     packagePath,
                                     sourceRoot.FullName,
                                     logger: logger).Item1)

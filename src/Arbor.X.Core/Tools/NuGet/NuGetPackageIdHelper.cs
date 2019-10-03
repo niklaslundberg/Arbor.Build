@@ -41,7 +41,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             string trimmedName = invalidCharacters.Aggregate(
                 nugetPackageId,
-                (current, invalidCharacter) => current.Replace(invalidCharacter, string.Empty));
+                (current, invalidCharacter) => current.Replace(invalidCharacter, string.Empty, StringComparison.Ordinal));
 
             return trimmedName;
         }

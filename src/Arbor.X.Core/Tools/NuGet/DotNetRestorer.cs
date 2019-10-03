@@ -6,9 +6,11 @@ using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.ProcessUtils;
-using Arbor.Processing.Core;
+using Arbor.Defensive;
+using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
+using Serilog.Core;
 
 namespace Arbor.Build.Core.Tools.NuGet
 {
@@ -21,7 +23,8 @@ namespace Arbor.Build.Core.Tools.NuGet
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.DotNetRestoreEnabled, false);
+            logger ??= Logger.None;
+            bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.DotNetRestoreEnabled);
 
             if (!enabled)
             {
@@ -44,14 +47,24 @@ namespace Arbor.Build.Core.Tools.NuGet
             var pathLookupSpecification = new PathLookupSpecification();
             FileInfo[] solutionFiles = new DirectoryInfo(rootPath)
                 .GetFiles("*.sln", SearchOption.AllDirectories)
-                .Where(file => !pathLookupSpecification.IsFileBlackListed(file.FullName, rootPath).Item1)
+                .Where(file => !pathLookupSpecification.IsFileExcluded(file.FullName, rootPath).Item1)
                 .ToArray();
+
+
+            Maybe<IVariable> runtimeIdentifier =
+                buildVariables.GetOptionalVariable(WellKnownVariables.ProjectMSBuildPublishRuntimeIdentifier);
 
             foreach (FileInfo solutionFile in solutionFiles)
             {
+                var arguments = new List<string> { "restore", solutionFile.FullName };
+                if (runtimeIdentifier.HasValue)
+                {
+                    arguments.Add(runtimeIdentifier.Value.Value);
+                }
+
                 ExitCode result = await ProcessHelper.ExecuteAsync(
                     dotNetExePath,
-                    new[] { "restore", solutionFile.FullName },
+                    arguments,
                     logger,
                     cancellationToken: cancellationToken).ConfigureAwait(false);
 

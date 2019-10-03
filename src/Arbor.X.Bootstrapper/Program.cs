@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Arbor.Processing.Core;
+using Arbor.Processing;
 using Serilog;
 using Serilog.Core;
 
@@ -14,7 +14,7 @@ namespace Arbor.Build.Bootstrapper
                 .WriteTo.Console(outputTemplate: "{Message:lj}{NewLine}{Exception}")
                 .CreateLogger();
 
-            var bootstrapper = new Core.Bootstrapper.Bootstrapper(logger);
+            var bootstrapper = new Core.Bootstrapper.AppBootstrapper(logger);
 
             ExitCode exitCode = await bootstrapper.StartAsync(args).ConfigureAwait(false);
 
@@ -23,7 +23,7 @@ namespace Arbor.Build.Bootstrapper
                 disposable.Dispose();
             }
 
-            return exitCode.Result;
+            return exitCode.Code;
         }
     }
 }

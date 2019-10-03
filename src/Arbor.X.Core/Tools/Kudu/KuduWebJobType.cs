@@ -6,22 +6,13 @@ namespace Arbor.Build.Core.Tools.Kudu
 {
     public class KuduWebJobType : IEquatable<KuduWebJobType>
     {
-        private KuduWebJobType(string invariantName)
-        {
-            DisplayName = invariantName;
-        }
+        private KuduWebJobType(string invariantName) => DisplayName = invariantName;
 
         public string DisplayName { get; }
 
-        public static bool operator ==(KuduWebJobType left, KuduWebJobType right)
-        {
-            return Equals(left, right);
-        }
+        public static bool operator ==(KuduWebJobType left, KuduWebJobType right) => Equals(left, right);
 
-        public static bool operator !=(KuduWebJobType left, KuduWebJobType right)
-        {
-            return !Equals(left, right);
-        }
+        public static bool operator !=(KuduWebJobType left, KuduWebJobType right) => !Equals(left, right);
 
         public static KuduWebJobType Continuous => new KuduWebJobType("Continuous");
 
@@ -45,7 +36,7 @@ namespace Arbor.Build.Core.Tools.Kudu
 
             string message = $"Could not parse {typeof(KuduWebJobType).Name} from value '{type}'";
 
-            const StringComparison ComparisonType = StringComparison.InvariantCultureIgnoreCase;
+            const StringComparison comparisonType = StringComparison.OrdinalIgnoreCase;
 
             var exception = new FormatException(message);
 
@@ -55,7 +46,7 @@ namespace Arbor.Build.Core.Tools.Kudu
 
             KuduWebJobType foundItem =
                 All.SingleOrDefault(
-                    item => item.DisplayName.Equals(valueToParse, ComparisonType));
+                    item => item.DisplayName.Equals(valueToParse, comparisonType));
 
             if (foundItem == null)
             {
@@ -67,7 +58,7 @@ namespace Arbor.Build.Core.Tools.Kudu
 
         public bool Equals(KuduWebJobType other)
         {
-            if (ReferenceEquals(null, other))
+            if (other is null)
             {
                 return false;
             }
@@ -77,12 +68,12 @@ namespace Arbor.Build.Core.Tools.Kudu
                 return true;
             }
 
-            return string.Equals(DisplayName, other.DisplayName);
+            return string.Equals(DisplayName, other.DisplayName, StringComparison.OrdinalIgnoreCase);
         }
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj))
+            if (obj is null)
             {
                 return false;
             }
@@ -100,14 +91,8 @@ namespace Arbor.Build.Core.Tools.Kudu
             return Equals((KuduWebJobType)obj);
         }
 
-        public override int GetHashCode()
-        {
-            return DisplayName?.GetHashCode() ?? 0;
-        }
+        public override int GetHashCode() => DisplayName?.GetHashCode(StringComparison.InvariantCulture) ?? 0;
 
-        public override string ToString()
-        {
-            return DisplayName;
-        }
+        public override string ToString() => DisplayName;
     }
 }

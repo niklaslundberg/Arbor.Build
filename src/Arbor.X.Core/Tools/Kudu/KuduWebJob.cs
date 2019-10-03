@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.IO;
-using Arbor.Processing.Core;
+using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
 
@@ -26,7 +26,7 @@ namespace Arbor.Build.Core.Tools.Kudu
             _logger = logger;
 
             const string kuduJobsEnabledKey = WellKnownVariables.KuduJobsEnabled;
-            bool kuduWebJobsEnabled = buildVariables.GetBooleanByKey(kuduJobsEnabledKey, false);
+            bool kuduWebJobsEnabled = buildVariables.GetBooleanByKey(kuduJobsEnabledKey);
 
             if (!kuduWebJobsEnabled)
             {
@@ -79,48 +79,46 @@ namespace Arbor.Build.Core.Tools.Kudu
 
             using (FileStream fs = file.OpenRead())
             {
-                using (var streamReader = new StreamReader(fs))
+                using var streamReader = new StreamReader(fs);
+                while (streamReader.Peek() >= 0)
                 {
-                    while (streamReader.Peek() >= 0)
+                    string line = streamReader.ReadLine();
+
+                    if (line != null)
                     {
-                        string line = streamReader.ReadLine();
-
-                        if (line != null)
+                        expectedKeys.ForEach(key =>
                         {
-                            expectedKeys.ForEach(key =>
+                            if (line.IndexOf(
+                                    key,
+                                    StringComparison.OrdinalIgnoreCase) >= 0)
                             {
-                                if (line.IndexOf(
-                                        key,
-                                        StringComparison.InvariantCultureIgnoreCase) >= 0)
+                                if (!foundItems.ContainsKey(key))
                                 {
-                                    if (!foundItems.ContainsKey(key))
-                                    {
-                                        foundItems.Add(key, line);
-                                    }
-                                    else
-                                    {
-                                        string existingValue = foundItems[key];
+                                    foundItems.Add(key, line);
+                                }
+                                else
+                                {
+                                    string existingValue = foundItems[key];
 
-                                        if (!existingValue.Equals(line, StringComparison.InvariantCultureIgnoreCase))
-                                        {
-                                            _logger.Warning(
-                                                "A Kudu web job key '{Key}' has already been found with value '{ExistingValue}', new value is different '{Line}', using first value",
-                                                key,
-                                                existingValue,
-                                                line);
-                                        }
+                                    if (!existingValue.Equals(line, StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        _logger.Warning(
+                                            "A Kudu web job key '{Key}' has already been found with value '{ExistingValue}', new value is different '{Line}', using first value",
+                                            key,
+                                            existingValue,
+                                            line);
                                     }
                                 }
-                            });
-
-                            if (foundItems.Count == expectedKeys.Count)
-                            {
-                                kuduWebJobProject = KuduWebProjectDetails.Create(
-                                    foundItems[kuduWebJobName],
-                                    foundItems[kuduWebJobType],
-                                    file.FullName);
-                                break;
                             }
+                        });
+
+                        if (foundItems.Count == expectedKeys.Count)
+                        {
+                            kuduWebJobProject = KuduWebProjectDetails.Create(
+                                foundItems[kuduWebJobName],
+                                foundItems[kuduWebJobType],
+                                file.FullName);
+                            break;
                         }
                     }
                 }

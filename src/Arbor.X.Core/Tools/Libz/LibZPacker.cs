@@ -7,15 +7,14 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
-using Arbor.Build.Core.GenericExtensions.Boolean;
+using Arbor.Build.Core.GenericExtensions.Bools;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.ProcessUtils;
-using Arbor.Build.Core.Tools.ILRepack;
 using Arbor.Build.Core.Tools.MSBuild;
 using Arbor.Processing;
-using Arbor.Processing.Core;
 using JetBrains.Annotations;
 using Serilog;
+using Serilog.Core;
 
 namespace Arbor.Build.Core.Tools.Libz
 {
@@ -34,11 +33,11 @@ namespace Arbor.Build.Core.Tools.Libz
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            _logger = logger;
+            _logger = logger ?? Logger.None;
 
             bool parseResult = buildVariables
                 .GetVariableValueOrDefault(WellKnownVariables.ExternalTools_LibZ_Enabled, "false")
-                .ParseOrDefault(false);
+                .ParseOrDefault();
 
             if (!parseResult)
             {
@@ -85,7 +84,7 @@ namespace Arbor.Build.Core.Tools.Libz
                 Environment.NewLine,
                 merges);
 
-            ImmutableArray<ILRepackData> filesToMerge;
+            ImmutableArray<IlMergeData> filesToMerge;
             try
             {
                 filesToMerge = (await Task.WhenAll(ilMergeProjects.Select(GetMergeFilesAsync)).ConfigureAwait(false))
@@ -98,7 +97,7 @@ namespace Arbor.Build.Core.Tools.Libz
                 return ExitCode.Failure;
             }
 
-            foreach (ILRepackData repackData in filesToMerge)
+            foreach (IlMergeData repackData in filesToMerge)
             {
                 var fileInfo = new FileInfo(repackData.Exe);
 
@@ -146,7 +145,7 @@ namespace Arbor.Build.Core.Tools.Libz
                     new DirectoryInfo(Directory.GetCurrentDirectory()),
                     mergedDirectory))
                 {
-                    result = await ProcessRunner.ExecuteAsync(
+                    result = await ProcessRunner.ExecuteProcessAsync(
                         _exePath,
                         arguments: arguments,
                         standardOutLog: logger.Information,
@@ -172,11 +171,11 @@ namespace Arbor.Build.Core.Tools.Libz
             var blacklisted = new List<string> { ".vshost.", "csc.exe", "csi.exe", "vbc.exe", "VBCSCompiler.exe" };
 
             return !blacklisted.Any(
-                blacklistedItem => file.Name.IndexOf(blacklistedItem, StringComparison.InvariantCultureIgnoreCase) >=
+                blacklistedItem => file.Name.IndexOf(blacklistedItem, StringComparison.OrdinalIgnoreCase) >=
                                    0);
         }
 
-        private async Task<ImmutableArray<ILRepackData>> GetMergeFilesAsync(FileInfo projectFile)
+        private async Task<ImmutableArray<IlMergeData>> GetMergeFilesAsync(FileInfo projectFile)
         {
 // ReSharper disable PossibleNullReferenceException
             DirectoryInfo binDirectory = projectFile.Directory.GetDirectories("bin").SingleOrDefault();
@@ -185,7 +184,7 @@ namespace Arbor.Build.Core.Tools.Libz
 
             if (binDirectory == null)
             {
-                return ImmutableArray<ILRepackData>.Empty;
+                return ImmutableArray<IlMergeData>.Empty;
             }
 
             const string configuration = "release"; // TODO support ilmerge for debug
@@ -196,7 +195,7 @@ namespace Arbor.Build.Core.Tools.Libz
             {
                 _logger.Warning("The release directory '{V}' does not exist",
                     Path.Combine(binDirectory.FullName, configuration));
-                return ImmutableArray<ILRepackData>.Empty;
+                return ImmutableArray<IlMergeData>.Empty;
             }
 
             DirectoryInfo[] releasePlatformDirectories = releaseDir.GetDirectories();
@@ -205,7 +204,7 @@ namespace Arbor.Build.Core.Tools.Libz
             {
                 _logger.Warning("Multiple release directories were found for  '{V}'",
                     Path.Combine(binDirectory.FullName, configuration));
-                return ImmutableArray<ILRepackData>.Empty;
+                return ImmutableArray<IlMergeData>.Empty;
             }
 
             string NormalizeVersion(string value)
@@ -235,7 +234,7 @@ namespace Arbor.Build.Core.Tools.Libz
                 {
                     _logger.Warning("No release platform directories were found in '{V}'",
                         Path.Combine(binDirectory.FullName, configuration));
-                    return ImmutableArray<ILRepackData>.Empty;
+                    return ImmutableArray<IlMergeData>.Empty;
                 }
 
                 if (releasePlatformDirectories.Length == 1 && releasePlatformDirectories[0].Name
@@ -289,7 +288,7 @@ namespace Arbor.Build.Core.Tools.Libz
                     {
                         _logger.Warning("The publish directory '{V}' does not exist",
                             Path.Combine(platformDirectory.FullName, "publish"));
-                        return ImmutableArray<ILRepackData>.Empty;
+                        return ImmutableArray<IlMergeData>.Empty;
                     }
 
                     releasePlatformDirectory = publishDirectoryInfo;
@@ -333,7 +332,7 @@ namespace Arbor.Build.Core.Tools.Libz
 
             if (exes.Count == 0)
             {
-                throw new InvalidOperationException("Could not find any exe files to merge");
+                throw new InvalidOperationException(Resources.CouldNotFindAnyExeFileToMerge);
             }
 
             FileInfo exe = exes.Single();
@@ -345,8 +344,8 @@ namespace Arbor.Build.Core.Tools.Libz
                 .Where(FileIsStandAloneExe)
                 .ToImmutableArray();
 
-            ImmutableArray<ILRepackData> mergeFiles =
-                new[] { new ILRepackData(exe.FullName, dlls, configuration, platform, targetFrameworkVersionValue) }
+            ImmutableArray<IlMergeData> mergeFiles =
+                new[] { new IlMergeData(exe.FullName, dlls, configuration, platform, targetFrameworkVersionValue) }
                     .ToImmutableArray();
 
             return mergeFiles;
@@ -376,18 +375,16 @@ namespace Arbor.Build.Core.Tools.Libz
         {
             using (FileStream fs = file.OpenRead())
             {
-                using (var streamReader = new StreamReader(fs))
+                using var streamReader = new StreamReader(fs);
+                while (streamReader.Peek() >= 0)
                 {
-                    while (streamReader.Peek() >= 0)
-                    {
-                        string line = streamReader.ReadLine();
+                    string line = streamReader.ReadLine();
 
-                        if (line?.IndexOf(
-                                "<ILMergeExe>true</ILMergeExe>",
-                                StringComparison.InvariantCultureIgnoreCase) >= 0)
-                        {
-                            return true;
-                        }
+                    if (line?.IndexOf(
+                            "<ILMergeExe>true</ILMergeExe>",
+                            StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        return true;
                     }
                 }
             }

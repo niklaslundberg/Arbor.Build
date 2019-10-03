@@ -1,17 +1,20 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 
-<RuleSet Name="Rules for Arbor" Description="Code analysis rules for Arbox.X" ToolsVersion="14.0">
+<RuleSet Name="Rules for Arbor" Description="Code analysis rules for Arbor.X" ToolsVersion="14.0">
   <Rules AnalyzerId="Microsoft.Analyzers.ManagedCodeAnalysis" RuleNamespace="Microsoft.Rules.Managed">
     <Rule Id="CA1001" Action="Warning" />
     <Rule Id="CA1009" Action="Warning" />
     <Rule Id="CA1016" Action="Warning" />
+    <Rule Id="CA1031" Action="None" />
     <Rule Id="CA1033" Action="Warning" />
     <Rule Id="CA1049" Action="Warning" />
     <Rule Id="CA1060" Action="Warning" />
+    <Rule Id="CA1065" Action="None" />
+    <Rule Id="CA1066" Action="None" />
     <Rule Id="CA1061" Action="Warning" />
     <Rule Id="CA1063" Action="Warning" />
-    <Rule Id="CA1065" Action="Warning" />
     <Rule Id="CA1301" Action="Warning" />
+    <Rule Id="CA1308" Action="None" />
     <Rule Id="CA1400" Action="Warning" />
     <Rule Id="CA1401" Action="Warning" />
     <Rule Id="CA1403" Action="Warning" />
@@ -20,6 +23,7 @@
     <Rule Id="CA1410" Action="Warning" />
     <Rule Id="CA1415" Action="Warning" />
     <Rule Id="CA1707" Action="None" />
+    <Rule Id="CA1812" Action="None" />
     <Rule Id="CA1821" Action="Warning" />
     <Rule Id="CA1900" Action="Warning" />
     <Rule Id="CA1901" Action="Warning" />
@@ -99,5 +103,8 @@
     <Rule Id="RCS1075" Action="None" />
     <Rule Id="RCS1102" Action="None" />
     <Rule Id="RCS1090" Action="None" />
+  </Rules>
+  <Rules AnalyzerId="VS" RuleNamespace="VS">
+    <Rule Id="IDE0007" Action="None" />
   </Rules>
 </RuleSet>

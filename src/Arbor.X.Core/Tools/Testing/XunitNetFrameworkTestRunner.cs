@@ -9,7 +9,6 @@ using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Properties;
 using Arbor.Processing;
-using Arbor.Processing.Core;
 using JetBrains.Annotations;
 using Serilog;
 using Xunit;
@@ -37,7 +36,7 @@ namespace Arbor.Build.Core.Tools.Testing
                 throw new ArgumentNullException(nameof(buildVariables));
             }
 
-            bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.XUnitNetFrameworkEnabled, false);
+            bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.XUnitNetFrameworkEnabled);
 
             if (!enabled)
             {
@@ -98,7 +97,7 @@ namespace Arbor.Build.Core.Tools.Testing
             arguments.Add("-nunit");
             arguments.Add(fileInfo.FullName);
 
-            ExitCode result = await ProcessRunner.ExecuteAsync(
+            ExitCode result = await ProcessRunner.ExecuteProcessAsync(
                 xunitExePath,
                 arguments: arguments,
                 standardOutLog: logger.Information,

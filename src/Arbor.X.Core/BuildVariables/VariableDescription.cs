@@ -1,14 +1,15 @@
 using System;
+using JetBrains.Annotations;
 
 namespace Arbor.Build.Core.BuildVariables
 {
     public sealed class VariableDescription : IEquatable<VariableDescription>
     {
-        private readonly string _defaultValue;
-        private readonly string _description;
-        private readonly string _wellknownName;
+        private readonly string? _defaultValue;
+        private readonly string? _description;
+        private readonly string? _wellKnownName;
 
-        private VariableDescription(string invariantName, string description, string wellknownName, string defaultValue)
+        private VariableDescription(string invariantName, string? description, string? wellKnownName, string? defaultValue)
         {
             if (string.IsNullOrWhiteSpace(invariantName))
             {
@@ -17,11 +18,11 @@ namespace Arbor.Build.Core.BuildVariables
 
             InvariantName = invariantName;
             _description = description;
-            _wellknownName = wellknownName;
+            _wellKnownName = wellKnownName;
             _defaultValue = defaultValue;
         }
 
-        public string WellknownName => _wellknownName ?? string.Empty;
+        public string WellknownName => _wellKnownName ?? string.Empty;
 
         public string DefaultValue => _defaultValue ?? string.Empty;
 
@@ -29,38 +30,31 @@ namespace Arbor.Build.Core.BuildVariables
 
         public string Description => _description ?? string.Empty;
 
-        public static implicit operator string(VariableDescription variableDescription)
+        public static implicit operator string([NotNull] VariableDescription variableDescription)
         {
+            if (variableDescription is null)
+            {
+                throw new ArgumentNullException(nameof(variableDescription));
+            }
+
             return variableDescription.InvariantName;
         }
 
-        public static implicit operator VariableDescription(string invariantName)
-        {
-            return Create(invariantName);
-        }
+        public static implicit operator VariableDescription(string invariantName) => Create(invariantName);
 
-        public static bool operator ==(VariableDescription left, VariableDescription right)
-        {
-            return Equals(left, right);
-        }
+        public static bool operator ==(VariableDescription left, VariableDescription right) => Equals(left, right);
 
-        public static bool operator !=(VariableDescription left, VariableDescription right)
-        {
-            return !Equals(left, right);
-        }
+        public static bool operator !=(VariableDescription left, VariableDescription right) => !Equals(left, right);
 
         public static VariableDescription Create(
             string invariantName,
-            string description = null,
-            string wellknownName = null,
-            string defaultValue = null)
-        {
-            return new VariableDescription(invariantName, description, wellknownName, defaultValue);
-        }
+            string? description = null,
+            string? wellknownName = null,
+            string? defaultValue = null) => new VariableDescription(invariantName, description, wellknownName, defaultValue);
 
         public bool Equals(VariableDescription other)
         {
-            if (ReferenceEquals(null, other))
+            if (other is null)
             {
                 return false;
             }
@@ -75,7 +69,7 @@ namespace Arbor.Build.Core.BuildVariables
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj))
+            if (obj is null)
             {
                 return false;
             }
@@ -88,14 +82,8 @@ namespace Arbor.Build.Core.BuildVariables
             return obj is VariableDescription && Equals((VariableDescription)obj);
         }
 
-        public override int GetHashCode()
-        {
-            return InvariantName != null ? InvariantName.GetHashCode() : 0;
-        }
+        public override int GetHashCode() => InvariantName != null ? InvariantName.GetHashCode(StringComparison.InvariantCulture) : 0;
 
-        public override string ToString()
-        {
-            return $"{InvariantName} ({WellknownName}) [{DefaultValue}], {Description}";
-        }
+        public override string ToString() => $"{InvariantName} ({WellknownName}) [{DefaultValue}], {Description}";
     }
 }

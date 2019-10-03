@@ -9,7 +9,7 @@ namespace Arbor.Build.Core.IO
 {
     public static class PathExtensions
     {
-        public static (bool, string) IsFileBlackListed(
+        public static (bool, string) IsFileExcluded(
             this PathLookupSpecification pathLookupSpecification,
             string sourceFile,
             string rootDir = null,
@@ -59,7 +59,7 @@ namespace Arbor.Build.Core.IO
             IReadOnlyCollection<string> ignoredFileNameParts = pathLookupSpecification.IgnoredFileNameParts
                 .Where(part => !string.IsNullOrEmpty(part))
                 .Where(
-                    part => sourceFileInfo.Name.IndexOf(part, StringComparison.InvariantCultureIgnoreCase) >= 0)
+                    part => sourceFileInfo.Name.IndexOf(part, StringComparison.OrdinalIgnoreCase) >= 0)
                 .SafeToReadOnlyCollection();
 
             if (ignoredFileNameParts.Count > 0)
@@ -149,44 +149,26 @@ namespace Arbor.Build.Core.IO
         private static bool HasAnyPathSegment(
             IEnumerable<string> segments,
             IEnumerable<string> patterns,
-            ILogger logger = null)
-        {
-            return segments.Any(segment => HasAnyPathSegment(segment, patterns, logger));
-        }
+            ILogger logger = null) => segments.Any(segment => HasAnyPathSegment(segment, patterns, logger));
 
-        private static bool HasAnyPathSegment(string segment, IEnumerable<string> patterns, ILogger logger = null)
-        {
-            return patterns.Any(pattern =>
-            {
-                bool isMatch = segment.Equals(pattern, StringComparison.InvariantCultureIgnoreCase);
+        private static bool HasAnyPathSegment(string segment, IEnumerable<string> patterns, ILogger logger = null) => patterns.Any(pattern =>
+                                                                                                                                {
+                                                                                                                                    bool isMatch = segment.Equals(pattern, StringComparison.OrdinalIgnoreCase);
 
-                if (isMatch)
-                {
-                    logger?.Debug("Segment '{Segment}' matches pattern '{Pattern}'", segment, pattern);
-                }
+                                                                                                                                    if (isMatch)
+                                                                                                                                    {
+                                                                                                                                        logger?.Debug("Segment '{Segment}' matches pattern '{Pattern}'", segment, pattern);
+                                                                                                                                    }
 
-                return isMatch;
-            });
-        }
+                                                                                                                                    return isMatch;
+                                                                                                                                });
 
-        private static bool HasAnyPathSegmentStartsWith(IEnumerable<string> segments, IEnumerable<string> patterns)
-        {
-            return segments.Any(segment => HasAnyPathSegmentStartsWith(segment, patterns));
-        }
+        private static bool HasAnyPathSegmentStartsWith(IEnumerable<string> segments, IEnumerable<string> patterns) => segments.Any(segment => HasAnyPathSegmentStartsWith(segment, patterns));
 
-        private static bool HasAnyPathSegmentStartsWith(string segment, IEnumerable<string> patterns)
-        {
-            return patterns.Any(pattern => segment.StartsWith(pattern, StringComparison.InvariantCultureIgnoreCase));
-        }
+        private static bool HasAnyPathSegmentStartsWith(string segment, IEnumerable<string> patterns) => patterns.Any(pattern => segment.StartsWith(pattern, StringComparison.OrdinalIgnoreCase));
 
-        private static bool HasAnyPathSegmentPart(IEnumerable<string> segments, IEnumerable<string> patterns)
-        {
-            return segments.Any(segment => HasAnyPathSegmentPart(segment, patterns));
-        }
+        private static bool HasAnyPathSegmentPart(IEnumerable<string> segments, IEnumerable<string> patterns) => segments.Any(segment => HasAnyPathSegmentPart(segment, patterns));
 
-        private static bool HasAnyPathSegmentPart(string segment, IEnumerable<string> patterns)
-        {
-            return patterns.Any(pattern => segment.IndexOf(pattern, StringComparison.InvariantCultureIgnoreCase) >= 0);
-        }
+        private static bool HasAnyPathSegmentPart(string segment, IEnumerable<string> patterns) => patterns.Any(pattern => segment.IndexOf(pattern, StringComparison.OrdinalIgnoreCase) >= 0);
     }
 }

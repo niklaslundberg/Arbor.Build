@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using Arbor.Processing.Core;
+using Arbor.Processing;
 using Serilog;
 
 namespace Arbor.Build.Core.IO
@@ -55,7 +55,7 @@ namespace Arbor.Build.Core.IO
                 string destFileName = Path.Combine(targetDir, file.Name);
 
                 (bool, string) isFileBlackListed =
-                    pathLookupSpecification.IsFileBlackListed(file.FullName, rootDir, logger: optionalLogger);
+                    pathLookupSpecification.IsFileExcluded(file.FullName, rootDir, logger: optionalLogger);
 
                 if (isFileBlackListed.Item1)
                 {

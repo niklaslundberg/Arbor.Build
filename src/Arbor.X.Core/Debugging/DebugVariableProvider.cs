@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using JetBrains.Annotations;
 using Serilog;
+using Serilog.Core;
 
 namespace Arbor.Build.Core.Debugging
 {
@@ -19,6 +20,8 @@ namespace Arbor.Build.Core.Debugging
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
+            logger ??= Logger.None;
+
             if (!DebugHelper.IsDebugging)
             {
                 logger.Verbose("Skipping debug variables, not running in debug mode");
@@ -39,14 +42,13 @@ namespace Arbor.Build.Core.Debugging
                 [WellKnownVariables.NuGetPackageExcludesCommaSeparated] = "Arbor.X.Bootstrapper.nuspec",
                 [WellKnownVariables.NuGetAllowManifestReWrite] = "false",
                 [WellKnownVariables.NuGetSymbolPackagesEnabled] = "false",
-                [WellKnownVariables.NugetCreateNuGetWebPackagesEnabled] = "false",
+                [WellKnownVariables.NugetCreateNuGetWebPackagesEnabled] = "true",
                 ["Arbor_X_Tests_DummyWebApplication_Arbor_X_NuGet_Package_CreateNuGetWebPackageForProject_Enabled"] =
                     "true",
-                [WellKnownVariables.ExternalTools_ILRepack_Custom_ExePath] = @"C:\Tools\ILRepack\ILRepack.exe",
                 [WellKnownVariables.NuGetVersionUpdatedEnabled] = "false",
                 [WellKnownVariables.ApplicationMetadataEnabled] = "true",
                 [WellKnownVariables.LogLevel] = "information",
-                [WellKnownVariables.NugetCreateNuGetWebPackageFilter] = "Arbor.X.Tests.DummyWebApplication,ABC,",
+                [WellKnownVariables.NugetCreateNuGetWebPackageFilter] = "",
                 [WellKnownVariables.WebJobsExcludedFileNameParts] =
                     "Microsoft.Build,Microsoft.CodeAnalysis,Microsoft.CodeDom",
                 [WellKnownVariables.WebJobsExcludedDirectorySegments] = "roslyn",
@@ -68,7 +70,7 @@ namespace Arbor.Build.Core.Debugging
                 [WellKnownVariables.XUnitNetCoreAppXmlAnalysisEnabled] = "true",
                 [WellKnownVariables.AssemblyUseReflectionOnlyMode] = "true",
                 [WellKnownVariables.MSBuildNuGetRestoreEnabled] = "true",
-                [WellKnownVariables.BranchName] = "develop",
+                [WellKnownVariables.DotNetPublishExeProjectsEnabled] = "true",
             };
 
             Task<ImmutableArray<IVariable>> result = Task.FromResult(environmentVariables.Select(

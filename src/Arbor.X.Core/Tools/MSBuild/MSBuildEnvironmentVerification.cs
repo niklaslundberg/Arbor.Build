@@ -8,9 +8,6 @@ namespace Arbor.Build.Core.Tools.MSBuild
     [UsedImplicitly]
     public class MSBuildEnvironmentVerification : EnvironmentVerification
     {
-        public MSBuildEnvironmentVerification()
-        {
-            RequiredValues.Add(WellKnownVariables.ExternalTools_MSBuild_ExePath);
-        }
+        public MSBuildEnvironmentVerification() => RequiredValues.Add(WellKnownVariables.ExternalTools_MSBuild_ExePath);
     }
 }

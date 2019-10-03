@@ -32,10 +32,7 @@ namespace Arbor.Build.Core.Tools.Git
             return new Maybe<BranchName>(new BranchName(branchName));
         }
 
-        public override string ToString()
-        {
-            return Name;
-        }
+        public override string ToString() => Name;
 
         public string Normalize()
         {

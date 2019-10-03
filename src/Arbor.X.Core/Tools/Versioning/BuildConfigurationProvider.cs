@@ -17,10 +17,7 @@ namespace Arbor.Build.Core.Tools.Versioning
         public const int ProviderOrder = 10;
         private readonly BuildContext _buildContext;
 
-        public BuildConfigurationProvider(BuildContext buildContext)
-        {
-            _buildContext = buildContext;
-        }
+        public BuildConfigurationProvider(BuildContext buildContext) => _buildContext = buildContext;
 
         public int Order => ProviderOrder;
 
@@ -31,7 +28,7 @@ namespace Arbor.Build.Core.Tools.Versioning
         {
             var variables = new List<IVariable>();
 
-            if (buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyConfiguration, null) == null)
+            if (buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyConfiguration, null) is null)
             {
                 variables.Add(new FunctionVariable(
                     WellKnownVariables.NetAssemblyConfiguration,
@@ -43,14 +40,20 @@ namespace Arbor.Build.Core.Tools.Versioning
             bool debugEnabled =
                 buildVariables.GetBooleanByKey(WellKnownVariables.DebugBuildEnabled, true);
 
-            if (!debugEnabled && releaseEnabled)
+            if (!buildVariables.HasKey(WellKnownVariables.Configuration))
             {
-                variables.Add(new BuildVariable(WellKnownVariables.Configuration, "release"));
-            }
-
-            if (debugEnabled && !releaseEnabled)
-            {
-                variables.Add(new BuildVariable(WellKnownVariables.Configuration, "debug"));
+                if (!debugEnabled && releaseEnabled)
+                {
+                    variables.Add(new BuildVariable(WellKnownVariables.Configuration, "release"));
+                }
+                else if (debugEnabled && !releaseEnabled)
+                {
+                    variables.Add(new BuildVariable(WellKnownVariables.Configuration, "debug"));
+                }
+                else
+                {
+                    variables.Add(new BuildVariable(WellKnownVariables.Configuration, "debug"));
+                }
             }
 
             string branchName = buildVariables.GetVariableValueOrDefault(WellKnownVariables.BranchName, "");

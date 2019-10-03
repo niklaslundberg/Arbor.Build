@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.ProcessUtils;
 using Arbor.Build.Core.Tools.EnvironmentVariables;
-using Arbor.Processing.Core;
+using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
 
@@ -17,10 +17,7 @@ namespace Arbor.Build.Core.Tools.NuGet
     [UsedImplicitly]
     public class NuGetEnvironmentVerification : EnvironmentVerification
     {
-        public NuGetEnvironmentVerification()
-        {
-            RequiredValues.Add(WellKnownVariables.ExternalTools_NuGet_ExePath);
-        }
+        public NuGetEnvironmentVerification() => RequiredValues.Add(WellKnownVariables.ExternalTools_NuGet_ExePath);
 
         protected override async Task<bool> PostVariableVerificationAsync(
             StringBuilder variableBuilder,
@@ -68,7 +65,7 @@ namespace Arbor.Build.Core.Tools.NuGet
         private async Task EnsureMinNuGetVersionAsync(string nuGetExePath, ILogger logger)
         {
             var standardOut = new List<string>();
-            ILogger versionLogger = InMemoryLoggerHelper.CreateInMemoryLogger(message => standardOut.Add(message));
+            ILogger versionLogger = InMemoryLoggerHelper.CreateInMemoryLogger((message, level) => standardOut.Add(message));
 
             try
             {
@@ -85,7 +82,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 const string nugetVersion = "NuGet Version: ";
                 string versionLine =
                     standardOut.FirstOrDefault(
-                        line => line.StartsWith(nugetVersion, StringComparison.InvariantCultureIgnoreCase));
+                        line => line.StartsWith(nugetVersion, StringComparison.OrdinalIgnoreCase));
 
                 if (string.IsNullOrWhiteSpace(versionLine))
                 {

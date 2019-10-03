@@ -5,9 +5,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
-using Arbor.Processing.Core;
+using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
+using Serilog.Core;
 
 namespace Arbor.Build.Core.Tools.VisualStudio
 {
@@ -20,6 +21,8 @@ namespace Arbor.Build.Core.Tools.VisualStudio
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
+            logger ??= Logger.None;
+
             string sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
 
             string visualStudioVersion =
@@ -37,7 +40,7 @@ namespace Arbor.Build.Core.Tools.VisualStudio
                             extensionPatterns.Any(
                                 pattern => file.Extension.Equals(
                                     pattern,
-                                    StringComparison.InvariantCultureIgnoreCase)));
+                                    StringComparison.OrdinalIgnoreCase)));
 
                 List<FileInfo> projectFiles81 = projectFiles.Where(Contains81).ToList();
 
@@ -67,20 +70,18 @@ namespace Arbor.Build.Core.Tools.VisualStudio
 
             using (FileStream fs = file.OpenRead())
             {
-                using (var sr = new StreamReader(fs))
+                using var sr = new StreamReader(fs);
+                while (sr.Peek() >= 0)
                 {
-                    while (sr.Peek() >= 0)
-                    {
-                        string line = sr.ReadLine();
+                    string line = sr.ReadLine();
 
-                        if (!string.IsNullOrWhiteSpace(line))
+                    if (!string.IsNullOrWhiteSpace(line))
+                    {
+                        if (
+                            lookupPatterns.Any(
+                                pattern => line.IndexOf(pattern, StringComparison.InvariantCulture) >= 0))
                         {
-                            if (
-                                lookupPatterns.Any(
-                                    pattern => line.IndexOf(pattern, StringComparison.InvariantCulture) >= 0))
-                            {
-                                return true;
-                            }
+                            return true;
                         }
                     }
                 }

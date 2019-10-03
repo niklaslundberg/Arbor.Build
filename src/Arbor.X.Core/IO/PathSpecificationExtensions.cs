@@ -8,26 +8,20 @@ namespace Arbor.Build.Core.IO
     {
         public static PathLookupSpecification WithIgnoredFileNameParts(
             this PathLookupSpecification pathLookupSpecification,
-            IEnumerable<string> ignoredFileNameParts)
-        {
-            return new PathLookupSpecification(
+            IEnumerable<string> ignoredFileNameParts) => new PathLookupSpecification(
                 pathLookupSpecification.IgnoredDirectorySegments,
                 pathLookupSpecification.IgnoredFileStartsWithPatterns,
                 pathLookupSpecification.IgnoredDirectorySegmentParts,
                 pathLookupSpecification.IgnoredDirectoryStartsWithPatterns,
                 ignoredFileNameParts.SafeToReadOnlyCollection());
-        }
 
         public static PathLookupSpecification AddExcludedDirectorySegments(
             this PathLookupSpecification pathLookupSpecification,
-            IEnumerable<string> ignoredExcludedDirectorySegments)
-        {
-            return new PathLookupSpecification(
+            IEnumerable<string> ignoredExcludedDirectorySegments) => new PathLookupSpecification(
                 pathLookupSpecification.IgnoredDirectorySegments.Concat(ignoredExcludedDirectorySegments),
                 pathLookupSpecification.IgnoredFileStartsWithPatterns,
                 pathLookupSpecification.IgnoredDirectorySegmentParts,
                 pathLookupSpecification.IgnoredDirectoryStartsWithPatterns,
                 pathLookupSpecification.IgnoredFileNameParts);
-        }
     }
 }
