@@ -19,8 +19,10 @@ using Arbor.Exceptions;
 using Arbor.KVConfiguration.Core.Metadata;
 using Arbor.KVConfiguration.Schema.Json;
 using Arbor.Processing;
-using Arbor.Xdt;
 using JetBrains.Annotations;
+
+using Microsoft.Web.XmlTransform;
+
 using NuGet.Versioning;
 using Serilog;
 using Serilog.Core;
