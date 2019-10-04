@@ -115,7 +115,7 @@ namespace Arbor.Build.Core.Tools.Git
                 }
             }
 
-            string currentDirectory = VcsPathHelper.FindVcsRootPath();
+            string currentDirectory = VcsPathHelper.FindVcsRootPath(Directory.GetCurrentDirectory());
 
             if (currentDirectory == null)
             {

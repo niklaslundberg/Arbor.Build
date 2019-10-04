@@ -68,7 +68,7 @@ namespace Arbor.Build.Core.BuildVariables
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            string currentDirectory = VcsPathHelper.FindVcsRootPath();
+            string currentDirectory = VcsPathHelper.FindVcsRootPath(Directory.GetCurrentDirectory());
 
             if (currentDirectory == null)
             {

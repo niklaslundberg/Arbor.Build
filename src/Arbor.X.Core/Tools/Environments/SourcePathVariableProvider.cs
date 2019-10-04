@@ -39,7 +39,7 @@ namespace Arbor.Build.Core.Tools.Environments
             }
             else
             {
-                sourceRoot = VcsPathHelper.FindVcsRootPath();
+                sourceRoot = VcsPathHelper.FindVcsRootPath(Directory.GetCurrentDirectory());
             }
 
             DirectoryInfo tempPath = new DirectoryInfo(Path.Combine(sourceRoot, "temp")).EnsureExists();

@@ -345,7 +345,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             var packageInfo = new { Id = packageId, Version = expectedVersion };
 
-            var args = new List<string> { "list", packageId };
+            var args = new List<string> { "list", $"packageid:{packageId}" };
 
             if (!string.IsNullOrWhiteSpace(sourceName))
             {

@@ -51,6 +51,13 @@ namespace Arbor.Build.Core
                 .Add(new EnvironmentVariableKeyValueConfigurationSource())
                 .Build();
 
+            string buildDirArg = args.FirstOrDefault(arg => arg.StartsWith("-buildDirectory=", StringComparison.OrdinalIgnoreCase))?.Split('=').LastOrDefault();
+
+            if (!string.IsNullOrWhiteSpace(buildDirArg) && Directory.Exists(buildDirArg))
+            {
+                Directory.SetCurrentDirectory(buildDirArg);
+            }
+
             StaticKeyValueConfigurationManager.Initialize(multiSourceKeyValueConfiguration);
 
             const bool debugLoggerEnabled = false;
@@ -181,6 +188,11 @@ namespace Arbor.Build.Core
             {
                 Console.WriteLine("Enter base directory");
                 string baseDirectory = Console.ReadLine();
+
+                if (baseDirectory == "-")
+                {
+                    return "";
+                }
 
                 if (!string.IsNullOrWhiteSpace(baseDirectory))
                 {
