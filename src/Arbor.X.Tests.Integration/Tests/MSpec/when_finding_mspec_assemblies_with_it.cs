@@ -34,7 +34,7 @@ namespace Arbor.Build.Tests.Integration.Tests.MSpec
                 $"{DefaultPaths.TempPathPrefix}_mspec_it_{DateTime.Now.ToString("yyyyMMddHHmmssfff_")}{Guid.NewGuid().ToString().Substring(0, 8)}");
             string root = Path.Combine(VcsTestPathHelper.FindVcsRootPath(), "src");
 
-            string combine = Path.Combine(root, "Arbor.X.Tests.Integration", "bin", "debug");
+            string combine = Path.Combine(root, "Arbor.Build.Tests.Integration", "bin", "debug");
 
             tempDirectory = new DirectoryInfo(tempPath).EnsureExists();
 

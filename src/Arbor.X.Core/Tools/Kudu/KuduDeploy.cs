@@ -179,7 +179,7 @@ namespace Arbor.Build.Core.Tools.Kudu
                         await using var fs = new FileStream(appOfflinePath, FileMode.Create, FileAccess.Write);
                         await using var streamWriter = new StreamWriter(fs, Encoding.UTF8);
                         streamWriter.WriteLine(
-"File created by Arbor.X Kudu at {0} (UTC)",
+"File created by Arbor.Build Kudu at {0} (UTC)",
 DateTime.UtcNow.ToString("O"));
                     }
                     catch (UnauthorizedAccessException ex)

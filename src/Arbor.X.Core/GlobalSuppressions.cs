@@ -9,7 +9,7 @@
         "SA1310:Field names must not contain underscore",
         Justification = "Variables",
         Scope = "type",
-        Target = "Arbor.X.Core.BuildVariables.WellKnownVariables")]
+        Target = "Arbor.Build.Core.BuildVariables.WellKnownVariables")]
 
 [assembly:
     System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules",

@@ -33,7 +33,7 @@ namespace Arbor.Build.Tests.Integration.Tests.Xunit
             {
                 string currentDirectory = Path.Combine(VcsTestPathHelper.FindVcsRootPath(),
                     "src",
-                    "Arbor.X.Tests.NetCoreAppSamle");
+                    "Arbor.Build.Tests.NetCoreAppSamle");
 
                 unitTestFixtureDlls = finder.GetUnitTestFixtureDlls(new DirectoryInfo(currentDirectory),
                     false,

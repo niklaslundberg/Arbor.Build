@@ -3,18 +3,18 @@
     public static partial class WellKnownVariables
     {
         [VariableDescription("Flag to indicate if Web Deploy packages should be built")]
-        public const string NetAssemblyMetadataEnabled = "Arbor.X.Build.NetAssembly.MetadataEnabled";
+        public const string NetAssemblyMetadataEnabled = "Arbor.Build.Build.NetAssembly.MetadataEnabled";
 
-        public const string NetAssemblyDescription = "Arbor.X.Build.NetAssembly.Description";
+        public const string NetAssemblyDescription = "Arbor.Build.Build.NetAssembly.Description";
 
-        public const string NetAssemblyCompany = "Arbor.X.Build.NetAssembly.Company";
+        public const string NetAssemblyCompany = "Arbor.Build.Build.NetAssembly.Company";
 
-        public const string NetAssemblyConfiguration = "Arbor.X.Build.NetAssembly.Configuration";
+        public const string NetAssemblyConfiguration = "Arbor.Build.Build.NetAssembly.Configuration";
 
-        public const string NetAssemblyCopyright = "Arbor.X.Build.NetAssembly.Copyright";
+        public const string NetAssemblyCopyright = "Arbor.Build.Build.NetAssembly.Copyright";
 
-        public const string NetAssemblyProduct = "Arbor.X.Build.NetAssembly.Product";
+        public const string NetAssemblyProduct = "Arbor.Build.Build.NetAssembly.Product";
 
-        public const string NetAssemblyTrademark = "Arbor.X.Build.NetAssembly.Trademark";
+        public const string NetAssemblyTrademark = "Arbor.Build.Build.NetAssembly.Trademark";
     }
 }

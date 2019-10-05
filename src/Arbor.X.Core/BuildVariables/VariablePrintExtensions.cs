@@ -14,9 +14,9 @@ namespace Arbor.Build.Core.BuildVariables
                 throw new ArgumentNullException(nameof(variables));
             }
 
-            IEnumerable<Dictionary<string, string>> dictionaries =
+            IEnumerable<Dictionary<string, string?>> dictionaries =
                 variables.Select(
-                    variable => new Dictionary<string, string>
+                    variable => new Dictionary<string, string?>
                     {
                         { "Name", variable.Key },
                         { "Value", variable.Key.GetDisplayValue(variable.Value) }
@@ -39,7 +39,7 @@ namespace Arbor.Build.Core.BuildVariables
             return $"\t{variable.Key}: {value}";
         }
 
-        public static string GetDisplayValue(this string key, string value)
+        public static string? GetDisplayValue(this string key, string? value)
         {
             if (SensitiveValues.Any(sensitive => key.IndexOf(sensitive, StringComparison.OrdinalIgnoreCase) >= 0))
             {

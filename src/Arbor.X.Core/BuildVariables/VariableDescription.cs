@@ -49,8 +49,8 @@ namespace Arbor.Build.Core.BuildVariables
         public static VariableDescription Create(
             string invariantName,
             string? description = null,
-            string? wellknownName = null,
-            string? defaultValue = null) => new VariableDescription(invariantName, description, wellknownName, defaultValue);
+            string? wellKnownName = null,
+            string? defaultValue = null) => new VariableDescription(invariantName, description, wellKnownName, defaultValue);
 
         public bool Equals(VariableDescription other)
         {
@@ -64,7 +64,7 @@ namespace Arbor.Build.Core.BuildVariables
                 return true;
             }
 
-            return string.Equals(InvariantName, other.InvariantName);
+            return string.Equals(InvariantName, other.InvariantName, StringComparison.Ordinal);
         }
 
         public override bool Equals(object obj)

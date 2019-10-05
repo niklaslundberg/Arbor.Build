@@ -44,7 +44,7 @@ namespace Arbor.Build.Tests.Integration.Tests.MSpec
         {
             string root = Path.Combine(VcsTestPathHelper.FindVcsRootPath(), "src");
 
-            string combine = Path.Combine(root, "Arbor.X.Tests.Integration", "bin", "debug");
+            string combine = Path.Combine(root, "Arbor.Build.Tests.Integration", "bin", "debug");
 
             string tempPath = Path.Combine(Path.GetTempPath(),
                 $"{DefaultPaths.TempPathPrefix}_mspec_self_rep_{DateTime.Now.ToString("yyyyMMddHHmmssfff_", CultureInfo.InvariantCulture)}{Guid.NewGuid().ToString().Substring(0, 8)}");

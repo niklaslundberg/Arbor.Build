@@ -8,7 +8,7 @@
 
         [VariableDescription("Flag to indiciate if running in TeamCity (calculated)")]
         public const string ExternalTools_TeamCity_IsRunningInTeamCity =
-            "Arbor.X.Tools.External.TeamCity.IsRunningInTeamCity";
+            "Arbor.Build.Tools.External.TeamCity.IsRunningInTeamCity";
 
         [VariableDescription("TeamCity Version")]
         public const string ExternalTools_TeamCity_TeamCityVersion =

@@ -35,8 +35,8 @@ namespace Arbor.Build.Tests.Integration.Tests.Xunit
                 AssemblyDefinition assemblyDefinition = AssemblyDefinition.ReadAssembly(
                     Path.Combine(VcsTestPathHelper.FindVcsRootPath(),
                         "src",
-                        "Arbor.X.Tests.NetCoreAppSamle",
-                        "Arbor.X.Tests.NetCoreAppSamle.dll"));
+                        "Arbor.Build.Tests.NetCoreAppSamle",
+                        "Arbor.Build.Tests.NetCoreAppSamle.dll"));
 
                 TypeDefinition typeDefinition =
                     assemblyDefinition.MainModule.Types.Single(t =>

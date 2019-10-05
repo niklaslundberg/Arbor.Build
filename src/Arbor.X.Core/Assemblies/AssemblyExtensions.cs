@@ -46,6 +46,7 @@ namespace Arbor.Build.Core.Assemblies
 
             Assembly loadedAssembly = AppDomain.CurrentDomain.GetAssemblies()
                 .SingleOrDefault(assembly => !assembly.IsDynamic
+                                             && assembly.FullName is object
                                              && assembly.FullName.Equals(assemblyDefinition.FullName,
                                                  StringComparison.OrdinalIgnoreCase));
 
@@ -62,6 +63,7 @@ namespace Arbor.Build.Core.Assemblies
 
             Assembly loadedReflectionOnlyAssembly = AppDomain.CurrentDomain.ReflectionOnlyGetAssemblies()
                 .SingleOrDefault(assembly => !assembly.IsDynamic
+                                             && assembly.FullName is object
                                              && assembly.FullName.Equals(assemblyDefinition.FullName,
                                                  StringComparison.OrdinalIgnoreCase));
 
@@ -79,7 +81,7 @@ namespace Arbor.Build.Core.Assemblies
             {
                 try
                 {
-                    Assembly reflectedAssembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(fileInfo.FullName);;
+                    Assembly reflectedAssembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(fileInfo.FullName);
 
                     if (reflectedAssembly != null)
                     {
@@ -89,7 +91,6 @@ namespace Arbor.Build.Core.Assemblies
                         {
                             usedLogger.Verbose("Assembly is debug from reflected assembly: {IsDebug}",
                                 isDebugAssembly?.ToString(CultureInfo.InvariantCulture) ?? "N/A");
-
                         }
 
                         return isDebugAssembly;
@@ -159,19 +160,19 @@ namespace Arbor.Build.Core.Assemblies
             {
                 try
                 {
-                    IList<CustomAttributeData> customAttributeDatas = CustomAttributeData.GetCustomAttributes(assembly);
+                    IList<CustomAttributeData> customAttributes = CustomAttributeData.GetCustomAttributes(assembly);
 
                     CustomAttributeData customAttributeData =
-                        customAttributeDatas.SingleOrDefault(cat => cat.AttributeType == debuggableAttributeType);
+                        customAttributes.SingleOrDefault(cat => cat.AttributeType == debuggableAttributeType);
 
                     if (customAttributeData != null)
                     {
-                        foreach (CustomAttributeTypedArgument cata in customAttributeData.ConstructorArguments)
+                        foreach (CustomAttributeTypedArgument typedArgument in customAttributeData.ConstructorArguments)
                         {
-                            if (cata.Value.GetType() != typeof(ReadOnlyCollection<CustomAttributeTypedArgument>))
+                            if (typedArgument.Value is object && typedArgument.Value.GetType() != typeof(ReadOnlyCollection<CustomAttributeTypedArgument>))
                             {
                                 bool isDebugAssembly =
-                                    (uint)(((DebuggableAttribute.DebuggingModes)cata.Value) &
+                                    (uint)((DebuggableAttribute.DebuggingModes)typedArgument.Value &
                                            DebuggableAttribute.DebuggingModes.Default) > 0U;
 
                                 return isDebugAssembly;

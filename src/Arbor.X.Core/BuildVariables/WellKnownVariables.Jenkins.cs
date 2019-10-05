@@ -14,6 +14,6 @@ namespace Arbor.Build.Core.BuildVariables
 
         [VariableDescription("Flag to indiciate if running in Jenkins (calculated)")]
         public const string ExternalTools_Jenkins_IsRunningInJenkins =
-            "Arbor.X.Tools.External.Jenkins.IsRunningInJenkins";
+            "Arbor.Build.Tools.External.Jenkins.IsRunningInJenkins";
     }
 }

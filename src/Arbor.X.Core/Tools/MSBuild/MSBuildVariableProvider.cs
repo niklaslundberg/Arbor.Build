@@ -16,7 +16,6 @@ using Microsoft.Win32;
 using Newtonsoft.Json;
 using NuGet.Versioning;
 using Serilog;
-using Serilog.Core;
 
 namespace Arbor.Build.Core.Tools.MSBuild
 {

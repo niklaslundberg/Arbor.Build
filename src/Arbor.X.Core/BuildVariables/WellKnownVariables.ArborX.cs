@@ -3,55 +3,55 @@
     public static partial class WellKnownVariables
     {
         [VariableDescription("Flag to indicate if web projects should be built")]
-        public const string WebProjectsBuildEnabled = "Arbor.X.Build.WebProjectsBuild.Enabled";
+        public const string WebProjectsBuildEnabled = "Arbor.Build.Build.WebProjectsBuild.Enabled";
 
         [VariableDescription("Use assembly reflection only mode enabled")]
-        public const string AssemblyUseReflectionOnlyMode = "Arbor.X.ReflectionAssemblyLoad.Enabled";
+        public const string AssemblyUseReflectionOnlyMode = "Arbor.Build.ReflectionAssemblyLoad.Enabled";
 
         [VariableDescription("External tools path")]
         public const string ExternalTools =
-            "Arbor.X.Build.Tools.External";
+            "Arbor.Build.Build.Tools.External";
 
         [VariableDescription("Source root override")]
         public const string SourceRootOverride =
-            "Arbor.X.Build.Source.Override";
+            "Arbor.Build.Build.Source.Override";
 
         [VariableDescription("Test framework report path")]
         public const string ReportPath =
-            "Arbor.X.Artifacts.TestReports";
+            "Arbor.Build.Artifacts.TestReports";
 
         [VariableDescription("Show available variables")]
         public const string ShowAvailableVariablesEnabled =
-            "Arbor.X.ShowAvailableVariablesEnabled";
+            "Arbor.Build.ShowAvailableVariablesEnabled";
 
         [VariableDescription("Show defined variables")]
         public const string ShowDefinedVariablesEnabled =
-            "Arbor.X.ShowDefinedVariablesEnabled";
+            "Arbor.Build.ShowDefinedVariablesEnabled";
 
         [VariableDescription("Flag to indicate if applicationmetadata.json should be created dynamically", "false")]
-        public const string ApplicationMetadataEnabled = "Arbor.X.ApplicationMetadata.Enabled";
+        public const string ApplicationMetadataEnabled = "Arbor.Build.ApplicationMetadata.Enabled";
 
         [VariableDescription(
             "Flag to indicate if Git hash should be added to applicationmetadata.json when it is created",
             "false")]
-        public const string ApplicationMetadataGitHashEnabled = "Arbor.X.ApplicationMetadata.GitHash.Enabled";
+        public const string ApplicationMetadataGitHashEnabled = "Arbor.Build.ApplicationMetadata.GitHash.Enabled";
 
         [VariableDescription(
             "Flag to indicate if Git branch name should be added to applicationmetadata.json when it is created",
             "false")]
         public const string ApplicationMetadataGitBranchEnabled =
-            "Arbor.X.ApplicationMetadata.GitBranch.Enabled";
+            "Arbor.Build.ApplicationMetadata.GitBranch.Enabled";
 
         [VariableDescription(
             "Flag to indicate if .NET CPU platform name should be added to applicationmetadata.json when it is created",
             "false")]
         public const string ApplicationMetadataDotNetCpuPlatformEnabled =
-            "Arbor.X.ApplicationMetadata.DotNetCpuPlatform.Enabled";
+            "Arbor.Build.ApplicationMetadata.DotNetCpuPlatform.Enabled";
 
         [VariableDescription(
             "Flag to indicate if .NET build configuration name should be added to applicationmetadata.json when it is created",
             "false")]
         public const string ApplicationMetadataDotNetConfigurationEnabled =
-            "Arbor.X.ApplicationMetadata.DotNetConfiguration.Enabled";
+            "Arbor.Build.ApplicationMetadata.DotNetConfiguration.Enabled";
     }
 }

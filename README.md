@@ -1,21 +1,21 @@
-# Arbor.X
+# Arbor.Build
 
-Arbor.X is a convention-based build tool for .NET. It is built to work with plain .NET-projects and does not try to replace any existing tool like MSBuild but rather invoke other tools based on what is found in a source code repository.
+Arbor.Build is a convention-based build tool for .NET. It is built to work with plain .NET-projects and does not try to replace any existing tool like MSBuild but rather invoke other tools based on what is found in a source code repository.
 
 In the simplest form, invoke the bootstrapper, **build.exe**, within a Git repository and that's all.
 
-Arbor.X is built to be run both locally on a developer's machine and on a build server. The idea is that the same build process should be able to reproduce in any environment. Features where the build server should be used is to automatically checkout the code, define a unique build number and collect artifacts.
+Arbor.Build is built to be run both locally on a developer's machine and on a build server. The idea is that the same build process should be able to reproduce in any environment. Features where the build server should be used is to automatically checkout the code, define a unique build number and collect artifacts.
 
 ## Usage
 
 * Define environment varibles as the input to the build bootstrapper. The bootstrapper will propagate all environment variables to the build application.
 * Run build.exe
 
-When running Arbor.X, it will show all the build variables it supports.
+When running Arbor.Build, it will show all the build variables it supports.
 
 ## Parts
 
-Arbor.X consists of two components, a bootstrapper and the build application.
+Arbor.Build consists of two components, a bootstrapper and the build application.
 
 The bootstrapper downloads a specific version or the latest version of the build application as a NuGet package from any NuGet source defined for the current user.
 
@@ -56,7 +56,7 @@ This code uses the MIT license http://opensource.org/licenses/MIT, see [License.
 
 ## Artifacts
 
-Artifacts are the output of the build process. When Arbor.X produces and known artifacts, it copies it to a subfolder to /Artifact/. When using Arbor.X from a build server, it's relatively easy to refer to these artifacts by pattern matching.
+Artifacts are the output of the build process. When Arbor.Build produces and known artifacts, it copies it to a subfolder to /Artifact/. When using Arbor.Build from a build server, it's relatively easy to refer to these artifacts by pattern matching.
 
 Examples of artifacts
 
@@ -73,24 +73,24 @@ Examples of artifacts
 
 ## Build variables
 
-Build variables are primarily defined as environment variables. All environment variables defined by Arbor.X are separated into namespaces.
+Build variables are primarily defined as environment variables. All environment variables defined by Arbor.Build are separated into namespaces.
 
 ### Environment variables
 
 All environment variables will be available as build variables with the same name.
 
-## Arbor.X.Bootstrapper
+## Arbor.Build.Bootstrapper
 
 The bootstrapper can be used in two ways:
 
 1. by adding the binary to the source code
 2. by running a custom script to download the latest version of the bootstrapper
 
-The bootstrapper is available as a NuGet package with id Arbor.X.Bootstrapper
+The bootstrapper is available as a NuGet package with id Arbor.Build.Bootstrapper
 
 ## Azure Web sites Kudu support
 
-Arbor.X is aware if Azure Web sites and can determine if is running in a context where Kudu is available. This enables web sites to be deployed with source code triggers and the same build pipeline as running elsewhere.
+Arbor.Build is aware if Azure Web sites and can determine if is running in a context where Kudu is available. This enables web sites to be deployed with source code triggers and the same build pipeline as running elsewhere.
 
 ### Kudu deployment
 
@@ -114,7 +114,7 @@ Find latest version of MSBuild installed on the current machine by looking at re
 
 ### Solution builder
 
-Arbor.X will scan for Visual Studio solution files .sln and build the solution with all configuration and platform combinations defined in the solution file.
+Arbor.Build will scan for Visual Studio solution files .sln and build the solution with all configuration and platform combinations defined in the solution file.
 
 ## NuGet
 

@@ -39,7 +39,7 @@ namespace Arbor.Build.Core.Debugging
                 [WellKnownVariables.VersionPatch] = "0",
                 [WellKnownVariables.VersionBuild] = "286",
                 [WellKnownVariables.GenericXmlTransformsEnabled] = "true",
-                [WellKnownVariables.NuGetPackageExcludesCommaSeparated] = "Arbor.X.Bootstrapper.nuspec",
+                [WellKnownVariables.NuGetPackageExcludesCommaSeparated] = "Arbor.Build.Bootstrapper.nuspec",
                 [WellKnownVariables.NuGetAllowManifestReWrite] = "false",
                 [WellKnownVariables.NuGetSymbolPackagesEnabled] = "false",
                 [WellKnownVariables.NugetCreateNuGetWebPackagesEnabled] = "true",

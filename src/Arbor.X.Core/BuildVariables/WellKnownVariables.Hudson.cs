@@ -8,6 +8,6 @@
 
         [VariableDescription("Flag to indiciate if running in Hudson (calculated)")]
         public const string ExternalTools_Hudson_IsRunningInHudson =
-            "Arbor.X.Tools.External.Hudson.IsRunningInHudson";
+            "Arbor.Build.Tools.External.Hudson.IsRunningInHudson";
     }
 }

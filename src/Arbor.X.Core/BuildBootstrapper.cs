@@ -68,7 +68,7 @@ namespace Arbor.Build.Core
                             && type.HasSingleDefaultConstructor()))
                 .Select(type => Activator.CreateInstance(type) as IModule)
                 .Where(module => module != null)
-                .ToArray();
+                .ToArray()!;
 
             return modules;
         }
