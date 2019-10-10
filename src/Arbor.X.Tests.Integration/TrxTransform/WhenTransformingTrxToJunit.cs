@@ -20,7 +20,7 @@ namespace Arbor.Build.Tests.Integration.TrxTransform
         {
             var report = new FileInfo(Path.Combine(VcsTestPathHelper.FindVcsRootPath(),
                 "src",
-                "Arbor.Build.Tests.Integration",
+                "Arbor.X.Tests.Integration",
                 "xunit_v2.Arbor.X.Tests.SampleXunitNetCoreApp21.trx"));
 
             ExitCode exitCode = TestReportXslt.Transform(report, XUnitV2JUnitXsl.TrxTemplate, _logger, false);
