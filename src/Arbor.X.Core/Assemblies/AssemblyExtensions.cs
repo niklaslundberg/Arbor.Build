@@ -35,8 +35,8 @@ namespace Arbor.Build.Core.Assemblies
 
             string binDebugPath = $"bin{Path.DirectorySeparatorChar}debug";
 
-            if (fileInfo.FullName.Contains(binDebugPath,
-                StringComparison.OrdinalIgnoreCase))
+            if (fileInfo.FullName.IndexOf(binDebugPath,
+                StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 logger?.Debug("Found assembly {Assembly} in {Path}, skipping assembly loading", fileInfo.FullName, binDebugPath);
                 return true;

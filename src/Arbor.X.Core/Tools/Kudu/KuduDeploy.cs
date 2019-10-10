@@ -176,12 +176,17 @@ namespace Arbor.Build.Core.Tools.Kudu
                         WellKnownVariables.KuduUseAppOfflineHtmFile);
                     try
                     {
-                        await using var fs = new FileStream(appOfflinePath, FileMode.Create, FileAccess.Write);
-                        await using var streamWriter = new StreamWriter(fs, Encoding.UTF8);
-                        streamWriter.WriteLine(
-"File created by Arbor.Build Kudu at {0} (UTC)",
-DateTime.UtcNow.ToString("O"));
+                        using (var fs = new FileStream(appOfflinePath, FileMode.Create, FileAccess.Write))
+                        {
+                            using (var streamWriter = new StreamWriter(fs, Encoding.UTF8))
+                            {
+                                streamWriter.WriteLine(
+                                    "File created by Arbor.Build Kudu at {0} (UTC)",
+                                    DateTime.UtcNow.ToString("O"));
+                            }
+                        }
                     }
+
                     catch (UnauthorizedAccessException ex)
                     {
                         logger.Warning(ex,

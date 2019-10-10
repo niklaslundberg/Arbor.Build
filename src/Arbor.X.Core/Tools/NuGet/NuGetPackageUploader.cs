@@ -318,7 +318,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             string packageVersion;
             string packageId;
 
-            await using (var fs = new FileStream(nugetPackage.FullName, FileMode.Open, FileAccess.Read))
+            using (var fs = new FileStream(nugetPackage.FullName, FileMode.Open, FileAccess.Read))
             {
                 using var archive = new ZipArchive(fs);
                 ZipArchiveEntry nuspecEntry =

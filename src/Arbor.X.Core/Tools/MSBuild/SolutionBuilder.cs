@@ -390,7 +390,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
         {
             var platforms = new List<string>();
 
-            await using (var fs = new FileStream(solutionFile.FullName, FileMode.Open, FileAccess.Read))
+            using (var fs = new FileStream(solutionFile.FullName, FileMode.Open, FileAccess.Read))
             {
                 using var streamReader = new StreamReader(fs);
                 bool isInGlobalSection = false;
