@@ -6,6 +6,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Management;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Aesculus.Core;
@@ -230,7 +231,11 @@ namespace Arbor.Build.Core.Bootstrapper
 
         private async Task<ExitCode> TryStartAsync(BootstrapStartOptions startOptions)
         {
-            _logger.Information("Starting Arbor.Build Bootstrapper");
+            var assembly = Assembly.GetExecutingAssembly();
+            var fileVersionInfo = FileVersionInfo.GetVersionInfo(assembly.Location);
+            string version = fileVersionInfo.FileVersion;
+
+            _logger.Information("Starting Arbor.Build Bootstrapper version {Version}", version);
 
             string directoryCloneValue = Environment.GetEnvironmentVariable(WellKnownVariables.DirectoryCloneEnabled);
 
