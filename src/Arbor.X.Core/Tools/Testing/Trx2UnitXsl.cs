@@ -1,6 +1,6 @@
 ﻿namespace Arbor.Build.Core.Tools.Testing
 {
-    public static class XUnitV2JUnitXsl
+    public static class Trx2UnitXsl
     {
         public static readonly
             string Xml = @"<?xml version=""1.0"" encoding=""UTF-8"" ?>

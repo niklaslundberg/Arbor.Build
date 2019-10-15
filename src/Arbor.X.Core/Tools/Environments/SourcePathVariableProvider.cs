@@ -58,16 +58,30 @@ namespace Arbor.Build.Core.Tools.Environments
 
             if (string.IsNullOrWhiteSpace(existingToolsDirectory))
             {
-                DirectoryInfo externalTools =
-                    new DirectoryInfo(Path.Combine(sourceRoot,
-                        "build",
-                        ArborConstants.ArborPackageName,
+                var externalToolsRelativeApp =
+                    new DirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
                         "tools",
-                        "external")).EnsureExists();
+                        "external"));
 
-                variables.Add(new BuildVariable(
-                    WellKnownVariables.ExternalTools,
-                    externalTools.FullName));
+                if (externalToolsRelativeApp.Exists)
+                {
+                    variables.Add(new BuildVariable(
+                        WellKnownVariables.ExternalTools,
+                        externalToolsRelativeApp.FullName));
+                }
+                else
+                {
+                    DirectoryInfo externalTools =
+                        new DirectoryInfo(Path.Combine(sourceRoot,
+                            "build",
+                            ArborConstants.ArborPackageName,
+                            "tools",
+                            "external")).EnsureExists();
+
+                    variables.Add(new BuildVariable(
+                        WellKnownVariables.ExternalTools,
+                        externalTools.FullName));
+                }
             }
 
             return Task.FromResult(variables.ToImmutableArray());

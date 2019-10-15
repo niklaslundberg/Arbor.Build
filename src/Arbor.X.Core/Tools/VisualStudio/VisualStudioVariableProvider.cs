@@ -53,7 +53,7 @@ namespace Arbor.Build.Core.Tools.VisualStudio
 
             string visualStudioVersion = GetVisualStudioVersion(logger, registryKeyName);
 
-            string vsTestExePath = null;
+            string? vsTestExePath = null;
 
             if (!string.IsNullOrWhiteSpace(visualStudioVersion))
             {
@@ -79,7 +79,7 @@ namespace Arbor.Build.Core.Tools.VisualStudio
 
         private static string GetVSTestExePath(ILogger logger, string registryKeyName, string visualStudioVersion)
         {
-            string path = null;
+            string? path = null;
 
             using (RegistryKey view32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
             {

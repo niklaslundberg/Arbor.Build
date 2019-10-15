@@ -29,10 +29,6 @@ namespace Arbor.Build.Core.BuildVariables
             {
                 logger.Verbose("Source directory is specified as {SourceDirectory}", _sourceDirectory);
                 variables.Add(new BuildVariable(WellKnownVariables.SourceRoot, _sourceDirectory));
-                variables.Add(new BuildVariable(
-                    WellKnownVariables.ExternalTools,
-                    new DirectoryInfo(Path.Combine(_sourceDirectory, "tools", "external")).EnsureExists()
-                        .FullName));
             }
 
             return Task.FromResult(variables.ToImmutableArray());

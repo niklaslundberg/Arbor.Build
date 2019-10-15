@@ -19,7 +19,7 @@ namespace Arbor.Build.Core.Tools.Testing
 {
     [Priority(400)]
     [UsedImplicitly]
-    public class XunitNetCoreAppTestRunnerV2 : ITestRunnerTool
+    public class DotNetTestRunner : ITestRunnerTool
     {
         protected internal const string AnyConfiguration = "[Any]";
         private string _sourceRoot;
@@ -44,13 +44,13 @@ namespace Arbor.Build.Core.Tools.Testing
             if (!enabled)
             {
                 logger.Information(
-                    "Xunit .NET Core App test runner is not enabled, set variable '{XUnitNetCoreAppV2Enabled}' to true to enable",
+                    ".NET test runner is not enabled, set variable '{XUnitNetCoreAppV2Enabled}' to true to enable",
                     WellKnownVariables.XUnitNetCoreAppV2Enabled);
                 return ExitCode.Success;
             }
 
             logger.Information(
-                "Xunit .NET Core App test runner is enabled, defined in key {Key}",
+                ".NET test runner is enabled, defined in key {Key}",
                 WellKnownVariables.XUnitNetCoreAppV2Enabled);
 
             _sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
@@ -86,77 +86,6 @@ namespace Arbor.Build.Core.Tools.Testing
 
             ImmutableArray<string> assemblyFilePrefix = buildVariables.AssemblyFilePrefixes();
 
-            object prefixes = assemblyFilePrefix.Length == 0 ? (object) "none" : (object) assemblyFilePrefix;
-
-            logger.Information(
-                "Finding Xunit test DLL files built with '{Configuration}' configuration in directory '{SourceRoot}', using prefixes {Prefixes}",
-                configuration,
-                _sourceRoot,
-                prefixes);
-
-            logger.Information("Looking for types {TypesToFind} in directory '{SourceRoot}'",
-                string.Join(", ", typesToFind.Select(t => t.FullName)),
-                _sourceRoot);
-
-            List<string> testDlls = new UnitTestFinder(typesToFind, logger: logger, debugLogEnabled: true)
-                .GetUnitTestFixtureDlls(directory,
-                    runTestsInReleaseConfiguration,
-                    assemblyFilePrefix,
-                    FrameworkConstants.NetCoreApp)
-                .ToList();
-
-            if (testDlls.Count == 0)
-            {
-                logger.Information("Found no .NETCoreApp Assemblies with Xunit tests using prefixes {Prefixes}", prefixes);
-                return ExitCode.Success;
-            }
-
-            logger.Information("Found {AssemblyCount} .NETCoreApp Assemblies with Xunit tests  using prefixes {Prefixes}", testDlls.Count, prefixes);
-
-            DirectoryInfo GetProjectDirectoryForDll(DirectoryInfo directoryInfo)
-            {
-                try
-                {
-                    if (directoryInfo.GetFiles("*.csproj").Length > 0)
-                    {
-                        return directoryInfo;
-                    }
-
-                    if (directoryInfo.Parent != null)
-                    {
-                        return GetProjectDirectoryForDll(directoryInfo.Parent);
-                    }
-                }
-                catch (Exception)
-                {
-                    return null;
-                }
-
-                return null;
-            }
-
-            HashSet<string> GetTestDirectories(IReadOnlyCollection<string> dlls)
-            {
-                var directories = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-                foreach (string dll in dlls)
-                {
-                    DirectoryInfo projectDirectoryForDll = GetProjectDirectoryForDll(new FileInfo(dll).Directory);
-
-                    if (projectDirectoryForDll != null)
-                    {
-                        directories.Add(projectDirectoryForDll.FullName);
-                    }
-                }
-
-                return directories;
-            }
-
-            logger.Debug("Found [{TestDlls}] potential Assembly dll files with tests: {NewLine}: {DllFiles}",
-                testDlls.Count,
-                Environment.NewLine,
-                string.Join(Environment.NewLine, testDlls.Select(dll => $" * '{dll}'")));
-
             string dotNetExePath =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.DotNetExePath, string.Empty);
 
@@ -170,16 +99,20 @@ namespace Arbor.Build.Core.Tools.Testing
 
             logger.Debug("Using dotnet.exe in path '{DotNetExePath}'", dotNetExePath);
 
-            HashSet<string> testDirectories = GetTestDirectories(testDlls);
+            var testDirectories = new DirectoryInfo(_sourceRoot)
+                .GetFiles("*test*.csproj", SearchOption.AllDirectories)
+                .Select(file => file.Directory.FullName)
+                .ToHashSet();
 
             ExitCode exitCode = ExitCode.Success;
 
             foreach (string testDirectory in testDirectories)
             {
                 var directoryInfo = new DirectoryInfo(testDirectory);
-                string xmlReportName = $"xunit_v2.{directoryInfo.Name}.trx";
+                string xmlReportName = $"dotnet.{directoryInfo.Name}.trx";
 
                 var arguments = new List<string> { "test", testDirectory, };
+
                 if (!configuration.Equals(AnyConfiguration, StringComparison.OrdinalIgnoreCase))
                 {
                    arguments.Add("--no-build");
@@ -190,7 +123,7 @@ namespace Arbor.Build.Core.Tools.Testing
                 bool xmlEnabled =
                     buildVariables.GetBooleanByKey(WellKnownVariables.XUnitNetCoreAppXmlEnabled, true);
 
-                string reportFile = Path.Combine(reportPath.Value, "xunit", "v2", xmlReportName);
+                string reportFile = Path.Combine(reportPath.Value, "dotnet", xmlReportName);
 
                 var reportFileInfo = new FileInfo(reportFile);
                 reportFileInfo.Directory.EnsureExists();
@@ -214,11 +147,11 @@ namespace Arbor.Build.Core.Tools.Testing
 
                     if (xmlEnabled)
                     {
-                        bool xunitXmlAnalysisEnabled =
+                        bool xmlAnalysisEnabled =
                             buildVariables.GetBooleanByKey(WellKnownVariables.XUnitNetCoreAppXmlAnalysisEnabled,
                                 true);
 
-                        if (xunitXmlAnalysisEnabled)
+                        if (xmlAnalysisEnabled)
                         {
                             logger.Debug(
                                 "Feature flag '{XUnitNetCoreAppXmlAnalysisEnabled}' is enabled and the xunit exit code was {Result}, running xml report to find actual result",
@@ -240,7 +173,7 @@ namespace Arbor.Build.Core.Tools.Testing
                     WellKnownVariables.XUnitNetCoreAppV2XmlXsltToJunitEnabled))
                 {
                     logger.Verbose(
-                        "Transforming XUnit net core app test reports to JUnit format");
+                        "Transforming TRX test reports to JUnit format");
 
                     DirectoryInfo xmlReportDirectory = reportFileInfo.Directory;
 
@@ -258,7 +191,7 @@ namespace Arbor.Build.Core.Tools.Testing
                             try
                             {
                                 ExitCode transformExitCode =
-                                    TestReportXslt.Transform(xmlReport, XUnitV2JUnitXsl.Xml, logger);
+                                    TestReportXslt.Transform(xmlReport, Trx2UnitXsl.Xml, logger);
 
                                 if (!transformExitCode.IsSuccess)
                                 {
@@ -276,11 +209,12 @@ namespace Arbor.Build.Core.Tools.Testing
                         }
                     }
                 }
+
                 if (buildVariables.GetBooleanByKey(
                     WellKnownVariables.XUnitNetCoreAppV2TrxXsltToJunitEnabled))
                 {
                     logger.Verbose(
-                        "Transforming XUnit net core TRX test reports to JUnit format");
+                        "Transforming TRX test reports to JUnit format");
 
                     DirectoryInfo xmlReportDirectory = reportFileInfo.Directory;
 
@@ -298,7 +232,7 @@ namespace Arbor.Build.Core.Tools.Testing
                             try
                             {
                                 ExitCode transformExitCode =
-                                    TestReportXslt.Transform(xmlReport, XUnitV2JUnitXsl.TrxTemplate, logger);
+                                    TestReportXslt.Transform(xmlReport, Trx2UnitXsl.TrxTemplate, logger);
 
                                 if (!transformExitCode.IsSuccess)
                                 {
@@ -319,7 +253,7 @@ namespace Arbor.Build.Core.Tools.Testing
                 else
                 {
                     logger.Verbose(
-                        "Xunit transformation to JUnit format is disabled, defined in key '{Key}' and '{TrxKey}'", WellKnownVariables.XUnitNetCoreAppV2XmlXsltToJunitEnabled, WellKnownVariables.XUnitNetCoreAppV2TrxXsltToJunitEnabled);
+                        "TRX transformation to JUnit format is disabled, defined in key '{Key}' and '{TrxKey}'", WellKnownVariables.XUnitNetCoreAppV2XmlXsltToJunitEnabled, WellKnownVariables.XUnitNetCoreAppV2TrxXsltToJunitEnabled);
                 }
             }
 

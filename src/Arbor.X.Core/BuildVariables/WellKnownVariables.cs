@@ -194,25 +194,9 @@ namespace Arbor.Build.Core.BuildVariables
         public const string ExternalTools_VSTest_ExePath =
             "Arbor.Build.Tools.External.VSTest.ExePath";
 
-        [VariableDescription("Visual Studio Test Framework test reports directory path")]
-        public const string ExternalTools_VSTest_ReportPath = "Arbor.Build.Artifacts.TestReports.VSTest";
-
-        [VariableDescription("Machine.Specifications reports directory path")]
-        public const string ExternalTools_MSpec_ReportPath = "Arbor.Build.Artifacts.TestReports.MSpec";
-
         [VariableDescription("PDB artifacts enabled")]
         public const string PublishPdbFilesAsArtifacts =
             "Arbor.Build.Artifacts.PdbArtifacts.Enabled";
-
-        [VariableDescription("LibZ executable path (eg. C:\\LibZ.exe)")]
-        public const string ExternalTools_LibZ_ExePath = "Arbor.Build.Tools.External.LibZ.ExePath";
-
-        [VariableDescription("LibZ custom executable path (eg. C:\\LibZ.exe)")]
-        public const string ExternalTools_LibZ_Custom_ExePath = "Arbor.Build.Tools.External.LibZ.CustomExePath";
-
-        [VariableDescription("LibZ enabled (eg. true|false")]
-        public const string ExternalTools_LibZ_Enabled =
-            "Arbor.Build.Tools.External.LibZ.Enabled";
 
         [VariableDescription("Flag to indicate if Kudu deployment is enabled", "true")]
         public const string ExternalTools_Kudu_Enabled = "Arbor.Build.Tools.External.Kudu.Enabled";
@@ -270,30 +254,6 @@ namespace Arbor.Build.Core.BuildVariables
         [VariableDescription("Flag to indicate if Kudu should exclude App_Data directory when deploying")]
         public const string KuduExcludeDeleteAppData = "Arbor.Build.Tools.External.Kudu.ExcludeDeleteApp_Data";
 
-        [VariableDescription("Enable Machine.Specifications")]
-        public const string MSpecEnabled =
-            "Arbor.Build.Tools.External.MSpec.Enabled";
-
-        [VariableDescription("Enable Machine.Specifications XSL transformation to NUnit")]
-        public const string MSpecJUnitXslTransformationEnabled =
-            "Arbor.Build.Tools.External.MSpec.JUnitXslTransformation.Enabled";
-
-        [VariableDescription("Enable NUnit")]
-        public const string NUnitEnabled =
-            "Arbor.Build.Tools.External.NUnit.Enabled";
-
-        [VariableDescription("NUnitExePathOverride")]
-        public const string NUnitExePathOverride =
-            "Arbor.Build.Tools.External.NUnit.ExePathOverride";
-
-        [VariableDescription("NUnit JUnit XSL transform enabled")]
-        public const string NUnitTransformToJunitEnabled =
-            "Arbor.Build.Tools.External.NUnit.JUnitXslTransform.Enabled";
-
-        [VariableDescription("Enable XUnit .NET Framework")]
-        public const string XUnitNetFrameworkEnabled =
-            "Arbor.Build.Tools.External.Xunit.NetFramework.Enabled";
-
         [VariableDescription("Enable XUnit .NET Core App")]
         public const string XUnitNetCoreAppV2Enabled =
             "Arbor.Build.Tools.External.Xunit.NetCoreAppV2.Enabled";
@@ -318,14 +278,6 @@ namespace Arbor.Build.Core.BuildVariables
         [VariableDescription("XUnit .NET Core App XML output enabled")]
         public const string XUnitNetCoreAppXmlEnabled =
             "Arbor.Build.Tools.External.Xunit.NetCoreApp.Xml.Enabled";
-
-        [VariableDescription("XUnit .NET Framework exe path")]
-        public const string XUnitNetFrameworkExePath =
-            "Arbor.Build.Tools.External.Xunit.NetFramework.ExePath";
-
-        [VariableDescription("Enable VSTest")]
-        public const string VSTestEnabled =
-            "Arbor.Build.Tools.External.VSTest.Enabled";
 
         [VariableDescription("'|' (bar) separated list of file names to not delete when deploying")]
         public const string KuduIgnoreDeleteFiles =
