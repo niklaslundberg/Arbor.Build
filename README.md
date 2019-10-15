@@ -1,15 +1,15 @@
 # Arbor.Build
 
-Arbor.Build is a convention-based build tool for .NET. It is built to work with plain .NET-projects and does not try to replace any existing tool like MSBuild but rather invoke other tools based on what is found in a source code repository.
+Arbor.Build is a convention-based build tool for .NET Core and .NET Framework. It is built to work with plain .NET-projects and does not try to replace any existing tool like MSBuild but rather invoke other tools based on what is found in a source code repository.
 
-In the simplest form, invoke the bootstrapper, **build.exe**, within a Git repository and that's all.
+In the simplest form, invoke the bootstrapper, **arbor-build**, within a Git repository and that's all.
 
 Arbor.Build is built to be run both locally on a developer's machine and on a build server. The idea is that the same build process should be able to reproduce in any environment. Features where the build server should be used is to automatically checkout the code, define a unique build number and collect artifacts.
 
 ## Usage
 
 * Define environment varibles as the input to the build bootstrapper. The bootstrapper will propagate all environment variables to the build application.
-* Run build.exe
+* Run arbor-build
 
 When running Arbor.Build, it will show all the build variables it supports.
 
@@ -35,8 +35,8 @@ It extracts the NuGet package and invokes the build application.
 
 * Scan system for supported tooling, like MSBuild, Git and NuGet.
 * Invoke MSBuild for all found solution files, built using the configurations and platforms within the solution file
-* Scan for supported tests and invoke unit tests frameworks.
-* Shows how external processes are invoked in log files to enable reproduction of individual tasks.
+* Run dotnet test for all test projects
+* Shows how external processes are invoked in log files to enable reproduction of individual tasks
 * Patch and unpatch assembly metadata
 * Restore NuGet packages
 * Create NuGet packages from found NuSpec-files
@@ -52,7 +52,7 @@ This code uses the MIT license http://opensource.org/licenses/MIT, see [License.
 
 ## System requirements
 
-* .NET Framework 4.5.1
+* .NET Core 3.0
 
 ## Artifacts
 
@@ -64,7 +64,6 @@ Examples of artifacts
 * Created NuGet packages
 * DLL files and PDB files
 * ASP.NET Websites
-* ILMerged files
 * EXE files
 
 ## Supported Version Control Systems
@@ -92,25 +91,13 @@ The bootstrapper is available as a NuGet package with id Arbor.Build.Bootstrappe
 
 Arbor.Build is aware if Azure Web sites and can determine if is running in a context where Kudu is available. This enables web sites to be deployed with source code triggers and the same build pipeline as running elsewhere.
 
-### Kudu deployment
-
-Create a .deployment file pointing to /build/build.exe
-
 #### Using GIT
 
 The code is cloned from the default repository and checked out with the specified branch into a temporary folder and and build actions are performed from that temp directory. This way the code is always clean.
 
-## Test framework integration
-
-Supported test frameworks
-
-* NUnit
-* VSTest
-* Machine.Specifications
-
 ## MSBuild integration
 
-Find latest version of MSBuild installed on the current machine by looking at registry keys.
+Find latest version of MSBuild installed on the current machine by looking at registry keys and using vswhere.exe.
 
 ### Solution builder
 
@@ -122,31 +109,12 @@ Arbor.Build will scan for Visual Studio solution files .sln and build the soluti
 * NuGet package restore
 * NuGet package publishing
 
-## Version Conntrol System file structure
-
-Recommended file structure
-* /src - source code
-* /build - build related scripts and tools
-* /docs - documents other than README, LICENSE
-
 ### Recommended ignored files
 
 * [Tt]emp
 * _assemblyPatchInfos
 * [Aa]rtifacts
 * [Bb]uild/*
-
-### Recommended included files
-
-* optional build/Build.exe 
-* optional build/build.bat
-
-# Build server support
-
-* TeamCity
-* Hudson
-* Jenkins
-* Bamboo
 
 ## Conventions
 
@@ -163,6 +131,3 @@ Recommended file structure
 * Code in a release branch will produce NuGet packages without suffix, thus the pakage is considered a stable production ready package
 * Code in a feature branch will produce packages identified by the feature branch name
 * By default no packages are created in a master branch
-
-### Excluded directory and file patterns
-
