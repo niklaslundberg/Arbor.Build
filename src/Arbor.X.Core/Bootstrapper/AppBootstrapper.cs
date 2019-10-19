@@ -333,13 +333,16 @@ namespace Arbor.Build.Core.Bootstrapper
             }
 
             var nuGetPackageInstaller = new NuGetPackageInstaller(logger: _logger);
+
             var nuGetPackage = new NuGetPackage(
                 new NuGetPackageId(BuildToolPackageName),
                 packageVersion);
 
+            var nugetPackageSettings = new NugetPackageSettings(preReleaseIsAllowed, nuGetSource);
+
             var nuGetPackageInstallResult = await nuGetPackageInstaller.InstallPackageAsync(
                     nuGetPackage,
-                    new NugetPackageSettings(preReleaseIsAllowed, nuGetSource))
+                    nugetPackageSettings)
                 .ConfigureAwait(false);
 
             return nuGetPackageInstallResult.PackageDirectory.FullName;

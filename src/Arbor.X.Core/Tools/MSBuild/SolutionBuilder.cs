@@ -1719,7 +1719,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             string tags = string.Empty;
 
             string files = string.Join(Environment.NewLine,
-                filesList.Select(file => NuSpecHelper.IncludedFile(file, baseDirectory.FullName)));
+                filesList.Select(file => NuSpecHelper.IncludedFile(file, baseDirectory.FullName, _logger)));
 
             FileListWithChecksumFile contentFilesInfo = ChecksumHelper.CreateFileListForDirectory(baseDirectory);
 

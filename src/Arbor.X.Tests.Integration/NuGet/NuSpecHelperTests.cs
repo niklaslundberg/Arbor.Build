@@ -2,6 +2,7 @@
 using System.IO;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.NuGet;
+using Serilog.Core;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -26,7 +27,7 @@ namespace Arbor.Build.Tests.Integration.NuGet
             {
             }
 
-            string includedFile = NuSpecHelper.IncludedFile(fileName, tempDirectory.FullName);
+            string includedFile = NuSpecHelper.IncludedFile(fileName, tempDirectory.FullName, Logger.None);
 
             tempDirectory.DeleteIfExists();
 
