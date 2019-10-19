@@ -6,9 +6,9 @@ using JetBrains.Annotations;
 namespace Arbor.Defensive
 {
     [ImmutableObject(true)]
-    public struct Maybe<T> : IEquatable<Maybe<T?>> where T : class
+    public struct Maybe<T> : IEquatable<Maybe<T>> where T : class
     {
-        private static readonly Lazy<Maybe<T?>> _Empty = new Lazy<Maybe<T?>>(() => default);
+        private static readonly Lazy<Maybe<T>> _Empty = new Lazy<Maybe<T>>(() => default);
 
         private readonly T? _value;
 
@@ -38,7 +38,7 @@ namespace Arbor.Defensive
 
         public bool HasValue => _value is object;
 
-        public static implicit operator T?(Maybe<T?> maybe)
+        public static implicit operator T?(Maybe<T> maybe)
         {
             if (!maybe.HasValue)
             {
@@ -52,14 +52,14 @@ namespace Arbor.Defensive
             return maybe.Value;
         }
 
-        public static implicit operator Maybe<T?>(T? value)
+        public static implicit operator Maybe<T>(T? value)
         {
             if (value is null)
             {
                 return Empty();
             }
 
-            return new Maybe<T?>(value);
+            return new Maybe<T>(value);
         }
 
         public static bool operator ==(Maybe<T> left, T right)
@@ -109,9 +109,9 @@ namespace Arbor.Defensive
             return !left.Value.Equals(right.Value);
         }
 
-        public static Maybe<T?> Empty() => _Empty.Value;
+        public static Maybe<T> Empty() => _Empty.Value;
 
-        public bool Equals(Maybe<T?> other)
+        public bool Equals(Maybe<T> other)
         {
             if (!other.HasValue)
             {

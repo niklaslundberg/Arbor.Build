@@ -181,16 +181,16 @@ namespace Arbor.Build.Core.Tools.Git
 
                 if (!variables.HasKey(WellKnownVariables.GitHash))
                 {
-                    const string arborXGitcommithashenabled = "Arbor.Build.GitCommitHashEnabled";
+                    const string arborBuildGitcommithashenabled = "Arbor.Build.GitCommitHashEnabled";
 
-                    string environmentVariable = Environment.GetEnvironmentVariable(arborXGitcommithashenabled);
+                    string environmentVariable = Environment.GetEnvironmentVariable(arborBuildGitcommithashenabled);
 
                     if (!environmentVariable
                         .ParseOrDefault(true))
                     {
                         logger.Information(
                             "Git commit hash is disabled by environment variable {ArborXGitcommithashenabled} set to {EnvironmentVariable}",
-                            arborXGitcommithashenabled,
+                            arborBuildGitcommithashenabled,
                             environmentVariable);
                     }
                     else

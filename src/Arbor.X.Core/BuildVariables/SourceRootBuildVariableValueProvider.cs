@@ -1,9 +1,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Arbor.Build.Core.IO;
 using JetBrains.Annotations;
 using Serilog;
 
@@ -14,7 +12,8 @@ namespace Arbor.Build.Core.BuildVariables
     {
         private readonly string? _sourceDirectory;
 
-        public SourceRootBuildVariableValueProvider(SourceRootValue? sourceDirectory = null) => _sourceDirectory = sourceDirectory?.SourceRoot;
+        public SourceRootBuildVariableValueProvider(SourceRootValue? sourceDirectory = null) =>
+            _sourceDirectory = sourceDirectory?.SourceRoot;
 
         public int Order => int.MinValue;
 

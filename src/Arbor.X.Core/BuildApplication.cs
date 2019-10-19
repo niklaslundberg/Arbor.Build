@@ -306,7 +306,7 @@ namespace Arbor.Build.Core
 
                 var files = new List<string>
                 {
-                    "arborx_environmentvariables.json", "arborx_environmentvariables.json.user"
+                    "arborbuild_environmentvariables.json", "arborbuild_environmentvariables.json.user"
                 };
 
                 foreach (string configFile in files)

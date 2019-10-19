@@ -145,35 +145,6 @@ namespace Arbor.Build.Core.BuildVariables
             return returnValue.Value;
         }
 
-        public static long GetInt64ByKey(
-            this IReadOnlyCollection<IVariable> buildVariables,
-            string key,
-            long defaultValue = default)
-        {
-            if (!buildVariables.HasKey(key))
-            {
-                return defaultValue;
-            }
-
-            string? value = buildVariables.GetVariableValueOrDefault(
-                key,
-                defaultValue.ToString(CultureInfo.InvariantCulture));
-
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                return defaultValue;
-            }
-
-            if (!long.TryParse(
-                value,
-                out long parsed))
-            {
-                return defaultValue;
-            }
-
-            return parsed;
-        }
-
         public static bool GetValueOrDefault(
             this IVariable variable,
             bool defaultValue = false)
@@ -191,54 +162,6 @@ namespace Arbor.Build.Core.BuildVariables
             if (!bool.TryParse(
                 variable.Value,
                 out bool parsed))
-            {
-                return defaultValue;
-            }
-
-            return parsed;
-        }
-
-        public static int GetValueOrDefault(
-            this IVariable variable,
-            int defaultValue = default)
-        {
-            if (variable == null)
-            {
-                return defaultValue;
-            }
-
-            if (string.IsNullOrWhiteSpace(variable.Value))
-            {
-                return defaultValue;
-            }
-
-            if (!int.TryParse(
-                variable.Value,
-                out int parsed))
-            {
-                return defaultValue;
-            }
-
-            return parsed;
-        }
-
-        public static long GetValueOrDefault(
-            this IVariable variable,
-            long defaultValue = default)
-        {
-            if (variable == null)
-            {
-                return defaultValue;
-            }
-
-            if (string.IsNullOrWhiteSpace(variable.Value))
-            {
-                return defaultValue;
-            }
-
-            if (!long.TryParse(
-                variable.Value,
-                out long parsed))
             {
                 return defaultValue;
             }

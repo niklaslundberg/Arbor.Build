@@ -22,7 +22,7 @@ namespace Arbor.Build.Core.BuildVariables
             _defaultValue = defaultValue;
         }
 
-        public string WellknownName => _wellKnownName ?? string.Empty;
+        public string WellKnownName => _wellKnownName ?? string.Empty;
 
         public string DefaultValue => _defaultValue ?? string.Empty;
 
@@ -79,11 +79,11 @@ namespace Arbor.Build.Core.BuildVariables
                 return true;
             }
 
-            return obj is VariableDescription && Equals((VariableDescription)obj);
+            return obj is VariableDescription description && Equals(description);
         }
 
         public override int GetHashCode() => InvariantName != null ? InvariantName.GetHashCode(StringComparison.InvariantCulture) : 0;
 
-        public override string ToString() => $"{InvariantName} ({WellknownName}) [{DefaultValue}], {Description}";
+        public override string ToString() => $"{InvariantName} ({WellKnownName}) [{DefaultValue}], {Description}";
     }
 }

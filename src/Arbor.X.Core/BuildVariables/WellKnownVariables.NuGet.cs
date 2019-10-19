@@ -2,12 +2,6 @@
 {
     public static partial class WellKnownVariables
     {
-        [VariableDescription("Flag to indicate if NuGet should have parallel processing disabled", "true")]
-        public const string NuGetRestoreDisableParallelProcessing = "Arbor.Build.NuGet.Restore.DisableParallelProcessing";
-
-        [VariableDescription("Flag to indicate if NuGet should use the -nocache flag", "true")]
-        public const string NuGetRestoreNoCache = "Arbor.Build.NuGet.Restore.NoCache";
-
         [VariableDescription("Flag to indicate if NuGet package upload is enabled", "true")]
         public const string ExternalTools_NuGetServer_Enabled = "Arbor.Build.NuGet.PackageUpload.Enabled";
 
@@ -46,9 +40,6 @@
 
         [VariableDescription("NuGet packaging timeout in seconds")]
         public const string NuGetPackageTimeoutInSeconds = "Arbor.Build.NuGet.Package.TimeoutInSeconds";
-
-        [VariableDescription("Specific URI to download nuget.exe from")]
-        public const string NuGetExeDownloadUri = "Arbor.Build.NuGet.DownloadUri";
 
         [VariableDescription("Flag to indicate if NuGet package creation is enabled")]
         public const string NuGetPackageExcludesCommaSeparated =
@@ -124,12 +115,6 @@
 
         [VariableDescription("Flag to indicate if NuGet should try to update itself during start", "false")]
         public const string NuGetVersionUpdatedEnabled = "Arbor.Build.NuGet.VersionUpdateEnabled";
-
-        [VariableDescription(
-            "Flag to indicate if NuGet packages should be created regardless of the branch convention",
-            "false")]
-        public const string NuGetReinstallArborPackageEnabled =
-            "Arbor.Build.NuGet.ReinstallArborPackageEnabled";
 
         [VariableDescription("Flag to indicate if NuGet self update is enabled", "true")]
         public const string NuGetSelfUpdateEnabled = "Arbor.Build.NuGet.SelfUpdate.Enabled";

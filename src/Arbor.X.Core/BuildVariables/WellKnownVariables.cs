@@ -121,11 +121,7 @@ namespace Arbor.Build.Core.BuildVariables
         public const string ArborBuildNuGetPackageVersion = "Arbor.Build.NuGetPackageVersion";
 
         [VariableDescription("NuGet source to use when downloading Arbor.Build NuGet package")]
-        public const string ArborXNuGetPackageSource = "Arbor.Build.NuGetPackage.Source";
-
-        [VariableDescription(
-            "Flag to indicate if the bootstrapper should use -NoCache flag when downloading Arbor.Build NuGet package")]
-        public const string ArborXNuGetPackageNoCacheEnabled = "Arbor.Build.NuGetPackage.NoCachedEnabled";
+        public const string ArborBuildNuGetPackageSource = "Arbor.Build.NuGetPackage.Source";
 
         [VariableDescription("MSBuild executable path (eg. C:\\MSbuild.exe)")]
         public const string ExternalTools_MSBuild_ExePath = "Arbor.Build.Tools.External.MSBuild.ExePath";
@@ -174,16 +170,10 @@ namespace Arbor.Build.Core.BuildVariables
         [VariableDescription("Flag to indicate if build platform configuration Debug is enabled", "true")]
         public const string DebugBuildEnabled = "Arbor.Build.Build.Configuration.Debug.Enabled";
 
-        [VariableDescription("Flag to indicate if test runner error results are ignored", "false")]
-        public const string IgnoreTestFailures = "Arbor.Build.Build.Tests.IgnoreTestFailures";
-
         [VariableDescription(
             "Comma separated list to filter assemblies, to only run tests dlls starting with prefix, case insensitive",
             "")]
         public const string TestsAssemblyStartsWith = "Arbor.Build.Build.Tests.AssemblyStartsWith";
-
-        [VariableDescription("Test categories and tags to ignore, comma separated")]
-        public const string IgnoredTestCategories = "Arbor.Build.Build.Tests.IgnoredCategories";
 
         [VariableDescription("Flag to indicate if tests are enabled", "false")]
         public const string TestsEnabled = "Arbor.Build.Build.Tests.Enabled";
@@ -241,7 +231,7 @@ namespace Arbor.Build.Core.BuildVariables
         public const string VariableOverrideEnabled = "Arbor.Build.Build.VariableOverrideEnabled";
 
         [VariableDescription(
-            "Flag to indicate if a file arborx_environmentvariables.json should be used as a source to set environment variables")]
+            "Flag to indicate if a file arborbuild_environmentvariables.json should be used as a source to set environment variables")]
         public const string VariableFileSourceEnabled = "Arbor.Build.Build.VariableFileSource.Enabled";
 
         [VariableDescription(

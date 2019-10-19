@@ -320,7 +320,7 @@ namespace Arbor.Build.Core.Bootstrapper
         {
             string? version = Environment.GetEnvironmentVariable(WellKnownVariables.ArborBuildNuGetPackageVersion);
 
-            string? nuGetSource = Environment.GetEnvironmentVariable(WellKnownVariables.ArborXNuGetPackageSource);
+            string? nuGetSource = Environment.GetEnvironmentVariable(WellKnownVariables.ArborBuildNuGetPackageSource);
 
             _ = Environment.GetEnvironmentVariable(WellKnownVariables.AllowPrerelease)
                 .TryParseBool(out bool preReleaseIsAllowed);

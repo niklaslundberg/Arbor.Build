@@ -40,7 +40,7 @@ namespace Arbor.Build.Core.BuildVariables
                 if (property is object)
                 {
                     message +=
-                        $". (The variable is a wellknown property {typeof(WellKnownVariables)}.{property.WellknownName})";
+                        $". (The variable is a wellknown property {typeof(WellKnownVariables)}.{property.WellKnownName})";
                 }
 
                 throw new BuildException(message, variables);

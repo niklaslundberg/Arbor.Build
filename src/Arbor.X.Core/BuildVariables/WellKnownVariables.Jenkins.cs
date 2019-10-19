@@ -11,9 +11,5 @@ namespace Arbor.Build.Core.BuildVariables
         [VariableDescription("Jenkins HOME path")]
         public const string ExternalTools_Jenkins_JenkinsHome =
             "JENKINS_HOME";
-
-        [VariableDescription("Flag to indiciate if running in Jenkins (calculated)")]
-        public const string ExternalTools_Jenkins_IsRunningInJenkins =
-            "Arbor.Build.Tools.External.Jenkins.IsRunningInJenkins";
     }
 }

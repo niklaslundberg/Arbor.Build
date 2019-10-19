@@ -9,7 +9,7 @@ namespace Arbor.Build.Core.GenericExtensions
     public static class DisplayExtensions
     {
         public static string DisplayAsTable(
-            this IEnumerable<IDictionary<string, string>> dictionaries,
+            this IEnumerable<IDictionary<string, string?>> dictionaries,
             char padChar = '.')
         {
             IReadOnlyCollection<IDictionary<string, string>> materialized = dictionaries.SafeToReadOnlyCollection();
