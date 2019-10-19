@@ -327,7 +327,9 @@ namespace Arbor.Build.Core.Bootstrapper
 
             preReleaseIsAllowed = _startOptions.PreReleaseEnabled ?? preReleaseIsAllowed;
 
-            if (!NuGetPackageVersion.TryParse(version, out NuGetPackageVersion packageVersion))
+            bool parsedPackageVersion = NuGetPackageVersion.TryParse(version, out NuGetPackageVersion packageVersion);
+
+            if (!parsedPackageVersion)
             {
                 packageVersion = NuGetPackageVersion.LatestAvailable;
             }
@@ -344,6 +346,27 @@ namespace Arbor.Build.Core.Bootstrapper
                     nuGetPackage,
                     nugetPackageSettings)
                 .ConfigureAwait(false);
+
+            if (nuGetPackageInstallResult?.SemanticVersion is null)
+            {
+                _logger.Warning("Could not download {PackageVersion}", packageVersion);
+            }
+
+            if (!parsedPackageVersion
+                && nuGetPackageInstallResult?.SemanticVersion is null
+                && nuGetPackage.NuGetPackageVersion != NuGetPackageVersion.LatestDownloaded)
+            {
+                _logger.Information("Retrying package download of {PackageVersion} with latest downloaded", packageVersion);
+                nuGetPackageInstallResult = await nuGetPackageInstaller.InstallPackageAsync(
+                        new NuGetPackage(nuGetPackage.NuGetPackageId, NuGetPackageVersion.LatestDownloaded),
+                        nugetPackageSettings)
+                    .ConfigureAwait(false);
+            }
+
+            if (nuGetPackageInstallResult?.SemanticVersion is null || nuGetPackageInstallResult?.PackageDirectory is null)
+            {
+                throw new InvalidOperationException($"Could not download {packageVersion}, verify it exists and that all sources are available");
+            }
 
             return nuGetPackageInstallResult.PackageDirectory.FullName;
         }
