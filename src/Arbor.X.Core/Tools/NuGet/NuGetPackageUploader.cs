@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.Tools.Git;
 using Arbor.Defensive.Collections;
 using Arbor.Processing;
 using JetBrains.Annotations;
@@ -462,6 +463,9 @@ namespace Arbor.Build.Core.Tools.NuGet
             bool forceUpload =
                 buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_NuGetServer_ForceUploadEnabled);
 
+            bool uploadOnFeatureBranches =
+                buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_NuGetServer_UploadFeatureBranchEnabled);
+
             bool timeoutIncreaseEnabled =
                 buildVariables.GetBooleanByKey(
                     WellKnownVariables.ExternalTools_NuGetServer_UploadTimeoutIncreaseEnabled);
@@ -485,6 +489,13 @@ namespace Arbor.Build.Core.Tools.NuGet
             if (isRunningOnBuildAgent)
             {
                 logger.Information("NuGet package upload is enabled");
+            }
+
+            string branchName = buildVariables.GetVariableValueOrDefault(WellKnownVariables.BranchName, "")!;
+
+            if (new BranchName(branchName).IsFeatureBranch() && !uploadOnFeatureBranches)
+            {
+                logger.Information("Package upload is not enabled for feature branches");
             }
 
             if (!isRunningOnBuildAgent && forceUpload)

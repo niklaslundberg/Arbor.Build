@@ -26,6 +26,10 @@
         public const string ExternalTools_NuGetServer_ForceUploadEnabled =
             "Arbor.Build.NuGet.PackageUpload.ForceUploadEnabled";
 
+        [VariableDescription("Flag to indicate if NuGet package upload should be enabled on feature branches", "true")]
+        public const string ExternalTools_NuGetServer_UploadFeatureBranchEnabled =
+            "Arbor.Build.NuGet.PackageUpload.FeatureBranchUploadEnabled";
+
         [VariableDescription("Timeout in seconds for NuGet package upload", "true")]
         public const string ExternalTools_NuGetServer_UploadTimeoutInSeconds =
             "Arbor.Build.NuGet.PackageUpload.TimeoutInSeconds";
