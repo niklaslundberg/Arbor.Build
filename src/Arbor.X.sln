@@ -39,6 +39,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arbor.Build.Sample.Tests.Xu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arbor.Build.Tests.Unit", "Arbor.Build.Tests.Unit\Arbor.Build.Tests.Unit.csproj", "{CF9C6FEB-A300-4BD1-A77D-20558B4D65CA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arbor.Build.Sample.PackageProject", "Arbor.Build.Sample.PackageProject\Arbor.Build.Sample.PackageProject.csproj", "{1A80D22B-7089-4478-A2DB-26C0F0F99806}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -85,6 +87,10 @@ Global
 		{CF9C6FEB-A300-4BD1-A77D-20558B4D65CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CF9C6FEB-A300-4BD1-A77D-20558B4D65CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CF9C6FEB-A300-4BD1-A77D-20558B4D65CA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A80D22B-7089-4478-A2DB-26C0F0F99806}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A80D22B-7089-4478-A2DB-26C0F0F99806}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A80D22B-7089-4478-A2DB-26C0F0F99806}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A80D22B-7089-4478-A2DB-26C0F0F99806}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -94,6 +100,7 @@ Global
 		{E414B1E3-3C82-49BD-BAC2-52CD83AFF0B7} = {BE5C46C6-ACDF-4620-8C7F-471281101E9B}
 		{CB9D5FD0-A85A-4BFE-B0D1-37B97AAB6473} = {BE5C46C6-ACDF-4620-8C7F-471281101E9B}
 		{CF9C6FEB-A300-4BD1-A77D-20558B4D65CA} = {BE5C46C6-ACDF-4620-8C7F-471281101E9B}
+		{1A80D22B-7089-4478-A2DB-26C0F0F99806} = {BE5C46C6-ACDF-4620-8C7F-471281101E9B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {51C7784C-57AF-4DEA-A2C4-BFDA6E1600DD}

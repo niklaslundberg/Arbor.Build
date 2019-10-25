@@ -8,7 +8,18 @@ namespace Arbor.Build.Core.Tools.MSBuild
 {
     internal class Solution
     {
-        public Solution(ImmutableArray<SolutionProject> projects) => Projects = projects;
+        public Solution(string fullPath, ImmutableArray<SolutionProject> projects)
+        {
+            FullPath = fullPath;
+            Projects = projects;
+            Name = Path.GetFileName(fullPath);
+        }
+
+        public string Name { get; }
+
+        public string FullPath { get; }
+
+        public override string ToString() => Name;
 
         public ImmutableArray<SolutionProject> Projects { get; }
 
@@ -28,7 +39,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             var fileInfo = new FileInfo(solutionFileFullName);
 
-            return new Solution(lines
+            return new Solution(solutionFileFullName, lines
                 .Select(line => GetProject(line, fileInfo))
                 .Where(item => item != null)
                 .ToImmutableArray());

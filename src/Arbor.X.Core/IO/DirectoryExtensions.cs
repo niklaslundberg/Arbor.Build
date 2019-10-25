@@ -39,20 +39,44 @@ namespace Arbor.Build.Core.IO
             return directoryInfo;
         }
 
-        public static void DeleteIfExists(this DirectoryInfo directoryInfo, bool recursive = true)
+        public static void DeleteIfExists(this DirectoryInfo? directoryInfo, bool recursive = true)
         {
+            if (directoryInfo is null)
+            {
+                return;
+            }
+
             try
             {
-                if (directoryInfo != null)
-                {
-                    directoryInfo.Refresh();
+                directoryInfo.Refresh();
 
-                    if (directoryInfo.Exists)
+                if (directoryInfo.Exists)
+                {
+                    FileInfo[] fileInfos;
+
+                    try
                     {
-                        FileInfo[] fileInfos;
+                        fileInfos = directoryInfo.GetFiles();
+                    }
+                    catch (Exception ex)
+                    {
+                        if (ex.IsFatal())
+                        {
+                            throw;
+                        }
+
+                        throw new IOException(
+                            $"Could not get files for directory '{directoryInfo.FullName}' for deletion",
+                            ex);
+                    }
+
+                    foreach (FileInfo file in fileInfos)
+                    {
+                        file.Attributes = FileAttributes.Normal;
+
                         try
                         {
-                            fileInfos = directoryInfo.GetFiles();
+                            file.Delete();
                         }
                         catch (Exception ex)
                         {
@@ -61,44 +85,25 @@ namespace Arbor.Build.Core.IO
                                 throw;
                             }
 
-                            throw new IOException(
-                                $"Could not get files for directory '{directoryInfo.FullName}' for deletion",
-                                ex);
-                        }
-
-                        foreach (FileInfo file in fileInfos)
-                        {
-                            file.Attributes = FileAttributes.Normal;
-                            try
-                            {
-                                file.Delete();
-                            }
-                            catch (Exception ex)
-                            {
-                                if (ex.IsFatal())
-                                {
-                                    throw;
-                                }
-
-                                throw new IOException($"Could not delete file '{file.FullName}'", ex);
-                            }
-                        }
-
-                        foreach (DirectoryInfo subDirectory in directoryInfo.GetDirectories())
-                        {
-                            subDirectory.DeleteIfExists(recursive);
+                            throw new IOException($"Could not delete file '{file.FullName}'", ex);
                         }
                     }
 
-                    directoryInfo.Refresh();
-
-                    if (directoryInfo.Exists)
+                    foreach (DirectoryInfo subDirectory in directoryInfo.GetDirectories())
                     {
-                        directoryInfo.Delete(recursive);
+                        subDirectory.DeleteIfExists(recursive);
                     }
-
-                    directoryInfo.Refresh();
                 }
+
+                directoryInfo.Refresh();
+
+                if (directoryInfo.Exists)
+                {
+                    directoryInfo.Delete(recursive);
+                }
+
+                directoryInfo.Refresh();
+
             }
             catch (UnauthorizedAccessException ex)
             {
