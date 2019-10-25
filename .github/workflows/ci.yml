@@ -16,7 +16,7 @@ jobs:
         dotnet tool install --global Arbor.Tooler.GlobalTool
         dotnet tool install --global Arbor.Build.Bootstrapper
         dotnet-arbor-tooler -outputdirectory=C:\Tools\NuGet
-        copy "%AppData%\NuGet\NuGet.Config" C:\Tools\NuGet\nuget.config
+        echo ^<?xml version="1.0" encoding="utf-8"?^>^<configuration^>^<config^>^</config^>^</configuration^> C:\Tools\NuGet\nuget.config
         C:\Tools\NuGet\nuget.exe source Add -Name "GitHub" -Source "https://nuget.pkg.github.com/niklaslundberg/index.json" -UserName niklaslundberg -Password "%NuGetPassword%" -ConfigFile C:\Tools\NuGet\nuget.config
     - name: build
       env:
