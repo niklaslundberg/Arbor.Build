@@ -25,5 +25,7 @@
         public string ProjectDirectory { get; }
 
         public MSBuildProject Project { get; }
+
+        public override string ToString() => ProjectName;
     }
 }

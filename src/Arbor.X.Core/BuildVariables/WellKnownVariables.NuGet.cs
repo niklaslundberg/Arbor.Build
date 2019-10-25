@@ -16,6 +16,9 @@
         [VariableDescription("NuGet package upload source name")]
         public const string ExternalTools_NuGetServer_SourceName = "Arbor.Build.NuGet.PackageUpload.SourceName";
 
+        [VariableDescription("NuGet package upload config file")]
+        public const string ExternalTools_NuGetServer_ConfigFile = "Arbor.Build.NuGet.PackageUpload.ConfigFile";
+
         [VariableDescription("NuGet package upload API key", "true")]
         public const string ExternalTools_NuGetServer_ApiKey = "Arbor.Build.NuGet.PackageUpload.Server.ApiKey";
 

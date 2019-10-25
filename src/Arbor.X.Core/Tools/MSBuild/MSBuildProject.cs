@@ -157,9 +157,9 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 packageReferences);
         }
 
-        public override string ToString() => $"{nameof(Properties)} [{PropertyGroups.SelectMany(g => g.Properties).Count()}]:{Environment.NewLine}{string.Join(Environment.NewLine, PropertyGroups.SelectMany(g => g.Properties).Select(p => "\t" + p.ToString()))}{Environment.NewLine}{nameof(FileName)}: {FileName}{Environment.NewLine}{nameof(ProjectName)}: {ProjectName}{Environment.NewLine}{nameof(ProjectDirectory)}: {ProjectDirectory}{nameof(ProjectTypes)}: {string.Join(", ", ProjectTypes.Select(t => t.ToString()))},{Environment.NewLine}{nameof(ProjectId)}: {ProjectId}{Environment.NewLine}{nameof(Sdk)}: {Sdk}{Environment.NewLine}{nameof(PackageReferences)} [{PackageReferences.Length}]:{Environment.NewLine} {string.Join(Environment.NewLine, PackageReferences.Select(r => r.ToString()))}";
+        public override string ToString() => $"{FileName} {nameof(Properties)} [{PropertyGroups.SelectMany(g => g.Properties).Count()}]:{Environment.NewLine}{string.Join(Environment.NewLine, PropertyGroups.SelectMany(g => g.Properties).Select(p => "\t" + p.ToString()))}{Environment.NewLine}{nameof(FileName)}: {FileName}{Environment.NewLine}{nameof(ProjectName)}: {ProjectName}{Environment.NewLine}{nameof(ProjectDirectory)}: {ProjectDirectory}{nameof(ProjectTypes)}: {string.Join(", ", ProjectTypes.Select(t => t.ToString()))},{Environment.NewLine}{nameof(ProjectId)}: {ProjectId}{Environment.NewLine}{nameof(Sdk)}: {Sdk}{Environment.NewLine}{nameof(PackageReferences)} [{PackageReferences.Length}]:{Environment.NewLine} {string.Join(Environment.NewLine, PackageReferences.Select(r => r.ToString()))}";
 
-        public bool HasPropertyWithValue([NotNull] string name, [NotNull] string value)
+        public bool HasPropertyWithValue([NotNull] string name, [NotNull] string value, StringComparison stringComparison = StringComparison.Ordinal)
         {
             if (name == null)
             {
@@ -172,8 +172,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
             }
 
             return PropertyGroups.Any(propertyGroup => propertyGroup.Properties.Any(property =>
-                property.Name.Equals(name, StringComparison.Ordinal) &&
-                value.Equals(property.Value, StringComparison.Ordinal)));
+                property.Name.Equals(name, stringComparison) &&
+                value.Equals(property.Value, stringComparison)));
         }
 
         public string GetPropertyValue([NotNull] string name)
