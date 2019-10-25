@@ -813,7 +813,6 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 {
                     if (HasPublishPackageEnabled(solutionProject))
                     {
-
                         args.Add($"/p:version={packageVersion}");
                         args.Add("--output");
 
@@ -861,7 +860,11 @@ namespace Arbor.Build.Core.Tools.MSBuild
                                 foreach (var nugetPackage in nugetPackages)
                                 {
                                     string targetFile = Path.Combine(_packagesDirectory, nugetPackage.Name);
-                                    nugetPackage.CopyTo(targetFile);
+
+                                    if (!File.Exists(targetFile))
+                                    {
+                                        nugetPackage.CopyTo(targetFile);
+                                    }
                                 }
                             }
                         }
