@@ -23,6 +23,7 @@ jobs:
         Arbor.Build.NuGet.PackageUpload.Server.Uri: "https://nuget.pkg.github.com/niklaslundberg/index.json"
         Arbor.Build.NuGet.PackageUpload.Enabled: "true"
         Arbor.Build.NuGet.PackageUpload.ForceUploadEnabled: "true"
+        Arbor.Build.NuGetPackage.Source: "nuget.org"
       run: |
         C:\Tools\NuGet\nuget.exe sources
         build\build.bat
