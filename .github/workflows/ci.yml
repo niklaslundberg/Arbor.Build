@@ -16,14 +16,14 @@ jobs:
         dotnet tool install --global Arbor.Tooler.GlobalTool
         dotnet tool install --global Arbor.Build.Bootstrapper
         dotnet-arbor-tooler -outputdirectory=C:\Tools\NuGet
-        C:\Tools\NuGet\nuget.exe source Add -Name "GitHub" -Source "https://nuget.pkg.github.com/niklaslundberg/index.json" -UserName niklaslundberg -Password "%NuGetPassword%"
+        C:\Tools\NuGet\nuget.exe source Add -Name "GitHub" -Source "https://nuget.pkg.github.com/niklaslundberg/index.json" -UserName niklaslundberg -Password "%NuGetPassword%" -ConfigFile=C:\Tools\NuGet\nuget.config
     - name: build
       env:
         Arbor.Build.NuGet.PackageUpload.Server.ApiKey: ${{ secrets.GITHUB_TOKEN }}
         Arbor.Build.NuGet.PackageUpload.Server.Uri: "https://nuget.pkg.github.com/niklaslundberg/index.json"
-        Arbor.Build.NuGet.PackageUpload.Enabled: "true"
-        Arbor.Build.NuGet.PackageUpload.ForceUploadEnabled: "true"
-        Arbor.Build.NuGetPackage.Source: "nuget.org"
+        Arbor.Build.NuGet.PackageUpload.Enabled: "false"
+        Arbor.Build.NuGet.PackageUpload.ForceUploadEnabled: "false"
+        Arbor.Build.NuGet.PackageUpload.ConfigFile: "C:\Tools\NuGet\nuget.config"
       run: |
         C:\Tools\NuGet\nuget.exe sources
         build\build.bat
