@@ -816,7 +816,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                         args.Add($"/p:version={packageVersion}");
                         args.Add("--output");
 
-                        var tempDirPath = Path.Combine(Path.GetTempPath(), "Arbor.Build-pkg" + DateTime.UtcNow.Ticks);
+                        string tempDirPath = Path.Combine(Path.GetTempPath(), "Arbor.Build-pkg" + DateTime.UtcNow.Ticks);
                         tempDirectory = new DirectoryInfo(tempDirPath);
                         tempDirectory.EnsureExists();
 
@@ -863,7 +863,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                                     if (!File.Exists(targetFile))
                                     {
-                                        nugetPackage.CopyTo(targetFile);
+                                        nugetPackage.CopyTo(targetFile, true);
                                     }
                                 }
                             }
