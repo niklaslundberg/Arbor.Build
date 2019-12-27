@@ -27,6 +27,7 @@ using NuGet.Versioning;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
+using Xunit.Sdk;
 using Stopwatch = System.Diagnostics.Stopwatch;
 
 namespace Arbor.Build.Core.Tools.MSBuild
@@ -709,7 +710,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             if (exitCode.IsSuccess)
             {
-                exitCode = await PublishPdbFilesAynsc(configuration, platform).ConfigureAwait(false);
+                exitCode = await PublishPdbFilesAsync(configuration, platform).ConfigureAwait(false);
             }
             else
             {
@@ -912,6 +913,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             foreach (SolutionProject solutionProject in exeProjects)
             {
+                EnsureFileDates(new DirectoryInfo(solutionProject.ProjectDirectory));
+
                 string[] args =
                 {
                     "pack",
@@ -936,6 +939,33 @@ namespace Arbor.Build.Core.Tools.MSBuild
             }
 
             return ExitCode.Success;
+        }
+
+        private void EnsureFileDates(DirectoryInfo directoryInfo)
+        {
+            if (directoryInfo is null)
+            {
+                return;
+            }
+
+            var files = directoryInfo.GetFiles();
+
+            foreach (var fileInfo in files)
+            {
+                try
+                {
+                    fileInfo.FullName.EnsureHasValidDate(_logger);
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error(ex, "Could not ensure dates for file '{File}'", fileInfo.FullName);
+                }
+            }
+
+            foreach (var subDirectory in directoryInfo.GetDirectories())
+            {
+                EnsureFileDates(subDirectory);
+            }
         }
 
         private string GetPackageVersion(bool isReleaseBuild)
@@ -981,7 +1011,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             }
         }
 
-        private Task<ExitCode> PublishPdbFilesAynsc(string configuration, string platform)
+        private Task<ExitCode> PublishPdbFilesAsync(string configuration, string platform)
         {
             string message = _pdbArtifactsEnabled
                 ? $"Publishing PDB artifacts for configuration {configuration} and platform {platform}"

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using JetBrains.Annotations;
 using Serilog;
 
@@ -25,28 +24,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                     nameof(fileName));
             }
 
-            if (Path.IsPathRooted(fileName))
-            {
-                var fileInfo = new FileInfo(fileName);
-
-                var dateTime = new DateTime(2000, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-                if (fileInfo.Exists && fileInfo.LastWriteTimeUtc < dateTime)
-                {
-                    try
-                    {
-                        fileInfo.LastWriteTimeUtc = dateTime;
-                        logger.Debug("Reset {LastWriteTime} for file {File} in nuspec",
-                            nameof(fileInfo.LastWriteTimeUtc),
-                            fileInfo.FullName);
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.Debug(ex, "Could not reset {LastWriteTime} {File} in nuspec",
-                            nameof(fileInfo.LastWriteTimeUtc),
-                            fileInfo.FullName);
-                    }
-                }
-            }
+            fileName.EnsureHasValidDate(logger);
 
             int baseDirLength = baseDirectory.Length;
             string targetFilePath = fileName.Substring(baseDirLength);
