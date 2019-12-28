@@ -15,6 +15,7 @@ using Arbor.KVConfiguration.Core.Metadata;
 using Arbor.KVConfiguration.JsonConfiguration;
 using JetBrains.Annotations;
 using Serilog;
+using Arbor.Build.Core.GenericExtensions.Bools;
 
 namespace Arbor.Build.Core.Tools.Versioning
 {
@@ -119,9 +120,9 @@ namespace Arbor.Build.Core.Tools.Versioning
 
                     if (required.All(ValidateVersionNumber))
                     {
-                        major = required[majorKey].ParseOrDefault();
-                        minor = required[minorKey].ParseOrDefault();
-                        patch = required[patchKey].ParseOrDefault();
+                        major = required[majorKey].ParseOrDefault(-1);
+                        minor = required[minorKey].ParseOrDefault(-1);
+                        patch = required[patchKey].ParseOrDefault(-1);
 
                         logger.Verbose(
                             "All version numbers from the version file '{VersionFileName}' were parsed successfully",
@@ -224,6 +225,10 @@ namespace Arbor.Build.Core.Tools.Versioning
                         "Found no build version, using version {Build} from TeamCity ({TeamCityVersionBuild})",
                         build,
                         WellKnownVariables.TeamCityVersionBuild);
+                }
+                else if (WellKnownVariables.BuildNumberAsUnixEpochSecondsEnabled.ParseOrDefault(false))
+                {
+                    build = (int) DateTimeOffset.UtcNow.ToUnixTimeSeconds();
                 }
                 else
                 {

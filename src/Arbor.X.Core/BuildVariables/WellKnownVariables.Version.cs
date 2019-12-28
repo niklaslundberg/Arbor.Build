@@ -13,5 +13,8 @@
 
         [VariableDescription("Build version")]
         public const string VersionBuild = "Version.Build";
+
+        [VariableDescription("Build number as unix time epoch in seconds")]
+        public const string BuildNumberAsUnixEpochSecondsEnabled = "Arbor.Build.BuilderNumber.UnixEpochSecondsEnabled";
     }
 }
