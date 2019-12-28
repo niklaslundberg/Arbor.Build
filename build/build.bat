@@ -35,6 +35,7 @@ REM SET Arbor.Build.Build.Tests.AssemblyStartsWith=Arbor.Build.Tests
 SET Arbor.Build.Tools.External.NUnit.Enabled=false
 SET Arbor.Build.NuGet.Package.ExcludesCommaSeparated=Arbor.Build.Bootstrapper.nuspec
 SET Arbor.Build.Tools.External.MSBuild.CodeAnalysis.Enabled=false
+SET Arbor.Build.BuilderNumber.UnixEpochSecondsEnabled=true
 
 SET Arbor.Build.Build.Tests.IgnoredCategories=dummyexcluded,dummyexcluded2,dummyexclude3
 
