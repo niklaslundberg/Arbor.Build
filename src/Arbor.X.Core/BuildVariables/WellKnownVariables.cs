@@ -361,7 +361,12 @@ namespace Arbor.Build.Core.BuildVariables
 
                 foreach (FieldInfo field in fields)
                 {
-                    string invariantName = (string)field.GetValue(null);
+                    string? invariantName = (string)field.GetValue(null);
+
+                    if (string.IsNullOrWhiteSpace(invariantName))
+                    {
+                        continue;
+                    }
 
                     var attribute = field.GetCustomAttribute<VariableDescriptionAttribute>();
 
