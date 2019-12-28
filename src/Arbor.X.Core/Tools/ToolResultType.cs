@@ -1,6 +1,8 @@
+using System;
+
 namespace Arbor.Build.Core.Tools
 {
-    public class ToolResultType
+    public class ToolResultType : IEquatable<ToolResultType>
     {
         private readonly bool? _succeeded;
 
@@ -21,5 +23,48 @@ namespace Arbor.Build.Core.Tools
         public static ToolResultType Failed => new ToolResultType("Failed", false);
 
         public static ToolResultType NotRun => new ToolResultType("Not run", null);
+
+        public bool Equals(ToolResultType? other)
+        {
+            if (ReferenceEquals(null, other))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return Type == other.Type;
+        }
+
+        public override string ToString() => $"{nameof(Type)}: {Type}";
+
+        public override bool Equals(object? obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj.GetType() != GetType())
+            {
+                return false;
+            }
+
+            return Equals((ToolResultType)obj);
+        }
+
+        public override int GetHashCode() => Type.GetHashCode();
+
+        public static bool operator ==(ToolResultType? left, ToolResultType? right) => Equals(left, right);
+
+        public static bool operator !=(ToolResultType? left, ToolResultType? right) => !Equals(left, right);
     }
 }

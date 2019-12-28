@@ -27,14 +27,13 @@ using NuGet.Versioning;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
-using Xunit.Sdk;
 using Stopwatch = System.Diagnostics.Stopwatch;
 
 namespace Arbor.Build.Core.Tools.MSBuild
 {
     [Priority(300)]
     [UsedImplicitly]
-    public class SolutionBuilder : ITool
+    public class SolutionBuilder : ITool, IReportLogTail
     {
         private readonly List<FileAttributes> _blackListedByAttributes = new List<FileAttributes>
         {
@@ -110,7 +109,14 @@ namespace Arbor.Build.Core.Tools.MSBuild
         private MSBuildVerbosityLevel _verbosity;
         private string _version;
 
-        public SolutionBuilder(BuildContext buildContext) => _buildContext = buildContext;
+        public SolutionBuilder(BuildContext buildContext)
+        {
+            _buildContext = buildContext;
+            LogTail = new FixedSizedQueue<string>()
+            {
+                Limit = 5
+            };
+        }
 
         private static int ProcessorCount(IReadOnlyCollection<IVariable> buildVariables)
         {
@@ -633,19 +639,24 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 _verboseLoggingEnabled ? logger.Verbose : (Action<string, string>?) null;
             Action<string, string>? debugAction = _verboseLoggingEnabled ? logger.Debug : (Action<string, string>?)null;
 
+            void LogDefault(string message, string category)
+            {
+                logger.Information("{Category} {Message}", category, message);
+                LogTail.Enqueue($"{category} {message}");
+            }
+
             ExitCode exitCode =
                 await
                     ProcessRunner.ExecuteProcessAsync(
                             _msBuildExe,
                             argList,
-                            logger.Information,
+                            standardOutLog: LogDefault,
                             logger.Error,
                             debugAction,
                             debugAction: debugAction,
                             cancellationToken: _cancellationToken,
                             verboseAction: verboseAction)
                         .ConfigureAwait(false);
-
 
             if (exitCode.IsSuccess)
             {
@@ -2491,5 +2502,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 return ExitCode.Failure;
             }
         }
+
+        public FixedSizedQueue<string> LogTail { get; }
     }
 }

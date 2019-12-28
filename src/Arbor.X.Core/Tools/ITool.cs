@@ -24,9 +24,4 @@ namespace Arbor.Build.Core.Tools
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken);
     }
-
-    public interface ITestRunnerTool : ITool
-    {
-
-    }
 }

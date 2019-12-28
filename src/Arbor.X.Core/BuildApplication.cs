@@ -265,6 +265,15 @@ namespace Arbor.Build.Core
 
             if (result != 0)
             {
+                foreach (var tuple in toolResults
+                    .Where(tool => tool.ResultType == ToolResultType.Failed)
+                    .Select(toolResult => (Result:toolResult, LogTail:toolResult.ToolWithPriority.Tool as IReportLogTail))
+                    .Where(item => item.LogTail is {}))
+                {
+                    string logTail = string.Join(Environment.NewLine, tuple.LogTail.LogTail.AllCurrentItems);
+                    _logger.Error("Tool {Tool} failed with log tail {NewLine}{LogTail}", tuple.Result.ToolWithPriority.Tool.Name(), Environment.NewLine, logTail);
+                }
+
                 return ExitCode.Failure;
             }
 
