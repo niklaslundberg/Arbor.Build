@@ -148,14 +148,17 @@ namespace Arbor.Build.Core.Tools.Versioning
                 environmentVariables.Where(item => item.Key == WellKnownVariables.VersionMajor)
                     .Select(item => (int?)int.Parse(item.Value))
                     .SingleOrDefault() ?? -1;
+
             int envMinor =
                 environmentVariables.Where(item => item.Key == WellKnownVariables.VersionMinor)
                     .Select(item => (int?)int.Parse(item.Value))
                     .SingleOrDefault() ?? -1;
+
             int envPatch =
                 environmentVariables.Where(item => item.Key == WellKnownVariables.VersionPatch)
                     .Select(item => (int?)int.Parse(item.Value))
                     .SingleOrDefault() ?? -1;
+
             int envBuild =
                 environmentVariables.Where(item => item.Key == WellKnownVariables.VersionBuild)
                     .Select(item => (int?)int.Parse(item.Value))
