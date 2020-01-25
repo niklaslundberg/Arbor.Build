@@ -16,7 +16,8 @@
       Arbor.Build
     </summary>
     <language>en-US</language>
-    <projectUrl>https://github.com/niklaslundberg/Arbor.X</projectUrl>
+    <projectUrl>https://github.com/niklaslundberg/Arbor.Build</projectUrl>
+    <repository type="git" url="https://github.com/niklaslundberg/Arbor.Build"></repository>
     <iconUrl>https://nuget.org/Content/Images/packageDefaultIcon-50x50.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <license type="expression">MIT</license>
