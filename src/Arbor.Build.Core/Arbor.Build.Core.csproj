@@ -1,15 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;netcoreapp3.1</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.1;netcoreapp3.1</TargetFrameworks>
     <LangVersion>8</LangVersion>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netcoreapp2.1|AnyCPU'">
-    <CodeAnalysisRuleSet>..\Arbor.Build.Tests.Integration\ArborBuild.Test.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netcoreapp2.1|AnyCPU'">
+  <PropertyGroup>
     <CodeAnalysisRuleSet>..\Arbor.Build.Tests.Integration\ArborBuild.Test.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 

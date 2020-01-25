@@ -24,7 +24,7 @@ namespace Arbor.Build.Tests.Integration.TrxTransform
                     VcsTestPathHelper.FindVcsRootPath(Directory.GetCurrentDirectory()),
                     "src",
                     "Arbor.Build.Tests.Integration",
-                    "xunit_v2.Arbor.Build.Tests.SampleXunitNetCoreApp21.trx"));
+                    "xunit_v2.Arbor.Build.Tests.SampleXunitNetCoreApp31.trx"));
 
                 ExitCode exitCode = TestReportXslt.Transform(report, Trx2UnitXsl.TrxTemplate, _logger, false);
 

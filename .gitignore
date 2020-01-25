@@ -18,8 +18,8 @@ UpgradeLog*.htm
 *.iml
 src/Arbor.Build.Tests.DummyWebApplication/App_Data/jobs/
 paket-files
-**\xunit_v2.Arbor.Build.Tests.SampleXunitNetCoreApp21.xml
-src/Arbor.Build.Tests.Integration/xunit_v2.Arbor.Build.Tests.SampleXunitNetCoreApp21_junit.xml
+**\xunit_v2.Arbor.Build.Tests.SampleXunitNetCoreApp31.xml
+src/Arbor.Build.Tests.Integration/xunit_v2.Arbor.Build.Tests.SampleXunitNetCoreApp31_junit.xml
 
 
 #################

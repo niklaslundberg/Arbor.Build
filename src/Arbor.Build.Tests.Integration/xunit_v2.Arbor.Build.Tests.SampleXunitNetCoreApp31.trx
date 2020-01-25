@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="42daa0a1-99fb-4b9c-bde4-ea63bcbcc988" name="TeamCityBuildAgent@TCBUILDAGENT1 2018-11-22 16:27:41" runUser="TCBUILDAGENT1\TeamCityBuildAgent" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2018-11-22T16:27:41.9677441+01:00" queuing="2018-11-22T16:27:41.9677442+01:00" start="2018-11-22T16:27:38.6386432+01:00" finish="2018-11-22T16:27:42.0444078+01:00" />
+  <TestSettings name="default" id="f1c3766d-e58c-49b9-9567-186062c11b93">
+    <Deployment runDeploymentRoot="TeamCityBuildAgent_TCBUILDAGENT1_2018-11-22_16_27_41" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="d23b8c06-e32a-479a-9d6a-fe35a1284c25" testId="3d5080c3-3bb4-8bde-ae37-9d84458ee4f9" testName="Arbor.Build.Tests.SampleXunitNetCoreApp31.NullTest.ShouldBeTrue" computerName="TCBUILDAGENT1" duration="00:00:00.0130000" startTime="2018-11-22T16:27:41.7663545+01:00" endTime="2018-11-22T16:27:41.7663594+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d23b8c06-e32a-479a-9d6a-fe35a1284c25" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Arbor.Build.Tests.SampleXunitNetCoreApp31.NullTest.ShouldBeTrue" storage="c:\tools\teamcity\buildagent\agent\temp\buildtmp\arborxbuilds\346\src\arbor.build.tests.samplexunitnetcoreapp31\bin\debug\netcoreapp3.1\arbor.build.tests.samplexunitnetcoreapp31.dll" id="3d5080c3-3bb4-8bde-ae37-9d84458ee4f9">
+      <Execution id="d23b8c06-e32a-479a-9d6a-fe35a1284c25" />
+      <TestMethod codeBase="C:\Tools\TeamCity\BuildAgent\Agent\temp\buildTmp\ArborXBuilds\346\src\Arbor.Build.Tests.SampleXunitNetCoreApp31\bin\Debug\netcoreapp3.1\Arbor.Build.Tests.SampleXunitNetCoreApp31.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Arbor.Build.Tests.SampleXunitNetCoreApp31" name="Arbor.Build.Tests.SampleXunitNetCoreApp31.NullTest.ShouldBeTrue" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="3d5080c3-3bb4-8bde-ae37-9d84458ee4f9" executionId="d23b8c06-e32a-479a-9d6a-fe35a1284c25" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="1" executed="1" passed="1" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.4.1 (64-bit .NET Core 4.6.27019.06)[xUnit.net 00:00:01.26] ##teamcity[testSuiteStarted name='Test collection for Arbor.Build.Tests.SampleXunitNetCoreApp31.NullTest (1)' flowId='3d444722809640daa693d36af01870c9'][xUnit.net 00:00:01.34] ##teamcity[testStarted name='Arbor.Build.Tests.SampleXunitNetCoreApp31.NullTest.ShouldBeTrue' flowId='3d444722809640daa693d36af01870c9'][xUnit.net 00:00:01.41] ##teamcity[testFinished name='Arbor.Build.Tests.SampleXunitNetCoreApp31.NullTest.ShouldBeTrue' duration='12' flowId='3d444722809640daa693d36af01870c9'][xUnit.net 00:00:01.52] ##teamcity[testSuiteFinished name='Test collection for Arbor.Build.Tests.SampleXunitNetCoreApp31.NullTest (1)' flowId='3d444722809640daa693d36af01870c9']</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>
