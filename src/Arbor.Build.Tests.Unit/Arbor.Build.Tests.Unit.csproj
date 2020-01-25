@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Arbor.X.Core\Arbor.Build.Core.csproj" />
+    <ProjectReference Include="..\Arbor.Build.Core\Arbor.Build.Core.csproj" />
   </ItemGroup>
 
 </Project>

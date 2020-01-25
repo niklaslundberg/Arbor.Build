@@ -8,10 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="xunit_v2.Arbor.X.Tests.SampleXunitNetCoreApp21_junit.xml" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
 
@@ -46,7 +42,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Arbor.X.Core\Arbor.Build.Core.csproj" />
+    <ProjectReference Include="..\Arbor.Build.Core\Arbor.Build.Core.csproj" />
   </ItemGroup>
 
 </Project>

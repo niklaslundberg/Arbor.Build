@@ -6,11 +6,11 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <CodeAnalysisRuleSet />
+    <CodeAnalysisRuleSet>..\Arbor.Build.Tests.Integration\ArborBuild.Test.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <CodeAnalysisRuleSet />
+    <CodeAnalysisRuleSet>..\Arbor.Build.Tests.Integration\ArborBuild.Test.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <ItemGroup>

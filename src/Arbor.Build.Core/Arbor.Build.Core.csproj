@@ -5,6 +5,14 @@
     <LangVersion>8</LangVersion>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netcoreapp2.1|AnyCPU'">
+    <CodeAnalysisRuleSet>..\Arbor.Build.Tests.Integration\ArborBuild.Test.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netcoreapp2.1|AnyCPU'">
+    <CodeAnalysisRuleSet>..\Arbor.Build.Tests.Integration\ArborBuild.Test.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Arbor.Aesculus" Version="3.0.2" />
     <PackageReference Include="Arbor.KVConfiguration.JsonConfiguration" Version="0.19.2" />

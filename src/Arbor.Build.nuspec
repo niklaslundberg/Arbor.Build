@@ -20,7 +20,7 @@
     <iconUrl>https://nuget.org/Content/Images/packageDefaultIcon-50x50.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <license type="expression">MIT</license>
-    <copyright>Copyright Niklas Lundberg 2014 - 2019</copyright>
+    <copyright>Copyright Niklas Lundberg 2014 - 2020</copyright>
     <dependencies>
 
     </dependencies>
@@ -28,6 +28,6 @@
     <tags>build tools convention</tags>
   </metadata>
   <files>
-    <file src="Arbor.X.Build\bin\$configuration$\netcoreapp3.1\publish\**\*.*" target="" exclude="*.pdb;*.xml;cs\*.*;de\*.*;es\*.*;fr\*.*;en\*.*;it\*.*;ja\*.*;ko\*.*;pl\*.*;pt-BR\*.*;ru\*.*;tr\*.*;zh-Hans\*.*;zh-Hant\*.*;runtimes\linux\*.*;runtimes\unix\*.*;runtimes\osx\*.*" />
+    <file src="Arbor.Build\bin\$configuration$\netcoreapp3.1\publish\**\*.*" target="" exclude="*.pdb;*.xml;cs\*.*;de\*.*;es\*.*;fr\*.*;en\*.*;it\*.*;ja\*.*;ko\*.*;pl\*.*;pt-BR\*.*;ru\*.*;tr\*.*;zh-Hans\*.*;zh-Hant\*.*;runtimes\linux\*.*;runtimes\unix\*.*;runtimes\osx\*.*" />
   </files>
 </package>

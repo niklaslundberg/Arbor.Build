@@ -8,9 +8,9 @@
     <UnitTestResult executionId="d23b8c06-e32a-479a-9d6a-fe35a1284c25" testId="3d5080c3-3bb4-8bde-ae37-9d84458ee4f9" testName="Arbor.Build.Tests.SampleXunitNetCoreApp21.NullTest.ShouldBeTrue" computerName="TCBUILDAGENT1" duration="00:00:00.0130000" startTime="2018-11-22T16:27:41.7663545+01:00" endTime="2018-11-22T16:27:41.7663594+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d23b8c06-e32a-479a-9d6a-fe35a1284c25" />
   </Results>
   <TestDefinitions>
-    <UnitTest name="Arbor.Build.Tests.SampleXunitNetCoreApp21.NullTest.ShouldBeTrue" storage="c:\tools\teamcity\buildagent\agent\temp\buildtmp\arborxbuilds\346\src\arbor.x.tests.samplexunitnetcoreapp21\bin\debug\netcoreapp2.1\arbor.build.tests.samplexunitnetcoreapp21.dll" id="3d5080c3-3bb4-8bde-ae37-9d84458ee4f9">
+    <UnitTest name="Arbor.Build.Tests.SampleXunitNetCoreApp21.NullTest.ShouldBeTrue" storage="c:\tools\teamcity\buildagent\agent\temp\buildtmp\arborxbuilds\346\src\arbor.build.tests.samplexunitnetcoreapp21\bin\debug\netcoreapp2.1\arbor.build.tests.samplexunitnetcoreapp21.dll" id="3d5080c3-3bb4-8bde-ae37-9d84458ee4f9">
       <Execution id="d23b8c06-e32a-479a-9d6a-fe35a1284c25" />
-      <TestMethod codeBase="C:\Tools\TeamCity\BuildAgent\Agent\temp\buildTmp\ArborXBuilds\346\src\Arbor.X.Tests.SampleXunitNetCoreApp21\bin\Debug\netcoreapp2.1\Arbor.Build.Tests.SampleXunitNetCoreApp21.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Arbor.Build.Tests.SampleXunitNetCoreApp21" name="Arbor.Build.Tests.SampleXunitNetCoreApp21.NullTest.ShouldBeTrue" />
+      <TestMethod codeBase="C:\Tools\TeamCity\BuildAgent\Agent\temp\buildTmp\ArborXBuilds\346\src\Arbor.Build.Tests.SampleXunitNetCoreApp21\bin\Debug\netcoreapp2.1\Arbor.Build.Tests.SampleXunitNetCoreApp21.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Arbor.Build.Tests.SampleXunitNetCoreApp21" name="Arbor.Build.Tests.SampleXunitNetCoreApp21.NullTest.ShouldBeTrue" />
     </UnitTest>
   </TestDefinitions>
   <TestEntries>

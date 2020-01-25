@@ -16,10 +16,10 @@ _nCrunchtemp*
 UpgradeLog*.htm
 .idea
 *.iml
-src/Arbor.X.Tests.DummyWebApplication/App_Data/jobs/
+src/Arbor.Build.Tests.DummyWebApplication/App_Data/jobs/
 paket-files
-**\xunit_v2.Arbor.X.Tests.SampleXunitNetCoreApp21.xml
-src/Arbor.X.Tests.Integration/xunit_v2.Arbor.X.Tests.SampleXunitNetCoreApp21_junit.xml
+**\xunit_v2.Arbor.Build.Tests.SampleXunitNetCoreApp21.xml
+src/Arbor.Build.Tests.Integration/xunit_v2.Arbor.Build.Tests.SampleXunitNetCoreApp21_junit.xml
 
 
 #################
