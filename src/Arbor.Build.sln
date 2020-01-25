@@ -19,6 +19,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\build\build.bat = ..\build\build.bat
 		..\.github\workflows\ci.yml = ..\.github\workflows\ci.yml
 		Directory.Build.props = Directory.Build.props
+		..\LICENSE.txt = ..\LICENSE.txt
 		..\README.md = ..\README.md
 		..\version.json = ..\version.json
 	EndProjectSection
@@ -39,7 +40,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arbor.Build.Sample.Tests.Xu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arbor.Build.Tests.Unit", "Arbor.Build.Tests.Unit\Arbor.Build.Tests.Unit.csproj", "{CF9C6FEB-A300-4BD1-A77D-20558B4D65CA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arbor.Build.Sample.PackageProject", "Arbor.Build.Sample.PackageProject\Arbor.Build.Sample.PackageProject.csproj", "{1A80D22B-7089-4478-A2DB-26C0F0F99806}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arbor.Build.Sample.PackageProject", "Arbor.Build.Sample.PackageProject\Arbor.Build.Sample.PackageProject.csproj", "{1A80D22B-7089-4478-A2DB-26C0F0F99806}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
