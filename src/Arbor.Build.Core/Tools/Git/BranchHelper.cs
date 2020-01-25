@@ -111,7 +111,7 @@ namespace Arbor.Build.Core.Tools.Git
             }
 
             string splitCharactersVariable =
-                Environment.GetEnvironmentVariable(WellKnownVariables.NameVersionCommanSeparatedSplitList);
+                Environment.GetEnvironmentVariable(WellKnownVariables.NameVersionCommonSeparatedSplitList);
 
             var splitCharacters = new List<string>
             {

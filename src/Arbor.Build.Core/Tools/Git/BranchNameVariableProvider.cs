@@ -30,7 +30,23 @@ namespace Arbor.Build.Core.Tools.Git
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            string branchName = Environment.GetEnvironmentVariable(WellKnownVariables.BranchName);
+            var possibleVariables = new List<string>
+            {
+                WellKnownVariables.BranchName, WellKnownVariables.GitHubBranchName
+            };
+
+            string branchName = default;
+
+            foreach (string possibleVariable in possibleVariables)
+            {
+                branchName = Environment.GetEnvironmentVariable(possibleVariable);
+
+                if (!string.IsNullOrWhiteSpace(branchName))
+                {
+                    logger.Information("Found branch name '{BranchName}' from environment variable '{VariableName}'", branchName, possibleVariable);
+                    break;
+                }
+            }
 
             var variables = new Dictionary<string, string>();
 

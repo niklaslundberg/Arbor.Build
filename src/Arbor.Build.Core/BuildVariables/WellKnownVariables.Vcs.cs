@@ -24,11 +24,14 @@
         public const string BranchNameVersion =
             "Arbor.Build.Vcs.Branch.Name.Version";
 
-        [VariableDescription("VCS branch name version split charecter comma separated list")]
-        public const string NameVersionCommanSeparatedSplitList =
+        [VariableDescription("VCS branch name version split character comma separated list")]
+        public const string NameVersionCommonSeparatedSplitList =
             "Arbor.Build.Vcs.Branch.NameVersionCommaSeparatedSplitList";
 
         [VariableDescription("Current branch name for the version control system")]
         public const string BranchName = "Arbor.Build.Vcs.Branch.Name";
+
+        [VariableDescription("Current GitHub branch name for the version control system")]
+        public const string GitHubBranchName = "GITHUB_REF";
     }
 }
