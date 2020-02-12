@@ -20,12 +20,9 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             var branch = new BranchName(branchName);
 
-            if (isReleaseBuild || !branch.IsFeatureBranch())
+            if (isReleaseBuild || !branch.IsFeatureBranch() || !branchNameEnabled)
             {
-                if (!branchNameEnabled)
-                {
-                    return basePackageId;
-                }
+                return basePackageId;
             }
 
             return CreateNugetPackageIdWithBranchName(basePackageId, branch);

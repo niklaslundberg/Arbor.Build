@@ -41,9 +41,9 @@ namespace Arbor.Build.Core.Tools.Git
             string branchNameWithValidCharacters = invalidCharacters.Aggregate(
                 Name,
                 (current, invalidCharacter) =>
-                    current.Replace(invalidCharacter, "-"));
+                    current.Replace(invalidCharacter, "-", StringComparison.Ordinal));
 
-            string removedFeatureInName = branchNameWithValidCharacters.Replace("feature-", string.Empty);
+            string removedFeatureInName = branchNameWithValidCharacters.Replace("feature-", string.Empty, StringComparison.OrdinalIgnoreCase);
 
             return removedFeatureInName;
         }

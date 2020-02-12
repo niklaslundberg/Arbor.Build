@@ -63,7 +63,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                     true);
 
             bool branchNameEnabled =
-                buildVariables.GetBooleanByKey(WellKnownVariables.NuGetPackageIdBranchNameEnabled);
+                buildVariables.GetBooleanByKey(WellKnownVariables.NuGetPackageIdBranchNameEnabled, true);
 
             string? packageIdOverride =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageIdOverride, null);

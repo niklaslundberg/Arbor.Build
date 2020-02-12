@@ -64,6 +64,7 @@ namespace Arbor.Build.Core.Debugging
                 [WellKnownVariables.AssemblyUseReflectionOnlyMode] = "true",
                 [WellKnownVariables.MSBuildNuGetRestoreEnabled] = "true",
                 [WellKnownVariables.DotNetPublishExeProjectsEnabled] = "true",
+                [WellKnownVariables.NuGetPackageIdBranchNameEnabled] = "false",
             };
 
             Task<ImmutableArray<IVariable>> result = Task.FromResult(environmentVariables.Select(
