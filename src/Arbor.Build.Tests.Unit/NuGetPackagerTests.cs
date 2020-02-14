@@ -16,7 +16,7 @@ namespace Arbor.Build.Tests.Unit
             string id = NuGetPackageIdHelper.CreateNugetPackageId("MyPackage", false, branchName, false);
             Assert.Equal("MyPackage", id);
         }
-        
+
         [InlineData("any-branch")]
         [Theory]
         public void WhenBranchNameIsEnabled(string branchName)
@@ -24,7 +24,24 @@ namespace Arbor.Build.Tests.Unit
             string id = NuGetPackageIdHelper.CreateNugetPackageId("MyPackage", false, branchName, true);
             Assert.Equal($"MyPackage-{branchName}", id);
         }
-        
+
+        [InlineData("any-branch")]
+        [Theory]
+        public void WhenBranchNameIs2Enabled(string branchName)
+        {
+            string id = NuGetPackageIdHelper.CreateNugetPackageId("MyPackage", false, branchName, true, ".Environment.Test");
+            Assert.Equal($"MyPackage-{branchName}.Environment.Test", id);
+        }
+
+        [InlineData("any-branch")]
+        [InlineData("release")]
+        [Theory]
+        public void WhenBranchNameIs2Disabled(string branchName)
+        {
+            string id = NuGetPackageIdHelper.CreateNugetPackageId("MyPackage", false, branchName, false, ".Environment.Test");
+            Assert.Equal("MyPackage.Environment.Test", id);
+        }
+
         [InlineData("feature", "123")]
         [Theory]
         public void WhenBranchNameIsEnabledForFeatureBranches(string branchPrefix, string branchSpecificName)

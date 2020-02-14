@@ -30,7 +30,8 @@ namespace Arbor.Build.Core.Tools.NuGet
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             string packagesDirectory,
-            string vcsRootDir)
+            string vcsRootDir,
+            string packageNameSuffix)
         {
             logger ??= Logger.None;
             IVariable version = buildVariables.Require(WellKnownVariables.Version).ThrowIfEmptyValue();
@@ -108,7 +109,8 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             bool isReleaseBuild = IsReleaseBuild(releaseBuild.Value, branchNameMayBe.Value);
 
-            string semVer = NuGetVersionHelper.GetVersion(version.Value,
+            string semVer = NuGetVersionHelper.GetVersion(
+                version.Value,
                 isReleaseBuild,
                 "build",
                 true,
@@ -160,7 +162,8 @@ namespace Arbor.Build.Core.Tools.NuGet
                 branchName.Value,
                 buildNumberEnabled,
                 tempDirectory.Value,
-                nuGetSymbolPackagesFormat: packageFormat);
+                nuGetSymbolPackagesFormat: packageFormat,
+                packageNameSuffix: packageNameSuffix);
             return packageConfiguration;
         }
 
@@ -198,7 +201,8 @@ namespace Arbor.Build.Core.Tools.NuGet
                     nuSpec.PackageId,
                     packageConfiguration.IsReleaseBuild,
                     packageConfiguration.BranchName,
-                    packageConfiguration.BranchNameEnabled);
+                    packageConfiguration.BranchNameEnabled,
+                    packageConfiguration.PackageNameSuffix);
 
             if (string.IsNullOrWhiteSpace(packageConfiguration.PackageIdOverride))
             {

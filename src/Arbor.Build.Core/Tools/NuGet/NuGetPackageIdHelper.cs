@@ -11,7 +11,8 @@ namespace Arbor.Build.Core.Tools.NuGet
             string basePackageId,
             bool isReleaseBuild,
             string branchName,
-            bool branchNameEnabled)
+            bool branchNameEnabled,
+            string packageNameSuffix = null)
         {
             if (string.IsNullOrWhiteSpace(basePackageId))
             {
@@ -22,10 +23,10 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             if (isReleaseBuild || !branch.IsFeatureBranch() || !branchNameEnabled)
             {
-                return basePackageId;
+                return basePackageId + packageNameSuffix;
             }
 
-            return CreateNugetPackageIdWithBranchName(basePackageId, branch);
+            return CreateNugetPackageIdWithBranchName(basePackageId, branch) + packageNameSuffix;
         }
 
         private static string CreateNugetPackageIdWithBranchName(string basePackageId, BranchName branch)

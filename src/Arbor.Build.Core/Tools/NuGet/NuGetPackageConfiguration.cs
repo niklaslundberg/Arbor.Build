@@ -26,7 +26,8 @@ namespace Arbor.Build.Core.Tools.NuGet
             bool buildNumberEnabled = true,
             string tempPath = null,
             string packageBuildMetadata = null,
-            string nuGetSymbolPackagesFormat = NuGetPackager.SnupkgPackageFormat)
+            string nuGetSymbolPackagesFormat = NuGetPackager.SnupkgPackageFormat,
+            string packageNameSuffix = null)
         {
             if (string.IsNullOrWhiteSpace(configuration))
             {
@@ -70,7 +71,10 @@ namespace Arbor.Build.Core.Tools.NuGet
             NuGetExePath = nugetExePath;
             NuGetSymbolPackagesFormat = nuGetSymbolPackagesFormat;
             Suffix = suffix;
+            PackageNameSuffix = packageNameSuffix;
         }
+
+        public string PackageNameSuffix { get; }
 
         public bool KeepBinaryAndSourcePackagesTogetherEnabled { get; }
 

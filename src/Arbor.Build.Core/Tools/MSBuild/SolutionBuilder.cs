@@ -1590,6 +1590,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 logger,
                 packageId,
                 allIncludedFiles,
+                "",
                 artifactDirectory).ConfigureAwait(false);
 
             if (!exitCode.IsSuccess)
@@ -1658,13 +1659,14 @@ namespace Arbor.Build.Core.Tools.MSBuild
                         environmentName);
                 }
 
-                string environmentPackageId = $"{packageId}.Environment.{environmentName}";
+                string environmentPackageId = $"{packageId}";
 
                 ExitCode environmentPackageExitCode = await CreateNuGetPackageAsync(
                     platformDirectoryPath,
                     logger,
                     environmentPackageId,
                     elements,
+                    $".Environment.{environmentName}",
                     new DirectoryInfo(rootDirectory)).ConfigureAwait(false);
 
                 if (!environmentPackageExitCode.IsSuccess)
@@ -1805,6 +1807,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             ILogger logger,
             string packageId,
             IReadOnlyCollection<string> filesList,
+            string packageNameSuffix,
             DirectoryInfo baseDirectory)
         {
             string packageDirectoryPath = Path.Combine(platformDirectoryPath, "NuGet");
@@ -1815,7 +1818,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 logger,
                 _buildVariables,
                 packageDirectory.FullName,
-                _vcsRoot);
+                _vcsRoot,
+                packageNameSuffix);
 
             packageConfiguration.NuGetSymbolPackagesEnabled = false;
 
