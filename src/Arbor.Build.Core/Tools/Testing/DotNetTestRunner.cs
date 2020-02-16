@@ -101,6 +101,7 @@ namespace Arbor.Build.Core.Tools.Testing
 
             var testDirectories = new DirectoryInfo(_sourceRoot)
                 .GetFiles("*test*.csproj", SearchOption.AllDirectories)
+                .Where(file => assemblyFilePrefix.Any(prefix => file.Name.StartsWith(prefix)))
                 .Select(file => file.Directory.FullName)
                 .ToHashSet();
 
