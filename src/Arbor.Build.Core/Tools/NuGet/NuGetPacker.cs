@@ -24,6 +24,7 @@ namespace Arbor.Build.Core.Tools.NuGet
         public async Task<ExitCode> ExecuteAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
+            string[] args,
             CancellationToken cancellationToken)
         {
             bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.NuGetPackageEnabled, true);

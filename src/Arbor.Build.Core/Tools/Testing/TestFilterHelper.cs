@@ -9,14 +9,14 @@ namespace Arbor.Build.Core.Tools.Testing
     public static class TestFilterHelper
     {
         public static ImmutableArray<string> AssemblyFilePrefixes(
-            [NotNull] this IReadOnlyCollection<IVariable> buildVairables)
+            [NotNull] this IReadOnlyCollection<IVariable> buildVariables)
         {
-            if (buildVairables == null)
+            if (buildVariables == null)
             {
-                throw new ArgumentNullException(nameof(buildVairables));
+                throw new ArgumentNullException(nameof(buildVariables));
             }
 
-            ImmutableArray<string> filters = buildVairables
+            ImmutableArray<string> filters = buildVariables
                 .GetVariableValueOrDefault(WellKnownVariables.TestsAssemblyStartsWith, string.Empty)
                 .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToImmutableArray();
 

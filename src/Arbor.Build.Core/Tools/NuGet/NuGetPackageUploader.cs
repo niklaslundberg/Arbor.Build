@@ -423,6 +423,7 @@ namespace Arbor.Build.Core.Tools.NuGet
         public Task<ExitCode> ExecuteAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
+            string[] args,
             CancellationToken cancellationToken)
         {
             logger ??= Logger.None ?? throw new ArgumentNullException(nameof(logger));

@@ -34,6 +34,7 @@ namespace Arbor.Build.Core.Tools.Kudu
         public async Task<ExitCode> ExecuteAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
+            string[] args,
             CancellationToken cancellationToken)
         {
             _kuduEnabled = buildVariables.HasKey(WellKnownVariables.ExternalTools_Kudu_Enabled) &&

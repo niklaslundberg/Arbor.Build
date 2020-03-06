@@ -63,7 +63,7 @@ namespace Arbor.Build.Core
                     string alreadyDefinedMessage =
                         $"{Environment.NewLine}Compatibility build variables already defined {Environment.NewLine}{Environment.NewLine}{alreadyDefined.DisplayAsTable()}{Environment.NewLine}";
 
-                    _logger.Warning("{AlreadyDefined}", alreadyDefinedMessage);
+                    _logger.Debug("{AlreadyDefined}", alreadyDefinedMessage);
                 }
 
                 if (compatibilities.Count > 0 && _verboseEnabled)
