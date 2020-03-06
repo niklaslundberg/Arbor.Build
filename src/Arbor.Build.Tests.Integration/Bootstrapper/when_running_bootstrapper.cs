@@ -38,7 +38,9 @@ namespace Arbor.Build.Tests.Integration.Bootstrapper
             baseDirectory = new DirectoryInfo(tempDirectoryPath).EnsureExists();
             Console.WriteLine("Temp directory is {0}", baseDirectory.FullName);
 
-            startOptions = new BootstrapStartOptions(baseDirectory.FullName,
+            startOptions = new BootstrapStartOptions(
+                Array.Empty<string>(),
+                baseDirectory.FullName,
                 true,
                 "develop");
             _appBootstrapper = new Core.Bootstrapper.AppBootstrapper(Logger.None);

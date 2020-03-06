@@ -22,6 +22,7 @@ namespace Arbor.Build.Core.Tools
         Task<ExitCode> ExecuteAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
+            string[] args,
             CancellationToken cancellationToken);
     }
 }

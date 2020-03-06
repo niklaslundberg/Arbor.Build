@@ -36,6 +36,7 @@ namespace Arbor.Build.Core
         private readonly bool _verboseEnabled;
         private CancellationToken _cancellationToken;
         private IContainer? _container;
+        private string[] _args;
 
         public BuildApplication(ILogger logger)
         {
@@ -153,7 +154,7 @@ namespace Arbor.Build.Core
                     variableAsTable);
             }
 
-            if (buildVariables.GetBooleanByKey(WellKnownVariables.ShowDefinedVariablesEnabled, true))
+            if (buildVariables.GetBooleanByKey(WellKnownVariables.ShowDefinedVariablesEnabled, false))
             {
                 _logger.Information("{NewLine}Defined build variables: [{Count}] {NewLine1}{NewLine2}{V}",
                     Environment.NewLine,
@@ -210,7 +211,7 @@ namespace Arbor.Build.Core
                 try
                 {
                     ExitCode toolResult =
-                        await toolWithPriority.Tool.ExecuteAsync(_logger, buildVariables, _cancellationToken)
+                        await toolWithPriority.Tool.ExecuteAsync(_logger, buildVariables, _args, _cancellationToken)
                             .ConfigureAwait(false);
 
                     stopwatch.Stop();
@@ -495,6 +496,7 @@ namespace Arbor.Build.Core
 
         public async Task<ExitCode> RunAsync(string[] args)
         {
+            _args = args ?? Array.Empty<string>();
             MultiSourceKeyValueConfiguration multiSourceKeyValueConfiguration = KeyValueConfigurationManager
                 .Add(new UserJsonConfiguration())
                 .Add(new EnvironmentVariableKeyValueConfigurationSource())

@@ -17,6 +17,7 @@ namespace Arbor.Build.Core.Tools.Versioning
         public Task<ExitCode> ExecuteAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
+            string[] args,
             CancellationToken cancellationToken)
         {
             bool assemblyVersionPatchingEnabled =
@@ -24,7 +25,7 @@ namespace Arbor.Build.Core.Tools.Versioning
 
             if (!assemblyVersionPatchingEnabled)
             {
-                logger.Warning("Assembly version pathcing is disabled");
+                logger.Warning("Assembly version patching is disabled");
                 return Task.FromResult(ExitCode.Success);
             }
 

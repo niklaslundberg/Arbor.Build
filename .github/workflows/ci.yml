@@ -22,5 +22,6 @@ jobs:
         Arbor.Build.NuGet.PackageUpload.Server.Uri: "https://www.myget.org/F/arbor/api/v2/package"
         Arbor.Build.NuGet.PackageUpload.Enabled: "true"
         Arbor.Build.NuGet.PackageUpload.ForceUploadEnabled: "true"
+        Arbor.Build.NuGet.WebsitePackages.PackageUpload.Enabled: "true"
       run: |
         build\build.bat

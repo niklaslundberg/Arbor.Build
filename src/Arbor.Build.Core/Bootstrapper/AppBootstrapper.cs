@@ -70,7 +70,7 @@ namespace Arbor.Build.Core.Bootstrapper
 
         public async Task<ExitCode> StartAsync(BootstrapStartOptions startOptions)
         {
-            _startOptions = startOptions ?? new BootstrapStartOptions();
+            _startOptions = startOptions ?? new BootstrapStartOptions(Array.Empty<string>());
 
             SetEnvironmentVariables();
 
@@ -194,6 +194,7 @@ namespace Arbor.Build.Core.Bootstrapper
             Environment.SetEnvironmentVariable(WellKnownVariables.VariableOverrideEnabled, "true");
 
             var bootstrapStartOptions = new BootstrapStartOptions(
+                Array.Empty<string>(),
                 tempDirectory.FullName,
                 true,
                 "refs/heads/develop/12.34.56");
@@ -559,7 +560,12 @@ namespace Arbor.Build.Core.Bootstrapper
                     return ExitCode.Failure;
                 }
 
-                string[] arguments = { buildToolExecutable.FullName, "--", $"-buildDirectory={buildDir}" };
+                var arguments = new List<string>{ buildToolExecutable.FullName, "--", $"-buildDirectory={buildDir}" };
+
+                if (_startOptions?.Args?.Any() ?? false)
+                {
+                    arguments.AddRange(_startOptions.Args);
+                }
 
                 result = await ProcessRunner.ExecuteProcessAsync(dotnetExePath,
                         arguments,

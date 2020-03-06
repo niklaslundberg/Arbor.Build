@@ -2319,6 +2319,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
         public async Task<ExitCode> ExecuteAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
+            string[] args,
             CancellationToken cancellationToken)
         {
             _buildVariables = buildVariables;

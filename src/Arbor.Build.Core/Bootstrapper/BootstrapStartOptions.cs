@@ -6,12 +6,13 @@ namespace Arbor.Build.Core.Bootstrapper
 {
     public class BootstrapStartOptions
     {
-        public BootstrapStartOptions(
+        public BootstrapStartOptions(string[] args,
             string? baseDir = null,
             bool? preReleaseEnabled = null,
             string? branchName = null,
             bool downloadOnly = false)
         {
+            Args = args;
             BaseDir = baseDir;
             PreReleaseEnabled = preReleaseEnabled;
             BranchName = branchName;
@@ -20,6 +21,7 @@ namespace Arbor.Build.Core.Bootstrapper
 
         public bool? PreReleaseEnabled { get; }
 
+        public string[] Args { get; }
         public string? BaseDir { get; }
 
         public string? BranchName { get; }
@@ -35,7 +37,7 @@ namespace Arbor.Build.Core.Bootstrapper
 
             bool downloadOnly = args.Any(arg => arg.Equals("--download-only", StringComparison.OrdinalIgnoreCase));
 
-            return new BootstrapStartOptions(downloadOnly: downloadOnly);
+            return new BootstrapStartOptions(args, downloadOnly: downloadOnly);
         }
     }
 }

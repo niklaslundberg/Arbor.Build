@@ -27,6 +27,7 @@ namespace Arbor.Build.Core.Tools.Testing
         public async Task<ExitCode> ExecuteAsync(
             [NotNull] ILogger logger,
             [NotNull] IReadOnlyCollection<IVariable> buildVariables,
+            string[] args,
             CancellationToken cancellationToken)
         {
             if (logger == null)
