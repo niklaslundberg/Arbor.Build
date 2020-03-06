@@ -65,7 +65,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                 if (!exitCode.IsSuccess)
                 {
-                    throw new InvalidOperationException(Resources.CouldNotGetVisualStudioPath);
+                    logger.Error("Could not get VS version by using vswhere");
+                    return ImmutableArray<IVariable>.Empty;
                 }
 
                 string json = resultBuilder.ToString();

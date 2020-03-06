@@ -13,6 +13,10 @@ Arbor.Build is built to be run both locally on a developer's machine and on a bu
 
 When running Arbor.Build, it will show all the build variables it supports.
 
+## Help
+
+Run arbor-build --help to se available variables to set
+
 ## Parts
 
 Arbor.Build consists of two components, a bootstrapper and the build application.

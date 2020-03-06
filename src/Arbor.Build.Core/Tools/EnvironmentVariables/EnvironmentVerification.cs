@@ -18,6 +18,7 @@ namespace Arbor.Build.Core.Tools.EnvironmentVariables
         public async Task<ExitCode> ExecuteAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
+            string[] args,
             CancellationToken cancellationToken)
         {
             logger ??= Logger.None;

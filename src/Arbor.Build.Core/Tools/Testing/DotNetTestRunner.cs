@@ -27,6 +27,7 @@ namespace Arbor.Build.Core.Tools.Testing
         public async Task<ExitCode> ExecuteAsync(
             [NotNull] ILogger logger,
             [NotNull] IReadOnlyCollection<IVariable> buildVariables,
+            string[] args,
             CancellationToken cancellationToken)
         {
             if (logger == null)
@@ -101,6 +102,7 @@ namespace Arbor.Build.Core.Tools.Testing
 
             var testDirectories = new DirectoryInfo(_sourceRoot)
                 .GetFiles("*test*.csproj", SearchOption.AllDirectories)
+                .Where(file => assemblyFilePrefix.Any(prefix => file.Name.StartsWith(prefix)))
                 .Select(file => file.Directory.FullName)
                 .ToHashSet();
 

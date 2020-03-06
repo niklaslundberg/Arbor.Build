@@ -21,6 +21,7 @@ namespace Arbor.Build.Core.Tools.Kudu
         public Task<ExitCode> ExecuteAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
+            string[] args,
             CancellationToken cancellationToken)
         {
             _logger = logger;
