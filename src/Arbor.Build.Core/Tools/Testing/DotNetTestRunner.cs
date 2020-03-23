@@ -9,6 +9,8 @@ using System.Xml.Linq;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Properties;
+using Arbor.Build.Core.Tools.MSBuild;
+using Arbor.Build.Core.Tools.Versioning;
 using Arbor.Defensive.Collections;
 using Arbor.Processing;
 using JetBrains.Annotations;
@@ -81,8 +83,8 @@ namespace Arbor.Build.Core.Tools.Testing
             else
             {
                 configuration = runTestsInReleaseConfiguration == true
-                    ? "release"
-                    : "debug";
+                    ? WellKnownConfigurations.Release
+                    : WellKnownConfigurations.Debug;
             }
 
             ImmutableArray<string> assemblyFilePrefix = buildVariables.AssemblyFilePrefixes();

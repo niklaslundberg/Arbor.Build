@@ -84,6 +84,10 @@ namespace Arbor.Build.Core.BuildVariables
         public const string Configuration =
             "Arbor.Build.Build.Configuration";
 
+        [VariableDescription("Default MSBuild configuration (eg. Debug/Release) for feature branches")]
+        public const string FeatureBranchDefaultConfiguration =
+            "Arbor.Build.FeatureBranchDefaultConfiguration";
+
         [VariableDescription("Dynamic configuration property")]
         public const string CurrentBuildConfiguration = "Arbor.Build.Build.CurrentBuild.Configuration";
 

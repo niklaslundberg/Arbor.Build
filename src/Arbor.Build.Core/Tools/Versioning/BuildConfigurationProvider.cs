@@ -44,15 +44,16 @@ namespace Arbor.Build.Core.Tools.Versioning
             {
                 if (!debugEnabled && releaseEnabled)
                 {
-                    variables.Add(new BuildVariable(WellKnownVariables.Configuration, "release"));
+                    variables.Add(new BuildVariable(WellKnownVariables.Configuration, WellKnownConfigurations.Release));
                 }
                 else if (debugEnabled && !releaseEnabled)
                 {
-                    variables.Add(new BuildVariable(WellKnownVariables.Configuration, "debug"));
+                    variables.Add(new BuildVariable(WellKnownVariables.Configuration, WellKnownConfigurations.Debug));
                 }
                 else
                 {
-                    variables.Add(new BuildVariable(WellKnownVariables.Configuration, "debug"));
+                    string configuration = GetConfiguration(buildVariables);
+                    variables.Add(new BuildVariable(WellKnownVariables.Configuration, configuration));
                 }
             }
 
@@ -66,25 +67,46 @@ namespace Arbor.Build.Core.Tools.Versioning
             return Task.FromResult(variables.ToImmutableArray());
         }
 
-        private static string GetConfiguration([NotNull] string branchName)
+        private static string GetConfiguration(IReadOnlyCollection<IVariable> buildVariables)
         {
-            if (branchName == null)
+            string? branchName = buildVariables.GetVariableValueOrDefault(WellKnownVariables.BranchName, null);
+
+            if (string.IsNullOrWhiteSpace(branchName))
             {
-                throw new ArgumentNullException(nameof(branchName));
+                return WellKnownConfigurations.Debug;
             }
 
-            bool isReleaseBranch = new BranchName(branchName).IsProductionBranch();
+            var branch = new BranchName(branchName);
+
+            bool isReleaseBranch = branch.IsProductionBranch();
 
             if (isReleaseBranch)
             {
-                return "release";
+                return WellKnownConfigurations.Release;
             }
 
-            return "debug";
+            if (branch.IsFeatureBranch())
+            {
+                string? featureBranchConfiguration = buildVariables.GetVariableValueOrDefault(WellKnownVariables.FeatureBranchDefaultConfiguration,
+                    null);
+
+                if (!string.IsNullOrWhiteSpace(
+                    featureBranchConfiguration))
+                {
+                    return featureBranchConfiguration;
+                }
+            }
+
+            return WellKnownConfigurations.Debug;
         }
 
         private static bool IsReleaseBuild(string branchName)
         {
+            if (string.IsNullOrWhiteSpace(branchName))
+            {
+                return false;
+            }
+
             bool isProductionBranch = new BranchName(branchName).IsProductionBranch();
 
             return isProductionBranch;
