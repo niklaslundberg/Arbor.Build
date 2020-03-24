@@ -77,12 +77,14 @@ namespace Arbor.Build.Core.BuildVariables
         [VariableDescription("Enable assembly version patching")]
         public const string AssemblyFilePatchingEnabled = "Arbor.Build.Build.NetAssembly.PatchingEnabled";
 
-        [VariableDescription("Flag to indicate if the build is consider a release build")]
-        public const string ReleaseBuild = "Arbor.Build.Build.IsReleaseBuild";
-
+        [Obsolete]
         [VariableDescription("MSBuild configuration (eg. Debug/Release)")]
         public const string Configuration =
             "Arbor.Build.Build.Configuration";
+
+        [VariableDescription("Semicolon separated MSBuild configurations (eg. Debug/Release)")]
+        public const string Configurations =
+            "Arbor.Build.MSBuild.Configurations";
 
         [VariableDescription("Default MSBuild configuration (eg. Debug/Release) for feature branches")]
         public const string FeatureBranchDefaultConfiguration =
@@ -144,6 +146,7 @@ namespace Arbor.Build.Core.BuildVariables
         public const string ExternalTools_MSBuild_SummaryEnabled =
             "Arbor.Build.Tools.External.MSBuild.SummaryEnabled";
 
+        [Obsolete]
         [VariableDescription(
             "MSBuild build configuration, if not specified, all well-known configurations will be built")]
         public const string ExternalTools_MSBuild_BuildConfiguration =

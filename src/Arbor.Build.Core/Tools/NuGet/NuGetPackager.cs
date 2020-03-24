@@ -5,11 +5,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
-using Arbor.Build.Core.GenericExtensions.Bools;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.Git;
 using Arbor.Build.Core.Tools.MSBuild;
-using Arbor.Build.Core.Tools.Versioning;
 using Arbor.Defensive;
 using Arbor.Processing;
 using JetBrains.Annotations;
@@ -20,15 +18,22 @@ using Serilog.Events;
 
 namespace Arbor.Build.Core.Tools.NuGet
 {
+    [UsedImplicitly]
     public class NuGetPackager
     {
+        private readonly BuildContext _buildContext;
+
         private readonly ILogger _logger;
 
         public const string SnupkgPackageFormat = "snupkg";
 
-        public NuGetPackager(ILogger logger) => _logger = logger;
+        public NuGetPackager(ILogger logger, BuildContext buildContext)
+        {
+            _logger = logger;
+            _buildContext = buildContext;
+        }
 
-        public static NuGetPackageConfiguration GetNuGetPackageConfiguration(
+        public NuGetPackageConfiguration GetNuGetPackageConfiguration(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             string packagesDirectory,
@@ -37,15 +42,17 @@ namespace Arbor.Build.Core.Tools.NuGet
         {
             logger ??= Logger.None;
             IVariable version = buildVariables.Require(WellKnownVariables.Version).ThrowIfEmptyValue();
-            IVariable releaseBuild = buildVariables.Require(WellKnownVariables.ReleaseBuild).ThrowIfEmptyValue();
+
             IVariable branchName = buildVariables.Require(WellKnownVariables.BranchLogicalName).ThrowIfEmptyValue();
 
-            string? assemblyConfiguration = buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyConfiguration, null);
             string? currentConfiguration = buildVariables.GetVariableValueOrDefault(WellKnownVariables.CurrentBuildConfiguration, null);
-            string? staticConfiguration = buildVariables.GetVariableValueOrDefault(WellKnownVariables.Configuration, null);
 
-            string? buildConfiguration = assemblyConfiguration
-                                        ?? currentConfiguration
+            string? staticConfiguration =
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_MSBuild_BuildConfiguration,
+                    null) ??
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.Configuration, null);
+
+            string? buildConfiguration = currentConfiguration
                                         ?? staticConfiguration;
 
             IVariable tempDirectory = buildVariables.Require(WellKnownVariables.TempDirectory).ThrowIfEmptyValue();
@@ -109,7 +116,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 throw new InvalidOperationException(Resources.TheBranchNameCouldNotBeFound);
             }
 
-            bool isReleaseBuild = IsReleaseBuild(releaseBuild.Value, branchNameMayBe.Value);
+            bool isReleaseBuild = IsStablePackage(branchNameMayBe.Value);
 
             string semVer = NuGetVersionHelper.GetVersion(
                 version.Value,
@@ -122,10 +129,10 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             var semanticVersion = SemanticVersion.Parse(semVer);
 
-            logger.Verbose("Based on branch {Value} and release build flags {Value1}, the build is considered {V}",
-                branchName.Value,
-                releaseBuild.Value,
-                isReleaseBuild ? WellKnownConfigurations.Release : "not release");
+            //logger.Verbose("Based on branch {Value} and release build flags {Value1}, the build is considered {V}",
+            //    branchName.Value,
+            //    releaseBuild.Value,
+            //    isReleaseBuild ? WellKnownConfigurations.Release : "not release");
 
             if (!string.IsNullOrWhiteSpace(buildConfiguration)
                 && buildConfiguration.Equals(WellKnownConfigurations.Debug, StringComparison.OrdinalIgnoreCase) && isReleaseBuild)
@@ -311,12 +318,11 @@ namespace Arbor.Build.Core.Tools.NuGet
             return properties;
         }
 
-        private static bool IsReleaseBuild(string releaseBuild, BranchName branchName)
-        {
-            _ = releaseBuild.TryParseBool(out bool isReleaseBuild);
-
-            return isReleaseBuild || branchName.IsProductionBranch();
-        }
+        private bool IsStablePackage(BranchName branchName) =>
+            (_buildContext.Configurations.Count == 1 &&
+             _buildContext.Configurations.Single()
+                 .Equals(WellKnownConfigurations.Release, StringComparison.OrdinalIgnoreCase))
+            || branchName.IsProductionBranch();
 
         private static async Task<ExitCode> ExecuteNuGetPackAsync(
             string nuGetExePath,

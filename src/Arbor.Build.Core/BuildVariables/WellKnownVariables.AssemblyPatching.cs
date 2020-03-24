@@ -1,4 +1,6 @@
-﻿namespace Arbor.Build.Core.BuildVariables
+﻿using System;
+
+namespace Arbor.Build.Core.BuildVariables
 {
     public static partial class WellKnownVariables
     {
@@ -9,6 +11,7 @@
 
         public const string NetAssemblyCompany = "Arbor.Build.Build.NetAssembly.Company";
 
+        [Obsolete]
         public const string NetAssemblyConfiguration = "Arbor.Build.Build.NetAssembly.Configuration";
 
         public const string NetAssemblyCopyright = "Arbor.Build.Build.NetAssembly.Copyright";

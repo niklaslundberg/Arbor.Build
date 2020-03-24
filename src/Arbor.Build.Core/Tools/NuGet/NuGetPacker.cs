@@ -20,6 +20,9 @@ namespace Arbor.Build.Core.Tools.NuGet
         private IReadOnlyCollection<string> _excludedNuSpecFiles;
 
         private PathLookupSpecification _pathLookupSpecification;
+        private readonly NuGetPackager _nugetPackager;
+
+        public NuGetPacker(NuGetPackager nuGetPackager) => _nugetPackager = nuGetPackager;
 
         public async Task<ExitCode> ExecuteAsync(
             ILogger logger,
@@ -53,7 +56,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             string vcsRootDir = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
 
             NuGetPackageConfiguration packageConfiguration =
-                NuGetPackager.GetNuGetPackageConfiguration(logger, buildVariables, packagesDirectory, vcsRootDir, "");
+                _nugetPackager.GetNuGetPackageConfiguration(logger, buildVariables, packagesDirectory, vcsRootDir, "");
 
             IReadOnlyCollection<string> packageSpecifications = GetPackageSpecifications(
                 logger,
@@ -142,12 +145,10 @@ namespace Arbor.Build.Core.Tools.NuGet
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            var packager = new NuGetPackager(logger);
-
             foreach (string packageSpecification in packageSpecifications)
             {
                 ExitCode packageResult =
-                    await packager.CreatePackageAsync(
+                    await _nugetPackager.CreatePackageAsync(
                         packageSpecification,
                         packageConfiguration,
                         cancellationToken: cancellationToken).ConfigureAwait(false);

@@ -44,7 +44,6 @@ namespace Arbor.Build.Core.Tools.MSBuild
             FileAttributes.Archive
         };
 
-        private readonly List<string> _buildConfigurations = new List<string>();
         private readonly BuildContext _buildContext;
 
         private readonly List<string> _knownPlatforms = new List<string> { "x86", "x64", "Any CPU" };
@@ -109,11 +108,13 @@ namespace Arbor.Build.Core.Tools.MSBuild
         private bool _verboseLoggingEnabled;
         private MSBuildVerbosityLevel _verbosity;
         private string _version;
+        private NuGetPackager _nugetPackager;
 
-        public SolutionBuilder(BuildContext buildContext)
+        public SolutionBuilder(BuildContext buildContext, NuGetPackager nugetPackager)
         {
             _buildContext = buildContext;
-            LogTail = new FixedSizedQueue<string>()
+            _nugetPackager = nugetPackager;
+            LogTail = new FixedSizedQueue<string>
             {
                 Limit = 5
             };
@@ -183,9 +184,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
         private async Task<ExitCode> BuildAsync(ILogger logger, IReadOnlyCollection<IVariable> variables)
         {
-            AddBuildConfigurations(logger, variables);
-
-            if (_buildConfigurations.Count == 0)
+            if (_buildContext.Configurations.Count == 0)
             {
                 logger.Error("No build configurations are defined");
                 return ExitCode.Failure;
@@ -345,55 +344,6 @@ namespace Arbor.Build.Core.Tools.MSBuild
             }
         }
 
-        private void AddBuildConfigurations(ILogger logger, IReadOnlyCollection<IVariable> variables)
-        {
-            string? buildConfiguration =
-                variables.GetVariableValueOrDefault(
-                    WellKnownVariables.ExternalTools_MSBuild_BuildConfiguration,
-                    string.Empty);
-
-            if (!string.IsNullOrWhiteSpace(buildConfiguration))
-            {
-                _buildConfigurations.Add(buildConfiguration);
-            }
-            else
-            {
-                bool buildDebug = BuildPlatformOrConfiguration(variables, WellKnownVariables.DebugBuildEnabled);
-
-                if (buildDebug)
-                {
-                    if (_debugLoggingEnabled)
-                    {
-                        logger.Debug("Adding debug configuration to build");
-                    }
-
-                    _buildConfigurations.Add(WellKnownConfigurations.Debug);
-                }
-                else
-                {
-                    logger.Information("Flag {DebugBuildEnabled} is set to false, ignoring debug builds",
-                        WellKnownVariables.DebugBuildEnabled);
-                }
-
-                bool buildRelease = BuildPlatformOrConfiguration(variables, WellKnownVariables.ReleaseBuildEnabled);
-
-                if (buildRelease)
-                {
-                    if (_debugLoggingEnabled)
-                    {
-                        logger.Debug("Adding release configuration to build");
-                    }
-
-                    _buildConfigurations.Add(WellKnownConfigurations.Release);
-                }
-                else
-                {
-                    logger.Information("Flag {ReleaseBuildEnabled} is set to false, ignoring release builds",
-                        WellKnownVariables.ReleaseBuildEnabled);
-                }
-            }
-        }
-
         private async Task<List<string>> GetSolutionPlatformsAsync(FileInfo solutionFile)
         {
             var platforms = new List<string>();
@@ -465,7 +415,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             var combinations = actualPlatforms
                 .SelectMany(
-                    item => _buildConfigurations.Select(config => new { Platform = item, Configuration = config }))
+                    item => _buildContext.Configurations.Select(config => new { Platform = item, Configuration = config }))
                 .ToList();
 
             if (combinations.Count > 1)
@@ -489,15 +439,9 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 }
             }
 
-            foreach (string configuration in _buildConfigurations)
+            foreach (string configuration in _buildContext.Configurations)
             {
-                Maybe<IVariable> optionalVariable =
-                    _buildVariables.GetOptionalVariable(WellKnownVariables.CurrentBuildConfiguration);
-
-                if (optionalVariable.HasValue && optionalVariable.Value is DynamicVariable dynamicVariable)
-                {
-                    dynamicVariable.Value = configuration;
-                }
+                _buildContext.CurrentBuildConfiguration = new BuildConfiguration(configuration);
 
                 ExitCode result =
                     await BuildSolutionWithConfigurationAsync(solutionFile, configuration, logger, actualPlatforms)
@@ -507,8 +451,6 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 {
                     return result;
                 }
-
-                _buildContext.CurrentBuildConfiguration = new BuildConfiguration(configuration);
             }
 
             return ExitCode.Success;
@@ -1815,7 +1757,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             DirectoryInfo packageDirectory = new DirectoryInfo(packageDirectoryPath).EnsureExists();
 
-            NuGetPackageConfiguration packageConfiguration = NuGetPackager.GetNuGetPackageConfiguration(
+            NuGetPackageConfiguration packageConfiguration = _nugetPackager.GetNuGetPackageConfiguration(
                 logger,
                 _buildVariables,
                 packageDirectory.FullName,
@@ -1902,7 +1844,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 .WriteAllTextAsync(nuspecTempFile, nuspecContent, Encoding.UTF8, _cancellationToken)
                 .ConfigureAwait(false);
 
-            ExitCode exitCode = await new NuGetPackager(_logger).CreatePackageAsync(
+            ExitCode exitCode = await _nugetPackager.CreatePackageAsync(
                 nuspecTempFile,
                 packageConfiguration,
                 true,

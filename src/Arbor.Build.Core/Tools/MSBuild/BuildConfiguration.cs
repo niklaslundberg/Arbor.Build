@@ -16,5 +16,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
         }
 
         public string Configuration { get; }
+
+        public bool IsReleaseBuild { get; set; }
     }
 }

@@ -33,7 +33,7 @@ namespace Arbor.Build.Tests.Integration.MSBuild
                 _testOutputHelper.WriteLine($"{variable.Key}: {variable.Value}");
             }
 
-            var configuration = variables.SingleOrDefault(v => v.Key.Equals(WellKnownVariables.Configuration));
+            var configuration = variables.SingleOrDefault(v => v.Key.Equals(WellKnownVariables.ExternalTools_MSBuild_BuildConfiguration));
 
             Assert.NotNull(configuration);
 
@@ -62,7 +62,7 @@ namespace Arbor.Build.Tests.Integration.MSBuild
                 _testOutputHelper.WriteLine($"{variable.Key}: {variable.Value}");
             }
 
-            var configuration = variables.SingleOrDefault(v => v.Key.Equals(WellKnownVariables.Configuration));
+            var configuration = variables.SingleOrDefault(v => v.Key.Equals(WellKnownVariables.ExternalTools_MSBuild_BuildConfiguration));
 
             Assert.NotNull(configuration);
 
@@ -91,7 +91,7 @@ namespace Arbor.Build.Tests.Integration.MSBuild
                 _testOutputHelper.WriteLine($"{variable.Key}: {variable.Value}");
             }
 
-            var configuration = variables.SingleOrDefault(v => v.Key.Equals(WellKnownVariables.Configuration));
+            var configuration = variables.SingleOrDefault(v => v.Key.Equals(WellKnownVariables.ExternalTools_MSBuild_BuildConfiguration));
 
             Assert.NotNull(configuration);
 
@@ -120,7 +120,7 @@ namespace Arbor.Build.Tests.Integration.MSBuild
                 _testOutputHelper.WriteLine($"{variable.Key}: {variable.Value}");
             }
 
-            var configuration = variables.SingleOrDefault(v => v.Key.Equals(WellKnownVariables.Configuration));
+            var configuration = variables.SingleOrDefault(v => v.Key.Equals(WellKnownVariables.ExternalTools_MSBuild_BuildConfiguration));
 
             Assert.NotNull(configuration);
 
