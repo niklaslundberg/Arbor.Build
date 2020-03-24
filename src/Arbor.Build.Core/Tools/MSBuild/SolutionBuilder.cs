@@ -13,6 +13,7 @@ using Arbor.Build.Core.GenericExtensions.Bools;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.ProcessUtils;
 using Arbor.Build.Core.Tools.NuGet;
+using Arbor.Build.Core.Tools.Versioning;
 using Arbor.Defensive;
 using Arbor.Defensive.Collections;
 using Arbor.Exceptions;
@@ -366,7 +367,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                         logger.Debug("Adding debug configuration to build");
                     }
 
-                    _buildConfigurations.Add("debug");
+                    _buildConfigurations.Add(WellKnownConfigurations.Debug);
                 }
                 else
                 {
@@ -383,7 +384,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                         logger.Debug("Adding release configuration to build");
                     }
 
-                    _buildConfigurations.Add("release");
+                    _buildConfigurations.Add(WellKnownConfigurations.Release);
                 }
                 else
                 {
@@ -817,7 +818,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                 DirectoryInfo tempDirectory = default;
 
-                bool isReleaseBuild = configuration.Equals("release", StringComparison.OrdinalIgnoreCase);
+                bool isReleaseBuild = configuration.Equals(WellKnownConfigurations.Release, StringComparison.OrdinalIgnoreCase);
 
                 string packageVersion = GetPackageVersion(isReleaseBuild);
 
@@ -918,7 +919,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             ImmutableArray<SolutionProject> exeProjects = solution.Projects.Where(IsToolProject).ToImmutableArray();
 
-            bool isReleaseBuild = configuration.Equals("release", StringComparison.OrdinalIgnoreCase);
+            bool isReleaseBuild = configuration.Equals(WellKnownConfigurations.Release, StringComparison.OrdinalIgnoreCase);
 
             string packageVersion = GetPackageVersion(isReleaseBuild);
 

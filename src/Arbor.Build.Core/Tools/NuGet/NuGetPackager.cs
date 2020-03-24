@@ -8,6 +8,8 @@ using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.GenericExtensions.Bools;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.Git;
+using Arbor.Build.Core.Tools.MSBuild;
+using Arbor.Build.Core.Tools.Versioning;
 using Arbor.Defensive;
 using Arbor.Processing;
 using JetBrains.Annotations;
@@ -123,14 +125,14 @@ namespace Arbor.Build.Core.Tools.NuGet
             logger.Verbose("Based on branch {Value} and release build flags {Value1}, the build is considered {V}",
                 branchName.Value,
                 releaseBuild.Value,
-                isReleaseBuild ? "release" : "not release");
+                isReleaseBuild ? WellKnownConfigurations.Release : "not release");
 
             if (!string.IsNullOrWhiteSpace(buildConfiguration)
-                && buildConfiguration.Equals("debug", StringComparison.OrdinalIgnoreCase) && isReleaseBuild)
+                && buildConfiguration.Equals(WellKnownConfigurations.Debug, StringComparison.OrdinalIgnoreCase) && isReleaseBuild)
             {
                 logger.Information(
                     "The current configuration is 'debug' but the build indicates that this is a release build, using 'release' configuration instead");
-                buildConfiguration = "release";
+                buildConfiguration = WellKnownConfigurations.Release;
             }
 
             if (!Directory.Exists(packagesDirectory))

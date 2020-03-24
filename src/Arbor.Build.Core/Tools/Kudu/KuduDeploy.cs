@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.Git;
+using Arbor.Build.Core.Tools.MSBuild;
+using Arbor.Build.Core.Tools.Versioning;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
@@ -360,7 +362,7 @@ namespace Arbor.Build.Core.Tools.Kudu
 
                 DirectoryInfo releaseConfig =
                     directoryInfos.SingleOrDefault(
-                        di => di.Name.Equals("release", StringComparison.OrdinalIgnoreCase));
+                        di => di.Name.Equals(WellKnownConfigurations.Release, StringComparison.OrdinalIgnoreCase));
 
                 if (releaseConfig != null)
                 {
@@ -383,7 +385,7 @@ namespace Arbor.Build.Core.Tools.Kudu
 
                 DirectoryInfo debugConfig =
                     directoryInfos.SingleOrDefault(
-                        di => di.Name.Equals("debug", StringComparison.OrdinalIgnoreCase));
+                        di => di.Name.Equals(WellKnownConfigurations.Debug, StringComparison.OrdinalIgnoreCase));
 
                 if (debugConfig != null)
                 {
