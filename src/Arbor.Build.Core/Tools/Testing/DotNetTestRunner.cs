@@ -8,14 +8,11 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.IO;
-using Arbor.Build.Core.Properties;
 using Arbor.Build.Core.Tools.MSBuild;
-using Arbor.Build.Core.Tools.Versioning;
 using Arbor.Defensive.Collections;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
-using Xunit;
 
 namespace Arbor.Build.Core.Tools.Testing
 {
@@ -23,7 +20,7 @@ namespace Arbor.Build.Core.Tools.Testing
     [UsedImplicitly]
     public class DotNetTestRunner : ITestRunnerTool
     {
-        protected internal const string AnyConfiguration = "[Any]";
+        private const string AnyConfiguration = "[Any]";
         private string _sourceRoot;
 
         public async Task<ExitCode> ExecuteAsync(
@@ -49,6 +46,7 @@ namespace Arbor.Build.Core.Tools.Testing
                 logger.Information(
                     ".NET test runner is not enabled, set variable '{XUnitNetCoreAppV2Enabled}' to true to enable",
                     WellKnownVariables.XUnitNetCoreAppV2Enabled);
+
                 return ExitCode.Success;
             }
 
@@ -58,13 +56,6 @@ namespace Arbor.Build.Core.Tools.Testing
 
             _sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
             IVariable reportPath = buildVariables.Require(WellKnownVariables.ReportPath).ThrowIfEmptyValue();
-
-            Type theoryType = typeof(TheoryAttribute);
-            Type factAttribute = typeof(FactAttribute);
-
-            var directory = new DirectoryInfo(_sourceRoot);
-
-            var typesToFind = new List<Type> { theoryType, factAttribute };
 
             bool? runTestsInReleaseConfiguration =
                 buildVariables.GetOptionalBooleanByKey(
@@ -77,7 +68,6 @@ namespace Arbor.Build.Core.Tools.Testing
 
             if (runTestsInAnyConfiguration)
             {
-                runTestsInReleaseConfiguration = null;
                 configuration = "[ANY]";
             }
             else
@@ -89,7 +79,7 @@ namespace Arbor.Build.Core.Tools.Testing
 
             ImmutableArray<string> assemblyFilePrefix = buildVariables.AssemblyFilePrefixes();
 
-            string dotNetExePath =
+            string? dotNetExePath =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.DotNetExePath, string.Empty);
 
             if (string.IsNullOrWhiteSpace(dotNetExePath))
@@ -97,6 +87,7 @@ namespace Arbor.Build.Core.Tools.Testing
                 logger.Error(
                     "Path to 'dotnet.exe' has not been specified, set variable '{DotNetExePath}' or ensure the dotnet.exe is installed in its standard location",
                     WellKnownVariables.DotNetExePath);
+
                 return ExitCode.Failure;
             }
 
@@ -104,7 +95,7 @@ namespace Arbor.Build.Core.Tools.Testing
 
             var testDirectories = new DirectoryInfo(_sourceRoot)
                 .GetFiles("*test*.csproj", SearchOption.AllDirectories)
-                .Where(file => assemblyFilePrefix.Any(prefix => file.Name.StartsWith(prefix)))
+                .Where(file => file?.Directory != null && assemblyFilePrefix.Any(prefix => file.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
                 .Select(file => file.Directory.FullName)
                 .ToHashSet();
 
@@ -115,13 +106,13 @@ namespace Arbor.Build.Core.Tools.Testing
                 var directoryInfo = new DirectoryInfo(testDirectory);
                 string xmlReportName = $"dotnet.{directoryInfo.Name}.trx";
 
-                var arguments = new List<string> { "test", testDirectory, };
+                var arguments = new List<string> {"test", testDirectory};
 
                 if (!configuration.Equals(AnyConfiguration, StringComparison.OrdinalIgnoreCase))
                 {
-                   arguments.Add("--no-build");
-                   arguments.Add("--configuration");
-                   arguments.Add(configuration);
+                    arguments.Add("--no-build");
+                    arguments.Add("--configuration");
+                    arguments.Add(configuration);
                 }
 
                 bool xmlEnabled =
@@ -139,10 +130,10 @@ namespace Arbor.Build.Core.Tools.Testing
 
                 ExitCode result = await ProcessRunner.ExecuteProcessAsync(
                     dotNetExePath,
-                    arguments: arguments,
-                    standardOutLog: logger.Information,
-                    standardErrorAction: logger.Error,
-                    toolAction: logger.Information,
+                    arguments,
+                    logger.Information,
+                    logger.Error,
+                    logger.Information,
                     cancellationToken: cancellationToken).ConfigureAwait(false);
 
                 if (!result.IsSuccess)
@@ -192,6 +183,7 @@ namespace Arbor.Build.Core.Tools.Testing
                         foreach (FileInfo xmlReport in xmlReports)
                         {
                             logger.Debug("Transforming '{FullName}' to JUnit XML format", xmlReport.FullName);
+
                             try
                             {
                                 ExitCode transformExitCode =
@@ -233,6 +225,7 @@ namespace Arbor.Build.Core.Tools.Testing
                         foreach (FileInfo xmlReport in xmlReports)
                         {
                             logger.Debug("Transforming '{FullName}' to JUnit XML format", xmlReport.FullName);
+
                             try
                             {
                                 ExitCode transformExitCode =
@@ -257,7 +250,9 @@ namespace Arbor.Build.Core.Tools.Testing
                 else
                 {
                     logger.Verbose(
-                        "TRX transformation to JUnit format is disabled, defined in key '{Key}' and '{TrxKey}'", WellKnownVariables.XUnitNetCoreAppV2XmlXsltToJunitEnabled, WellKnownVariables.XUnitNetCoreAppV2TrxXsltToJunitEnabled);
+                        "TRX transformation to JUnit format is disabled, defined in key '{Key}' and '{TrxKey}'",
+                        WellKnownVariables.XUnitNetCoreAppV2XmlXsltToJunitEnabled,
+                        WellKnownVariables.XUnitNetCoreAppV2TrxXsltToJunitEnabled);
                 }
             }
 

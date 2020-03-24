@@ -42,7 +42,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 var vsWhereArgs = new List<string> { command, component, "-format", "json" };
 
                 bool allowPreRelease =
-                    buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_MSBuild_AllowPrereleaseEnabled);
+                    buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_MSBuild_AllowPreReleaseEnabled);
 
                 if (allowPreRelease)
                 {

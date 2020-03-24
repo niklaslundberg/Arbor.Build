@@ -92,8 +92,7 @@ namespace Arbor.Build.Core.BuildVariables
         public const string CurrentBuildConfiguration = "Arbor.Build.Build.CurrentBuild.Configuration";
 
         [VariableDescription("Temporary directory path")]
-        public const string TempDirectory =
-            "Arbor.Build.Build.TempDirectory";
+        public const string TempDirectory = "Arbor.Build.Build.TempDirectory";
 
         [VariableDescription("Symbol server URI for NuGet source package upload")]
         public const string ExternalTools_SymbolServer_Uri = "Arbor.Build.Tools.External.SymbolServer.Uri";
@@ -135,7 +134,7 @@ namespace Arbor.Build.Core.BuildVariables
             "Arbor.Build.Tools.External.MSBuild.MaxVersion";
 
         [VariableDescription("MSBuild max version")]
-        public const string ExternalTools_MSBuild_AllowPrereleaseEnabled =
+        public const string ExternalTools_MSBuild_AllowPreReleaseEnabled =
             "Arbor.Build.Tools.External.MSBuild.AllowPrerelease.Enabled";
 
         [VariableDescription("MSBuild verbosity level", "normal")]
@@ -146,11 +145,11 @@ namespace Arbor.Build.Core.BuildVariables
             "Arbor.Build.Tools.External.MSBuild.SummaryEnabled";
 
         [VariableDescription(
-            "MSBuild build configuration, if not specified, all wellknown configurations will be built")]
+            "MSBuild build configuration, if not specified, all well-known configurations will be built")]
         public const string ExternalTools_MSBuild_BuildConfiguration =
             "Arbor.Build.Tools.External.MSBuild.BuildConfiguration";
 
-        [VariableDescription("MSBuild build platform, if not specified, all wellknown platforms will be built")]
+        [VariableDescription("MSBuild build platform, if not specified, all well-known platforms will be built")]
         public const string ExternalTools_MSBuild_BuildPlatform =
             "Arbor.Build.Tools.External.MSBuild.BuildPlatform";
 
