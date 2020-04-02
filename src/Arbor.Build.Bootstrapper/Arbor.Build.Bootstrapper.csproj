@@ -27,11 +27,11 @@
     <PackageReference Include="Arbor.Aesculus" Version="3.0.2" />
     <PackageReference Include="Arbor.Tooler" Version="0.8.1-build.0" />
     <PackageReference Include="JetBrains.Annotations" Version="2019.1.3" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="2.9.8">
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.4.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.5.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
