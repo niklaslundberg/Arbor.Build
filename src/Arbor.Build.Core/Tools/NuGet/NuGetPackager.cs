@@ -351,6 +351,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 properties,
                 "-OutputDirectory",
                 packagesDirectoryPath,
+                "-NoPackageAnalysis",
                 "-Version",
                 nuSpecCopy.Version.ToNormalizedString()
             };

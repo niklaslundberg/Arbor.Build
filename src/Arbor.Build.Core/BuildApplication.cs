@@ -196,7 +196,7 @@ namespace Arbor.Build.Core
                 string boxLine = new string(boxCharacter, boxLength);
 
                 string message = string.Format(CultureInfo.InvariantCulture,
-                    "{0}{1}{2}{1}{2} Running tool {3}{1}{2}{1}{0}",
+                    "{1}{0}{1}{2}{1}{2} Running tool {3}{1}{2}{1}{0}",
                     boxLine,
                     Environment.NewLine,
                     boxCharacter,
