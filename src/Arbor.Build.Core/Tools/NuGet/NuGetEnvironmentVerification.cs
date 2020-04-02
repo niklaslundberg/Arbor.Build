@@ -27,7 +27,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             IVariable variable =
                 buildVariables.SingleOrDefault(item => item.Key == WellKnownVariables.ExternalTools_NuGet_ExePath);
 
-            if (variable == null)
+            if (variable?.Value is null)
             {
                 return false;
             }
@@ -43,7 +43,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             else
             {
                 bool nuGetUpdateEnabled =
-                    buildVariables.GetBooleanByKey(WellKnownVariables.NuGetSelfUpdateEnabled, true);
+                    buildVariables.GetBooleanByKey(WellKnownVariables.NuGetSelfUpdateEnabled);
 
                 if (nuGetUpdateEnabled)
                 {

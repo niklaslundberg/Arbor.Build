@@ -52,10 +52,12 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                 var resultBuilder = new StringBuilder();
 
+                CategoryLog standardOutLog = (message, category) => resultBuilder.Append(message);
+
                 ExitCode exitCode = await ProcessRunner.ExecuteProcessAsync(
                     vsWherePath,
                     vsWhereArgs,
-                    (message, category) => resultBuilder.Append(message),
+                    standardOutLog,
                     cancellationToken: cancellationToken,
                     toolAction: logger.Debug,
                     standardErrorAction: logger.Error).ConfigureAwait(false);
@@ -177,6 +179,13 @@ namespace Arbor.Build.Core.Tools.MSBuild
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
+            string? path = buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_MSBuild_ExePath, null);
+
+            if (!string.IsNullOrWhiteSpace(path))
+            {
+                return ImmutableArray<IVariable>.Empty;
+            }
+
             int currentProcessBits = Environment.Is64BitProcess ? 64 : 32;
             const int registryLookupBits = 32;
             logger.Verbose("Running current process [id {Id}] as a {CurrentProcessBits}-bit process",

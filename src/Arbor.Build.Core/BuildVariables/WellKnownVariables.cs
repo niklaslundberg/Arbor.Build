@@ -142,6 +142,9 @@ namespace Arbor.Build.Core.BuildVariables
         [VariableDescription("MSBuild verbosity level", "normal")]
         public const string ExternalTools_MSBuild_Verbosity = "Arbor.Build.Tools.External.MSBuild.Verbosity";
 
+        [VariableDescription("MSBuild show warnings", "normal")]
+        public const string ExternalTools_MSBuild_LogWarnings = "Arbor.Build.Tools.External.MSBuild.Logging.Warnings.Enabled";
+
         [VariableDescription("Flag to indicate if MSBuild should display a build summary", "false")]
         public const string ExternalTools_MSBuild_SummaryEnabled =
             "Arbor.Build.Tools.External.MSBuild.SummaryEnabled";

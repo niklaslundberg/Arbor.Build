@@ -109,6 +109,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
         private MSBuildVerbosityLevel _verbosity;
         private string _version;
         private NuGetPackager _nugetPackager;
+        private bool _logMsBuildWarnings;
 
         public SolutionBuilder(BuildContext buildContext, NuGetPackager nugetPackager)
         {
@@ -532,10 +533,14 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 $"/verbosity:{_verbosity.Level}",
                 $"/target:{_defaultTarget}",
                 $"/maxcpucount:{_processorCount.ToString(CultureInfo.InvariantCulture)}",
-                "/nodeReuse:false",
-                $"/property:AssemblyVersion={_assemblyVersion}",
+               $"/property:AssemblyVersion={_assemblyVersion}",
                 $"/property:FileVersion={_assemblyFileVersion}"
             };
+
+            if (!_logMsBuildWarnings)
+            {
+                argList.Add("/clp:ErrorsOnly");
+            }
 
             if (_codeAnalysisEnabled)
             {
@@ -584,9 +589,22 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             void LogDefault(string message, string category)
             {
-                logger.Information("{Category} {Message}", category, message);
-                LogTail.Enqueue($"{category} {message}");
+                if (message.Trim().IndexOf("): warning ", StringComparison.Ordinal) >= 0)
+                {
+                    if (_logMsBuildWarnings)
+                    {
+                        logger.Warning("{Category} {Message}", category, message);
+                        LogTail.Enqueue($"{category} {message}");
+                    }
+                }
+                else
+                {
+                    logger.Information("{Category} {Message}", category, message);
+                    LogTail.Enqueue($"{category} {message}");
+                }
             }
+
+            AdjustBuildArgs(argList);
 
             ExitCode exitCode =
                 await
@@ -674,6 +692,18 @@ namespace Arbor.Build.Core.Tools.MSBuild
             return exitCode;
         }
 
+        private void AdjustBuildArgs(List<string> argList)
+        {
+            var fileInfo = new FileInfo(_msBuildExe);
+
+            if (fileInfo.Name.Equals("dotnet.exe", StringComparison.OrdinalIgnoreCase)
+                && argList.Count > 0
+                && !argList[0].Equals("msbuild", StringComparison.OrdinalIgnoreCase))
+            {
+                argList.Insert(0, "msbuild");
+            }
+        }
+
         private async Task<ExitCode> PublishProjectsAsync(FileInfo solutionFile, string configuration, ILogger logger)
         {
             ExitCode exitCode = ExitCode.Success;
@@ -752,13 +782,18 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     "publish",
                     Path.GetFullPath(solutionProject.FullPath),
                     "-c",
-                    configuration,
-                    "/nodeReuse:false"
+                    configuration
                 };
+
+                if (!logger.IsEnabled(LogEventLevel.Debug))
+                {
+                    args.Add("--verbosity");
+                    args.Add("minimal");
+                }
 
                 var packageLookupDirectories = new List<DirectoryInfo>();
 
-                DirectoryInfo tempDirectory = default;
+                DirectoryInfo? tempDirectory = default;
 
                 bool isReleaseBuild = configuration.Equals(WellKnownConfigurations.Release, StringComparison.OrdinalIgnoreCase);
 
@@ -787,10 +822,25 @@ namespace Arbor.Build.Core.Tools.MSBuild
                         args.Add(_publishRuntimeIdentifier);
                     }
 
-                    ExitCode projectExitCode = await ProcessHelper.ExecuteAsync(
+                    void Log(string message, string category)
+                    {
+                        if (message.Trim().IndexOf("): warning ", StringComparison.Ordinal) >= 0)
+                        {
+                            if (_logMsBuildWarnings)
+                            {
+                                logger.Warning("{Category} {Message}", category, message);
+                            }
+                        }
+                        else
+                        {
+                            logger.Information("{Category} {Message}", category, message);
+                        }
+                    }
+
+                    ExitCode projectExitCode = await ProcessRunner.ExecuteProcessAsync(
                                                    _dotNetExePath,
                                                    args,
-                                                   logger,
+                                                   standardOutLog: Log,
                                                    cancellationToken: _cancellationToken).ConfigureAwait(false);
 
                     if (!projectExitCode.IsSuccess)
@@ -881,9 +931,25 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     "--no-build"
                 };
 
-                ExitCode projectExitCode = await ProcessHelper.ExecuteAsync(_dotNetExePath,
+
+                void Log(string message, string category)
+                {
+                    if (message.Trim().IndexOf("): warning ", StringComparison.Ordinal) >= 0)
+                    {
+                        if (_logMsBuildWarnings)
+                        {
+                            logger.Warning("{Category} {Message}", category, message);
+                        }
+                    }
+                    else
+                    {
+                        logger.Information("{Category} {Message}", category, message);
+                    }
+                }
+
+                ExitCode projectExitCode = await ProcessRunner.ExecuteProcessAsync(_dotNetExePath,
                     args,
-                    logger,
+                    standardOutLog: Log,
                     cancellationToken: _cancellationToken).ConfigureAwait(false);
 
                 if (!projectExitCode.IsSuccess)
@@ -1373,7 +1439,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     $"/verbosity:{_verbosity.Level}",
                     "/property:AutoParameterizationWebConfigConnectionStrings=false",
                     $"/maxcpucount:{_processorCount.ToString(CultureInfo.InvariantCulture)}",
-                    "/nodeReuse:false"
+
                 };
 
                 if (_preCompilationEnabled)
@@ -1393,7 +1459,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     $"/verbosity:{_verbosity.Level}",
                     $"/property:publishdir={siteArtifactDirectory.FullName}",
                     $"/maxcpucount:{_processorCount.ToString(CultureInfo.InvariantCulture)}",
-                    "/nodeReuse:false",
+
                     $"/property:AssemblyVersion={_assemblyVersion}",
                     $"/property:FileVersion={_assemblyFileVersion}"
                 };
@@ -2137,7 +2203,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 $"/verbosity:{_verbosity.Level}",
                 "/target:Package",
                 $"/maxcpucount:{_processorCount.ToString(CultureInfo.InvariantCulture)}",
-                "/nodeReuse:false",
+
                 $"/property:AssemblyVersion={_assemblyVersion}",
                 $"/property:FileVersion={_assemblyFileVersion}"
             };
@@ -2322,6 +2388,9 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             _preCompilationEnabled =
                 buildVariables.GetBooleanByKey(WellKnownVariables.WebDeployPreCompilationEnabled);
+
+            _logMsBuildWarnings =
+                buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_MSBuild_LogWarnings, true);
 
             int maxProcessorCount = ProcessorCount(buildVariables);
 
