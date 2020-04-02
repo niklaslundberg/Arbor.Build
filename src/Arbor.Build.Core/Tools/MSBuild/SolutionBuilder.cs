@@ -578,9 +578,9 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     argList.Select(arg => new Dictionary<string, string> { { "Value", arg } }).DisplayAsTable());
             }
 
-            Action<string, string>? verboseAction =
-                _verboseLoggingEnabled ? logger.Verbose : (Action<string, string>?) null;
-            Action<string, string>? debugAction = _verboseLoggingEnabled ? logger.Debug : (Action<string, string>?)null;
+            CategoryLog? verboseAction =
+                _verboseLoggingEnabled ? logger.Verbose : (CategoryLog?) null;
+            CategoryLog? debugAction = _verboseLoggingEnabled ? logger.Debug : (CategoryLog?)null;
 
             void LogDefault(string message, string category)
             {
@@ -2152,7 +2152,9 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 buildSitePackageArguments.Add("/property:RunCodeAnalysis=false");
             }
 
-            Action<string, string>? toolAction = _debugLoggingEnabled ? logger.Debug : (Action<string, string>?) null;
+            CategoryLog? toolAction = _debugLoggingEnabled
+                ? (message, _) => logger.Debug("{Message}", message)
+                : (CategoryLog?)null;
 
             ExitCode packageSiteExitCode =
                 await

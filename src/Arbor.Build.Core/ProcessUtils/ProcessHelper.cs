@@ -28,11 +28,11 @@ namespace Arbor.Build.Core.ProcessUtils
 
             string executingCategory = $"[{Path.GetFileNameWithoutExtension(Path.GetFileName(executePath))}]";
 
-            Action<string, string>? toolAction = usedLogger.IsEnabled(LogEventLevel.Information) ? (message, _) => usedLogger.Information("{Tool} [{ExecutingCategory}] {Message}", ToolName, executingCategory, message) : (Action<string, string>) null;
-            Action<string, string>? infoAction = usedLogger.IsEnabled(LogEventLevel.Information) ? (message, _) => usedLogger.Information("{Tool} [{ExecutingCategory}] {Message}", ToolName, executingCategory, message) : (Action<string, string>) null;
-            Action<string, string>? errorAction = usedLogger.IsEnabled(LogEventLevel.Error) ? (message, _) => usedLogger.Error("{Tool} [{ExecutingCategory}] {Message}", ToolName, executingCategory, message) : (Action<string, string>) null;
-            Action<string, string>? verboseAction = usedLogger.IsEnabled(LogEventLevel.Verbose) ? (message, _) => usedLogger.Verbose("{Tool} [{ExecutingCategory}] {Message}", ToolName, executingCategory, message) : (Action<string, string>) null;
-            Action<string, string>? debugAction = usedLogger.IsEnabled(LogEventLevel.Debug) ? (message, _) => usedLogger.Debug("{Tool} [{ExecutingCategory}] {Message}", ToolName, executingCategory, message) : (Action<string, string>) null;
+            CategoryLog? toolAction = usedLogger.IsEnabled(LogEventLevel.Information) ? (message, _) => usedLogger.Information("{Tool} [{ExecutingCategory}] {Message}", ToolName, executingCategory, message) : (CategoryLog?) null;
+            CategoryLog? infoAction = usedLogger.IsEnabled(LogEventLevel.Information) ? (message, _) => usedLogger.Information("{Tool} [{ExecutingCategory}] {Message}", ToolName, executingCategory, message) : (CategoryLog?) null;
+            CategoryLog? errorAction = usedLogger.IsEnabled(LogEventLevel.Error) ? (message, _) => usedLogger.Error("{Tool} [{ExecutingCategory}] {Message}", ToolName, executingCategory, message) : (CategoryLog?) null;
+            CategoryLog? verboseAction = usedLogger.IsEnabled(LogEventLevel.Verbose) ? (message, _) => usedLogger.Verbose("{Tool} [{ExecutingCategory}] {Message}", ToolName, executingCategory, message) : (CategoryLog?) null;
+            CategoryLog? debugAction = usedLogger.IsEnabled(LogEventLevel.Debug) ? (message, _) => usedLogger.Debug("{Tool} [{ExecutingCategory}] {Message}", ToolName, executingCategory, message) : (CategoryLog?) null;
 
             return ProcessRunner.ExecuteProcessAsync(
                 executePath,
