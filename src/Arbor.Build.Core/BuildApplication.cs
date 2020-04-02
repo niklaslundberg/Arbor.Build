@@ -457,7 +457,7 @@ namespace Arbor.Build.Core
 
             buildVariables.AddCompatibilityVariables(_logger);
 
-            List<IVariable> sorted = buildVariables
+            var sorted = buildVariables
                 .OrderBy(variable => variable.Key)
                 .ToList();
 
