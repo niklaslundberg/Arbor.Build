@@ -6,8 +6,8 @@ namespace Arbor.Build.Core.BuildVariables
 {
     public static class VariableValidationExtensions
     {
-        [NotNullIfNotNull("variable")]
-        public static IVariable ThrowIfEmptyValue(this IVariable variable)
+        public static IVariable ThrowIfEmptyValue(
+            [NotNullIfNotNull("variable")] this IVariable variable)
         {
             if (variable == null)
             {
