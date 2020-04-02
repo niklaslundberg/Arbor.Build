@@ -50,8 +50,6 @@ namespace Arbor.Build.Core.Tools.Cleanup
                     .ConfigureAwait(false);
 
                 _logger.Debug("Dotnet build server shutdown exit code {ExitCode}", exitCode.Code);
-
-                return exitCode;
             }
 
             StopProcesses();
