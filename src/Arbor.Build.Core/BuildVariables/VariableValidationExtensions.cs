@@ -1,10 +1,12 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Arbor.Build.Core.BuildVariables
 {
     public static class VariableValidationExtensions
     {
+        [NotNullIfNotNull("variable")]
         public static IVariable ThrowIfEmptyValue(this IVariable variable)
         {
             if (variable == null)

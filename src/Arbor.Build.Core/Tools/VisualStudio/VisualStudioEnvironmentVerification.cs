@@ -74,7 +74,7 @@ namespace Arbor.Build.Core.Tools.VisualStudio
                 using var sr = new StreamReader(fs);
                 while (sr.Peek() >= 0)
                 {
-                    string line = sr.ReadLine();
+                    string? line = sr.ReadLine();
 
                     if (!string.IsNullOrWhiteSpace(line))
                     {
