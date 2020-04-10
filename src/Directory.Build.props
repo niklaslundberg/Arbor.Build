@@ -12,5 +12,6 @@
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <CodeAnalysisRuleSet>..\ArborBuild.ruleset</CodeAnalysisRuleSet>
     <Nullable>enable</Nullable>
+    <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
   </PropertyGroup>
 </Project>
