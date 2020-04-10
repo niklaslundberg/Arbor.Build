@@ -1,6 +1,6 @@
 ﻿using Xunit;
 
-namespace Arbor.Build.Tests.SampleXunitNetCoreApp31
+namespace Arbor.Build.Sample.Tests.XunitNetCoreApp31
 {
     public class NullTest
     {

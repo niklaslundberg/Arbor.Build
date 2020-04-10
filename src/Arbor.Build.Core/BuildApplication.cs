@@ -17,6 +17,7 @@ using Arbor.Build.Core.GenericExtensions.Int;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools;
 using Arbor.Defensive.Collections;
+using Arbor.Exceptions;
 using Arbor.KVConfiguration.Core;
 using Arbor.KVConfiguration.Schema.Json;
 using Arbor.KVConfiguration.UserConfiguration;
@@ -176,13 +177,10 @@ namespace Arbor.Build.Core
 
             foreach (ToolWithPriority toolWithPriority in toolWithPriorities)
             {
-                if (result != 0)
+                if (result != 0 && !toolWithPriority.RunAlways)
                 {
-                    if (!toolWithPriority.RunAlways)
-                    {
-                        toolResults.Add(new ToolResult(toolWithPriority, ToolResultType.NotRun));
-                        continue;
-                    }
+                    toolResults.Add(new ToolResult(toolWithPriority, ToolResultType.NotRun));
+                    continue;
                 }
 
                 if (!testsEnabled
@@ -198,7 +196,7 @@ namespace Arbor.Build.Core
                 string boxLine = new string(boxCharacter, boxLength);
 
                 string message = string.Format(CultureInfo.InvariantCulture,
-                    "{0}{1}{2}{1}{2} Running tool {3}{1}{2}{1}{0}",
+                    "{1}{0}{1}{2}{1}{2} Running tool {3}{1}{2}{1}{0}",
                     boxLine,
                     Environment.NewLine,
                     boxCharacter,
@@ -243,7 +241,7 @@ namespace Arbor.Build.Core
                                 stopwatch.Elapsed));
                     }
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (!ex.IsFatal())
                 {
                     stopwatch.Stop();
                     toolResults.Add(new ToolResult(
@@ -459,7 +457,7 @@ namespace Arbor.Build.Core
 
             buildVariables.AddCompatibilityVariables(_logger);
 
-            List<IVariable> sorted = buildVariables
+            var sorted = buildVariables
                 .OrderBy(variable => variable.Key)
                 .ToList();
 
@@ -551,7 +549,7 @@ namespace Arbor.Build.Core
                     _logger.Information("All tools succeeded");
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (!ex.IsFatal())
             {
                 _logger.Error(ex, "Error running builds tools");
                 exitCode = ExitCode.Failure;

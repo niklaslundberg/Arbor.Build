@@ -30,7 +30,7 @@ namespace Arbor.Build.Tests.Integration.TrxTransform
 
                 Assert.Equal(ExitCode.Success, exitCode);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 //ignore when recursive
             }

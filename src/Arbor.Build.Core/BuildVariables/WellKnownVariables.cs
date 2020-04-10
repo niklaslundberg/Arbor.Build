@@ -77,19 +77,24 @@ namespace Arbor.Build.Core.BuildVariables
         [VariableDescription("Enable assembly version patching")]
         public const string AssemblyFilePatchingEnabled = "Arbor.Build.Build.NetAssembly.PatchingEnabled";
 
-        [VariableDescription("Flag to indicate if the build is consider a release build")]
-        public const string ReleaseBuild = "Arbor.Build.Build.IsReleaseBuild";
-
+        [Obsolete]
         [VariableDescription("MSBuild configuration (eg. Debug/Release)")]
         public const string Configuration =
             "Arbor.Build.Build.Configuration";
+
+        [VariableDescription("Semicolon separated MSBuild configurations (eg. Debug/Release)")]
+        public const string Configurations =
+            "Arbor.Build.MSBuild.Configurations";
+
+        [VariableDescription("Default MSBuild configuration (eg. Debug/Release) for feature branches")]
+        public const string FeatureBranchDefaultConfiguration =
+            "Arbor.Build.FeatureBranchDefaultConfiguration";
 
         [VariableDescription("Dynamic configuration property")]
         public const string CurrentBuildConfiguration = "Arbor.Build.Build.CurrentBuild.Configuration";
 
         [VariableDescription("Temporary directory path")]
-        public const string TempDirectory =
-            "Arbor.Build.Build.TempDirectory";
+        public const string TempDirectory = "Arbor.Build.Build.TempDirectory";
 
         [VariableDescription("Symbol server URI for NuGet source package upload")]
         public const string ExternalTools_SymbolServer_Uri = "Arbor.Build.Tools.External.SymbolServer.Uri";
@@ -131,22 +136,26 @@ namespace Arbor.Build.Core.BuildVariables
             "Arbor.Build.Tools.External.MSBuild.MaxVersion";
 
         [VariableDescription("MSBuild max version")]
-        public const string ExternalTools_MSBuild_AllowPrereleaseEnabled =
+        public const string ExternalTools_MSBuild_AllowPreReleaseEnabled =
             "Arbor.Build.Tools.External.MSBuild.AllowPrerelease.Enabled";
 
         [VariableDescription("MSBuild verbosity level", "normal")]
         public const string ExternalTools_MSBuild_Verbosity = "Arbor.Build.Tools.External.MSBuild.Verbosity";
 
+        [VariableDescription("MSBuild show warnings", "normal")]
+        public const string ExternalTools_MSBuild_LogWarnings = "Arbor.Build.Tools.External.MSBuild.Logging.Warnings.Enabled";
+
         [VariableDescription("Flag to indicate if MSBuild should display a build summary", "false")]
         public const string ExternalTools_MSBuild_SummaryEnabled =
             "Arbor.Build.Tools.External.MSBuild.SummaryEnabled";
 
+        [Obsolete]
         [VariableDescription(
-            "MSBuild build configuration, if not specified, all wellknown configurations will be built")]
+            "MSBuild build configuration, if not specified, all well-known configurations will be built")]
         public const string ExternalTools_MSBuild_BuildConfiguration =
             "Arbor.Build.Tools.External.MSBuild.BuildConfiguration";
 
-        [VariableDescription("MSBuild build platform, if not specified, all wellknown platforms will be built")]
+        [VariableDescription("MSBuild build platform, if not specified, all well-known platforms will be built")]
         public const string ExternalTools_MSBuild_BuildPlatform =
             "Arbor.Build.Tools.External.MSBuild.BuildPlatform";
 

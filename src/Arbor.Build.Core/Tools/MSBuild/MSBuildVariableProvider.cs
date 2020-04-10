@@ -42,34 +42,39 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 var vsWhereArgs = new List<string> { command, component, "-format", "json" };
 
                 bool allowPreRelease =
-                    buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_MSBuild_AllowPrereleaseEnabled);
+                    buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_MSBuild_AllowPreReleaseEnabled);
 
-                if (allowPreRelease)
+                // NOTE only newer releases of vswhere.exe supports -prerelease flag
+                if (allowPreRelease && versionExitCode.IsSuccess)
                 {
-                    // NOTE only newer releases of vswhere.exe supports -prerelease flag
-                    if (versionExitCode.IsSuccess)
-                    {
-                        vsWhereArgs.Add("-prerelease");
-                    }
+                    vsWhereArgs.Add("-prerelease");
                 }
 
                 var resultBuilder = new StringBuilder();
 
+                CategoryLog standardOutLog = (message, category) => resultBuilder.Append(message);
+
                 ExitCode exitCode = await ProcessRunner.ExecuteProcessAsync(
                     vsWherePath,
                     vsWhereArgs,
-                    (message, category) => resultBuilder.Append(message),
+                    standardOutLog,
                     cancellationToken: cancellationToken,
                     toolAction: logger.Debug,
                     standardErrorAction: logger.Error).ConfigureAwait(false);
 
                 if (!exitCode.IsSuccess)
                 {
-                    logger.Error("Could not get VS version by using vswhere");
+                    logger.Error("Could not get VS version by using vswhere, exit code {ExitCode}", exitCode.Code);
                     return ImmutableArray<IVariable>.Empty;
                 }
 
                 string json = resultBuilder.ToString();
+
+                if (string.IsNullOrWhiteSpace(json))
+                {
+                    logger.Error("Could not get VS version by using vswhere, empty json response");
+                    return ImmutableArray<IVariable>.Empty;
+                }
 
                 try
                 {
@@ -102,15 +107,15 @@ namespace Arbor.Build.Core.Tools.MSBuild
                         .Select(candidate => new { candidate, version = Version.Parse(candidate.installationVersion) })
                         .ToArray();
 
-                    var firstOrDefault = array.OrderByDescending(candidateItem => candidateItem.version)
+                    var latest = array.OrderByDescending(candidateItem => candidateItem.version)
                         .FirstOrDefault();
 
                     logger.Debug("Found VS candidate version with vswhere.exe: {Paths}", candidates.Select(s => s.installationPath).ToArray());
 
-                    if (firstOrDefault != null)
+                    if (latest != null)
                     {
                         string msbuild2019Path = Path.Combine(
-                            firstOrDefault.candidate.installationPath,
+                            latest.candidate.installationPath,
                             "MSBuild",
                             "Current",
                             "bin",
@@ -131,7 +136,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                         }
 
                         string msbuild2017Path = Path.Combine(
-                            firstOrDefault.candidate.installationPath,
+                            latest.candidate.installationPath,
                             "MSBuild",
                             "15.0",
                             "bin",
@@ -151,7 +156,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                             return variables.ToImmutableArray();
                         }
 
-                        logger.Debug("Could not find VS 2017 or 2019 MSBuild path for candidate {Candidate}", firstOrDefault.candidate.installationPath);
+                        logger.Debug("Could not find VS 2017 or 2019 MSBuild path for candidate {Candidate}", latest.candidate.installationPath);
                     }
 
                     logger.Information("Could not find any version of MSBuild.exe with vswhere.exe");
@@ -174,6 +179,13 @@ namespace Arbor.Build.Core.Tools.MSBuild
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
+            string? path = buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_MSBuild_ExePath, null);
+
+            if (!string.IsNullOrWhiteSpace(path))
+            {
+                return ImmutableArray<IVariable>.Empty;
+            }
+
             int currentProcessBits = Environment.Is64BitProcess ? 64 : 32;
             const int registryLookupBits = 32;
             logger.Verbose("Running current process [id {Id}] as a {CurrentProcessBits}-bit process",

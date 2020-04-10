@@ -46,6 +46,14 @@ namespace Arbor.Build.Core.Tools.Git
                     logger.Information("Found branch name '{BranchName}' from environment variable '{VariableName}'", branchName, possibleVariable);
                     break;
                 }
+
+                branchName = buildVariables.GetVariableValueOrDefault(possibleVariable, null);
+
+                if (!string.IsNullOrWhiteSpace(branchName))
+                {
+                    logger.Information("Found branch name '{BranchName}' from build variable '{VariableName}'", branchName, possibleVariable);
+                    break;
+                }
             }
 
             var variables = new Dictionary<string, string>();

@@ -40,67 +40,6 @@ namespace Arbor.Build.Core.Tools.Git
 
             variables.Add(new BuildVariable(WellKnownVariables.BranchLogicalName, logicalName));
 
-            Maybe<BranchName> maybeBranch = BranchName.TryParse(logicalName);
-
-            if (maybeBranch.HasValue && maybeBranch.Value.IsDevelopBranch())
-            {
-                logger.Debug("Branch '{Name}' is develop branch, checking if release build is explicitly set",
-                    maybeBranch.Value.Name);
-                Maybe<IVariable> releaseBuildEnabled =
-                    buildVariables.GetOptionalVariable(WellKnownVariables.ReleaseBuildEnabled);
-
-                if (!releaseBuildEnabled.HasValue
-                    || !bool.TryParse(releaseBuildEnabled.Value.Value, out bool isReleaseBuildEnabled))
-                {
-                    variables.Add(new BuildVariable(WellKnownVariables.ReleaseBuildEnabled, "false"));
-                    logger.Debug(
-                        "Release build is not explicitly set when branch is develop branch, skipping release build");
-                }
-                else
-                {
-                    logger.Debug(
-                        "Release build is explicitly set when branch is develop branch, value {IsReleaseBuildEnabled}",
-                        isReleaseBuildEnabled);
-                }
-
-                Maybe<IVariable> isDebugBuildEnabled =
-                    buildVariables.GetOptionalVariable(WellKnownVariables.DebugBuildEnabled);
-
-                if (!isDebugBuildEnabled.HasValue)
-                {
-                    variables.Add(new BuildVariable(WellKnownVariables.DebugBuildEnabled, "true"));
-                }
-            }
-
-            if (maybeBranch.HasValue && maybeBranch.Value.IsProductionBranch())
-            {
-                logger.Debug("Branch is production branch, checking if release build is explicitly set");
-                Maybe<IVariable> debugBuildEnabled =
-                    buildVariables.GetOptionalVariable(WellKnownVariables.DebugBuildEnabled);
-
-                if (!debugBuildEnabled.HasValue
-                    || !bool.TryParse(debugBuildEnabled.Value.Value, out bool isDebugBuildEnabled))
-                {
-                    variables.Add(new BuildVariable(WellKnownVariables.DebugBuildEnabled, "false"));
-                    logger.Debug(
-                        "Debug build is not explicitly set when branch is production branch, skipping debug build");
-                }
-                else
-                {
-                    logger.Debug(
-                        "Debug build is explicitly set when branch is production branch, value {IsDebugBuildEnabled}",
-                        isDebugBuildEnabled);
-                }
-
-                Maybe<IVariable> releaseBuildEnabled =
-                    buildVariables.GetOptionalVariable(WellKnownVariables.ReleaseBuildEnabled);
-
-                if (!releaseBuildEnabled.HasValue)
-                {
-                    variables.Add(new BuildVariable(WellKnownVariables.ReleaseBuildEnabled, "true"));
-                }
-            }
-
             if (BranchHelper.BranchNameHasVersion(branchName))
             {
                 string version = BranchHelper.BranchSemVerMajorMinorPatch(branchName).ToString();

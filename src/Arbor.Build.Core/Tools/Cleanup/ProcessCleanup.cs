@@ -1,134 +1,104 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
+using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
-using Arbor.Build.Core.GenericExtensions;
 using Arbor.Exceptions;
 using Arbor.Processing;
+using JetBrains.Annotations;
 using Serilog;
 
 namespace Arbor.Build.Core.Tools.Cleanup
 {
-    [Priority(1001, true)]
+    [UsedImplicitly]
+    [Priority(int.MaxValue, true)]
     public class ProcessCleanup : ITool
     {
-        public Task<ExitCode> ExecuteAsync(
-            ILogger logger,
+        private readonly ILogger _logger;
+        private static readonly string[] _processNames = {"msbuild.exe", "vbcscompiler.exe", "csc.exe"};
+
+        public ProcessCleanup(ILogger logger) => _logger = logger;
+
+        public async Task<ExitCode> ExecuteAsync(ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             string[] args,
             CancellationToken cancellationToken)
         {
-            bool enabled = buildVariables.GetBooleanByKey(
-                WellKnownVariables.CleanupProcessesAfterBuildEnabled);
+            string? dotNetExe = buildVariables.GetVariableValueOrDefault(WellKnownVariables.DotNetExePath, null);
 
-            if (!enabled)
+            if (!buildVariables.GetBooleanByKey(WellKnownVariables.CleanupProcessesAfterBuildEnabled, true))
             {
-                logger.Information(
-                    "Process cleanup is disabled, enable by setting key {CleanupProcessesAfterBuildEnabled} to true",
-                    WellKnownVariables.CleanupProcessesAfterBuildEnabled);
-                return ExitCode.Success.AsCompletedTask();
+                return ExitCode.Success;
             }
 
-            logger.Information("Process cleanup is enabled, from key {CleanupProcessesAfterBuildEnabled} to true",
-                WellKnownVariables.CleanupProcessesAfterBuildEnabled);
-
-            string sourceRoot = buildVariables.GetVariableValueOrDefault(WellKnownVariables.SourceRoot, string.Empty);
-
-            if (string.IsNullOrWhiteSpace(sourceRoot))
+            if (!string.IsNullOrWhiteSpace(dotNetExe))
             {
-                return ExitCode.Success.AsCompletedTask();
+                IEnumerable<string> shutdownArguments = new List<string>(2)
+                {
+                    "build-server",
+                    "shutdown"
+                };
+
+                var exitCode = await ProcessRunner.ExecuteProcessAsync(
+                        dotNetExe,
+                        shutdownArguments,
+                        Log,
+                        cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
+
+                _logger.Debug("Dotnet build server shutdown exit code {ExitCode}", exitCode.Code);
             }
 
-            if (!Directory.Exists(sourceRoot))
-            {
-                return ExitCode.Success.AsCompletedTask();
-            }
+            StopProcesses();
 
-            var procesNamesToKill = new[] { "VBCSCompiler.exe", "csc.exe" };
-
-            bool ShouldKillProcess(Process process)
-            {
-                if (process == null)
-                {
-                    return false;
-                }
-
-                string executablePath = process.ExecutablePath();
-
-                if (string.IsNullOrWhiteSpace(executablePath))
-                {
-                    return false;
-                }
-
-                if (process.HasExited)
-                {
-                    return false;
-                }
-
-                string fileName = Path.GetFileName(executablePath);
-
-                if (!procesNamesToKill.Any(processToKill =>
-                    processToKill.Equals(fileName, StringComparison.OrdinalIgnoreCase)))
-                {
-                    return false;
-                }
-
-                if (executablePath.IndexOf(sourceRoot, StringComparison.OrdinalIgnoreCase) < 0)
-                {
-                    return false;
-                }
-
-                logger.Verbose("Found process {V} to kill in cleanup", process.ToDisplayValue());
-
-                return true;
-            }
-
-            void TryKillProcess(Process process)
-            {
-                if (process == null)
-                {
-                    return;
-                }
-
-                try
-                {
-                    if (process.HasExited)
-                    {
-                        return;
-                    }
-
-                    logger.Verbose("Killing process {V}", process.ToDisplayValue());
-
-                    process.Kill();
-
-                    logger.Verbose("Killed process {V}", process.ToDisplayValue());
-                }
-                catch (Exception ex) when (!ex.IsFatal())
-                {
-                    logger.Verbose("Could not kill process {V}", process.ToDisplayValue());
-                }
-            }
-
-            ImmutableArray<Process> processesToKill = Process.GetProcesses()
-                .Where(ShouldKillProcess)
-                .ToImmutableArray();
-
-            string message =
-                $"Found [{processesToKill.Length}] processes to kill in cleanup: {Environment.NewLine}{string.Join(Environment.NewLine, processesToKill.Select(process => process.ExecutablePath()))}";
-
-            logger.Verbose(message);
-
-            foreach (Process process in processesToKill)
-            {
-                TryKillProcess(process);
-            }
-
-            return ExitCode.Success.AsCompletedTask();
+            return ExitCode.Success;
         }
+
+        private void StopProcesses()
+        {
+            try
+            {
+                var processes = Process.GetProcesses();
+
+                foreach (var process in processes)
+                {
+                    TryStopProcess(process);
+                }
+            }
+            catch (Exception ex) when (!ex.IsFatal())
+            {
+                _logger.Warning(ex, "Could not stop all build processes");
+            }
+        }
+
+        private void TryStopProcess(Process process)
+        {
+            try
+            {
+                if (!process.HasExited)
+                {
+                    string? fileName = process.MainModule?.FileName;
+
+                    if (!string.IsNullOrWhiteSpace(fileName) && _processNames.Any(name =>
+                        fileName.Equals(name, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        process.Kill(true);
+                    }
+                }
+            }
+            catch (Win32Exception)
+            {
+                //ignore
+            }
+            catch (Exception ex) when (!ex.IsFatal())
+            {
+                _logger.Warning(ex, "Could not stop process {Process}", process.Id);
+            }
+        }
+
+        private void Log(string message, string category) => _logger.Debug("{Message}", message);
     }
 }

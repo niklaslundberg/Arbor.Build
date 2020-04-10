@@ -13,6 +13,7 @@ using Arbor.Build.Core.GenericExtensions.Bools;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.ProcessUtils;
 using Arbor.Build.Core.Tools.NuGet;
+using Arbor.Build.Core.Tools.Versioning;
 using Arbor.Defensive;
 using Arbor.Defensive.Collections;
 using Arbor.Exceptions;
@@ -43,7 +44,6 @@ namespace Arbor.Build.Core.Tools.MSBuild
             FileAttributes.Archive
         };
 
-        private readonly List<string> _buildConfigurations = new List<string>();
         private readonly BuildContext _buildContext;
 
         private readonly List<string> _knownPlatforms = new List<string> { "x86", "x64", "Any CPU" };
@@ -108,11 +108,14 @@ namespace Arbor.Build.Core.Tools.MSBuild
         private bool _verboseLoggingEnabled;
         private MSBuildVerbosityLevel _verbosity;
         private string _version;
+        private NuGetPackager _nugetPackager;
+        private bool _logMsBuildWarnings;
 
-        public SolutionBuilder(BuildContext buildContext)
+        public SolutionBuilder(BuildContext buildContext, NuGetPackager nugetPackager)
         {
             _buildContext = buildContext;
-            LogTail = new FixedSizedQueue<string>()
+            _nugetPackager = nugetPackager;
+            LogTail = new FixedSizedQueue<string>
             {
                 Limit = 5
             };
@@ -182,9 +185,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
         private async Task<ExitCode> BuildAsync(ILogger logger, IReadOnlyCollection<IVariable> variables)
         {
-            AddBuildConfigurations(logger, variables);
-
-            if (_buildConfigurations.Count == 0)
+            if (_buildContext.Configurations.Count == 0)
             {
                 logger.Error("No build configurations are defined");
                 return ExitCode.Failure;
@@ -344,55 +345,6 @@ namespace Arbor.Build.Core.Tools.MSBuild
             }
         }
 
-        private void AddBuildConfigurations(ILogger logger, IReadOnlyCollection<IVariable> variables)
-        {
-            string? buildConfiguration =
-                variables.GetVariableValueOrDefault(
-                    WellKnownVariables.ExternalTools_MSBuild_BuildConfiguration,
-                    string.Empty);
-
-            if (!string.IsNullOrWhiteSpace(buildConfiguration))
-            {
-                _buildConfigurations.Add(buildConfiguration);
-            }
-            else
-            {
-                bool buildDebug = BuildPlatformOrConfiguration(variables, WellKnownVariables.DebugBuildEnabled);
-
-                if (buildDebug)
-                {
-                    if (_debugLoggingEnabled)
-                    {
-                        logger.Debug("Adding debug configuration to build");
-                    }
-
-                    _buildConfigurations.Add("debug");
-                }
-                else
-                {
-                    logger.Information("Flag {DebugBuildEnabled} is set to false, ignoring debug builds",
-                        WellKnownVariables.DebugBuildEnabled);
-                }
-
-                bool buildRelease = BuildPlatformOrConfiguration(variables, WellKnownVariables.ReleaseBuildEnabled);
-
-                if (buildRelease)
-                {
-                    if (_debugLoggingEnabled)
-                    {
-                        logger.Debug("Adding release configuration to build");
-                    }
-
-                    _buildConfigurations.Add("release");
-                }
-                else
-                {
-                    logger.Information("Flag {ReleaseBuildEnabled} is set to false, ignoring release builds",
-                        WellKnownVariables.ReleaseBuildEnabled);
-                }
-            }
-        }
-
         private async Task<List<string>> GetSolutionPlatformsAsync(FileInfo solutionFile)
         {
             var platforms = new List<string>();
@@ -464,7 +416,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             var combinations = actualPlatforms
                 .SelectMany(
-                    item => _buildConfigurations.Select(config => new { Platform = item, Configuration = config }))
+                    item => _buildContext.Configurations.Select(config => new { Platform = item, Configuration = config }))
                 .ToList();
 
             if (combinations.Count > 1)
@@ -488,15 +440,9 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 }
             }
 
-            foreach (string configuration in _buildConfigurations)
+            foreach (string configuration in _buildContext.Configurations)
             {
-                Maybe<IVariable> optionalVariable =
-                    _buildVariables.GetOptionalVariable(WellKnownVariables.CurrentBuildConfiguration);
-
-                if (optionalVariable.HasValue && optionalVariable.Value is DynamicVariable dynamicVariable)
-                {
-                    dynamicVariable.Value = configuration;
-                }
+                _buildContext.CurrentBuildConfiguration = new BuildConfiguration(configuration);
 
                 ExitCode result =
                     await BuildSolutionWithConfigurationAsync(solutionFile, configuration, logger, actualPlatforms)
@@ -506,8 +452,6 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 {
                     return result;
                 }
-
-                _buildContext.CurrentBuildConfiguration = new BuildConfiguration(configuration);
             }
 
             return ExitCode.Success;
@@ -589,10 +533,14 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 $"/verbosity:{_verbosity.Level}",
                 $"/target:{_defaultTarget}",
                 $"/maxcpucount:{_processorCount.ToString(CultureInfo.InvariantCulture)}",
-                "/nodeReuse:false",
-                $"/property:AssemblyVersion={_assemblyVersion}",
+               $"/property:AssemblyVersion={_assemblyVersion}",
                 $"/property:FileVersion={_assemblyFileVersion}"
             };
+
+            if (!_logMsBuildWarnings)
+            {
+                argList.Add("/clp:ErrorsOnly");
+            }
 
             if (_codeAnalysisEnabled)
             {
@@ -635,15 +583,28 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     argList.Select(arg => new Dictionary<string, string> { { "Value", arg } }).DisplayAsTable());
             }
 
-            Action<string, string>? verboseAction =
-                _verboseLoggingEnabled ? logger.Verbose : (Action<string, string>?) null;
-            Action<string, string>? debugAction = _verboseLoggingEnabled ? logger.Debug : (Action<string, string>?)null;
+            CategoryLog? verboseAction =
+                _verboseLoggingEnabled ? logger.Verbose : (CategoryLog?) null;
+            CategoryLog? debugAction = _verboseLoggingEnabled ? logger.Debug : (CategoryLog?)null;
 
             void LogDefault(string message, string category)
             {
-                logger.Information("{Category} {Message}", category, message);
-                LogTail.Enqueue($"{category} {message}");
+                if (message.Trim().IndexOf("): warning ", StringComparison.Ordinal) >= 0)
+                {
+                    if (_logMsBuildWarnings)
+                    {
+                        logger.Warning("{Category} {Message}", category, message);
+                        LogTail.Enqueue($"{category} {message}");
+                    }
+                }
+                else
+                {
+                    logger.Information("{Category} {Message}", category, message);
+                    LogTail.Enqueue($"{category} {message}");
+                }
             }
+
+            AdjustBuildArgs(argList);
 
             ExitCode exitCode =
                 await
@@ -731,6 +692,18 @@ namespace Arbor.Build.Core.Tools.MSBuild
             return exitCode;
         }
 
+        private void AdjustBuildArgs(List<string> argList)
+        {
+            var fileInfo = new FileInfo(_msBuildExe);
+
+            if (fileInfo.Name.Equals("dotnet.exe", StringComparison.OrdinalIgnoreCase)
+                && argList.Count > 0
+                && !argList[0].Equals("msbuild", StringComparison.OrdinalIgnoreCase))
+            {
+                argList.Insert(0, "msbuild");
+            }
+        }
+
         private async Task<ExitCode> PublishProjectsAsync(FileInfo solutionFile, string configuration, ILogger logger)
         {
             ExitCode exitCode = ExitCode.Success;
@@ -809,15 +782,20 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     "publish",
                     Path.GetFullPath(solutionProject.FullPath),
                     "-c",
-                    configuration,
-                    "/nodeReuse:false"
+                    configuration
                 };
+
+                if (!logger.IsEnabled(LogEventLevel.Debug))
+                {
+                    args.Add("--verbosity");
+                    args.Add("minimal");
+                }
 
                 var packageLookupDirectories = new List<DirectoryInfo>();
 
-                DirectoryInfo tempDirectory = default;
+                DirectoryInfo? tempDirectory = default;
 
-                bool isReleaseBuild = configuration.Equals("release", StringComparison.OrdinalIgnoreCase);
+                bool isReleaseBuild = configuration.Equals(WellKnownConfigurations.Release, StringComparison.OrdinalIgnoreCase);
 
                 string packageVersion = GetPackageVersion(isReleaseBuild);
 
@@ -844,10 +822,25 @@ namespace Arbor.Build.Core.Tools.MSBuild
                         args.Add(_publishRuntimeIdentifier);
                     }
 
-                    ExitCode projectExitCode = await ProcessHelper.ExecuteAsync(
+                    void Log(string message, string category)
+                    {
+                        if (message.Trim().IndexOf("): warning ", StringComparison.Ordinal) >= 0)
+                        {
+                            if (_logMsBuildWarnings)
+                            {
+                                logger.Warning("{Category} {Message}", category, message);
+                            }
+                        }
+                        else
+                        {
+                            logger.Information("{Category} {Message}", category, message);
+                        }
+                    }
+
+                    ExitCode projectExitCode = await ProcessRunner.ExecuteProcessAsync(
                                                    _dotNetExePath,
                                                    args,
-                                                   logger,
+                                                   standardOutLog: Log,
                                                    cancellationToken: _cancellationToken).ConfigureAwait(false);
 
                     if (!projectExitCode.IsSuccess)
@@ -918,7 +911,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             ImmutableArray<SolutionProject> exeProjects = solution.Projects.Where(IsToolProject).ToImmutableArray();
 
-            bool isReleaseBuild = configuration.Equals("release", StringComparison.OrdinalIgnoreCase);
+            bool isReleaseBuild = configuration.Equals(WellKnownConfigurations.Release, StringComparison.OrdinalIgnoreCase);
 
             string packageVersion = GetPackageVersion(isReleaseBuild);
 
@@ -938,9 +931,25 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     "--no-build"
                 };
 
-                ExitCode projectExitCode = await ProcessHelper.ExecuteAsync(_dotNetExePath,
+
+                void Log(string message, string category)
+                {
+                    if (message.Trim().IndexOf("): warning ", StringComparison.Ordinal) >= 0)
+                    {
+                        if (_logMsBuildWarnings)
+                        {
+                            logger.Warning("{Category} {Message}", category, message);
+                        }
+                    }
+                    else
+                    {
+                        logger.Information("{Category} {Message}", category, message);
+                    }
+                }
+
+                ExitCode projectExitCode = await ProcessRunner.ExecuteProcessAsync(_dotNetExePath,
                     args,
-                    logger,
+                    standardOutLog: Log,
                     cancellationToken: _cancellationToken).ConfigureAwait(false);
 
                 if (!projectExitCode.IsSuccess)
@@ -1430,7 +1439,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     $"/verbosity:{_verbosity.Level}",
                     "/property:AutoParameterizationWebConfigConnectionStrings=false",
                     $"/maxcpucount:{_processorCount.ToString(CultureInfo.InvariantCulture)}",
-                    "/nodeReuse:false"
+
                 };
 
                 if (_preCompilationEnabled)
@@ -1450,7 +1459,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     $"/verbosity:{_verbosity.Level}",
                     $"/property:publishdir={siteArtifactDirectory.FullName}",
                     $"/maxcpucount:{_processorCount.ToString(CultureInfo.InvariantCulture)}",
-                    "/nodeReuse:false",
+
                     $"/property:AssemblyVersion={_assemblyVersion}",
                     $"/property:FileVersion={_assemblyFileVersion}"
                 };
@@ -1814,7 +1823,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             DirectoryInfo packageDirectory = new DirectoryInfo(packageDirectoryPath).EnsureExists();
 
-            NuGetPackageConfiguration packageConfiguration = NuGetPackager.GetNuGetPackageConfiguration(
+            NuGetPackageConfiguration packageConfiguration = _nugetPackager.GetNuGetPackageConfiguration(
                 logger,
                 _buildVariables,
                 packageDirectory.FullName,
@@ -1901,7 +1910,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 .WriteAllTextAsync(nuspecTempFile, nuspecContent, Encoding.UTF8, _cancellationToken)
                 .ConfigureAwait(false);
 
-            ExitCode exitCode = await new NuGetPackager(_logger).CreatePackageAsync(
+            ExitCode exitCode = await _nugetPackager.CreatePackageAsync(
                 nuspecTempFile,
                 packageConfiguration,
                 true,
@@ -2194,7 +2203,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 $"/verbosity:{_verbosity.Level}",
                 "/target:Package",
                 $"/maxcpucount:{_processorCount.ToString(CultureInfo.InvariantCulture)}",
-                "/nodeReuse:false",
+
                 $"/property:AssemblyVersion={_assemblyVersion}",
                 $"/property:FileVersion={_assemblyFileVersion}"
             };
@@ -2209,7 +2218,9 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 buildSitePackageArguments.Add("/property:RunCodeAnalysis=false");
             }
 
-            Action<string, string>? toolAction = _debugLoggingEnabled ? logger.Debug : (Action<string, string>?) null;
+            CategoryLog? toolAction = _debugLoggingEnabled
+                ? (message, _) => logger.Debug("{Message}", message)
+                : (CategoryLog?)null;
 
             ExitCode packageSiteExitCode =
                 await
@@ -2377,6 +2388,9 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             _preCompilationEnabled =
                 buildVariables.GetBooleanByKey(WellKnownVariables.WebDeployPreCompilationEnabled);
+
+            _logMsBuildWarnings =
+                buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_MSBuild_LogWarnings, true);
 
             int maxProcessorCount = ProcessorCount(buildVariables);
 

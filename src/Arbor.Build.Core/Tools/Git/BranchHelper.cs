@@ -95,7 +95,7 @@ namespace Arbor.Build.Core.Tools.Git
 
             SemanticVersion version = BranchSemVerMajorMinorPatch(branchName);
 
-            return version != null && (version.Major > 0 || version.Minor > 0 || version.Patch > 0);
+            return version.Major > 0 || version.Minor > 0 || version.Patch > 0;
         }
 
         public static SemanticVersion BranchSemVerMajorMinorPatch(string branchName)

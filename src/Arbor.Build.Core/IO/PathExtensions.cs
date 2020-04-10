@@ -40,7 +40,7 @@ namespace Arbor.Build.Core.IO
 
             if (directoryBlackListed.Item1)
             {
-                string reasonMessage = $"Directory of '{sourceFile}' is notallowed, {directoryBlackListed.Item2}";
+                string reasonMessage = $"Directory of '{sourceFile}' is not allowed, {directoryBlackListed.Item2}";
                 logger?.Debug("{Reason}", reasonMessage);
                 return (true, reasonMessage);
             }
@@ -51,7 +51,7 @@ namespace Arbor.Build.Core.IO
 
             if (isNotAllowed)
             {
-                string reasonMessage = $"Path segments of '{sourceFile}' makes it notallowed";
+                string reasonMessage = $"Path segments of '{sourceFile}' makes it not allowed";
                 logger?.Debug("{Reason}", reasonMessage);
                 return (true, reasonMessage);
             }
@@ -65,7 +65,7 @@ namespace Arbor.Build.Core.IO
             if (ignoredFileNameParts.Count > 0)
             {
                 string reasonMessage =
-                    $"Ignored file name parts of '{sourceFile}' makes it notallowed: {string.Join(", ", ignoredFileNameParts.Select(item => $"'{item}'"))}";
+                    $"Ignored file name parts of '{sourceFile}' makes it not allowed: {string.Join(", ", ignoredFileNameParts.Select(item => $"'{item}'"))}";
                 logger?.Debug("{Reason}", reasonMessage);
                 return (true, reasonMessage);
             }
@@ -103,7 +103,7 @@ namespace Arbor.Build.Core.IO
 
             if (hasAnyPathSegment)
             {
-                string reasonMessage = $"The directory '{sourceDir}' has a path segment that is notallowed";
+                string reasonMessage = $"The directory '{sourceDir}' has a path segment that is not allowed";
                 logger?.Debug("{Reason}", reasonMessage);
                 return (true, reasonMessage);
             }
@@ -114,7 +114,7 @@ namespace Arbor.Build.Core.IO
 
             if (hasAnyPathSegmentPart)
             {
-                string reasonMessage = $"The directory '{sourceDir}' has a path segment part that is notallowed";
+                string reasonMessage = $"The directory '{sourceDir}' has a path segment part that is not allowed";
                 logger?.Debug("{Reason}", reasonMessage);
                 return (true, reasonMessage);
             }
@@ -126,12 +126,12 @@ namespace Arbor.Build.Core.IO
             if (hasAnyPartStartsWith)
             {
                 string reasonMessage =
-                    $"The directory '{sourceDir}' has a path that starts with a pattern that is notallowed";
+                    $"The directory '{sourceDir}' has a path that starts with a pattern that is not allowed";
                 logger?.Debug("{Reason}", reasonMessage);
                 return (true, reasonMessage);
             }
 
-            logger?.Debug("The directory '{SourceDir}' is not notallowed", sourceDir);
+            logger?.Debug("The directory '{SourceDir}' is not not allowed", sourceDir);
 
             return (false, string.Empty);
         }
@@ -151,7 +151,7 @@ namespace Arbor.Build.Core.IO
             IEnumerable<string> patterns,
             ILogger logger = null) => segments.Any(segment => HasAnyPathSegment(segment, patterns, logger));
 
-        private static bool HasAnyPathSegment(string segment, IEnumerable<string> patterns, ILogger logger = null) => patterns.Any(pattern =>
+        private static bool HasAnyPathSegment(string segment, IEnumerable<string> patterns, ILogger? logger = null) => patterns.Any(pattern =>
                                                                                                                                 {
                                                                                                                                     bool isMatch = segment.Equals(pattern, StringComparison.OrdinalIgnoreCase);
 

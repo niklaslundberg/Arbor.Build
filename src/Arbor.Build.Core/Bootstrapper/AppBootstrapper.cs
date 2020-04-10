@@ -14,10 +14,7 @@ using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.GenericExtensions.Bools;
 using Arbor.Build.Core.GenericExtensions.Int;
 using Arbor.Build.Core.IO;
-using Arbor.Build.Core.ProcessUtils;
 using Arbor.Build.Core.Tools.DotNet;
-using Arbor.Build.Core.Tools.Git;
-using Arbor.Build.Core.Tools.Kudu;
 using Arbor.Exceptions;
 using Arbor.Processing;
 using Arbor.Tooler;
@@ -103,7 +100,7 @@ namespace Arbor.Build.Core.Bootstrapper
                 _logger.Error(ex, "{Prefix} Could not start process", Prefix);
             }
 
-            _ = Environment.GetEnvironmentVariable(WellKnownVariables.BootstrapperExitDelayInMilliseconds)
+            Environment.GetEnvironmentVariable(WellKnownVariables.BootstrapperExitDelayInMilliseconds)
                 .TryParseInt32(out int exitDelayInMilliseconds);
 
             if (exitDelayInMilliseconds > 0)
@@ -112,6 +109,7 @@ namespace Arbor.Build.Core.Bootstrapper
                     "Delaying bootstrapper exit with {ExitDelayInMilliseconds} milliseconds as specified in '{BootstrapperExitDelayInMilliseconds}'",
                     exitDelayInMilliseconds,
                     WellKnownVariables.BootstrapperExitDelayInMilliseconds);
+
                 await Task.Delay(TimeSpan.FromMilliseconds(exitDelayInMilliseconds)).ConfigureAwait(false);
             }
 
@@ -127,7 +125,9 @@ namespace Arbor.Build.Core.Bootstrapper
             logger.Debug("Finding processes spawned by process with Id [{ParentProcessId}]", parentProcessId);
 
             ManagementObjectCollection collection;
-            using (var searcher = new ManagementObjectSearcher($"SELECT * FROM Win32_Process WHERE ParentProcessId={parentProcessId}"))
+
+            using (var searcher =
+                new ManagementObjectSearcher($"SELECT * FROM Win32_Process WHERE ParentProcessId={parentProcessId}"))
             {
                 collection = searcher.Get();
             }
@@ -148,12 +148,14 @@ namespace Arbor.Build.Core.Bootstrapper
 
                         try
                         {
-                            using Process childProcess = Process.GetProcessById((int)childProcessId);
-                            if (!childProcess.HasExited)
+                            using var childProcess = Process.GetProcessById((int)childProcessId);
+
+                            if (childProcess?.HasExited == false)
                             {
                                 logger.Debug("Killing child process [{ProcessName}] with Id [{ChildProcessId}]",
                                     childProcess.ProcessName,
                                     childProcessId);
+
                                 childProcess.Kill();
 
                                 logger.Verbose("Child process with id {ChildProcessId} was killed", childProcessId);
@@ -259,6 +261,7 @@ namespace Arbor.Build.Core.Bootstrapper
             _logger.Verbose("Using base directory '{BaseDir}'", baseDir);
 
             _logger.Debug("Downloading nuget package {Package}", BuildToolPackageName);
+
             string buildToolsDirectory =
                 await DownloadNuGetPackageAsync().ConfigureAwait(false);
 
@@ -297,7 +300,7 @@ namespace Arbor.Build.Core.Bootstrapper
             {
                 try
                 {
-                    _ = Environment.GetEnvironmentVariable("KillSpawnedProcess").TryParseBool(out bool enabled, true);
+                    Environment.GetEnvironmentVariable("KillSpawnedProcess").TryParseBool(out bool enabled, true);
 
                     if (enabled)
                     {
@@ -323,7 +326,7 @@ namespace Arbor.Build.Core.Bootstrapper
 
             string? nuGetSource = Environment.GetEnvironmentVariable(WellKnownVariables.ArborBuildNuGetPackageSource);
 
-            _ = Environment.GetEnvironmentVariable(WellKnownVariables.AllowPrerelease)
+            Environment.GetEnvironmentVariable(WellKnownVariables.AllowPrerelease)
                 .TryParseBool(out bool preReleaseIsAllowed);
 
             preReleaseIsAllowed = _startOptions.PreReleaseEnabled ?? preReleaseIsAllowed;
@@ -357,16 +360,20 @@ namespace Arbor.Build.Core.Bootstrapper
                 && nuGetPackageInstallResult?.SemanticVersion is null
                 && nuGetPackage.NuGetPackageVersion != NuGetPackageVersion.LatestDownloaded)
             {
-                _logger.Information("Retrying package download of {PackageVersion} with latest downloaded", packageVersion);
+                _logger.Information("Retrying package download of {PackageVersion} with latest downloaded",
+                    packageVersion);
+
                 nuGetPackageInstallResult = await nuGetPackageInstaller.InstallPackageAsync(
                         new NuGetPackage(nuGetPackage.NuGetPackageId, NuGetPackageVersion.LatestDownloaded),
                         nugetPackageSettings)
                     .ConfigureAwait(false);
             }
 
-            if (nuGetPackageInstallResult?.SemanticVersion is null || nuGetPackageInstallResult?.PackageDirectory is null)
+            if (nuGetPackageInstallResult?.SemanticVersion is null ||
+                nuGetPackageInstallResult?.PackageDirectory is null)
             {
-                throw new InvalidOperationException($"Could not download {packageVersion}, verify it exists and that all sources are available");
+                throw new InvalidOperationException(
+                    $"Could not download {packageVersion}, verify it exists and that all sources are available");
             }
 
             return nuGetPackageInstallResult.PackageDirectory.FullName;
@@ -384,132 +391,10 @@ namespace Arbor.Build.Core.Bootstrapper
             }
             else
             {
-                if (IsBetterRunOnLocalTempStorage() && await IsCurrentDirectoryClonableAsync().ConfigureAwait(false))
-                {
-                    string clonedDirectory = await CloneDirectoryAsync().ConfigureAwait(false);
-
-                    baseDir = clonedDirectory;
-                }
-                else
-                {
-                    baseDir = VcsPathHelper.FindVcsRootPath(Directory.GetCurrentDirectory());
-                }
+                baseDir = VcsPathHelper.FindVcsRootPath(Directory.GetCurrentDirectory());
             }
 
             return baseDir;
-        }
-
-        private bool IsBetterRunOnLocalTempStorage()
-        {
-            bool isKuduAware = KuduHelper.IsKuduAware(
-                EnvironmentVariableHelper.GetBuildVariablesFromEnvironmentVariables(_logger),
-                _logger);
-
-            bool isBetterRunOnLocalTempStorage = isKuduAware;
-
-            _logger.Verbose("Is Kudu-aware: {IsKuduAware}", isKuduAware);
-
-            return isBetterRunOnLocalTempStorage;
-        }
-
-        private async Task<string> CloneDirectoryAsync()
-        {
-            string targetDirectoryPath = Path.Combine(
-                Path.GetTempPath(),
-                DefaultPaths.TempPathPrefix,
-                "R",
-                Guid.NewGuid().ToString().Substring(0, 8));
-
-            var targetDirectory = new DirectoryInfo(targetDirectoryPath);
-
-            targetDirectory.EnsureExists();
-
-            string gitExePath = GitHelper.GetGitExePath(_logger);
-
-            string sourceRoot = VcsPathHelper.TryFindVcsRootPath();
-
-            IEnumerable<string> cloneArguments = new List<string>
-            {
-                "clone",
-                sourceRoot,
-                targetDirectory.FullName
-            };
-
-            _logger.Verbose("Using temp storage to clone: '{FullName}'", targetDirectory.FullName);
-
-            ExitCode cloneExitCode = await ProcessHelper.ExecuteAsync(
-                gitExePath,
-                cloneArguments,
-                _logger,
-                addProcessNameAsLogCategory: true,
-                addProcessRunnerCategory: true,
-                parentPrefix: Prefix).ConfigureAwait(false);
-
-            if (!cloneExitCode.IsSuccess)
-            {
-                throw new InvalidOperationException(
-                    $"Could not clone directory '{sourceRoot}' to '{targetDirectory.FullName}'");
-            }
-
-            return targetDirectory.FullName;
-        }
-
-        private async Task<bool> IsCurrentDirectoryClonableAsync()
-        {
-            if (!_directoryCloneEnabled)
-            {
-                _logger.Verbose("Directory clone is disabled");
-                return false;
-            }
-
-            _logger.Verbose("Directory clone is enabled");
-
-            string sourceRoot = VcsPathHelper.TryFindVcsRootPath();
-
-            if (string.IsNullOrWhiteSpace(sourceRoot))
-            {
-                _logger.Warning("Could not find source root");
-                return false;
-            }
-
-            bool isClonable = false;
-
-            string gitExePath = GitHelper.GetGitExePath(_logger);
-
-            if (!string.IsNullOrWhiteSpace(gitExePath))
-            {
-                string gitDir = Path.Combine(sourceRoot, ".git");
-
-                string[] statusAllArguments =
-                {
-                    $"--git-dir={gitDir}",
-                    $"--work-tree={sourceRoot}",
-                    "status"
-                };
-
-                var argumentVariants = new List<string[]> { new[] { "status" }, statusAllArguments };
-
-                foreach (string[] argumentVariant in argumentVariants)
-                {
-                    ExitCode statusExitCode = await ProcessRunner.ExecuteProcessAsync(
-                        gitExePath,
-                        arguments: argumentVariant,
-                        standardOutLog: _logger.Verbose,
-                        standardErrorAction: _logger.Verbose,
-                        toolAction: _logger.Information,
-                        verboseAction: _logger.Verbose).ConfigureAwait(false);
-
-                    if (statusExitCode.IsSuccess)
-                    {
-                        isClonable = true;
-                        break;
-                    }
-                }
-            }
-
-            _logger.Verbose("Is directory clonable: {IsClonable}", isClonable);
-
-            return isClonable;
         }
 
         private async Task<ExitCode> RunBuildToolsAsync(string buildDir, string buildToolDirectoryName)
@@ -542,14 +427,17 @@ namespace Arbor.Build.Core.Bootstrapper
             _logger.Information("Using build timeout {UsedTimeoutInSeconds} seconds", usedTimeoutInSeconds);
 
             ExitCode result;
-            using (var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(usedTimeoutInSeconds)))
+
+            using (var cancellationTokenSource =
+                new CancellationTokenSource(TimeSpan.FromSeconds(usedTimeoutInSeconds)))
             {
                 const string buildApplicationPrefix = "[Arbor.Build] ";
 
-                ImmutableArray<IVariable> variables = await new DotNetEnvironmentVariableProvider().GetBuildVariablesAsync(
-                    _logger,
-                    ImmutableArray<IVariable>.Empty,
-                    cancellationTokenSource.Token).ConfigureAwait(false);
+                ImmutableArray<IVariable> variables = await new DotNetEnvironmentVariableProvider()
+                    .GetBuildVariablesAsync(
+                        _logger,
+                        ImmutableArray<IVariable>.Empty,
+                        cancellationTokenSource.Token).ConfigureAwait(false);
 
                 string? dotnetExePath = variables.SingleOrDefault(variable =>
                     variable.Key.Equals(WellKnownVariables.DotNetExePath, StringComparison.OrdinalIgnoreCase))?.Value;
@@ -560,7 +448,7 @@ namespace Arbor.Build.Core.Bootstrapper
                     return ExitCode.Failure;
                 }
 
-                var arguments = new List<string>{ buildToolExecutable.FullName, "--", $"-buildDirectory={buildDir}" };
+                var arguments = new List<string> {buildToolExecutable.FullName, "--", $"-buildDirectory={buildDir}"};
 
                 if (_startOptions?.Args?.Any() ?? false)
                 {
@@ -584,8 +472,12 @@ namespace Arbor.Build.Core.Bootstrapper
         {
             string multiple =
                 $"Found {exeFiles.Count} such files: {string.Join(", ", exeFiles.Select(file => file.Name))}";
+
             const string single = ". Found no such files";
-            string found = exeFiles.Count > 0 ? single : multiple;
+
+            string found = exeFiles.Count > 0
+                ? single
+                : multiple;
 
             _logger.Error(
                 "Expected directory {BuildToolDirectoryPath} to contain exactly one executable file with extensions .exe. {Found}",

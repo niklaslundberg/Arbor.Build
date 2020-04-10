@@ -1,8 +1,7 @@
 {
   "profiles": {
     "Arbor.Build": {
-      "commandName": "Project",
-      "commandLineArgs": "-buildDirectory=C:\\Projects\\Niklas\\Arbor.Processing"
+      "commandName": "Project"
     }
   }
 }

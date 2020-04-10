@@ -92,7 +92,7 @@ namespace Arbor.Build.Core.Tools.Versioning
                 string description =
                     buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyDescription, null);
                 string configuration =
-                    buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyConfiguration, null);
+                    buildVariables.GetVariableValueOrDefault(WellKnownVariables.CurrentBuildConfiguration, null);
                 string copyright =
                     buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyCopyright, null);
                 string product = buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyProduct, null);

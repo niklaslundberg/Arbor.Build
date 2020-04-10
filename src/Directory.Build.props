@@ -8,7 +8,10 @@
     <Features>IOperation</Features>
     <DebugType>embedded</DebugType>
     <DebugSymbols>true</DebugSymbols>
+    <EmbedAllSources>true</EmbedAllSources>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <CodeAnalysisRuleSet>..\ArborBuild.ruleset</CodeAnalysisRuleSet>
     <Nullable>enable</Nullable>
+    <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
   </PropertyGroup>
 </Project>
