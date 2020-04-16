@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Globalization;
 using Arbor.Build.Core.GenericExtensions;
+using Arbor.Build.Core.Tools.Git;
 using Arbor.Build.Core.Tools.MSBuild;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NuGet.Versioning;
 using Serilog;
 
@@ -17,16 +19,24 @@ namespace Arbor.Build.Core.Tools.NuGet
             string? packageBuildMetadata,
             ILogger? logger,
             NuGetVersioningSettings? nugetVersioningSettings = null,
-            GitModel? gitModel = null)
+            GitBranchModel? gitModel = null,
+            BranchName? branchName = null)
         {
+            string GetStableSemanticVersion(Version result)
+            {
+                string parsed = result.ToString(3);
+
+                return parsed;
+            }
+
             if (!Version.TryParse(version, out Version? parsedVersion))
             {
                 throw new ArgumentException($"The version '{version} is not a valid version format");
             }
 
-            if (isReleaseBuild && GitModel.GitFlowBuildOnMaster != gitModel)
+            if (isReleaseBuild && GitBranchModel.GitFlowBuildOnMaster != gitModel)
             {
-                string parsed = parsedVersion.ToString(3);
+                string parsed = GetStableSemanticVersion(parsedVersion);
 
                 logger?.Information("Build is release build, using major.minor.patch as the version, {Parsed}", parsed);
 
@@ -46,8 +56,13 @@ namespace Arbor.Build.Core.Tools.NuGet
                 ? "."
                 : string.Empty;
 
-            if (GitModel.GitFlowBuildOnMaster == gitModel && isReleaseBuild)
+            if (GitBranchModel.GitFlowBuildOnMaster == gitModel && isReleaseBuild)
             {
+                if (string.Equals(branchName?.LogicalName, "master"))
+                {
+                    return GetStableSemanticVersion(parsedVersion);
+                }
+
                 suffix ??= "rc";
             }
             else
@@ -117,7 +132,8 @@ namespace Arbor.Build.Core.Tools.NuGet
                 versionOptions.Metadata,
                 versionOptions.Logger,
                 versionOptions.NuGetVersioningSettings,
-                versionOptions.GitModel);
+                versionOptions.GitModel,
+                versionOptions.BranchName);
 
             string packageVersion = SemanticVersion.Parse(
                 version).ToNormalizedString();

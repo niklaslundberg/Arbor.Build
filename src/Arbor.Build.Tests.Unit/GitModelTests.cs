@@ -8,7 +8,7 @@ namespace Arbor.Build.Tests.Unit
         [Fact]
         public void ParseGitFlowMasterShouldReturnInstance()
         {
-            bool parsed = GitModel.TryParse("GitFlowBuildOnMaster", out var model);
+            bool parsed = GitBranchModel.TryParse("GitFlowBuildOnMaster", out var model);
 
 
             Assert.True(parsed);
@@ -18,7 +18,7 @@ namespace Arbor.Build.Tests.Unit
         [Fact]
         public void ParseInvalidShouldReturnFalse()
         {
-            bool parsed = GitModel.TryParse("BadValue", out var model);
+            bool parsed = GitBranchModel.TryParse("BadValue", out var model);
 
             Assert.False(parsed);
             Assert.Null(model);

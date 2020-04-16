@@ -33,7 +33,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             _buildContext = buildContext;
         }
 
-        public NuGetPackageConfiguration GetNuGetPackageConfiguration(
+        public NuGetPackageConfiguration? GetNuGetPackageConfiguration(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             string packagesDirectory,
@@ -45,6 +45,8 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             IVariable branchName = buildVariables.Require(WellKnownVariables.BranchLogicalName).ThrowIfEmptyValue();
 
+            var branch = BranchName.TryParse(branchName.Value);
+
             string? currentConfiguration = buildVariables.GetVariableValueOrDefault(WellKnownVariables.CurrentBuildConfiguration, null);
 
             string? staticConfiguration =
@@ -52,8 +54,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                     null) ??
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.Configuration, null);
 
-            string? buildConfiguration = currentConfiguration
-                                        ?? staticConfiguration;
+            string? buildConfiguration = currentConfiguration ?? staticConfiguration;
 
             IVariable tempDirectory = buildVariables.Require(WellKnownVariables.TempDirectory).ThrowIfEmptyValue();
             string nuGetExePath = buildVariables.Require(WellKnownVariables.ExternalTools_NuGet_ExePath)
@@ -61,7 +62,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 .Value;
 
             string? suffix =
-                buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageArtifactsSuffix, "build");
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageArtifactsSuffix, null);
 
             bool buildNumberEnabled = buildVariables.GetBooleanByKey(
                 WellKnownVariables.BuildNumberInNuGetPackageArtifactsEnabled,
@@ -90,7 +91,22 @@ namespace Arbor.Build.Core.Tools.NuGet
             bool buildPackagesOnAnyBranch =
                 buildVariables.GetBooleanByKey(WellKnownVariables.NuGetCreatePackagesOnAnyBranchEnabled);
 
-            if (!buildPackagesOnAnyBranch)
+            string? gitModel =
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.GitBranchModel, null);
+
+            if (!buildVariables.GetBooleanByKey(WellKnownVariables.NuGetPackageArtifactsSuffixEnabled, true))
+            {
+                suffix = "";
+            }
+
+            GitBranchModel.TryParse(gitModel, out GitBranchModel? model);
+
+            if (model is {})
+            {
+                buildPackagesOnAnyBranch = true;
+            }
+
+            if (buildPackagesOnAnyBranch == false)
             {
                 if (branchName.Value.Equals("master", StringComparison.OrdinalIgnoreCase))
                 {
@@ -98,7 +114,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                         "NuGet package creation is not supported on 'master' branch. To force NuGet package creation, set environment variable '{NuGetCreatePackagesOnAnyBranchEnabled}' to value 'true'",
                         WellKnownVariables.NuGetCreatePackagesOnAnyBranchEnabled);
 
-                    // return ExitCode.Success;
+                    return default;
                 }
             }
             else
@@ -109,21 +125,21 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             string? packageFormat = buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetSymbolPackageFormat, SnupkgPackageFormat);
 
-            Maybe<BranchName> branchNameMayBe = BranchName.TryParse(branchName.Value);
-
-            if (!branchNameMayBe.HasValue)
+            if (!branch.HasValue)
             {
                 throw new InvalidOperationException(Resources.TheBranchNameCouldNotBeFound);
             }
 
-            bool isReleaseBuild = IsStablePackage(branchNameMayBe.Value);
+            bool isReleaseBuild = IsStablePackage(branch.Value);
 
             var options = new VersionOptions(version.Value)
             {
                 IsReleaseBuild = isReleaseBuild,
-                BuildSuffix = "build",
+                BuildSuffix = suffix,
                 BuildNumberEnabled = true,
-                Logger = logger
+                Logger = logger,
+                GitModel = model,
+                BranchName = branch.HasValue ? branch.Value : default
             };
 
             string semVer = NuGetVersionHelper.GetPackageVersion(options);

@@ -55,8 +55,13 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             string vcsRootDir = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
 
-            NuGetPackageConfiguration packageConfiguration =
+            NuGetPackageConfiguration? packageConfiguration =
                 _nugetPackager.GetNuGetPackageConfiguration(logger, buildVariables, packagesDirectory, vcsRootDir, "");
+
+            if (packageConfiguration is null)
+            {
+                return ExitCode.Success;
+            }
 
             IReadOnlyCollection<string> packageSpecifications = GetPackageSpecifications(
                 logger,

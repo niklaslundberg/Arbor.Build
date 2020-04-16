@@ -2,15 +2,15 @@
 
 namespace Arbor.Build.Core.Tools.MSBuild
 {
-    public sealed class GitModel : IEquatable<GitModel>
+    public sealed class GitBranchModel : IEquatable<GitBranchModel>
     {
-        public static readonly GitModel GitFlowBuildOnMaster = new GitModel(nameof(GitFlowBuildOnMaster));
+        public static readonly GitBranchModel GitFlowBuildOnMaster = new GitBranchModel(nameof(GitFlowBuildOnMaster));
 
-        public GitModel(string name) => Name = name;
+        public GitBranchModel(string name) => Name = name;
 
         public string Name { get; }
 
-        public bool Equals(GitModel? other)
+        public bool Equals(GitBranchModel? other)
         {
             if (other is null)
             {
@@ -25,7 +25,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             return Name == other.Name;
         }
 
-        public static bool TryParse(string? value, out GitModel? model)
+        public static bool TryParse(string? value, out GitBranchModel? model)
         {
             if (string.IsNullOrWhiteSpace(value))
             {
@@ -44,12 +44,12 @@ namespace Arbor.Build.Core.Tools.MSBuild
         }
 
         public override bool Equals(object? obj) =>
-            ReferenceEquals(this, obj) || (obj is GitModel other && Equals(other));
+            ReferenceEquals(this, obj) || (obj is GitBranchModel other && Equals(other));
 
         public override int GetHashCode() => Name.GetHashCode(StringComparison.Ordinal);
 
-        public static bool operator ==(GitModel? left, GitModel? right) => Equals(left, right);
+        public static bool operator ==(GitBranchModel? left, GitBranchModel? right) => Equals(left, right);
 
-        public static bool operator !=(GitModel? left, GitModel? right) => !Equals(left, right);
+        public static bool operator !=(GitBranchModel? left, GitBranchModel? right) => !Equals(left, right);
     }
 }

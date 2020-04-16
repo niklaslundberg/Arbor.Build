@@ -1,4 +1,5 @@
-﻿using Arbor.Build.Core.Tools.NuGet;
+﻿using Arbor.Build.Core.Tools.Git;
+using Arbor.Build.Core.Tools.NuGet;
 using Serilog;
 
 namespace Arbor.Build.Core.Tools.MSBuild
@@ -10,7 +11,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             Version = version;
         }
 
-        public GitModel? GitModel { get; set; }
+        public GitBranchModel? GitModel { get; set; }
 
         public string Version { get; }
 
@@ -25,5 +26,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
         public ILogger? Logger { get; set; }
 
         public NuGetVersioningSettings NuGetVersioningSettings { get; set; } = NuGetVersioningSettings.Default;
+
+        public BranchName? BranchName { get; set; }
     }
 }
