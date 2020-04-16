@@ -11,10 +11,7 @@ using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.GenericExtensions;
 using Arbor.Build.Core.GenericExtensions.Bools;
 using Arbor.Build.Core.IO;
-using Arbor.Build.Core.ProcessUtils;
 using Arbor.Build.Core.Tools.NuGet;
-using Arbor.Build.Core.Tools.Versioning;
-using Arbor.Defensive;
 using Arbor.Defensive.Collections;
 using Arbor.Exceptions;
 using Arbor.KVConfiguration.Core.Metadata;
@@ -23,8 +20,6 @@ using Arbor.Processing;
 using JetBrains.Annotations;
 
 using Microsoft.Web.XmlTransform;
-
-using NuGet.Versioning;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
@@ -110,6 +105,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
         private string _version;
         private NuGetPackager _nugetPackager;
         private bool _logMsBuildWarnings;
+        private GitModel? _gitModel;
 
         public SolutionBuilder(BuildContext buildContext, NuGetPackager nugetPackager)
         {
@@ -797,7 +793,9 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                 bool isReleaseBuild = configuration.Equals(WellKnownConfigurations.Release, StringComparison.OrdinalIgnoreCase);
 
-                string packageVersion = GetPackageVersion(isReleaseBuild);
+                var options = GetVersionOptions(isReleaseBuild);
+
+                string packageVersion = NuGetVersionHelper.GetPackageVersion(options);
 
                 try
                 {
@@ -850,7 +848,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 }
                 finally
                 {
-                    _ = new DirectoryInfo(_packagesDirectory).EnsureExists();
+                    new DirectoryInfo(_packagesDirectory).EnsureExists();
 
                     foreach (var lookupDirectory in packageLookupDirectories)
                     {
@@ -889,6 +887,20 @@ namespace Arbor.Build.Core.Tools.MSBuild
             return ExitCode.Success;
         }
 
+        private VersionOptions GetVersionOptions(bool isReleaseBuild)
+        {
+            var options = new VersionOptions(_version)
+            {
+                BuildNumberEnabled = true,
+                BuildSuffix = _buildSuffix,
+                IsReleaseBuild = isReleaseBuild,
+                Logger = _logger,
+                GitModel = _gitModel
+            };
+
+            return options;
+        }
+
         private async Task<ExitCode> PackDotNetToolProjectsAsync(
             FileInfo solutionFile,
             string configuration,
@@ -913,7 +925,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             bool isReleaseBuild = configuration.Equals(WellKnownConfigurations.Release, StringComparison.OrdinalIgnoreCase);
 
-            string packageVersion = GetPackageVersion(isReleaseBuild);
+            var options = GetVersionOptions(isReleaseBuild);
+            string packageVersion = NuGetVersionHelper.GetPackageVersion(options);
 
             foreach (SolutionProject solutionProject in exeProjects)
             {
@@ -986,21 +999,6 @@ namespace Arbor.Build.Core.Tools.MSBuild
             {
                 EnsureFileDates(subDirectory);
             }
-        }
-
-        private string GetPackageVersion(bool isReleaseBuild)
-        {
-            string packageVersion = SemanticVersion.Parse(
-                NuGetVersionHelper.GetVersion(
-                    _version,
-                    isReleaseBuild,
-                    _buildSuffix,
-                    true,
-                    "", // TODO add support for metadata
-                    _logger,
-                    NuGetVersioningSettings.Default)).ToNormalizedString();
-
-            return packageVersion;
         }
 
         private void CopyCodeAnalysisReportsToArtifacts(string configuration, string platform, ILogger logger)
@@ -2349,6 +2347,11 @@ namespace Arbor.Build.Core.Tools.MSBuild
             _buildSuffix =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageArtifactsSuffix, "build");
 
+            if (!buildVariables.GetBooleanByKey(WellKnownVariables.NuGetPackageArtifactsSuffixEnabled, true))
+            {
+                _buildSuffix = "";
+            }
+
             _version = buildVariables.Require(WellKnownVariables.Version).ThrowIfEmptyValue().Value;
 
             IVariable artifacts = buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue();
@@ -2504,6 +2507,13 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             _assemblyFileVersion = buildVariables.Require(WellKnownVariables.NetAssemblyFileVersion).Value;
             _assemblyVersion = buildVariables.Require(WellKnownVariables.NetAssemblyVersion).Value;
+
+            string? gitModel = buildVariables.GetVariableValueOrDefault(WellKnownVariables.GitModel, null);
+
+            if (GitModel.TryParse(gitModel, out var model))
+            {
+                _gitModel = model;
+            }
 
             if (_vcsRoot == null)
             {

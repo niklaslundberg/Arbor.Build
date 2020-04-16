@@ -33,5 +33,8 @@
 
         [VariableDescription("Current GitHub branch name for the version control system")]
         public const string GitHubBranchName = "GITHUB_REF";
+
+        [VariableDescription("Branching model used, used for default values")]
+        public const string GitModel = "Arbor.Build.Vcs.Branch.Model";
     }
 }

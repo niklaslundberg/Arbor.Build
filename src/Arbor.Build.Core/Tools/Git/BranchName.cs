@@ -22,7 +22,7 @@ namespace Arbor.Build.Core.Tools.Git
 
         public string FullName => Name;
 
-        public static Maybe<BranchName> TryParse(string branchName)
+        public static Maybe<BranchName> TryParse(string? branchName)
         {
             if (string.IsNullOrWhiteSpace(branchName))
             {

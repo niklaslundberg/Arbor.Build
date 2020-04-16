@@ -55,6 +55,9 @@
         [VariableDescription("NuGet package artifacts suffix")]
         public const string NuGetPackageArtifactsSuffix = "Arbor.Build.NuGet.Package.Artifacts.Suffix";
 
+        [VariableDescription("NuGet package artifacts suffix enabled")]
+        public const string NuGetPackageArtifactsSuffixEnabled = "Arbor.Build.NuGet.Package.Artifacts.Suffix.Enabled";
+
         [VariableDescription("NuGet package id override")]
         public const string NuGetPackageIdOverride =
             "Arbor.Build.NuGet.Package.Artifacts.PackageId.Override";

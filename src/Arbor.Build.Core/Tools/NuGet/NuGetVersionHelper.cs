@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using Arbor.Build.Core.GenericExtensions;
+using Arbor.Build.Core.Tools.MSBuild;
 using NuGet.Versioning;
 using Serilog;
 
@@ -14,15 +15,16 @@ namespace Arbor.Build.Core.Tools.NuGet
             string? suffix,
             bool enableBuildNumber,
             string? packageBuildMetadata,
-            ILogger logger,
-            NuGetVersioningSettings nugetVersioningSettings)
+            ILogger? logger,
+            NuGetVersioningSettings? nugetVersioningSettings = null,
+            GitModel? gitModel = null)
         {
             if (!Version.TryParse(version, out Version? parsedVersion))
             {
                 throw new ArgumentException($"The version '{version} is not a valid version format");
             }
 
-            if (isReleaseBuild)
+            if (isReleaseBuild && GitModel.GitFlowBuildOnMaster != gitModel)
             {
                 string parsed = parsedVersion.ToString(3);
 
@@ -33,14 +35,27 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             string buildVersion;
 
+            var settings = nugetVersioningSettings ?? NuGetVersioningSettings.Default;
+
             int usePadding =
-                nugetVersioningSettings.SemVerVersion == 1 && nugetVersioningSettings.MaxZeroPaddingLength > 0
-                    ? nugetVersioningSettings.MaxZeroPaddingLength
+                settings.SemVerVersion == 1 && settings.MaxZeroPaddingLength > 0
+                    ? settings.MaxZeroPaddingLength
                     : 0;
 
-            string semVer2PreReleaseSeparator = nugetVersioningSettings.SemVerVersion == 2 ? "." : string.Empty;
+            string semVer2PreReleaseSeparator = settings.SemVerVersion >= 2
+                ? "."
+                : string.Empty;
 
-            if (!string.IsNullOrWhiteSpace(suffix))
+            if (GitModel.GitFlowBuildOnMaster == gitModel && isReleaseBuild)
+            {
+                suffix ??= "rc";
+            }
+            else
+            {
+                suffix ??= "build";
+            }
+
+            if (suffix.Length > 0)
             {
                 if (enableBuildNumber)
                 {
@@ -80,16 +95,9 @@ namespace Arbor.Build.Core.Tools.NuGet
                 }
             }
 
-            string final;
-
-            if (!string.IsNullOrWhiteSpace(packageBuildMetadata))
-            {
-                final = $"{buildVersion}+{packageBuildMetadata.TrimStart('+')}";
-            }
-            else
-            {
-                final = buildVersion;
-            }
+            string final = !string.IsNullOrWhiteSpace(packageBuildMetadata)
+                ? $"{buildVersion}+{packageBuildMetadata.TrimStart('+')}"
+                : buildVersion;
 
             if (!SemanticVersion.TryParse(final, out SemanticVersion _))
             {
@@ -97,6 +105,24 @@ namespace Arbor.Build.Core.Tools.NuGet
             }
 
             return final;
+        }
+
+        public static string GetPackageVersion(VersionOptions versionOptions)
+        {
+            string version = GetVersion(
+                versionOptions.Version,
+                versionOptions.IsReleaseBuild,
+                versionOptions.BuildSuffix,
+                versionOptions.BuildNumberEnabled,
+                versionOptions.Metadata,
+                versionOptions.Logger,
+                versionOptions.NuGetVersioningSettings,
+                versionOptions.GitModel);
+
+            string packageVersion = SemanticVersion.Parse(
+                version).ToNormalizedString();
+
+            return packageVersion;
         }
     }
 }

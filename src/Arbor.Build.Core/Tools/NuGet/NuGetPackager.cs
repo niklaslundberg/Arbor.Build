@@ -118,21 +118,17 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             bool isReleaseBuild = IsStablePackage(branchNameMayBe.Value);
 
-            string semVer = NuGetVersionHelper.GetVersion(
-                version.Value,
-                isReleaseBuild,
-                "build",
-                true,
-                null,
-                logger,
-                NuGetVersioningSettings.Default);
+            var options = new VersionOptions(version.Value)
+            {
+                IsReleaseBuild = isReleaseBuild,
+                BuildSuffix = "build",
+                BuildNumberEnabled = true,
+                Logger = logger
+            };
+
+            string semVer = NuGetVersionHelper.GetPackageVersion(options);
 
             var semanticVersion = SemanticVersion.Parse(semVer);
-
-            //logger.Verbose("Based on branch {Value} and release build flags {Value1}, the build is considered {V}",
-            //    branchName.Value,
-            //    releaseBuild.Value,
-            //    isReleaseBuild ? WellKnownConfigurations.Release : "not release");
 
             if (!string.IsNullOrWhiteSpace(buildConfiguration)
                 && buildConfiguration.Equals(WellKnownConfigurations.Debug, StringComparison.OrdinalIgnoreCase) && isReleaseBuild)
