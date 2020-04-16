@@ -32,12 +32,7 @@ namespace Arbor.Build.Tests.Integration.MSBuild
             {
                 _testOutputHelper.WriteLine($"{variable.Key}: {variable.Value}");
             }
-
-            var configuration = variables.SingleOrDefault(v => v.Key.Equals(WellKnownVariables.ExternalTools_MSBuild_BuildConfiguration));
-
-            Assert.NotNull(configuration);
-
-            Assert.Equal(WellKnownConfigurations.Debug, configuration.Value);
+            Assert.Contains(WellKnownConfigurations.Debug, buildContext.Configurations);
         }
 
         [InlineData("feature-abc123")]
@@ -62,11 +57,7 @@ namespace Arbor.Build.Tests.Integration.MSBuild
                 _testOutputHelper.WriteLine($"{variable.Key}: {variable.Value}");
             }
 
-            var configuration = variables.SingleOrDefault(v => v.Key.Equals(WellKnownVariables.ExternalTools_MSBuild_BuildConfiguration));
-
-            Assert.NotNull(configuration);
-
-            Assert.Equal(WellKnownConfigurations.Debug, configuration.Value);
+            Assert.Contains(WellKnownConfigurations.Debug, buildContext.Configurations);
         }
 
         [InlineData("feature-abc123")]
@@ -91,11 +82,7 @@ namespace Arbor.Build.Tests.Integration.MSBuild
                 _testOutputHelper.WriteLine($"{variable.Key}: {variable.Value}");
             }
 
-            var configuration = variables.SingleOrDefault(v => v.Key.Equals(WellKnownVariables.ExternalTools_MSBuild_BuildConfiguration));
-
-            Assert.NotNull(configuration);
-
-            Assert.Equal("customDefault", configuration.Value);
+            Assert.Contains("customDefault", buildContext.Configurations);
         }
 
         [InlineData("master")]
@@ -120,11 +107,7 @@ namespace Arbor.Build.Tests.Integration.MSBuild
                 _testOutputHelper.WriteLine($"{variable.Key}: {variable.Value}");
             }
 
-            var configuration = variables.SingleOrDefault(v => v.Key.Equals(WellKnownVariables.ExternalTools_MSBuild_BuildConfiguration));
-
-            Assert.NotNull(configuration);
-
-            Assert.Equal(WellKnownConfigurations.Release, configuration.Value);
+            Assert.Contains(WellKnownConfigurations.Release, buildContext.Configurations);
         }
     }
 }
