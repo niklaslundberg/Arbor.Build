@@ -20,7 +20,10 @@ namespace Arbor.Build.Core.Tools.Testing
     [UsedImplicitly]
     public class DotNetTestRunner : ITestRunnerTool
     {
+        public DotNetTestRunner(BuildContext buildContext) => _buildContext = buildContext;
+
         private const string AnyConfiguration = "[Any]";
+        private readonly BuildContext _buildContext;
         private string _sourceRoot;
 
         public async Task<ExitCode> ExecuteAsync(
@@ -70,11 +73,16 @@ namespace Arbor.Build.Core.Tools.Testing
             {
                 configuration = "[ANY]";
             }
+            else if (runTestsInReleaseConfiguration == true)
+            {
+                configuration = WellKnownConfigurations.Release;
+            } else if (_buildContext.Configurations.Count == 1)
+            {
+                configuration = _buildContext.Configurations.Single();
+            }
             else
             {
-                configuration = runTestsInReleaseConfiguration == true
-                    ? WellKnownConfigurations.Release
-                    : WellKnownConfigurations.Debug;
+                configuration = WellKnownConfigurations.Debug;
             }
 
             ImmutableArray<string> assemblyFilePrefix = buildVariables.AssemblyFilePrefixes();
