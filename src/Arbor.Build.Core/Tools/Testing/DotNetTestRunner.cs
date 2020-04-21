@@ -103,7 +103,7 @@ namespace Arbor.Build.Core.Tools.Testing
 
             var testDirectories = new DirectoryInfo(_sourceRoot)
                 .GetFiles("*test*.csproj", SearchOption.AllDirectories)
-                .Where(file => file?.Directory != null && assemblyFilePrefix.Any(prefix => file.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
+                .Where(file => file?.Directory != null && (assemblyFilePrefix.Length == 0 || assemblyFilePrefix.Any(prefix => file.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))))
                 .Select(file => file.Directory.FullName)
                 .ToHashSet();
 
