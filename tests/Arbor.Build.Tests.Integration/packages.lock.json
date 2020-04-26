@@ -8,6 +8,41 @@
         "resolved": "2020.1.0",
         "contentHash": "kD9D2ey3DGeLbfIzS8PkwLFkcF5vCOLk2rdjgfSxTfpoyovl7gAyoS6yq6T77zo9QgJGaVJ7PO/cSgLopnKlzg=="
       },
+      "Machine.Specifications": {
+        "type": "Direct",
+        "requested": "[1.0.0, )",
+        "resolved": "1.0.0",
+        "contentHash": "atKK6oPsk1hybCwXRo1OqeUsBHInLVNUQDSiU7McBf5oMgDRyyDo8FIPwIrNgX7NhL2ci7NF1eFmii9qV7clnQ==",
+        "dependencies": {
+          "NETStandard.Library": "1.6.0",
+          "System.Diagnostics.TextWriterTraceListener": "4.0.0",
+          "System.Diagnostics.TraceSource": "4.0.0",
+          "System.Reflection": "4.1.0",
+          "System.Reflection.Extensions": "4.0.1",
+          "System.Reflection.TypeExtensions": "4.1.0",
+          "System.Xml.XPath": "4.0.1",
+          "System.Xml.XPath.XDocument": "4.0.1"
+        }
+      },
+      "Machine.Specifications.Runner.VisualStudio": {
+        "type": "Direct",
+        "requested": "[2.10.0, )",
+        "resolved": "2.10.0",
+        "contentHash": "9JkO8QMCLvLkEhtAL04X5QIIY8DM8nGD4/ojvJ5u+i3wSdYEW1qaIJGvS2RQKpMZuPTowkVqi9Ao0Hhp1c3jvg==",
+        "dependencies": {
+          "Mono.Cecil": "[0.10.0, 0.11.0)"
+        }
+      },
+      "Machine.Specifications.Should": {
+        "type": "Direct",
+        "requested": "[1.0.0, )",
+        "resolved": "1.0.0",
+        "contentHash": "H63vJHsDb+vTIhqTDvy5xdi4TxFSti+UUXYkUW5n1y/W+92f7yzYSUDjO1k2+c0xnzeskz1qR+fOSwWFQ+cbHQ==",
+        "dependencies": {
+          "Machine.Specifications": "1.0.0",
+          "NETStandard.Library": "1.6.1"
+        }
+      },
       "Microsoft.CodeAnalysis.Analyzers": {
         "type": "Direct",
         "requested": "[3.0.0, )",
@@ -35,37 +70,73 @@
           "Microsoft.NetFramework.Analyzers": "[2.9.8]"
         }
       },
-      "Serilog.Sinks.Console": {
+      "Microsoft.NET.Test.Sdk": {
         "type": "Direct",
-        "requested": "[3.1.1, )",
-        "resolved": "3.1.1",
-        "contentHash": "56mI5AqvyF/i/c2451nvV71kq370XOCE4Uu5qiaJ295sOhMb9q3BWwG7mWLOVSnmpWiq0SBT3SXfgRXGNP6vzA==",
+        "requested": "[16.5.0, )",
+        "resolved": "16.5.0",
+        "contentHash": "yHZOhVSPuGqgHi+KhHiAZqNY08avkQraXKvgKgDU8c/ztmGzw7gmukkv49EaTq6T3xmp4XroWk3gAlbJHMxl8w==",
         "dependencies": {
-          "Serilog": "2.5.0",
-          "System.Console": "4.3.0",
-          "System.Runtime.InteropServices": "4.3.0",
-          "System.Runtime.InteropServices.RuntimeInformation": "4.3.0"
+          "Microsoft.CodeCoverage": "16.5.0",
+          "Microsoft.TestPlatform.TestHost": "16.5.0"
         }
       },
-      "Serilog.Sinks.Seq": {
+      "Mono.Cecil": {
         "type": "Direct",
-        "requested": "[4.0.0, )",
-        "resolved": "4.0.0",
-        "contentHash": "02HTAboPlG6+/u63+o4bffS5f9VOLMn0/76OsK+Ii90IufoTO6YWIEzZ84KUYjmQnjToe0lrVbLa7qOJdUCYbg==",
+        "requested": "[0.11.2, )",
+        "resolved": "0.11.2",
+        "contentHash": "hZNAnXKQsOs/SZMFtT/e82/nA/iLgkeDy+sHD8xix4f0m9/3G0RNZplE1QHB+0n8QXq54jLqR/IPgVOkLapkyg=="
+      },
+      "NCrunch.Framework": {
+        "type": "Direct",
+        "requested": "[4.0.0.1, )",
+        "resolved": "4.0.0.1",
+        "contentHash": "zwEgVcifJXNESrVmNU63kOE+jCp20PCSVNfWTYdy0F58qbIYvEMY7UucnkFaNKOEzApI6u3ZnhDTogNR7cFZ8w==",
         "dependencies": {
           "NETStandard.Library": "1.6.1",
-          "Serilog": "2.5.0",
-          "Serilog.Formatting.Compact": "1.0.0",
-          "Serilog.Sinks.File": "4.0.0",
-          "Serilog.Sinks.PeriodicBatching": "2.1.1",
-          "System.Net.Http": "4.3.2"
+          "System.Collections.NonGeneric": "4.3.0"
         }
       },
-      "System.ComponentModel.Annotations": {
+      "Serilog.Sinks.Debug": {
         "type": "Direct",
-        "requested": "[4.7.0, )",
-        "resolved": "4.7.0",
-        "contentHash": "0YFqjhp/mYkDGpU0Ye1GjE53HMp9UVfGN7seGpAMttAC0C40v5gw598jCgpbBLMmCo0E5YRLBv5Z2doypO49ZQ=="
+        "requested": "[1.0.1, )",
+        "resolved": "1.0.1",
+        "contentHash": "nE5wvw9+J/V4lA+rEkFUETGjBabK8IlLQY5Z9KDzoo5LvILC4vhTOXLs7DGYs8h5juIf2nLZnVxHDXf404FqEQ==",
+        "dependencies": {
+          "Serilog": "2.5.0",
+          "System.Diagnostics.Debug": "4.3.0"
+        }
+      },
+      "xunit": {
+        "type": "Direct",
+        "requested": "[2.4.1, )",
+        "resolved": "2.4.1",
+        "contentHash": "XNR3Yz9QTtec16O0aKcO6+baVNpXmOnPUxDkCY97J+8krUYxPvXT1szYYEUdKk4sB8GOI2YbAjRIOm8ZnXRfzQ==",
+        "dependencies": {
+          "xunit.analyzers": "0.10.0",
+          "xunit.assert": "[2.4.1]",
+          "xunit.core": "[2.4.1]"
+        }
+      },
+      "xunit.analyzers": {
+        "type": "Direct",
+        "requested": "[0.10.0, )",
+        "resolved": "0.10.0",
+        "contentHash": "4/IDFCJfIeg6bix9apmUtIMwvOsiwqdEexeO/R2D4GReIGPLIRODTpId/l4LRSrAJk9lEO3Zx1H0Zx6uohJDNg=="
+      },
+      "xunit.runner.console": {
+        "type": "Direct",
+        "requested": "[2.4.1, )",
+        "resolved": "2.4.1",
+        "contentHash": "6yGe+Vx250m1zG/nV8FH1XlftJFoidCThpRdWEIwIFE/rc/lYSuL0M+D1gMDNmZgERAR/sHR18Q/etqd6lxaNA=="
+      },
+      "xunit.runner.visualstudio": {
+        "type": "Direct",
+        "requested": "[2.4.1, )",
+        "resolved": "2.4.1",
+        "contentHash": "mBXd1lp1TQr4to2nFv+c4Tf+RnPoQPKglzwLdbdirOUxRaJsCUNDUx2y7E6j9ajgISlTTp1CydFBZCRCUIrwDg==",
+        "dependencies": {
+          "Microsoft.NET.Test.Sdk": "15.0.0"
+        }
       },
       "Arbor.Aesculus": {
         "type": "Transitive",
@@ -148,21 +219,6 @@
         "resolved": "5.1.2",
         "contentHash": "iGEx5Cm6Uor6/bZkgCHHjJO8cEQvDSOxgzNmHGJgGOnLDCe0b8NpOlhotsqx8dFvBDCsEX/V3YGRR30sRQLsxw=="
       },
-      "Machine.Specifications": {
-        "type": "Transitive",
-        "resolved": "1.0.0",
-        "contentHash": "atKK6oPsk1hybCwXRo1OqeUsBHInLVNUQDSiU7McBf5oMgDRyyDo8FIPwIrNgX7NhL2ci7NF1eFmii9qV7clnQ==",
-        "dependencies": {
-          "NETStandard.Library": "1.6.0",
-          "System.Diagnostics.TextWriterTraceListener": "4.0.0",
-          "System.Diagnostics.TraceSource": "4.0.0",
-          "System.Reflection": "4.1.0",
-          "System.Reflection.Extensions": "4.0.1",
-          "System.Reflection.TypeExtensions": "4.1.0",
-          "System.Xml.XPath": "4.0.1",
-          "System.Xml.XPath.XDocument": "4.0.1"
-        }
-      },
       "Microsoft.CodeAnalysis.Common": {
         "type": "Transitive",
         "resolved": "3.5.0",
@@ -181,6 +237,11 @@
         "type": "Transitive",
         "resolved": "2.9.8",
         "contentHash": "iSjqkECKpagJPjzc7sMjD6rQWSznVYqTfUZ96yR0r0jDzA45TymBof350tlOfGDRvn4OrU/KKJav21/oZDttrA=="
+      },
+      "Microsoft.CodeCoverage": {
+        "type": "Transitive",
+        "resolved": "16.5.0",
+        "contentHash": "PM5YLtyN45EyUGePJpaNogndlaQPrMgQQXHKMhMESC6KfSVvt+j7+dxBi8NYC6X6dZVysf7ngwhSW3wwvPJRSQ=="
       },
       "Microsoft.CodeQuality.Analyzers": {
         "type": "Transitive",
@@ -239,6 +300,23 @@
         "type": "Transitive",
         "resolved": "2.9.8",
         "contentHash": "8fZYJqeKBW5uuKBact26IeOBogchn5Km85klHqHneRY7Jxp+ERtrw8zJVumNFUVL68pIcf4uKPOY7zfBQ7eY3A=="
+      },
+      "Microsoft.TestPlatform.ObjectModel": {
+        "type": "Transitive",
+        "resolved": "16.5.0",
+        "contentHash": "NnLFxmFBCAS6kye2JFszD5WKgj4Zve5KX/R0mhYwh6BVnSeybI2unRnjEPtLyY3CAVhwrY4bh/8LNFtslAcGZg==",
+        "dependencies": {
+          "NuGet.Frameworks": "5.0.0"
+        }
+      },
+      "Microsoft.TestPlatform.TestHost": {
+        "type": "Transitive",
+        "resolved": "16.5.0",
+        "contentHash": "ytGymboQIvjNX5pLC0yp/Bz9sGDHqSnLQgBRtd4VrqOUgKmmcfxMYZ6p0TBZgAT1oijdC6xqUZ7rl8mbaaXTJw==",
+        "dependencies": {
+          "Microsoft.TestPlatform.ObjectModel": "16.5.0",
+          "Newtonsoft.Json": "9.0.1"
+        }
       },
       "Microsoft.Web.Xdt": {
         "type": "Transitive",
@@ -564,6 +642,17 @@
           "Serilog": "2.0.0"
         }
       },
+      "Serilog.Sinks.Console": {
+        "type": "Transitive",
+        "resolved": "3.1.1",
+        "contentHash": "56mI5AqvyF/i/c2451nvV71kq370XOCE4Uu5qiaJ295sOhMb9q3BWwG7mWLOVSnmpWiq0SBT3SXfgRXGNP6vzA==",
+        "dependencies": {
+          "Serilog": "2.5.0",
+          "System.Console": "4.3.0",
+          "System.Runtime.InteropServices": "4.3.0",
+          "System.Runtime.InteropServices.RuntimeInformation": "4.3.0"
+        }
+      },
       "Serilog.Sinks.File": {
         "type": "Transitive",
         "resolved": "4.0.0",
@@ -587,6 +676,19 @@
           "Serilog": "2.0.0",
           "System.Collections.Concurrent": "4.0.12",
           "System.Threading.Timer": "4.0.1"
+        }
+      },
+      "Serilog.Sinks.Seq": {
+        "type": "Transitive",
+        "resolved": "4.0.0",
+        "contentHash": "02HTAboPlG6+/u63+o4bffS5f9VOLMn0/76OsK+Ii90IufoTO6YWIEzZ84KUYjmQnjToe0lrVbLa7qOJdUCYbg==",
+        "dependencies": {
+          "NETStandard.Library": "1.6.1",
+          "Serilog": "2.5.0",
+          "Serilog.Formatting.Compact": "1.0.0",
+          "Serilog.Sinks.File": "4.0.0",
+          "Serilog.Sinks.PeriodicBatching": "2.1.1",
+          "System.Net.Http": "4.3.2"
         }
       },
       "System.CodeDom": {
@@ -625,6 +727,24 @@
         "type": "Transitive",
         "resolved": "1.7.0",
         "contentHash": "RVSM6wZUo6L2y6P3vN6gjUtyJ2IF2RVtrepF3J7nrDKfFQd5u/SnSUFclchYQis8/k5scHy9E+fVeKVQLnnkzw=="
+      },
+      "System.Collections.NonGeneric": {
+        "type": "Transitive",
+        "resolved": "4.3.0",
+        "contentHash": "prtjIEMhGUnQq6RnPEYLpFt8AtLbp9yq2zxOSrY7KJJZrw25Fi97IzBqY7iqssbM61Ek5b8f3MG/sG1N2sN5KA==",
+        "dependencies": {
+          "System.Diagnostics.Debug": "4.3.0",
+          "System.Globalization": "4.3.0",
+          "System.Resources.ResourceManager": "4.3.0",
+          "System.Runtime": "4.3.0",
+          "System.Runtime.Extensions": "4.3.0",
+          "System.Threading": "4.3.0"
+        }
+      },
+      "System.ComponentModel.Annotations": {
+        "type": "Transitive",
+        "resolved": "4.7.0",
+        "contentHash": "0YFqjhp/mYkDGpU0Ye1GjE53HMp9UVfGN7seGpAMttAC0C40v5gw598jCgpbBLMmCo0E5YRLBv5Z2doypO49ZQ=="
       },
       "System.ComponentModel.Composition": {
         "type": "Transitive",
@@ -1688,25 +1808,10 @@
           "System.Xml.XPath": "4.0.1"
         }
       },
-      "xunit": {
-        "type": "Transitive",
-        "resolved": "2.4.1",
-        "contentHash": "XNR3Yz9QTtec16O0aKcO6+baVNpXmOnPUxDkCY97J+8krUYxPvXT1szYYEUdKk4sB8GOI2YbAjRIOm8ZnXRfzQ==",
-        "dependencies": {
-          "xunit.analyzers": "0.10.0",
-          "xunit.assert": "[2.4.1]",
-          "xunit.core": "[2.4.1]"
-        }
-      },
       "xunit.abstractions": {
         "type": "Transitive",
         "resolved": "2.0.3",
         "contentHash": "pot1I4YOxlWjIb5jmwvvQNbTrZ3lJQ+jUGkGjWE3hEFM0l5gOnBWS+H3qsex68s5cO52g+44vpGzhAt+42vwKg=="
-      },
-      "xunit.analyzers": {
-        "type": "Transitive",
-        "resolved": "0.10.0",
-        "contentHash": "4/IDFCJfIeg6bix9apmUtIMwvOsiwqdEexeO/R2D4GReIGPLIRODTpId/l4LRSrAJk9lEO3Zx1H0Zx6uohJDNg=="
       },
       "xunit.assert": {
         "type": "Transitive",

@@ -57,9 +57,9 @@ namespace Arbor.Build.Core.Tools.MSBuild
         private bool _applicationMetadataGitBranchEnabled;
         private bool _applicationMetadataGitHashEnabled;
 
-        private string _artifactsPath;
-        private string _assemblyFileVersion;
-        private string _assemblyVersion;
+        private string _artifactsPath = null!;
+        private string _assemblyFileVersion = null!;
+        private string _assemblyVersion = null!;
         private string? _buildSuffix;
 
         private IReadOnlyCollection<IVariable> _buildVariables;
@@ -90,21 +90,21 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
         private string? _gitHash;
         private ILogger _logger;
-        private string _msBuildExe;
-        private string _packagesDirectory;
+        private string _msBuildExe = null!;
+        private string _packagesDirectory = null!;
         private bool _pdbArtifactsEnabled;
         private bool _preCompilationEnabled;
-        private int _processorCount;
+        private int? _processorCount = default;
         private string? _publishRuntimeIdentifier;
 
         private string? _ruleset;
         private bool _showSummary;
-        private string _vcsRoot;
+        private string _vcsRoot = null!;
         private bool _webProjectsBuildEnabled;
         private bool _verboseLoggingEnabled;
         private MSBuildVerbosityLevel _verbosity;
-        private string _version;
-        private NuGetPackager _nugetPackager;
+        private string _version = null!;
+        private readonly NuGetPackager _nugetPackager;
         private bool _logMsBuildWarnings;
         private GitBranchModel? _gitModel;
         private BranchName? _branchName;
@@ -117,22 +117,6 @@ namespace Arbor.Build.Core.Tools.MSBuild
             {
                 Limit = 5
             };
-        }
-
-        private static int ProcessorCount(IReadOnlyCollection<IVariable> buildVariables)
-        {
-            int processorCount = 1;
-
-            const string key = WellKnownVariables.ExternalTools_Kudu_ProcessorCount;
-
-            int setting = buildVariables.GetInt32ByKey(key, 1);
-
-            if (setting > 0)
-            {
-                processorCount = setting;
-            }
-
-            return processorCount;
         }
 
         private static bool BuildPlatformOrConfiguration(IReadOnlyCollection<IVariable> variables, string key)
@@ -347,7 +331,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
         {
             var platforms = new List<string>();
 
-            using (var fs = new FileStream(solutionFile.FullName, FileMode.Open, FileAccess.Read))
+            await using (var fs = new FileStream(solutionFile.FullName, FileMode.Open, FileAccess.Read))
             {
                 using var streamReader = new StreamReader(fs);
                 bool isInGlobalSection = false;
@@ -399,13 +383,10 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             if (actualPlatforms.Length == 0)
             {
-                if (_excludedPlatforms.Any())
+                if (_excludedPlatforms.Any() && _debugLoggingEnabled)
                 {
-                    if (_debugLoggingEnabled)
-                    {
-                        logger.Debug("Excluding platforms {Platforms}",
-                            string.Join(", ", _excludedPlatforms.WrapItems("'")));
-                    }
+                    logger.Debug("Excluding platforms {Platforms}",
+                        string.Join(", ", _excludedPlatforms.WrapItems("'")));
                 }
 
                 logger.Warning("No platforms are found to be built for solution file '{SolutionFile}'", solutionFile);
@@ -523,17 +504,21 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 return ExitCode.Failure;
             }
 
-            var argList = new List<string>
+            var argList = new List<string>(10)
             {
                 solutionFile.FullName,
                 $"/property:configuration={configuration}",
                 $"/property:platform={platform}",
                 $"/verbosity:{_verbosity.Level}",
                 $"/target:{_defaultTarget}",
-                $"/maxcpucount:{_processorCount.ToString(CultureInfo.InvariantCulture)}",
                $"/property:AssemblyVersion={_assemblyVersion}",
                 $"/property:FileVersion={_assemblyFileVersion}"
             };
+
+            if (_processorCount.HasValue && _processorCount.Value >= 1)
+            {
+                argList.Add($"/maxcpucount:{_processorCount.Value.ToString(CultureInfo.InvariantCulture)}");
+            }
 
             if (!_logMsBuildWarnings)
             {
@@ -1438,8 +1423,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     // ReSharper disable once PossibleNullReferenceException
                     $"/property:SolutionDir={solutionFile.Directory.FullName}",
                     $"/verbosity:{_verbosity.Level}",
-                    "/property:AutoParameterizationWebConfigConnectionStrings=false",
-                    $"/maxcpucount:{_processorCount.ToString(CultureInfo.InvariantCulture)}",
+                    "/property:AutoParameterizationWebConfigConnectionStrings=false"
 
                 };
 
@@ -1459,8 +1443,6 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     $"/property:configuration={configuration}",
                     $"/verbosity:{_verbosity.Level}",
                     $"/property:publishdir={siteArtifactDirectory.FullName}",
-                    $"/maxcpucount:{_processorCount.ToString(CultureInfo.InvariantCulture)}",
-
                     $"/property:AssemblyVersion={_assemblyVersion}",
                     $"/property:FileVersion={_assemblyFileVersion}"
                 };
@@ -1474,6 +1456,11 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 }
 
                 target = "restore;rebuild;publish";
+            }
+
+            if (_processorCount.HasValue && _processorCount.Value >= 1)
+            {
+                buildSiteArguments.Add($"/maxcpucount:{_processorCount.Value.ToString(CultureInfo.InvariantCulture)}");
             }
 
             if (_showSummary)
@@ -2208,11 +2195,14 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 $"/property:PackageLocation={packagePath}",
                 $"/verbosity:{_verbosity.Level}",
                 "/target:Package",
-                $"/maxcpucount:{_processorCount.ToString(CultureInfo.InvariantCulture)}",
-
                 $"/property:AssemblyVersion={_assemblyVersion}",
                 $"/property:FileVersion={_assemblyFileVersion}"
             };
+
+            if (_processorCount.HasValue && _processorCount.Value >= 1)
+            {
+                buildSitePackageArguments.Add($"/maxcpucount:{_processorCount.Value.ToString(CultureInfo.InvariantCulture)}");
+            }
 
             if (_showSummary)
             {
@@ -2313,7 +2303,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             foreach (FileInfo fileInfo in dllFiles)
             {
                 var xmlFile = new FileInfo(Path.Combine(
-                    fileInfo.Directory?.FullName,
+                    fileInfo.Directory?.FullName!,
                     $"{Path.GetFileNameWithoutExtension(fileInfo.Name)}.xml"));
 
                 if (xmlFile.Exists)
@@ -2345,9 +2335,9 @@ namespace Arbor.Build.Core.Tools.MSBuild
             _verboseLoggingEnabled = _logger.IsEnabled(LogEventLevel.Verbose);
             _cancellationToken = cancellationToken;
             _msBuildExe =
-                buildVariables.Require(WellKnownVariables.ExternalTools_MSBuild_ExePath).ThrowIfEmptyValue().Value;
+                buildVariables.Require(WellKnownVariables.ExternalTools_MSBuild_ExePath).GetValueOrThrow();
             _artifactsPath =
-                buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue().Value;
+                buildVariables.Require(WellKnownVariables.Artifacts).GetValueOrThrow();
 
             _appDataJobsEnabled = buildVariables.GetBooleanByKey(
                 WellKnownVariables.AppDataJobsEnabled);
@@ -2360,7 +2350,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 _buildSuffix = "";
             }
 
-            _version = buildVariables.Require(WellKnownVariables.Version).ThrowIfEmptyValue().Value;
+            _version = buildVariables.Require(WellKnownVariables.Version).GetValueOrThrow();
 
             IVariable artifacts = buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue();
             _packagesDirectory = Path.Combine(artifacts.Value, "packages");
@@ -2382,7 +2372,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     WellKnownVariables.CleanBinXmlFilesForAssembliesEnabled);
 
             _excludedPlatforms = buildVariables
-                .GetVariableValueOrDefault(WellKnownVariables.MSBuildExcludedPlatforms, string.Empty)
+                .GetVariableValueOrDefault(WellKnownVariables.MSBuildExcludedPlatforms, string.Empty)!
                 .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                 .ToImmutableArray();
 
@@ -2403,20 +2393,6 @@ namespace Arbor.Build.Core.Tools.MSBuild
             _logMsBuildWarnings =
                 buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_MSBuild_LogWarnings, true);
 
-            int maxProcessorCount = ProcessorCount(buildVariables);
-
-            int maxCpuLimit = buildVariables.GetInt32ByKey(
-                WellKnownVariables.CpuLimit,
-                maxProcessorCount,
-                1);
-
-            if (_verboseLoggingEnabled)
-            {
-                _logger.Verbose("Using CPU limit: {MaxCpuLimit}", maxCpuLimit);
-            }
-
-            _processorCount = maxCpuLimit;
-
             _verbosity =
                 MSBuildVerbosityLevel.TryParse(
                     buildVariables.GetVariableValueOrDefault(
@@ -2435,7 +2411,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 _logger.Verbose("Using MSBuild verbosity {Verbosity}", _verbosity);
             }
 
-            _vcsRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
+            _vcsRoot = buildVariables.Require(WellKnownVariables.SourceRoot).GetValueOrThrow();
 
             if (_codeAnalysisEnabled)
             {
@@ -2484,7 +2460,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             _filteredNuGetWebPackageProjects =
                 buildVariables.GetVariableValueOrDefault(
                         WellKnownVariables.NugetCreateNuGetWebPackageFilter,
-                        string.Empty)
+                        string.Empty)!
                     .Split(',')
                     .Where(item => !string.IsNullOrWhiteSpace(item))
                     .SafeToReadOnlyCollection();
@@ -2492,7 +2468,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             _excludedWebJobsFiles =
                 buildVariables.GetVariableValueOrDefault(
                         WellKnownVariables.WebJobsExcludedFileNameParts,
-                        string.Empty)
+                        string.Empty)!
                     .Split(',')
                     .Where(item => !string.IsNullOrWhiteSpace(item))
                     .SafeToReadOnlyCollection();
@@ -2500,7 +2476,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             _excludedNuGetWebPackageFiles =
                 buildVariables.GetVariableValueOrDefault(
                         WellKnownVariables.ExcludedNuGetWebPackageFiles,
-                        string.Empty)
+                        string.Empty)!
                     .Split(',')
                     .Where(item => !string.IsNullOrWhiteSpace(item))
                     .SafeToReadOnlyCollection();
@@ -2508,13 +2484,13 @@ namespace Arbor.Build.Core.Tools.MSBuild
             _excludedWebJobsDirectorySegments =
                 buildVariables.GetVariableValueOrDefault(
                         WellKnownVariables.WebJobsExcludedDirectorySegments,
-                        string.Empty)
+                        string.Empty)!
                     .Split(',')
                     .Where(item => !string.IsNullOrWhiteSpace(item))
                     .SafeToReadOnlyCollection();
 
-            _assemblyFileVersion = buildVariables.Require(WellKnownVariables.NetAssemblyFileVersion).Value;
-            _assemblyVersion = buildVariables.Require(WellKnownVariables.NetAssemblyVersion).Value;
+            _assemblyFileVersion = buildVariables.Require(WellKnownVariables.NetAssemblyFileVersion).Value!;
+            _assemblyVersion = buildVariables.Require(WellKnownVariables.NetAssemblyVersion).Value!;
 
             string? gitModel = buildVariables.GetVariableValueOrDefault(WellKnownVariables.GitBranchModel, null);
 
@@ -2525,10 +2501,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             var maybe = BranchName.TryParse(buildVariables.GetVariableValueOrDefault(WellKnownVariables.BranchName, null));
 
-            if (maybe.HasValue)
-            {
-                _branchName = maybe.Value;
-            }
+            _branchName = maybe;
 
             if (_vcsRoot == null)
             {
@@ -2540,7 +2513,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             {
                 return await BuildAsync(_logger, buildVariables).ConfigureAwait(false);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (!ex.IsFatal())
             {
                 _logger.Error(ex, "Error in solution builder");
                 return ExitCode.Failure;

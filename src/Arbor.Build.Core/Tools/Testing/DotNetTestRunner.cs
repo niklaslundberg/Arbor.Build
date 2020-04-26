@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -20,11 +19,10 @@ namespace Arbor.Build.Core.Tools.Testing
     [UsedImplicitly]
     public class DotNetTestRunner : ITestRunnerTool
     {
-        public DotNetTestRunner(BuildContext buildContext) => _buildContext = buildContext;
-
         private const string AnyConfiguration = "[Any]";
         private readonly BuildContext _buildContext;
         private string _sourceRoot;
+        public DotNetTestRunner(BuildContext buildContext) => _buildContext = buildContext;
 
         public async Task<ExitCode> ExecuteAsync(
             [NotNull] ILogger logger,
@@ -57,7 +55,7 @@ namespace Arbor.Build.Core.Tools.Testing
                 ".NET test runner is enabled, defined in key {Key}",
                 WellKnownVariables.XUnitNetCoreAppV2Enabled);
 
-            _sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
+            _sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).GetValueOrThrow();
             IVariable reportPath = buildVariables.Require(WellKnownVariables.ReportPath).ThrowIfEmptyValue();
 
             bool? runTestsInReleaseConfiguration =
@@ -76,7 +74,8 @@ namespace Arbor.Build.Core.Tools.Testing
             else if (runTestsInReleaseConfiguration == true)
             {
                 configuration = WellKnownConfigurations.Release;
-            } else if (_buildContext.Configurations.Count == 1)
+            }
+            else if (_buildContext.Configurations.Count == 1)
             {
                 configuration = _buildContext.Configurations.Single();
             }
@@ -85,7 +84,7 @@ namespace Arbor.Build.Core.Tools.Testing
                 configuration = WellKnownConfigurations.Debug;
             }
 
-            ImmutableArray<string> assemblyFilePrefix = buildVariables.AssemblyFilePrefixes();
+            var assemblyFilePrefix = buildVariables.AssemblyFilePrefixes();
 
             string? dotNetExePath =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.DotNetExePath, string.Empty);
@@ -103,11 +102,13 @@ namespace Arbor.Build.Core.Tools.Testing
 
             var testDirectories = new DirectoryInfo(_sourceRoot)
                 .GetFiles("*test*.csproj", SearchOption.AllDirectories)
-                .Where(file => file?.Directory != null && (assemblyFilePrefix.Length == 0 || assemblyFilePrefix.Any(prefix => file.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))))
+                .Where(file =>
+                    file?.Directory != null && (assemblyFilePrefix.Length == 0 || assemblyFilePrefix.Any(prefix =>
+                        file.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))))
                 .Select(file => file.Directory.FullName)
                 .ToHashSet();
 
-            ExitCode exitCode = ExitCode.Success;
+            var exitCode = ExitCode.Success;
 
             foreach (string testDirectory in testDirectories)
             {
@@ -136,7 +137,7 @@ namespace Arbor.Build.Core.Tools.Testing
                     arguments.Add($"--logger:trx;LogFileName={reportFileInfo.FullName}");
                 }
 
-                ExitCode result = await ProcessRunner.ExecuteProcessAsync(
+                var result = await ProcessRunner.ExecuteProcessAsync(
                     dotNetExePath,
                     arguments,
                     logger.Information,
@@ -161,7 +162,7 @@ namespace Arbor.Build.Core.Tools.Testing
                                 WellKnownVariables.XUnitNetCoreAppXmlAnalysisEnabled,
                                 result);
 
-                            ExitCode projectExitCode = AnalyzeXml(reportFileInfo,
+                            var projectExitCode = AnalyzeXml(reportFileInfo,
                                 message => logger.Debug("{Message}", message));
 
                             if (!projectExitCode.IsSuccess)
@@ -194,7 +195,7 @@ namespace Arbor.Build.Core.Tools.Testing
 
                             try
                             {
-                                ExitCode transformExitCode =
+                                var transformExitCode =
                                     TestReportXslt.Transform(xmlReport, Trx2UnitXsl.Xml, logger);
 
                                 if (!transformExitCode.IsSuccess)
@@ -236,7 +237,7 @@ namespace Arbor.Build.Core.Tools.Testing
 
                             try
                             {
-                                ExitCode transformExitCode =
+                                var transformExitCode =
                                     TestReportXslt.Transform(xmlReport, Trx2UnitXsl.TrxTemplate, logger);
 
                                 if (!transformExitCode.IsSuccess)

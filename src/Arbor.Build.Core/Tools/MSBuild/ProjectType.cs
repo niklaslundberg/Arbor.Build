@@ -42,7 +42,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             return Id.Equals(other.Id);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is null)
             {

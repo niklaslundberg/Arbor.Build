@@ -222,7 +222,7 @@ namespace Arbor.Build.Core.Bootstrapper
             if (_startOptions?.PreReleaseEnabled == true)
             {
                 Environment.SetEnvironmentVariable(
-                    WellKnownVariables.AllowPrerelease,
+                    WellKnownVariables.AllowPreRelease,
                     _startOptions!.PreReleaseEnabled!.Value.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
             }
 
@@ -326,7 +326,7 @@ namespace Arbor.Build.Core.Bootstrapper
 
             string? nuGetSource = Environment.GetEnvironmentVariable(WellKnownVariables.ArborBuildNuGetPackageSource);
 
-            Environment.GetEnvironmentVariable(WellKnownVariables.AllowPrerelease)
+            Environment.GetEnvironmentVariable(WellKnownVariables.AllowPreRelease)
                 .TryParseBool(out bool preReleaseIsAllowed);
 
             preReleaseIsAllowed = _startOptions.PreReleaseEnabled ?? preReleaseIsAllowed;

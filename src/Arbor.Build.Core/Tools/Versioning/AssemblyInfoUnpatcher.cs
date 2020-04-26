@@ -29,7 +29,7 @@ namespace Arbor.Build.Core.Tools.Versioning
                 return Task.FromResult(ExitCode.Success);
             }
 
-            string sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
+            string sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).GetValueOrThrow();
 
             var app = new AssemblyPatcherApp();
 

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using Arbor.Defensive;
 
 namespace Arbor.Build.Core.Tools.Git
 {
@@ -22,14 +21,14 @@ namespace Arbor.Build.Core.Tools.Git
 
         public string FullName => Name;
 
-        public static Maybe<BranchName> TryParse(string? branchName)
+        public static BranchName? TryParse(string? branchName)
         {
             if (string.IsNullOrWhiteSpace(branchName))
             {
-                return Maybe<BranchName>.Empty();
+                return default;
             }
 
-            return new Maybe<BranchName>(new BranchName(branchName));
+            return new BranchName(branchName);
         }
 
         public override string ToString() => Name;

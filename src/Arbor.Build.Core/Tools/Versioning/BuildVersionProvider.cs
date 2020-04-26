@@ -61,15 +61,15 @@ namespace Arbor.Build.Core.Tools.Versioning
             IReadOnlyCollection<IVariable> buildVariables,
             ILogger logger)
         {
-            List<KeyValuePair<string, string>> environmentVariables =
-                buildVariables.Select(item => new KeyValuePair<string, string>(item.Key, item.Value)).ToList();
+            var environmentVariables =
+                buildVariables.Select(item => new KeyValuePair<string, string?>(item.Key, item.Value)).ToList();
 
             int major = -1;
             int minor = -1;
             int patch = -1;
             int build = -1;
 
-            string sourceRoot = buildVariables.GetVariable(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
+            string sourceRoot = buildVariables.GetVariable(WellKnownVariables.SourceRoot).GetValueOrThrow();
 
             const string fileName = "version.json";
 
@@ -80,7 +80,7 @@ namespace Arbor.Build.Core.Tools.Versioning
                 logger.Verbose("A version file was found with name {VersionFileName} at source root '{SourceRoot}'",
                     versionFileName,
                     sourceRoot);
-                IReadOnlyCollection<KeyValueConfigurationItem> keyValueConfigurationItems = null;
+                IReadOnlyCollection<KeyValueConfigurationItem>? keyValueConfigurationItems = null;
                 try
                 {
                     keyValueConfigurationItems =
@@ -147,25 +147,10 @@ namespace Arbor.Build.Core.Tools.Versioning
                     sourceRoot);
             }
 
-            int envMajor =
-                environmentVariables.Where(item => item.Key == WellKnownVariables.VersionMajor)
-                    .Select(item => (int?)int.Parse(item.Value, CultureInfo.InvariantCulture))
-                    .SingleOrDefault() ?? -1;
-
-            int envMinor =
-                environmentVariables.Where(item => item.Key == WellKnownVariables.VersionMinor)
-                    .Select(item => (int?)int.Parse(item.Value, CultureInfo.InvariantCulture))
-                    .SingleOrDefault() ?? -1;
-
-            int envPatch =
-                environmentVariables.Where(item => item.Key == WellKnownVariables.VersionPatch)
-                    .Select(item => (int?)int.Parse(item.Value, CultureInfo.InvariantCulture))
-                    .SingleOrDefault() ?? -1;
-
-            int envBuild =
-                environmentVariables.Where(item => item.Key == WellKnownVariables.VersionBuild)
-                    .Select(item => (int?)int.Parse(item.Value, CultureInfo.InvariantCulture))
-                    .SingleOrDefault() ?? -1;
+            int envMajor = environmentVariables.IntValueOrDefault(WellKnownVariables.VersionMajor, -1);
+            int envMinor = environmentVariables.IntValueOrDefault(WellKnownVariables.VersionMinor, -1);
+            int envPatch = environmentVariables.IntValueOrDefault(WellKnownVariables.VersionPatch, -1);
+            int envBuild = environmentVariables.IntValueOrDefault(WellKnownVariables.VersionBuild, -1);
 
             int? teamCityBuildVersion =
                 environmentVariables.Where(item => item.Key == WellKnownVariables.TeamCityVersionBuild)

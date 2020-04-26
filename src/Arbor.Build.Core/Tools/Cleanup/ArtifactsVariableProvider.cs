@@ -20,7 +20,7 @@ namespace Arbor.Build.Core.Tools.Cleanup
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            string sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
+            string sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).GetValueOrThrow();
 
             DirectoryInfo artifactsDirectory = new DirectoryInfo(Path.Combine(sourceRoot, "Artifacts")).EnsureExists();
             DirectoryInfo testReportsDirectory =

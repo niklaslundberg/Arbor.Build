@@ -18,7 +18,7 @@ namespace Arbor.Build.Core.Tools.Versioning
     [Priority(200)]
     public class AssemblyInfoPatcher : ITool
     {
-        private string _filePattern;
+        private string _filePattern = null!;
 
         public Task<ExitCode> ExecuteAsync(
             ILogger logger,
@@ -39,12 +39,12 @@ namespace Arbor.Build.Core.Tools.Versioning
 
             _filePattern = buildVariables.GetVariableValueOrDefault(
                 WellKnownVariables.AssemblyFilePatchingFilePattern,
-                "AssemblyInfo.cs");
+                "AssemblyInfo.cs")!;
 
             logger.Verbose("Using assembly version file pattern '{FilePattern}' to lookup files to patch",
                 _filePattern);
 
-            string sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
+            string sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).GetValueOrThrow();
 
             IVariable netAssemblyVersionVar =
                 buildVariables.SingleOrDefault(var => var.Key == WellKnownVariables.NetAssemblyVersion);
@@ -84,20 +84,20 @@ namespace Arbor.Build.Core.Tools.Versioning
 
             var assemblyFileVersion = new Version(netAssemblyFileVersion);
 
-            AssemblyMetaData assemblyMetadata = null;
+            AssemblyMetaData? assemblyMetadata = null;
 
             if (buildVariables.GetBooleanByKey(WellKnownVariables.NetAssemblyMetadataEnabled))
             {
-                string company = buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyCompany, null);
-                string description =
-                    buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyDescription, null);
-                string configuration =
-                    buildVariables.GetVariableValueOrDefault(WellKnownVariables.CurrentBuildConfiguration, null);
-                string copyright =
-                    buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyCopyright, null);
-                string product = buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyProduct, null);
-                string trademark =
-                    buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyTrademark, null);
+                string? company = buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyCompany);
+                string? description =
+                    buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyDescription);
+                string? configuration =
+                    buildVariables.GetVariableValueOrDefault(WellKnownVariables.CurrentBuildConfiguration);
+                string? copyright =
+                    buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyCopyright);
+                string? product = buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyProduct);
+                string? trademark =
+                    buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyTrademark);
 
                 assemblyMetadata = new AssemblyMetaData(
                     description,

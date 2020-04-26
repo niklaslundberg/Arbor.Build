@@ -36,9 +36,9 @@ namespace Arbor.Build.Core.Tools.NuGet
             }
 
             string nugetExePath =
-                buildVariables.GetVariable(WellKnownVariables.ExternalTools_NuGet_ExePath).ThrowIfEmptyValue().Value;
+                buildVariables.GetVariable(WellKnownVariables.ExternalTools_NuGet_ExePath).GetValueOrThrow();
 
-            string rootPath = buildVariables.GetVariable(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
+            string rootPath = buildVariables.GetVariable(WellKnownVariables.SourceRoot).GetValueOrThrow();
 
             string[] solutionFiles = Directory.GetFiles(rootPath, "*.sln", SearchOption.AllDirectories);
 

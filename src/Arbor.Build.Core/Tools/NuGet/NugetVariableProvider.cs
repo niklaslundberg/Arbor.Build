@@ -21,7 +21,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
         private async Task<string> EnsureNuGetExeExistsAsync(ILogger logger, string? userSpecifiedNuGetExePath)
         {
-            if (userSpecifiedNuGetExePath is object && File.Exists(userSpecifiedNuGetExePath))
+            if (userSpecifiedNuGetExePath is {} && File.Exists(userSpecifiedNuGetExePath))
             {
                 return userSpecifiedNuGetExePath;
             }
@@ -67,7 +67,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             if (string.IsNullOrWhiteSpace(
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetRestoreEnabled, string.Empty)))
             {
-                string sourceDir = buildVariables.Require(WellKnownVariables.SourceRoot).Value;
+                string sourceDir = buildVariables.Require(WellKnownVariables.SourceRoot).Value!;
 
                 var pathLookupSpecification = new PathLookupSpecification();
                 var packageConfigFiles = new DirectoryInfo(sourceDir)

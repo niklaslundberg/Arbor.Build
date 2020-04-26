@@ -62,7 +62,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             return string.Equals(SdkName, other.SdkName, StringComparison.InvariantCulture);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is null)
             {

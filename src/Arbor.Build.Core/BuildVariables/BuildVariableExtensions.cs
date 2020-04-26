@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
-using Arbor.Defensive;
 
 namespace Arbor.Build.Core.BuildVariables
 {
@@ -22,34 +22,17 @@ namespace Arbor.Build.Core.BuildVariables
                 key,
                 StringComparison.OrdinalIgnoreCase));
 
-        public static Maybe<IVariable> GetOptionalVariable(
-            this IReadOnlyCollection<IVariable> buildVariables,
-            string key)
-        {
-            IVariable variable = buildVariables.SingleOrDefault(
-                bv => bv.Key.Equals(
-                    key,
-                    StringComparison.OrdinalIgnoreCase));
-
-            if (variable is null)
-            {
-                return Maybe<IVariable>.Empty();
-            }
-
-            return new Maybe<IVariable>(variable);
-        }
-
         public static string? GetVariableValueOrDefault(
             this IReadOnlyCollection<IVariable> buildVariables,
             string key,
-            string? defaultValue)
+            [NotNullIfNotNull("defaultValue")] string? defaultValue = null)
         {
             if (!buildVariables.HasKey(key))
             {
                 return defaultValue;
             }
 
-            return buildVariables.GetVariable(key).Value;
+            return buildVariables.GetVariable(key).Value ?? defaultValue;
         }
 
         public static bool GetBooleanByKey(
@@ -90,9 +73,7 @@ namespace Arbor.Build.Core.BuildVariables
                 return null;
             }
 
-            string? value = buildVariables.GetVariableValueOrDefault(
-                key,
-                default);
+            string? value = buildVariables.GetVariableValueOrDefault(key);
 
             if (string.IsNullOrWhiteSpace(value))
             {
@@ -123,19 +104,13 @@ namespace Arbor.Build.Core.BuildVariables
                     key,
                     defaultValue.ToString(CultureInfo.InvariantCulture));
 
-                if (!string.IsNullOrWhiteSpace(value))
+                if (!string.IsNullOrWhiteSpace(value) && int.TryParse(value, out int parsed))
                 {
-                    if (int.TryParse(value, out int parsed))
-                    {
-                        returnValue = parsed;
-                    }
+                    returnValue = parsed;
                 }
             }
 
-            if (!returnValue.HasValue)
-            {
-                returnValue = defaultValue;
-            }
+            returnValue ??= defaultValue;
 
             if (returnValue < minValue)
             {
@@ -168,5 +143,14 @@ namespace Arbor.Build.Core.BuildVariables
 
             return parsed;
         }
+
+        public static int IntValueOrDefault(this IEnumerable<KeyValuePair<string, string?>> pairs,
+            string key,
+            int defaultValue = default) => int.TryParse(
+                pairs.SingleOrDefault(
+                    pair => pair.Key.Equals(key, StringComparison.Ordinal)).Value,
+                out int value)
+                ? value
+                : defaultValue;
     }
 }

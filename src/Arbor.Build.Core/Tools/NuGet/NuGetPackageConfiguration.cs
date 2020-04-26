@@ -24,10 +24,10 @@ namespace Arbor.Build.Core.Tools.NuGet
             bool isReleaseBuild = false,
             string? branchName = null,
             bool buildNumberEnabled = true,
-            string tempPath = null,
-            string packageBuildMetadata = null,
+            string? tempPath = null,
+            string? packageBuildMetadata = null,
             string nuGetSymbolPackagesFormat = NuGetPackager.SnupkgPackageFormat,
-            string packageNameSuffix = null)
+            string? packageNameSuffix = null)
         {
             if (string.IsNullOrWhiteSpace(configuration))
             {
@@ -74,7 +74,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             PackageNameSuffix = packageNameSuffix;
         }
 
-        public string PackageNameSuffix { get; }
+        public string? PackageNameSuffix { get; }
 
         public bool KeepBinaryAndSourcePackagesTogetherEnabled { get; }
 
@@ -88,11 +88,11 @@ namespace Arbor.Build.Core.Tools.NuGet
 
         public bool NuGetSymbolPackagesEnabled { get; set; }
 
-        public string Configuration { get; }
+        public string? Configuration { get; }
 
         public bool IsReleaseBuild { get; }
 
-        public string BranchName { get; }
+        public string? BranchName { get; }
 
         public SemanticVersion Version { get; }
 

@@ -1,0 +1,1 @@
+﻿<testsuites xmlns:a="http://microsoft.com/schemas/VisualStudio/TeamTest/2006" xmlns:b="http://microsoft.com/schemas/VisualStudio/TeamTest/2010"><testsuite name="MSTestSuite" tests="1" time="0" failures="0" errors="0" skipped="0"><testcase classname="" name="Arbor.Build.Tests.SampleXunitNetCoreApp31.NullTest.ShouldBeTrue" time="0.013" /></testsuite></testsuites>

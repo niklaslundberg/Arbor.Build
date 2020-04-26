@@ -41,25 +41,24 @@ namespace Arbor.Build.Core.Tools.NuGet
             string packageNameSuffix)
         {
             logger ??= Logger.None;
-            IVariable version = buildVariables.Require(WellKnownVariables.Version).ThrowIfEmptyValue();
+            var version = buildVariables.Require(WellKnownVariables.Version).GetValueOrThrow();
 
-            IVariable branchName = buildVariables.Require(WellKnownVariables.BranchLogicalName).ThrowIfEmptyValue();
+            var branchName = buildVariables.Require(WellKnownVariables.BranchLogicalName).GetValueOrThrow();
 
-            var branch = BranchName.TryParse(branchName.Value);
+            var branch = BranchName.TryParse(branchName);
 
             string? currentConfiguration = buildVariables.GetVariableValueOrDefault(WellKnownVariables.CurrentBuildConfiguration, null);
 
             string? staticConfiguration =
-                buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_MSBuild_BuildConfiguration,
-                    null) ??
-                buildVariables.GetVariableValueOrDefault(WellKnownVariables.Configuration, null);
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_MSBuild_BuildConfiguration
+                    ) ??
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.Configuration);
 
             string? buildConfiguration = currentConfiguration ?? staticConfiguration;
 
             IVariable tempDirectory = buildVariables.Require(WellKnownVariables.TempDirectory).ThrowIfEmptyValue();
             string nuGetExePath = buildVariables.Require(WellKnownVariables.ExternalTools_NuGet_ExePath)
-                .ThrowIfEmptyValue()
-                .Value;
+                .GetValueOrThrow();
 
             string? suffix =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageArtifactsSuffix, null);
@@ -106,9 +105,9 @@ namespace Arbor.Build.Core.Tools.NuGet
                 buildPackagesOnAnyBranch = true;
             }
 
-            if (buildPackagesOnAnyBranch == false)
+            if (!buildPackagesOnAnyBranch)
             {
-                if (branchName.Value.Equals("master", StringComparison.OrdinalIgnoreCase))
+                if (branchName.Equals("master", StringComparison.OrdinalIgnoreCase))
                 {
                     logger.Warning(
                         "NuGet package creation is not supported on 'master' branch. To force NuGet package creation, set environment variable '{NuGetCreatePackagesOnAnyBranchEnabled}' to value 'true'",
@@ -125,21 +124,21 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             string? packageFormat = buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetSymbolPackageFormat, SnupkgPackageFormat);
 
-            if (!branch.HasValue)
+            if (branch is null)
             {
                 throw new InvalidOperationException(Resources.TheBranchNameCouldNotBeFound);
             }
 
-            bool isReleaseBuild = IsStablePackage(branch.Value);
+            bool isReleaseBuild = IsStablePackage(branch);
 
-            var options = new VersionOptions(version.Value)
+            var options = new VersionOptions(version)
             {
                 IsReleaseBuild = isReleaseBuild,
                 BuildSuffix = suffix,
                 BuildNumberEnabled = true,
                 Logger = logger,
                 GitModel = model,
-                BranchName = branch.HasValue ? branch.Value : default
+                BranchName = branch
             };
 
             string semVer = NuGetVersionHelper.GetPackageVersion(options);
@@ -180,7 +179,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 nuGetSymbolPackagesEnabled,
                 keepBinaryAndSourcePackagesTogetherEnabled,
                 isReleaseBuild,
-                branchName.Value,
+                branchName,
                 buildNumberEnabled,
                 tempDirectory.Value,
                 nuGetSymbolPackagesFormat: packageFormat,

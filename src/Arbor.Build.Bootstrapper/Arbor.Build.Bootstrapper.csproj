@@ -11,14 +11,6 @@
     <LangVersion>8</LangVersion>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <CodeAnalysisRuleSet>..\Arbor.Build.Tests.Integration\ArborBuild.Test.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <CodeAnalysisRuleSet>..\Arbor.Build.Tests.Integration\ArborBuild.Test.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-
   <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>

@@ -67,7 +67,7 @@ namespace Arbor.Build.Core.BuildVariables
             return string.Equals(InvariantName, other.InvariantName, StringComparison.Ordinal);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is null)
             {

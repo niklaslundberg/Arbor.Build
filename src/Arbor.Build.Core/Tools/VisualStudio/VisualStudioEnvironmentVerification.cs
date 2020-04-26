@@ -24,10 +24,10 @@ namespace Arbor.Build.Core.Tools.VisualStudio
         {
             logger ??= Logger.None;
 
-            string sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
+            string sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).GetValueOrThrow();
 
             string visualStudioVersion =
-                buildVariables.Require(WellKnownVariables.ExternalTools_VisualStudio_Version).ThrowIfEmptyValue().Value;
+                buildVariables.Require(WellKnownVariables.ExternalTools_VisualStudio_Version).GetValueOrThrow();
 
             if (!visualStudioVersion.Equals("12.0", StringComparison.Ordinal))
             {
@@ -69,22 +69,17 @@ namespace Arbor.Build.Core.Tools.VisualStudio
                 "<TargetPlatformVersion>8.1</TargetPlatformVersion>"
             };
 
-            using (FileStream fs = file.OpenRead())
-            {
-                using var sr = new StreamReader(fs);
-                while (sr.Peek() >= 0)
-                {
-                    string? line = sr.ReadLine();
+            using FileStream fs = file.OpenRead();
 
-                    if (!string.IsNullOrWhiteSpace(line))
-                    {
-                        if (
-                            lookupPatterns.Any(
-                                pattern => line.IndexOf(pattern, StringComparison.InvariantCulture) >= 0))
-                        {
-                            return true;
-                        }
-                    }
+            using var sr = new StreamReader(fs);
+            while (sr.Peek() >= 0)
+            {
+                string? line = sr.ReadLine();
+
+                if (!string.IsNullOrWhiteSpace(line) && lookupPatterns.Any(
+                    pattern => line.IndexOf(pattern, StringComparison.InvariantCulture) >= 0))
+                {
+                    return true;
                 }
             }
 

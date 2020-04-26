@@ -51,9 +51,9 @@ namespace Arbor.Build.Core.Tools.NuGet
             }
 
             string msbuildExePath = buildVariables.GetVariable(WellKnownVariables.ExternalTools_MSBuild_ExePath)
-                .ThrowIfEmptyValue().Value;
+                .GetValueOrThrow();
 
-            string rootPath = buildVariables.GetVariable(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
+            string rootPath = buildVariables.GetVariable(WellKnownVariables.SourceRoot).GetValueOrThrow();
 
             string[] solutionFiles = Directory.GetFiles(rootPath, "*.sln", SearchOption.AllDirectories);
 
@@ -93,15 +93,15 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             string solutionFile = included.Single();
 
-            Maybe<IVariable> runtimeIdentifier =
-                buildVariables.GetOptionalVariable(WellKnownVariables.PublishRuntimeIdentifier);
+            var runtimeIdentifier =
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.PublishRuntimeIdentifier);
 
             var arguments = new List<string> { solutionFile, "/t:restore" };
 
-            if (runtimeIdentifier.HasValue)
+            if (!string.IsNullOrWhiteSpace(runtimeIdentifier))
             {
-                arguments.Add($"/p:RuntimeIdentifiers={runtimeIdentifier.Value.Value}");
-                logger.Information("Restoring using runtime identifiers {Identifiers}", runtimeIdentifier.Value.Value);
+                arguments.Add($"/p:RuntimeIdentifiers={runtimeIdentifier}");
+                logger.Information("Restoring using runtime identifiers {Identifiers}", runtimeIdentifier);
             }
 
             ExitCode exitCode;

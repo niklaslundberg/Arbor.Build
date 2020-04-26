@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -17,9 +18,9 @@ namespace Arbor.Build.Core.Tools.NuGet
     [UsedImplicitly]
     public class NuGetPacker : ITool
     {
-        private IReadOnlyCollection<string> _excludedNuSpecFiles;
+        private IReadOnlyCollection<string> _excludedNuSpecFiles = ImmutableArray<string>.Empty;
 
-        private PathLookupSpecification _pathLookupSpecification;
+        private PathLookupSpecification _pathLookupSpecification = null!;
         private readonly NuGetPackager _nugetPackager;
 
         public NuGetPacker(NuGetPackager nuGetPackager) => _nugetPackager = nuGetPackager;
@@ -42,7 +43,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             _excludedNuSpecFiles =
                 buildVariables.GetVariableValueOrDefault(
                         WellKnownVariables.NuGetPackageExcludesCommaSeparated,
-                        string.Empty)
+                        string.Empty)!
                     .Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries)
                     .SafeToReadOnlyCollection();
 
@@ -50,10 +51,10 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             string packageDirectory = PackageDirectory();
 
-            IVariable artifacts = buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue();
-            string packagesDirectory = Path.Combine(artifacts.Value, "packages");
+            var artifacts = buildVariables.Require(WellKnownVariables.Artifacts).GetValueOrThrow();
+            string packagesDirectory = Path.Combine(artifacts, "packages");
 
-            string vcsRootDir = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
+            string vcsRootDir = buildVariables.Require(WellKnownVariables.SourceRoot).GetValueOrThrow();
 
             NuGetPackageConfiguration? packageConfiguration =
                 _nugetPackager.GetNuGetPackageConfiguration(logger, buildVariables, packagesDirectory, vcsRootDir, "");

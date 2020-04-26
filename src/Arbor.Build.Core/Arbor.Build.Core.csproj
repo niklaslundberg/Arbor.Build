@@ -5,10 +5,6 @@
     <LangVersion>8</LangVersion>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <CodeAnalysisRuleSet>..\Arbor.Build.Tests.Integration\ArborBuild.Test.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Arbor.Aesculus" Version="3.0.2" />
     <PackageReference Include="Arbor.KVConfiguration.JsonConfiguration" Version="0.20.0" />
@@ -47,7 +43,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Arbor.Defensive.Collections\Arbor.Defensive.Collections.csproj" />
-    <ProjectReference Include="..\Arbor.Defensive\Arbor.Defensive.csproj" />
     <ProjectReference Include="..\Arbor.Exceptions\Arbor.Exceptions.csproj" />
   </ItemGroup>
 

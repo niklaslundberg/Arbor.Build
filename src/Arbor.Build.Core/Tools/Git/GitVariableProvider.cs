@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.GenericExtensions.Bools;
-using Arbor.Defensive;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using NuGet.Versioning;
@@ -29,7 +28,7 @@ namespace Arbor.Build.Core.Tools.Git
             logger ??= Logger.None;
             var variables = new List<IVariable>();
 
-            string branchName = buildVariables.Require(WellKnownVariables.BranchName).ThrowIfEmptyValue().Value;
+            string branchName = buildVariables.Require(WellKnownVariables.BranchName).GetValueOrThrow();
 
             if (branchName.StartsWith("refs/heads/", StringComparison.Ordinal))
             {
@@ -100,7 +99,7 @@ namespace Arbor.Build.Core.Tools.Git
                 {
                     string gitCommitHash = buildVariables.GetVariableValueOrDefault(
                         WellKnownVariables.TeamCityVcsNumber,
-                        string.Empty);
+                        string.Empty)!;
 
                     if (!string.IsNullOrWhiteSpace(gitCommitHash))
                     {
@@ -122,7 +121,7 @@ namespace Arbor.Build.Core.Tools.Git
                 {
                     const string arborBuildGitcommithashenabled = "Arbor.Build.GitCommitHashEnabled";
 
-                    string environmentVariable = Environment.GetEnvironmentVariable(arborBuildGitcommithashenabled);
+                    string? environmentVariable = Environment.GetEnvironmentVariable(arborBuildGitcommithashenabled);
 
                     if (!environmentVariable
                         .ParseOrDefault(true))

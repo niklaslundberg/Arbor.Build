@@ -3,7 +3,6 @@ using System.Globalization;
 using Arbor.Build.Core.GenericExtensions;
 using Arbor.Build.Core.Tools.Git;
 using Arbor.Build.Core.Tools.MSBuild;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NuGet.Versioning;
 using Serilog;
 

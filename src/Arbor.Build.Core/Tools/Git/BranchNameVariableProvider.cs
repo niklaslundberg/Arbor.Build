@@ -222,11 +222,11 @@ namespace Arbor.Build.Core.Tools.Git
                                                    StringSplitOptions.RemoveEmptyEntries)
                                                .FirstOrDefault() ?? string.Empty;
 
-                        Maybe<string> mayBeBranchName = firstLine.GetBranchName();
+                        var mayBeBranchName = firstLine.GetBranchName();
 
-                        if (mayBeBranchName.HasValue)
+                        if (!string.IsNullOrWhiteSpace(mayBeBranchName))
                         {
-                            return mayBeBranchName.Value;
+                            return mayBeBranchName;
                         }
                     }
                 }

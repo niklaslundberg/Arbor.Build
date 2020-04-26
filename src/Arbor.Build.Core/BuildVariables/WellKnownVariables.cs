@@ -34,9 +34,6 @@ namespace Arbor.Build.Core.BuildVariables
         public const string ExternalTools_SymbolServer_UploadTimeoutInSeconds =
             "Arbor.Build.NuGet.SymbolServer.TimeoutInSeconds";
 
-        [VariableDescription("External, Kudu: deployment version control branch")]
-        public const string ExternalTools_Kudu_DeploymentBranchName = "deployment_branch";
-
         public const string DotNetRestoreEnabled = "Arbor.Build.DotNet.Restore.Enabled";
 
         public const string MSBuildNuGetRestoreEnabled = "Arbor.Build.MSBuild.NuGetRestore.Enabled";
@@ -120,7 +117,7 @@ namespace Arbor.Build.Core.BuildVariables
         [VariableDescription(
             "Flag to indicate if the bootstrapper is allowed to download pre-release versions of Arbor.Build NuGet package",
             "false")]
-        public const string AllowPrerelease = "Arbor.Build.Build.Bootstrapper.AllowPrerelease";
+        public const string AllowPreRelease = "Arbor.Build.Build.Bootstrapper.AllowPrerelease";
 
         [VariableDescription("Arbor.Build NuGet package version for bootstrapper to download")]
         public const string ArborBuildNuGetPackageVersion = "Arbor.Build.NuGetPackageVersion";
@@ -197,33 +194,9 @@ namespace Arbor.Build.Core.BuildVariables
         public const string PublishPdbFilesAsArtifacts =
             "Arbor.Build.Artifacts.PdbArtifacts.Enabled";
 
-        [VariableDescription("Flag to indicate if Kudu deployment is enabled", "true")]
-        public const string ExternalTools_Kudu_Enabled = "Arbor.Build.Tools.External.Kudu.Enabled";
-
-        [VariableDescription("External, Kudu: deployment target directory path (website public directory)")]
-        public const string ExternalTools_Kudu_DeploymentTarget = "DEPLOYMENT_TARGET";
-
-        [VariableDescription("External, Kudu: site running as x86 or x64 process")]
-        public const string ExternalTools_Kudu_Platform = "REMOTEDEBUGGINGBITVERSION";
-
-        [VariableDescription("Deployment branch to be used in Kudu, overrides value defined in " +
-                             ExternalTools_Kudu_DeploymentBranchName)]
-        public const string ExternalTools_Kudu_DeploymentBranchNameOverride =
-            "Arbor.Build.Tools.External.Kudu.DeploymentBranchNameOverride";
-
-        [VariableDescription("External, Kudu: number of processors available on the current system")]
-        public const string ExternalTools_Kudu_ProcessorCount = "NUMBER_OF_PROCESSORS";
-
         [VariableDescription(
             "Flag to indicate if Kudu WebJobs defined in App_Data directory is to be handled by the Kudu WebJobs aware tools")]
         public const string AppDataJobsEnabled = "Arbor.Build.Tools.External.Kudu.WebJobs.AppData.Enabled";
-
-        [VariableDescription(
-            "MSBuild configuration to be used to locate web application artifacts to be deployed, if not found by the tools")]
-        public const string KuduConfigurationFallback = "Arbor.Build.Tools.External.Kudu.ConfigurationFallback";
-
-        [VariableDescription("Flag to indicate if Kudu WebJobs is to be handles by the Kudu WebJobs aware tools")]
-        public const string KuduJobsEnabled = "Arbor.Build.Tools.External.Kudu.WebJobs.Enabled";
 
         [VariableDescription("Time out in seconds for total build process")]
         public const string BuildToolTimeoutInSeconds = "Arbor.Build.Build.TimeoutInSeconds";
@@ -242,16 +215,6 @@ namespace Arbor.Build.Core.BuildVariables
         [VariableDescription(
             "Flag to indicate if a file arborbuild_environmentvariables.json should be used as a source to set environment variables")]
         public const string VariableFileSourceEnabled = "Arbor.Build.Build.VariableFileSource.Enabled";
-
-        [VariableDescription(
-            "Flag to indicate if Kudu target path files and directories should be deleted before deploy")]
-        public const string KuduClearFilesAndDirectories = "Arbor.Build.Tools.External.Kudu.ClearEnabled";
-
-        [VariableDescription("Flag to indicate if Kudu should use app_offline.htm file when deploying")]
-        public const string KuduUseAppOfflineHtmFile = "Arbor.Build.Tools.External.Kudu.UseAppOfflineHtmFile";
-
-        [VariableDescription("Flag to indicate if Kudu should exclude App_Data directory when deploying")]
-        public const string KuduExcludeDeleteAppData = "Arbor.Build.Tools.External.Kudu.ExcludeDeleteApp_Data";
 
         [VariableDescription("Enable XUnit .NET Core App")]
         public const string XUnitNetCoreAppV2Enabled =
@@ -278,26 +241,10 @@ namespace Arbor.Build.Core.BuildVariables
         public const string XUnitNetCoreAppXmlEnabled =
             "Arbor.Build.Tools.External.Xunit.NetCoreApp.Xml.Enabled";
 
-        [VariableDescription("'|' (bar) separated list of file names to not delete when deploying")]
-        public const string KuduIgnoreDeleteFiles =
-            "Arbor.Build.Tools.External.Kudu.IgnoreDeleteFilesBarSeparatedList";
-
-        [VariableDescription("'|' (bar) separated list of directory names to not delete when deploying")]
-        public const string KuduIgnoreDeleteDirectories =
-            "Arbor.Build.Tools.External.Kudu.IgnoreDeleteDirectoriesBarSeparatedList";
-
-        [VariableDescription(
-            "Site for Kudu to deploy, needs to be specified if there are multiple web projects. Name of the csproj file exception the extension.")]
-        public const string KuduSiteToDeploy = "Arbor.Build.Tools.External.Kudu.SiteToDeploy";
-
-        [VariableDescription("Flag to indicate if Kudu should delete any existing app_offline.htm file when deploying")]
-        public const string KuduDeleteExistingAppOfflineHtmFile =
-            "Arbor.Build.Tools.External.Kudu.DeleteExistingAppOfflineHtmFile";
-
         [VariableDescription("Log level")]
         public const string LogLevel = "Arbor.Build.Log.Level";
 
-        [VariableDescription("Generic XML transformaions enabled")]
+        [VariableDescription("Generic XML transformations enabled")]
         public const string GenericXmlTransformsEnabled = "Arbor.Build.Build.XmlTransformations.Enabled";
 
         [VariableDescription("Run tests in release configuration")]
@@ -370,7 +317,7 @@ namespace Arbor.Build.Core.BuildVariables
 
                 foreach (FieldInfo field in fields)
                 {
-                    string? invariantName = (string)field.GetValue(null);
+                    string? invariantName = (string?)field.GetValue(null);
 
                     if (string.IsNullOrWhiteSpace(invariantName))
                     {

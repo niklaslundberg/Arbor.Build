@@ -34,14 +34,14 @@ namespace Arbor.Build.Core.Tools.Paket
             }
 
             var sourceRoot =
-                new DirectoryInfo(buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value);
+                new DirectoryInfo(buildVariables.Require(WellKnownVariables.SourceRoot).GetValueOrThrow());
 
             logger.Information("Looking for paket.exe in source root {FullName}", sourceRoot.FullName);
 
             PathLookupSpecification pathLookupSpecification =
                 DefaultPaths.DefaultPathLookupSpecification.WithIgnoredFileNameParts(new List<string>());
 
-            FileInfo paketExe = null;
+            FileInfo? paketExe = null;
 
             List<string> packageSpecifications =
                 sourceRoot.GetFilesRecursive(new List<string> { ".exe" }, pathLookupSpecification)
@@ -89,7 +89,7 @@ namespace Arbor.Build.Core.Tools.Paket
 
             logger.Information("Found paket.exe at '{FullName}'", paketExe.FullName);
 
-            string copyFromPath =
+            string? copyFromPath =
                 buildVariables.GetVariableValueOrDefault("Arbor.Build.Build.Tools.Paket.CopyExeFromPath", string.Empty);
 
             if (!string.IsNullOrWhiteSpace(copyFromPath))
