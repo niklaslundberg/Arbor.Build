@@ -19,7 +19,7 @@ using Serilog.Core;
 
 namespace Arbor.Build.Core.Tools.NuGet
 {
-    [Priority(800)]
+    [Priority(850)]
     [UsedImplicitly]
     public class NuGetPackageUploader : ITool
     {
