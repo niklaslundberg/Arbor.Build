@@ -15,6 +15,6 @@ namespace Arbor.Build.Tests.Integration.GitBranchNameExtensions
 
         Because of = () => result = name.GetBranchName();
 
-        It should_not_return_a_branch_name = () => result.ShouldNotBeNull();
+        It should_not_return_a_branch_name = () => result.ShouldBeNull();
     }
 }
