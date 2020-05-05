@@ -16,6 +16,10 @@ namespace Arbor.Build.Core.Tools.DotNet
     [UsedImplicitly]
     public class DotNetEnvironmentVariableProvider : IVariableProvider
     {
+        private readonly IEnvironmentVariables _environmentVariables;
+
+        public DotNetEnvironmentVariableProvider(IEnvironmentVariables environmentVariables) => _environmentVariables = environmentVariables;
+
         public int Order => VariableProviderOrder.Ignored;
 
         public async Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
@@ -35,7 +39,7 @@ namespace Arbor.Build.Core.Tools.DotNet
             {
                 var sb = new List<string>(10);
 
-                string? winDir = Environment.GetEnvironmentVariable("WINDIR");
+                string? winDir = _environmentVariables.GetEnvironmentVariable("WINDIR");
 
                 if (string.IsNullOrWhiteSpace(winDir))
                 {

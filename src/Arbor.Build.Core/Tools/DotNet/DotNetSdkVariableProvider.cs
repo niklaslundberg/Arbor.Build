@@ -16,7 +16,10 @@ namespace Arbor.Build.Core.Tools.DotNet
     [UsedImplicitly]
     public class DotNetSdkVariableProvider : IVariableProvider
     {
+        private readonly IEnvironmentVariables _environmentVariables;
         private const string MSBuildSdksPath = "MSBuildSDKsPath";
+
+        public DotNetSdkVariableProvider(IEnvironmentVariables environmentVariables) => _environmentVariables = environmentVariables;
 
         public int Order => VariableProviderOrder.Ignored;
 
@@ -32,7 +35,7 @@ namespace Arbor.Build.Core.Tools.DotNet
                 return ImmutableArray<IVariable>.Empty;
             }
 
-            string? programFilesX64 = Environment.GetEnvironmentVariable("ProgramW6432");
+            string? programFilesX64 = _environmentVariables.GetEnvironmentVariable("ProgramW6432");
 
             if (!string.IsNullOrWhiteSpace(programFilesX64))
             {

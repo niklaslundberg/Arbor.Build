@@ -18,6 +18,15 @@ namespace Arbor.Build.Core.Tools.Git
     [UsedImplicitly]
     public class GitVariableProvider : IVariableProvider
     {
+        private readonly IEnvironmentVariables _environmentVariables;
+        private readonly ISpecialFolders _specialFolders;
+
+        public GitVariableProvider(IEnvironmentVariables environmentVariables, ISpecialFolders specialFolders)
+        {
+            _environmentVariables = environmentVariables;
+            _specialFolders = specialFolders;
+        }
+
         public int Order { get; } = -1;
 
         public async Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
@@ -39,9 +48,9 @@ namespace Arbor.Build.Core.Tools.Git
 
             variables.Add(new BuildVariable(WellKnownVariables.BranchLogicalName, logicalName));
 
-            if (BranchHelper.BranchNameHasVersion(branchName))
+            if (BranchHelper.BranchNameHasVersion(branchName, _environmentVariables))
             {
-                string version = BranchHelper.BranchSemVerMajorMinorPatch(branchName).ToString();
+                string version = BranchHelper.BranchSemVerMajorMinorPatch(branchName, _environmentVariables).ToString();
 
                 logger.Debug("Branch has version {Version}", version);
 
@@ -60,7 +69,7 @@ namespace Arbor.Build.Core.Tools.Git
 
                     logger.Verbose("Overriding {VersionMajor} from '{V}' to '{Major}'",
                         WellKnownVariables.VersionMajor,
-                        Environment.GetEnvironmentVariable(WellKnownVariables.VersionMajor),
+                        _environmentVariables.GetEnvironmentVariable(WellKnownVariables.VersionMajor),
                         major);
 
                     variables.Add(new BuildVariable(WellKnownVariables.VersionMajor, major));
@@ -69,7 +78,7 @@ namespace Arbor.Build.Core.Tools.Git
 
                     logger.Verbose("Overriding {VersionMinor} from '{V}' to '{Minor}'",
                         WellKnownVariables.VersionMinor,
-                        Environment.GetEnvironmentVariable(WellKnownVariables.VersionMinor),
+                        _environmentVariables.GetEnvironmentVariable(WellKnownVariables.VersionMinor),
                         minor);
 
                     variables.Add(new BuildVariable(WellKnownVariables.VersionMinor, minor));
@@ -78,7 +87,7 @@ namespace Arbor.Build.Core.Tools.Git
 
                     logger.Verbose("Overriding {VersionPatch} from '{V}' to '{Patch}'",
                         WellKnownVariables.VersionPatch,
-                        Environment.GetEnvironmentVariable(WellKnownVariables.VersionPatch),
+                        _environmentVariables.GetEnvironmentVariable(WellKnownVariables.VersionPatch),
                         patch);
 
                     variables.Add(new BuildVariable(WellKnownVariables.VersionPatch, patch));
@@ -121,7 +130,7 @@ namespace Arbor.Build.Core.Tools.Git
                 {
                     const string arborBuildGitcommithashenabled = "Arbor.Build.GitCommitHashEnabled";
 
-                    string? environmentVariable = Environment.GetEnvironmentVariable(arborBuildGitcommithashenabled);
+                    string? environmentVariable = _environmentVariables.GetEnvironmentVariable(arborBuildGitcommithashenabled);
 
                     if (!environmentVariable
                         .ParseOrDefault(true))
@@ -133,7 +142,7 @@ namespace Arbor.Build.Core.Tools.Git
                     }
                     else
                     {
-                        string gitExePath = GitHelper.GetGitExePath(logger);
+                        string gitExePath = GitHelper.GetGitExePath(logger, _specialFolders, _environmentVariables);
 
                         var stringBuilder = new StringBuilder();
 

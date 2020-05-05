@@ -22,6 +22,15 @@ namespace Arbor.Build.Core.Tools.MSBuild
     [UsedImplicitly]
     public class MSBuildVariableProvider : IVariableProvider
     {
+        private readonly IEnvironmentVariables _environmentVariables;
+        private readonly ISpecialFolders _specialFolders;
+
+        public MSBuildVariableProvider(IEnvironmentVariables environmentVariables, ISpecialFolders specialFolders)
+        {
+            _environmentVariables = environmentVariables;
+            _specialFolders = specialFolders;
+        }
+
         private async Task<ImmutableArray<IVariable>> TryGetWithVsWhereAsync(
             string vsWherePath,
             string command,
@@ -216,7 +225,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             }
 
             string vsWherePath = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                _specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
                 "Microsoft Visual Studio",
                 "Installer",
                 "vswhere.exe");
@@ -251,7 +260,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             string[] possiblePaths =
             {
                 Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                    _specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
                     "Microsoft Visual Studio",
                     "2019",
                     "Enterprise",
@@ -261,7 +270,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     "MSBuild.exe"),
 
                 Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                    _specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
                     "Microsoft Visual Studio",
                     "2019",
                     "Professional",
@@ -271,7 +280,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     "MSBuild.exe"),
 
                 Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                    _specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
                     "Microsoft Visual Studio",
                     "2019",
                     "Community",
@@ -281,7 +290,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     "MSBuild.exe"),
 
                 Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                    _specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
                     "Microsoft Visual Studio",
                     "2019",
                     "BuildTools",
@@ -291,7 +300,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     "MSBuild.exe"),
 
                 Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                    _specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
                     "Microsoft Visual Studio",
                     "2017",
                     "Enterprise",
@@ -301,7 +310,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     "MSBuild.exe"),
 
                 Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                    _specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
                     "Microsoft Visual Studio",
                     "2017",
                     "Professional",
@@ -311,7 +320,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     "MSBuild.exe"),
 
                 Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                    _specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
                     "Microsoft Visual Studio",
                     "2017",
                     "Community",
@@ -321,7 +330,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     "MSBuild.exe"),
 
                 Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                    _specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
                     "Microsoft Visual Studio",
                     "2017",
                     "BuildTools",
@@ -398,7 +407,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             if (string.IsNullOrWhiteSpace(foundPath))
             {
                 const string msbuildPath = "MSBUILD_PATH";
-                string? fromEnvironmentVariable = Environment.GetEnvironmentVariable(msbuildPath);
+                string? fromEnvironmentVariable = _environmentVariables.GetEnvironmentVariable(msbuildPath);
 
                 if (!string.IsNullOrWhiteSpace(fromEnvironmentVariable))
                 {

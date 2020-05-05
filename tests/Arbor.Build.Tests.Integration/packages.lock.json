@@ -96,6 +96,12 @@
           "System.Collections.NonGeneric": "4.3.0"
         }
       },
+      "Serilog": {
+        "type": "Direct",
+        "requested": "[2.9.0, )",
+        "resolved": "2.9.0",
+        "contentHash": "QzcrD33A3+CsVvwi1I5CSei67ikQnkGrw7SscgL+vZTghaC2aNYg8fiUcedXHzKJFNjgje9rBjzwYGQTKEaXaA=="
+      },
       "Serilog.Sinks.Debug": {
         "type": "Direct",
         "requested": "[1.0.1, )",
@@ -104,6 +110,18 @@
         "dependencies": {
           "Serilog": "2.5.0",
           "System.Diagnostics.Debug": "4.3.0"
+        }
+      },
+      "Serilog.Sinks.XUnit": {
+        "type": "Direct",
+        "requested": "[2.0.4, )",
+        "resolved": "2.0.4",
+        "contentHash": "L9R01Z3EzsNlr6iPozwSX1TekFHyg8YiaaUncXG+WWSvT/wQp/8jIsN1EmXYtTbPbfUgzNdTdU/lCveYPFtNlA==",
+        "dependencies": {
+          "NETStandard.Library": "1.6.1",
+          "Serilog": "2.9.0",
+          "xunit.abstractions": "2.0.3",
+          "xunit.core": "2.4.1"
         }
       },
       "xunit": {
@@ -628,11 +646,6 @@
         "type": "Transitive",
         "resolved": "4.4.0",
         "contentHash": "YhEdSQUsTx+C8m8Bw7ar5/VesXvCFMItyZF7G1AUY+OM0VPZUOeAVpJ4Wl6fydBGUYZxojTDR3I6Bj/+BPkJNA=="
-      },
-      "Serilog": {
-        "type": "Transitive",
-        "resolved": "2.9.0",
-        "contentHash": "QzcrD33A3+CsVvwi1I5CSei67ikQnkGrw7SscgL+vZTghaC2aNYg8fiUcedXHzKJFNjgje9rBjzwYGQTKEaXaA=="
       },
       "Serilog.Formatting.Compact": {
         "type": "Transitive",

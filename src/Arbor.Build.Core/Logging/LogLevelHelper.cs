@@ -8,13 +8,13 @@ namespace Arbor.Build.Core.Logging
 {
     public static class LogLevelHelper
     {
-        public static LoggingLevelSwitch GetLevelSwitch(string[]? args)
+        public static LoggingLevelSwitch GetLevelSwitch(string[]? args, IEnvironmentVariables environmentVariables)
         {
             string? logLevelArg = args?.FirstOrDefault(arg => arg.StartsWith(WellKnownVariables.LogLevel,
                                           StringComparison.OrdinalIgnoreCase))
                                       ?.Split('=')
                                       .LastOrDefault()
-                                  ?? Environment.GetEnvironmentVariable(WellKnownVariables.LogLevel);
+                                  ?? environmentVariables.GetEnvironmentVariable(WellKnownVariables.LogLevel);
 
             var levelSwitch = new LoggingLevelSwitch();
 

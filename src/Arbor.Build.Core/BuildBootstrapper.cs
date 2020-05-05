@@ -17,7 +17,10 @@ namespace Arbor.Build.Core
 {
     public static class BuildBootstrapper
     {
-        public static Task<IContainer> StartAsync([NotNull] ILogger logger, string? sourceDirectory = null)
+        public static Task<IContainer> StartAsync([NotNull] ILogger logger,
+            IEnvironmentVariables environmentVariables,
+            ISpecialFolders specialFolders,
+            string? sourceDirectory = null)
         {
             if (logger == null)
             {
@@ -31,6 +34,9 @@ namespace Arbor.Build.Core
             RegisterAssemblyModules(builder);
 
             RegisterSourceRootConditionally(sourceDirectory, builder);
+
+            builder.RegisterInstance(environmentVariables).AsImplementedInterfaces();
+            builder.RegisterInstance(specialFolders).AsImplementedInterfaces();
 
             IContainer container = builder.Build();
 

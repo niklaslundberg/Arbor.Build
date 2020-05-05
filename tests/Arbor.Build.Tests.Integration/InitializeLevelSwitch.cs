@@ -1,6 +1,8 @@
 ﻿using System;
+using Arbor.Build.Core;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.Logging;
+using Arbor.Build.Tests.Integration.Bootstrapper;
 using Serilog.Core;
 using Serilog.Events;
 using Xunit;
@@ -12,9 +14,10 @@ namespace Arbor.Build.Tests.Integration
         [Fact]
         public void WhenUsingLogLevelEnvironmentVariableItShouldInitializeWithSuppliedLevel()
         {
-            Environment.SetEnvironmentVariable(WellKnownVariables.LogLevel, "Debug");
-            LoggingLevelSwitch loggingLevelSwitch = LogLevelHelper.GetLevelSwitch(null);
-            Environment.SetEnvironmentVariable(WellKnownVariables.LogLevel, null);
+            IEnvironmentVariables environmentVariables = new EnvironmentVariables();
+            environmentVariables.SetEnvironmentVariable(WellKnownVariables.LogLevel, "Debug");
+            LoggingLevelSwitch loggingLevelSwitch = LogLevelHelper.GetLevelSwitch(null, environmentVariables);
+            environmentVariables.SetEnvironmentVariable(WellKnownVariables.LogLevel, null);
 
             Assert.NotNull(loggingLevelSwitch);
             Assert.Equal(LogEventLevel.Debug, loggingLevelSwitch.MinimumLevel);

@@ -1,4 +1,5 @@
 using System;
+using Arbor.Build.Core.Logging;
 using Autofac;
 using JetBrains.Annotations;
 
@@ -18,8 +19,11 @@ namespace Arbor.Build.Core.BuildVariables
             _sourceDirectory = sourceDirectory;
         }
 
-        protected override void Load(ContainerBuilder builder) => builder.RegisterInstance(new SourceRootValue(_sourceDirectory))
+        protected override void Load(ContainerBuilder builder)
+        {
+            builder.RegisterInstance(new SourceRootValue(_sourceDirectory))
                 .AsSelf()
                 .SingleInstance();
+        }
     }
 }

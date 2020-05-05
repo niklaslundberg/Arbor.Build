@@ -33,8 +33,13 @@ namespace Arbor.Build.Core.Bootstrapper
 
         private bool _failed;
         private BootstrapStartOptions? _startOptions;
+        private readonly IEnvironmentVariables _environmentVariables;
 
-        public AppBootstrapper(ILogger logger) => _logger = logger;
+        public AppBootstrapper(ILogger logger, IEnvironmentVariables environmentVariables)
+        {
+            _logger = logger;
+            _environmentVariables = environmentVariables;
+        }
 
         public async Task<ExitCode> StartAsync(string[] args)
         {
@@ -100,7 +105,7 @@ namespace Arbor.Build.Core.Bootstrapper
                 _logger.Error(ex, "{Prefix} Could not start process", Prefix);
             }
 
-            Environment.GetEnvironmentVariable(WellKnownVariables.BootstrapperExitDelayInMilliseconds)
+            _environmentVariables.GetEnvironmentVariable(WellKnownVariables.BootstrapperExitDelayInMilliseconds)
                 .TryParseInt32(out int exitDelayInMilliseconds);
 
             if (exitDelayInMilliseconds > 0)
@@ -192,8 +197,8 @@ namespace Arbor.Build.Core.Bootstrapper
 
             await DirectoryCopy.CopyAsync(baseDir, tempDirectory.FullName).ConfigureAwait(false);
 
-            Environment.SetEnvironmentVariable(WellKnownVariables.BranchNameVersionOverrideEnabled, "true");
-            Environment.SetEnvironmentVariable(WellKnownVariables.VariableOverrideEnabled, "true");
+            _environmentVariables.SetEnvironmentVariable(WellKnownVariables.BranchNameVersionOverrideEnabled, "true");
+            _environmentVariables.SetEnvironmentVariable(WellKnownVariables.VariableOverrideEnabled, "true");
 
             var bootstrapStartOptions = new BootstrapStartOptions(
                 Array.Empty<string>(),
@@ -216,19 +221,19 @@ namespace Arbor.Build.Core.Bootstrapper
         {
             if (!string.IsNullOrWhiteSpace(_startOptions?.BaseDir) && Directory.Exists(_startOptions.BaseDir))
             {
-                Environment.SetEnvironmentVariable(WellKnownVariables.SourceRoot, _startOptions.BaseDir);
+                _environmentVariables.SetEnvironmentVariable(WellKnownVariables.SourceRoot, _startOptions.BaseDir);
             }
 
             if (_startOptions?.PreReleaseEnabled == true)
             {
-                Environment.SetEnvironmentVariable(
+                _environmentVariables.SetEnvironmentVariable(
                     WellKnownVariables.AllowPreRelease,
                     _startOptions!.PreReleaseEnabled!.Value.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
             }
 
             if (!string.IsNullOrWhiteSpace(_startOptions?.BranchName))
             {
-                Environment.SetEnvironmentVariable(WellKnownVariables.BranchName, _startOptions.BranchName);
+                _environmentVariables.SetEnvironmentVariable(WellKnownVariables.BranchName, _startOptions.BranchName);
             }
         }
 
@@ -240,7 +245,7 @@ namespace Arbor.Build.Core.Bootstrapper
 
             _logger.Information("Starting Arbor.Build Bootstrapper version {Version}", version);
 
-            string directoryCloneValue = Environment.GetEnvironmentVariable(WellKnownVariables.DirectoryCloneEnabled);
+            string? directoryCloneValue = _environmentVariables.GetEnvironmentVariable(WellKnownVariables.DirectoryCloneEnabled);
 
             _ = directoryCloneValue
                 .TryParseBool(out bool directoryCloneEnabled, true);
@@ -300,7 +305,7 @@ namespace Arbor.Build.Core.Bootstrapper
             {
                 try
                 {
-                    Environment.GetEnvironmentVariable("KillSpawnedProcess").TryParseBool(out bool enabled, true);
+                    _environmentVariables.GetEnvironmentVariable("KillSpawnedProcess").TryParseBool(out bool enabled, true);
 
                     if (enabled)
                     {
@@ -322,11 +327,11 @@ namespace Arbor.Build.Core.Bootstrapper
 
         private async Task<string> DownloadNuGetPackageAsync()
         {
-            string? version = Environment.GetEnvironmentVariable(WellKnownVariables.ArborBuildNuGetPackageVersion);
+            string? version = _environmentVariables.GetEnvironmentVariable(WellKnownVariables.ArborBuildNuGetPackageVersion);
 
-            string? nuGetSource = Environment.GetEnvironmentVariable(WellKnownVariables.ArborBuildNuGetPackageSource);
+            string? nuGetSource = _environmentVariables.GetEnvironmentVariable(WellKnownVariables.ArborBuildNuGetPackageSource);
 
-            Environment.GetEnvironmentVariable(WellKnownVariables.AllowPreRelease)
+            _environmentVariables.GetEnvironmentVariable(WellKnownVariables.AllowPreRelease)
                 .TryParseBool(out bool preReleaseIsAllowed);
 
             preReleaseIsAllowed = _startOptions.PreReleaseEnabled ?? preReleaseIsAllowed;
@@ -415,7 +420,7 @@ namespace Arbor.Build.Core.Bootstrapper
             FileInfo buildToolExecutable = arborBuild.Single();
 
             const string timeoutKey = WellKnownVariables.BuildToolTimeoutInSeconds;
-            string? timeoutInSecondsFromEnvironment = Environment.GetEnvironmentVariable(timeoutKey);
+            string? timeoutInSecondsFromEnvironment = _environmentVariables.GetEnvironmentVariable(timeoutKey);
 
             if (timeoutInSecondsFromEnvironment.TryParseInt32(out int parseResult, MaxBuildTimeInSeconds))
             {
@@ -433,7 +438,7 @@ namespace Arbor.Build.Core.Bootstrapper
             {
                 const string buildApplicationPrefix = "[Arbor.Build] ";
 
-                ImmutableArray<IVariable> variables = await new DotNetEnvironmentVariableProvider()
+                ImmutableArray<IVariable> variables = await new DotNetEnvironmentVariableProvider(_environmentVariables)
                     .GetBuildVariablesAsync(
                         _logger,
                         ImmutableArray<IVariable>.Empty,

@@ -38,9 +38,14 @@ namespace Arbor.Build.Core
         private CancellationToken _cancellationToken;
         private IContainer? _container;
         private string[] _args;
+        private readonly IEnvironmentVariables _environmentVariables;
+        private readonly ISpecialFolders _specialFolders;
 
-        public BuildApplication(ILogger logger)
+        public BuildApplication(ILogger logger, IEnvironmentVariables environmentVariables, ISpecialFolders specialFolders)
         {
+            _args = Array.Empty<string>();
+            _environmentVariables = environmentVariables;
+            _specialFolders = specialFolders;
             _logger = logger ?? Logger.None ?? throw new ArgumentNullException(nameof(logger));
             _verboseEnabled = _logger.IsEnabled(LogEventLevel.Verbose);
             _debugEnabled = _logger.IsEnabled(LogEventLevel.Debug);
@@ -303,7 +308,7 @@ namespace Arbor.Build.Core
         {
             var buildVariables = new List<IVariable>(500);
 
-            _ = Environment.GetEnvironmentVariable(WellKnownVariables.VariableFileSourceEnabled)
+            _ = _environmentVariables.GetEnvironmentVariable(WellKnownVariables.VariableFileSourceEnabled)
                 .TryParseBool(out bool enabled);
 
             if (enabled)
@@ -342,7 +347,7 @@ namespace Arbor.Build.Core
             buildVariables.AddRange(result);
 
             buildVariables.AddRange(
-                EnvironmentVariableHelper.GetBuildVariablesFromEnvironmentVariables(_logger, buildVariables));
+                EnvironmentVariableHelper.GetBuildVariablesFromEnvironmentVariables(_logger, _environmentVariables, buildVariables));
 
             IReadOnlyCollection<IVariableProvider> providers = _container.Resolve<IEnumerable<IVariableProvider>>()
                 .OrderBy(provider => provider.Order)
@@ -515,12 +520,12 @@ namespace Arbor.Build.Core
 
             string? sourceDir = null;
 
-            if (DebugHelper.IsDebugging)
+            if (DebugHelper.IsDebugging(_environmentVariables))
             {
                 sourceDir = await StartWithDebuggerAsync(args).ConfigureAwait(false);
             }
 
-            _container = await BuildBootstrapper.StartAsync(_logger, sourceDir).ConfigureAwait(false);
+            _container = await BuildBootstrapper.StartAsync(_logger, _environmentVariables, _specialFolders, sourceDir).ConfigureAwait(false);
 
             _logger.Information("Using logger '{Type}'", _logger.GetType());
 

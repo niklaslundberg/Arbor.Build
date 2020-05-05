@@ -1,4 +1,5 @@
 ﻿using System;
+using Arbor.Build.Core;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.Logging;
 using Serilog.Core;
@@ -12,9 +13,10 @@ namespace Arbor.Build.Tests.Unit
         [Fact]
         public void WhenEmptyArgumentListItShouldInitializeWithInformationLevel()
         {
-            Environment.SetEnvironmentVariable(WellKnownVariables.LogLevel, "");
+            var environmentVariables = new EnvironmentVariables();
+            environmentVariables.SetEnvironmentVariable(WellKnownVariables.LogLevel, "");
 
-            LoggingLevelSwitch loggingLevelSwitch = LogLevelHelper.GetLevelSwitch(Array.Empty<string>());
+            LoggingLevelSwitch loggingLevelSwitch = LogLevelHelper.GetLevelSwitch(Array.Empty<string>(), environmentVariables);
 
             Assert.NotNull(loggingLevelSwitch);
             Assert.Equal(LogEventLevel.Information, loggingLevelSwitch.MinimumLevel);
@@ -23,8 +25,9 @@ namespace Arbor.Build.Tests.Unit
         [Fact]
         public void WhenNullArgumentListItShouldInitializeWithInformationLevel()
         {
-            Environment.SetEnvironmentVariable(WellKnownVariables.LogLevel, "");
-            LoggingLevelSwitch loggingLevelSwitch = LogLevelHelper.GetLevelSwitch(null);
+            var environmentVariables = new EnvironmentVariables();
+            environmentVariables.SetEnvironmentVariable(WellKnownVariables.LogLevel, "");
+            LoggingLevelSwitch loggingLevelSwitch = LogLevelHelper.GetLevelSwitch(null, environmentVariables);
 
             Assert.NotNull(loggingLevelSwitch);
             Assert.Equal(LogEventLevel.Information, loggingLevelSwitch.MinimumLevel);
@@ -34,7 +37,7 @@ namespace Arbor.Build.Tests.Unit
         public void WhenUsingInvvalidLogLevelArgumentItShouldInitializeWithSuppliedLevel()
         {
             string[] args = { $"{WellKnownVariables.LogLevel}=" };
-            LoggingLevelSwitch loggingLevelSwitch = LogLevelHelper.GetLevelSwitch(args);
+            LoggingLevelSwitch loggingLevelSwitch = LogLevelHelper.GetLevelSwitch(args, EnvironmentVariables.Empty);
 
             Assert.NotNull(loggingLevelSwitch);
             Assert.Equal(LogEventLevel.Information, loggingLevelSwitch.MinimumLevel);
@@ -44,7 +47,7 @@ namespace Arbor.Build.Tests.Unit
         public void WhenUsingLogLevelArgumentItShouldInitializeWithSuppliedLevel()
         {
             string[] args = { $"{WellKnownVariables.LogLevel}=Debug" };
-            LoggingLevelSwitch loggingLevelSwitch = LogLevelHelper.GetLevelSwitch(args);
+            LoggingLevelSwitch loggingLevelSwitch = LogLevelHelper.GetLevelSwitch(args, EnvironmentVariables.Empty);
 
             Assert.NotNull(loggingLevelSwitch);
             Assert.Equal(LogEventLevel.Debug, loggingLevelSwitch.MinimumLevel);

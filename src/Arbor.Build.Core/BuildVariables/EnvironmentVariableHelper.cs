@@ -16,23 +16,19 @@ namespace Arbor.Build.Core.BuildVariables
 {
     public static class EnvironmentVariableHelper
     {
+
         public static IReadOnlyCollection<IVariable> GetBuildVariablesFromEnvironmentVariables(
             ILogger logger,
+            IEnvironmentVariables environmentVariables,
             List<IVariable>? existingItems = null)
         {
             logger ??= Logger.None ?? throw new ArgumentNullException(nameof(logger));
             List<IVariable> existing = existingItems ?? new List<IVariable>();
             var buildVariables = new List<IVariable>();
 
-            IDictionary environmentVariables = Environment.GetEnvironmentVariables();
-
-            var variables = environmentVariables
-                .OfType<DictionaryEntry>()
-                .Where(item => item.Key is object)
-                .Select(entry => new BuildVariable(
-                    entry.Key?.ToString() ?? throw new InvalidOperationException("Build variable key cannot be null"),
-                    entry.Value?.ToString()))
-                .ToList();
+            var variables = environmentVariables.GetVariables()
+                .Where(pair => pair.Value is {})
+                .Select(pair => new BuildVariable(pair.Key, pair.Value));
 
             var nonExisting = variables
                 .Where(bv => !existing.Any(ebv => ebv.Key.Equals(bv.Key, StringComparison.OrdinalIgnoreCase)))

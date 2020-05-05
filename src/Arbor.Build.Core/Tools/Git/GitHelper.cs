@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Arbor.Build.Core.BuildVariables;
 using JetBrains.Annotations;
 using Serilog;
 
@@ -9,7 +10,7 @@ namespace Arbor.Build.Core.Tools.Git
 {
     public static class GitHelper
     {
-        public static string GetGitExePath([NotNull] ILogger logger)
+        public static string GetGitExePath([NotNull] ILogger logger, ISpecialFolders specialFolders, IEnvironmentVariables environmentVariables)
         {
             if (logger == null)
             {
@@ -19,18 +20,18 @@ namespace Arbor.Build.Core.Tools.Git
             var gitExeLocations = new List<string>
             {
                 Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                    specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
                     "Git",
                     "bin",
                     "git.exe"),
                 Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                    specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
                     "Git",
                     "bin",
                     "git.exe")
             };
 
-            string programFilesX64 = Environment.GetEnvironmentVariable("ProgramW6432");
+            string? programFilesX64 = environmentVariables.GetEnvironmentVariable("ProgramW6432");
 
             if (!string.IsNullOrWhiteSpace(programFilesX64))
             {

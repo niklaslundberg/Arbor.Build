@@ -1,9 +1,11 @@
 ﻿using System;
 using System.IO;
+using Arbor.Build.Core;
 using Arbor.Build.Core.Bootstrapper;
 using Arbor.Build.Core.IO;
 using Arbor.Processing;
 using Machine.Specifications;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Serilog.Core;
 
 namespace Arbor.Build.Tests.Integration.Bootstrapper
@@ -43,7 +45,7 @@ namespace Arbor.Build.Tests.Integration.Bootstrapper
                 baseDirectory.FullName,
                 true,
                 "develop");
-            _appBootstrapper = new Core.Bootstrapper.AppBootstrapper(Logger.None);
+            _appBootstrapper = new Core.Bootstrapper.AppBootstrapper(Logger.None, EnvironmentVariables.Empty);
         };
 
         Because of = () => exitCode = _appBootstrapper.StartAsync(startOptions).Result;

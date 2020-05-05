@@ -86,19 +86,19 @@ namespace Arbor.Build.Core.Tools.Git
             return new BranchName(logicalName);
         }
 
-        public static bool BranchNameHasVersion(string branchName)
+        public static bool BranchNameHasVersion(string branchName, IEnvironmentVariables environmentVariables)
         {
             if (string.IsNullOrWhiteSpace(branchName))
             {
                 throw new ArgumentNullException(nameof(branchName));
             }
 
-            SemanticVersion version = BranchSemVerMajorMinorPatch(branchName);
+            SemanticVersion version = BranchSemVerMajorMinorPatch(branchName, environmentVariables);
 
             return version.Major > 0 || version.Minor > 0 || version.Patch > 0;
         }
 
-        public static SemanticVersion BranchSemVerMajorMinorPatch(string branchName)
+        public static SemanticVersion BranchSemVerMajorMinorPatch(string branchName, IEnvironmentVariables environmentVariables)
         {
             if (string.IsNullOrWhiteSpace(branchName))
             {
@@ -111,7 +111,7 @@ namespace Arbor.Build.Core.Tools.Git
             }
 
             string splitCharactersVariable =
-                Environment.GetEnvironmentVariable(WellKnownVariables.NameVersionCommonSeparatedSplitList);
+                environmentVariables.GetEnvironmentVariable(WellKnownVariables.NameVersionCommonSeparatedSplitList);
 
             var splitCharacters = new List<string>
             {

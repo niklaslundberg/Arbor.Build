@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Arbor.Aesculus.Core;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.Tools.Cleanup;
-using Arbor.Defensive;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
@@ -20,8 +19,15 @@ namespace Arbor.Build.Core.Tools.Git
     public class BranchNameVariableProvider : IVariableProvider
     {
         private readonly ILogger _logger;
+        private readonly IEnvironmentVariables _environmentVariables;
+        private readonly ISpecialFolders _specialFolders;
 
-        public BranchNameVariableProvider(ILogger logger) => _logger = logger;
+        public BranchNameVariableProvider(ILogger logger, IEnvironmentVariables environmentVariables, ISpecialFolders specialFolders)
+        {
+            _logger = logger;
+            _environmentVariables = environmentVariables;
+            _specialFolders = specialFolders;
+        }
 
         public int Order => VariableProviderOrder.Priority - 2;
 
@@ -35,11 +41,11 @@ namespace Arbor.Build.Core.Tools.Git
                 WellKnownVariables.BranchName, WellKnownVariables.GitHubBranchName
             };
 
-            string branchName = default;
+            string? branchName = default;
 
             foreach (string possibleVariable in possibleVariables)
             {
-                branchName = Environment.GetEnvironmentVariable(possibleVariable);
+                branchName = _environmentVariables.GetEnvironmentVariable(possibleVariable);
 
                 if (!string.IsNullOrWhiteSpace(branchName))
                 {
@@ -96,14 +102,14 @@ namespace Arbor.Build.Core.Tools.Git
             _logger.Information("Environment variable '{BranchName}' is not defined or has empty value",
                 WellKnownVariables.BranchName);
 
-            string gitExePath = GitHelper.GetGitExePath(_logger);
+            string gitExePath = GitHelper.GetGitExePath(_logger, _specialFolders, _environmentVariables);
 
             if (!File.Exists(gitExePath))
             {
                 _logger.Debug("The git path '{GitExePath}' does not exist", gitExePath);
 
                 string githubForWindowsPath =
-                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "GitHub");
+                    Path.Combine(_specialFolders.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "GitHub");
 
                 if (Directory.Exists(githubForWindowsPath))
                 {
