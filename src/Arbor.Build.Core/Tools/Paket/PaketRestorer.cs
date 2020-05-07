@@ -90,7 +90,7 @@ namespace Arbor.Build.Core.Tools.Paket
             logger.Information("Found paket.exe at '{FullName}'", paketExe.FullName);
 
             string? copyFromPath =
-                buildVariables.GetVariableValueOrDefault("Arbor.Build.Build.Tools.Paket.CopyExeFromPath", string.Empty);
+                buildVariables.GetVariableValueOrDefault("Arbor.Build.Tools.Paket.CopyExeFromPath", string.Empty);
 
             if (!string.IsNullOrWhiteSpace(copyFromPath))
             {

@@ -18,16 +18,16 @@ namespace Arbor.Build.Core.BuildVariables
         // ReSharper disable ConvertToConstant.Global
 
         [VariableDescription("Flag to enabled dotnet publish for executable netcoreapp projects")]
-        public const string DotNetPublishExeProjectsEnabled = "Arbor.Build.Build.PublishDotNetExecutableProjects";
+        public const string DotNetPublishExeProjectsEnabled = "Arbor.Build.PublishDotNetExecutableProjects";
 
         [VariableDescription("Flag to enabled dotnet publish for executable netcoreapp projects")]
         public const string DotNetPublishExeEnabled = "ArborBuild_PublishDotNetExecutableEnabled";
 
         [VariableDescription("Flag to enabled dotnet pack for tool netcoreapp projects")]
-        public const string DotNetPackToolProjectsEnabled = "Arbor.Build.Build.PackDotNetToolProjects";
+        public const string DotNetPackToolProjectsEnabled = "Arbor.Build.PackDotNetToolProjects";
 
         [VariableDescription("Flag to indicate if build platform AnyCPU is enabled")]
-        public const string AnyCpuEnabled = "Arbor.Build.Build.Platform.AnyCPU.Enabled";
+        public const string AnyCpuEnabled = "Arbor.Build.Platform.AnyCPU.Enabled";
 
         [VariableDescription(
             "Flag to indicate that Symbol server package upload is enabled even if not running on a build server")]
@@ -57,7 +57,7 @@ namespace Arbor.Build.Core.BuildVariables
 
         [VariableDescription("Full build version number")]
         public const string Version =
-            "Arbor.Build.Build.Version";
+            "Arbor.Build.Version";
 
         [VariableDescription("Max number of CPUs for MSBuild to use")]
         public const string CpuLimit =
@@ -65,19 +65,19 @@ namespace Arbor.Build.Core.BuildVariables
 
         [VariableDescription(".NET assembly version")]
         public const string NetAssemblyVersion =
-            "Arbor.Build.Build.NetAssembly.Version";
+            "Arbor.Build.NetAssembly.Version";
 
         [VariableDescription(".NET assembly file version")]
         public const string NetAssemblyFileVersion =
-            "Arbor.Build.Build.NetAssembly.FileVersion";
+            "Arbor.Build.NetAssembly.FileVersion";
 
         [VariableDescription("Enable assembly version patching")]
-        public const string AssemblyFilePatchingEnabled = "Arbor.Build.Build.NetAssembly.PatchingEnabled";
+        public const string AssemblyFilePatchingEnabled = "Arbor.Build.NetAssembly.PatchingEnabled";
 
         [Obsolete]
         [VariableDescription("MSBuild configuration (eg. Debug/Release)")]
         public const string Configuration =
-            "Arbor.Build.Build.Configuration";
+            "Arbor.Build.Configuration";
 
         [VariableDescription("Semicolon separated MSBuild configurations (eg. Debug/Release)")]
         public const string Configurations =
@@ -88,10 +88,10 @@ namespace Arbor.Build.Core.BuildVariables
             "Arbor.Build.FeatureBranchDefaultConfiguration";
 
         [VariableDescription("Dynamic configuration property")]
-        public const string CurrentBuildConfiguration = "Arbor.Build.Build.CurrentBuild.Configuration";
+        public const string CurrentBuildConfiguration = "Arbor.Build.CurrentBuild.Configuration";
 
         [VariableDescription("Temporary directory path")]
-        public const string TempDirectory = "Arbor.Build.Build.TempDirectory";
+        public const string TempDirectory = "Arbor.Build.TempDirectory";
 
         [VariableDescription("Symbol server URI for NuGet source package upload")]
         public const string ExternalTools_SymbolServer_Uri = "Arbor.Build.Tools.External.SymbolServer.Uri";
@@ -109,15 +109,15 @@ namespace Arbor.Build.Core.BuildVariables
             "Arbor.Build.Tools.External.SymbolServer.Enabled";
 
         [VariableDescription("Flag to indicate if the build is running on a build agent")]
-        public const string IsRunningOnBuildAgent = "Arbor.Build.Build.IsRunningOnBuildAgent";
+        public const string IsRunningOnBuildAgent = "Arbor.Build.IsRunningOnBuildAgent";
 
         [VariableDescription("Flag to indicate if the console log should include timestamps")]
-        public const string ConsoleLogTimestampEnabled = "Arbor.Build.Build.Logging.Console.Timestamps.Enabled";
+        public const string ConsoleLogTimestampEnabled = "Arbor.Build.Logging.Console.Timestamps.Enabled";
 
         [VariableDescription(
             "Flag to indicate if the bootstrapper is allowed to download pre-release versions of Arbor.Build NuGet package",
             "false")]
-        public const string AllowPreRelease = "Arbor.Build.Build.Bootstrapper.AllowPrerelease";
+        public const string AllowPreRelease = "Arbor.Build.Bootstrapper.AllowPrerelease";
 
         [VariableDescription("Arbor.Build NuGet package version for bootstrapper to download")]
         public const string ArborBuildNuGetPackageVersion = "Arbor.Build.NuGetPackageVersion";
@@ -168,21 +168,21 @@ namespace Arbor.Build.Core.BuildVariables
         public const string SourceRoot = "SourceRoot";
 
         [VariableDescription("Flag to indicate if build platform AnyCPU is disabled", "false", AnyCpuEnabled)]
-        public const string IgnoreAnyCpu = "Arbor.Build.Build.Platform.AnyCPU.Disabled";
+        public const string IgnoreAnyCpu = "Arbor.Build.Platform.AnyCPU.Disabled";
 
         [VariableDescription("Flag to indicate if build configuration Release is enabled", "true")]
-        public const string ReleaseBuildEnabled = "Arbor.Build.Build.Configuration.Release.Enabled";
+        public const string ReleaseBuildEnabled = "Arbor.Build.Configuration.Release.Enabled";
 
         [VariableDescription("Flag to indicate if build platform configuration Debug is enabled", "true")]
-        public const string DebugBuildEnabled = "Arbor.Build.Build.Configuration.Debug.Enabled";
+        public const string DebugBuildEnabled = "Arbor.Build.Configuration.Debug.Enabled";
 
         [VariableDescription(
             "Comma separated list to filter assemblies, to only run tests dlls starting with prefix, case insensitive",
             "")]
-        public const string TestsAssemblyStartsWith = "Arbor.Build.Build.Tests.AssemblyStartsWith";
+        public const string TestsAssemblyStartsWith = "Arbor.Build.Tests.AssemblyStartsWith";
 
         [VariableDescription("Flag to indicate if tests are enabled", "false")]
-        public const string TestsEnabled = "Arbor.Build.Build.Tests.Enabled";
+        public const string TestsEnabled = "Arbor.Build.Tests.Enabled";
 
         [VariableDescription(
             "Visual Studio Test Framework console application path, (eg. C:\\VSTestConsole.exe)",
@@ -199,7 +199,7 @@ namespace Arbor.Build.Core.BuildVariables
         public const string AppDataJobsEnabled = "Arbor.Build.Tools.External.Kudu.WebJobs.AppData.Enabled";
 
         [VariableDescription("Time out in seconds for total build process")]
-        public const string BuildToolTimeoutInSeconds = "Arbor.Build.Build.TimeoutInSeconds";
+        public const string BuildToolTimeoutInSeconds = "Arbor.Build.TimeoutInSeconds";
 
         [VariableDescription("Bootstrapper exit delay in milliseconds")]
         public const string BootstrapperExitDelayInMilliseconds =
@@ -207,14 +207,14 @@ namespace Arbor.Build.Core.BuildVariables
 
         [VariableDescription("Build application exit delay in milliseconds")]
         public const string BuildApplicationExitDelayInMilliseconds =
-            "Arbor.Build.Build.ExitDelayInMilliseconds";
+            "Arbor.Build.ExitDelayInMilliseconds";
 
         [VariableDescription("Flag to indicate if defined variables can be overriden")]
-        public const string VariableOverrideEnabled = "Arbor.Build.Build.VariableOverrideEnabled";
+        public const string VariableOverrideEnabled = "Arbor.Build.VariableOverrideEnabled";
 
         [VariableDescription(
             "Flag to indicate if a file arborbuild_environmentvariables.json should be used as a source to set environment variables")]
-        public const string VariableFileSourceEnabled = "Arbor.Build.Build.VariableFileSource.Enabled";
+        public const string VariableFileSourceEnabled = "Arbor.Build.VariableFileSource.Enabled";
 
         [VariableDescription("Enable XUnit .NET Core App")]
         public const string XUnitNetCoreAppV2Enabled =
@@ -245,7 +245,7 @@ namespace Arbor.Build.Core.BuildVariables
         public const string LogLevel = "Arbor.Build.Log.Level";
 
         [VariableDescription("Generic XML transformations enabled")]
-        public const string GenericXmlTransformsEnabled = "Arbor.Build.Build.XmlTransformations.Enabled";
+        public const string GenericXmlTransformsEnabled = "Arbor.Build.XmlTransformations.Enabled";
 
         [VariableDescription("Run tests in release configuration")]
         public const string RunTestsInReleaseConfigurationEnabled =
@@ -257,21 +257,21 @@ namespace Arbor.Build.Core.BuildVariables
 
         [VariableDescription("Flag to indicate if XML files for assemblies in the bin directory should be deleted")]
         public const string CleanBinXmlFilesForAssembliesEnabled =
-            "Arbor.Build.Build.WebApplications.CleanBinXmlFilesForAssembliesEnabled";
+            "Arbor.Build.WebApplications.CleanBinXmlFilesForAssembliesEnabled";
 
         [VariableDescription("Flag to indicate if XML files for assemblies in the bin directory should be deleted")]
         public const string CleanWebJobsXmlFilesForAssembliesEnabled =
-            "Arbor.Build.Build.WebApplications.WebJobs.CleanWebJobsXmlFilesForAssembliesEnabled";
+            "Arbor.Build.WebApplications.WebJobs.CleanWebJobsXmlFilesForAssembliesEnabled";
 
         [VariableDescription(
             "List of file name parts to be used when excluding files from being copied to web jobs directory, comma separated")]
         public const string WebJobsExcludedFileNameParts =
-            "Arbor.Build.Build.WebApplications.WebJobs.ExcludedFileNameParts";
+            "Arbor.Build.WebApplications.WebJobs.ExcludedFileNameParts";
 
         [VariableDescription(
             "List of file name parts to be used when excluding directories from being copied to web jobs directory, comma separated")]
         public const string WebJobsExcludedDirectorySegments =
-            "Arbor.Build.Build.WebApplications.WebJobs.ExcludedDirectorySegments";
+            "Arbor.Build.WebApplications.WebJobs.ExcludedDirectorySegments";
 
         [VariableDescription(
             "List of file patterns to be used when excluding files to be included in a NuGet Web Package, comma separated")]
@@ -280,22 +280,22 @@ namespace Arbor.Build.Core.BuildVariables
 
         [VariableDescription("Cleanup known processes after build")]
         public const string CleanupProcessesAfterBuildEnabled =
-            "Arbor.Build.Build.Cleanup.KillProcessesAfterBuild.Enabled";
+            "Arbor.Build.Cleanup.KillProcessesAfterBuild.Enabled";
 
         [VariableDescription(".NET Core publish runtime identifier")]
         public const string PublishRuntimeIdentifier =
-            "Arbor.Build.Build.PublishRuntimeIdentifier";
+            "Arbor.Build.PublishRuntimeIdentifier";
 
         [VariableDescription("Paket Enabled")]
         public const string PaketEnabled =
-            "Arbor.Build.Build.Paket.Enabled";
+            "Arbor.Build.Paket.Enabled";
 
         [VariableDescription(".NET Core MSBuild web publish runtime identifiers")]
         public const string ProjectMSBuildPublishRuntimeIdentifier =
             "ArborBuild_PublishRuntimeIdentifier";
 
         [VariableDescription("Colon separated list of platforms to be excluded")]
-        public const string MSBuildExcludedPlatforms = "Arbor.Build.Build.MSBuild.ExcludedPlatforms";
+        public const string MSBuildExcludedPlatforms = "Arbor.Build.MSBuild.ExcludedPlatforms";
 
         public static IReadOnlyCollection<VariableDescription> AllVariables
         {

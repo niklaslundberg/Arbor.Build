@@ -571,7 +571,7 @@ namespace Arbor.Build.Core
 
             stopwatch.Stop();
 
-            _logger.Information("Arbor.Build.Build total elapsed time in seconds: {TotalSeconds:F}",
+            _logger.Information("Arbor.Build total elapsed time in seconds: {TotalSeconds:F}",
                 stopwatch.Elapsed.TotalSeconds);
 
             _ = multiSourceKeyValueConfiguration[WellKnownVariables.BuildApplicationExitDelayInMilliseconds]
