@@ -3,6 +3,8 @@ using System.Collections.Immutable;
 using System.Linq;
 using Arbor.Build.Core.BuildVariables;
 
+#nullable enable
+
 namespace Arbor.Build.Tests.Integration
 {
     public class FallbackEnvironment : IEnvironmentVariables
