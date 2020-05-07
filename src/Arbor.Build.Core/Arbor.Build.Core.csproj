@@ -12,7 +12,7 @@
     <PackageReference Include="Arbor.KVConfiguration.UserConfiguration" Version="0.20.0" />
     <PackageReference Include="Arbor.Processing" Version="0.6.0" />
     <PackageReference Include="Arbor.Sorbus" Version="3.1.0" />
-    <PackageReference Include="Arbor.Tooler" Version="0.9.0" />
+    <PackageReference Include="Arbor.Tooler" Version="0.9.1" />
     <PackageReference Include="Autofac" Version="5.1.4" />
     <PackageReference Include="JetBrains.Annotations" Version="2020.1.0" />
     <PackageReference Include="Machine.Specifications" Version="1.0.0" />
