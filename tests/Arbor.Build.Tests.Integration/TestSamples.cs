@@ -2,18 +2,14 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
-using System.Linq;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Arbor.Build.Core;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.Logging;
 using Arbor.Build.Tests.Integration.Tests.MSpec;
-using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 using Serilog;
 using Xunit;
 using Xunit.Abstractions;
-using Logger = Serilog.Core.Logger;
 
 namespace Arbor.Build.Tests.Integration
 {
@@ -28,20 +24,58 @@ namespace Arbor.Build.Tests.Integration
         public async Task Do(string path)
         {
             _testOutputHelper.WriteLine("Testing " + path);
-            var environmentVariables = new FallbackEnvironment(new EnvironmentVariables(), new DefaultEnvironmentVariables());
+
+            var environmentVariables =
+                new FallbackEnvironment(new EnvironmentVariables(), new DefaultEnvironmentVariables());
 
             environmentVariables.SetEnvironmentVariable(WellKnownVariables.BranchName, "develop");
             environmentVariables.SetEnvironmentVariable(WellKnownVariables.SourceRoot, path);
+            environmentVariables.SetEnvironmentVariable("AllowDebug", "false");
 
-            var logger = _testOutputHelper.CreateTestLogger();
-            BuildApplication buildApplication = new BuildApplication(logger, environmentVariables, SpecialFolders.Default);
+            var xunitLogger = _testOutputHelper.CreateTestLogger();
+
+            var expectedFiles = await GetExpectedFiles(path);
+
+            string logFile = Path.Combine(path, "build.log");
+
+            if (File.Exists(logFile))
+            {
+                File.Delete(logFile);
+            }
+
+            var logger = new LoggerConfiguration()
+                .WriteTo.Logger(xunitLogger)
+                .WriteTo.File(logFile)
+                .MinimumLevel.Verbose()
+                .CreateLogger();
+
+            var buildApplication = new BuildApplication(logger, environmentVariables, SpecialFolders.Default);
 
             var args = Array.Empty<string>();
 
-           var exitCode =  await buildApplication.RunAsync(args);
+            var exitCode = await buildApplication.RunAsync(args);
 
-           Assert.Equal(0, exitCode);
+            Assert.Equal(expected: 0, exitCode);
 
+            Assert.All(expectedFiles, file =>
+            {
+                string filePath = Path.Combine(path, file);
+                Assert.True(File.Exists(filePath), $"File.Exists({filePath})");
+            });
+        }
+
+        async Task<ImmutableArray<string>> GetExpectedFiles(string path)
+        {
+            string expectedFilesDataPath = Path.Combine(path, "ExpectedFiles.txt");
+
+            if (!File.Exists(expectedFilesDataPath))
+            {
+                return ImmutableArray<string>.Empty;
+            }
+
+            var expectedFiles = await File.ReadAllLinesAsync(expectedFilesDataPath);
+
+            return expectedFiles.ToImmutableArray();
         }
 
         public static IEnumerable<object[]> Data()
@@ -55,23 +89,5 @@ namespace Arbor.Build.Tests.Integration
                 yield return new object[] {directoryInfo.FullName};
             }
         }
-    }
-
-    public class FallbackEnvironment : IEnvironmentVariables
-    {
-        readonly IEnvironmentVariables _environmentVariables;
-        readonly IEnvironmentVariables _defaultEnvironmentVariables;
-
-        public FallbackEnvironment(IEnvironmentVariables environmentVariables, IEnvironmentVariables defaultEnvironmentVariables)
-        {
-            _environmentVariables = environmentVariables;
-            _defaultEnvironmentVariables = defaultEnvironmentVariables;
-        }
-
-        public string? GetEnvironmentVariable(string key) => _environmentVariables.GetEnvironmentVariable(key) ?? _defaultEnvironmentVariables.GetEnvironmentVariable(key);
-
-        public ImmutableArray<KeyValuePair<string, string?>> GetVariables() => _environmentVariables.GetVariables().Concat(_defaultEnvironmentVariables.GetVariables()).ToImmutableArray();
-
-        public void SetEnvironmentVariable(string key, string? value) => _environmentVariables.SetEnvironmentVariable(key, value);
     }
 }

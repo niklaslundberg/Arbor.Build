@@ -1,0 +1,21 @@
+{
+    "version": "1.0",
+    "keys": [
+        {
+            "key": "Version.Major",
+            "value": 1
+        },
+        {
+            "key": "Version.Minor",
+            "value": 2
+        },
+        {
+            "key":  "Version.Patch",
+            "value": 3
+        },
+        {
+            "key":  "Version.Build",
+            "value": 4
+        }
+    ]
+}

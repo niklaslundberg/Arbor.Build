@@ -16,7 +16,6 @@ namespace Arbor.Build.Core.BuildVariables
 {
     public static class EnvironmentVariableHelper
     {
-
         public static IReadOnlyCollection<IVariable> GetBuildVariablesFromEnvironmentVariables(
             ILogger logger,
             IEnvironmentVariables environmentVariables,
@@ -34,14 +33,16 @@ namespace Arbor.Build.Core.BuildVariables
                 .Where(bv => !existing.Any(ebv => ebv.Key.Equals(bv.Key, StringComparison.OrdinalIgnoreCase)))
                 .ToList();
 
-            var existingVariables = variables.Except(nonExisting).ToList();
+            var existingVariables = variables.Except(nonExisting)
+                .OrderBy(item => item.Key)
+                .ToList();
 
             if (existingVariables.Count > 0)
             {
                 var builder = new StringBuilder();
 
                 builder.Append(
-                        "There are ").Append(existingVariables)
+                        "There are ").Append(string.Join(", ", existingVariables))
                     .AppendLine(" existing variables that will not be overriden by environment variables:");
 
                 foreach (BuildVariable environmentVariable in existingVariables)
@@ -57,29 +58,30 @@ namespace Arbor.Build.Core.BuildVariables
             return buildVariables;
         }
 
-        public static ImmutableArray<KeyValue> GetBuildVariablesFromFile([NotNull] ILogger logger, string fileName)
+        public static ImmutableArray<KeyValue> GetBuildVariablesFromFile([NotNull] ILogger logger, string fileName, string? sourceRoot)
         {
             if (logger == null)
             {
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            string currentDirectory = VcsPathHelper.FindVcsRootPath(Directory.GetCurrentDirectory());
+            sourceRoot ??= VcsPathHelper.FindVcsRootPath(Directory.GetCurrentDirectory());
 
-            if (currentDirectory == null)
+            if (sourceRoot == null)
             {
                 logger.Error("Could not find source root");
                 return ImmutableArray<KeyValue>.Empty;
             }
 
-            var fileInfo = new FileInfo(Path.Combine(currentDirectory, fileName));
+            var fileInfo = new FileInfo(Path.Combine(sourceRoot, fileName));
 
             if (!fileInfo.Exists)
             {
-                logger.Warning(
+                logger.Debug(
                     "The environment variable file '{FileInfo}' does not exist, skipping setting environment variables from file '{FileName}'",
                     fileInfo,
                     fileName);
+
                 return ImmutableArray<KeyValue>.Empty;
             }
 

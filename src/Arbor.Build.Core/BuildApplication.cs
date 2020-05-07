@@ -309,7 +309,9 @@ namespace Arbor.Build.Core
             var buildVariables = new List<IVariable>(500);
 
             _ = _environmentVariables.GetEnvironmentVariable(WellKnownVariables.VariableFileSourceEnabled)
-                .TryParseBool(out bool enabled);
+                .TryParseBool(out bool enabled, defaultValue: true);
+
+            string? sourceRoot = _environmentVariables.GetEnvironmentVariable(WellKnownVariables.SourceRoot);
 
             if (enabled)
             {
@@ -325,13 +327,20 @@ namespace Arbor.Build.Core
                 foreach (string configFile in files)
                 {
                     ImmutableArray<KeyValue> variables =
-                        EnvironmentVariableHelper.GetBuildVariablesFromFile(_logger, configFile);
+                        EnvironmentVariableHelper.GetBuildVariablesFromFile(_logger, configFile, sourceRoot);
 
                     if (variables.IsDefaultOrEmpty)
                     {
                         _logger.Warning(
                             "Could not set environment variables from file, set variable '{Key}' to false to disabled",
                             WellKnownVariables.VariableFileSourceEnabled);
+                    }
+                    else
+                    {
+                        foreach (var variable in variables)
+                        {
+                            _environmentVariables.SetEnvironmentVariable(variable.Key, variable.Value);
+                        }
                     }
                 }
             }

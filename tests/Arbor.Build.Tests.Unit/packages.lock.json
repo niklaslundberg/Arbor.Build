@@ -96,7 +96,7 @@
       "Arbor.Tooler": {
         "type": "Transitive",
         "resolved": "0.9.0",
-        "contentHash": "mDd6OVud5euymyQPGfsS1nY9Wdg5FwiejTdNUrBq0xewriC2/EbiKpYMPRjs/PWeyJ9QBrUrvBLuDBbx4zCtig==",
+        "contentHash": "YbYyF4qZINBs5GqyrLioHOHV3AA7VUt9f4hAsACe7MBSLUpUUC7w2aTBR6nJt8qN/QUdU5ZLjBj1+pS2nT/hvg==",
         "dependencies": {
           "Arbor.Processing": "0.4.0",
           "NuGet.Versioning": "[5.0.0, 6.0.0)",
@@ -106,8 +106,8 @@
       },
       "Autofac": {
         "type": "Transitive",
-        "resolved": "5.1.2",
-        "contentHash": "iGEx5Cm6Uor6/bZkgCHHjJO8cEQvDSOxgzNmHGJgGOnLDCe0b8NpOlhotsqx8dFvBDCsEX/V3YGRR30sRQLsxw=="
+        "resolved": "5.1.4",
+        "contentHash": "MsAEZJNCBTwZ21cBaFosWvR+zNG3VXB8y8qn3HmYl6m9iR/CDqDQykqBzfApbqj3N1l2I4qVBPA2exIdHJvANQ=="
       },
       "JetBrains.Annotations": {
         "type": "Transitive",
@@ -163,24 +163,24 @@
       },
       "Microsoft.IdentityModel.JsonWebTokens": {
         "type": "Transitive",
-        "resolved": "6.5.0",
-        "contentHash": "9h0AqqcKck8pjrX1KCfm3pLrsH/nWa6Lt5G7kCee9bfbmMa6cxHOlLtgp9sp+hXuiHsjMv4YtpPCFEoFNsHwyA==",
+        "resolved": "6.5.1",
+        "contentHash": "zOnP8Hv6JcA+E2qeHGVo6KM7lV7J9kj2a/+VasTTqZ1mkLhnxTLpX7oZ3n8HJ7hZXuG2KY3P/EaCt6eApM30kQ==",
         "dependencies": {
-          "Microsoft.IdentityModel.Tokens": "6.5.0"
+          "Microsoft.IdentityModel.Tokens": "6.5.1"
         }
       },
       "Microsoft.IdentityModel.Logging": {
         "type": "Transitive",
-        "resolved": "6.5.0",
-        "contentHash": "H1QRoz+tKrNcQfRWIREWrzWLAXXp2G8YuYndS3JNGJ05HIjYg9x04fbcfh/0zV7zLRDaNfJjpwLFQJ23L6S7oQ=="
+        "resolved": "6.5.1",
+        "contentHash": "iujlW4mgBKaib0gB3wbJLCCRhaNmxt504O5aGMdIH0JLIjCw+LbX+q3SFf3u0C29rYErvQQ9xeAtGywjvSGLxg=="
       },
       "Microsoft.IdentityModel.Tokens": {
         "type": "Transitive",
-        "resolved": "6.5.0",
-        "contentHash": "43mUg9N8dTn8Eb8bRd4Z7cBOwAgJRSV3vOs76V45HJhQutodXGTH2JhLW601LFCEEjy5gH2Ab89A2OVeWyErLQ==",
+        "resolved": "6.5.1",
+        "contentHash": "+kKU5tbizQmXee6iYJwqxROInlohMYhKYbLa37BUnU/YBhCvPapi2iywE4bVgno2NOF78p7VBERd/s+gYM/9dA==",
         "dependencies": {
           "Microsoft.CSharp": "4.5.0",
-          "Microsoft.IdentityModel.Logging": "6.5.0",
+          "Microsoft.IdentityModel.Logging": "6.5.1",
           "System.Security.Cryptography.Cng": "4.5.0"
         }
       },
@@ -1020,11 +1020,11 @@
       },
       "System.IdentityModel.Tokens.Jwt": {
         "type": "Transitive",
-        "resolved": "6.5.0",
-        "contentHash": "x1I1BcZrgF8CPWuR8pu6ip9wiQVSULozPSJLyAwMPt6f9bW8/u43OGxiaqLHnA0ybHrpOz3Misiu/D97gsYb+A==",
+        "resolved": "6.5.1",
+        "contentHash": "2t8+04Ozz4vX10X1h+lqV8X7PkLUSRTr+kRY4QNpAeTUngqGqv180A1JDK2piGEKCvNbm6xGGkajL9STgI0JJA==",
         "dependencies": {
-          "Microsoft.IdentityModel.JsonWebTokens": "6.5.0",
-          "Microsoft.IdentityModel.Tokens": "6.5.0"
+          "Microsoft.IdentityModel.JsonWebTokens": "6.5.1",
+          "Microsoft.IdentityModel.Tokens": "6.5.1"
         }
       },
       "System.IO": {
@@ -1967,7 +1967,7 @@
           "Arbor.Processing": "0.6.0",
           "Arbor.Sorbus": "3.1.0",
           "Arbor.Tooler": "0.9.0",
-          "Autofac": "5.1.2",
+          "Autofac": "5.1.4",
           "JetBrains.Annotations": "2020.1.0",
           "MSTest.TestFramework": "2.1.1",
           "Machine.Specifications": "1.0.0",
@@ -1982,7 +1982,7 @@
           "Serilog.Sinks.Console": "3.1.1",
           "Serilog.Sinks.Seq": "4.0.0",
           "System.ComponentModel.Annotations": "4.7.0",
-          "System.IdentityModel.Tokens.Jwt": "6.5.0",
+          "System.IdentityModel.Tokens.Jwt": "6.5.1",
           "System.Runtime": "4.3.1",
           "xunit": "2.4.1"
         }
