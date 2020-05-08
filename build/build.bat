@@ -5,7 +5,7 @@ IF "%Arbor.Build.Bootstrapper.AllowPrerelease%" == "" (
 )
 
 IF "%Arbor.Build.Build.Bootstrapper.AllowPrerelease%" == "" (
-    SET Arbor.Build.Bootstrapper.AllowPrerelease=true
+    SET Arbor.Build.Build.Bootstrapper.AllowPrerelease=true
 )
 
 SET Arbor.Build.Tools.External.MSpec.Enabled=true
