@@ -37,10 +37,10 @@ namespace Arbor.Build.Core.BuildVariables
                 VariableDescription property = WellKnownVariables.AllVariables.SingleOrDefault(
                     item => item.InvariantName.Equals(variableName, StringComparison.OrdinalIgnoreCase));
 
-                if (property is object)
+                if (property is {})
                 {
                     message +=
-                        $". (The variable is a wellknown property {typeof(WellKnownVariables)}.{property.WellKnownName})";
+                        $". (The variable is a well-known property {typeof(WellKnownVariables)}.{property.WellKnownName})";
                 }
 
                 throw new BuildException(message, variables);

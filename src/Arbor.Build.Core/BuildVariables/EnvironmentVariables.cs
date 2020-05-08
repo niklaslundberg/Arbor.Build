@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 
 namespace Arbor.Build.Core.BuildVariables
 {
@@ -7,7 +6,7 @@ namespace Arbor.Build.Core.BuildVariables
     {
         public string? GetEnvironmentVariable(string key);
 
-        public ImmutableArray<KeyValuePair<string, string?>> GetVariables();
+        public ImmutableDictionary<string, string?> GetVariables();
 
         void SetEnvironmentVariable(string key, string? value);
     }

@@ -11,14 +11,14 @@ namespace Arbor.Build.Core.Logging
     {
         public string? GetEnvironmentVariable(string key) => Environment.GetEnvironmentVariable(key);
 
-        public ImmutableArray<KeyValuePair<string, string?>> GetVariables() =>
+        public ImmutableDictionary<string, string?> GetVariables() =>
             Environment.GetEnvironmentVariables()
                 .OfType<DictionaryEntry>()
                 .Select(pair =>
                     (Key: pair.Key as string, Value: pair.Value as string))
                 .Where(pair => !string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrWhiteSpace(pair.Value))
                 .Select(pair => new KeyValuePair<string, string?>(pair.Key!, pair.Value))
-                .ToImmutableArray();
+                .ToImmutableDictionary(StringComparer.OrdinalIgnoreCase);
 
         public void SetEnvironmentVariable(string key, string? value) => Environment.SetEnvironmentVariable(key, value);
     }

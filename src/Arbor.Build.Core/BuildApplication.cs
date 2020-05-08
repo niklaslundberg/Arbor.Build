@@ -332,8 +332,8 @@ namespace Arbor.Build.Core
                     if (variables.IsDefaultOrEmpty)
                     {
                         _logger.Warning(
-                            "Could not set environment variables from file, set variable '{Key}' to false to disabled",
-                            WellKnownVariables.VariableFileSourceEnabled);
+                            "Could not set environment variables from file {File}",
+                            configFile);
                     }
                     else
                     {

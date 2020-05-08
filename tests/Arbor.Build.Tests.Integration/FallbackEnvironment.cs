@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using System.Collections.Immutable;
 using System.Linq;
 using Arbor.Build.Core.BuildVariables;
@@ -9,19 +9,30 @@ namespace Arbor.Build.Tests.Integration
 {
     public class FallbackEnvironment : IEnvironmentVariables
     {
-        readonly IEnvironmentVariables _environmentVariables;
         readonly IEnvironmentVariables _defaultEnvironmentVariables;
+        readonly IEnvironmentVariables _environmentVariables;
 
-        public FallbackEnvironment(IEnvironmentVariables environmentVariables, IEnvironmentVariables defaultEnvironmentVariables)
+        public FallbackEnvironment(IEnvironmentVariables environmentVariables,
+            IEnvironmentVariables defaultEnvironmentVariables)
         {
             _environmentVariables = environmentVariables;
             _defaultEnvironmentVariables = defaultEnvironmentVariables;
         }
 
-        public string? GetEnvironmentVariable(string key) => _environmentVariables.GetEnvironmentVariable(key) ?? _defaultEnvironmentVariables.GetEnvironmentVariable(key);
+        public string? GetEnvironmentVariable(string key) => _environmentVariables.GetEnvironmentVariable(key) ??
+                                                             _defaultEnvironmentVariables.GetEnvironmentVariable(key);
 
-        public ImmutableArray<KeyValuePair<string, string?>> GetVariables() => _environmentVariables.GetVariables().Concat(_defaultEnvironmentVariables.GetVariables()).ToImmutableArray();
+        public ImmutableDictionary<string, string?> GetVariables()
+        {
+            var keyValuePairs = _environmentVariables.GetVariables();
 
-        public void SetEnvironmentVariable(string key, string? value) => _environmentVariables.SetEnvironmentVariable(key, value);
+            var fallbackVariables = _defaultEnvironmentVariables.GetVariables()
+                .Where(pair => !keyValuePairs.ContainsKey(pair.Key));
+
+            return keyValuePairs.Concat(fallbackVariables).ToImmutableDictionary(StringComparer.OrdinalIgnoreCase);
+        }
+
+        public void SetEnvironmentVariable(string key, string? value) =>
+            _environmentVariables.SetEnvironmentVariable(key, value);
     }
 }

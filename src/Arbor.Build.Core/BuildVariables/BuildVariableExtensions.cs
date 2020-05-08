@@ -17,10 +17,26 @@ namespace Arbor.Build.Core.BuildVariables
 
         public static IVariable GetVariable(
             this IReadOnlyCollection<IVariable> buildVariables,
-            string key) => buildVariables.Single(
-            bv => bv.Key.Equals(
-                key,
-                StringComparison.OrdinalIgnoreCase));
+            string key)
+        {
+            var foundVariables = buildVariables.Where(
+                bv => bv.Key.Equals(
+                    key,
+                    StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+
+            if (foundVariables.Length > 1)
+            {
+                throw new InvalidOperationException($"Found multiple build variables with key '{key}'");
+            }
+
+            if (foundVariables.Length == 0)
+            {
+                throw new InvalidOperationException($"Found no build variable with key '{key}'");
+            }
+
+            return foundVariables[0];
+        }
 
         public static string? GetVariableValueOrDefault(
             this IReadOnlyCollection<IVariable> buildVariables,

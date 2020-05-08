@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
@@ -7,6 +6,7 @@ using System.Linq;
 using System.Text;
 using Arbor.Aesculus.Core;
 using Arbor.Exceptions;
+using Arbor.KVConfiguration.JsonConfiguration;
 using Arbor.KVConfiguration.Schema.Json;
 using JetBrains.Annotations;
 using Serilog;
@@ -33,7 +33,8 @@ namespace Arbor.Build.Core.BuildVariables
                 .Where(bv => !existing.Any(ebv => ebv.Key.Equals(bv.Key, StringComparison.OrdinalIgnoreCase)))
                 .ToList();
 
-            var existingVariables = variables.Except(nonExisting)
+            var existingVariables = variables
+                .Where(bv => nonExisting.Any(ebv => ebv.Key.Equals(bv.Key, StringComparison.OrdinalIgnoreCase)))
                 .OrderBy(item => item.Key)
                 .ToList();
 
@@ -58,7 +59,9 @@ namespace Arbor.Build.Core.BuildVariables
             return buildVariables;
         }
 
-        public static ImmutableArray<KeyValue> GetBuildVariablesFromFile([NotNull] ILogger logger, string fileName, string? sourceRoot)
+        public static ImmutableArray<KeyValue> GetBuildVariablesFromFile([NotNull] ILogger logger,
+            string fileName,
+            string? sourceRoot)
         {
             if (logger == null)
             {
@@ -89,7 +92,7 @@ namespace Arbor.Build.Core.BuildVariables
 
             try
             {
-                configurationItems = new KVConfiguration.JsonConfiguration.JsonFileReader(fileInfo.FullName)
+                configurationItems = new JsonFileReader(fileInfo.FullName)
                     .GetConfigurationItems();
             }
             catch (Exception ex) when (!ex.IsFatal())
