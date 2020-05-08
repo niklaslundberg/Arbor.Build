@@ -128,5 +128,8 @@
 
         [VariableDescription("Flag to indicate if NuGet self update is enabled", "true")]
         public const string NuGetSelfUpdateEnabled = "Arbor.Build.NuGet.SelfUpdate.Enabled";
+
+        [VariableDescription("Semicolon separated list of file patterns for nuget packages to upload. Example \"*web.nupkg;Lib*.nupkg\"", "true")]
+        public const string ExternalTools_NuGetServer_UploadPackagePatterns = "Arbor.Build.NuGet.PackageUpload.PackagePatterns";
     }
 }

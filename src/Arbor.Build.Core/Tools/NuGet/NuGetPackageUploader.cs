@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
@@ -177,7 +178,8 @@ namespace Arbor.Build.Core.Tools.NuGet
             bool checkNuGetPackagesExists,
             string? sourceName,
             string? configFile,
-            bool timeoutIncreaseEnabled)
+            bool timeoutIncreaseEnabled,
+            ImmutableArray<string> packagePatterns)
         {
             if (artifactPackagesDirectory == null)
             {
@@ -202,10 +204,23 @@ namespace Arbor.Build.Core.Tools.NuGet
             }
             else
             {
-                List<FileInfo> standardPackages =
-                    artifactPackagesDirectory.EnumerateFiles("*.nupkg", SearchOption.AllDirectories)
-                        .Where(file => file.Name.IndexOf("symbols", StringComparison.OrdinalIgnoreCase) < 0)
-                        .ToList();
+                var allStandardPackages = new List<FileInfo>();
+
+                if (packagePatterns.Length == 0)
+                {
+                    allStandardPackages.AddRange(artifactPackagesDirectory.EnumerateFiles("*.nupkg", SearchOption.AllDirectories));
+                }
+                else
+                {
+                    foreach (string packagePattern in packagePatterns)
+                    {
+                        allStandardPackages.AddRange(artifactPackagesDirectory.EnumerateFiles(packagePattern, SearchOption.AllDirectories));
+                    }
+                }
+
+                List<FileInfo> standardPackages = allStandardPackages
+                    .Where(file => file.Name.IndexOf("symbols", StringComparison.OrdinalIgnoreCase) < 0)
+                    .ToList();
 
                 nuGetPackageFiles.AddRange(standardPackages);
             }
@@ -220,10 +235,23 @@ namespace Arbor.Build.Core.Tools.NuGet
             }
             else
             {
-                List<FileInfo> websitePackages =
-                    websitesDirectory.EnumerateFiles("*.nupkg", SearchOption.AllDirectories)
-                        .Where(file => file.Name.IndexOf("symbols", StringComparison.OrdinalIgnoreCase) < 0)
-                        .ToList();
+                var allWebSitePackages = new List<FileInfo>();
+
+                if (packagePatterns.Length == 0)
+                {
+                    allWebSitePackages.AddRange( websitesDirectory.EnumerateFiles("*.nupkg", SearchOption.AllDirectories));
+                }
+                else
+                {
+                    foreach (string packagePattern in packagePatterns)
+                    {
+                        allWebSitePackages.AddRange(websitesDirectory.EnumerateFiles(packagePattern, SearchOption.AllDirectories));
+                    }
+                }
+
+                List<FileInfo> websitePackages = allWebSitePackages
+                    .Where(file => file.Name.IndexOf("symbols", StringComparison.OrdinalIgnoreCase) < 0)
+                    .ToList();
 
                 nuGetPackageFiles.AddRange(websitePackages);
             }
@@ -487,6 +515,12 @@ namespace Arbor.Build.Core.Tools.NuGet
                     WellKnownVariables.ExternalTools_NuGetServer_ConfigFile,
                     string.Empty);
 
+            string patterns =
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables
+                    .ExternalTools_NuGetServer_UploadPackagePatterns, "") ?? "";
+
+            var packagePatterns = patterns.Split(';', StringSplitOptions.RemoveEmptyEntries).ToImmutableArray();
+
             if (isRunningOnBuildAgent)
             {
                 logger.Information("NuGet package upload is enabled");
@@ -520,7 +554,8 @@ namespace Arbor.Build.Core.Tools.NuGet
                     checkNuGetPackagesExists,
                     sourceName,
                     configFile,
-                    timeoutIncreaseEnabled);
+                    timeoutIncreaseEnabled,
+                    packagePatterns);
             }
 
             logger.Information(
