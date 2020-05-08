@@ -7,11 +7,11 @@ namespace Arbor.Build.Core.IO
     public class PathLookupSpecification
     {
         public PathLookupSpecification(
-            IEnumerable<string> ignoredDirectorySegments = null,
-            IEnumerable<string> ignoredFileStartsWithPatterns = null,
-            IEnumerable<string> ignoredDirectorySegmentParts = null,
-            IEnumerable<string> ignoredDirectoryStartsWithPatterns = null,
-            IEnumerable<string> ignoredFileNameParts = null)
+            IEnumerable<string>? ignoredDirectorySegments = null,
+            IEnumerable<string>? ignoredFileStartsWithPatterns = null,
+            IEnumerable<string>? ignoredDirectorySegmentParts = null,
+            IEnumerable<string>? ignoredDirectoryStartsWithPatterns = null,
+            IEnumerable<string>? ignoredFileNameParts = null)
         {
             IgnoredFileStartsWithPatterns = ignoredFileStartsWithPatterns.SafeToReadOnlyCollection();
             IgnoredDirectorySegments = ignoredDirectorySegments.SafeToReadOnlyCollection();

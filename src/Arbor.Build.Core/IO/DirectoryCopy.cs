@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Arbor.Processing;
 using Serilog;
+using Serilog.Core;
 
 namespace Arbor.Build.Core.IO
 {
@@ -11,14 +12,14 @@ namespace Arbor.Build.Core.IO
         public static async Task<ExitCode> CopyAsync(
             string sourceDir,
             string targetDir,
-            ILogger optionalLogger = null,
-            PathLookupSpecification pathLookupSpecificationOption = null,
-            string rootDir = null)
+            ILogger? optionalLogger = null,
+            PathLookupSpecification? pathLookupSpecificationOption = null,
+            string? rootDir = null)
         {
             PathLookupSpecification pathLookupSpecification =
                 pathLookupSpecificationOption ?? DefaultPaths.DefaultPathLookupSpecification;
 
-            ILogger logger = optionalLogger;
+            ILogger logger = optionalLogger ?? Logger.None;
 
             if (string.IsNullOrWhiteSpace(sourceDir))
             {
@@ -59,7 +60,7 @@ namespace Arbor.Build.Core.IO
 
                 if (isFileBlackListed.Item1)
                 {
-                    logger?.Verbose("File '{FullName}' is notallowed, skipping copying file, {Item2}",
+                    logger?.Verbose("File '{FullName}' is not allowed, skipping copying file, {Item2}",
                         file.FullName,
                         isFileBlackListed.Item2);
                     continue;
