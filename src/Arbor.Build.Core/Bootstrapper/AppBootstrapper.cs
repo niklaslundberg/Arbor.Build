@@ -184,6 +184,8 @@ namespace Arbor.Build.Core.Bootstrapper
                 throw new ArgumentNullException(nameof(args));
             }
 
+            var startOptions = BootstrapStartOptions.Parse(args);
+
             string baseDir = VcsPathHelper.FindVcsRootPath(AppDomain.CurrentDomain.BaseDirectory);
 
             var tempDirectory = new DirectoryInfo(Path.Combine(
@@ -195,16 +197,20 @@ namespace Arbor.Build.Core.Bootstrapper
 
             WriteDebug($"Using temp directory '{tempDirectory}'");
 
-            await DirectoryCopy.CopyAsync(baseDir, tempDirectory.FullName).ConfigureAwait(false);
+            var paths = new PathLookupSpecification();
+
+            await DirectoryCopy.CopyAsync(baseDir, tempDirectory.FullName, pathLookupSpecificationOption: paths).ConfigureAwait(false);
 
             _environmentVariables.SetEnvironmentVariable(WellKnownVariables.BranchNameVersionOverrideEnabled, "true");
             _environmentVariables.SetEnvironmentVariable(WellKnownVariables.VariableOverrideEnabled, "true");
 
             var bootstrapStartOptions = new BootstrapStartOptions(
-                Array.Empty<string>(),
+                args,
                 tempDirectory.FullName,
                 true,
-                "refs/heads/develop/12.34.56");
+                "refs/heads/develop/12.34.56",
+                downloadOnly: startOptions.DownloadOnly,
+                arborBuildExePath: startOptions.ArborBuildExePath);
 
             WriteDebug("Starting with debugger attached");
 
@@ -286,7 +292,7 @@ namespace Arbor.Build.Core.Bootstrapper
                 else
                 {
                     ExitCode buildToolsResult =
-                        await RunBuildToolsAsync(buildDir.FullName, buildToolsDirectory).ConfigureAwait(false);
+                        await RunBuildToolsAsync(buildDir.FullName, buildToolsDirectory, startOptions.ArborBuildExePath).ConfigureAwait(false);
 
                     if (buildToolsResult.IsSuccess)
                     {
@@ -402,22 +408,54 @@ namespace Arbor.Build.Core.Bootstrapper
             return baseDir;
         }
 
-        private async Task<ExitCode> RunBuildToolsAsync(string buildDir, string buildToolDirectoryName)
+        private async Task<(string?, List<string>)> GetExePath(DirectoryInfo buildToolDirectory, CancellationToken cancellationToken)
         {
-            var buildToolDirectory = new DirectoryInfo(buildToolDirectoryName);
-
             List<FileInfo> arborBuild =
-                buildToolDirectory.GetFiles("Arbor.Build.dll", SearchOption.TopDirectoryOnly)
+                buildToolDirectory.GetFiles("Arbor.Build.*", SearchOption.TopDirectoryOnly)
                     .Where(file => !file.Name.Equals("nuget.exe", StringComparison.OrdinalIgnoreCase))
                     .ToList();
 
             if (arborBuild.Count != 1)
             {
                 PrintInvalidExeFileCount(arborBuild, buildToolDirectory.FullName);
-                return ExitCode.Failure;
+                return (null, new List<string>());
             }
 
-            FileInfo buildToolExecutable = arborBuild.Single();
+            FileInfo? buildToolExecutable = arborBuild.SingleOrDefault(file => file.Extension.Equals(".exe"));
+
+            if (buildToolExecutable is {})
+            {
+                return (buildToolExecutable.FullName, new List<string>());
+            }
+
+            FileInfo? buildToolDll = arborBuild.SingleOrDefault(file => file.Extension.Equals(".dll"));
+
+            if (buildToolDll is null)
+            {
+                return (null, new List<string>());
+            }
+
+            ImmutableArray<IVariable> variables = await new DotNetEnvironmentVariableProvider(_environmentVariables)
+                   .GetBuildVariablesAsync(
+                       _logger,
+                       ImmutableArray<IVariable>.Empty,
+                       cancellationToken).ConfigureAwait(false);
+
+            string? dotnetExePath = variables.SingleOrDefault(variable =>
+                variable.Key.Equals(WellKnownVariables.DotNetExePath, StringComparison.OrdinalIgnoreCase))?.Value;
+
+            if (string.IsNullOrWhiteSpace(dotnetExePath))
+            {
+                _logger.Error("Could not find dotnet.exe");
+                return (null, new List<string>());
+            }
+
+            return (dotnetExePath, new List<string> {"--", buildToolDll.FullName});
+        }
+
+        private async Task<ExitCode> RunBuildToolsAsync(string buildDir, string buildToolDirectoryName, string? arborBuildExePath)
+        {
+            var buildToolDirectory = new DirectoryInfo(buildToolDirectoryName);
 
             const string timeoutKey = WellKnownVariables.BuildToolTimeoutInSeconds;
             string? timeoutInSecondsFromEnvironment = _environmentVariables.GetEnvironmentVariable(timeoutKey);
@@ -438,29 +476,30 @@ namespace Arbor.Build.Core.Bootstrapper
             {
                 const string buildApplicationPrefix = "[Arbor.Build] ";
 
-                ImmutableArray<IVariable> variables = await new DotNetEnvironmentVariableProvider(_environmentVariables)
-                    .GetBuildVariablesAsync(
-                        _logger,
-                        ImmutableArray<IVariable>.Empty,
-                        cancellationTokenSource.Token).ConfigureAwait(false);
+                var arguments = new List<string>();
 
-                string? dotnetExePath = variables.SingleOrDefault(variable =>
-                    variable.Key.Equals(WellKnownVariables.DotNetExePath, StringComparison.OrdinalIgnoreCase))?.Value;
-
-                if (string.IsNullOrWhiteSpace(dotnetExePath))
+                string? exePath = arborBuildExePath;
+                if (string.IsNullOrWhiteSpace(arborBuildExePath))
                 {
-                    _logger.Error("Could not find dotnet.exe");
+                    var (defaultExePath, args) = await GetExePath(buildToolDirectory, cancellationTokenSource.Token);
+
+                    arguments.AddRange(args);
+                    exePath = defaultExePath;
+                }
+
+                if (string.IsNullOrWhiteSpace(exePath))
+                {
                     return ExitCode.Failure;
                 }
 
-                var arguments = new List<string> {buildToolExecutable.FullName, "--", $"-buildDirectory={buildDir}"};
+                arguments.Add($"-buildDirectory={buildDir}");
 
                 if (_startOptions?.Args?.Any() ?? false)
                 {
                     arguments.AddRange(_startOptions.Args);
                 }
 
-                result = await ProcessRunner.ExecuteProcessAsync(dotnetExePath,
+                result = await ProcessRunner.ExecuteProcessAsync(exePath,
                         arguments,
                         (message, prefix) => _logger.Information("{Prefix}{Message}", buildApplicationPrefix, message),
                         (message, prefix) => _logger.Error("{Prefix}{Message}", buildApplicationPrefix, message),

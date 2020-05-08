@@ -6,27 +6,35 @@ namespace Arbor.Build.Core.Bootstrapper
 {
     public class BootstrapStartOptions
     {
+        public const string DownloadOnlyCliParameter = "--download-only";
+        public const string ArborBuildExeCliParameter = "-arborBuildExe=";
+
         public BootstrapStartOptions(string[] args,
             string? baseDir = null,
             bool? preReleaseEnabled = null,
             string? branchName = null,
-            bool downloadOnly = false)
+            bool downloadOnly = false,
+            string? arborBuildExePath = default)
         {
             Args = args;
             BaseDir = baseDir;
             PreReleaseEnabled = preReleaseEnabled;
             BranchName = branchName;
             DownloadOnly = downloadOnly;
+            ArborBuildExePath = arborBuildExePath;
         }
 
         public bool? PreReleaseEnabled { get; }
 
         public string[] Args { get; }
+
         public string? BaseDir { get; }
 
         public string? BranchName { get; }
 
         public bool DownloadOnly { get; }
+
+        public string? ArborBuildExePath { get; }
 
         public static BootstrapStartOptions Parse([NotNull] string[] args)
         {
@@ -35,9 +43,11 @@ namespace Arbor.Build.Core.Bootstrapper
                 throw new ArgumentNullException(nameof(args));
             }
 
-            bool downloadOnly = args.Any(arg => arg.Equals("--download-only", StringComparison.OrdinalIgnoreCase));
+            bool downloadOnly = args.Any(arg => arg.Equals(DownloadOnlyCliParameter, StringComparison.OrdinalIgnoreCase));
 
-            return new BootstrapStartOptions(args, downloadOnly: downloadOnly);
+            string? arborBuildExePath = args.FirstOrDefault(arg => arg.StartsWith(ArborBuildExeCliParameter, StringComparison.OrdinalIgnoreCase))?.Split("=")?.Skip(1).FirstOrDefault();
+
+            return new BootstrapStartOptions(args, downloadOnly: downloadOnly, arborBuildExePath: arborBuildExePath);
         }
     }
 }
