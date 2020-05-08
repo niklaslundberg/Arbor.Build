@@ -26,7 +26,7 @@ namespace Arbor.Build.Core.Bootstrapper
     public class AppBootstrapper
     {
         private const string BuildToolPackageName = ArborConstants.ArborBuild;
-        private const int MaxBuildTimeInSeconds = 600;
+        private const int MaxBuildTimeInSeconds = 900;
         private static readonly string Prefix = $"[{ArborConstants.ArborBuild}.{nameof(AppBootstrapper)}] ";
         private readonly ILogger _logger;
         private bool _directoryCloneEnabled;
