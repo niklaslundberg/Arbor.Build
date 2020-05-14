@@ -63,6 +63,7 @@
 
   <ItemGroup>
     <Folder Include="GenericExtensions\Boolean\" />
+    <Folder Include="Tools\Scripts\" />
   </ItemGroup>
 
 </Project>

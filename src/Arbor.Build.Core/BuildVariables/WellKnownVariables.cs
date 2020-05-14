@@ -13,6 +13,8 @@ namespace Arbor.Build.Core.BuildVariables
         Justification = "Variables")]
     public static partial class WellKnownVariables
     {
+        [VariableDescription("Semicolon separated list of executables to execute after build")]
+        public const string PostScripts = "Arbor.Build.PostScripts";
         // ReSharper disable InconsistentNaming
 
         // ReSharper disable ConvertToConstant.Global

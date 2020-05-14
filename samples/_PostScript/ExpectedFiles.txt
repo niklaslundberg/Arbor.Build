@@ -1,0 +1,2 @@
+Artifacts\test1.txt
+Artifacts\test2.txt

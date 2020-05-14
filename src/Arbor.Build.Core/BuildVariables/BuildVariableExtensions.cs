@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
@@ -8,6 +9,14 @@ namespace Arbor.Build.Core.BuildVariables
 {
     public static class BuildVariableExtensions
     {
+        public static ImmutableArray<string> GetValues(this IReadOnlyCollection<IVariable> variables, string key)
+        {
+            string value = variables.GetVariableValueOrDefault(key, "")!;
+
+            return value.Split(';', StringSplitOptions.RemoveEmptyEntries).Select(item => item.Trim())
+                .ToImmutableArray();
+        }
+
         public static bool HasKey(
             this IReadOnlyCollection<IVariable> buildVariables,
             string key) => buildVariables.Any(
@@ -20,9 +29,9 @@ namespace Arbor.Build.Core.BuildVariables
             string key)
         {
             var foundVariables = buildVariables.Where(
-                bv => bv.Key.Equals(
-                    key,
-                    StringComparison.OrdinalIgnoreCase))
+                    bv => bv.Key.Equals(
+                        key,
+                        StringComparison.OrdinalIgnoreCase))
                 .ToArray();
 
             if (foundVariables.Length > 1)
@@ -163,10 +172,10 @@ namespace Arbor.Build.Core.BuildVariables
         public static int IntValueOrDefault(this IEnumerable<KeyValuePair<string, string?>> pairs,
             string key,
             int defaultValue = default) => int.TryParse(
-                pairs.SingleOrDefault(
-                    pair => pair.Key.Equals(key, StringComparison.Ordinal)).Value,
-                out int value)
-                ? value
-                : defaultValue;
+            pairs.SingleOrDefault(
+                pair => pair.Key.Equals(key, StringComparison.Ordinal)).Value,
+            out int value)
+            ? value
+            : defaultValue;
     }
 }
