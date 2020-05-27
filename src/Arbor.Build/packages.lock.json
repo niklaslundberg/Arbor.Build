@@ -135,7 +135,7 @@
       "Arbor.Tooler": {
         "type": "Transitive",
         "resolved": "0.9.1",
-        "contentHash": "l7EJKzvkHFTzZfzmIJqnAM9sn7WQpuVcG50f5E+c4n12oCNaesjgRFs9DMEqtObN8CLfVg9IkiGvCxBpXKF3wA==",
+        "contentHash": "IWp/FZhpu9erUhMjVNv7cY9Dtj8YNw4Fr2E2iTT9d9gfUt/KTlsTatDQR2p7meLuwT9E16m9rtpOyNOigyagNQ==",
         "dependencies": {
           "Arbor.Processing": "0.4.0",
           "NuGet.Versioning": "[5.0.0, 6.0.0)",
