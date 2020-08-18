@@ -11,12 +11,9 @@ namespace Arbor.Build
     {
         private static BuildApplication _app;
 
-        private static Task<int> Main(string[] args)
-        {
-            return RunAsync(args);
-        }
+        private static Task<int> Main(string[] args) => RunAsync(args);
 
-        public static async Task<int> RunAsync(string[] args, IEnvironmentVariables? environmentVariables = default, ISpecialFolders specialFolders = default)
+        public static async Task<int> RunAsync(string[] args, IEnvironmentVariables? environmentVariables = default, ISpecialFolders? specialFolders = default)
         {
             environmentVariables ??= new DefaultEnvironmentVariables();
             specialFolders ??= SpecialFolders.Default;

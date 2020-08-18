@@ -509,10 +509,12 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 solutionFile.FullName,
                 $"/property:configuration={configuration}",
                 $"/property:platform={platform}",
+                "/property:ContinuousIntegrationBuild=true",
                 $"/verbosity:{_verbosity.Level}",
                 $"/target:{_defaultTarget}",
                $"/property:AssemblyVersion={_assemblyVersion}",
-                $"/property:FileVersion={_assemblyFileVersion}"
+                $"/property:FileVersion={_assemblyFileVersion}",
+                $"/property:Version={_version}"
             };
 
             if (_processorCount.HasValue && _processorCount.Value >= 1)
@@ -645,7 +647,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                         WellKnownVariables.DotNetPackToolProjectsEnabled);
 
                     ExitCode webAppsExitCode =
-                        await PackDotNetToolProjectsAsync(solutionFile, configuration, logger)
+                        await PackDotNetProjectsAsync(solutionFile, configuration, logger)
                             .ConfigureAwait(false);
 
                     exitCode = webAppsExitCode;
@@ -734,15 +736,16 @@ namespace Arbor.Build.Core.Tools.MSBuild
             ImmutableArray<SolutionProject> publishProjects = solution.Projects
                 .Where(project =>
                     project.NetFrameworkGeneration == NetFrameworkGeneration.NetCoreApp
-                    && (project.Project.HasPropertyWithValue("ArborPublishEnabled", "true") ||
-                        !project.Project.PropertyGroups.Any(msBuildPropertyGroup =>
-                            msBuildPropertyGroup.Properties.Any(msBuildProperty =>
-                                msBuildProperty.Name.Equals("ArborPublishEnabled", StringComparison.Ordinal))))
-                    && (project.Project.HasPropertyWithValue("OutputType", "Exe")
-                        || project.Project.Sdk == DotNetSdk.DotnetWeb
-                        || HasPublishPackageEnabled(project))
-                    && !project.Project.PackageReferences.Any(reference =>
-                        sdkTestPackageId.Equals(reference.Package, StringComparison.OrdinalIgnoreCase)))
+                    && (
+                        ((project.Project.HasPropertyWithValue("ArborPublishEnabled", "true") ||
+                          !project.Project.PropertyGroups.Any(msBuildPropertyGroup =>
+                              msBuildPropertyGroup.Properties.Any(msBuildProperty =>
+                                  msBuildProperty.Name.Equals("ArborPublishEnabled", StringComparison.Ordinal))))
+                         || (project.Project.HasPropertyWithValue("OutputType", "Exe")
+                             || project.Project.Sdk == DotNetSdk.DotnetWeb
+                             || HasPublishPackageEnabled(project)))
+                        && !project.Project.PackageReferences.Any(reference =>
+                            sdkTestPackageId.Equals(reference.Package, StringComparison.OrdinalIgnoreCase))))
                 .ToImmutableArray();
 
             foreach (SolutionProject solutionProject in publishProjects)
@@ -773,6 +776,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     args.Add("--verbosity");
                     args.Add("minimal");
                 }
+
+                args.Add("-p:ContinuousIntegrationBuild=true");
 
                 var packageLookupDirectories = new List<DirectoryInfo>();
 
@@ -856,6 +861,18 @@ namespace Arbor.Build.Core.Tools.MSBuild
                                         nugetPackage.CopyTo(targetFile, true);
                                     }
                                 }
+
+                                var nugetSymbolPackages = lookupDirectory.GetFiles($"*{packageVersion}.snupkg", SearchOption.AllDirectories);
+
+                                foreach (var nugetPackage in nugetSymbolPackages)
+                                {
+                                    string targetFile = Path.Combine(_packagesDirectory, nugetPackage.Name);
+
+                                    if (!File.Exists(targetFile))
+                                    {
+                                        nugetPackage.CopyTo(targetFile, true);
+                                    }
+                                }
                             }
                         }
                     }
@@ -889,7 +906,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             return options;
         }
 
-        private async Task<ExitCode> PackDotNetToolProjectsAsync(
+        private async Task<ExitCode> PackDotNetProjectsAsync(
             FileInfo solutionFile,
             string configuration,
             ILogger logger)
@@ -900,16 +917,18 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 return ExitCode.Success;
             }
 
-            static bool IsToolProject(SolutionProject project)
+            static bool IsPackageProject(SolutionProject project)
             {
                 return project.NetFrameworkGeneration == NetFrameworkGeneration.NetCoreApp
-                       && project.Project.HasPropertyWithValue("OutputType", "Exe")
-                       && project.Project.HasPropertyWithValue("PackAsTool", "true");
+                       && ((project.Project.HasPropertyWithValue("OutputType", "Exe")
+                            && project.Project.HasPropertyWithValue("PackAsTool", "true")));
+
+                //|| !project.Project.HasPropertyWithValue("GeneratePackage", "false", StringComparison.OrdinalIgnoreCase));
             }
 
             Solution solution = Solution.LoadFrom(solutionFile.FullName);
 
-            ImmutableArray<SolutionProject> exeProjects = solution.Projects.Where(IsToolProject).ToImmutableArray();
+            ImmutableArray<SolutionProject> exeProjects = solution.Projects.Where(IsPackageProject).ToImmutableArray();
 
             bool isReleaseBuild = configuration.Equals(WellKnownConfigurations.Release, StringComparison.OrdinalIgnoreCase);
 
@@ -929,9 +948,9 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     $"/p:VersionPrefix={packageVersion}",
                     "--output",
                     _packagesDirectory,
-                    "--no-build"
+                    "--no-build",
+                    "--include-symbols",
                 };
-
 
                 void Log(string message, string category)
                 {
@@ -1442,6 +1461,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     solutionProject.FullPath,
                     $"/property:configuration={configuration}",
                     $"/verbosity:{_verbosity.Level}",
+                    "/property:ContinuousIntegrationBuild=true",
                     $"/property:publishdir={siteArtifactDirectory.FullName}",
                     $"/property:AssemblyVersion={_assemblyVersion}",
                     $"/property:FileVersion={_assemblyFileVersion}"

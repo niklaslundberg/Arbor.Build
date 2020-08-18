@@ -157,14 +157,20 @@ namespace Arbor.Build.Core.Tools.Symbols
                 throw new ArgumentNullException(nameof(apiKey));
             }
 
-            List<FileInfo> files = new DirectoryInfo(packagesFolder)
+            List<FileInfo> oldSymbolPackages = new DirectoryInfo(packagesFolder)
                 .EnumerateFiles("*.nupkg", SearchOption.AllDirectories)
                 .Where(file => file.Name.IndexOf("symbols", StringComparison.OrdinalIgnoreCase) >= 0)
                 .ToList();
 
+            List<FileInfo> newSymbolPackages = new DirectoryInfo(packagesFolder)
+                .EnumerateFiles("*.snupkg", SearchOption.AllDirectories)
+                .ToList();
+
             bool result = true;
 
-            foreach (FileInfo fileInfo in files)
+            var allPackages = oldSymbolPackages.Concat(newSymbolPackages).ToList();
+
+            foreach (FileInfo fileInfo in allPackages)
             {
                 string nugetPackage = fileInfo.FullName;
 
