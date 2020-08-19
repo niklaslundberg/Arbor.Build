@@ -108,6 +108,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
         private bool _logMsBuildWarnings;
         private GitBranchModel? _gitModel;
         private BranchName? _branchName;
+        private bool _deterministicBuildEnabled;
 
         public SolutionBuilder(BuildContext buildContext, NuGetPackager nugetPackager)
         {
@@ -509,13 +510,17 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 solutionFile.FullName,
                 $"/property:configuration={configuration}",
                 $"/property:platform={platform}",
-                "/property:ContinuousIntegrationBuild=true",
                 $"/verbosity:{_verbosity.Level}",
                 $"/target:{_defaultTarget}",
                $"/property:AssemblyVersion={_assemblyVersion}",
                 $"/property:FileVersion={_assemblyFileVersion}",
                 $"/property:Version={_version}"
             };
+
+            if (_deterministicBuildEnabled)
+            {
+                argList.Add("/property:ContinuousIntegrationBuild=true");
+            }
 
             if (_processorCount.HasValue && _processorCount.Value >= 1)
             {
@@ -777,7 +782,10 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     args.Add("minimal");
                 }
 
-                args.Add("-p:ContinuousIntegrationBuild=true");
+                if (_deterministicBuildEnabled)
+                {
+                    args.Add("-p:ContinuousIntegrationBuild=true");
+                }
 
                 var packageLookupDirectories = new List<DirectoryInfo>();
 
@@ -1461,11 +1469,15 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     solutionProject.FullPath,
                     $"/property:configuration={configuration}",
                     $"/verbosity:{_verbosity.Level}",
-                    "/property:ContinuousIntegrationBuild=true",
                     $"/property:publishdir={siteArtifactDirectory.FullName}",
                     $"/property:AssemblyVersion={_assemblyVersion}",
                     $"/property:FileVersion={_assemblyFileVersion}"
                 };
+
+                if (_deterministicBuildEnabled)
+                {
+                    buildSiteArguments.Add("/property:ContinuousIntegrationBuild=true");
+                }
 
                 string rid =
                     solutionProject.Project.GetPropertyValue(WellKnownVariables.ProjectMSBuildPublishRuntimeIdentifier);
@@ -2519,11 +2531,13 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 _gitModel = model;
             }
 
+            _deterministicBuildEnabled = buildVariables.GetBooleanByKey(WellKnownVariables.DeterministicBuildEnabled);
+
             var maybe = BranchName.TryParse(buildVariables.GetVariableValueOrDefault(WellKnownVariables.BranchName, null));
 
             _branchName = maybe;
 
-            if (_vcsRoot == null)
+            if (_vcsRoot is null)
             {
                 _logger.Error("Could not find version control root path");
                 return ExitCode.Failure;

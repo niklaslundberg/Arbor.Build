@@ -158,6 +158,10 @@ namespace Arbor.Build.Core.BuildVariables
         public const string ExternalTools_MSBuild_BuildPlatform =
             "Arbor.Build.Tools.External.MSBuild.BuildPlatform";
 
+        [VariableDescription("Flag to indicate if the build should be deterministic, enabling ContinuousIntegrationBuild MSBuild property")]
+        public const string DeterministicBuildEnabled =
+            "Arbor.Build.Tools.External.MSBuild.DeterministicBuild.Enabled";
+
         [VariableDescription("Flag to indicate if code analysis should be run by MSBuild")]
         public const string ExternalTools_MSBuild_CodeAnalysisEnabled =
             "Arbor.Build.Tools.External.MSBuild.CodeAnalysis.Enabled";

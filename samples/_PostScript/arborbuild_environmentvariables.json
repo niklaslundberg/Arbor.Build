@@ -20,6 +20,10 @@
         {
             "key":  "Arbor.Build.PostScripts",
             "value": "PostScript1.bat;PostScript2.bat"
+        },
+        {
+            "key":  "Arbor.Build.Tools.External.MSBuild.DeterministicBuild.Enabled",
+            "value": false
         }
     ]
 }
