@@ -723,7 +723,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             string configuration,
             ILogger logger)
         {
-            bool HasPublishPackageEnabled(SolutionProject project)
+            static bool HasPublishPackageEnabled(SolutionProject project)
             {
                 return project.Project.HasPropertyWithValue("GeneratePackageOnBuild", "true");
             }
@@ -928,10 +928,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
             static bool IsPackageProject(SolutionProject project)
             {
                 return project.NetFrameworkGeneration == NetFrameworkGeneration.NetCoreApp
-                       && ((project.Project.HasPropertyWithValue("OutputType", "Exe")
-                            && project.Project.HasPropertyWithValue("PackAsTool", "true")));
-
-                //|| !project.Project.HasPropertyWithValue("GeneratePackage", "false", StringComparison.OrdinalIgnoreCase));
+                       && project.Project.HasPropertyWithValue("OutputType", "Exe")
+                       && project.Project.HasPropertyWithValue("PackAsTool", "true");
             }
 
             Solution solution = Solution.LoadFrom(solutionFile.FullName);
