@@ -33,7 +33,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 throw new ArgumentException($"The version '{version} is not a valid version format");
             }
 
-            if (isReleaseBuild && GitBranchModel.GitFlowBuildOnMaster != gitModel)
+            if (isReleaseBuild && GitBranchModel.GitFlowBuildOnMain != gitModel)
             {
                 string parsed = GetStableSemanticVersion(parsedVersion);
 
@@ -55,9 +55,9 @@ namespace Arbor.Build.Core.Tools.NuGet
                 ? "."
                 : string.Empty;
 
-            if (GitBranchModel.GitFlowBuildOnMaster == gitModel && isReleaseBuild)
+            if (GitBranchModel.GitFlowBuildOnMain == gitModel && isReleaseBuild)
             {
-                if (string.Equals(branchName?.LogicalName, "master"))
+                if (branchName is {IsMainBranch: true})
                 {
                     return GetStableSemanticVersion(parsedVersion);
                 }

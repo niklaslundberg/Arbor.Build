@@ -20,6 +20,9 @@
         [VariableDescription("Git hash")]
         public const string GitHash = "Arbor.Build.Vcs.Git.Hash";
 
+        [VariableDescription("Git repository url")]
+        public const string RepositoryUrl = "Arbor.Build.Vcs.Git.RepositoryUrl";
+
         [VariableDescription("VCS branch name version if any")]
         public const string BranchNameVersion =
             "Arbor.Build.Vcs.Branch.Name.Version";

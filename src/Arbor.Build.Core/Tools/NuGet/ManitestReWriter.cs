@@ -12,7 +12,7 @@ namespace Arbor.Build.Core.Tools.NuGet
         public ManifestReWriteResult Rewrite(
             string nuspecFullPath,
             string tagPrefix = "x-arbor-x",
-            ILogger logger = null)
+            ILogger? logger = null)
         {
             if (string.IsNullOrWhiteSpace(nuspecFullPath))
             {

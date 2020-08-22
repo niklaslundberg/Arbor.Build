@@ -2,6 +2,15 @@
   "version": 1,
   "dependencies": {
     ".NETCoreApp,Version=v3.1": {
+      "FluentAssertions": {
+        "type": "Direct",
+        "requested": "[5.10.3, )",
+        "resolved": "5.10.3",
+        "contentHash": "gVPEVp1hLVqcv+7Q2wiDf7kqCNn7+bQcQ0jbJ2mcRT6CeRoZl1tNkqvzSIhvekyldDptk77j1b03MXTTRIqqpg==",
+        "dependencies": {
+          "System.Configuration.ConfigurationManager": "4.4.0"
+        }
+      },
       "xunit": {
         "type": "Direct",
         "requested": "[2.4.1, )",
@@ -29,6 +38,14 @@
         "type": "Transitive",
         "resolved": "3.0.2",
         "contentHash": "YWFdVy4MjN/pmh3FueugcOVhgQY82+hcivmXuWQBxlEPwrZ0E+3KgGsrnq/QjCntDfrSk5XB+Dw+Zlpsv0mQ9A=="
+      },
+      "Arbor.FS": {
+        "type": "Transitive",
+        "resolved": "0.1.0",
+        "contentHash": "UTSQCd+3kSXo8mnZLxZxs8BTHjGru8ue8+0oSHlX0iqD1qx/rxcnJBGHBhQyJxX35eTcQinLc60IUoMFGYp8NA==",
+        "dependencies": {
+          "zio": "0.8.0"
+        }
       },
       "Arbor.KVConfiguration.Core": {
         "type": "Transitive",
@@ -1715,12 +1732,18 @@
           "xunit.extensibility.core": "[2.4.1]"
         }
       },
+      "Zio": {
+        "type": "Transitive",
+        "resolved": "0.8.0",
+        "contentHash": "K1uswTWdec+j6KJAXmi1WT2G1v4mxdP8ojNl/JLp9bVFAdQSNW1oMdUIVv5go1cKmcu6GJcgCJxNMP2uTSOZXg=="
+      },
       "arbor.build.core": {
         "type": "Project",
         "dependencies": {
           "Arbor.Aesculus": "3.0.2",
           "Arbor.Defensive.Collections": "1.0.0",
           "Arbor.Exceptions": "1.0.0",
+          "Arbor.FS": "0.1.0",
           "Arbor.KVConfiguration.JsonConfiguration": "0.20.0",
           "Arbor.KVConfiguration.Schema.Json": "0.20.0",
           "Arbor.KVConfiguration.UserConfiguration": "0.20.0",

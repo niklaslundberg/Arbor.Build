@@ -130,10 +130,11 @@ namespace Arbor.Build.Core.Tools.Git
                 {
                     const string arborBuildGitcommithashenabled = "Arbor.Build.GitCommitHashEnabled";
 
-                    string? environmentVariable = _environmentVariables.GetEnvironmentVariable(arborBuildGitcommithashenabled);
+                    string? environmentVariable =
+                        _environmentVariables.GetEnvironmentVariable(arborBuildGitcommithashenabled);
 
                     if (!environmentVariable
-                        .ParseOrDefault(true))
+                        .ParseOrDefault(defaultValue: true))
                     {
                         logger.Information(
                             "Git commit hash is disabled by environment variable {ArborXGitcommithashenabled} set to {EnvironmentVariable}",
@@ -148,13 +149,13 @@ namespace Arbor.Build.Core.Tools.Git
 
                         if (!string.IsNullOrWhiteSpace(gitExePath))
                         {
-                            var arguments = new List<string> { "rev-parse", "HEAD" };
+                            var arguments = new List<string> {"rev-parse", "HEAD"};
 
-                            ExitCode exitCode = await ProcessRunner.ExecuteProcessAsync(gitExePath,
-                                arguments: arguments,
-                                standardOutLog: (message, category) => stringBuilder.Append(message),
+                            var exitCode = await ProcessRunner.ExecuteProcessAsync(gitExePath,
+                                arguments,
+                                (message, category) => stringBuilder.Append(message),
                                 toolAction: logger.Information,
-                                cancellationToken: cancellationToken).ConfigureAwait(false);
+                                cancellationToken: cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
 
                             if (!exitCode.IsSuccess)
                             {
@@ -174,6 +175,18 @@ namespace Arbor.Build.Core.Tools.Git
                         }
                     }
                 }
+            }
+
+            string? gitHubUrl = buildVariables.GetVariableValueOrDefault("GITHUB_SERVER_URL");
+            string? gitHubRepository = buildVariables.GetVariableValueOrDefault("GITHUB_REPOSITORY");
+
+            if (string.IsNullOrWhiteSpace(buildVariables.GetVariableValueOrDefault(WellKnownVariables.RepositoryUrl))
+                && !string.IsNullOrWhiteSpace(gitHubUrl)
+                && !string.IsNullOrWhiteSpace(gitHubRepository)
+            )
+            {
+                string repositoryUrl = $"{gitHubUrl}/{gitHubRepository}";
+                variables.Add(new BuildVariable(WellKnownVariables.RepositoryUrl, repositoryUrl));
             }
 
             return variables.ToImmutableArray();

@@ -346,17 +346,13 @@ namespace Arbor.Build.Core.Tools.MSBuild
                         continue;
                     }
 
-                    if (line.IndexOf(
-                            "GlobalSection(SolutionConfigurationPlatforms)",
-                            StringComparison.OrdinalIgnoreCase) >= 0)
+                    if (line.Contains("GlobalSection(SolutionConfigurationPlatforms)", StringComparison.OrdinalIgnoreCase))
                     {
                         isInGlobalSection = true;
                         continue;
                     }
 
-                    if (line.IndexOf(
-                            "EndGlobalSection",
-                            StringComparison.OrdinalIgnoreCase) >= 0)
+                    if (line.Contains("EndGlobalSection", StringComparison.OrdinalIgnoreCase))
                     {
                         isInGlobalSection = false;
                         continue;
@@ -365,7 +361,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     if (isInGlobalSection)
                     {
                         platforms.AddRange(_platforms.Where(knownPlatform =>
-                            line.IndexOf(knownPlatform, StringComparison.InvariantCulture) >= 0));
+                            line.Contains(knownPlatform, StringComparison.InvariantCulture)));
                     }
                 }
             }
@@ -579,7 +575,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             void LogDefault(string message, string category)
             {
-                if (message.Trim().IndexOf("): warning ", StringComparison.Ordinal) >= 0)
+                if (message.Trim().Contains("): warning "))
                 {
                     if (_logMsBuildWarnings)
                     {
@@ -822,7 +818,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                     void Log(string message, string category)
                     {
-                        if (message.Trim().IndexOf("): warning ", StringComparison.Ordinal) >= 0)
+                        if (message.Trim().Contains("): warning "))
                         {
                             if (_logMsBuildWarnings)
                             {
@@ -960,7 +956,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                 void Log(string message, string category)
                 {
-                    if (message.Trim().IndexOf("): warning ", StringComparison.Ordinal) >= 0)
+                    if (message.Trim().Contains("): warning "))
                     {
                         if (_logMsBuildWarnings)
                         {
@@ -1206,7 +1202,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             ImmutableArray<WebSolutionProject> solutionProjects = solution.Projects
                 .Where(project => File.ReadAllLines(project.Project.FileName)
                                       .First()
-                                      .IndexOf("Microsoft.NET.Sdk.Web", StringComparison.OrdinalIgnoreCase) >= 0)
+.Contains("Microsoft.NET.Sdk.Web", StringComparison.OrdinalIgnoreCase))
                 .Select(project => new WebSolutionProject(
                     project.Project.FileName,
                     project.Project.ProjectName,

@@ -64,7 +64,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             }
 
             return File.ReadLines(projectFile.FullName)
-                .Any(line => line.IndexOf("Microsoft.NET.Sdk", StringComparison.OrdinalIgnoreCase) >= 0);
+                .Any(line => line.Contains("Microsoft.NET.Sdk", StringComparison.OrdinalIgnoreCase));
         }
 
         public static MSBuildProject LoadFrom(string projectFileFullName)

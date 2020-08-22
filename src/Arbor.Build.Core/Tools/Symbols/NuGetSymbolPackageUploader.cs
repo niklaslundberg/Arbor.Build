@@ -159,7 +159,7 @@ namespace Arbor.Build.Core.Tools.Symbols
 
             List<FileInfo> oldSymbolPackages = new DirectoryInfo(packagesFolder)
                 .EnumerateFiles("*.nupkg", SearchOption.AllDirectories)
-                .Where(file => file.Name.IndexOf("symbols", StringComparison.OrdinalIgnoreCase) >= 0)
+                .Where(file => file.Name.Contains("symbols", StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
             List<FileInfo> newSymbolPackages = new DirectoryInfo(packagesFolder)

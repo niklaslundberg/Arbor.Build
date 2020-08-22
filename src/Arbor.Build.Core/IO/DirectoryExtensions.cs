@@ -3,9 +3,13 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Arbor.Defensive.Collections;
 using Arbor.Exceptions;
 using JetBrains.Annotations;
+using Zio;
 
 namespace Arbor.Build.Core.IO
 {
@@ -37,6 +41,30 @@ namespace Arbor.Build.Core.IO
             directoryInfo.Refresh();
 
             return directoryInfo;
+        }
+
+        public static DirectoryEntry EnsureExists(this DirectoryEntry directoryEntry)
+        {
+            if (directoryEntry == null)
+            {
+                throw new ArgumentNullException(nameof(directoryEntry));
+            }
+
+            try
+            {
+                if (!directoryEntry.FileSystem.DirectoryExists(directoryEntry.Path))
+                {
+                    directoryEntry.Create();
+                }
+            }
+            catch (PathTooLongException ex)
+            {
+                throw new PathTooLongException(
+                    $"Could not create directory '{directoryEntry.FullName}', path length {directoryEntry.FullName.Length}",
+                    ex);
+            }
+
+            return new DirectoryEntry(directoryEntry.FileSystem, directoryEntry.Path);
         }
 
         public static void DeleteIfExists(this DirectoryInfo? directoryInfo, bool recursive = true)
@@ -118,9 +146,9 @@ namespace Arbor.Build.Core.IO
 
         public static ImmutableArray<FileInfo> GetFilesRecursive(
             this DirectoryInfo directoryInfo,
-            IEnumerable<string> fileExtensions = null,
-            PathLookupSpecification pathLookupSpecification = null,
-            string rootDir = null)
+            IEnumerable<string>? fileExtensions = null,
+            PathLookupSpecification? pathLookupSpecification = null,
+            string? rootDir = null)
         {
             if (directoryInfo == null)
             {
@@ -208,12 +236,11 @@ namespace Arbor.Build.Core.IO
                     siteArtifactDirectory.Refresh();
                     try
                     {
-                        if (excludedPattern.IndexOf(Path.DirectorySeparatorChar, StringComparison.InvariantCulture) >=
-                            0)
+                        if (excludedPattern.Contains(Path.DirectorySeparatorChar, StringComparison.InvariantCulture))
                         {
                             excludedFiles = allFiles.Where(file =>
                                     file.Substring(siteArtifactDirectory.FullName.Length)
-                                        .IndexOf(excludedPattern, StringComparison.OrdinalIgnoreCase) >= 0)
+.Contains(excludedPattern, StringComparison.OrdinalIgnoreCase))
                                 .ToArray();
                         }
                         else
@@ -248,6 +275,25 @@ namespace Arbor.Build.Core.IO
             }
 
             return allIncludedFiles.ToImmutableArray();
+        }
+    }
+
+    public static class FileExtensions
+    {
+        public static async Task WriteAllTextAsync(this FileEntry fileEntry, string text, Encoding? encoding = default, CancellationToken cancellationToken = default)
+        {
+            await using Stream stream = fileEntry.Create();
+
+            await stream.WriteAllTextAsync(text.AsMemory(), encoding, cancellationToken);
+        }
+    }
+    public static class StreamExtensions
+    {
+        public static async Task WriteAllTextAsync(this Stream stream, ReadOnlyMemory<char> text, Encoding? encoding = default, CancellationToken cancellationToken = default)
+        {
+            await using var streamWriter = new StreamWriter(stream, encoding ?? Encoding.UTF8);
+
+            await streamWriter.WriteAsync(text, cancellationToken);
         }
     }
 }

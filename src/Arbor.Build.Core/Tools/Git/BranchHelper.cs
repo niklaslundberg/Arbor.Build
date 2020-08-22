@@ -18,8 +18,9 @@ namespace Arbor.Build.Core.Tools.Git
             var nonFeatureBranchNames = new[]
             {
                 "dev",
-                "develop",
-                "master",
+                BranchName.Develop.LogicalName,
+                BranchName.Master.LogicalName,
+                BranchName.Main.LogicalName,
                 "release",
                 "hotfix"
             };
@@ -40,7 +41,7 @@ namespace Arbor.Build.Core.Tools.Git
 
             var developBranchNames = new[]
             {
-                "develop",
+                BranchName.Develop.LogicalName,
                 "dev"
             };
 
@@ -61,7 +62,8 @@ namespace Arbor.Build.Core.Tools.Git
 
             var productionBranches = new List<string>(10)
             {
-                "master",
+                BranchName.Master.LogicalName,
+                BranchName.Main.LogicalName,
                 "release",
                 "hotfix"
             };

@@ -1,5 +1,8 @@
-﻿using Autofac;
+﻿using Arbor.FS;
+using Autofac;
 using JetBrains.Annotations;
+using Zio;
+using Zio.FileSystems;
 
 namespace Arbor.Build.Core
 {
@@ -8,5 +11,15 @@ namespace Arbor.Build.Core
     {
         protected override void Load(ContainerBuilder builder) =>
             builder.RegisterType<TimeService>().AsImplementedInterfaces();
+    }
+
+    [UsedImplicitly]
+    public class FileSystemModule : Module
+    {
+        protected override void Load(ContainerBuilder builder)
+        {
+           IFileSystem fileSystem = new Arbor.FS.PhysicalJunctionFs(new WindowsFs(new PhysicalFileSystem()));
+           builder.RegisterInstance(fileSystem);
+        }
     }
 }

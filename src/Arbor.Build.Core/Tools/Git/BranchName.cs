@@ -5,6 +5,10 @@ namespace Arbor.Build.Core.Tools.Git
 {
     public sealed class BranchName
     {
+        public static readonly BranchName Main = new BranchName("main");
+        public static readonly BranchName Master = new BranchName("master");
+        public static readonly BranchName Develop = new BranchName("develop");
+
         public BranchName(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -14,6 +18,11 @@ namespace Arbor.Build.Core.Tools.Git
 
             Name = name;
         }
+
+        public bool IsMainBranch =>
+            Equals(Main) || Equals(Master) ||
+            LogicalName.Equals(Master.LogicalName, StringComparison.Ordinal) ||
+            LogicalName.Equals(Main.LogicalName, StringComparison.Ordinal);
 
         public string Name { get; }
 
@@ -35,14 +44,15 @@ namespace Arbor.Build.Core.Tools.Git
 
         public string Normalize()
         {
-            var invalidCharacters = new[] { "/", @"\", "\"" };
+            var invalidCharacters = new[] {"/", @"\", "\""};
 
             string branchNameWithValidCharacters = invalidCharacters.Aggregate(
                 Name,
                 (current, invalidCharacter) =>
                     current.Replace(invalidCharacter, "-", StringComparison.Ordinal));
 
-            string removedFeatureInName = branchNameWithValidCharacters.Replace("feature-", string.Empty, StringComparison.OrdinalIgnoreCase);
+            string removedFeatureInName =
+                branchNameWithValidCharacters.Replace("feature-", string.Empty, StringComparison.OrdinalIgnoreCase);
 
             return removedFeatureInName;
         }

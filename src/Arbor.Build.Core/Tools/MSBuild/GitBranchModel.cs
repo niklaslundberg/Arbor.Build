@@ -4,11 +4,18 @@ namespace Arbor.Build.Core.Tools.MSBuild
 {
     public sealed class GitBranchModel : IEquatable<GitBranchModel>
     {
-        public static readonly GitBranchModel GitFlowBuildOnMaster = new GitBranchModel(nameof(GitFlowBuildOnMaster));
+        public static readonly GitBranchModel GitFlowBuildOnMain =
+            new GitBranchModel(nameof(GitFlowBuildOnMain), "GitFlowBuildOnMaster");
 
-        public GitBranchModel(string name) => Name = name;
+        public GitBranchModel(string name, string? alias = null)
+        {
+            Name = name;
+            Alias = alias;
+        }
 
         public string Name { get; }
+
+        public string? Alias { get; }
 
         public bool Equals(GitBranchModel? other)
         {
@@ -33,9 +40,15 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 return false;
             }
 
-            if (value.Equals(GitFlowBuildOnMaster.Name, StringComparison.OrdinalIgnoreCase))
+            if (value.Equals(GitFlowBuildOnMain.Name, StringComparison.OrdinalIgnoreCase))
             {
-                model = GitFlowBuildOnMaster;
+                model = GitFlowBuildOnMain;
+                return true;
+            }
+
+            if (value.Equals(GitFlowBuildOnMain.Alias, StringComparison.OrdinalIgnoreCase))
+            {
+                model = GitFlowBuildOnMain;
                 return true;
             }
 

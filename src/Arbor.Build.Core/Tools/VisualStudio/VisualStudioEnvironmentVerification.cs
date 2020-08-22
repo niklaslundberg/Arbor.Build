@@ -77,7 +77,7 @@ namespace Arbor.Build.Core.Tools.VisualStudio
                 string? line = sr.ReadLine();
 
                 if (!string.IsNullOrWhiteSpace(line) && lookupPatterns.Any(
-                    pattern => line.IndexOf(pattern, StringComparison.InvariantCulture) >= 0))
+                    pattern => line.Contains(pattern, StringComparison.InvariantCulture)))
                 {
                     return true;
                 }

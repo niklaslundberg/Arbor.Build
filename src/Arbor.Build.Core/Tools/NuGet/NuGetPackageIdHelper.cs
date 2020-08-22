@@ -12,7 +12,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             bool isReleaseBuild,
             string branchName,
             bool branchNameEnabled,
-            string packageNameSuffix = null)
+            string? packageNameSuffix = null)
         {
             if (string.IsNullOrWhiteSpace(basePackageId))
             {

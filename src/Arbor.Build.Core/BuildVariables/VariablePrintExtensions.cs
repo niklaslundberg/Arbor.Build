@@ -49,7 +49,7 @@ namespace Arbor.Build.Core.BuildVariables
                            .Replace("-", "", comparisonType)
                            .Replace("_", "", comparisonType)
                            .Replace(".", "", comparisonType)
-                           .IndexOf(sensitive, comparisonType) >= 0;
+                           .Contains(sensitive, comparisonType);
             }))
             {
                 value = "*****";

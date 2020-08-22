@@ -16,6 +16,16 @@ namespace Arbor.Build.Tests.Unit
         }
 
         [Fact]
+        public void ParseGitFlowMainShouldReturnInstance()
+        {
+            bool parsed = GitBranchModel.TryParse("GitFlowBuildOnMain", out var model);
+
+
+            Assert.True(parsed);
+            Assert.NotNull(model);
+        }
+
+        [Fact]
         public void ParseInvalidShouldReturnFalse()
         {
             bool parsed = GitBranchModel.TryParse("BadValue", out var model);

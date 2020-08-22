@@ -125,7 +125,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                             environmentVariables: environmentVariables).ConfigureAwait(false);
 
                 if (!exitCode.IsSuccess
-                    && errorBuilder.ToString().IndexOf("conflict", StringComparison.OrdinalIgnoreCase) >= 0)
+                    && errorBuilder.ToString().Contains("conflict", StringComparison.OrdinalIgnoreCase))
                 {
                     if (checkNuGetPackagesExists)
                     {

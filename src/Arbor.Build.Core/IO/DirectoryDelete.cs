@@ -16,7 +16,7 @@ namespace Arbor.Build.Core.IO
         public DirectoryDelete(
             IEnumerable<string> directoryFilters,
             IEnumerable<string> fileFilters,
-            ILogger logger = null)
+            ILogger? logger = null)
         {
             _logger = logger ?? Logger.None;
             _directoryFilters = directoryFilters.ToList();

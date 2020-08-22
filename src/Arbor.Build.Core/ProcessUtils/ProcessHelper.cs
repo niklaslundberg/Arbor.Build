@@ -20,7 +20,7 @@ namespace Arbor.Build.Core.ProcessUtils
             IEnumerable<KeyValuePair<string, string>>? environmentVariables = null,
             bool addProcessNameAsLogCategory = false,
             bool addProcessRunnerCategory = false,
-            string parentPrefix = null,
+            string? parentPrefix = null,
             CancellationToken cancellationToken = default)
         {
             ILogger usedLogger = logger ?? Logger.None;

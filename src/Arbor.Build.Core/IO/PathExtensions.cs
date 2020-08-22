@@ -12,9 +12,9 @@ namespace Arbor.Build.Core.IO
         public static (bool, string) IsFileExcluded(
             this PathLookupSpecification pathLookupSpecification,
             string sourceFile,
-            string rootDir = null,
+            string? rootDir = null,
             bool allowNonExistingFiles = false,
-            ILogger logger = null)
+            ILogger? logger = null)
         {
             if (pathLookupSpecification == null)
             {
@@ -59,7 +59,7 @@ namespace Arbor.Build.Core.IO
             IReadOnlyCollection<string> ignoredFileNameParts = pathLookupSpecification.IgnoredFileNameParts
                 .Where(part => !string.IsNullOrEmpty(part))
                 .Where(
-                    part => sourceFileInfo.Name.IndexOf(part, StringComparison.OrdinalIgnoreCase) >= 0)
+                    part => sourceFileInfo.Name.Contains(part, StringComparison.OrdinalIgnoreCase))
                 .SafeToReadOnlyCollection();
 
             if (ignoredFileNameParts.Count > 0)
@@ -76,8 +76,8 @@ namespace Arbor.Build.Core.IO
         public static (bool, string) IsNotAllowed(
             this PathLookupSpecification pathLookupSpecification,
             string sourceDir,
-            string rootDir = null,
-            ILogger logger = null)
+            string? rootDir = null,
+            ILogger? logger = null)
         {
             if (pathLookupSpecification == null)
             {
@@ -149,7 +149,7 @@ namespace Arbor.Build.Core.IO
         private static bool HasAnyPathSegment(
             IEnumerable<string> segments,
             IEnumerable<string> patterns,
-            ILogger logger = null) => segments.Any(segment => HasAnyPathSegment(segment, patterns, logger));
+            ILogger? logger = null) => segments.Any(segment => HasAnyPathSegment(segment, patterns, logger));
 
         private static bool HasAnyPathSegment(string segment, IEnumerable<string> patterns, ILogger? logger = null) => patterns.Any(pattern =>
                                                                                                                                 {
@@ -169,6 +169,6 @@ namespace Arbor.Build.Core.IO
 
         private static bool HasAnyPathSegmentPart(IEnumerable<string> segments, IEnumerable<string> patterns) => segments.Any(segment => HasAnyPathSegmentPart(segment, patterns));
 
-        private static bool HasAnyPathSegmentPart(string segment, IEnumerable<string> patterns) => patterns.Any(pattern => segment.IndexOf(pattern, StringComparison.OrdinalIgnoreCase) >= 0);
+        private static bool HasAnyPathSegmentPart(string segment, IEnumerable<string> patterns) => patterns.Any(pattern => segment.Contains(pattern, StringComparison.OrdinalIgnoreCase));
     }
 }

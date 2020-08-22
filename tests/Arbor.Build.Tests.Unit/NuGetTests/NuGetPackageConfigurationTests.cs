@@ -85,7 +85,7 @@ namespace Arbor.Build.Tests.Unit.NuGetTests
             string packageVersion = NuGetVersionHelper.GetPackageVersion(new VersionOptions("1.2.3.4")
             {
                 IsReleaseBuild = false,
-                GitModel = GitBranchModel.GitFlowBuildOnMaster
+                GitModel = GitBranchModel.GitFlowBuildOnMain
             });
 
             Assert.Equal("1.2.3-build.4", packageVersion);
@@ -97,20 +97,22 @@ namespace Arbor.Build.Tests.Unit.NuGetTests
             string packageVersion = NuGetVersionHelper.GetPackageVersion(new VersionOptions("1.2.3.4")
             {
                 IsReleaseBuild = true,
-                GitModel = GitBranchModel.GitFlowBuildOnMaster
+                GitModel = GitBranchModel.GitFlowBuildOnMain
             });
 
             Assert.Equal("1.2.3-rc.4", packageVersion);
         }
 
-        [Fact]
-        public void NoSuffixShouldBeIncludedInVersionWhenUsingGitFlowMasterForMaster()
+        [Theory]
+        [InlineData("main")]
+        [InlineData("master")]
+        public void NoSuffixShouldBeIncludedInVersionWhenUsingGitFlowMasterForMaster(string branchName)
         {
             string packageVersion = NuGetVersionHelper.GetPackageVersion(new VersionOptions("1.2.3.4")
             {
                 IsReleaseBuild = true,
-                GitModel = GitBranchModel.GitFlowBuildOnMaster,
-                BranchName = new BranchName("master")
+                GitModel = GitBranchModel.GitFlowBuildOnMain,
+                BranchName = new BranchName(branchName)
             });
 
             Assert.Equal("1.2.3", packageVersion);

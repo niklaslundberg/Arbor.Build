@@ -107,7 +107,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             if (!buildPackagesOnAnyBranch)
             {
-                if (branchName.Equals("master", StringComparison.OrdinalIgnoreCase))
+                if (BranchName.TryParse(branchName) is {IsMainBranch:true})
                 {
                     logger.Warning(
                         "NuGet package creation is not supported on 'master' branch. To force NuGet package creation, set environment variable '{NuGetCreatePackagesOnAnyBranchEnabled}' to value 'true'",

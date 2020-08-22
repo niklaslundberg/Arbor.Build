@@ -7,7 +7,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 {
     public static class PackHelper
     {
-        public static void EnsureHasValidDate([NotNull] this string fileName, ILogger logger = default)
+        public static void EnsureHasValidDate([NotNull] this string fileName, ILogger? logger = default)
         {
             if (string.IsNullOrWhiteSpace(fileName))
             {

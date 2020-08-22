@@ -8,6 +8,15 @@
         "resolved": "3.0.2",
         "contentHash": "YWFdVy4MjN/pmh3FueugcOVhgQY82+hcivmXuWQBxlEPwrZ0E+3KgGsrnq/QjCntDfrSk5XB+Dw+Zlpsv0mQ9A=="
       },
+      "Arbor.FS": {
+        "type": "Direct",
+        "requested": "[0.1.0, )",
+        "resolved": "0.1.0",
+        "contentHash": "UTSQCd+3kSXo8mnZLxZxs8BTHjGru8ue8+0oSHlX0iqD1qx/rxcnJBGHBhQyJxX35eTcQinLc60IUoMFGYp8NA==",
+        "dependencies": {
+          "zio": "0.8.0"
+        }
+      },
       "Arbor.KVConfiguration.JsonConfiguration": {
         "type": "Direct",
         "requested": "[0.20.0, )",
@@ -1764,6 +1773,11 @@
           "NETStandard.Library": "1.6.1",
           "xunit.extensibility.core": "[2.4.1]"
         }
+      },
+      "Zio": {
+        "type": "Transitive",
+        "resolved": "0.8.0",
+        "contentHash": "K1uswTWdec+j6KJAXmi1WT2G1v4mxdP8ojNl/JLp9bVFAdQSNW1oMdUIVv5go1cKmcu6GJcgCJxNMP2uTSOZXg=="
       },
       "arbor.defensive.collections": {
         "type": "Project",

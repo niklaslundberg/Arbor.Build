@@ -128,77 +128,76 @@ namespace Arbor.Build.Core.Tools.VisualStudio
         {
             string visualStudioVersion = null;
 
-            using (RegistryKey view32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
+            using var view32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
+
+            using RegistryKey vsKey = view32.OpenSubKey(registryKeyName);
+            if (vsKey != null)
             {
-                using RegistryKey vsKey = view32.OpenSubKey(registryKeyName);
-                if (vsKey != null)
-                {
-                    List<Version> versions = vsKey.GetSubKeyNames()
-                        .Where(subKeyName => char.IsDigit(subKeyName.First()))
-                        .Select(
-                            keyName =>
+                List<Version> versions = vsKey.GetSubKeyNames()
+                    .Where(subKeyName => char.IsDigit(subKeyName.First()))
+                    .Select(
+                        keyName =>
+                        {
+                            if (!Version.TryParse(keyName, out Version? version))
                             {
-                                if (!Version.TryParse(keyName, out Version version))
+                                if (_allowPreReleaseVersions)
                                 {
-                                    if (_allowPreReleaseVersions)
+                                    const string preReleaseSeparator = "_";
+
+                                    int indexOf = keyName.IndexOf(
+                                        preReleaseSeparator,
+                                        StringComparison.OrdinalIgnoreCase);
+
+                                    if (indexOf >= 0)
                                     {
-                                        const string preReleaseSeparator = "_";
+                                        string versionOnly = keyName.Substring(0, indexOf);
 
-                                        int indexOf = keyName.IndexOf(
-                                            preReleaseSeparator,
-                                            StringComparison.OrdinalIgnoreCase);
-
-                                        if (indexOf >= 0)
+                                        if (Version.TryParse(versionOnly, out version))
                                         {
-                                            string versionOnly = keyName.Substring(0, indexOf);
-
-                                            if (Version.TryParse(versionOnly, out version))
-                                            {
-                                                logger.Debug("Found pre-release Visual Studio version {Version}",
-                                                    version);
-                                            }
+                                            logger.Debug("Found pre-release Visual Studio version {Version}",
+                                                version!);
                                         }
                                     }
                                 }
+                            }
 
-                                if (version == null)
-                                {
-                                    logger.Debug(
-                                        "Could not parse Visual Studio version from registry key name '{KeyName}', skipping that version.",
-                                        keyName);
-                                }
+                            if (version is null)
+                            {
+                                logger.Debug(
+                                    "Could not parse Visual Studio version from registry key name '{KeyName}', skipping that version.",
+                                    keyName);
+                            }
 
-                                return version;
-                            })
-                        .Where(version => version != null)
-                        .OrderByDescending(name => name)
-                        .ToList();
+                            return version;
+                        })
+                    .Where(version => version is {})
+                    .OrderByDescending(name => name)
+                    .ToList();
 
-                    logger.Verbose("Found {Count} Visual Studio versions: {V}",
-                        versions.Count,
-                        string.Join(", ", versions.Select(version => version.ToString(2))));
+                logger.Verbose("Found {Count} Visual Studio versions: {Versions}",
+                    versions.Count,
+                    string.Join(", ", versions.Select(version => version.ToString(2))));
 
-                    if (versions.Any(version => version == new Version(15, 0)))
-                    {
-                        visualStudioVersion = "15.0";
-                    }
+                if (versions.Any(version => version == new Version(15, 0)))
+                {
+                    visualStudioVersion = "15.0";
+                }
 
-                    if (versions.Any(version => version == new Version(14, 0)))
-                    {
-                        visualStudioVersion = "14.0";
-                    }
-                    else if (versions.Any(version => version == new Version(12, 0)))
-                    {
-                        visualStudioVersion = "12.0";
-                    }
-                    else if (versions.Any(version => version == new Version(11, 0)))
-                    {
-                        visualStudioVersion = "11.0";
-                    }
-                    else if (versions.Count > 0)
-                    {
-                        visualStudioVersion = versions.First().ToString(2);
-                    }
+                if (versions.Any(version => version == new Version(14, 0)))
+                {
+                    visualStudioVersion = "14.0";
+                }
+                else if (versions.Any(version => version == new Version(12, 0)))
+                {
+                    visualStudioVersion = "12.0";
+                }
+                else if (versions.Any(version => version == new Version(11, 0)))
+                {
+                    visualStudioVersion = "11.0";
+                }
+                else if (versions.Count > 0)
+                {
+                    visualStudioVersion = versions.First().ToString(2);
                 }
             }
 

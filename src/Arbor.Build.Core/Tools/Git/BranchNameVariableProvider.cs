@@ -120,9 +120,7 @@ namespace Arbor.Build.Core.Tools.Git
                         string[] lines = File.ReadAllLines(shellFile);
 
                         string pathLine = lines.SingleOrDefault(
-                            line => line.IndexOf(
-                                        "$env:github_git = ",
-                                        StringComparison.OrdinalIgnoreCase) >= 0);
+                            line => line.Contains("$env:github_git = ", StringComparison.OrdinalIgnoreCase));
 
                         if (!string.IsNullOrWhiteSpace(pathLine))
                         {
