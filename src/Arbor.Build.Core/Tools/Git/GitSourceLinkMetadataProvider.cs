@@ -12,16 +12,14 @@ using Zio;
 
 namespace Arbor.Build.Core.Tools.Git
 {
-    [Priority(priority: 300)]
+    [Priority(250)]
     [UsedImplicitly]
     public class GitSourceLinkMetadataProvider : ITool
     {
+        private const string GitDirectoryName = ".git";
         private readonly IFileSystem _fileSystem;
 
-        public GitSourceLinkMetadataProvider(IFileSystem fileSystem)
-        {
-            _fileSystem = fileSystem;
-        }
+        public GitSourceLinkMetadataProvider(IFileSystem fileSystem) => _fileSystem = fileSystem;
 
         public async Task<ExitCode> ExecuteAsync(ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
@@ -36,18 +34,18 @@ namespace Arbor.Build.Core.Tools.Git
                 return ExitCode.Success;
             }
 
-            string sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).Value!;
+            var sourceRoot = _fileSystem.ConvertPathFromInternal(buildVariables.Require(WellKnownVariables.SourceRoot).Value!);
 
-            var sourceRootDirectory = new Zio.DirectoryEntry(_fileSystem, sourceRoot);
+            var sourceRootDirectory = new DirectoryEntry(_fileSystem, sourceRoot);
 
-            var dotGitDirectory = sourceRootDirectory.EnumerateDirectories(".git").SingleOrDefault();
+            var dotGitDirectory = sourceRootDirectory.EnumerateDirectories(GitDirectoryName).SingleOrDefault();
 
             if (dotGitDirectory is {Exists: true})
             {
                 return ExitCode.Success;
             }
 
-            dotGitDirectory = new DirectoryEntry(_fileSystem, UPath.Combine(sourceRootDirectory.FullName, ".git"));
+            dotGitDirectory = new DirectoryEntry(_fileSystem, UPath.Combine(sourceRootDirectory.FullName, GitDirectoryName));
 
             dotGitDirectory.EnsureExists();
 
@@ -60,7 +58,7 @@ namespace Arbor.Build.Core.Tools.Git
             await headFile.WriteAllTextAsync(gitHash, Encoding.UTF8, cancellationToken);
 
             string origin = $@"[remote ""origin""]
-\turl = {repositoryUrl}";
+{"\t"}url = {repositoryUrl}";
 
             await configFile.WriteAllTextAsync(origin, Encoding.UTF8, cancellationToken);
 

@@ -19,7 +19,7 @@ SET Arbor.Build.VariableOverrideEnabled=true
 SET Arbor.Build.Artifacts.CleanupBeforeBuildEnabled=true
 SET Arbor.Build.NetAssembly.Configuration=
 SET Arbor.Build.Tools.External.LibZ.Enabled=true
-SET Arbor.Build.Tools.External.MSBuild.DeterministicBuild.Enabled=true
+REM SET Arbor.Build.Tools.External.MSBuild.DeterministicBuild.Enabled=true
 
 SET Arbor.Build.NuGet.ReinstallArborPackageEnabled=true
 SET Arbor.Build.NuGet.VersionUpdateEnabled=false

@@ -67,9 +67,17 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 .Any(line => line.Contains("Microsoft.NET.Sdk", StringComparison.OrdinalIgnoreCase));
         }
 
+
         public static MSBuildProject LoadFrom(string projectFileFullName)
         {
+
             using var fs = new FileStream(projectFileFullName, FileMode.Open, FileAccess.Read);
+
+            return LoadFrom(fs, projectFileFullName);
+        }
+
+        public static MSBuildProject LoadFrom(Stream fs, string projectFileFullName)
+        {
             var msbuildPropertyGroups = new List<MSBuildPropertyGroup>();
 
             Guid? projectId = default;
@@ -90,6 +98,11 @@ namespace Arbor.Build.Core.Tools.MSBuild
             ImmutableArray<XElement> propertyGroups = project
                 .Elements()
                 .Where(e => e.Name.LocalName.Equals("PropertyGroup", StringComparison.Ordinal))
+                .ToImmutableArray();
+
+            ImmutableArray<XElement> itemGroups = project
+                .Elements()
+                .Where(e => e.Name.LocalName.Equals("ItemGroup", StringComparison.Ordinal))
                 .ToImmutableArray();
 
             XElement idElement = propertyGroups
@@ -139,7 +152,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             DotNetSdk sdk = DotNetSdk.ParseOrDefault(sdkValue);
 
-            ImmutableArray<PackageReferenceElement> packageReferences = propertyGroups
+            ImmutableArray<PackageReferenceElement> packageReferences = itemGroups
+                .Elements()
                 .Where(e => e.Name.LocalName.Equals("PackageReference", StringComparison.Ordinal))
                 .Select(packageReference => new PackageReferenceElement(
                     packageReference?.Attribute("Include")?.Value,

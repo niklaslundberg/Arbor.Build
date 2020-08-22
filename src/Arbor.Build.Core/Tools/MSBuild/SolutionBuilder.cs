@@ -719,10 +719,6 @@ namespace Arbor.Build.Core.Tools.MSBuild
             string configuration,
             ILogger logger)
         {
-            static bool HasPublishPackageEnabled(SolutionProject project)
-            {
-                return project.Project.HasPropertyWithValue("GeneratePackageOnBuild", "true");
-            }
 
             if (string.IsNullOrWhiteSpace(_dotNetExePath))
             {
@@ -732,21 +728,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             Solution solution = Solution.LoadFrom(solutionFile.FullName);
 
-            const string sdkTestPackageId = "Microsoft.NET.Test.Sdk";
-
             ImmutableArray<SolutionProject> publishProjects = solution.Projects
-                .Where(project =>
-                    project.NetFrameworkGeneration == NetFrameworkGeneration.NetCoreApp
-                    && (
-                        ((project.Project.HasPropertyWithValue("ArborPublishEnabled", "true") ||
-                          !project.Project.PropertyGroups.Any(msBuildPropertyGroup =>
-                              msBuildPropertyGroup.Properties.Any(msBuildProperty =>
-                                  msBuildProperty.Name.Equals("ArborPublishEnabled", StringComparison.Ordinal))))
-                         || (project.Project.HasPropertyWithValue("OutputType", "Exe")
-                             || project.Project.Sdk == DotNetSdk.DotnetWeb
-                             || HasPublishPackageEnabled(project)))
-                        && !project.Project.PackageReferences.Any(reference =>
-                            sdkTestPackageId.Equals(reference.Package, StringComparison.OrdinalIgnoreCase))))
+                .Where(project => project.PublishEnabled())
                 .ToImmutableArray();
 
             foreach (SolutionProject solutionProject in publishProjects)
@@ -795,7 +778,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                 try
                 {
-                    if (HasPublishPackageEnabled(solutionProject))
+                    if (solutionProject.HasPublishPackageEnabled())
                     {
                         args.Add($"/p:version={packageVersion}");
                         args.Add("--output");

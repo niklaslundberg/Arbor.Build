@@ -23,6 +23,14 @@ namespace Arbor.Build.Tests.Integration
         [Theory]
         public async Task Do(string path)
         {
+            var samplesDirectory = GetSamplesDirectory();
+
+            if (samplesDirectory.FullName == path)
+            {
+                _testOutputHelper.WriteLine("Skipping test for " + path + ", no samples found starting with _");
+                return;
+            }
+
             _testOutputHelper.WriteLine("Testing " + path);
 
             var environmentVariables =
@@ -80,14 +88,27 @@ namespace Arbor.Build.Tests.Integration
 
         public static IEnumerable<object[]> Data()
         {
-            string samples = Path.Combine(VcsTestPathHelper.FindVcsRootPath(), "samples");
+            var samplesDirectory = GetSamplesDirectory();
 
-            var samplesDirectory = new DirectoryInfo(samples);
+            var samplesDirectories = samplesDirectory.GetDirectories("_*");
 
-            foreach (var directoryInfo in samplesDirectory.GetDirectories("_*"))
+            foreach (var directoryInfo in samplesDirectories)
             {
                 yield return new object[] {directoryInfo.FullName};
             }
+
+            if (samplesDirectories.Length == 0)
+            {
+                yield return new object[] {samplesDirectory.FullName};
+            }
+        }
+
+        static DirectoryInfo GetSamplesDirectory()
+        {
+            string samples = Path.Combine(VcsTestPathHelper.FindVcsRootPath(), "samples");
+
+            var samplesDirectory = new DirectoryInfo(samples);
+            return samplesDirectory;
         }
     }
 }

@@ -73,6 +73,9 @@ namespace Arbor.Build.Core.Debugging
                 [WellKnownVariables.DotNetPublishExeProjectsEnabled] = "true",
                 [WellKnownVariables.NuGetPackageIdBranchNameEnabled] = "false",
                 [WellKnownVariables.XUnitNetCoreAppXmlEnabled] = "true",
+                [WellKnownVariables.DeterministicBuildEnabled] = "true",
+                [WellKnownVariables.RepositoryUrl] = "http://ignore.local",
+                [WellKnownVariables.GitHash] = "aaaaaa",
             };
 
             Task<ImmutableArray<IVariable>> result = Task.FromResult(environmentVariables.Select(
