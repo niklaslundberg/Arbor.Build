@@ -17,7 +17,7 @@
     </summary>
     <language>en-US</language>
     <projectUrl>https://github.com/niklaslundberg/Arbor.Build</projectUrl>
-    <repository type="git" url="https://github.com/niklaslundberg/Arbor.Build"></repository>
+    <repository type="git" url="https://github.com/niklaslundberg/Arbor.Build" commit="$RepositoryCommit$"></repository>
     <iconUrl>https://nuget.org/Content/Images/packageDefaultIcon-50x50.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <license type="expression">MIT</license>

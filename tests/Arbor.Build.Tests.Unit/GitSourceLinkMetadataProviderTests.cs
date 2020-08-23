@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
@@ -35,7 +36,7 @@ namespace Arbor.Build.Tests.Unit
                     new BuildVariable(WellKnownVariables.SourceRoot, buildDirectory.FullName)
                 };
 
-            var args = new string[] { };
+            var args = Array.Empty<string>();
 
             var exitCode = await provider.ExecuteAsync(Logger.None, buildVariables, args, CancellationToken.None);
 

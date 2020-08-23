@@ -93,6 +93,8 @@ namespace Arbor.Build.Core.Tools.NuGet
             string? gitModel =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.GitBranchModel, null);
 
+            string? gitHash = buildVariables.GetVariableValueOrDefault(WellKnownVariables.GitHash);
+
             if (!buildVariables.GetBooleanByKey(WellKnownVariables.NuGetPackageArtifactsSuffixEnabled, true))
             {
                 suffix = "";
@@ -183,7 +185,8 @@ namespace Arbor.Build.Core.Tools.NuGet
                 buildNumberEnabled,
                 tempDirectory.Value,
                 nuGetSymbolPackagesFormat: packageFormat,
-                packageNameSuffix: packageNameSuffix);
+                packageNameSuffix: packageNameSuffix,
+                gitHash: gitHash);
             return packageConfiguration;
         }
 
@@ -207,7 +210,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             NuSpec nuSpec = NuSpec.Parse(packageSpecificationPath);
 
-            string properties = GetProperties(packageConfiguration.Configuration);
+            IDictionary<string, string> properties = GetProperties(packageConfiguration);
 
             if (!string.IsNullOrWhiteSpace(packageConfiguration.PackageIdOverride))
             {
@@ -315,18 +318,15 @@ namespace Arbor.Build.Core.Tools.NuGet
 
         private static string GetNuSpecContent(string nuSpecFileCopyPath) => File.ReadAllText(nuSpecFileCopyPath);
 
-        private static string GetProperties(string configuration)
+        private static IDictionary<string, string?> GetProperties(NuGetPackageConfiguration configuration)
         {
-            var propertyValues = new List<KeyValuePair<string, string>>
+            var propertyValues = new Dictionary<string, string?>
             {
-                new KeyValuePair<string, string>(
-                    "configuration",
-                    configuration)
+                ["configuration"] = configuration.Configuration,
+                ["RepositoryCommit"] = configuration.GitHash
             };
 
-            IEnumerable<string> formattedValues = propertyValues.Select(item => $"{item.Key}={item.Value}");
-            string properties = string.Join(";", formattedValues);
-            return properties;
+            return propertyValues;
         }
 
         private bool IsStablePackage(BranchName branchName) =>
@@ -340,7 +340,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             string packagesDirectoryPath,
             ILogger logger,
             string nuSpecFileCopyPath,
-            string properties,
+            IDictionary<string, string> properties,
             NuSpec nuSpecCopy,
             List<string> removedTags,
             bool keepBinaryAndSourcePackagesTogetherEnabled = false,
@@ -359,7 +359,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 "pack",
                 nuSpecFileCopyPath,
                 "-Properties",
-                properties,
+                string.Join(";", properties.Select(pair => $"{pair.Key}={pair.Value}")),
                 "-OutputDirectory",
                 packagesDirectoryPath,
                 "-NoPackageAnalysis",

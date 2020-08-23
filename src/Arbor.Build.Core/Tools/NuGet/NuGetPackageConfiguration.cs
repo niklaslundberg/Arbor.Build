@@ -27,7 +27,8 @@ namespace Arbor.Build.Core.Tools.NuGet
             string? tempPath = null,
             string? packageBuildMetadata = null,
             string nuGetSymbolPackagesFormat = NuGetPackager.SnupkgPackageFormat,
-            string? packageNameSuffix = null)
+            string? packageNameSuffix = null,
+            string? gitHash = null)
         {
             if (string.IsNullOrWhiteSpace(configuration))
             {
@@ -72,9 +73,11 @@ namespace Arbor.Build.Core.Tools.NuGet
             NuGetSymbolPackagesFormat = nuGetSymbolPackagesFormat;
             Suffix = suffix;
             PackageNameSuffix = packageNameSuffix;
+            GitHash = gitHash;
         }
 
         public string? PackageNameSuffix { get; }
+        public string? GitHash { get; }
 
         public bool KeepBinaryAndSourcePackagesTogetherEnabled { get; }
 
