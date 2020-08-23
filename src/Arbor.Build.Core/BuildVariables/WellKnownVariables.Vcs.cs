@@ -20,6 +20,9 @@
         [VariableDescription("Git hash")]
         public const string GitHash = "Arbor.Build.Vcs.Git.Hash";
 
+        [VariableDescription("GitHub commit hash")]
+        public const string GitHubSha = "GITHUB_SHA";
+
         [VariableDescription("Git repository url")]
         public const string RepositoryUrl = "Arbor.Build.Vcs.Git.RepositoryUrl";
 

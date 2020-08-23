@@ -177,6 +177,13 @@ namespace Arbor.Build.Core.Tools.Git
                 }
             }
 
+            if (!buildVariables.HasKey(WellKnownVariables.GitHash)
+                && buildVariables.HasKey(WellKnownVariables.GitHubSha)
+                && buildVariables.GetVariableValueOrDefault(WellKnownVariables.GitHubSha) is {} hash)
+            {
+                variables.Add(new BuildVariable(WellKnownVariables.GitHash, hash));
+            }
+
             string? gitHubUrl = buildVariables.GetVariableValueOrDefault("GITHUB_SERVER_URL");
             string? gitHubRepository = buildVariables.GetVariableValueOrDefault("GITHUB_REPOSITORY");
 
