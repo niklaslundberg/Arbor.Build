@@ -179,6 +179,7 @@ namespace Arbor.Build.Core.Tools.Git
 
             if (!buildVariables.HasKey(WellKnownVariables.GitHash)
                 && buildVariables.HasKey(WellKnownVariables.GitHubSha)
+                && !variables.HasKey(WellKnownVariables.GitHash)
                 && buildVariables.GetVariableValueOrDefault(WellKnownVariables.GitHubSha) is {} hash)
             {
                 variables.Add(new BuildVariable(WellKnownVariables.GitHash, hash));
