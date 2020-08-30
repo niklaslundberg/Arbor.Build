@@ -8,7 +8,6 @@ using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.Git;
 using Arbor.Build.Core.Tools.MSBuild;
-using Arbor.Defensive;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using NuGet.Versioning;

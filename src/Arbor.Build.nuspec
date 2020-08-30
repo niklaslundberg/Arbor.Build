@@ -26,7 +26,7 @@
 
     </dependencies>
     <references></references>
-    <tags>build tools convention</tags>
+    <tags>build tools convention NoSource</tags>
   </metadata>
   <files>
     <file src="Arbor.Build\bin\$configuration$\netcoreapp3.1\publish\**\*.*" target="" exclude="*.xml;cs\*.*;de\*.*;es\*.*;fr\*.*;en\*.*;it\*.*;ja\*.*;ko\*.*;pl\*.*;pt-BR\*.*;ru\*.*;tr\*.*;zh-Hans\*.*;zh-Hant\*.*;runtimes\linux\*.*;runtimes\unix\*.*;runtimes\osx\*.*" />
