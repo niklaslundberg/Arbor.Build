@@ -51,7 +51,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 var vsWhereArgs = new List<string> { command, component, "-format", "json" };
 
                 bool allowPreRelease =
-                    buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_MSBuild_AllowPreReleaseEnabled);
+                    buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_MSBuild_AllowPreReleaseEnabled)
+                    || buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_VisualStudio_Version_Allow_PreRelease);
 
                 // NOTE only newer releases of vswhere.exe supports -prerelease flag
                 if (allowPreRelease && versionExitCode.IsSuccess)
@@ -61,7 +62,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                 var resultBuilder = new StringBuilder();
 
-                CategoryLog standardOutLog = (message, category) => resultBuilder.Append(message);
+                CategoryLog standardOutLog = (message, _) => resultBuilder.Append(message);
 
                 ExitCode exitCode = await ProcessRunner.ExecuteProcessAsync(
                     vsWherePath,
@@ -188,6 +189,11 @@ namespace Arbor.Build.Core.Tools.MSBuild
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
+            if (buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_MSBuild_DotNetEnabled))
+            {
+                return ImmutableArray<IVariable>.Empty;
+            }
+
             string? path = buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_MSBuild_ExePath, null);
 
             if (!string.IsNullOrWhiteSpace(path))
@@ -245,7 +251,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 }
 
                 ImmutableArray<IVariable> variablesForTools = await TryGetWithVsWhereAsync(vsWherePath,
-                    "-products",
+                    " ",
                     "Microsoft.VisualStudio.Product.BuildTools",
                     logger,
                     buildVariables,

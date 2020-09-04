@@ -50,10 +50,10 @@ namespace Arbor.Build.Core.BuildVariables
         public const string ExternalTools_VisualStudio_Version_Allow_PreRelease =
             "Arbor.Build.Tools.External.VisualStudio.Version.PreRelease.Enabled";
 
-        [VariableDescription("Build arftifacts path")]
+        [VariableDescription("Build artifacts path")]
         public const string Artifacts = "Arbor.Build.Artifacts";
 
-        [VariableDescription("Flag to indicate if the build arftifacts should be cleaned up before the build starts")]
+        [VariableDescription("Flag to indicate if the build artifacts should be cleaned up before the build starts")]
         public const string CleanupArtifactsBeforeBuildEnabled =
             "Arbor.Build.Artifacts.CleanupBeforeBuildEnabled";
 
@@ -129,6 +129,9 @@ namespace Arbor.Build.Core.BuildVariables
 
         [VariableDescription("MSBuild executable path (eg. C:\\MSbuild.exe)")]
         public const string ExternalTools_MSBuild_ExePath = "Arbor.Build.Tools.External.MSBuild.ExePath";
+
+        [VariableDescription("Use dotnet msbuild instead of .NET Framework MSBuild")]
+        public const string ExternalTools_MSBuild_DotNetEnabled = "Arbor.Build.Tools.External.MSBuild.DotNet.Enabled";
 
         [VariableDescription("MSBuild max version")]
         public const string ExternalTools_MSBuild_MaxVersion =

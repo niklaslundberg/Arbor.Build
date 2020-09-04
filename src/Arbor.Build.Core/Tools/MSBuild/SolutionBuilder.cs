@@ -90,7 +90,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
         private string? _gitHash;
         private ILogger _logger;
-        private string _msBuildExe = null!;
+        private string? _msBuildExe = null!;
         private string _packagesDirectory = null!;
         private bool _pdbArtifactsEnabled;
         private bool _preCompilationEnabled;
@@ -109,6 +109,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
         private GitBranchModel? _gitModel;
         private BranchName? _branchName;
         private bool _deterministicBuildEnabled;
+        private bool _dotnetMsBuildEnabled;
+        private MsBuildArgHelper _argHelper = default!;
 
         public SolutionBuilder(BuildContext buildContext, NuGetPackager nugetPackager)
         {
@@ -504,28 +506,28 @@ namespace Arbor.Build.Core.Tools.MSBuild
             var argList = new List<string>(10)
             {
                 solutionFile.FullName,
-                $"/property:configuration={configuration}",
-                $"/property:platform={platform}",
-                $"/verbosity:{_verbosity.Level}",
-                $"/target:{_defaultTarget}",
-               $"/property:AssemblyVersion={_assemblyVersion}",
-                $"/property:FileVersion={_assemblyFileVersion}",
-                $"/property:Version={_version}"
+                _argHelper.FormatPropertyArg("configuration", configuration),
+                _argHelper.FormatPropertyArg("platform", platform),
+                _argHelper.FormatArg("verbosity",_verbosity.Level),
+                _argHelper.FormatArg("target",_defaultTarget),
+                _argHelper.FormatPropertyArg("AssemblyVersion", _assemblyVersion),
+                _argHelper.FormatPropertyArg("FileVersion", _assemblyFileVersion),
+                _argHelper.FormatPropertyArg("Version", _version)
             };
 
             if (_deterministicBuildEnabled)
             {
-                argList.Add("/property:ContinuousIntegrationBuild=true");
+                argList.Add(_argHelper.FormatPropertyArg("ContinuousIntegrationBuild","true"));
             }
 
             if (_processorCount.HasValue && _processorCount.Value >= 1)
             {
-                argList.Add($"/maxcpucount:{_processorCount.Value.ToString(CultureInfo.InvariantCulture)}");
+                argList.Add(_argHelper.FormatArg("maxcpucount",_processorCount.Value.ToString(CultureInfo.InvariantCulture)));
             }
 
             if (!_logMsBuildWarnings)
             {
-                argList.Add("/clp:ErrorsOnly");
+                argList.Add(_argHelper.FormatArg("clp","ErrorsOnly"));
             }
 
             if (_codeAnalysisEnabled)
@@ -535,24 +537,24 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     logger.Verbose("Code analysis is enabled");
                 }
 
-                argList.Add("/property:RunCodeAnalysis=true");
+                argList.Add(_argHelper.FormatPropertyArg("RunCodeAnalysis", "true"));
 
                 if (!string.IsNullOrWhiteSpace(_ruleset) && File.Exists(_ruleset))
                 {
                     logger.Information("Using code analysis ruleset '{Ruleset}'", _ruleset);
 
-                    argList.Add($"/property:CodeAnalysisRuleSet={_ruleset}");
+                    argList.Add(_argHelper.FormatPropertyArg("CodeAnalysisRuleSet",_ruleset));
                 }
             }
             else
             {
-                argList.Add("/property:RunCodeAnalysis=false");
+                argList.Add(_argHelper.FormatPropertyArg("RunCodeAnalysis","false"));
                 logger.Information("Code analysis is disabled");
             }
 
             if (_showSummary)
             {
-                argList.Add("/detailedsummary");
+                argList.Add(_argHelper.FormatArg("detailedsummary"));
             }
 
             logger.Information("Building solution file {Name} ({Configuration}|{Platform})",
@@ -780,7 +782,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 {
                     if (solutionProject.HasPublishPackageEnabled())
                     {
-                        args.Add($"/p:version={packageVersion}");
+                        args.Add(_argHelper.FormatPropertyArg("version", packageVersion));
                         args.Add("--output");
 
                         string tempDirPath = Path.Combine(Path.GetTempPath(), "Arbor.Build-pkg" + DateTime.UtcNow.Ticks);
@@ -930,11 +932,11 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     solutionProject.FullPath,
                     "--configuration",
                     configuration,
-                    $"/p:VersionPrefix={packageVersion}",
+                    _argHelper.FormatPropertyArg("VersionPrefix", packageVersion),
                     "--output",
                     _packagesDirectory,
                     "--no-build",
-                    "--include-symbols",
+                    "--include-symbols"
                 };
 
                 void Log(string message, string category)
@@ -966,7 +968,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             return ExitCode.Success;
         }
 
-        private void EnsureFileDates(DirectoryInfo directoryInfo)
+        private void EnsureFileDates(DirectoryInfo? directoryInfo)
         {
             if (directoryInfo is null)
             {
@@ -1420,23 +1422,22 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 buildSiteArguments = new List<string>(15)
                 {
                     solutionProject.FullPath,
-                    $"/property:configuration={configuration}",
-                    $"/property:platform={platformName}",
-                    $"/property:_PackageTempDir={siteArtifactDirectory.FullName}",
+                    _argHelper.FormatPropertyArg("configuration", configuration),
+                    _argHelper.FormatPropertyArg("platform", platformName),
+                    _argHelper.FormatPropertyArg("_PackageTempDir", siteArtifactDirectory.FullName),
 
                     // ReSharper disable once PossibleNullReferenceException
-                    $"/property:SolutionDir={solutionFile.Directory.FullName}",
-                    $"/verbosity:{_verbosity.Level}",
-                    "/property:AutoParameterizationWebConfigConnectionStrings=false"
-
+                    _argHelper.FormatPropertyArg("SolutionDir", solutionFile.Directory.FullName),
+                    _argHelper.FormatArg("verbosity", _verbosity.Level),
+                    _argHelper.FormatPropertyArg("AutoParameterizationWebConfigConnectionStrings","false")
                 };
 
                 if (_preCompilationEnabled)
                 {
                     _logger.Information("Pre-compilation is enabled");
-                    buildSiteArguments.Add("/property:UseMerge=true");
-                    buildSiteArguments.Add("/property:PrecompileBeforePublish=true");
-                    buildSiteArguments.Add("/property:SingleAssemblyName=AppCode");
+                    buildSiteArguments.Add(_argHelper.FormatPropertyArg("UseMerge","true"));
+                    buildSiteArguments.Add(_argHelper.FormatPropertyArg("PrecompileBeforePublish","true"));
+                    buildSiteArguments.Add(_argHelper.FormatPropertyArg("SingleAssemblyName","AppCode"));
                 }
             }
             else
@@ -1444,16 +1445,16 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 buildSiteArguments = new List<string>(15)
                 {
                     solutionProject.FullPath,
-                    $"/property:configuration={configuration}",
-                    $"/verbosity:{_verbosity.Level}",
-                    $"/property:publishdir={siteArtifactDirectory.FullName}",
-                    $"/property:AssemblyVersion={_assemblyVersion}",
-                    $"/property:FileVersion={_assemblyFileVersion}"
+                    _argHelper.FormatPropertyArg("configuration", configuration),
+                    _argHelper.FormatArg("verbosity", _verbosity.Level),
+                    _argHelper.FormatPropertyArg("publishdir", siteArtifactDirectory.FullName),
+                    _argHelper.FormatPropertyArg("AssemblyVersion", _assemblyVersion),
+                    _argHelper.FormatPropertyArg("FileVersion", _assemblyFileVersion)
                 };
 
                 if (_deterministicBuildEnabled)
                 {
-                    buildSiteArguments.Add("/property:ContinuousIntegrationBuild=true");
+                    buildSiteArguments.Add(_argHelper.FormatPropertyArg("ContinuousIntegrationBuild","true"));
                 }
 
                 string rid =
@@ -1461,7 +1462,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                 if (!string.IsNullOrWhiteSpace(rid))
                 {
-                    buildSiteArguments.Add($"/property:RuntimeIdentifier={rid}");
+                    buildSiteArguments.Add(_argHelper.FormatPropertyArg("RuntimeIdentifier", rid));
                 }
 
                 target = "restore;rebuild;publish";
@@ -1469,19 +1470,19 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             if (_processorCount.HasValue && _processorCount.Value >= 1)
             {
-                buildSiteArguments.Add($"/maxcpucount:{_processorCount.Value.ToString(CultureInfo.InvariantCulture)}");
+                buildSiteArguments.Add(_argHelper.FormatArg("maxcpucount",_processorCount.Value.ToString(CultureInfo.InvariantCulture)));
             }
 
             if (_showSummary)
             {
-                buildSiteArguments.Add("/detailedsummary");
+                buildSiteArguments.Add(_argHelper.FormatArg("detailedsummary"));
             }
 
-            buildSiteArguments.Add($"/target:{target}");
+            buildSiteArguments.Add(_argHelper.FormatArg("target", target));
 
             if (!_codeAnalysisEnabled)
             {
-                buildSiteArguments.Add("/property:RunCodeAnalysis=false");
+                buildSiteArguments.Add(_argHelper.FormatPropertyArg("RunCodeAnalysis","false"));
             }
 
             ExitCode buildSiteExitCode =
@@ -2196,16 +2197,16 @@ namespace Arbor.Build.Core.Tools.MSBuild
             var buildSitePackageArguments = new List<string>(20)
             {
                 solutionProject.FullPath,
-                $"/property:configuration={configuration}",
-                $"/property:platform={platformName}",
+                _argHelper.FormatPropertyArg("configuration", configuration),
+                _argHelper.FormatPropertyArg("platform", platformName),
 
 // ReSharper disable once PossibleNullReferenceException
-                $"/property:SolutionDir={solutionFile.Directory.FullName}",
-                $"/property:PackageLocation={packagePath}",
-                $"/verbosity:{_verbosity.Level}",
-                "/target:Package",
-                $"/property:AssemblyVersion={_assemblyVersion}",
-                $"/property:FileVersion={_assemblyFileVersion}"
+                _argHelper.FormatPropertyArg("SolutionDir", solutionFile.Directory.FullName),
+                _argHelper.FormatPropertyArg("PackageLocation", packagePath),
+                _argHelper.FormatArg("verbosity",_verbosity.Level),
+                _argHelper.FormatArg("target","Package"),
+                _argHelper.FormatPropertyArg("AssemblyVersion", _assemblyVersion),
+                _argHelper.FormatPropertyArg("FileVersion", _assemblyFileVersion)
             };
 
             if (_processorCount.HasValue && _processorCount.Value >= 1)
@@ -2215,12 +2216,12 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             if (_showSummary)
             {
-                buildSitePackageArguments.Add("/detailedsummary");
+                buildSitePackageArguments.Add(_argHelper.FormatArg("detailedsummary"));
             }
 
             if (!_codeAnalysisEnabled)
             {
-                buildSitePackageArguments.Add("/property:RunCodeAnalysis=false");
+                buildSitePackageArguments.Add(_argHelper.FormatPropertyArg("RunCodeAnalysis","false"));
             }
 
             CategoryLog? toolAction = _debugLoggingEnabled
@@ -2343,8 +2344,20 @@ namespace Arbor.Build.Core.Tools.MSBuild
             _debugLoggingEnabled = _logger.IsEnabled(LogEventLevel.Debug);
             _verboseLoggingEnabled = _logger.IsEnabled(LogEventLevel.Verbose);
             _cancellationToken = cancellationToken;
-            _msBuildExe =
-                buildVariables.Require(WellKnownVariables.ExternalTools_MSBuild_ExePath).GetValueOrThrow();
+
+            _dotnetMsBuildEnabled =
+                buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_MSBuild_DotNetEnabled);
+
+            _msBuildExe = _dotnetMsBuildEnabled
+                    ? null
+                    : buildVariables.Require(WellKnownVariables.ExternalTools_MSBuild_ExePath).GetValueOrThrow();
+
+            string msbuildParameterArgumentDelimiter = _dotnetMsBuildEnabled
+                ? "-"
+                : "/";
+
+            _argHelper = new MsBuildArgHelper(msbuildParameterArgumentDelimiter);
+
             _artifactsPath =
                 buildVariables.Require(WellKnownVariables.Artifacts).GetValueOrThrow();
 

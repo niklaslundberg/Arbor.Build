@@ -42,6 +42,11 @@ namespace Arbor.Build.Core.Tools.NuGet
         {
             logger ??= Logger.None??throw new ArgumentNullException(nameof(logger));
 
+            if (buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_MSBuild_DotNetEnabled))
+            {
+                return ExitCode.Success;
+            }
+
             bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.MSBuildNuGetRestoreEnabled, true);
 
             if (!enabled)

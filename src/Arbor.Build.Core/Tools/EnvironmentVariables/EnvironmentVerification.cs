@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -15,6 +16,8 @@ namespace Arbor.Build.Core.Tools.EnvironmentVariables
     {
         protected readonly List<string> RequiredValues = new List<string>();
 
+        protected virtual bool Enabled(IReadOnlyCollection<IVariable> buildVariables) => true;
+
         public async Task<ExitCode> ExecuteAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
@@ -22,6 +25,12 @@ namespace Arbor.Build.Core.Tools.EnvironmentVariables
             CancellationToken cancellationToken)
         {
             logger ??= Logger.None;
+
+            if (!Enabled(buildVariables))
+            {
+                logger.Debug("{Tool} is not enabled", GetType().Name);
+                return ExitCode.Success;
+            }
 
             List<string> missingKeys =
                 RequiredValues.Where(
