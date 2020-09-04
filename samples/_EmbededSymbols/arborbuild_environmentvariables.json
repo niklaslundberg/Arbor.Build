@@ -1,0 +1,33 @@
+{
+    "version": "1.0",
+    "keys": [
+        {
+            "key": "Version.Major",
+            "value": 1
+        },
+        {
+            "key": "Version.Minor",
+            "value": 2
+        },
+        {
+            "key":  "Version.Patch",
+            "value": 3
+        },
+        {
+            "key":  "Version.Build",
+            "value": 4
+        },
+        {
+            "key":  "Arbor.Build.Vcs.Branch.Name",
+            "value": "develop"
+        },
+        {
+            "key":  "Arbor.Build.NuGet.Package.Symbols.Enabled",
+            "value": false
+        },
+        {
+            "key":  "Arbor.Build.NuGet.Package.AllowManifestReWriteEnabled",
+            "value": true
+        }
+    ]
+}
