@@ -90,7 +90,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
         private string? _gitHash;
         private ILogger _logger;
-        private string? _msBuildExe = null!;
+        private string? _msBuildExe;
         private string _packagesDirectory = null!;
         private bool _pdbArtifactsEnabled;
         private bool _preCompilationEnabled;
@@ -491,13 +491,13 @@ namespace Arbor.Build.Core.Tools.MSBuild
             string platform,
             ILogger logger)
         {
-            if (string.IsNullOrWhiteSpace(_msBuildExe))
+            if (!_dotnetMsBuildEnabled && string.IsNullOrWhiteSpace(_msBuildExe))
             {
                 logger.Error("MSBuild path is not defined");
                 return ExitCode.Failure;
             }
 
-            if (!File.Exists(_msBuildExe))
+            if (!_dotnetMsBuildEnabled && !File.Exists(_msBuildExe))
             {
                 logger.Error("The MSBuild path '{MsBuildExe}' does not exist", _msBuildExe);
                 return ExitCode.Failure;
@@ -592,12 +592,12 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 }
             }
 
-            AdjustBuildArgs(argList);
+            string exePath = AdjustBuildArgs(argList);
 
             ExitCode exitCode =
                 await
                     ProcessRunner.ExecuteProcessAsync(
-                            _msBuildExe,
+                            exePath,
                             argList,
                             standardOutLog: LogDefault,
                             logger.Error,
@@ -680,16 +680,20 @@ namespace Arbor.Build.Core.Tools.MSBuild
             return exitCode;
         }
 
-        private void AdjustBuildArgs(List<string> argList)
+        private string AdjustBuildArgs(List<string> argList)
         {
-            var fileInfo = new FileInfo(_msBuildExe);
+            bool dotnetMsBuildEnabled = _dotnetMsBuildEnabled || (!string.IsNullOrWhiteSpace(_msBuildExe) &&_msBuildExe.EndsWith("dotnet.exe", StringComparison.OrdinalIgnoreCase));
 
-            if (fileInfo.Name.Equals("dotnet.exe", StringComparison.OrdinalIgnoreCase)
+            if (dotnetMsBuildEnabled
                 && argList.Count > 0
                 && !argList[0].Equals("msbuild", StringComparison.OrdinalIgnoreCase))
             {
                 argList.Insert(0, "msbuild");
+
+                return _dotNetExePath!;
             }
+
+            return _msBuildExe!;
         }
 
         private async Task<ExitCode> PublishProjectsAsync(FileInfo solutionFile, string configuration, ILogger logger)
@@ -1485,10 +1489,12 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 buildSiteArguments.Add(_argHelper.FormatPropertyArg("RunCodeAnalysis","false"));
             }
 
+            string exePath = AdjustBuildArgs(buildSiteArguments);
+
             ExitCode buildSiteExitCode =
                 await
                     ProcessRunner.ExecuteProcessAsync(
-                        _msBuildExe,
+                        exePath,
                         buildSiteArguments,
                         logger.Information,
                         logger.Error,
@@ -2228,10 +2234,12 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 ? (message, _) => logger.Debug("{Message}", message)
                 : (CategoryLog?)null;
 
+            string exePath = AdjustBuildArgs(buildSitePackageArguments);
+
             ExitCode packageSiteExitCode =
                 await
                     ProcessRunner.ExecuteProcessAsync(
-                        _msBuildExe,
+                        exePath,
                         buildSitePackageArguments,
                         logger.Information,
                         logger.Error,
