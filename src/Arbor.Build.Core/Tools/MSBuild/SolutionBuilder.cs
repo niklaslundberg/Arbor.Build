@@ -2356,9 +2356,18 @@ namespace Arbor.Build.Core.Tools.MSBuild
             _dotnetMsBuildEnabled =
                 buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_MSBuild_DotNetEnabled);
 
+            if (_dotnetMsBuildEnabled)
+            {
+                logger.Information("SolutionBuilder is using dotnet msbuild");
+            }
+            else
+            {
+                logger.Information("SolutionBuilder is using .NET Framework msbuild");
+            }
+
             _msBuildExe = _dotnetMsBuildEnabled
-                    ? null
-                    : buildVariables.Require(WellKnownVariables.ExternalTools_MSBuild_ExePath).GetValueOrThrow();
+                ? null
+                : buildVariables.Require(WellKnownVariables.ExternalTools_MSBuild_ExePath).GetValueOrThrow();
 
             string msbuildParameterArgumentDelimiter = _dotnetMsBuildEnabled
                 ? "-"

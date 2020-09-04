@@ -18,12 +18,8 @@
             "value": 4
         },
         {
-            "key":  "Arbor.Build.Tools.External.MSBuild.DeterministicBuild.Enabled",
-            "value": false
-        },
-        {
             "key":  "Arbor.Build.Tools.External.MSBuild.DotNet.Enabled",
-            "value": true
+            "value": false
         }
     ]
 }

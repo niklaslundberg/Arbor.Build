@@ -70,6 +70,8 @@ namespace Arbor.Build.Tests.Integration
                 string filePath = Path.Combine(path, file);
                 Assert.True(File.Exists(filePath), $"File.Exists({filePath})");
             });
+
+            logger.Dispose();
         }
 
         async Task<ImmutableArray<string>> GetExpectedFiles(string path)
