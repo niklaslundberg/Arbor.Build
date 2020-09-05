@@ -55,14 +55,14 @@ namespace Arbor.Build.Core.IO
             {
                 string destFileName = Path.Combine(targetDir, file.Name);
 
-                (bool, string) isFileBlackListed =
+                (bool, string) isFileExcludeListed =
                     pathLookupSpecification.IsFileExcluded(file.FullName, rootDir, logger: optionalLogger);
 
-                if (isFileBlackListed.Item1)
+                if (isFileExcludeListed.Item1)
                 {
                     logger?.Verbose("File '{FullName}' is not allowed, skipping copying file, {Item2}",
                         file.FullName,
-                        isFileBlackListed.Item2);
+                        isFileExcludeListed.Item2);
                     continue;
                 }
 

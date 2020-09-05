@@ -35,12 +35,12 @@ namespace Arbor.Build.Core.IO
 
             var sourceFileInfo = new FileInfo(sourceFile);
 
-            (bool, string) directoryBlackListed =
+            (bool, string) directoryExcludeListed =
                 pathLookupSpecification.IsNotAllowed(sourceFileInfo.Directory?.FullName, rootDir);
 
-            if (directoryBlackListed.Item1)
+            if (directoryExcludeListed.Item1)
             {
-                string reasonMessage = $"Directory of '{sourceFile}' is not allowed, {directoryBlackListed.Item2}";
+                string reasonMessage = $"Directory of '{sourceFile}' is not allowed, {directoryExcludeListed.Item2}";
                 logger?.Debug("{Reason}", reasonMessage);
                 return (true, reasonMessage);
             }

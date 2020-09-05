@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -8,7 +7,6 @@ using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Logging;
 using Arbor.Build.Core.ProcessUtils;
-using Arbor.Defensive;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
@@ -40,8 +38,6 @@ namespace Arbor.Build.Core.Tools.NuGet
             string[] args,
             CancellationToken cancellationToken)
         {
-            logger ??= Logger.None??throw new ArgumentNullException(nameof(logger));
-
             if (buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_MSBuild_DotNetEnabled))
             {
                 return ExitCode.Success;
@@ -51,7 +47,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             if (!enabled)
             {
-                logger?.Debug("{Tool} is disabled", nameof(MsBuildNuGetRestorer));
+                logger.Debug("{Tool} is disabled", nameof(MsBuildNuGetRestorer));
                 return ExitCode.Success;
             }
 
@@ -65,12 +61,18 @@ namespace Arbor.Build.Core.Tools.NuGet
             PathLookupSpecification pathLookupSpecification =
                 DefaultPaths.DefaultPathLookupSpecification.AddExcludedDirectorySegments(new[] { "node_modules" });
 
-            var blackListStatus = solutionFiles.Select(
-                file => new { File = file, Status = pathLookupSpecification.IsFileExcluded(file, rootPath) }).ToArray();
+            var excludeListStatus = solutionFiles
+                .Select(file => new {File = file, Status = pathLookupSpecification.IsFileExcluded(file, rootPath)})
+                .ToArray();
 
-            string[] included = blackListStatus.Where(file => !file.Status.Item1).Select(file => file.File).ToArray();
+            string[] included = excludeListStatus
+                .Where(file => !file.Status.Item1)
+                .Select(file => file.File)
+                .ToArray();
 
-            var excluded = blackListStatus.Where(file => file.Status.Item1).ToArray();
+            var excluded = excludeListStatus
+                .Where(file => file.Status.Item1)
+                .ToArray();
 
             if (included.Length > 1)
             {
@@ -98,7 +100,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             string solutionFile = included.Single();
 
-            var runtimeIdentifier =
+            string? runtimeIdentifier =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.PublishRuntimeIdentifier);
 
             var arguments = new List<string> { solutionFile, "/t:restore" };

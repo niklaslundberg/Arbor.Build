@@ -4,19 +4,27 @@ using System.IO;
 using System.Linq;
 using NuGet.Packaging;
 using Serilog;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.NuGet
 {
     public class ManitestReWriter
     {
+        private readonly IFileSystem _fileSystem;
+
+        public ManitestReWriter(IFileSystem fileSystem)
+        {
+            _fileSystem = fileSystem;
+        }
+
         public ManifestReWriteResult Rewrite(
-            string nuspecFullPath,
+            string nuspecFullPath2,
             string tagPrefix = "x-arbor-build",
             ILogger? logger = null)
         {
-            if (string.IsNullOrWhiteSpace(nuspecFullPath))
+            if (string.IsNullOrWhiteSpace(nuspecFullPath2))
             {
-                throw new ArgumentNullException(nameof(nuspecFullPath));
+                throw new ArgumentNullException(nameof(nuspecFullPath2));
             }
 
             if (string.IsNullOrWhiteSpace(tagPrefix))
@@ -24,58 +32,73 @@ namespace Arbor.Build.Core.Tools.NuGet
                 throw new ArgumentNullException(nameof(tagPrefix));
             }
 
-            if (!File.Exists(nuspecFullPath))
-            {
-                throw new FileNotFoundException($"The file '{nuspecFullPath}' does not exist", nuspecFullPath);
-            }
+            var nuspecFileSystemFullPath = _fileSystem.ConvertPathFromInternal(nuspecFullPath2);
 
-            var removeTags = new List<string>();
+            if (!_fileSystem.FileExists(nuspecFileSystemFullPath))
+            {
+                throw new FileNotFoundException($"The file '{nuspecFileSystemFullPath}' does not exist", nuspecFileSystemFullPath.FullName);
+            }
+            using var stream = _fileSystem.OpenFile(nuspecFileSystemFullPath, FileMode.Open, FileAccess.Read);
+
+
+            DirectoryEntry baseDir = new FileEntry(_fileSystem, nuspecFileSystemFullPath).Directory;
+            var baseDirFileSystemPath = _fileSystem.ConvertPathToInternal(baseDir.Path);
+
+            var packageBuilder = new PackageBuilder(stream, baseDirFileSystemPath);
+
+            var removeTags = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             bool isReWritten = false;
 
-            string tempFile = $"{nuspecFullPath}.{Guid.NewGuid()}.tmp";
+            string? tempFile = null;
 
-            DirectoryInfo baseDir = new FileInfo(nuspecFullPath).Directory;
-
-            using (var stream = new FileStream(nuspecFullPath, FileMode.Open))
+            if (packageBuilder.Tags.Count > 0)
             {
-                var packageBuilder = new PackageBuilder(stream, baseDir.FullName);
+                tempFile = $"{nuspecFileSystemFullPath}.{Guid.NewGuid()}.tmp";
 
                 logger?.Verbose("Using starts with-pattern '{TagPrefix}' to exclude tags from NuSpec", tagPrefix);
 
-                string[] tagsToRemove = packageBuilder.Tags
-                    .Where(tag => tag.StartsWith(tagPrefix, StringComparison.Ordinal)).ToArray();
+                string[] matchingTags = packageBuilder.Tags
+                    .Where(tag => tag.StartsWith(tagPrefix, StringComparison.OrdinalIgnoreCase))
+                    .ToArray();
 
-                if (tagsToRemove.Length == 0)
+                if (packageBuilder.Tags.Any(tag =>
+                    tag.Equals(WellKnownNuGetTags.NoSource, StringComparison.OrdinalIgnoreCase)))
                 {
-                    logger?.Verbose("No tags to remove from NuSpec '{NuspecFullPath}'", nuspecFullPath);
+                    removeTags.Add(WellKnownNuGetTags.NoSource);
                 }
 
-                foreach (string tagToRemove in tagsToRemove)
+                if (matchingTags.Length == 0)
                 {
-                    logger?.Verbose("Removing tag '{TagToRemove}' from NuSpec '{NuspecFullPath}'",
-                        tagToRemove,
-                        nuspecFullPath);
-                    packageBuilder.Tags.Remove(tagToRemove);
+                    logger?.Verbose("No tags to remove from NuSpec '{NuspecFullPath}'", nuspecFileSystemFullPath);
                 }
-
-                if (tagsToRemove.Length > 0)
+                else
                 {
-                    using var outStream = new FileStream(tempFile, FileMode.CreateNew);
+                    removeTags.AddRange(matchingTags);
+                    foreach (string tagToRemove in removeTags)
+                    {
+                        logger?.Verbose("Removing tag '{TagToRemove}' from NuSpec '{NuspecFullPath}'",
+                            tagToRemove,
+                            nuspecFileSystemFullPath);
+                        packageBuilder.Tags.Remove(tagToRemove);
+                    }
+
+
+                    using var outStream = _fileSystem.OpenFile(tempFile, FileMode.CreateNew, FileAccess.Write);
                     packageBuilder.Save(outStream);
                     isReWritten = true;
                 }
             }
 
-            if (isReWritten)
+            if (isReWritten && tempFile is {})
             {
-                logger?.Verbose("Deleting NuSpec file '{NuspecFullPath}'", nuspecFullPath);
-                File.Delete(nuspecFullPath);
+                logger?.Verbose("Deleting NuSpec file '{NuspecFullPath}'", nuspecFileSystemFullPath);
+                _fileSystem.DeleteFile(nuspecFileSystemFullPath);
 
                 logger?.Verbose("Moving NuSpec temp copy '{TempFile}' to file '{NuspecFullPath}'",
                     tempFile,
-                    nuspecFullPath);
-                File.Move(tempFile, nuspecFullPath);
+                    nuspecFileSystemFullPath);
+                _fileSystem.MoveFile(tempFile, nuspecFileSystemFullPath);
             }
 
             var result = new ManifestReWriteResult(removeTags, tagPrefix);

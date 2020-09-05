@@ -32,7 +32,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
     [UsedImplicitly]
     public class SolutionBuilder : ITool, IReportLogTail
     {
-        private readonly List<FileAttributes> _blackListedByAttributes = new List<FileAttributes>
+        private readonly List<FileAttributes> _excludeListedByAttributes = new List<FileAttributes>
         {
             FileAttributes.Hidden,
             FileAttributes.System,
@@ -2259,15 +2259,15 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
         private IEnumerable<FileInfo> FindSolutionFiles(DirectoryInfo directoryInfo, ILogger logger)
         {
-            (bool, string) isBlacklisted = IsBlacklisted(directoryInfo);
-            if (isBlacklisted.Item1)
+            (bool, string) isExcludeListed = IsExcludeListed(directoryInfo);
+            if (isExcludeListed.Item1)
             {
                 if (_debugLoggingEnabled)
                 {
                     logger.Debug(
                         "Skipping directory '{FullName}' when searching for solution files because the directory is notallowed, {Item2}",
                         directoryInfo.FullName,
-                        isBlacklisted.Item2);
+                        isExcludeListed.Item2);
                 }
 
                 return Enumerable.Empty<FileInfo>();
@@ -2283,23 +2283,23 @@ namespace Arbor.Build.Core.Tools.MSBuild
             return solutionFiles;
         }
 
-        private (bool, string) IsBlacklisted(DirectoryInfo directoryInfo)
+        private (bool, string) IsExcludeListed(DirectoryInfo directoryInfo)
         {
-            (bool, string) isBlacklistedByName =
+            (bool, string) isExcludedByName =
                 _pathLookupSpecification.IsNotAllowed(directoryInfo.FullName, _vcsRoot);
 
-            if (isBlacklistedByName.Item1)
+            if (isExcludedByName.Item1)
             {
-                return isBlacklistedByName;
+                return isExcludedByName;
             }
 
-            FileAttributes[] blackListedByAttributes = _blackListedByAttributes.Where(
-                blackListed => (directoryInfo.Attributes & blackListed) != 0).ToArray();
+            FileAttributes[] excludedByAttributes = _excludeListedByAttributes.Where(
+                excluded => (directoryInfo.Attributes & excluded) != 0).ToArray();
 
-            bool isNotAllowedByAttributes = blackListedByAttributes.Length > 0;
+            bool isNotAllowedByAttributes = excludedByAttributes.Length > 0;
 
             return (isNotAllowedByAttributes, isNotAllowedByAttributes
-                ? $"Directory has black-listed attributes {string.Join(", ", blackListedByAttributes.Select(_ => Enum.GetName(typeof(FileAttributes), _)))}"
+                ? $"Directory has exclude-listed attributes {string.Join(", ", excludedByAttributes.Select(_ => Enum.GetName(typeof(FileAttributes), _)))}"
                 : string.Empty);
         }
 

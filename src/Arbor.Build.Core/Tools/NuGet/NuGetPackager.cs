@@ -23,13 +23,16 @@ namespace Arbor.Build.Core.Tools.NuGet
         private readonly BuildContext _buildContext;
 
         private readonly ILogger _logger;
+        private ManitestReWriter _manifestReWriter;
 
         public const string SnupkgPackageFormat = "snupkg";
 
-        public NuGetPackager(ILogger logger, BuildContext buildContext)
+        public NuGetPackager(ILogger logger, BuildContext buildContext,
+            ManitestReWriter manifestReWriter)
         {
             _logger = logger;
             _buildContext = buildContext;
+            _manifestReWriter = manifestReWriter;
         }
 
         public NuGetPackageConfiguration? GetNuGetPackageConfiguration(
@@ -269,8 +272,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             {
                 _logger.Verbose("Rewriting manifest in NuSpec '{NuSpecFileCopyPath}'", nuSpecFileCopyPath);
 
-                var manifestReWriter = new ManitestReWriter();
-                ManifestReWriteResult manifestReWriteResult = manifestReWriter.Rewrite(nuSpecFileCopyPath);
+                ManifestReWriteResult manifestReWriteResult = _manifestReWriter.Rewrite(nuSpecFileCopyPath);
 
                 removedTags.AddRange(manifestReWriteResult.RemoveTags);
             }

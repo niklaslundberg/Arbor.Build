@@ -45,16 +45,16 @@ namespace Arbor.Build.Core.Tools.NuGet
             PathLookupSpecification pathLookupSpecification =
                 DefaultPaths.DefaultPathLookupSpecification.AddExcludedDirectorySegments(new[] { "node_modules" });
 
-            var blackListStatus = solutionFiles
+            var excludeListStatus = solutionFiles
                 .Select(file => new { File = file, Status = pathLookupSpecification.IsFileExcluded(file, rootPath) })
                 .ToArray();
 
-            string[] included = blackListStatus
+            string[] included = excludeListStatus
                 .Where(file => !file.Status.Item1)
                 .Select(file => file.File)
                 .ToArray();
 
-            var excluded = blackListStatus
+            var excluded = excludeListStatus
                 .Where(file => file.Status.Item1)
                 .ToArray();
 

@@ -11,6 +11,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
         {
             builder.RegisterType<BuildContext>().AsSelf().SingleInstance();
             builder.RegisterType<NuGetPackager>().AsSelf().SingleInstance();
+            builder.RegisterType<ManitestReWriter>().AsSelf().SingleInstance();
         }
     }
 }

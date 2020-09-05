@@ -28,6 +28,14 @@
         {
             "key":  "Arbor.Build.NuGet.Package.AllowManifestReWriteEnabled",
             "value": true
+        },
+        {
+            "key":  "Arbor.Build.Tools.External.MSBuild.DeterministicBuild.Enabled",
+            "value": true
+        },
+        {
+            "key":  "Arbor.Build.Vcs.Git.RepositoryUrl",
+            "value": "https://github.com/niklaslundberg/Arbor.Build.git"
         }
     ]
 }
