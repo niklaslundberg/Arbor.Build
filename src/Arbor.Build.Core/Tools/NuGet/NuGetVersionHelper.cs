@@ -98,7 +98,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 if (enableBuildNumber)
                 {
                     buildVersion =
-                        $"{parsedVersion.Major}.{parsedVersion.Minor}.{parsedVersion.Build}-{parsedVersion.Revision.ToString().LeftPad(usePadding, '0')}";
+                        $"{parsedVersion.Major}.{parsedVersion.Minor}.{parsedVersion.Build}-{parsedVersion.Revision.ToString(CultureInfo.InvariantCulture).LeftPad(usePadding, '0')}";
 
                     logger?.Information("Using major.minor.patch-build as the version, {BuildVersion}", buildVersion);
                 }

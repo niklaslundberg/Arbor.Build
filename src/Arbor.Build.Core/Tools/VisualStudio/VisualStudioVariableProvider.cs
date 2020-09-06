@@ -11,7 +11,6 @@ using Arbor.Build.Core.Tools.Cleanup;
 using JetBrains.Annotations;
 using Microsoft.Win32;
 using Serilog;
-using Serilog.Core;
 
 namespace Arbor.Build.Core.Tools.VisualStudio
 {
@@ -27,7 +26,6 @@ namespace Arbor.Build.Core.Tools.VisualStudio
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            logger ??= Logger.None;
             if (!string.IsNullOrWhiteSpace(buildVariables.GetVariableValueOrDefault(
                 WellKnownVariables.ExternalTools_VisualStudio_Version,
                 string.Empty)))
@@ -51,7 +49,7 @@ namespace Arbor.Build.Core.Tools.VisualStudio
                 registryLookupBits,
                 registryKeyName);
 
-            string visualStudioVersion = GetVisualStudioVersion(logger, registryKeyName);
+            string? visualStudioVersion = GetVisualStudioVersion(logger, registryKeyName);
 
             string? vsTestExePath = null;
 
@@ -77,36 +75,36 @@ namespace Arbor.Build.Core.Tools.VisualStudio
             return Task.FromResult(environmentVariables.ToImmutableArray());
         }
 
-        private static string GetVSTestExePath(ILogger logger, string registryKeyName, string visualStudioVersion)
+        private static string? GetVSTestExePath(ILogger logger, string registryKeyName, string visualStudioVersion)
         {
             string? path = null;
 
             using (RegistryKey view32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
             {
-                using RegistryKey vsKey = view32.OpenSubKey(registryKeyName);
+                using RegistryKey? vsKey = view32.OpenSubKey(registryKeyName);
                 if (vsKey != null)
                 {
-                    using RegistryKey versionKey = vsKey.OpenSubKey(visualStudioVersion);
+                    using RegistryKey? versionKey = vsKey.OpenSubKey(visualStudioVersion);
                     if (versionKey == null)
                     {
                         throw new InvalidOperationException(
                             $"Expected key {vsKey.Name} to contain a subkey with name {visualStudioVersion}");
                     }
 
-                    const string installdir = "InstallDir";
-                    object installDir = versionKey.GetValue(installdir, null);
+                    const string installDirKey = "InstallDir";
+                    string? installDir = versionKey.GetValue(installDirKey, null)?.ToString();
 
-                    if (string.IsNullOrWhiteSpace(installDir?.ToString()))
+                    if (string.IsNullOrWhiteSpace(installDir))
                     {
                         logger.Warning(
-                            "Expected key {Name} to contain a value with name {Installdir} and a non-empty value",
+                            "Expected key {Name} to contain a value with name {InstallDir} and a non-empty value",
                             versionKey.Name,
-                            installdir);
+                            installDirKey);
                         return null;
                     }
 
                     string exePath = Path.Combine(
-                        installDir.ToString(),
+                        installDir,
                         "CommonExtensions",
                         "Microsoft",
                         "TestWindow",
@@ -124,14 +122,14 @@ namespace Arbor.Build.Core.Tools.VisualStudio
             return path;
         }
 
-        private string GetVisualStudioVersion(ILogger logger, string registryKeyName)
+        private string? GetVisualStudioVersion(ILogger logger, string registryKeyName)
         {
-            string visualStudioVersion = null;
+            string? visualStudioVersion = null;
 
             using var view32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
 
-            using RegistryKey vsKey = view32.OpenSubKey(registryKeyName);
-            if (vsKey != null)
+            using RegistryKey? vsKey = view32.OpenSubKey(registryKeyName);
+            if (vsKey is {})
             {
                 List<Version> versions = vsKey.GetSubKeyNames()
                     .Where(subKeyName => char.IsDigit(subKeyName.First()))
@@ -172,7 +170,7 @@ namespace Arbor.Build.Core.Tools.VisualStudio
                         })
                     .Where(version => version is {})
                     .OrderByDescending(name => name)
-                    .ToList();
+                    .ToList()!;
 
                 logger.Verbose("Found {Count} Visual Studio versions: {Versions}",
                     versions.Count,

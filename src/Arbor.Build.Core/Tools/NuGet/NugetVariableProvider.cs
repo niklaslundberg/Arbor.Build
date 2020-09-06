@@ -19,7 +19,7 @@ namespace Arbor.Build.Core.Tools.NuGet
     {
         private CancellationToken _cancellationToken;
 
-        private async Task<string> EnsureNuGetExeExistsAsync(ILogger logger, string? userSpecifiedNuGetExePath)
+        private async Task<string?> EnsureNuGetExeExistsAsync(ILogger logger, string? userSpecifiedNuGetExePath)
         {
             if (userSpecifiedNuGetExePath is {} && File.Exists(userSpecifiedNuGetExePath))
             {

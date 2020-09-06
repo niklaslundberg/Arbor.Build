@@ -72,6 +72,7 @@ namespace Arbor.Build.Tests.Integration
             });
 
             logger.Dispose();
+            xunitLogger.Dispose();
         }
 
         async Task<ImmutableArray<string>> GetExpectedFiles(string path)

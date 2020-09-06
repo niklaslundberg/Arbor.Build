@@ -2,6 +2,7 @@
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using Arbor.Defensive.Collections;
 using JetBrains.Annotations;
 
 namespace Arbor.Build.Core.Tools.MSBuild
@@ -42,6 +43,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             return new Solution(solutionFileFullName, lines
                 .Select(line => GetProject(line, fileInfo))
                 .Where(item => item != null)
+                .NotNull()
                 .ToImmutableArray());
         }
 

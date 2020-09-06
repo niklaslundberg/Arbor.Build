@@ -164,7 +164,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             return new MSBuildProject(msbuildPropertyGroups,
                 projectFileFullName,
                 name,
-                file.Directory?.FullName,
+                file.Directory!.FullName,
                 projectTypes,
                 projectId,
                 sdk,

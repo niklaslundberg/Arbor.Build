@@ -23,7 +23,7 @@ namespace Arbor.Build.Core.Tools.NuGet
         private readonly BuildContext _buildContext;
 
         private readonly ILogger _logger;
-        private ManifestReWriter _manifestReWriter;
+        private readonly ManifestReWriter _manifestReWriter;
 
         public const string SnupkgPackageFormat = "snupkg";
 
@@ -43,20 +43,20 @@ namespace Arbor.Build.Core.Tools.NuGet
             string packageNameSuffix)
         {
             logger ??= Logger.None;
-            var version = buildVariables.Require(WellKnownVariables.Version).GetValueOrThrow();
+            string version = buildVariables.Require(WellKnownVariables.Version).GetValueOrThrow()!;
 
-            var branchName = buildVariables.Require(WellKnownVariables.BranchLogicalName).GetValueOrThrow();
+            string branchName = buildVariables.Require(WellKnownVariables.BranchLogicalName).GetValueOrThrow()!;
 
             var branch = BranchName.TryParse(branchName);
 
-            string? currentConfiguration = buildVariables.GetVariableValueOrDefault(WellKnownVariables.CurrentBuildConfiguration, null);
+            string? currentConfiguration = buildVariables.GetVariableValueOrDefault(WellKnownVariables.CurrentBuildConfiguration);
 
             string? staticConfiguration =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_MSBuild_BuildConfiguration
                     ) ??
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.Configuration);
 
-            string? buildConfiguration = currentConfiguration ?? staticConfiguration;
+            string buildConfiguration = currentConfiguration ?? staticConfiguration ?? WellKnownConfigurations.Release;
 
             IVariable tempDirectory = buildVariables.Require(WellKnownVariables.TempDirectory).ThrowIfEmptyValue();
             string nuGetExePath = buildVariables.Require(WellKnownVariables.ExternalTools_NuGet_ExePath)
@@ -78,13 +78,13 @@ namespace Arbor.Build.Core.Tools.NuGet
                 buildVariables.GetBooleanByKey(WellKnownVariables.NuGetPackageIdBranchNameEnabled, true);
 
             string? packageIdOverride =
-                buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageIdOverride, null);
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageIdOverride);
 
             bool nuGetSymbolPackagesEnabled =
                 buildVariables.GetBooleanByKey(WellKnownVariables.NuGetSymbolPackagesEnabled);
 
             string? nuGetPackageVersionOverride =
-                buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageVersionOverride, null);
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageVersionOverride);
 
             bool allowManifestReWrite =
                 buildVariables.GetBooleanByKey(WellKnownVariables.NuGetAllowManifestReWrite);
@@ -212,7 +212,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             NuSpec nuSpec = NuSpec.Parse(packageSpecificationPath);
 
-            IDictionary<string, string> properties = GetProperties(packageConfiguration);
+            IDictionary<string, string?> properties = GetProperties(packageConfiguration);
 
             if (!string.IsNullOrWhiteSpace(packageConfiguration.PackageIdOverride))
             {

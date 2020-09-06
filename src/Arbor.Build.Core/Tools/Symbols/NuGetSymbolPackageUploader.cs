@@ -36,7 +36,7 @@ namespace Arbor.Build.Core.Tools.Symbols
 
             IVariable artifacts = buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue();
 
-            var packagesFolder = new DirectoryInfo(Path.Combine(artifacts.Value, "packages"));
+            var packagesFolder = new DirectoryInfo(Path.Combine(artifacts.Value!, "packages"));
 
             if (!packagesFolder.Exists)
             {
@@ -81,9 +81,9 @@ namespace Arbor.Build.Core.Tools.Symbols
                 return UploadNuGetPackagesAsync(
                     logger,
                     packagesFolder.FullName,
-                    nugetExe.Value,
-                    symbolServer.Value,
-                    symbolServerApiKey.Value,
+                    nugetExe.Value!,
+                    symbolServer.Value!,
+                    symbolServerApiKey.Value!,
                     timeout);
             }
 

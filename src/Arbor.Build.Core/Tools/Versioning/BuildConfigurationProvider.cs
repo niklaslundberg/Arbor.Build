@@ -42,7 +42,7 @@ namespace Arbor.Build.Core.Tools.Versioning
             bool? debugEnabled =
                 buildVariables.GetOptionalBooleanByKey(WellKnownVariables.DebugBuildEnabled);
 
-            _buildContext.Configurations.AddRange(buildVariables.GetVariableValueOrDefault(WellKnownVariables.Configurations, "")
+            _buildContext.Configurations.AddRange(buildVariables.GetVariableValueOrDefault(WellKnownVariables.Configurations, "")!
                 .Split(';', StringSplitOptions.RemoveEmptyEntries)
                 .Select(value => value.Trim())
                 .Where(value => !string.IsNullOrWhiteSpace(value)));

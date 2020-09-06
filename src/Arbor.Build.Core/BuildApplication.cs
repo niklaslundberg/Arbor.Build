@@ -41,12 +41,12 @@ namespace Arbor.Build.Core
         private readonly IEnvironmentVariables _environmentVariables;
         private readonly ISpecialFolders _specialFolders;
 
-        public BuildApplication(ILogger logger, IEnvironmentVariables environmentVariables, ISpecialFolders specialFolders)
+        public BuildApplication(ILogger? logger, IEnvironmentVariables environmentVariables, ISpecialFolders specialFolders)
         {
             _args = Array.Empty<string>();
             _environmentVariables = environmentVariables;
             _specialFolders = specialFolders;
-            _logger = logger ?? Logger.None ?? throw new ArgumentNullException(nameof(logger));
+            _logger = logger ?? Logger.None;
             _verboseEnabled = _logger.IsEnabled(LogEventLevel.Verbose);
             _debugEnabled = _logger.IsEnabled(LogEventLevel.Debug);
         }
@@ -59,7 +59,7 @@ namespace Arbor.Build.Core
 
             string displayTable = toolResults.Select(
                     result =>
-                        new Dictionary<string, string>
+                        new Dictionary<string, string?>
                         {
                             { "Tool", result.ToolWithPriority.Tool.Name() },
                             {
@@ -145,7 +145,7 @@ namespace Arbor.Build.Core
                 string variableAsTable = WellKnownVariables.AllVariables
                     .OrderBy(item => item.InvariantName)
                     .Select(
-                        variable => new Dictionary<string, string>
+                        variable => new Dictionary<string, string?>
                         {
                             { "Name", variable.InvariantName },
                             { "Description", variable.Description },
@@ -274,7 +274,7 @@ namespace Arbor.Build.Core
                     .Select(toolResult => (Result:toolResult, LogTail:toolResult.ToolWithPriority.Tool as IReportLogTail))
                     .Where(item => item.LogTail is {}))
                 {
-                    string logTail = string.Join(Environment.NewLine, tuple.LogTail.LogTail.AllCurrentItems);
+                    string logTail = string.Join(Environment.NewLine, tuple.LogTail!.LogTail.AllCurrentItems);
                     _logger.Error("Tool {Tool} failed with log tail {NewLine}{LogTail}", tuple.Result.ToolWithPriority.Tool.Name(), Environment.NewLine, logTail);
                 }
 
@@ -293,7 +293,7 @@ namespace Arbor.Build.Core
             sb.AppendLine();
 
             sb.AppendLine(toolWithPriorities.Select(tool =>
-                    new Dictionary<string, string>
+                    new Dictionary<string, string?>
                     {
                         { "Tool", tool.Tool.Name() },
                         { "Priority", tool.Priority.ToString(CultureInfo.InvariantCulture) },
@@ -365,7 +365,7 @@ namespace Arbor.Build.Core
             if (_verboseEnabled)
             {
                 string displayAsTable =
-                    providers.Select(item => new Dictionary<string, string> { { "Provider", item.GetType().Name } })
+                    providers.Select(item => new Dictionary<string, string?> { { "Provider", item.GetType().Name } })
                         .DisplayAsTable();
 
                 string variablesMessage =
@@ -390,7 +390,7 @@ namespace Arbor.Build.Core
                     string values;
                     if (newVariables.Length > 0)
                     {
-                        Dictionary<string, string>[] providerTable =
+                        Dictionary<string, string?>[] providerTable =
                         {
                             newVariables.ToDictionary(s => s.Key, s => s.Value)
                         };
@@ -433,7 +433,7 @@ namespace Arbor.Build.Core
                         }
                         else
                         {
-                            if (existing.Value.Equals(variable.Value, StringComparison.OrdinalIgnoreCase))
+                            if (existing.Value is {} existingValue && existingValue.Equals(variable.Value, StringComparison.OrdinalIgnoreCase))
                             {
                                 continue;
                             }
@@ -506,7 +506,7 @@ namespace Arbor.Build.Core
             return variables.Select(item => new BuildVariable(item.Key, item.Value)).ToImmutableArray();
         }
 
-        public async Task<ExitCode> RunAsync(string[] args)
+        public async Task<ExitCode> RunAsync(string[]? args)
         {
             _args = args ?? Array.Empty<string>();
             MultiSourceKeyValueConfiguration multiSourceKeyValueConfiguration = KeyValueConfigurationManager
@@ -531,7 +531,7 @@ namespace Arbor.Build.Core
 
             if (DebugHelper.IsDebugging(_environmentVariables))
             {
-                sourceDir = await StartWithDebuggerAsync(args).ConfigureAwait(false);
+                sourceDir = await StartWithDebuggerAsync(_args).ConfigureAwait(false);
             }
 
             _container = await BuildBootstrapper.StartAsync(_logger, _environmentVariables, _specialFolders, sourceDir).ConfigureAwait(false);

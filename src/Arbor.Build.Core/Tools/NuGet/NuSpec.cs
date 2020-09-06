@@ -80,7 +80,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 return _xml;
             }
 
-            return base.ToString();
+            return base.ToString()!;
         }
 
         public void Save(string filePath)

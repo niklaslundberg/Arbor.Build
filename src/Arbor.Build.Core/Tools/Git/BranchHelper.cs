@@ -112,7 +112,7 @@ namespace Arbor.Build.Core.Tools.Git
                 return new SemanticVersion(0, 0, 0);
             }
 
-            string splitCharactersVariable =
+            string? splitCharactersVariable =
                 environmentVariables.GetEnvironmentVariable(WellKnownVariables.NameVersionCommonSeparatedSplitList);
 
             var splitCharacters = new List<string>
@@ -136,7 +136,7 @@ namespace Arbor.Build.Core.Tools.Git
                 splitCharacters = parts;
             }
 
-            string version =
+            string? version =
                 branchName.Split(splitCharacters.ToArray(), StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
 
             if (!SemanticVersion.TryParse(version, out SemanticVersion semver))

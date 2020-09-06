@@ -16,7 +16,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
         public ManifestReWriteResult Rewrite(
             string nuspecFullPath,
-            Func<string, string>? propertyProvider = null,
+            Func<string, string?>? propertyProvider = null,
             string tagPrefix = "x-arbor-build",
             ILogger? logger = null)
         {

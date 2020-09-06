@@ -18,8 +18,10 @@ namespace Arbor.Build.Core
     {
         protected override void Load(ContainerBuilder builder)
         {
-           IFileSystem fileSystem = new Arbor.FS.PhysicalJunctionFs(new WindowsFs(new PhysicalFileSystem()));
-           builder.RegisterInstance(fileSystem);
+#pragma warning disable CA2000 // Dispose objects before losing scope
+            IFileSystem fileSystem = new PhysicalJunctionFs(new WindowsFs(new PhysicalFileSystem()));
+#pragma warning restore CA2000 // Dispose objects before losing scope
+            builder.RegisterInstance(fileSystem);
         }
     }
 }

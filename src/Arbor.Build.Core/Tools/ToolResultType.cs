@@ -61,7 +61,7 @@ namespace Arbor.Build.Core.Tools
             return Equals((ToolResultType)obj);
         }
 
-        public override int GetHashCode() => Type.GetHashCode();
+        public override int GetHashCode() => Type.GetHashCode(StringComparison.Ordinal);
 
         public static bool operator ==(ToolResultType? left, ToolResultType? right) => Equals(left, right);
 

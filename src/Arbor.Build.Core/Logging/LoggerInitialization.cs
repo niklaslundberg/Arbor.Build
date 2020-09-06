@@ -15,7 +15,7 @@ namespace Arbor.Build.Core.Logging
 
             LoggingLevelSwitch levelSwitch = LogLevelHelper.GetLevelSwitch(args, environmentVariables);
 
-            string seqUrl = args?.FirstOrDefault(arg => arg.StartsWith("sequrl", StringComparison.OrdinalIgnoreCase))
+            string? seqUrl = args.FirstOrDefault(arg => arg.StartsWith("sequrl", StringComparison.OrdinalIgnoreCase))
                                 ?.Split('=').LastOrDefault()
                             ?? environmentVariables.GetEnvironmentVariable("sequrl");
 
@@ -39,7 +39,7 @@ namespace Arbor.Build.Core.Logging
             LoggerConfiguration loggerConfiguration = new LoggerConfiguration()
                 .WriteTo.Console(outputTemplate: outputTemplate);
 
-            if (!string.IsNullOrWhiteSpace(seqUrl) && Uri.TryCreate(seqUrl, UriKind.Absolute, out Uri uri))
+            if (!string.IsNullOrWhiteSpace(seqUrl) && Uri.TryCreate(seqUrl, UriKind.Absolute, out Uri? _))
             {
                 loggerConfiguration = loggerConfiguration.WriteTo.Seq(seqUrl);
             }

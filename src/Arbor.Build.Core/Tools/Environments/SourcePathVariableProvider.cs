@@ -20,10 +20,10 @@ namespace Arbor.Build.Core.Tools.Environments
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            string existingSourceRoot =
+            string? existingSourceRoot =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.SourceRoot, string.Empty);
 
-            string existingToolsDirectory =
+            string? existingToolsDirectory =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools, string.Empty);
             string sourceRoot;
 
@@ -59,7 +59,7 @@ namespace Arbor.Build.Core.Tools.Environments
             if (string.IsNullOrWhiteSpace(existingToolsDirectory))
             {
                 var externalToolsRelativeApp =
-                    new DirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
+                    new DirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory!,
                         "tools",
                         "external"));
 

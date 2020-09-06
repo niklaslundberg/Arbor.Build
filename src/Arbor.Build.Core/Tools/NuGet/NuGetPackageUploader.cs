@@ -469,8 +469,8 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             IVariable artifacts = buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue();
 
-            var packagesFolder = new DirectoryInfo(Path.Combine(artifacts.Value, "packages"));
-            var websitesDirectory = new DirectoryInfo(Path.Combine(artifacts.Value, "websites"));
+            var packagesFolder = new DirectoryInfo(Path.Combine(artifacts.Value!, "packages"));
+            var websitesDirectory = new DirectoryInfo(Path.Combine(artifacts.Value!, "websites"));
 
             IVariable nugetExe = buildVariables.Require(WellKnownVariables.ExternalTools_NuGet_ExePath)
                 .ThrowIfEmptyValue();

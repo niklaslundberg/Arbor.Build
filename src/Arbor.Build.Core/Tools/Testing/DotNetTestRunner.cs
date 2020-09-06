@@ -127,10 +127,10 @@ namespace Arbor.Build.Core.Tools.Testing
                 bool xmlEnabled =
                     buildVariables.GetBooleanByKey(WellKnownVariables.XUnitNetCoreAppXmlEnabled, true);
 
-                string reportFile = Path.Combine(reportPath.Value, "dotnet", xmlReportName);
+                string reportFile = Path.Combine(reportPath.Value!, "dotnet", xmlReportName);
 
                 var reportFileInfo = new FileInfo(reportFile);
-                reportFileInfo.Directory.EnsureExists();
+                reportFileInfo.Directory!.EnsureExists();
 
                 if (xmlEnabled)
                 {

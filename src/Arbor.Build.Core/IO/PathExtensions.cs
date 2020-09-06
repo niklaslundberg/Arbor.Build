@@ -36,7 +36,7 @@ namespace Arbor.Build.Core.IO
             var sourceFileInfo = new FileInfo(sourceFile);
 
             (bool, string) directoryExcludeListed =
-                pathLookupSpecification.IsNotAllowed(sourceFileInfo.Directory?.FullName, rootDir);
+                pathLookupSpecification.IsNotAllowed(sourceFileInfo.Directory!.FullName, rootDir);
 
             if (directoryExcludeListed.Item1)
             {
@@ -136,9 +136,9 @@ namespace Arbor.Build.Core.IO
             return (false, string.Empty);
         }
 
-        private static string[] GetSourceDirSegments(string sourceDir, string rootDir)
+        private static string[] GetSourceDirSegments(string sourceDir, string? rootDir)
         {
-            string path = string.IsNullOrWhiteSpace(rootDir) ? sourceDir : sourceDir.Replace(rootDir, string.Empty);
+            string path = string.IsNullOrWhiteSpace(rootDir) ? sourceDir : sourceDir.Replace(rootDir, string.Empty, StringComparison.OrdinalIgnoreCase);
 
             string[] sourceDirSegments = path.Split(
                 new[] { Path.DirectorySeparatorChar },

@@ -49,7 +49,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             return All.SingleOrDefault(sdk => sdk.SdkName.Equals(sdkValue, StringComparison.Ordinal));
         }
 
-        public bool Equals(DotNetSdk other)
+        public bool Equals(DotNetSdk? other)
         {
             if (other is null)
             {

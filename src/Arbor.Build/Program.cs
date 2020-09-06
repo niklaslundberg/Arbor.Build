@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Arbor.Build.Core;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.Logging;
@@ -13,8 +14,9 @@ namespace Arbor.Build
 
         private static Task<int> Main(string[] args) => RunAsync(args);
 
-        public static async Task<int> RunAsync(string[] args, IEnvironmentVariables? environmentVariables = default, ISpecialFolders? specialFolders = default)
+        public static async Task<int> RunAsync(string[]? args, IEnvironmentVariables? environmentVariables = default, ISpecialFolders? specialFolders = default)
         {
+            args ??= Array.Empty<string>();
             environmentVariables ??= new DefaultEnvironmentVariables();
             specialFolders ??= SpecialFolders.Default;
 

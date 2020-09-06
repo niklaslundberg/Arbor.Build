@@ -52,7 +52,7 @@ namespace Arbor.Build.Core.BuildVariables
             string? wellKnownName = null,
             string? defaultValue = null) => new VariableDescription(invariantName, description, wellKnownName, defaultValue);
 
-        public bool Equals(VariableDescription other)
+        public bool Equals(VariableDescription? other)
         {
             if (other is null)
             {
@@ -82,7 +82,7 @@ namespace Arbor.Build.Core.BuildVariables
             return obj is VariableDescription description && Equals(description);
         }
 
-        public override int GetHashCode() => InvariantName != null ? InvariantName.GetHashCode(StringComparison.InvariantCulture) : 0;
+        public override int GetHashCode() => InvariantName.GetHashCode(StringComparison.InvariantCulture);
 
         public override string ToString() => $"{InvariantName} ({WellKnownName}) [{DefaultValue}], {Description}";
     }

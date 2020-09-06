@@ -32,7 +32,7 @@ namespace Arbor.Build.Core.Bootstrapper
         private bool _directoryCloneEnabled;
 
         private bool _failed;
-        private BootstrapStartOptions? _startOptions;
+        private BootstrapStartOptions _startOptions;
         private readonly IEnvironmentVariables _environmentVariables;
 
         public AppBootstrapper(ILogger logger, IEnvironmentVariables environmentVariables)
@@ -70,7 +70,7 @@ namespace Arbor.Build.Core.Bootstrapper
             return exitCode;
         }
 
-        public async Task<ExitCode> StartAsync(BootstrapStartOptions startOptions)
+        public async Task<ExitCode> StartAsync(BootstrapStartOptions? startOptions)
         {
             _startOptions = startOptions ?? new BootstrapStartOptions(Array.Empty<string>());
 
@@ -342,7 +342,7 @@ namespace Arbor.Build.Core.Bootstrapper
 
             preReleaseIsAllowed = _startOptions.PreReleaseEnabled ?? preReleaseIsAllowed;
 
-            bool parsedPackageVersion = NuGetPackageVersion.TryParse(version, out NuGetPackageVersion packageVersion);
+            bool parsedPackageVersion = NuGetPackageVersion.TryParse(version, out NuGetPackageVersion? packageVersion);
 
             if (!parsedPackageVersion)
             {
@@ -421,14 +421,14 @@ namespace Arbor.Build.Core.Bootstrapper
                 return (null, new List<string>());
             }
 
-            FileInfo? buildToolExecutable = arborBuild.SingleOrDefault(file => file.Extension.Equals(".exe"));
+            FileInfo? buildToolExecutable = arborBuild.SingleOrDefault(file => file.Extension.Equals(".exe", StringComparison.OrdinalIgnoreCase));
 
             if (buildToolExecutable is {})
             {
                 return (buildToolExecutable.FullName, new List<string>());
             }
 
-            FileInfo? buildToolDll = arborBuild.SingleOrDefault(file => file.Extension.Equals(".dll"));
+            FileInfo? buildToolDll = arborBuild.SingleOrDefault(file => file.Extension.Equals(".dll", StringComparison.OrdinalIgnoreCase));
 
             if (buildToolDll is null)
             {
