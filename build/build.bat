@@ -41,6 +41,7 @@ SET Arbor.Build.Tools.External.NUnit.Enabled=false
 SET Arbor.Build.NuGet.Package.ExcludesCommaSeparated=Arbor.Build.Bootstrapper.nuspec
 SET Arbor.Build.Tools.External.MSBuild.CodeAnalysis.Enabled=false
 SET Arbor.Build.BuildNumber.UnixEpochSecondsEnabled=true
+SET Arbor.Build.NuGet.NuGetWebPackage.ExcludedPatterns=Arbor.Build.Samples
 
 SET Arbor.Build.Tests.IgnoredCategories=dummyexcluded,dummyexcluded2,dummyexclude3
 
