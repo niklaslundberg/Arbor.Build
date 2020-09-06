@@ -34,7 +34,7 @@ namespace Arbor.Build.Tests.Unit
     <license type=""expression"">MIT</license>
     <copyright>Copyright Niklas Lundberg</copyright>
     <dependencies>
-
+        <dependency id=""Newtonsoft.Json"" version=""12.0.3"" />
     </dependencies>
     <references></references>
     <tags></tags>
@@ -69,7 +69,7 @@ namespace Arbor.Build.Tests.Unit
     <license type=""expression"">MIT</license>
     <copyright>Copyright Niklas Lundberg</copyright>
     <dependencies>
-
+        <dependency id=""Newtonsoft.Json"" version=""12.0.3"" />
     </dependencies>
     <references></references>
     <tags>{WellKnownNuGetTags.NoSource}</tags>
@@ -88,7 +88,7 @@ namespace Arbor.Build.Tests.Unit
             var path = new UPath("/my.nuspec");
             fileSystem.WriteAllText(path, NuSpecNoTags, Encoding.UTF8);
 
-            var manifestReWriter = new ManitestReWriter(fileSystem);
+            var manifestReWriter = new ManifestReWriter(fileSystem);
 
             var result = manifestReWriter.Rewrite(path.FullName);
 
@@ -103,7 +103,7 @@ namespace Arbor.Build.Tests.Unit
             var path = new UPath("/my.nuspec");
             fileSystem.WriteAllText(path, NuSpecNoSourceTags, Encoding.UTF8);
 
-            var manifestReWriter = new ManitestReWriter(fileSystem);
+            var manifestReWriter = new ManifestReWriter(fileSystem);
 
             var result = manifestReWriter.Rewrite(path.FullName);
 

@@ -25,6 +25,7 @@ SET Arbor.Build.NuGet.ReinstallArborPackageEnabled=true
 SET Arbor.Build.NuGet.VersionUpdateEnabled=false
 SET Arbor.Build.Artifacts.PdbArtifacts.Enabled=true
 SET Arbor.Build.NuGet.Package.CreateNuGetWebPackages.Enabled=true
+SET Arbor.Build.NuGet.Package.Symbols.Enabled=true
 
 SET Arbor.Build.NetAssembly.MetadataEnabled=true
 SET Arbor.Build.NetAssembly.Description=A convention-based build tool
@@ -33,7 +34,7 @@ SET Arbor.Build.NetAssembly.Copyright=© Niklas Lundberg 2014-2020
 SET Arbor.Build.NetAssembly.Trademark=Arbor.Build TM
 SET Arbor.Build.NetAssembly.Product=Arbor.Build
 SET Arbor.Build.Tools.External.MSBuild.Verbosity=minimal
-SET Arbor.Build.NuGet.Package.AllowManifestReWriteEnabled=false
+SET Arbor.Build.NuGet.Package.AllowManifestReWriteEnabled=true
 SET Arbor.Build.WebDeploy.PreCompilation.Enabled=true
 SET Arbor.Build.Cleanup.KillProcessesAfterBuild.Enabled=true
 SET Arbor.Build.Tools.External.NUnit.Enabled=false

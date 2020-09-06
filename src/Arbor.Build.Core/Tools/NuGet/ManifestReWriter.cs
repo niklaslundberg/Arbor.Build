@@ -8,23 +8,21 @@ using Zio;
 
 namespace Arbor.Build.Core.Tools.NuGet
 {
-    public class ManitestReWriter
+    public class ManifestReWriter
     {
         private readonly IFileSystem _fileSystem;
 
-        public ManitestReWriter(IFileSystem fileSystem)
-        {
-            _fileSystem = fileSystem;
-        }
+        public ManifestReWriter(IFileSystem fileSystem) => _fileSystem = fileSystem;
 
         public ManifestReWriteResult Rewrite(
-            string nuspecFullPath2,
+            string nuspecFullPath,
+            Func<string, string>? propertyProvider = null,
             string tagPrefix = "x-arbor-build",
             ILogger? logger = null)
         {
-            if (string.IsNullOrWhiteSpace(nuspecFullPath2))
+            if (string.IsNullOrWhiteSpace(nuspecFullPath))
             {
-                throw new ArgumentNullException(nameof(nuspecFullPath2));
+                throw new ArgumentNullException(nameof(nuspecFullPath));
             }
 
             if (string.IsNullOrWhiteSpace(tagPrefix))
@@ -32,25 +30,29 @@ namespace Arbor.Build.Core.Tools.NuGet
                 throw new ArgumentNullException(nameof(tagPrefix));
             }
 
-            var nuspecFileSystemFullPath = _fileSystem.ConvertPathFromInternal(nuspecFullPath2);
+            var nuspecFileSystemFullPath = _fileSystem.ConvertPathFromInternal(nuspecFullPath);
 
             if (!_fileSystem.FileExists(nuspecFileSystemFullPath))
             {
-                throw new FileNotFoundException($"The file '{nuspecFileSystemFullPath}' does not exist", nuspecFileSystemFullPath.FullName);
+                throw new FileNotFoundException($"The file '{nuspecFileSystemFullPath}' does not exist",
+                    nuspecFileSystemFullPath.FullName);
             }
-            using var stream = _fileSystem.OpenFile(nuspecFileSystemFullPath, FileMode.Open, FileAccess.Read);
-
-
-            DirectoryEntry baseDir = new FileEntry(_fileSystem, nuspecFileSystemFullPath).Directory;
-            var baseDirFileSystemPath = _fileSystem.ConvertPathToInternal(baseDir.Path);
-
-            var packageBuilder = new PackageBuilder(stream, baseDirFileSystemPath);
-
-            var removeTags = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             bool isReWritten = false;
 
             string? tempFile = null;
+
+            var removeTags = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            PackageBuilder? packageBuilder;
+
+            using (var nuspecReadStream =
+                _fileSystem.OpenFile(nuspecFileSystemFullPath, FileMode.Open, FileAccess.Read))
+            {
+                DirectoryEntry baseDir = new FileEntry(_fileSystem, nuspecFileSystemFullPath).Directory;
+                string? baseDirFileSystemPath = _fileSystem.ConvertPathToInternal(baseDir.Path);
+
+                packageBuilder = new PackageBuilder(nuspecReadStream, baseDirFileSystemPath, propertyProvider);
+            }
 
             if (packageBuilder.Tags.Count > 0)
             {
@@ -68,7 +70,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                     removeTags.Add(WellKnownNuGetTags.NoSource);
                 }
 
-                if (matchingTags.Length == 0)
+                if (removeTags.Count == 0)
                 {
                     logger?.Verbose("No tags to remove from NuSpec '{NuspecFullPath}'", nuspecFileSystemFullPath);
                 }
@@ -83,9 +85,14 @@ namespace Arbor.Build.Core.Tools.NuGet
                         packageBuilder.Tags.Remove(tagToRemove);
                     }
 
+                    using var nuspecReadStream =
+                        _fileSystem.OpenFile(nuspecFileSystemFullPath, FileMode.Open, FileAccess.Read);
+                    var manifest = Manifest.ReadFrom(nuspecReadStream, propertyProvider, true);
 
-                    using var outStream = _fileSystem.OpenFile(tempFile, FileMode.CreateNew, FileAccess.Write);
-                    packageBuilder.Save(outStream);
+                    manifest.Metadata.Tags = string.Join(" ", packageBuilder.Tags);
+
+                    using var tempStream = _fileSystem.OpenFile(tempFile, FileMode.Create, FileAccess.Write);
+                    manifest.Save(tempStream);
                     isReWritten = true;
                 }
             }

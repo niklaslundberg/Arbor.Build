@@ -23,12 +23,12 @@ namespace Arbor.Build.Core.Tools.NuGet
         private readonly BuildContext _buildContext;
 
         private readonly ILogger _logger;
-        private ManitestReWriter _manifestReWriter;
+        private ManifestReWriter _manifestReWriter;
 
         public const string SnupkgPackageFormat = "snupkg";
 
         public NuGetPackager(ILogger logger, BuildContext buildContext,
-            ManitestReWriter manifestReWriter)
+            ManifestReWriter manifestReWriter)
         {
             _logger = logger;
             _buildContext = buildContext;
@@ -250,7 +250,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             // ReSharper disable AssignNullToNotNullAttribute
             string nuSpecFileCopyPath =
-                Path.Combine(nuSpecInfo.DirectoryName, $"{packageId}-{DateTime.Now.Ticks}.nuspec");
+                Path.Combine(nuSpecInfo.DirectoryName, $"{packageId}-{DateTime.Now.Ticks}_copy.nuspec");
 
             // ReSharper restore AssignNullToNotNullAttribute
 
@@ -272,7 +272,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             {
                 _logger.Verbose("Rewriting manifest in NuSpec '{NuSpecFileCopyPath}'", nuSpecFileCopyPath);
 
-                ManifestReWriteResult manifestReWriteResult = _manifestReWriter.Rewrite(nuSpecFileCopyPath);
+                ManifestReWriteResult manifestReWriteResult = _manifestReWriter.Rewrite(nuSpecFileCopyPath, key => properties[key]);
 
                 removedTags.AddRange(manifestReWriteResult.RemoveTags);
             }
