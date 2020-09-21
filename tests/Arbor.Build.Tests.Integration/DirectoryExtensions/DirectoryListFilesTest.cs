@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Immutable;
 using System.IO;
+using System.Linq;
 using Arbor.Build.Core.IO;
+using Arbor.FS;
 using Xunit;
+using Zio;
+using Zio.FileSystems;
 
 namespace Arbor.Build.Tests.Integration.DirectoryExtensions
 {
@@ -11,10 +15,11 @@ namespace Arbor.Build.Tests.Integration.DirectoryExtensions
         [Fact]
         public void WhenGettingFilesExcludingUserFiles()
         {
-            DirectoryInfo tempDirectory = new DirectoryInfo(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()))
+            var fs = new WindowsFs(new PhysicalFileSystem());
+            DirectoryEntry tempDirectory = new DirectoryEntry(fs,Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()))
                 .EnsureExists();
 
-            DirectoryInfo subDirectoryA = tempDirectory.CreateSubdirectory("Abc");
+            var subDirectoryA = tempDirectory.CreateSubdirectory("Abc");
 
             string fileName = Path.Combine(subDirectoryA.FullName, "def.txt");
             using (File.Create(fileName))
@@ -26,7 +31,7 @@ namespace Arbor.Build.Tests.Integration.DirectoryExtensions
             {
             }
 
-            ImmutableArray<string> files = tempDirectory.GetFilesWithWithExclusions(new[] { "*.user" });
+            ImmutableArray<string> files = tempDirectory.GetFilesWithWithExclusions(fs,new[] { "*.user" }).Select(file => file.FullName).ToImmutableArray();
 
             tempDirectory.DeleteIfExists();
 

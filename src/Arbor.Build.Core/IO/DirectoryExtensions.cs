@@ -3,9 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Arbor.Defensive.Collections;
 using Arbor.Exceptions;
 using JetBrains.Annotations;
@@ -131,21 +128,79 @@ namespace Arbor.Build.Core.IO
                 }
 
                 directoryInfo.Refresh();
-
             }
             catch (UnauthorizedAccessException ex)
             {
-                if (directoryInfo != null)
+                throw new InvalidOperationException($"Could not delete directory '{directoryInfo.FullName}'", ex);
+            }
+        }
+        public static void DeleteIfExists(this DirectoryEntry? directoryInfo, bool recursive = true)
+        {
+            if (directoryInfo is null)
+            {
+                return;
+            }
+
+            try
+            {
+                if (directoryInfo.Exists)
                 {
-                    throw new InvalidOperationException($"Could not delete directory '{directoryInfo.FullName}'", ex);
+                    FileEntry[] fileInfos;
+
+                    try
+                    {
+                        fileInfos = directoryInfo.EnumerateFiles().ToArray();
+                    }
+                    catch (Exception ex)
+                    {
+                        if (ex.IsFatal())
+                        {
+                            throw;
+                        }
+
+                        throw new IOException(
+                            $"Could not get files for directory '{directoryInfo.FullName}' for deletion",
+                            ex);
+                    }
+
+                    foreach (var file in fileInfos)
+                    {
+                        file.Attributes = FileAttributes.Normal;
+
+                        try
+                        {
+                            file.Delete();
+                        }
+                        catch (Exception ex)
+                        {
+                            if (ex.IsFatal())
+                            {
+                                throw;
+                            }
+
+                            throw new IOException($"Could not delete file '{file.FullName}'", ex);
+                        }
+                    }
+
+                    foreach (var subDirectory in directoryInfo.EnumerateDirectories())
+                    {
+                        subDirectory.DeleteIfExists(recursive);
+                    }
                 }
 
-                throw;
+                if (directoryInfo.Exists)
+                {
+                    directoryInfo.Delete(recursive);
+                }
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                throw new InvalidOperationException($"Could not delete directory '{directoryInfo.FullName}'", ex);
             }
         }
 
-        public static ImmutableArray<FileInfo> GetFilesRecursive(
-            this DirectoryInfo directoryInfo,
+        public static ImmutableArray<FileEntry> GetFilesRecursive(
+            this DirectoryEntry directoryInfo,
             IEnumerable<string>? fileExtensions = null,
             PathLookupSpecification? pathLookupSpecification = null,
             string? rootDir = null)
@@ -163,11 +218,11 @@ namespace Arbor.Build.Core.IO
             PathLookupSpecification usedPathLookupSpecification =
                 pathLookupSpecification ?? DefaultPaths.DefaultPathLookupSpecification;
 
-            ImmutableArray<string> usedFileExtensions = fileExtensions.SafeToReadOnlyCollection();
+            var usedFileExtensions = fileExtensions.SafeToReadOnlyCollection();
 
             if (usedPathLookupSpecification.IsNotAllowed(directoryInfo.FullName, rootDir).Item1)
             {
-                return ImmutableArray<FileInfo>.Empty;
+                return ImmutableArray<FileEntry>.Empty;
             }
 
             IReadOnlyCollection<string> invalidFileExtensions = usedFileExtensions
@@ -179,15 +234,15 @@ namespace Arbor.Build.Core.IO
                 throw new ArgumentException(Resources.FileExtensionMustStartWithDot);
             }
 
-            var files = new List<FileInfo>();
+            var files = new List<FileEntry>();
 
-            List<FileInfo> directoryFiles = directoryInfo
-                .GetFiles()
+            List<FileEntry> directoryFiles = directoryInfo
+                .EnumerateFiles()
                 .Where(file => !usedPathLookupSpecification.IsFileExcluded(file.FullName, rootDir).Item1)
                 .ToList();
 
-            List<FileInfo> filtered = (usedFileExtensions.Any()
-                    ? directoryFiles.Where(file => usedFileExtensions.Any(extension => file.Extension.Equals(
+            List<FileEntry> filtered = (usedFileExtensions.Any()
+                    ? directoryFiles.Where(file => usedFileExtensions.Any(extension => file.Path.GetExtensionWithDot().Equals(
                         extension,
                         StringComparison.OrdinalIgnoreCase)))
                     : directoryFiles)
@@ -195,7 +250,7 @@ namespace Arbor.Build.Core.IO
 
             files.AddRange(filtered);
 
-            DirectoryInfo[] subDirectories = directoryInfo.GetDirectories();
+            DirectoryEntry[] subDirectories = directoryInfo.EnumerateDirectories().ToArray();
 
             files.AddRange(subDirectories
                 .SelectMany(dir => dir.GetFilesRecursive(usedFileExtensions, usedPathLookupSpecification, rootDir)));
@@ -203,8 +258,9 @@ namespace Arbor.Build.Core.IO
             return files.ToImmutableArray();
         }
 
-        public static ImmutableArray<string> GetFilesWithWithExclusions(
-            [NotNull] this DirectoryInfo siteArtifactDirectory,
+        public static ImmutableArray<FileEntry> GetFilesWithWithExclusions(
+            [NotNull] this DirectoryEntry siteArtifactDirectory,
+            IFileSystem fileSystem,
             [NotNull] IReadOnlyCollection<string> excludedPatterns)
         {
             if (siteArtifactDirectory == null)
@@ -217,10 +273,12 @@ namespace Arbor.Build.Core.IO
                 throw new ArgumentNullException(nameof(excludedPatterns));
             }
 
-            string[] allFiles = siteArtifactDirectory.GetFiles("*", SearchOption.AllDirectories).Select(s => s.FullName)
+
+            var allFiles = fileSystem
+                .EnumerateFileEntries(siteArtifactDirectory.Path, "*", SearchOption.AllDirectories)
                 .ToArray();
 
-            string[] allIncludedFiles;
+            FileEntry[] allIncludedFiles;
 
             if (excludedPatterns.Count == 0)
             {
@@ -228,26 +286,26 @@ namespace Arbor.Build.Core.IO
             }
             else
             {
-                var excludedFileNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                var excludedFileNames = new HashSet<FileEntry>();
 
-                foreach (string excludedPattern in excludedPatterns.Where(p => p.Length > 0))
+                foreach (string excludedPattern in excludedPatterns.Where(pattern => pattern.Length > 0))
                 {
-                    string[] excludedFiles;
-                    siteArtifactDirectory.Refresh();
+                    FileEntry[] excludedFiles;
+
                     try
                     {
                         if (excludedPattern.Contains(Path.DirectorySeparatorChar, StringComparison.InvariantCulture))
                         {
                             excludedFiles = allFiles.Where(file =>
-                                    file.Substring(siteArtifactDirectory.FullName.Length)
-.Contains(excludedPattern, StringComparison.OrdinalIgnoreCase))
+                                    file.FullName.Substring(siteArtifactDirectory.FullName.Length)
+                                        .Contains(excludedPattern, StringComparison.OrdinalIgnoreCase))
                                 .ToArray();
                         }
                         else
                         {
                             excludedFiles =
-                                siteArtifactDirectory.GetFiles(excludedPattern, SearchOption.AllDirectories)
-                                    .Select(file => file.FullName).ToArray();
+                                fileSystem.EnumerateFileEntries(siteArtifactDirectory.Path,excludedPattern, SearchOption.AllDirectories)
+                                    .ToArray();
                         }
                     }
                     catch (Exception ex) when (!ex.IsFatal())
@@ -255,19 +313,19 @@ namespace Arbor.Build.Core.IO
                         throw new InvalidOperationException($"Could not get files with pattern '{excludedPattern}'");
                     }
 
-                    foreach (string excludedFile in excludedFiles)
+                    foreach (var excludedFile in excludedFiles)
                     {
                         excludedFileNames.Add(excludedFile);
                     }
                 }
 
                 allIncludedFiles = allFiles
-                    .Except(excludedFileNames, StringComparer.OrdinalIgnoreCase)
+                    .Except(excludedFileNames)
                     .ToArray();
 
-                foreach (string file in allIncludedFiles)
+                foreach (var file in allIncludedFiles)
                 {
-                    if (!File.Exists(file))
+                    if (!fileSystem.FileExists(file.Path))
                     {
                         throw new InvalidOperationException($"The file '{file}' does not exist");
                     }
@@ -275,25 +333,6 @@ namespace Arbor.Build.Core.IO
             }
 
             return allIncludedFiles.ToImmutableArray();
-        }
-    }
-
-    public static class FileExtensions
-    {
-        public static async Task WriteAllTextAsync(this FileEntry fileEntry, string text, Encoding? encoding = default, CancellationToken cancellationToken = default)
-        {
-            await using Stream stream = fileEntry.Create();
-
-            await stream.WriteAllTextAsync(text.AsMemory(), encoding, cancellationToken);
-        }
-    }
-    public static class StreamExtensions
-    {
-        public static async Task WriteAllTextAsync(this Stream stream, ReadOnlyMemory<char> text, Encoding? encoding = default, CancellationToken cancellationToken = default)
-        {
-            await using var streamWriter = new StreamWriter(stream, encoding ?? Encoding.UTF8);
-
-            await streamWriter.WriteAsync(text, cancellationToken);
         }
     }
 }

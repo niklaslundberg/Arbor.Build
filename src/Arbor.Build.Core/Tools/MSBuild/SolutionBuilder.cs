@@ -23,6 +23,7 @@ using Microsoft.Web.XmlTransform;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
+using Zio;
 using Stopwatch = System.Diagnostics.Stopwatch;
 
 namespace Arbor.Build.Core.Tools.MSBuild
@@ -40,6 +41,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
         private readonly List<string> _knownPlatforms = new List<string> {"x86", "x64", "Any CPU"};
         private readonly NuGetPackager _nugetPackager;
+        private readonly IFileSystem _fileSystem;
 
         private readonly PathLookupSpecification _pathLookupSpecification =
             DefaultPaths.DefaultPathLookupSpecification.AddExcludedDirectorySegments(new[] {"node_modules"});
@@ -108,10 +110,14 @@ namespace Arbor.Build.Core.Tools.MSBuild
         private string _version = null!;
         private bool _webProjectsBuildEnabled;
 
-        public SolutionBuilder(BuildContext buildContext, NuGetPackager nugetPackager)
+        public SolutionBuilder(
+            BuildContext buildContext,
+            NuGetPackager nugetPackager,
+            IFileSystem fileSystem)
         {
             _buildContext = buildContext;
             _nugetPackager = nugetPackager;
+            _fileSystem = fileSystem;
             LogTail = new FixedSizedQueue<string> {Limit = 5};
         }
 
@@ -347,7 +353,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
         private string? FindRuleSet()
         {
-            IReadOnlyCollection<FileInfo> fileInfos = new DirectoryInfo(_vcsRoot)
+            IReadOnlyCollection<FileEntry> fileInfos = new DirectoryEntry(_fileSystem, _vcsRoot)
                 .GetFilesRecursive(".ruleset".ValueToImmutableArray(), _pathLookupSpecification, _vcsRoot)
                 .ToReadOnlyCollection();
 
@@ -1148,7 +1154,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             foreach (SolutionProject solutionProject in exeProjects)
             {
-                EnsureFileDates(new DirectoryInfo(solutionProject.ProjectDirectory));
+                EnsureFileDates(new DirectoryEntry(_fileSystem,solutionProject.ProjectDirectory));
 
                 string[] args =
                 {
@@ -1186,20 +1192,20 @@ namespace Arbor.Build.Core.Tools.MSBuild
             return ExitCode.Success;
         }
 
-        private void EnsureFileDates(DirectoryInfo? directoryInfo)
+        private void EnsureFileDates(DirectoryEntry? directoryInfo)
         {
             if (directoryInfo is null)
             {
                 return;
             }
 
-            var files = directoryInfo.GetFiles();
+            var files = directoryInfo.EnumerateFiles();
 
             foreach (var fileInfo in files)
             {
                 try
                 {
-                    fileInfo.FullName.EnsureHasValidDate(_logger);
+                    fileInfo.EnsureHasValidDate(_logger);
                 }
                 catch (Exception ex)
                 {
@@ -1207,7 +1213,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 }
             }
 
-            foreach (var subDirectory in directoryInfo.GetDirectories())
+            foreach (var subDirectory in directoryInfo.EnumerateDirectories())
             {
                 EnsureFileDates(subDirectory);
             }
@@ -1262,21 +1268,21 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     defaultPathLookupSpecification.IgnoredDirectorySegmentParts,
                     defaultPathLookupSpecification.IgnoredDirectoryStartsWithPatterns);
 
-                var sourceRootDirectory = new DirectoryInfo(_vcsRoot);
+                var sourceRootDirectory = new DirectoryEntry(_fileSystem, _vcsRoot);
 
-                IReadOnlyCollection<FileInfo> files = sourceRootDirectory.GetFilesRecursive(
+                IReadOnlyCollection<FileEntry> files = sourceRootDirectory.GetFilesRecursive(
                         new[] {".pdb", ".dll"},
                         pathLookupSpecification,
                         _vcsRoot)
                     .OrderBy(file => file.FullName)
                     .ToReadOnlyCollection();
 
-                IReadOnlyCollection<FileInfo> pdbFiles =
-                    files.Where(file => file.Extension.Equals(".pdb", StringComparison.OrdinalIgnoreCase))
+                IReadOnlyCollection<FileEntry> pdbFiles =
+                    files.Where(file => file.ExtensionWithDot.Equals(".pdb", StringComparison.OrdinalIgnoreCase))
                         .ToReadOnlyCollection();
 
-                IReadOnlyCollection<FileInfo> dllFiles =
-                    files.Where(file => file.Extension.Equals(".dll", StringComparison.OrdinalIgnoreCase))
+                IReadOnlyCollection<FileEntry> dllFiles =
+                    files.Where(file => file.ExtensionWithDot.Equals(".dll", StringComparison.OrdinalIgnoreCase))
                         .ToReadOnlyCollection();
                 if (_debugLoggingEnabled)
                 {
@@ -1308,9 +1314,9 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                 foreach (var pair in pairs)
                 {
-                    string targetFilePath = Path.Combine(targetDirectory.FullName, pair.PdbFile.Name);
+                    UPath targetFilePath = Path.Combine(targetDirectory.FullName, pair.PdbFile.Name);
 
-                    if (!File.Exists(targetFilePath))
+                    if (!_fileSystem.FileExists(targetFilePath))
                     {
                         if (_debugLoggingEnabled)
                         {
@@ -1319,7 +1325,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                                 targetFilePath);
                         }
 
-                        pair.PdbFile.CopyTo(targetFilePath);
+                        pair.PdbFile.CopyTo(targetFilePath, true);
                     }
                     else
                     {
@@ -1332,9 +1338,9 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                     if (pair.DllFile != null)
                     {
-                        string targetDllFilePath = Path.Combine(targetDirectory.FullName, pair.DllFile.Name);
+                        UPath targetDllFilePath = Path.Combine(targetDirectory.FullName, pair.DllFile.Name);
 
-                        if (!File.Exists(targetDllFilePath))
+                        if (!_fileSystem.FileExists(targetDllFilePath))
                         {
                             if (_debugLoggingEnabled)
                             {
@@ -1343,7 +1349,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                                     targetFilePath);
                             }
 
-                            pair.DllFile.CopyTo(targetDllFilePath);
+                            pair.DllFile.CopyTo(targetDllFilePath, true);
                         }
                         else
                         {
@@ -1809,10 +1815,12 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             string packageId = solutionProject.ProjectName;
 
-            var artifactDirectory = new DirectoryInfo(siteArtifactDirectory);
+
+
+            var artifactDirectory = new DirectoryEntry(_fileSystem, siteArtifactDirectory);
 
             var allIncludedFiles =
-                artifactDirectory.GetFilesWithWithExclusions(_excludedNuGetWebPackageFiles);
+                artifactDirectory.GetFilesWithWithExclusions(_fileSystem, _excludedNuGetWebPackageFiles);
 
             var exitCode = await CreateNuGetPackageAsync(
                 platformDirectoryPath,
@@ -1834,7 +1842,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             const char separator = '.';
             int fileNameMinPartCount = pattern.Split(separator).Length;
 
-            var environmentFiles = new DirectoryInfo(solutionProject.ProjectDirectory)
+            var environmentFiles = new DirectoryEntry(_fileSystem, solutionProject.ProjectDirectory)
                 .GetFilesRecursive(rootDir: _vcsRoot)
                 .Select(file => new {File = file, Parts = file.Name.Split(separator)})
                 .Where(item => item.Parts.Length == fileNameMinPartCount
@@ -1870,9 +1878,9 @@ namespace Arbor.Build.Core.Tools.MSBuild
                         environmentName);
                 }
 
-                List<string> elements = environmentFiles
+                List<FileEntry> elements = environmentFiles
                     .Where(file => file.EnvironmentName.Equals(environmentName, StringComparison.OrdinalIgnoreCase))
-                    .Select(file => file.File.FullName)
+                    .Select(file => file.File)
                     .ToList();
 
                 if (_verboseLoggingEnabled)
@@ -1892,7 +1900,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     environmentPackageId,
                     elements,
                     $".Environment.{environmentName}",
-                    new DirectoryInfo(rootDirectory)).ConfigureAwait(false);
+                    new DirectoryEntry(_fileSystem, rootDirectory)).ConfigureAwait(false);
 
                 if (!environmentPackageExitCode.IsSuccess)
                 {
@@ -2031,9 +2039,9 @@ namespace Arbor.Build.Core.Tools.MSBuild
             string platformDirectoryPath,
             ILogger logger,
             string packageId,
-            IReadOnlyCollection<string> filesList,
+            IReadOnlyCollection<FileEntry> filesList,
             string packageNameSuffix,
-            DirectoryInfo baseDirectory)
+            DirectoryEntry baseDirectory)
         {
             string packageDirectoryPath = Path.Combine(platformDirectoryPath, "NuGet");
 
@@ -2163,15 +2171,15 @@ namespace Arbor.Build.Core.Tools.MSBuild
             }
 
             Stopwatch transformationStopwatch = Stopwatch.StartNew();
-            string projectDirectoryPath = solutionProject.ProjectDirectory;
+            UPath projectDirectoryPath = solutionProject.ProjectDirectory;
 
             string[] extensions = {".xml", ".config"};
 
-            IReadOnlyCollection<FileInfo> files = new DirectoryInfo(projectDirectoryPath)
+            IReadOnlyCollection<FileEntry> files = new DirectoryEntry(_fileSystem, projectDirectoryPath)
                 .GetFilesRecursive(extensions)
                 .Where(
                     file =>
-                        !_pathLookupSpecification.IsNotAllowed(file.DirectoryName).Item1
+                        !_pathLookupSpecification.IsNotAllowed(file.Directory.FullName).Item1
                         && !_pathLookupSpecification.IsFileExcluded(file.FullName, _vcsRoot).Item1)
                 .Where(
                     file =>
@@ -2182,7 +2190,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                         && !file.Name.Equals("web.config", StringComparison.OrdinalIgnoreCase))
                 .ToImmutableArray();
 
-            string TransformFile(FileInfo file)
+            string TransformFile(FileEntry file)
             {
                 string nameWithoutExtension = Path.GetFileNameWithoutExtension(file.Name);
                 string extension = Path.GetExtension(file.Name);
@@ -2206,7 +2214,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             foreach (var configurationFile in transformationPairs)
             {
                 string relativeFilePath =
-                    configurationFile.Original.FullName.Replace(projectDirectoryPath,
+                    configurationFile.Original.FullName.Replace(projectDirectoryPath.FullName,
                         string.Empty,
                         StringComparison.InvariantCulture);
 

@@ -11,6 +11,7 @@ using Arbor.Defensive.Collections;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.NuGet
 {
@@ -22,8 +23,13 @@ namespace Arbor.Build.Core.Tools.NuGet
 
         private PathLookupSpecification _pathLookupSpecification = null!;
         private readonly NuGetPackager _nugetPackager;
+        private IFileSystem _fileSystem;
 
-        public NuGetPacker(NuGetPackager nuGetPackager) => _nugetPackager = nuGetPackager;
+        public NuGetPacker(NuGetPackager nuGetPackager, IFileSystem fileSystem)
+        {
+            _nugetPackager = nuGetPackager;
+            _fileSystem = fileSystem;
+        }
 
         public async Task<ExitCode> ExecuteAsync(
             ILogger logger,
@@ -109,7 +115,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             string vcsRootDir,
             string packageDirectory)
         {
-            var vcsRootDirectory = new DirectoryInfo(vcsRootDir);
+            var vcsRootDirectory = new DirectoryEntry(_fileSystem, vcsRootDir);
 
             List<string> packageSpecifications =
                 vcsRootDirectory.GetFilesRecursive(new List<string> { ".nuspec" }, _pathLookupSpecification, vcsRootDir)

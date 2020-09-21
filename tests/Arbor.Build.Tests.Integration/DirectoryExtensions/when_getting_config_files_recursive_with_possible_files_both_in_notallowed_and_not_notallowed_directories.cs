@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Arbor.Build.Core.IO;
+using Arbor.FS;
 using Machine.Specifications;
 using Machine.Specifications.Model;
+using Zio;
+using Zio.FileSystems;
 
 namespace Arbor.Build.Tests.Integration.DirectoryExtensions
 {
@@ -12,25 +15,26 @@ namespace Arbor.Build.Tests.Integration.DirectoryExtensions
     public class
         when_getting_config_files_recursive_with_possible_files_both_in_notallowed_and_not_notallowed_directories
     {
-        static DirectoryInfo baseDir;
+        static DirectoryEntry baseDir;
         static IReadOnlyCollection<string> files;
 
         Cleanup after = () => baseDir.DeleteIfExists();
 
         Establish context = () =>
         {
+            fs = new WindowsFs(new PhysicalFileSystem());
             baseDir =
-                new DirectoryInfo(Path.Combine(Path.GetTempPath(),
+                new DirectoryEntry(fs,Path.Combine(Path.GetTempPath(),
                     $"{DefaultPaths.TempPathPrefix}_DirectoryExtensions_{Guid.NewGuid()}"));
             baseDir.EnsureExists();
 
-            DirectoryInfo a = baseDir.CreateSubdirectory("A");
-            DirectoryInfo bower = baseDir.CreateSubdirectory("bower_components");
-            DirectoryInfo c = baseDir.CreateSubdirectory("C");
+            DirectoryEntry a = baseDir.CreateSubdirectory("A");
+            DirectoryEntry bower = baseDir.CreateSubdirectory("bower_components");
+            DirectoryEntry c = baseDir.CreateSubdirectory("C");
 
-            DirectoryInfo e = c.CreateSubdirectory("e");
+            DirectoryEntry e = c.CreateSubdirectory("e");
 
-            DirectoryInfo nodeModules = bower.CreateSubdirectory("node_modules");
+            DirectoryEntry nodeModules = bower.CreateSubdirectory("node_modules");
 
             using (File.Create(Path.Combine(nodeModules.FullName, "node.config")))
             {
@@ -81,5 +85,7 @@ namespace Arbor.Build.Tests.Integration.DirectoryExtensions
 
         It should_not_contain_notallowed_files =
             () => files.ShouldNotContain("bower.config", "bower.debug.config", "node.debug.config", "node.config");
+
+        static WindowsFs fs;
     }
 }

@@ -11,6 +11,7 @@ using Arbor.Processing;
 using Arbor.Sorbus.Core;
 using JetBrains.Annotations;
 using Serilog;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.Versioning
 {
@@ -19,6 +20,9 @@ namespace Arbor.Build.Core.Tools.Versioning
     public class AssemblyInfoPatcher : ITool
     {
         private string _filePattern = null!;
+        private readonly IFileSystem _fileSystem;
+
+        public AssemblyInfoPatcher(IFileSystem fileSystem) => _fileSystem = fileSystem;
 
         public Task<ExitCode> ExecuteAsync(
             ILogger logger,
@@ -116,7 +120,7 @@ namespace Arbor.Build.Core.Tools.Versioning
                     assemblyFileVersion,
                     sourceRoot);
 
-                var sourceDirectory = new DirectoryInfo(sourceRoot);
+                var sourceDirectory = new DirectoryEntry(_fileSystem, sourceRoot);
 
                 PathLookupSpecification defaultPathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification;
 

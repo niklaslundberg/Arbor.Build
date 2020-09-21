@@ -2,9 +2,12 @@
 using System.IO;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.NuGet;
+using Arbor.FS;
 using Serilog.Core;
 using Xunit;
 using Xunit.Abstractions;
+using Zio;
+using Zio.FileSystems;
 
 namespace Arbor.Build.Tests.Integration.NuGet
 {
@@ -22,12 +25,15 @@ namespace Arbor.Build.Tests.Integration.NuGet
 
             DirectoryInfo subDirectoryA = tempDirectory.CreateSubdirectory("Abc");
 
-            string fileName = Path.Combine(subDirectoryA.FullName, "def.txt");
-            using (File.Create(fileName))
+            UPath fileName = Path.Combine(subDirectoryA.FullName, "def.txt");
+
+            var fs = new WindowsFs(new PhysicalFileSystem());
+
+            using (fs.CreateFile(fileName))
             {
             }
 
-            string includedFile = NuSpecHelper.IncludedFile(fileName, tempDirectory.FullName, Logger.None);
+            var includedFile = NuSpecHelper.IncludedFile(new FileEntry(fs, fileName), tempDirectory.FullName, Logger.None);
 
             tempDirectory.DeleteIfExists();
 

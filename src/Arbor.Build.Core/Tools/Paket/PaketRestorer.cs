@@ -12,6 +12,7 @@ using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
 using Serilog.Core;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.Paket
 {
@@ -19,6 +20,10 @@ namespace Arbor.Build.Core.Tools.Paket
     [UsedImplicitly]
     public class PaketRestorer : ITool
     {
+        private readonly IFileSystem _fileSystem;
+
+        public PaketRestorer(IFileSystem fileSystem) => _fileSystem = fileSystem;
+
         public async Task<ExitCode> ExecuteAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
@@ -34,14 +39,14 @@ namespace Arbor.Build.Core.Tools.Paket
             }
 
             var sourceRoot =
-                new DirectoryInfo(buildVariables.Require(WellKnownVariables.SourceRoot).GetValueOrThrow());
+                new DirectoryEntry(_fileSystem, buildVariables.Require(WellKnownVariables.SourceRoot).GetValueOrThrow());
 
             logger.Information("Looking for paket.exe in source root {FullName}", sourceRoot.FullName);
 
             PathLookupSpecification pathLookupSpecification =
                 DefaultPaths.DefaultPathLookupSpecification.WithIgnoredFileNameParts(new List<string>());
 
-            FileInfo? paketExe = null;
+            FileEntry? paketExe = null;
 
             List<string> packageSpecifications =
                 sourceRoot.GetFilesRecursive(new List<string> { ".exe" }, pathLookupSpecification)
@@ -51,7 +56,7 @@ namespace Arbor.Build.Core.Tools.Paket
 
             if (packageSpecifications.Count == 0)
             {
-                FileInfo normalSearch = sourceRoot.GetFiles("paket.exe", SearchOption.AllDirectories)
+                var normalSearch = sourceRoot.EnumerateFiles("paket.exe", SearchOption.AllDirectories)
                     .OrderBy(file => file.FullName.Length).FirstOrDefault();
 
                 if (normalSearch != null)
@@ -67,14 +72,14 @@ namespace Arbor.Build.Core.Tools.Paket
 
             if (paketExe == null)
             {
-                IReadOnlyCollection<FileInfo> filtered =
+                IReadOnlyCollection<FileEntry> filtered =
                     packageSpecifications.Where(
                             packagePath =>
                                 !pathLookupSpecification.IsFileExcluded(
                                     packagePath,
                                     sourceRoot.FullName,
                                     logger: logger).Item1)
-                        .Select(file => new FileInfo(file))
+                        .Select(file => new FileEntry(_fileSystem, file))
                         .ToReadOnlyCollection();
 
                 if (filtered.Count == 0)
