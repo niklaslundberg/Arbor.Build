@@ -200,19 +200,19 @@ namespace Arbor.Build.Core.IO
         }
 
         public static ImmutableArray<FileEntry> GetFilesRecursive(
-            this DirectoryEntry directoryInfo,
+            this DirectoryEntry directory,
             IEnumerable<string>? fileExtensions = null,
             PathLookupSpecification? pathLookupSpecification = null,
             string? rootDir = null)
         {
-            if (directoryInfo == null)
+            if (directory == null)
             {
-                throw new ArgumentNullException(nameof(directoryInfo));
+                throw new ArgumentNullException(nameof(directory));
             }
 
-            if (!directoryInfo.Exists)
+            if (!directory.Exists)
             {
-                throw new DirectoryNotFoundException($"The directory '{directoryInfo.FullName}' does not exist");
+                throw new DirectoryNotFoundException($"The directory '{directory.FullName}' does not exist");
             }
 
             PathLookupSpecification usedPathLookupSpecification =
@@ -220,7 +220,7 @@ namespace Arbor.Build.Core.IO
 
             var usedFileExtensions = fileExtensions.SafeToReadOnlyCollection();
 
-            if (usedPathLookupSpecification.IsNotAllowed(directoryInfo.FullName, rootDir).Item1)
+            if (usedPathLookupSpecification.IsNotAllowed(directory.FullName, rootDir).Item1)
             {
                 return ImmutableArray<FileEntry>.Empty;
             }
@@ -236,7 +236,7 @@ namespace Arbor.Build.Core.IO
 
             var files = new List<FileEntry>();
 
-            List<FileEntry> directoryFiles = directoryInfo
+            List<FileEntry> directoryFiles = directory
                 .EnumerateFiles()
                 .Where(file => !usedPathLookupSpecification.IsFileExcluded(file.FullName, rootDir).Item1)
                 .ToList();
@@ -250,7 +250,7 @@ namespace Arbor.Build.Core.IO
 
             files.AddRange(filtered);
 
-            DirectoryEntry[] subDirectories = directoryInfo.EnumerateDirectories().ToArray();
+            DirectoryEntry[] subDirectories = directory.EnumerateDirectories().ToArray();
 
             files.AddRange(subDirectories
                 .SelectMany(dir => dir.GetFilesRecursive(usedFileExtensions, usedPathLookupSpecification, rootDir)));

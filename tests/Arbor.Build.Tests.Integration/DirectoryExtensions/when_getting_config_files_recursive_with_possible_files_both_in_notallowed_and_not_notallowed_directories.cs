@@ -18,13 +18,17 @@ namespace Arbor.Build.Tests.Integration.DirectoryExtensions
         static DirectoryEntry baseDir;
         static IReadOnlyCollection<string> files;
 
-        Cleanup after = () => baseDir.DeleteIfExists();
+        Cleanup after = () =>
+        {
+            baseDir.DeleteIfExists();
+            fs.Dispose();
+        };
 
         Establish context = () =>
         {
             fs = new WindowsFs(new PhysicalFileSystem());
             baseDir =
-                new DirectoryEntry(fs,Path.Combine(Path.GetTempPath(),
+                new DirectoryEntry(fs, UPath.Combine(fs.ConvertPathFromInternal(Path.GetTempPath()),
                     $"{DefaultPaths.TempPathPrefix}_DirectoryExtensions_{Guid.NewGuid()}"));
             baseDir.EnsureExists();
 
@@ -36,35 +40,35 @@ namespace Arbor.Build.Tests.Integration.DirectoryExtensions
 
             DirectoryEntry nodeModules = bower.CreateSubdirectory("node_modules");
 
-            using (File.Create(Path.Combine(nodeModules.FullName, "node.config")))
+            using (fs.CreateFile(UPath.Combine(nodeModules.FullName, "node.config")))
             {
             }
 
-            using (File.Create(Path.Combine(nodeModules.FullName, "node.debug.config")))
+            using (fs.CreateFile(UPath.Combine(nodeModules.FullName, "node.debug.config")))
             {
             }
 
-            using (File.Create(Path.Combine(bower.FullName, "bower.config")))
+            using (fs.CreateFile(UPath.Combine(bower.FullName, "bower.config")))
             {
             }
 
-            using (File.Create(Path.Combine(bower.FullName, "bower.debug.config")))
+            using (fs.CreateFile(UPath.Combine(bower.FullName, "bower.debug.config")))
             {
             }
 
-            using (File.Create(Path.Combine(a.FullName, "atest.config")))
+            using (fs.CreateFile(UPath.Combine(a.FullName, "atest.config")))
             {
             }
 
-            using (File.Create(Path.Combine(a.FullName, "atest.debug.config")))
+            using (fs.CreateFile(UPath.Combine(a.FullName, "atest.debug.config")))
             {
             }
 
-            using (File.Create(Path.Combine(e.FullName, "etest.config")))
+            using (fs.CreateFile(UPath.Combine(e.FullName, "etest.config")))
             {
             }
 
-            using (File.Create(Path.Combine(e.FullName, "etest.debug.config")))
+            using (fs.CreateFile(UPath.Combine(e.FullName, "etest.debug.config")))
             {
             }
         };

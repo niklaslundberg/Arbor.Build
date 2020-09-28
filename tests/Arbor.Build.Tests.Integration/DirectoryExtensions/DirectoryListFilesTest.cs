@@ -15,19 +15,19 @@ namespace Arbor.Build.Tests.Integration.DirectoryExtensions
         [Fact]
         public void WhenGettingFilesExcludingUserFiles()
         {
-            var fs = new WindowsFs(new PhysicalFileSystem());
-            DirectoryEntry tempDirectory = new DirectoryEntry(fs,Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()))
+            using var fs = new WindowsFs(new PhysicalFileSystem());
+            DirectoryEntry tempDirectory = new DirectoryEntry(fs,UPath.Combine(fs.ConvertPathFromInternal(Path.GetTempPath()), Guid.NewGuid().ToString()))
                 .EnsureExists();
 
             var subDirectoryA = tempDirectory.CreateSubdirectory("Abc");
 
             string fileName = Path.Combine(subDirectoryA.FullName, "def.txt");
-            using (File.Create(fileName))
+            using (fs.CreateFile(fileName))
             {
             }
 
             string userFile = Path.Combine(subDirectoryA.FullName, "def.user");
-            using (File.Create(userFile))
+            using (fs.CreateFile(userFile))
             {
             }
 

@@ -20,14 +20,16 @@ namespace Arbor.Build.Tests.Integration.NuGet
         [Fact]
         public void WhenGettingIncludedFiles()
         {
-            DirectoryInfo tempDirectory = new DirectoryInfo(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()))
+            using var fs = new WindowsFs(new PhysicalFileSystem());
+            var tempPath = fs.ConvertPathFromInternal(Path.GetTempPath());
+
+            DirectoryEntry tempDirectory = new DirectoryEntry(fs, UPath.Combine(tempPath, Guid.NewGuid().ToString()))
                 .EnsureExists();
 
-            DirectoryInfo subDirectoryA = tempDirectory.CreateSubdirectory("Abc");
+            DirectoryEntry subDirectoryA = tempDirectory.CreateSubdirectory("Abc");
 
             UPath fileName = Path.Combine(subDirectoryA.FullName, "def.txt");
 
-            var fs = new WindowsFs(new PhysicalFileSystem());
 
             using (fs.CreateFile(fileName))
             {
