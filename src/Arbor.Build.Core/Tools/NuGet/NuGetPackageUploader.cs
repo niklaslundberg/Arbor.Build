@@ -17,6 +17,7 @@ using NuGet.Packaging;
 using NuGet.Versioning;
 using Serilog;
 using Serilog.Core;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.NuGet
 {
@@ -24,7 +25,13 @@ namespace Arbor.Build.Core.Tools.NuGet
     [UsedImplicitly]
     public class NuGetPackageUploader : ITool
     {
-        private static async Task<ExitCode> UploadNugetPackageAsync(
+        private readonly IFileSystem _fileSystem;
+
+        public NuGetPackageUploader(IFileSystem fileSystem)
+        {
+            _fileSystem = fileSystem;
+        }
+        private async Task<ExitCode> UploadNugetPackageAsync(
             string nugetExePath,
             string? serverUri,
             string? apiKey,
@@ -34,7 +41,8 @@ namespace Arbor.Build.Core.Tools.NuGet
             bool checkNuGetPackagesExists,
             bool timeoutIncreaseEnabled,
             string? sourceName,
-            string? configFile)
+            string? configFile,
+            PackageUploadFilter? filter = default)
         {
             if (!File.Exists(nugetPackage))
             {
@@ -168,18 +176,18 @@ namespace Arbor.Build.Core.Tools.NuGet
 
         private async Task<ExitCode> UploadNuGetPackagesAsync(
             ILogger logger,
-            DirectoryInfo artifactPackagesDirectory,
+            DirectoryEntry artifactPackagesDirectory,
             string nugetExePath,
             string? serverUri,
             string? apiKey,
             bool websitePackagesUploadEnabled,
-            DirectoryInfo websitesDirectory,
+            DirectoryEntry websitesDirectory,
             int timeoutInSeconds,
             bool checkNuGetPackagesExists,
             string? sourceName,
             string? configFile,
             bool timeoutIncreaseEnabled,
-            ImmutableArray<string> packagePatterns)
+            PackageUploadFilter? filter = default)
         {
             if (artifactPackagesDirectory == null)
             {
@@ -196,7 +204,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 throw new ArgumentNullException(nameof(websitesDirectory));
             }
 
-            var nuGetPackageFiles = new List<FileInfo>();
+            var nuGetPackageFiles = new System.Collections.Generic.List<FileEntry>();
 
             if (!artifactPackagesDirectory.Exists)
             {
@@ -204,21 +212,19 @@ namespace Arbor.Build.Core.Tools.NuGet
             }
             else
             {
-                var allStandardPackages = new List<FileInfo>();
+                var allStandardPackages = new List<FileEntry>();
 
-                if (packagePatterns.Length == 0)
+                if (filter is {})
                 {
                     allStandardPackages.AddRange(artifactPackagesDirectory.EnumerateFiles("*.nupkg", SearchOption.AllDirectories));
                 }
                 else
                 {
-                    foreach (string packagePattern in packagePatterns)
-                    {
-                        allStandardPackages.AddRange(artifactPackagesDirectory.EnumerateFiles(packagePattern, SearchOption.AllDirectories));
-                    }
+                        allStandardPackages.AddRange(artifactPackagesDirectory.EnumerateFiles("*.nupkg", SearchOption.AllDirectories).Where(f => filter.UploadEnable(f.Path.FullName)));
+
                 }
 
-                List<FileInfo> standardPackages = allStandardPackages
+                List<FileEntry> standardPackages = allStandardPackages
                     .Where(file => file.Name.IndexOf("symbols", StringComparison.OrdinalIgnoreCase) < 0)
                     .ToList();
 
@@ -235,28 +241,30 @@ namespace Arbor.Build.Core.Tools.NuGet
             }
             else
             {
-                var allWebSitePackages = new List<FileInfo>();
+                var allWebSitePackages = new List<FileEntry>();
 
-                if (packagePatterns.Length == 0)
+                if (filter is { })
                 {
-                    allWebSitePackages.AddRange( websitesDirectory.EnumerateFiles("*.nupkg", SearchOption.AllDirectories));
+                    allWebSitePackages.AddRange(websitesDirectory.EnumerateFiles("*.nupkg", SearchOption.AllDirectories));
                 }
                 else
                 {
-                    foreach (string packagePattern in packagePatterns)
-                    {
-                        allWebSitePackages.AddRange(websitesDirectory.EnumerateFiles(packagePattern, SearchOption.AllDirectories));
-                    }
+                    allWebSitePackages.AddRange(websitesDirectory.EnumerateFiles("*.nupkg", SearchOption.AllDirectories).Where(f => filter.UploadEnable(f.Path.FullName)));
+
                 }
 
-                List<FileInfo> websitePackages = allWebSitePackages
+                List<FileEntry> websitePackages = allWebSitePackages
                     .Where(file => file.Name.IndexOf("symbols", StringComparison.OrdinalIgnoreCase) < 0)
                     .ToList();
 
                 nuGetPackageFiles.AddRange(websitePackages);
             }
 
-            if (nuGetPackageFiles.Count == 0)
+            var enabledUploadPackages = nuGetPackageFiles
+                .Where(package => filter.UploadEnable(package.FullName))
+                .ToImmutableArray();
+
+            if (enabledUploadPackages.Length == 0)
             {
                 string websiteUploadMissingMessage = websitePackagesUploadEnabled
                     ? $" or in folder websites folder '{websitesDirectory.FullName}'"
@@ -272,14 +280,14 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             string files =
                 string.Join(Environment.NewLine,
-                    nuGetPackageFiles.Select(
+                    enabledUploadPackages.Select(
                         file => $"{file.FullName}: {file.Length / 1024.0:F1} KiB"));
 
-            logger.Information("Found {Count} NuGet packages to upload {Files}", nuGetPackageFiles.Count, files);
+            logger.Information("Found {Count} NuGet packages to upload {Files}", enabledUploadPackages.Length, files);
 
             bool result = true;
 
-            IReadOnlyCollection<FileInfo> sortedPackages = nuGetPackageFiles
+            IReadOnlyCollection<FileEntry> sortedPackages = enabledUploadPackages
                 .OrderByDescending(package => package.Name.Length)
                 .SafeToReadOnlyCollection();
 
@@ -287,7 +295,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             {
                 logger.Information("Checking if packages already exists in NuGet source");
 
-                foreach (FileInfo fileInfo in sortedPackages)
+                foreach (var fileInfo in sortedPackages)
                 {
                     bool? packageExists =
                         await CheckPackageExistsAsync(fileInfo, nugetExePath, logger, sourceName).ConfigureAwait(false);
@@ -314,7 +322,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 logger.Information("Skipping checking if packages already exists in NuGet source");
             }
 
-            foreach (FileInfo fileInfo in sortedPackages)
+            foreach (var fileInfo in sortedPackages)
             {
                 string nugetPackage = fileInfo.FullName;
 
@@ -340,7 +348,7 @@ namespace Arbor.Build.Core.Tools.NuGet
         }
 
         private async Task<bool?> CheckPackageExistsAsync(
-            FileInfo nugetPackage,
+            FileEntry nugetPackage,
             string nugetExePath,
             ILogger logger,
             string? sourceName)
@@ -469,8 +477,10 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             IVariable artifacts = buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue();
 
-            var packagesFolder = new DirectoryInfo(Path.Combine(artifacts.Value!, "packages"));
-            var websitesDirectory = new DirectoryInfo(Path.Combine(artifacts.Value!, "websites"));
+            var artifactsPath = _fileSystem.GetDirectoryEntry(artifacts.Value);
+
+            var packagesFolder = new DirectoryEntry(_fileSystem, UPath.Combine(artifacts.Value!, "packages"));
+            var websitesDirectory = new DirectoryEntry(_fileSystem, UPath.Combine(artifacts.Value!, "websites"));
 
             IVariable nugetExe = buildVariables.Require(WellKnownVariables.ExternalTools_NuGet_ExePath)
                 .ThrowIfEmptyValue();
@@ -489,6 +499,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 buildVariables.Require(WellKnownVariables.IsRunningOnBuildAgent).ThrowIfEmptyValue();
 
             bool isRunningOnBuildAgent = isRunningOnBuildAgentVariable.GetValueOrDefault(false);
+
             bool forceUpload =
                 buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_NuGetServer_ForceUploadEnabled);
 
@@ -517,9 +528,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             string patterns =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables
-                    .ExternalTools_NuGetServer_UploadPackagePatterns, "") ?? "";
-
-            var packagePatterns = patterns.Split(';', StringSplitOptions.RemoveEmptyEntries).ToImmutableArray();
+                    .NuGetServerUploadPackageExclueStartsWithPatterns, "") ?? "";
 
             if (isRunningOnBuildAgent)
             {
@@ -540,6 +549,8 @@ namespace Arbor.Build.Core.Tools.NuGet
                     WellKnownVariables.ExternalTools_NuGetServer_ForceUploadEnabled);
             }
 
+            var filters = new PackageUploadFilter(patterns, _fileSystem);
+
             if (isRunningOnBuildAgent || forceUpload)
             {
                 return UploadNuGetPackagesAsync(
@@ -555,7 +566,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                     sourceName,
                     configFile,
                     timeoutIncreaseEnabled,
-                    packagePatterns);
+                    filters);
             }
 
             logger.Information(
