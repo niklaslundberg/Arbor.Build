@@ -16,7 +16,6 @@ using Arbor.Build.Core.GenericExtensions.Bools;
 using Arbor.Build.Core.GenericExtensions.Int;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools;
-using Arbor.Build.Core.Tools.MSBuild;
 using Arbor.Defensive.Collections;
 using Arbor.Exceptions;
 using Arbor.KVConfiguration.Core;
@@ -165,7 +164,7 @@ namespace Arbor.Build.Core
                     variableAsTable);
             }
 
-            if (buildVariables.GetBooleanByKey(WellKnownVariables.ShowDefinedVariablesEnabled, false))
+            if (buildVariables.GetBooleanByKey(WellKnownVariables.ShowDefinedVariablesEnabled))
             {
                 _logger.Information("{NewLine}Defined build variables: [{Count}] {NewLine1}{NewLine2}{V}",
                     Environment.NewLine,

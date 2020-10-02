@@ -1,6 +1,5 @@
 ﻿using Arbor.Build.Core;
 using Arbor.Build.Core.Tools.Git;
-using Arbor.Build.Tests.Integration.Bootstrapper;
 using Machine.Specifications;
 
 namespace Arbor.Build.Tests.Integration.GitBranches

@@ -19,7 +19,7 @@ namespace Arbor.Build.Core.Tools.NuGet
     public class NugetVariableProvider : IVariableProvider
     {
         private CancellationToken _cancellationToken;
-        private IFileSystem _fileSystem;
+        private readonly IFileSystem _fileSystem;
 
         public NugetVariableProvider(IFileSystem fileSystem) => _fileSystem = fileSystem;
 

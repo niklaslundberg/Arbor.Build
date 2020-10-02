@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using Arbor.Defensive.Collections;
 using Arbor.Exceptions;
-using Arbor.FS;
 using JetBrains.Annotations;
 using Zio;
 
@@ -105,16 +104,17 @@ namespace Arbor.Build.Core.IO
             }
         }
 
-        public static void DeleteIfExists(this FileEntry? file)
+        public static bool DeleteIfExists(this FileEntry? file)
         {
             if (file is null)
             {
-                return;
+                return false;
             }
 
             try
             {
                 file.Delete();
+                return true;
             }
             catch (UnauthorizedAccessException ex)
             {

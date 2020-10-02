@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -198,7 +197,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 return ImmutableArray<IVariable>.Empty;
             }
 
-            string? path = buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_MSBuild_ExePath, null);
+            string? path = buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_MSBuild_ExePath);
 
             if (!string.IsNullOrWhiteSpace(path))
             {

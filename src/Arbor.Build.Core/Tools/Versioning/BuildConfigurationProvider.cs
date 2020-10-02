@@ -30,7 +30,7 @@ namespace Arbor.Build.Core.Tools.Versioning
         {
             var variables = new List<IVariable>();
 
-            if (buildVariables.GetVariableValueOrDefault(WellKnownVariables.CurrentBuildConfiguration, null) is null)
+            if (buildVariables.GetVariableValueOrDefault(WellKnownVariables.CurrentBuildConfiguration) is null)
             {
                 variables.Add(new FunctionVariable(
                     WellKnownVariables.CurrentBuildConfiguration,
@@ -47,8 +47,8 @@ namespace Arbor.Build.Core.Tools.Versioning
                 .Select(value => value.Trim())
                 .Where(value => !string.IsNullOrWhiteSpace(value)));
 
-            string? config = buildVariables.GetVariableValueOrDefault(WellKnownVariables.Configuration, null);
-            string? msBuildConfig = buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_MSBuild_BuildConfiguration, null);
+            string? config = buildVariables.GetVariableValueOrDefault(WellKnownVariables.Configuration);
+            string? msBuildConfig = buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_MSBuild_BuildConfiguration);
 
             if (!string.IsNullOrWhiteSpace(config))
             {
@@ -84,7 +84,7 @@ namespace Arbor.Build.Core.Tools.Versioning
 
         private static string GetConfiguration(IReadOnlyCollection<IVariable> buildVariables)
         {
-            string? branchName = buildVariables.GetVariableValueOrDefault(WellKnownVariables.BranchName, null);
+            string? branchName = buildVariables.GetVariableValueOrDefault(WellKnownVariables.BranchName);
 
             if (string.IsNullOrWhiteSpace(branchName))
             {
@@ -103,8 +103,7 @@ namespace Arbor.Build.Core.Tools.Versioning
             if (branch.IsFeatureBranch())
             {
                 string? featureBranchConfiguration = buildVariables.GetVariableValueOrDefault(
-                    WellKnownVariables.FeatureBranchDefaultConfiguration,
-                    null);
+                    WellKnownVariables.FeatureBranchDefaultConfiguration);
 
                 if (!string.IsNullOrWhiteSpace(
                     featureBranchConfiguration))

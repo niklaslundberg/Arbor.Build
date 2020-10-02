@@ -1,5 +1,4 @@
 using System;
-using Arbor.Build.Core.Logging;
 using Autofac;
 using JetBrains.Annotations;
 using Zio;

@@ -21,7 +21,7 @@ namespace Arbor.Build.Core.Tools.NuGet
     [UsedImplicitly]
     public class MsBuildNuGetRestorer : ITool
     {
-        private IFileSystem _fileSystem;
+        private readonly IFileSystem _fileSystem;
         private readonly BuildContext _buildContext;
 
         public MsBuildNuGetRestorer(IFileSystem fileSystem, BuildContext buildContext)

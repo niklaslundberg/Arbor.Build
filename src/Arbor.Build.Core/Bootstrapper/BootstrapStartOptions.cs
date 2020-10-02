@@ -46,7 +46,7 @@ namespace Arbor.Build.Core.Bootstrapper
 
             bool downloadOnly = args.Any(arg => arg.Equals(DownloadOnlyCliParameter, StringComparison.OrdinalIgnoreCase));
 
-            string? arborBuildExePath = args.FirstOrDefault(arg => arg.StartsWith(ArborBuildExeCliParameter, StringComparison.OrdinalIgnoreCase))?.Split("=")?.Skip(1).FirstOrDefault();
+            string? arborBuildExePath = args.FirstOrDefault(arg => arg.StartsWith(ArborBuildExeCliParameter, StringComparison.OrdinalIgnoreCase))?.Split("=").Skip(1).FirstOrDefault();
 
             return new BootstrapStartOptions(args, downloadOnly: downloadOnly, arborBuildExePath: arborBuildExePath);
         }

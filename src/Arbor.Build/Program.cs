@@ -13,7 +13,8 @@ namespace Arbor.Build
 {
     internal static class Program
     {
-        private static BuildApplication _app;
+        private static BuildApplication? _app;
+        private static WindowsFs? _fileSystem;
 
         private static Task<int> Main(string[] args) => RunAsync(args);
 
@@ -27,15 +28,20 @@ namespace Arbor.Build
 
             Log.Logger = logger;
 
-            _app = new BuildApplication(logger, environmentVariables, specialFolders, fileSystem ?? new WindowsFs(new PhysicalFileSystem()));
-
-            using (_app)
+            using var physicalFileSystem = new PhysicalFileSystem();
+            using (_fileSystem = new WindowsFs(physicalFileSystem))
             {
-                ExitCode exitCode = await _app.RunAsync(args).ConfigureAwait(false);
+                _app = new BuildApplication(logger, environmentVariables, specialFolders, fileSystem ?? _fileSystem);
 
-                Log.CloseAndFlush();
+                using (_app)
+                {
+                    ExitCode exitCode = await _app.RunAsync(args).ConfigureAwait(false);
 
-                return exitCode.Code;
+                    Log.CloseAndFlush();
+
+                    return exitCode.Code;
+
+                }
             }
         }
     }

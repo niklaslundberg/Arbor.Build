@@ -21,7 +21,7 @@ namespace Arbor.Build.Tests.Integration.PathExtensions
 
         Establish context = () =>
         {
-            fs = new WindowsFs(new PhysicalFileSystem());
+            fs = new PhysicalFileSystem();
             var tempPath = @"C:\Temp\root\afolder".AsFullPath();
             tempDir = new DirectoryEntry(fs,tempPath).EnsureExists();
             specification = DefaultPaths.DefaultPathLookupSpecification;
@@ -29,6 +29,6 @@ namespace Arbor.Build.Tests.Integration.PathExtensions
 
         Because of = () => isNotAllowed = specification.IsNotAllowed(fs.GetDirectoryEntry( @"C:\Temp\root\afolder".AsFullPath())).Item1;
         It should_return_true = () => isNotAllowed.ShouldBeTrue();
-        static WindowsFs fs;
+        static IFileSystem fs;
     }
 }

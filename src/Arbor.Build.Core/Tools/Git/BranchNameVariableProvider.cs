@@ -59,7 +59,7 @@ namespace Arbor.Build.Core.Tools.Git
                     break;
                 }
 
-                branchName = buildVariables.GetVariableValueOrDefault(possibleVariable, null);
+                branchName = buildVariables.GetVariableValueOrDefault(possibleVariable);
 
                 if (!string.IsNullOrWhiteSpace(branchName))
                 {

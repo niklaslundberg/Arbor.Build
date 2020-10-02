@@ -9,7 +9,6 @@ using Arbor.Build.Core.Tools.MSBuild;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
-using Serilog.Core;
 using Zio;
 
 namespace Arbor.Build.Core.Tools.VisualStudio

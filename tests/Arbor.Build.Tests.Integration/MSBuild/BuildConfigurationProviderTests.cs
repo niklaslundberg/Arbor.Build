@@ -21,7 +21,8 @@ namespace Arbor.Build.Tests.Integration.MSBuild
         [Fact]
         public async Task DefaultConfigurationShouldBeDebug()
         {
-            var buildContext = new BuildContext(new MemoryFileSystem());
+            using var memoryFileSystem = new MemoryFileSystem();
+            var buildContext = new BuildContext(memoryFileSystem);
 
             var buildConfigurationProvider = new BuildConfigurationProvider(buildContext);
 
@@ -42,7 +43,8 @@ namespace Arbor.Build.Tests.Integration.MSBuild
         [Theory]
         public async Task BranchConfigurationShouldBeDebug(string branchName)
         {
-            var buildContext = new BuildContext(new MemoryFileSystem());
+            using var memoryFileSystem = new MemoryFileSystem();
+            var buildContext = new BuildContext(memoryFileSystem);
 
             var buildConfigurationProvider = new BuildConfigurationProvider(buildContext);
 
@@ -66,7 +68,8 @@ namespace Arbor.Build.Tests.Integration.MSBuild
         [Theory]
         public async Task BranchConfigurationShouldBeDefaultForFeatureBranch(string branchName)
         {
-            var buildContext = new BuildContext(new MemoryFileSystem());
+            using var memoryFileSystem = new MemoryFileSystem();
+            var buildContext = new BuildContext(memoryFileSystem);
 
             var buildConfigurationProvider = new BuildConfigurationProvider(buildContext);
 
@@ -92,7 +95,8 @@ namespace Arbor.Build.Tests.Integration.MSBuild
         [Theory]
         public async Task BranchConfigurationShouldBeRelease(string branchName)
         {
-            var buildContext = new BuildContext(new MemoryFileSystem());
+            using var memoryFileSystem = new MemoryFileSystem();
+            var buildContext = new BuildContext(memoryFileSystem);
 
             var buildConfigurationProvider = new BuildConfigurationProvider(buildContext);
 

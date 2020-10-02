@@ -27,7 +27,7 @@ namespace Arbor.Build.Core.Tools.Cleanup
             string[] args,
             CancellationToken cancellationToken)
         {
-            string? dotNetExe = buildVariables.GetVariableValueOrDefault(WellKnownVariables.DotNetExePath, null);
+            string? dotNetExe = buildVariables.GetVariableValueOrDefault(WellKnownVariables.DotNetExePath);
 
             if (!buildVariables.GetBooleanByKey(WellKnownVariables.CleanupProcessesAfterBuildEnabled, true))
             {

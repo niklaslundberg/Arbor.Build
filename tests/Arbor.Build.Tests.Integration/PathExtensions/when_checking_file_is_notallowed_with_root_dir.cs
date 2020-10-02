@@ -20,7 +20,7 @@ namespace Arbor.Build.Tests.Integration.PathExtensions
         static IFileSystem fs;
         Establish context = () =>
         {
-            fs = new WindowsFs(new PhysicalFileSystem());
+            fs = new PhysicalFileSystem();
 
             UPath rootPath = $@"C:\Temp\root-{Guid.NewGuid()}".AsFullPath();
             fs.CreateDirectory(rootPath);

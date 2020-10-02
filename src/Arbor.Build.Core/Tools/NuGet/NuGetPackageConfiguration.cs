@@ -15,6 +15,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             [NotNull] SemanticVersion version,
             [NotNull] DirectoryEntry packagesDirectory,
             [NotNull] UPath nugetExePath,
+            string? branchName,
             string? suffix = null,
             bool branchNameEnabled = false,
             string? packageIdOverride = null,
@@ -23,7 +24,6 @@ namespace Arbor.Build.Core.Tools.NuGet
             bool nuGetSymbolPackagesEnabled = false,
             bool keepBinaryAndSourcePackagesTogetherEnabled = false,
             bool isReleaseBuild = false,
-            string? branchName = null,
             bool buildNumberEnabled = true,
             DirectoryEntry? tempPath = null,
             string? packageBuildMetadata = null,
@@ -96,7 +96,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
         public bool IsReleaseBuild { get; }
 
-        public string? BranchName { get; }
+        public string BranchName { get; }
 
         public SemanticVersion Version { get; }
 

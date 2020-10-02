@@ -23,7 +23,7 @@ namespace Arbor.Build.Core.Tools.Testing
     {
         private const string AnyConfiguration = "[Any]";
         private readonly BuildContext _buildContext;
-        private IFileSystem _fileSystem;
+        private readonly IFileSystem _fileSystem;
         public DotNetTestRunner(BuildContext buildContext, IFileSystem fileSystem)
         {
             _buildContext = buildContext;

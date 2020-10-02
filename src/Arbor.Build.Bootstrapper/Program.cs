@@ -13,6 +13,9 @@ namespace Arbor.Build.Bootstrapper
 {
     internal static class Program
     {
+        private static PhysicalFileSystem _physicalFileSystem;
+        private static WindowsFs _fileSystem;
+
         private static Task<int> Main(string[] args)
         {
             return RunAsync(args);
@@ -26,7 +29,9 @@ namespace Arbor.Build.Bootstrapper
                 .WriteTo.Console(outputTemplate: "{Message:lj}{NewLine}{Exception}")
                 .CreateLogger();
 
-            var bootstrapper = new Core.Bootstrapper.AppBootstrapper(logger, environmentVariables, fileSystem ?? new WindowsFs(new PhysicalFileSystem()));
+            _physicalFileSystem = new PhysicalFileSystem();
+            _fileSystem = new WindowsFs(_physicalFileSystem);
+            var bootstrapper = new Core.Bootstrapper.AppBootstrapper(logger, environmentVariables, fileSystem ?? _fileSystem);
 
             ExitCode exitCode = await bootstrapper.StartAsync(args).ConfigureAwait(false);
 
@@ -34,6 +39,9 @@ namespace Arbor.Build.Bootstrapper
             {
                 disposable.Dispose();
             }
+
+            _physicalFileSystem.Dispose();
+            _fileSystem.Dispose();
 
             return exitCode.Code;
         }

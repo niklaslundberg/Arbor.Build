@@ -26,7 +26,7 @@ namespace Arbor.Build.Tests.Integration.DirectoryExtensions
 
         Establish context = () =>
         {
-            fs = new WindowsFs(new PhysicalFileSystem());
+            fs = new PhysicalFileSystem();
             baseDir =
                 new DirectoryEntry(fs, UPath.Combine(Path.GetTempPath().AsFullPath(),
                     $"{DefaultPaths.TempPathPrefix}_DirectoryExtensions_{Guid.NewGuid()}"));
@@ -90,6 +90,6 @@ namespace Arbor.Build.Tests.Integration.DirectoryExtensions
         It should_not_contain_notallowed_files =
             () => files.ShouldNotContain("bower.config", "bower.debug.config", "node.debug.config", "node.config");
 
-        static WindowsFs fs;
+        static IFileSystem fs;
     }
 }

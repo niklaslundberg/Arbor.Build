@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,7 +21,7 @@ namespace Arbor.Build.Core.Tools.Versioning
     {
         private string _filePattern = null!;
         private readonly IFileSystem _fileSystem;
-        private BuildContext _buildContext;
+        private readonly BuildContext _buildContext;
 
         public AssemblyInfoPatcher(IFileSystem fileSystem, BuildContext buildContext)
         {

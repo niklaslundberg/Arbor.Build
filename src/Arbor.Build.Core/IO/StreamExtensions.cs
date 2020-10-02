@@ -37,8 +37,7 @@ namespace Arbor.Build.Core.IO
         }
         public static async IAsyncEnumerable<string> EnumerateLinesAsync(this Stream stream,
             Encoding? encoding = default,
-            bool leaveOpen = false,
-            CancellationToken cancellationToken = default)
+            bool leaveOpen = false)
         {
             using var streamReader = new StreamReader(stream, encoding ?? Encoding.UTF8, leaveOpen);
 
@@ -56,12 +55,11 @@ namespace Arbor.Build.Core.IO
         }
         public static async Task<ImmutableArray<string>> ReadAllLinesAsync(this Stream stream,
             Encoding? encoding = default,
-            bool leaveOpen = false,
-            CancellationToken cancellationToken = default)
+            bool leaveOpen = false)
         {
             var lines = new List<string>();
 
-            await foreach (string item in EnumerateLinesAsync(stream, encoding, leaveOpen, cancellationToken))
+            await foreach (string item in EnumerateLinesAsync(stream, encoding, leaveOpen))
             {
                 lines.Add(item);
             }

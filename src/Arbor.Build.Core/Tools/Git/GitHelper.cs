@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.IO;
@@ -39,7 +38,7 @@ namespace Arbor.Build.Core.Tools.Git
 
             var programFilesX64 = environmentVariables.GetEnvironmentVariable("ProgramW6432")?.AsFullPath();
 
-            if (programFilesX64 is {})
+            if (programFilesX64.HasValue)
             {
                 var programFilesX64FullPath = UPath.Combine(
                     programFilesX64.Value,

@@ -24,7 +24,7 @@ namespace Arbor.Build.Tests.Integration.PathExtensions
         private static IEnumerable<IFileSystem> EnumerateFilesSystem()
         {
             yield return new MemoryFileSystem();
-            yield return new WindowsFs(new PhysicalFileSystem());
+            yield return new PhysicalFileSystem();
         }
 
         public static IEnumerable<string> GetPaths()
@@ -94,7 +94,7 @@ namespace Arbor.Build.Tests.Integration.PathExtensions
         {
             var file = new FileEntry(fileSystem, "/mnt/c/temp/exampleFile.txt");
 
-            file.DeleteIfExists();
+            file.DeleteIfExists().Should().BeTrue();
         }
 
     }

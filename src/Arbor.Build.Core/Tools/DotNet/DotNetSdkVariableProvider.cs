@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,7 +18,7 @@ namespace Arbor.Build.Core.Tools.DotNet
     public class DotNetSdkVariableProvider : IVariableProvider
     {
         private readonly IEnvironmentVariables _environmentVariables;
-        private IFileSystem _fileSystem;
+        private readonly IFileSystem _fileSystem;
         private const string MSBuildSdksPath = "MSBuildSDKsPath";
 
         public DotNetSdkVariableProvider(IEnvironmentVariables environmentVariables, IFileSystem fileSystem)
@@ -45,35 +43,37 @@ namespace Arbor.Build.Core.Tools.DotNet
 
             var programFilesX64 = _environmentVariables.GetEnvironmentVariable("ProgramW6432")?.AsFullPath();
 
-            if (programFilesX64 is {})
+            if (programFilesX64 is null)
             {
-                var programFilesX64FullPath = UPath.Combine(
-                    programFilesX64.Value,
-                    "dotnet",
-                    "sdk");
+                return ImmutableArray<IVariable>.Empty;
+            }
 
-                var directoryEntry = new DirectoryEntry(_fileSystem, programFilesX64FullPath);
+            var programFilesX64FullPath = UPath.Combine(
+                programFilesX64.Value,
+                "dotnet",
+                "sdk");
 
-                if (directoryEntry.Exists)
+            var directoryEntry = new DirectoryEntry(_fileSystem, programFilesX64FullPath);
+
+            if (directoryEntry.Exists)
+            {
+                var semanticVersions = directoryEntry.GetDirectories()
+                    .Select(dir =>
+                        (Directory: dir,
+                            HasVersion: SemanticVersion.TryParse(dir.Name, out SemanticVersion version),
+                            Version: version))
+                    .Where(dir => dir.HasVersion && !dir.Version.IsPrerelease)
+                    .ToArray();
+
+                if (semanticVersions.Length > 0)
                 {
-                    var semanticVersions = directoryEntry.GetDirectories()
-                        .Select(dir =>
-                            (Directory: dir,
-                                HasVersion: SemanticVersion.TryParse(dir.Name, out SemanticVersion version),
-                                Version: version))
-                        .Where(dir => dir.HasVersion && !dir.Version.IsPrerelease)
-                        .ToArray();
+                    var version = semanticVersions.OrderByDescending(s => s.Version).First();
 
-                    if (semanticVersions.Length > 0)
+                    var sdksPath = UPath.Combine(version.Directory.Path, "sdks");
+
+                    if (_fileSystem.DirectoryExists(sdksPath))
                     {
-                        var version = semanticVersions.OrderByDescending(s => s.Version).First();
-
-                        var sdksPath = UPath.Combine(version.Directory.Path, "sdks");
-
-                        if (_fileSystem.DirectoryExists(sdksPath))
-                        {
-                            return new IVariable[] { new BuildVariable(MSBuildSdksPath, sdksPath.FullName) }.ToImmutableArray();
-                        }
+                        return new IVariable[] { new BuildVariable(MSBuildSdksPath, sdksPath.FullName) }.ToImmutableArray();
                     }
                 }
             }

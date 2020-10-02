@@ -60,7 +60,7 @@ namespace Arbor.Build.Core.Tools.Symbols
             IVariable isRunningOnBuildAgentVariable =
                 buildVariables.Require(WellKnownVariables.IsRunningOnBuildAgent).ThrowIfEmptyValue();
 
-            bool isRunningOnBuildAgent = isRunningOnBuildAgentVariable.GetValueOrDefault(false);
+            bool isRunningOnBuildAgent = isRunningOnBuildAgentVariable.GetValueOrDefault();
             bool forceUpload =
                 buildVariables.GetBooleanByKey(
                     WellKnownVariables.ExternalTools_SymbolServer_ForceUploadEnabled);

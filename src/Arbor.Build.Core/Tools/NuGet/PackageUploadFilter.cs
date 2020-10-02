@@ -7,16 +7,16 @@ namespace Arbor.Build.Core.Tools.NuGet
 {
     public class PackageUploadFilter
     {
-        private readonly ImmutableArray<string> _exclusions;
+        public ImmutableArray<string> Exclusions { get; }
         private readonly StringComparison _stringComparison;
 
         public PackageUploadFilter(string startsWithExclusions, IFileSystem fileSystem)
         {
             _stringComparison = fileSystem.GetPathComparison();
-            _exclusions = startsWithExclusions.Split(";").ToImmutableArray();
+            Exclusions = startsWithExclusions.Split(";").ToImmutableArray();
         }
 
 
-        public bool UploadEnable(string packageFile) => !_exclusions.Any(exclusion => packageFile.StartsWith(exclusion, _stringComparison));
+        public bool UploadEnable(string packageFile) => !Exclusions.Any(exclusion => packageFile.StartsWith(exclusion, _stringComparison));
     }
 }

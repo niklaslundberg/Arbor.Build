@@ -1,8 +1,6 @@
-﻿using System;
-using Arbor.Build.Core;
+﻿using Arbor.Build.Core;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.Logging;
-using Arbor.Build.Tests.Integration.Bootstrapper;
 using Serilog.Core;
 using Serilog.Events;
 using Xunit;

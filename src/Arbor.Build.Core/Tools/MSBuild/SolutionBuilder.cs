@@ -21,7 +21,6 @@ using Arbor.KVConfiguration.Schema.Json;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using Microsoft.Web.XmlTransform;
-using NUnit.Framework;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
@@ -41,9 +40,10 @@ namespace Arbor.Build.Core.Tools.MSBuild
             FileAttributes.Hidden, FileAttributes.System, FileAttributes.Offline, FileAttributes.Archive
         };
 
+        private readonly IFileSystem _fileSystem;
+
         private readonly List<string> _knownPlatforms = new List<string> {"x86", "x64", "Any CPU"};
         private readonly NuGetPackager _nugetPackager;
-        private readonly IFileSystem _fileSystem;
 
         private readonly PathLookupSpecification _pathLookupSpecification =
             DefaultPaths.DefaultPathLookupSpecification.AddExcludedDirectorySegments(new[] {"node_modules"});
@@ -151,7 +151,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             _msBuildExe = _dotnetMsBuildEnabled
                 ? null
-                : buildVariables.Require(WellKnownVariables.ExternalTools_MSBuild_ExePath).GetValueOrThrow().AsFullPath();
+                : buildVariables.Require(WellKnownVariables.ExternalTools_MSBuild_ExePath).GetValueOrThrow()
+                    .AsFullPath();
 
             string msbuildParameterArgumentDelimiter = _dotnetMsBuildEnabled
                 ? "-"
@@ -160,7 +161,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
             _argHelper = new MsBuildArgHelper(msbuildParameterArgumentDelimiter);
 
             _artifactsPath =
-               new DirectoryEntry(_fileSystem, buildVariables.Require(WellKnownVariables.Artifacts).GetValueOrThrow().AsFullPath());
+                new DirectoryEntry(_fileSystem,
+                    buildVariables.Require(WellKnownVariables.Artifacts).GetValueOrThrow().AsFullPath());
 
             _appDataJobsEnabled = buildVariables.GetBooleanByKey(
                 WellKnownVariables.AppDataJobsEnabled);
@@ -176,7 +178,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
             _version = buildVariables.Require(WellKnownVariables.Version).GetValueOrThrow();
 
             IVariable artifacts = buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue();
-            _packagesDirectory = new DirectoryEntry(_fileSystem, UPath.Combine(artifacts.Value!.AsFullPath(), "packages"));
+            _packagesDirectory =
+                new DirectoryEntry(_fileSystem, UPath.Combine(artifacts.Value!.AsFullPath(), "packages"));
 
             _dotnetPackToolsEnabled =
                 buildVariables.GetBooleanByKey(WellKnownVariables.DotNetPackToolProjectsEnabled, true);
@@ -234,7 +237,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 _logger.Verbose("Using MSBuild verbosity {Verbosity}", _verbosity);
             }
 
-            _vcsRoot = new DirectoryEntry(_fileSystem,  buildVariables.Require(WellKnownVariables.SourceRoot).GetValueOrThrow().AsFullPath());
+            _vcsRoot = new DirectoryEntry(_fileSystem,
+                buildVariables.Require(WellKnownVariables.SourceRoot).GetValueOrThrow().AsFullPath());
 
             if (_codeAnalysisEnabled)
             {
@@ -766,7 +770,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 {
                     logger.Information("Using code analysis ruleset '{Ruleset}'", _ruleset);
 
-                    argList.Add(_argHelper.FormatPropertyArg("CodeAnalysisRuleSet", _fileSystem.ConvertPathToInternal(_ruleset.Value)));
+                    argList.Add(_argHelper.FormatPropertyArg("CodeAnalysisRuleSet",
+                        _fileSystem.ConvertPathToInternal(_ruleset.Value)));
                 }
             }
             else
@@ -979,7 +984,10 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                 var args = new List<string>
                 {
-                    "publish", solutionProject.FullPath.FileSystem.ConvertPathToInternal(solutionProject.FullPath.Path), "-c", configuration
+                    "publish",
+                    solutionProject.FullPath.FileSystem.ConvertPathToInternal(solutionProject.FullPath.Path),
+                    "-c",
+                    configuration
                 };
 
                 if (!logger.IsEnabled(LogEventLevel.Debug))
@@ -1156,9 +1164,9 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                 string[] args =
                 {
-                    "pack", _fileSystem.ConvertPathToInternal(solutionProject.FullPath.Path), "--configuration", configuration,
-                    _argHelper.FormatPropertyArg("VersionPrefix", packageVersion), "--output", _fileSystem.ConvertPathToInternal(_packagesDirectory.Path),
-                    "--no-build", "--include-symbols"
+                    "pack", _fileSystem.ConvertPathToInternal(solutionProject.FullPath.Path), "--configuration",
+                    configuration, _argHelper.FormatPropertyArg("VersionPrefix", packageVersion), "--output",
+                    _fileSystem.ConvertPathToInternal(_packagesDirectory.Path), "--no-build", "--include-symbols"
                 };
 
                 void Log(string message, string category)
@@ -1176,7 +1184,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     }
                 }
 
-                var projectExitCode = await ProcessRunner.ExecuteProcessAsync(_fileSystem.ConvertPathToInternal(_dotNetExePath.Value),
+                var projectExitCode = await ProcessRunner.ExecuteProcessAsync(
+                    _fileSystem.ConvertPathToInternal(_dotNetExePath.Value),
                     args,
                     Log,
                     cancellationToken: _cancellationToken).ConfigureAwait(false);
@@ -1238,7 +1247,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 string projectName = analysisLogFile.Name.Replace(".CodeAnalysisLog.xml", string.Empty,
                     StringComparison.OrdinalIgnoreCase);
 
-                UPath targetFilePath = UPath.Combine(
+                var targetFilePath = UPath.Combine(
                     targetReportDirectory.FullName,
                     $"{projectName}.{Platforms.Normalize(platform)}.{configuration}.xml");
 
@@ -1310,7 +1319,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                 foreach (var pair in pairs)
                 {
-                    UPath targetFilePath = UPath.Combine(targetDirectory.FullName, pair.PdbFile.Name);
+                    var targetFilePath = UPath.Combine(targetDirectory.FullName, pair.PdbFile.Name);
 
                     if (!_fileSystem.FileExists(targetFilePath))
                     {
@@ -1334,7 +1343,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                     if (pair.DllFile != null)
                     {
-                        UPath targetDllFilePath = UPath.Combine(targetDirectory.FullName, pair.DllFile.Name);
+                        var targetDllFilePath = UPath.Combine(targetDirectory.FullName, pair.DllFile.Name);
 
                         if (!_fileSystem.FileExists(targetDllFilePath))
                         {
@@ -1409,7 +1418,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             {
                 var stream = file.Open(FileMode.Open, FileAccess.Read);
 
-                await foreach (var line in stream.EnumerateLinesAsync(cancellationToken: _cancellationToken))
+                await foreach (var line in stream.EnumerateLinesAsync())
                 {
                     if (line.Contains("Microsoft.NET.Sdk.Web", StringComparison.OrdinalIgnoreCase))
                     {
@@ -1451,7 +1460,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     solutionProject.ProjectName,
                     Platforms.Normalize(platform));
 
-                DirectoryEntry platformDirectory = new DirectoryEntry(_fileSystem, platformDirectoryPath).EnsureExists();
+                DirectoryEntry platformDirectory =
+                    new DirectoryEntry(_fileSystem, platformDirectoryPath).EnsureExists();
 
                 DirectoryEntry siteArtifactDirectory = platformDirectory.CreateSubdirectory(configuration);
 
@@ -1689,7 +1699,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             {
                 buildSiteArguments = new List<string>(15)
                 {
-                   _fileSystem.ConvertPathToInternal(solutionProject.FullPath.Path),
+                    _fileSystem.ConvertPathToInternal(solutionProject.FullPath.Path),
                     _argHelper.FormatPropertyArg("configuration", configuration),
                     _argHelper.FormatArg("verbosity", _verbosity.Level),
                     _argHelper.FormatPropertyArg("publishdir", siteArtifactDirectory.FullName),
@@ -1736,7 +1746,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             var buildSiteExitCode =
                 await
                     ProcessRunner.ExecuteProcessAsync(
-                       _fileSystem.ConvertPathToInternal(exePath),
+                        _fileSystem.ConvertPathToInternal(exePath),
                         buildSiteArguments,
                         logger.Information,
                         logger.Error,
@@ -1752,7 +1762,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
                         _logger.Debug("Clean bin directory XML files is enabled");
                     }
 
-                    var binDirectory = new DirectoryEntry(_fileSystem, UPath.Combine(siteArtifactDirectory.FullName, "bin"));
+                    var binDirectory =
+                        new DirectoryEntry(_fileSystem, UPath.Combine(siteArtifactDirectory.FullName, "bin"));
 
                     if (binDirectory.Exists)
                     {
@@ -1834,7 +1845,6 @@ namespace Arbor.Build.Core.Tools.MSBuild
             logger.Information("Creating NuGet web package for project '{ProjectName}'", solutionProject.ProjectName);
 
             string packageId = solutionProject.ProjectName;
-
 
 
             var artifactDirectory = new DirectoryEntry(_fileSystem, siteArtifactDirectory);
@@ -2103,10 +2113,10 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             FileListWithChecksumFile contentFilesInfo = await ChecksumHelper.CreateFileListForDirectory(baseDirectory);
 
-            var metaDir = contentFilesInfo.ContentFilesFile.Directory.Path.WindowsPath();
+            string? metaDir = contentFilesInfo.ContentFilesFile.Directory.Path.WindowsPath();
 
-            var nativePath = contentFilesInfo.ContentFilesFile.Path.WindowsPath();
-            var nativeChecksumPath = contentFilesInfo.ContentFilesFile.Path.WindowsPath();
+            string? nativePath = contentFilesInfo.ContentFilesFile.Path.WindowsPath();
+            string? nativeChecksumPath = contentFilesInfo.ContentFilesFile.Path.WindowsPath();
 
 
             string contentFileListFile =
@@ -2151,11 +2161,11 @@ namespace Arbor.Build.Core.Tools.MSBuild
             logger.Information("{NuSpec}", nuspecContent);
 
             DirectoryEntry tempDir = new DirectoryEntry(_fileSystem, UPath.Combine(
-                   Path.GetTempPath().AsFullPath(),
+                    Path.GetTempPath().AsFullPath(),
                     $"{DefaultPaths.TempPathPrefix}_sb_{DateTime.Now.Ticks}"))
                 .EnsureExists();
 
-            UPath nuspecTempFile = UPath.Combine(tempDir.Path, $"{packageId}.nuspec");
+            var nuspecTempFile = UPath.Combine(tempDir.Path, $"{packageId}.nuspec");
             {
                 await using var stream = _fileSystem.OpenFile(nuspecTempFile, FileMode.OpenOrCreate, FileAccess.Write);
 
@@ -2164,9 +2174,9 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     .ConfigureAwait(false);
             }
 
-            var packageSpecificationPath = new FileEntry(_fileSystem,  nuspecTempFile);
+            var packageSpecificationPath = new FileEntry(_fileSystem, nuspecTempFile);
             var exitCode = await _nugetPackager.CreatePackageAsync(
-               packageSpecificationPath,
+                packageSpecificationPath,
                 packageConfiguration,
                 true,
                 _cancellationToken).ConfigureAwait(false);
@@ -2250,7 +2260,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                 transformable.Load(_fileSystem.ConvertPathToInternal(configurationFile.Original.Path));
 
-                using var transformation = new XmlTransformation(_fileSystem.ConvertPathToInternal(configurationFile.TransformFile));
+                using var transformation =
+                    new XmlTransformation(_fileSystem.ConvertPathToInternal(configurationFile.TransformFile));
                 if (_debugLoggingEnabled)
                 {
                     logger.Debug(
@@ -2360,7 +2371,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
                                 _logger.Debug("Clean bin directory XML files is enabled for WebJobs");
                             }
 
-                            var binDirectory = new DirectoryEntry(_fileSystem, UPath.Combine(artifactJobAppDataDirectory.FullName));
+                            var binDirectory = new DirectoryEntry(_fileSystem,
+                                UPath.Combine(artifactJobAppDataDirectory.FullName));
 
                             if (binDirectory.Exists)
                             {
@@ -2437,7 +2449,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             var webDeployPackageDirectoryPath = UPath.Combine(platformDirectoryPath, "WebDeploy");
 
-            DirectoryEntry webDeployPackageDirectory = new DirectoryEntry(_fileSystem, webDeployPackageDirectoryPath).EnsureExists();
+            DirectoryEntry webDeployPackageDirectory =
+                new DirectoryEntry(_fileSystem, webDeployPackageDirectoryPath).EnsureExists();
 
             var packagePath = UPath.Combine(
                 webDeployPackageDirectory.FullName,

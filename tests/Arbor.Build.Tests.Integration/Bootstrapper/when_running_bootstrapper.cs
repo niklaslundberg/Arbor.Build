@@ -21,7 +21,7 @@ namespace Arbor.Build.Tests.Integration.Bootstrapper
         static BootstrapStartOptions startOptions;
         static ExitCode exitCode;
         static DirectoryEntry baseDirectory;
-        static WindowsFs fs;
+        static IFileSystem fs;
 
         Cleanup after = () =>
         {
@@ -39,7 +39,7 @@ namespace Arbor.Build.Tests.Integration.Bootstrapper
 
         Establish context = () =>
         {
-            fs = new WindowsFs(new PhysicalFileSystem());
+            fs = new PhysicalFileSystem();
             var tempDirectoryPath = UPath.Combine(Path.GetTempPath().AsFullPath(),
                 $"{DefaultPaths.TempPathPrefix}_Bootstrapper_Test_{Guid.NewGuid()}");
 

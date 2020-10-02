@@ -8,7 +8,6 @@ using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Logging;
 using Arbor.Build.Tests.Integration.Tests.MSpec;
-using Arbor.FS;
 using Serilog;
 using Xunit;
 using Xunit.Abstractions;
@@ -20,12 +19,12 @@ namespace Arbor.Build.Tests.Integration
     public sealed class TestSamples : IDisposable
     {
         readonly ITestOutputHelper _testOutputHelper;
-        WindowsFs _fs = new WindowsFs(new PhysicalFileSystem());
+        readonly IFileSystem _fs;
 
         public TestSamples(ITestOutputHelper testOutputHelper)
         {
             _testOutputHelper = testOutputHelper;
-            _fs = new WindowsFs(new PhysicalFileSystem());
+            _fs = new PhysicalFileSystem();
         }
 
         [MemberData(nameof(Data))]
@@ -91,7 +90,7 @@ namespace Arbor.Build.Tests.Integration
                 return ImmutableArray<string>.Empty;
             }
 
-            using var openFile = _fs.OpenFile(expectedFilesDataPath,FileMode.Open,FileAccess.Read);
+            await using var openFile = _fs.OpenFile(expectedFilesDataPath,FileMode.Open,FileAccess.Read);
             var expectedFiles = await openFile.ReadAllLinesAsync();
 
             return expectedFiles.ToImmutableArray();
@@ -116,7 +115,7 @@ namespace Arbor.Build.Tests.Integration
 
         static DirectoryEntry GetSamplesDirectory()
         {
-            var fs = new WindowsFs(new PhysicalFileSystem());
+            var fs = new PhysicalFileSystem();
             var samples = UPath.Combine(VcsTestPathHelper.FindVcsRootPath().Path, "samples");
 
             var samplesDirectory = fs.GetDirectoryEntry(samples);

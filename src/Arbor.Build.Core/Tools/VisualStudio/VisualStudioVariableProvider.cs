@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,7 +18,7 @@ namespace Arbor.Build.Core.Tools.VisualStudio
     public class VisualStudioVariableProvider : IVariableProvider
     {
         private bool _allowPreReleaseVersions;
-        private IFileSystem _fileSystem;
+        private readonly IFileSystem _fileSystem;
 
         public VisualStudioVariableProvider(IFileSystem fileSystem) => _fileSystem = fileSystem;
 

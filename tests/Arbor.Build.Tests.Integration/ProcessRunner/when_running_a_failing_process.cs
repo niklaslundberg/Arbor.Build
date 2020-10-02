@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 using Arbor.Build.Core.IO;
 using Arbor.Processing;

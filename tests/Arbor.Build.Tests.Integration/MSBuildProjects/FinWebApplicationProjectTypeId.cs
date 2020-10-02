@@ -52,7 +52,7 @@ namespace Arbor.Build.Tests.Integration.MSBuildProjects
 ";
 
             FileEntry? tempFile = null;
-            using var fs = new WindowsFs(new PhysicalFileSystem());
+            using var fs = new PhysicalFileSystem();
             try
             {
 

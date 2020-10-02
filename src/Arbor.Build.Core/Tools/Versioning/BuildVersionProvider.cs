@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,7 +23,7 @@ namespace Arbor.Build.Core.Tools.Versioning
     public class BuildVersionProvider : IVariableProvider
     {
         private readonly ITimeService _timeService;
-        private BuildContext _buildContext;
+        private readonly BuildContext _buildContext;
 
         public BuildVersionProvider(ITimeService timeService, BuildContext buildContext)
         {

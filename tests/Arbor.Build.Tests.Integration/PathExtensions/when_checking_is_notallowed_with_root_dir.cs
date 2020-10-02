@@ -1,4 +1,3 @@
-using System.IO;
 using Arbor.Build.Core.IO;
 using Arbor.FS;
 using Machine.Specifications;
@@ -21,7 +20,7 @@ namespace Arbor.Build.Tests.Integration.PathExtensions
 
         Establish context = () =>
         {
-            fs = new WindowsFs(new PhysicalFileSystem());
+            fs = new PhysicalFileSystem();
             var rootPath = @"C:\Temp\root".AsFullPath();
             var aPath = @"C:\Temp\root\afolder".AsFullPath();
             fs.CreateDirectory(aPath);

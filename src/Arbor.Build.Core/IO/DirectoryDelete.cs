@@ -113,7 +113,7 @@ namespace Arbor.Build.Core.IO
 
             foreach (var directoryToDelete in baseDirectory.EnumerateDirectories())
             {
-               bool deleted = Delete(directoryToDelete, true, true);
+               bool deleted = Delete(directoryToDelete, true);
 
                if (!deleted)
                {

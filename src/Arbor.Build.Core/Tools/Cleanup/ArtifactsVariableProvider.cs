@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
@@ -15,7 +14,7 @@ namespace Arbor.Build.Core.Tools.Cleanup
     [UsedImplicitly]
     public class ArtifactsVariableProvider : IVariableProvider
     {
-        private BuildContext _buildContext;
+        private readonly BuildContext _buildContext;
 
         public ArtifactsVariableProvider(BuildContext buildContext) => _buildContext = buildContext;
 

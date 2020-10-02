@@ -11,7 +11,6 @@ using Arbor.Defensive.Collections;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
-using Serilog.Core;
 using Zio;
 
 namespace Arbor.Build.Core.Tools.Paket
@@ -30,8 +29,6 @@ namespace Arbor.Build.Core.Tools.Paket
             string[] args,
             CancellationToken cancellationToken)
         {
-            logger ??= Logger.None;
-
             if (buildVariables.GetOptionalBooleanByKey(WellKnownVariables.PaketEnabled) != true)
             {
                 logger.Information("Paket is disabled by key '{Key}'", WellKnownVariables.PaketEnabled);
@@ -93,9 +90,9 @@ namespace Arbor.Build.Core.Tools.Paket
             logger.Information("Found paket.exe at '{FullName}'", paketExe.FullName);
 
             UPath? copyFromPath =
-                buildVariables.GetVariableValueOrDefault("Arbor.Build.Tools.Paket.CopyExeFromPath", null)?.AsFullPath();
+                buildVariables.GetVariableValueOrDefault("Arbor.Build.Tools.Paket.CopyExeFromPath")?.AsFullPath();
 
-            if (copyFromPath is {})
+            if (copyFromPath.HasValue)
             {
                 if (_fileSystem.FileExists(copyFromPath.Value))
                 {
@@ -104,7 +101,7 @@ namespace Arbor.Build.Core.Tools.Paket
                 }
                 else
                 {
-                    logger.Information("The specified paket.exe path '{CopyFromPath}' does not exist", copyFromPath);
+                    logger.Information("The specified paket.exe path '{CopyFromPath}' does not exist", copyFromPath.Value);
                 }
             }
             else

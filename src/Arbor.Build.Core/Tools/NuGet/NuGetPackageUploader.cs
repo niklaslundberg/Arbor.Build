@@ -189,6 +189,8 @@ namespace Arbor.Build.Core.Tools.NuGet
             bool timeoutIncreaseEnabled,
             PackageUploadFilter? filter = default)
         {
+            filter ??= new PackageUploadFilter("", _fileSystem);
+
             if (artifactPackagesDirectory == null)
             {
                 throw new ArgumentNullException(nameof(artifactPackagesDirectory));
@@ -214,15 +216,10 @@ namespace Arbor.Build.Core.Tools.NuGet
             {
                 var allStandardPackages = new List<FileEntry>();
 
-                if (filter is {})
-                {
-                    allStandardPackages.AddRange(artifactPackagesDirectory.EnumerateFiles("*.nupkg", SearchOption.AllDirectories));
-                }
-                else
-                {
-                        allStandardPackages.AddRange(artifactPackagesDirectory.EnumerateFiles("*.nupkg", SearchOption.AllDirectories).Where(f => filter.UploadEnable(f.Path.FullName)));
-
-                }
+                allStandardPackages.AddRange(filter.Exclusions.Any()
+                    ? artifactPackagesDirectory.EnumerateFiles("*.nupkg", SearchOption.AllDirectories)
+                    : artifactPackagesDirectory.EnumerateFiles("*.nupkg", SearchOption.AllDirectories)
+                        .Where(f => filter.UploadEnable(f.Path.FullName)));
 
                 List<FileEntry> standardPackages = allStandardPackages
                     .Where(file => file.Name.IndexOf("symbols", StringComparison.OrdinalIgnoreCase) < 0)
@@ -243,15 +240,10 @@ namespace Arbor.Build.Core.Tools.NuGet
             {
                 var allWebSitePackages = new List<FileEntry>();
 
-                if (filter is { })
-                {
-                    allWebSitePackages.AddRange(websitesDirectory.EnumerateFiles("*.nupkg", SearchOption.AllDirectories));
-                }
-                else
-                {
-                    allWebSitePackages.AddRange(websitesDirectory.EnumerateFiles("*.nupkg", SearchOption.AllDirectories).Where(f => filter.UploadEnable(f.Path.FullName)));
-
-                }
+                allWebSitePackages.AddRange(filter.Exclusions.Any()
+                    ? websitesDirectory.EnumerateFiles("*.nupkg", SearchOption.AllDirectories)
+                    : websitesDirectory.EnumerateFiles("*.nupkg", SearchOption.AllDirectories)
+                        .Where(f => filter.UploadEnable(f.Path.FullName)));
 
                 List<FileEntry> websitePackages = allWebSitePackages
                     .Where(file => file.Name.IndexOf("symbols", StringComparison.OrdinalIgnoreCase) < 0)
@@ -496,7 +488,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             IVariable isRunningOnBuildAgentVariable =
                 buildVariables.Require(WellKnownVariables.IsRunningOnBuildAgent).ThrowIfEmptyValue();
 
-            bool isRunningOnBuildAgent = isRunningOnBuildAgentVariable.GetValueOrDefault(false);
+            bool isRunningOnBuildAgent = isRunningOnBuildAgentVariable.GetValueOrDefault();
 
             bool forceUpload =
                 buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_NuGetServer_ForceUploadEnabled);

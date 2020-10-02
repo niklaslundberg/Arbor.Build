@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Threading.Tasks;
-using Arbor.Build.Core.IO;
+﻿using System.Threading.Tasks;
 using Arbor.Build.Core.Tools.MSBuild;
 using Arbor.Build.Tests.Integration.Tests.MSpec;
 using Arbor.FS;
@@ -16,7 +14,7 @@ namespace Arbor.Build.Tests.Integration
         [Fact]
         public async Task TestProjectShouldHavePublishedDisabled()
         {
-            using var fs = new WindowsFs(new PhysicalFileSystem());
+            using var fs = new PhysicalFileSystem();
             var projectFileFullName = fs.GetFileEntry(UPath.Combine(VcsTestPathHelper.FindVcsRootPath().Path, "tests",
                 "Arbor.Build.Tests.Integration", "Arbor.Build.Tests.Integration.csproj"));
             var msbuildProject = await MSBuildProject.LoadFrom(projectFileFullName);

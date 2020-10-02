@@ -36,7 +36,7 @@ namespace Arbor.Build.Core.Bootstrapper
         private bool _failed;
         private BootstrapStartOptions _startOptions;
         private readonly IEnvironmentVariables _environmentVariables;
-        private IFileSystem _fileSystem;
+        private readonly IFileSystem _fileSystem;
 
         public AppBootstrapper(ILogger logger, IEnvironmentVariables environmentVariables, IFileSystem fileSystem)
         {
@@ -422,7 +422,7 @@ namespace Arbor.Build.Core.Bootstrapper
         private async Task<(string?, List<string>)> GetExePath(DirectoryEntry buildToolDirectory, CancellationToken cancellationToken)
         {
             List<FileEntry> arborBuild =
-                buildToolDirectory.GetFiles("Arbor.Build.*", SearchOption.TopDirectoryOnly)
+                buildToolDirectory.GetFiles("Arbor.Build.*")
                     .Where(file => !file.Name.Equals("nuget.exe", StringComparison.OrdinalIgnoreCase))
                     .ToList();
 

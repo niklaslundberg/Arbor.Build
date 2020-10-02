@@ -19,7 +19,7 @@ namespace Arbor.Build.Core.Tools.NuGet
     [UsedImplicitly]
     public class NuGetRestorer : ITool
     {
-        private IFileSystem _fileSystem;
+        private readonly IFileSystem _fileSystem;
 
         public NuGetRestorer(IFileSystem fileSystem) => _fileSystem = fileSystem;
 

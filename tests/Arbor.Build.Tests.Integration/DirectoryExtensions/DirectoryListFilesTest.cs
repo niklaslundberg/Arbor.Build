@@ -11,14 +11,14 @@ using Zio.FileSystems;
 
 namespace Arbor.Build.Tests.Integration.DirectoryExtensions
 {
-    public class DirectoryListFilesTest : IDisposable
+    public sealed class DirectoryListFilesTest : IDisposable
     {
         readonly IFileSystem _fs;
         readonly DirectoryEntry _tempDirectory;
 
         public DirectoryListFilesTest()
         {
-            _fs = new WindowsFs(new PhysicalFileSystem());
+            _fs = new PhysicalFileSystem();
 
             _tempDirectory = new DirectoryEntry(_fs,
                     UPath.Combine(Path.GetTempPath().AsFullPath(), Guid.NewGuid().ToString()))

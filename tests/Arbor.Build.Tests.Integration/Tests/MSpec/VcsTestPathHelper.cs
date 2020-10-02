@@ -20,7 +20,9 @@ namespace Arbor.Build.Tests.Integration.Tests.MSpec
 
         public static DirectoryEntry FindVcsRootPath(UPath baseDir)
         {
+#pragma warning disable CA2000 // Dispose objects before losing scope
             var fs = new PhysicalFileSystem();
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
             if (baseDir != UPath.Empty && !fs.DirectoryExists(baseDir))
             {

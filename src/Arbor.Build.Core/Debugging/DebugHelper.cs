@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using Arbor.Build.Core.BuildVariables;
 
 namespace Arbor.Build.Core.Debugging
