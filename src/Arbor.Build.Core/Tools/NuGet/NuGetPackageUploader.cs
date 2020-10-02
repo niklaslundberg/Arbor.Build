@@ -27,10 +27,8 @@ namespace Arbor.Build.Core.Tools.NuGet
     {
         private readonly IFileSystem _fileSystem;
 
-        public NuGetPackageUploader(IFileSystem fileSystem)
-        {
-            _fileSystem = fileSystem;
-        }
+        public NuGetPackageUploader(IFileSystem fileSystem) => _fileSystem = fileSystem;
+
         private async Task<ExitCode> UploadNugetPackageAsync(
             string nugetExePath,
             string? serverUri,

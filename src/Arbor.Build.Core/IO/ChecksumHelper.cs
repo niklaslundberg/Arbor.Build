@@ -30,17 +30,17 @@ namespace Arbor.Build.Core.IO
 
             string json = JsonConvert.SerializeObject(new {files}, Formatting.Indented);
 
-            DirectoryEntry tempDirectory = new DirectoryEntry(baseDirectory.FileSystem, UPath.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()))
+            DirectoryEntry tempDirectory = new DirectoryEntry(baseDirectory.FileSystem, UPath.Combine(Path.GetTempPath().AsFullPath(), Guid.NewGuid().ToString()))
                 .EnsureExists();
 
             var contentFilesFile = UPath.Combine(tempDirectory.Path, "contentFiles.json");
 
-            var contentStream = tempDirectory.FileSystem.OpenFile(contentFilesFile, FileMode.Open, FileAccess.Write);
+            await using var contentStream = tempDirectory.FileSystem.OpenFile(contentFilesFile, FileMode.Open, FileAccess.Write);
 
             await contentStream.WriteAllTextAsync(json);
 
             var contentFileEntry = new FileEntry(tempDirectory.FileSystem, contentFilesFile);
-            var contentFilesFileChecksum = GetFileHashSha512Base64Encoded(contentFileEntry);
+            string contentFilesFileChecksum = GetFileHashSha512Base64Encoded(contentFileEntry);
 
             var hashFilePath = UPath.Combine(tempDirectory.Path, "contentFiles.json.sha512");
 

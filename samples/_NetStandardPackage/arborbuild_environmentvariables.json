@@ -24,6 +24,10 @@
         {
             "key":  "Arbor.Build.Tools.External.MSBuild.DotNet.Enabled",
             "value": true
+        },
+        {
+            "key":  "Arbor.Build.NuGet.PackageUpload.Enabled",
+            "value": "false"
         }
     ]
 }
