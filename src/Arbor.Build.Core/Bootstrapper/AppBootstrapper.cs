@@ -15,11 +15,13 @@ using Arbor.Build.Core.GenericExtensions.Bools;
 using Arbor.Build.Core.GenericExtensions.Int;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.DotNet;
+using Arbor.Build.Core.Tools.NuGet;
 using Arbor.Exceptions;
 using Arbor.Processing;
 using Arbor.Tooler;
 using JetBrains.Annotations;
 using Serilog;
+using Zio;
 
 namespace Arbor.Build.Core.Bootstrapper
 {
@@ -34,11 +36,13 @@ namespace Arbor.Build.Core.Bootstrapper
         private bool _failed;
         private BootstrapStartOptions _startOptions;
         private readonly IEnvironmentVariables _environmentVariables;
+        private IFileSystem _fileSystem;
 
-        public AppBootstrapper(ILogger logger, IEnvironmentVariables environmentVariables)
+        public AppBootstrapper(ILogger logger, IEnvironmentVariables environmentVariables, IFileSystem fileSystem)
         {
             _logger = logger;
             _environmentVariables = environmentVariables;
+            _fileSystem = fileSystem;
         }
 
         public async Task<ExitCode> StartAsync(string[] args)
@@ -186,10 +190,10 @@ namespace Arbor.Build.Core.Bootstrapper
 
             var startOptions = BootstrapStartOptions.Parse(args);
 
-            string baseDir = VcsPathHelper.FindVcsRootPath(AppDomain.CurrentDomain.BaseDirectory);
+            DirectoryEntry baseDir = new DirectoryEntry(_fileSystem, VcsPathHelper.FindVcsRootPath(AppDomain.CurrentDomain.BaseDirectory));
 
-            var tempDirectory = new DirectoryInfo(Path.Combine(
-                Path.GetTempPath(),
+            var tempDirectory = new DirectoryEntry(_fileSystem, UPath.Combine(
+                Path.GetTempPath().AsFullPath(),
                 $"{DefaultPaths.TempPathPrefix}_Boot_Debug",
                 DateTime.Now.ToString("yyyyMMddHHmmssfff", CultureInfo.InvariantCulture)));
 
@@ -199,14 +203,14 @@ namespace Arbor.Build.Core.Bootstrapper
 
             var paths = new PathLookupSpecification();
 
-            await DirectoryCopy.CopyAsync(baseDir, tempDirectory.FullName, pathLookupSpecificationOption: paths).ConfigureAwait(false);
+            await DirectoryCopy.CopyAsync(baseDir, tempDirectory, pathLookupSpecificationOption: paths).ConfigureAwait(false);
 
             _environmentVariables.SetEnvironmentVariable(WellKnownVariables.BranchNameVersionOverrideEnabled, "true");
             _environmentVariables.SetEnvironmentVariable(WellKnownVariables.VariableOverrideEnabled, "true");
 
             var bootstrapStartOptions = new BootstrapStartOptions(
                 args,
-                tempDirectory.FullName,
+                tempDirectory,
                 true,
                 "refs/heads/develop/12.34.56",
                 downloadOnly: startOptions.DownloadOnly,
@@ -225,9 +229,9 @@ namespace Arbor.Build.Core.Bootstrapper
 
         private void SetEnvironmentVariables()
         {
-            if (!string.IsNullOrWhiteSpace(_startOptions?.BaseDir) && Directory.Exists(_startOptions.BaseDir))
+            if (!string.IsNullOrWhiteSpace(_startOptions?.BaseDir?.FullName) && _startOptions.BaseDir.Exists)
             {
-                _environmentVariables.SetEnvironmentVariable(WellKnownVariables.SourceRoot, _startOptions.BaseDir);
+                _environmentVariables.SetEnvironmentVariable(WellKnownVariables.SourceRoot, _startOptions.BaseDir.Path.FullName);
             }
 
             if (_startOptions?.PreReleaseEnabled == true)
@@ -265,9 +269,9 @@ namespace Arbor.Build.Core.Bootstrapper
                     directoryCloneValue);
             }
 
-            string baseDir = await GetBaseDirectoryAsync(_startOptions).ConfigureAwait(false);
+            var baseDir = await GetBaseDirectoryAsync(_startOptions).ConfigureAwait(false);
 
-            DirectoryInfo buildDir = new DirectoryInfo(Path.Combine(baseDir, "build")).EnsureExists();
+            DirectoryEntry buildDir = new DirectoryEntry(_fileSystem, UPath.Combine(baseDir.Path, "build")).EnsureExists();
 
             _logger.Verbose("Using base directory '{BaseDir}'", baseDir);
 
@@ -390,11 +394,11 @@ namespace Arbor.Build.Core.Bootstrapper
             return nuGetPackageInstallResult.PackageDirectory.FullName;
         }
 
-        private async Task<string> GetBaseDirectoryAsync(BootstrapStartOptions startOptions)
+        private async Task<DirectoryEntry> GetBaseDirectoryAsync(BootstrapStartOptions startOptions)
         {
-            string baseDir;
+            DirectoryEntry baseDir;
 
-            if (!string.IsNullOrWhiteSpace(startOptions.BaseDir) && Directory.Exists(startOptions.BaseDir))
+            if (!string.IsNullOrWhiteSpace(startOptions.BaseDir?.FullName) && startOptions.BaseDir.Exists)
             {
                 _logger.Information("Using base directory '{BaseDir}' from start options", startOptions.BaseDir);
 
@@ -402,15 +406,22 @@ namespace Arbor.Build.Core.Bootstrapper
             }
             else
             {
-                baseDir = VcsPathHelper.FindVcsRootPath(Directory.GetCurrentDirectory());
+                string foundPath = VcsPathHelper.FindVcsRootPath(Directory.GetCurrentDirectory());
+
+                if (string.IsNullOrWhiteSpace(foundPath))
+                {
+                    throw new InvalidOperationException("Could not get source root path");
+                }
+
+                baseDir = new DirectoryEntry(_fileSystem, foundPath.AsFullPath());
             }
 
             return baseDir;
         }
 
-        private async Task<(string?, List<string>)> GetExePath(DirectoryInfo buildToolDirectory, CancellationToken cancellationToken)
+        private async Task<(string?, List<string>)> GetExePath(DirectoryEntry buildToolDirectory, CancellationToken cancellationToken)
         {
-            List<FileInfo> arborBuild =
+            List<FileEntry> arborBuild =
                 buildToolDirectory.GetFiles("Arbor.Build.*", SearchOption.TopDirectoryOnly)
                     .Where(file => !file.Name.Equals("nuget.exe", StringComparison.OrdinalIgnoreCase))
                     .ToList();
@@ -421,21 +432,21 @@ namespace Arbor.Build.Core.Bootstrapper
                 return (null, new List<string>());
             }
 
-            FileInfo? buildToolExecutable = arborBuild.SingleOrDefault(file => file.Extension.Equals(".exe", StringComparison.OrdinalIgnoreCase));
+            FileEntry? buildToolExecutable = arborBuild.SingleOrDefault(file => file.ExtensionWithDot.Equals(".exe", StringComparison.OrdinalIgnoreCase));
 
             if (buildToolExecutable is {})
             {
                 return (buildToolExecutable.FullName, new List<string>());
             }
 
-            FileInfo? buildToolDll = arborBuild.SingleOrDefault(file => file.Extension.Equals(".dll", StringComparison.OrdinalIgnoreCase));
+            FileEntry? buildToolDll = arborBuild.SingleOrDefault(file => file.ExtensionWithDot.Equals(".dll", StringComparison.OrdinalIgnoreCase));
 
             if (buildToolDll is null)
             {
                 return (null, new List<string>());
             }
 
-            ImmutableArray<IVariable> variables = await new DotNetEnvironmentVariableProvider(_environmentVariables)
+            ImmutableArray<IVariable> variables = await new DotNetEnvironmentVariableProvider(_environmentVariables, _fileSystem)
                    .GetBuildVariablesAsync(
                        _logger,
                        ImmutableArray<IVariable>.Empty,
@@ -455,7 +466,7 @@ namespace Arbor.Build.Core.Bootstrapper
 
         private async Task<ExitCode> RunBuildToolsAsync(string buildDir, string buildToolDirectoryName, string? arborBuildExePath)
         {
-            var buildToolDirectory = new DirectoryInfo(buildToolDirectoryName);
+            var buildToolDirectory = new DirectoryEntry(_fileSystem, buildToolDirectoryName);
 
             const string timeoutKey = WellKnownVariables.BuildToolTimeoutInSeconds;
             string? timeoutInSecondsFromEnvironment = _environmentVariables.GetEnvironmentVariable(timeoutKey);
@@ -512,7 +523,7 @@ namespace Arbor.Build.Core.Bootstrapper
             return result;
         }
 
-        private void PrintInvalidExeFileCount(List<FileInfo> exeFiles, string buildToolDirectoryPath)
+        private void PrintInvalidExeFileCount(List<FileEntry> exeFiles, string buildToolDirectoryPath)
         {
             string multiple =
                 $"Found {exeFiles.Count} such files: {string.Join(", ", exeFiles.Select(file => file.Name))}";

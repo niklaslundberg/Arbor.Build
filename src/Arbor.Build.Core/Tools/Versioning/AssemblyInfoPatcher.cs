@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.IO;
+using Arbor.Build.Core.Tools.MSBuild;
 using Arbor.Defensive.Collections;
 using Arbor.Processing;
 using Arbor.Sorbus.Core;
@@ -21,8 +22,13 @@ namespace Arbor.Build.Core.Tools.Versioning
     {
         private string _filePattern = null!;
         private readonly IFileSystem _fileSystem;
+        private BuildContext _buildContext;
 
-        public AssemblyInfoPatcher(IFileSystem fileSystem) => _fileSystem = fileSystem;
+        public AssemblyInfoPatcher(IFileSystem fileSystem, BuildContext buildContext)
+        {
+            _fileSystem = fileSystem;
+            _buildContext = buildContext;
+        }
 
         public Task<ExitCode> ExecuteAsync(
             ILogger logger,
@@ -48,7 +54,7 @@ namespace Arbor.Build.Core.Tools.Versioning
             logger.Verbose("Using assembly version file pattern '{FilePattern}' to lookup files to patch",
                 _filePattern);
 
-            string sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).GetValueOrThrow();
+            var sourceRoot = _buildContext.SourceRoot;
 
             IVariable netAssemblyVersionVar =
                 buildVariables.SingleOrDefault(var => var.Key == WellKnownVariables.NetAssemblyVersion);
@@ -120,14 +126,12 @@ namespace Arbor.Build.Core.Tools.Versioning
                     assemblyFileVersion,
                     sourceRoot);
 
-                var sourceDirectory = new DirectoryEntry(_fileSystem, sourceRoot);
-
                 PathLookupSpecification defaultPathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification;
 
-                IReadOnlyCollection<AssemblyInfoFile> assemblyFiles = sourceDirectory
+                IReadOnlyCollection<AssemblyInfoFile> assemblyFiles = sourceRoot
                     .GetFilesRecursive(new[] { ".cs" }, defaultPathLookupSpecification, sourceRoot)
                     .Where(file => file.Name.Equals(_filePattern, StringComparison.OrdinalIgnoreCase))
-                    .Select(file => new AssemblyInfoFile(file.FullName))
+                    .Select(file => new AssemblyInfoFile(_fileSystem.ConvertPathToInternal(file.FullName)))
                     .ToReadOnlyCollection();
 
                 logger.Debug(
@@ -140,7 +144,7 @@ namespace Arbor.Build.Core.Tools.Versioning
                 app.Patch(
                     new AssemblyVersion(assemblyVersion),
                     new AssemblyFileVersion(assemblyFileVersion),
-                    sourceRoot,
+                    _fileSystem.ConvertPathToInternal(sourceRoot.Path),
                     assemblyFiles,
                     assemblyMetadata);
             }

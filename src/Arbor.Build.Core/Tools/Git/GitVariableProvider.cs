@@ -12,6 +12,7 @@ using JetBrains.Annotations;
 using NuGet.Versioning;
 using Serilog;
 using Serilog.Core;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.Git
 {
@@ -20,11 +21,15 @@ namespace Arbor.Build.Core.Tools.Git
     {
         private readonly IEnvironmentVariables _environmentVariables;
         private readonly ISpecialFolders _specialFolders;
+        private readonly IFileSystem _fileSystem;
+        private readonly GitHelper _gitHelper;
 
-        public GitVariableProvider(IEnvironmentVariables environmentVariables, ISpecialFolders specialFolders)
+        public GitVariableProvider(IEnvironmentVariables environmentVariables, ISpecialFolders specialFolders, IFileSystem fileSystem, GitHelper gitHelper)
         {
             _environmentVariables = environmentVariables;
             _specialFolders = specialFolders;
+            _fileSystem = fileSystem;
+            _gitHelper = gitHelper;
         }
 
         public int Order { get; } = -1;
@@ -143,15 +148,15 @@ namespace Arbor.Build.Core.Tools.Git
                     }
                     else
                     {
-                        string gitExePath = GitHelper.GetGitExePath(logger, _specialFolders, _environmentVariables);
+                        UPath gitExePath = _gitHelper.GetGitExePath(logger, _specialFolders, _environmentVariables);
 
                         var stringBuilder = new StringBuilder();
 
-                        if (!string.IsNullOrWhiteSpace(gitExePath))
+                        if (gitExePath != UPath.Empty)
                         {
                             var arguments = new List<string> {"rev-parse", "HEAD"};
 
-                            var exitCode = await ProcessRunner.ExecuteProcessAsync(gitExePath,
+                            var exitCode = await ProcessRunner.ExecuteProcessAsync(_fileSystem.ConvertPathToInternal(gitExePath),
                                 arguments,
                                 (message, category) => stringBuilder.Append(message),
                                 toolAction: logger.Information,

@@ -1,11 +1,13 @@
-﻿namespace Arbor.Build.Core.Tools.MSBuild
+﻿using Zio;
+
+namespace Arbor.Build.Core.Tools.MSBuild
 {
     public class WebSolutionProject : SolutionProject
     {
         public WebSolutionProject(
-            string fullPath,
+            FileEntry fullPath,
             string projectName,
-            string projectDirectory,
+            DirectoryEntry projectDirectory,
             MSBuildProject msbuildProject,
             NetFrameworkGeneration netFrameworkGeneration) : base(fullPath, projectName, projectDirectory, msbuildProject, netFrameworkGeneration)
         {

@@ -1,6 +1,9 @@
 using System.IO;
 using Arbor.Build.Core.IO;
+using Arbor.FS;
 using Machine.Specifications;
+using Zio;
+using Zio.FileSystems;
 
 namespace Arbor.Build.Tests.Integration.PathExtensions
 {
@@ -9,17 +12,34 @@ namespace Arbor.Build.Tests.Integration.PathExtensions
     {
         static bool isNotAllowed;
         static PathLookupSpecification specification;
-        static DirectoryInfo tempDir;
-        Cleanup after = () => tempDir.DeleteIfExists();
+        static DirectoryEntry tempDir;
+        Cleanup after = () =>
+        {
+            tempDir.DeleteIfExists();
+            fs.Dispose();
+        };
 
         Establish context = () =>
         {
-            tempDir = new DirectoryInfo(@"C:\Temp\root\afolder").EnsureExists();
+            fs = new WindowsFs(new PhysicalFileSystem());
+            var rootPath = @"C:\Temp\root".AsFullPath();
+            var aPath = @"C:\Temp\root\afolder".AsFullPath();
+            fs.CreateDirectory(aPath);
+
+            tempDir = new DirectoryEntry(fs, aPath);
             specification = DefaultPaths.DefaultPathLookupSpecification;
+            rootDir = new DirectoryEntry(fs, rootPath);
+            sourceDir = fs.GetDirectoryEntry(@"C:\Temp\root\afolder".AsFullPath());
         };
 
-        Because of = () => isNotAllowed = specification.IsNotAllowed(@"C:\Temp\root\afolder", @"C:\Temp\root").Item1;
+        Because of = () =>
+        {
+            isNotAllowed = specification.IsNotAllowed(sourceDir, rootDir).Item1;
+        };
 
         It should_return_false = () => isNotAllowed.ShouldBeFalse();
+        static DirectoryEntry rootDir;
+        static DirectoryEntry sourceDir;
+        static IFileSystem fs;
     }
 }

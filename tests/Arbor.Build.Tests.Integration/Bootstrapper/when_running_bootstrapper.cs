@@ -3,22 +3,25 @@ using System.IO;
 using Arbor.Build.Core;
 using Arbor.Build.Core.Bootstrapper;
 using Arbor.Build.Core.IO;
+using Arbor.FS;
 using Arbor.Processing;
 using Machine.Specifications;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Serilog.Core;
+using Zio;
+using Zio.FileSystems;
 
 namespace Arbor.Build.Tests.Integration.Bootstrapper
 {
     [Ignore("Not complete")]
-    [Subject(typeof(Core.Bootstrapper.AppBootstrapper))]
+    [Subject(typeof(AppBootstrapper))]
     public class when_running_bootstrapper
     {
-        static Core.Bootstrapper.AppBootstrapper _appBootstrapper;
+        static AppBootstrapper _appBootstrapper;
 
         static BootstrapStartOptions startOptions;
         static ExitCode exitCode;
-        static DirectoryInfo baseDirectory;
+        static DirectoryEntry baseDirectory;
+        static WindowsFs fs;
 
         Cleanup after = () =>
         {
@@ -30,22 +33,26 @@ namespace Arbor.Build.Tests.Integration.Bootstrapper
             {
                 Console.Error.WriteLine(ex);
             }
+
+            fs.Dispose();
         };
 
         Establish context = () =>
         {
-            string tempDirectoryPath = Path.Combine(Path.GetTempPath(),
+            fs = new WindowsFs(new PhysicalFileSystem());
+            var tempDirectoryPath = UPath.Combine(Path.GetTempPath().AsFullPath(),
                 $"{DefaultPaths.TempPathPrefix}_Bootstrapper_Test_{Guid.NewGuid()}");
 
-            baseDirectory = new DirectoryInfo(tempDirectoryPath).EnsureExists();
+            baseDirectory = new DirectoryEntry(fs, tempDirectoryPath).EnsureExists();
             Console.WriteLine("Temp directory is {0}", baseDirectory.FullName);
+
 
             startOptions = new BootstrapStartOptions(
                 Array.Empty<string>(),
-                baseDirectory.FullName,
+                baseDirectory,
                 true,
                 "develop");
-            _appBootstrapper = new Core.Bootstrapper.AppBootstrapper(Logger.None, EnvironmentVariables.Empty);
+            _appBootstrapper = new AppBootstrapper(Logger.None, EnvironmentVariables.Empty, fs);
         };
 
         Because of = () => exitCode = _appBootstrapper.StartAsync(startOptions).Result;

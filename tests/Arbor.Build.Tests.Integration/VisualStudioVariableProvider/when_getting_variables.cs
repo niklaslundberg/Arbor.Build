@@ -5,6 +5,7 @@ using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.Tools.Testing;
 using Machine.Specifications;
 using Serilog.Core;
+using Zio.FileSystems;
 
 namespace Arbor.Build.Tests.Integration.VisualStudioVariableProvider
 {
@@ -16,7 +17,7 @@ namespace Arbor.Build.Tests.Integration.VisualStudioVariableProvider
 
         static List<IVariable> enumerable;
 
-        Establish context = () => provider = new Core.Tools.VisualStudio.VisualStudioVariableProvider();
+        Establish context = () => provider = new Core.Tools.VisualStudio.VisualStudioVariableProvider(new PhysicalFileSystem());
 
         Because of = () =>
         {

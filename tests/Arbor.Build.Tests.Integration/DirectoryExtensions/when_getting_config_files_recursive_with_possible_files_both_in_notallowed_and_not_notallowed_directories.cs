@@ -28,7 +28,7 @@ namespace Arbor.Build.Tests.Integration.DirectoryExtensions
         {
             fs = new WindowsFs(new PhysicalFileSystem());
             baseDir =
-                new DirectoryEntry(fs, UPath.Combine(fs.ConvertPathFromInternal(Path.GetTempPath()),
+                new DirectoryEntry(fs, UPath.Combine(Path.GetTempPath().AsFullPath(),
                     $"{DefaultPaths.TempPathPrefix}_DirectoryExtensions_{Guid.NewGuid()}"));
             baseDir.EnsureExists();
 
@@ -77,7 +77,7 @@ namespace Arbor.Build.Tests.Integration.DirectoryExtensions
         {
             files = baseDir.GetFilesRecursive(new List<string> { ".config" },
                     DefaultPaths.DefaultPathLookupSpecification,
-                    baseDir.FullName)
+                    baseDir)
                 .Select(s => s.Name)
                 .ToList();
         };

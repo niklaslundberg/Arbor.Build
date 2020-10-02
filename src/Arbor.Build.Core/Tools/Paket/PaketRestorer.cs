@@ -48,10 +48,9 @@ namespace Arbor.Build.Core.Tools.Paket
 
             FileEntry? paketExe = null;
 
-            List<string> packageSpecifications =
+            List<FileEntry> packageSpecifications =
                 sourceRoot.GetFilesRecursive(new List<string> { ".exe" }, pathLookupSpecification)
                     .Where(file => file.Name.Equals("paket.exe", StringComparison.Ordinal))
-                    .Select(f => f.FullName)
                     .ToList();
 
             if (packageSpecifications.Count == 0)
@@ -77,9 +76,8 @@ namespace Arbor.Build.Core.Tools.Paket
                             packagePath =>
                                 !pathLookupSpecification.IsFileExcluded(
                                     packagePath,
-                                    sourceRoot.FullName,
+                                    sourceRoot,
                                     logger: logger).Item1)
-                        .Select(file => new FileEntry(_fileSystem, file))
                         .ToReadOnlyCollection();
 
                 if (filtered.Count == 0)
@@ -94,14 +92,14 @@ namespace Arbor.Build.Core.Tools.Paket
 
             logger.Information("Found paket.exe at '{FullName}'", paketExe.FullName);
 
-            string? copyFromPath =
-                buildVariables.GetVariableValueOrDefault("Arbor.Build.Tools.Paket.CopyExeFromPath", string.Empty);
+            UPath? copyFromPath =
+                buildVariables.GetVariableValueOrDefault("Arbor.Build.Tools.Paket.CopyExeFromPath", null)?.AsFullPath();
 
-            if (!string.IsNullOrWhiteSpace(copyFromPath))
+            if (copyFromPath is {})
             {
-                if (File.Exists(copyFromPath))
+                if (_fileSystem.FileExists(copyFromPath.Value))
                 {
-                    File.Copy(copyFromPath, paketExe.FullName, true);
+                    _fileSystem.CopyFile(copyFromPath.Value, paketExe.FullName, true);
                     logger.Information("Copied paket.exe to {FullName}", paketExe.FullName);
                 }
                 else

@@ -1,7 +1,10 @@
 using System;
 using System.IO;
 using Arbor.Build.Core.IO;
+using Arbor.FS;
 using Machine.Specifications;
+using Zio;
+using Zio.FileSystems;
 
 namespace Arbor.Build.Tests.Integration.PathExtensions
 {
@@ -12,16 +15,24 @@ namespace Arbor.Build.Tests.Integration.PathExtensions
 
         static PathLookupSpecification specification;
 
-        static string root;
+        static DirectoryEntry root;
 
-        Cleanup after = () => new DirectoryInfo(root).DeleteIfExists();
+        static IFileSystem fs;
+
+        Cleanup after = () =>
+        {
+            root.DeleteIfExists();
+        };
 
         Establish context = () =>
         {
-            root = $@"C:\Temp\root-{Guid.NewGuid()}";
+            fs = new WindowsFs(new PhysicalFileSystem());
+            var rootPath = $@"C:\Temp\root-{Guid.NewGuid()}".AsFullPath();
+            fs.CreateDirectory(rootPath);
+            root = fs.GetDirectoryEntry(rootPath);
 
-            new DirectoryInfo(Path.Combine(root, "artifacts")).EnsureExists();
-            using (File.Create(Path.Combine(root, "artifacts", "afile.txt")))
+            new DirectoryEntry(fs, UPath.Combine(root.Path, "artifacts")).EnsureExists();
+            using (fs.OpenFile(UPath.Combine(root.Path, "artifacts", "afile.txt"), FileMode.Create, FileAccess.Write))
             {
             }
 
@@ -29,7 +40,8 @@ namespace Arbor.Build.Tests.Integration.PathExtensions
         };
 
         Because of =
-            () => isNotAllowed = specification.IsFileExcluded($@"{root}\artifacts\afile.txt", root).Item1;
+            () => isNotAllowed = specification
+                .IsFileExcluded(fs.GetFileEntry(UPath.Combine(root.Path, @"artifacts\afile.txt")), root).Item1;
 
         It should_return_false = () => isNotAllowed.ShouldBeTrue();
     }

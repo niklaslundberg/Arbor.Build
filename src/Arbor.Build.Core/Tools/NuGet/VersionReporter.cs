@@ -5,11 +5,13 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.IO;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using NuGet.Packaging;
 using NuGet.Versioning;
 using Serilog;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.NuGet
 {
@@ -18,8 +20,13 @@ namespace Arbor.Build.Core.Tools.NuGet
     public class VersionReporter : ITool
     {
         private readonly ILogger _logger;
+        private readonly IFileSystem _fileSystem;
 
-        public VersionReporter(ILogger logger) => _logger = logger;
+        public VersionReporter(ILogger logger, IFileSystem fileSystem)
+        {
+            _logger = logger;
+            _fileSystem = fileSystem;
+        }
 
         public Task<ExitCode> ExecuteAsync(ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
@@ -29,9 +36,9 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             IVariable artifacts = buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue();
 
-            var nuGetPackageFiles = new List<FileInfo>();
+            var nuGetPackageFiles = new List<FileEntry>();
 
-            var artifactPackagesDirectory = new DirectoryInfo(artifacts.Value);
+            var artifactPackagesDirectory = new DirectoryEntry(_fileSystem, artifacts.Value!.AsFullPath());
 
             if (!artifactPackagesDirectory.Exists)
             {
@@ -39,7 +46,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             }
             else
             {
-                List<FileInfo> standardPackages =
+                List<FileEntry> standardPackages =
                     artifactPackagesDirectory.EnumerateFiles("*.nupkg", SearchOption.AllDirectories)
                         .Where(file => file.Name.IndexOf("symbols", StringComparison.OrdinalIgnoreCase) < 0)
                         .ToList();
@@ -51,7 +58,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             foreach (var nuGetPackageFile in nuGetPackageFiles)
             {
-                using (var package = new PackageArchiveReader(nuGetPackageFile.FullName))
+                using (var package = new PackageArchiveReader(nuGetPackageFile.FileSystem.ConvertPathToInternal(nuGetPackageFile.FullName)))
                 {
                     versions.Add(SemanticVersion.Parse(package.NuspecReader.GetVersion().ToNormalizedString()).ToNormalizedString());
                 }

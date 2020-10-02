@@ -6,10 +6,12 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.Cleanup;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.DotNet
 {
@@ -17,8 +19,13 @@ namespace Arbor.Build.Core.Tools.DotNet
     public class DotNetEnvironmentVariableProvider : IVariableProvider
     {
         private readonly IEnvironmentVariables _environmentVariables;
+        private readonly IFileSystem _fileSystem;
 
-        public DotNetEnvironmentVariableProvider(IEnvironmentVariables environmentVariables) => _environmentVariables = environmentVariables;
+        public DotNetEnvironmentVariableProvider(IEnvironmentVariables environmentVariables, IFileSystem fileSystem)
+        {
+            _environmentVariables = environmentVariables;
+            _fileSystem = fileSystem;
+        }
 
         public int Order => VariableProviderOrder.Ignored;
 
@@ -27,30 +34,30 @@ namespace Arbor.Build.Core.Tools.DotNet
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            string? dotNetExePath =
-                buildVariables.GetVariableValueOrDefault(WellKnownVariables.DotNetExePath, string.Empty);
+            UPath? dotNetExePath =
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.DotNetExePath)?.AsFullPath();
 
-            if (!string.IsNullOrWhiteSpace(dotNetExePath))
+            if (dotNetExePath.HasValue)
             {
                 return ImmutableArray<IVariable>.Empty;
             }
 
-            if (string.IsNullOrWhiteSpace(dotNetExePath))
+            if (string.IsNullOrWhiteSpace(dotNetExePath?.FullName))
             {
                 var sb = new List<string>(10);
 
-                string? winDir = _environmentVariables.GetEnvironmentVariable("WINDIR");
+                var winDir = _environmentVariables.GetEnvironmentVariable("WINDIR")?.AsFullPath();
 
-                if (string.IsNullOrWhiteSpace(winDir))
+                if (winDir is null)
                 {
                     logger.Warning("Error finding Windows directory");
                     return ImmutableArray<IVariable>.Empty;
                 }
 
-                string whereExePath = Path.Combine(winDir, "System32", "where.exe");
+                var whereExePath = UPath.Combine(winDir.Value, "System32", "where.exe");
 
                 ExitCode exitCode = await Processing.ProcessRunner.ExecuteProcessAsync(
-                    whereExePath,
+                    _fileSystem.ConvertPathToInternal(whereExePath),
                     arguments: new[] { "dotnet.exe" },
                     standardOutLog: (message, _) => sb.Add(message),
                     cancellationToken: cancellationToken).ConfigureAwait(false);
@@ -63,7 +70,7 @@ namespace Arbor.Build.Core.Tools.DotNet
                 dotNetExePath =
                     sb.FirstOrDefault(item => item.EndsWith("dotnet.exe", StringComparison.OrdinalIgnoreCase))?.Trim();
             }
-            else if (!File.Exists(dotNetExePath))
+            else if (!_fileSystem.FileExists(dotNetExePath.Value))
             {
                 logger.Warning(
                     "The specified path to dotnet.exe is from variable '{DotNetExePath}' is set to '{DotNetExePath1}' but the file does not exist",
@@ -72,7 +79,7 @@ namespace Arbor.Build.Core.Tools.DotNet
                 return ImmutableArray<IVariable>.Empty;
             }
 
-            return new IVariable[] { new BuildVariable(WellKnownVariables.DotNetExePath, dotNetExePath) }
+            return new IVariable[] { new BuildVariable(WellKnownVariables.DotNetExePath, dotNetExePath?.FullName ?? "") }
                 .ToImmutableArray();
         }
     }

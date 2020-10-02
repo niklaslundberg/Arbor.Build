@@ -21,21 +21,21 @@ namespace Arbor.Build.Tests.Integration.NuGet
         public void WhenGettingIncludedFiles()
         {
             using var fs = new WindowsFs(new PhysicalFileSystem());
-            var tempPath = fs.ConvertPathFromInternal(Path.GetTempPath());
+            var tempPath = Path.GetTempPath().AsFullPath();
 
             DirectoryEntry tempDirectory = new DirectoryEntry(fs, UPath.Combine(tempPath, Guid.NewGuid().ToString()))
                 .EnsureExists();
 
             DirectoryEntry subDirectoryA = tempDirectory.CreateSubdirectory("Abc");
 
-            UPath fileName = Path.Combine(subDirectoryA.FullName, "def.txt");
+            UPath fileName = UPath.Combine(subDirectoryA.FullName, "def.txt");
 
 
             using (fs.CreateFile(fileName))
             {
             }
 
-            var includedFile = NuSpecHelper.IncludedFile(new FileEntry(fs, fileName), tempDirectory.FullName, Logger.None);
+            var includedFile = NuSpecHelper.IncludedFile(new FileEntry(fs, fileName), tempDirectory, Logger.None);
 
             tempDirectory.DeleteIfExists();
 

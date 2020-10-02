@@ -3,8 +3,11 @@ using System.Threading.Tasks;
 using Arbor.Build.Core;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.Logging;
+using Arbor.FS;
 using Arbor.Processing;
 using Serilog;
+using Zio;
+using Zio.FileSystems;
 
 namespace Arbor.Build
 {
@@ -14,7 +17,7 @@ namespace Arbor.Build
 
         private static Task<int> Main(string[] args) => RunAsync(args);
 
-        public static async Task<int> RunAsync(string[]? args, IEnvironmentVariables? environmentVariables = default, ISpecialFolders? specialFolders = default)
+        public static async Task<int> RunAsync(string[]? args, IEnvironmentVariables? environmentVariables = default, ISpecialFolders? specialFolders = default, IFileSystem? fileSystem = default)
         {
             args ??= Array.Empty<string>();
             environmentVariables ??= new DefaultEnvironmentVariables();
@@ -24,13 +27,16 @@ namespace Arbor.Build
 
             Log.Logger = logger;
 
-            _app = new BuildApplication(logger, environmentVariables, specialFolders);
+            _app = new BuildApplication(logger, environmentVariables, specialFolders, fileSystem ?? new WindowsFs(new PhysicalFileSystem()));
 
-            ExitCode exitCode = await _app.RunAsync(args).ConfigureAwait(false);
+            using (_app)
+            {
+                ExitCode exitCode = await _app.RunAsync(args).ConfigureAwait(false);
 
-            Log.CloseAndFlush();
+                Log.CloseAndFlush();
 
-            return exitCode.Code;
+                return exitCode.Code;
+            }
         }
     }
 }

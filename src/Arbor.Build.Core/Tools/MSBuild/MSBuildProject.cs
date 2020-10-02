@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Xml.Linq;
+using Arbor.Build.Core.IO;
 using JetBrains.Annotations;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.MSBuild
 {
@@ -12,9 +15,9 @@ namespace Arbor.Build.Core.Tools.MSBuild
     {
         private MSBuildProject(
             IReadOnlyList<MSBuildPropertyGroup> propertyGroups,
-            string fileName,
+            FileEntry fileName,
             string projectName,
-            string projectDirectory,
+            DirectoryEntry projectDirectory,
             ImmutableArray<ProjectType> projectTypes,
             Guid? projectId,
             DotNetSdk sdk,
@@ -32,11 +35,11 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
         public ImmutableArray<MSBuildPropertyGroup> PropertyGroups { get; }
 
-        public string FileName { get; }
+        public FileEntry FileName { get; }
 
         public string ProjectName { get; }
 
-        public string ProjectDirectory { get; }
+        public DirectoryEntry ProjectDirectory { get; }
 
         public ImmutableArray<ProjectType> ProjectTypes { get; }
 
@@ -46,7 +49,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
         public ImmutableArray<PackageReferenceElement> PackageReferences { get; }
 
-        public static bool IsNetSdkProject([NotNull] FileInfo projectFile)
+        public static async Task<bool> IsNetSdkProject([NotNull] FileEntry projectFile)
         {
             if (projectFile == null)
             {
@@ -63,20 +66,26 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 throw new InvalidOperationException(Resources.ThePathContainsInvalidCharacters);
             }
 
-            return File.ReadLines(projectFile.FullName)
-                .Any(line => line.Contains("Microsoft.NET.Sdk", StringComparison.OrdinalIgnoreCase));
+            var fs = projectFile.Open(FileMode.Open, FileAccess.Read);
+
+            await foreach (var line in fs.EnumerateLinesAsync())
+            {
+                return line.Contains("Microsoft.NET.Sdk", StringComparison.OrdinalIgnoreCase);
+            }
+
+            return false;
         }
 
 
-        public static MSBuildProject LoadFrom(string projectFileFullName)
+        public static async Task<MSBuildProject> LoadFrom(FileEntry projectFileFullName)
         {
 
-            using var fs = new FileStream(projectFileFullName, FileMode.Open, FileAccess.Read);
+            using var fs = projectFileFullName.Open(FileMode.Open, FileAccess.Read);
 
-            return LoadFrom(fs, projectFileFullName);
+            return await LoadFrom(fs, projectFileFullName);
         }
 
-        public static MSBuildProject LoadFrom(Stream fs, string projectFileFullName)
+        public static async Task<MSBuildProject> LoadFrom(Stream fs, FileEntry projectFileFullName)
         {
             var msbuildPropertyGroups = new List<MSBuildPropertyGroup>();
 
@@ -130,9 +139,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 msbuildPropertyGroups.Add(new MSBuildPropertyGroup(msBuildProperties));
             }
 
-            string name = Path.GetFileNameWithoutExtension(projectFileFullName);
-
-            var file = new FileInfo(projectFileFullName);
+            string name = Path.GetFileNameWithoutExtension(projectFileFullName.Name);
 
             XElement projectTypeGuidsElement = propertyGroups
                 .Elements()
@@ -164,7 +171,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             return new MSBuildProject(msbuildPropertyGroups,
                 projectFileFullName,
                 name,
-                file.Directory!.FullName,
+                projectFileFullName.Directory,
                 projectTypes,
                 projectId,
                 sdk,

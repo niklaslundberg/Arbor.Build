@@ -4,14 +4,23 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.Tools.MSBuild;
 using Arbor.Processing;
 using Serilog;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.Scripts
 {
     [Priority(840)]
     public class ScriptTool : ITool
     {
+        private readonly BuildContext _buildContext;
+
+        public ScriptTool(BuildContext buildContext)
+        {
+            _buildContext = buildContext;
+        }
+
         public async Task<ExitCode> ExecuteAsync(ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             string[] args,
@@ -19,23 +28,21 @@ namespace Arbor.Build.Core.Tools.Scripts
         {
             var paths = buildVariables.GetValues(WellKnownVariables.PostScripts);
 
-            var root = buildVariables.GetVariable(WellKnownVariables.SourceRoot).GetValueOrThrow();
-
-            var fullPaths = paths.Select(path => Path.Combine(root, path)).ToArray();
+            var fullPaths = paths.Select(path => UPath.Combine(_buildContext.SourceRoot.Path, path)).ToArray();
 
             logger.Debug("Found PostScripts [{PostScriptCount}] {Scripts}", paths.Length, paths);
 
-            foreach (string fullPath in fullPaths)
+            foreach (var fullPath in fullPaths)
             {
-                if (!File.Exists(fullPath))
+                if (!_buildContext.SourceRoot.FileSystem.FileExists(fullPath))
                 {
                     logger.Warning("The specified executable post script '{Path}' does not exist, skipping", fullPath);
                     continue;
                 }
 
-                var exitCode = await ProcessRunner.ExecuteProcessAsync(fullPath,
+                var exitCode = await ProcessRunner.ExecuteProcessAsync(_buildContext.SourceRoot.FileSystem.ConvertPathToInternal(fullPath),
                     standardOutLog: (message, category) => logger.Information("{Message}", message),
-                    workingDirectory: new DirectoryInfo(root),
+                    workingDirectory: new DirectoryInfo(_buildContext.SourceRoot.FileSystem.ConvertPathToInternal(_buildContext.SourceRoot.Path)),
                     cancellationToken: cancellationToken);
 
                 if (!exitCode.IsSuccess)

@@ -12,6 +12,7 @@ using Autofac.Core;
 using Autofac.Util;
 using JetBrains.Annotations;
 using Serilog;
+using Zio;
 
 namespace Arbor.Build.Core
 {
@@ -20,7 +21,7 @@ namespace Arbor.Build.Core
         public static Task<IContainer> StartAsync([NotNull] ILogger logger,
             IEnvironmentVariables environmentVariables,
             ISpecialFolders specialFolders,
-            string? sourceDirectory = null)
+            DirectoryEntry? sourceDirectory = null)
         {
             if (logger == null)
             {
@@ -43,9 +44,9 @@ namespace Arbor.Build.Core
             return container.AsCompletedTask();
         }
 
-        private static void RegisterSourceRootConditionally(string? sourceDirectory, ContainerBuilder builder)
+        private static void RegisterSourceRootConditionally(DirectoryEntry? sourceDirectory, ContainerBuilder builder)
         {
-            if (!string.IsNullOrWhiteSpace(sourceDirectory))
+            if (sourceDirectory is {})
             {
                 builder.RegisterModule(new BuildVariableModule(sourceDirectory));
             }

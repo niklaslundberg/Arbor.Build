@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using JetBrains.Annotations;
+using Zio;
 
 namespace Arbor.Build.Core.Bootstrapper
 {
@@ -10,7 +11,7 @@ namespace Arbor.Build.Core.Bootstrapper
         public const string ArborBuildExeCliParameter = "-arborBuildExe=";
 
         public BootstrapStartOptions(string[] args,
-            string? baseDir = null,
+            DirectoryEntry? baseDir = null,
             bool? preReleaseEnabled = null,
             string? branchName = null,
             bool downloadOnly = false,
@@ -28,7 +29,7 @@ namespace Arbor.Build.Core.Bootstrapper
 
         public string[] Args { get; }
 
-        public string? BaseDir { get; }
+        public DirectoryEntry? BaseDir { get; }
 
         public string? BranchName { get; }
 

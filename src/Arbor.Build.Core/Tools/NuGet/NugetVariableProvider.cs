@@ -11,6 +11,7 @@ using Arbor.Build.Core.IO;
 using Arbor.Tooler;
 using JetBrains.Annotations;
 using Serilog;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.NuGet
 {
@@ -18,12 +19,17 @@ namespace Arbor.Build.Core.Tools.NuGet
     public class NugetVariableProvider : IVariableProvider
     {
         private CancellationToken _cancellationToken;
+        private IFileSystem _fileSystem;
 
-        private async Task<string?> EnsureNuGetExeExistsAsync(ILogger logger, string? userSpecifiedNuGetExePath)
+        public NugetVariableProvider(IFileSystem fileSystem) => _fileSystem = fileSystem;
+
+        private async Task<UPath?> EnsureNuGetExeExistsAsync(ILogger logger, UPath? userSpecifiedNuGetExePath)
         {
-            if (userSpecifiedNuGetExePath is {} && File.Exists(userSpecifiedNuGetExePath))
+            if (userSpecifiedNuGetExePath is {}
+                && userSpecifiedNuGetExePath.Value != UPath.Empty
+                && _fileSystem.FileExists(userSpecifiedNuGetExePath.Value))
             {
-                return userSpecifiedNuGetExePath;
+                return userSpecifiedNuGetExePath.Value;
             }
 
             using var httClient = new HttpClient();
@@ -56,23 +62,25 @@ namespace Arbor.Build.Core.Tools.NuGet
                 WellKnownVariables.ExternalTools_NuGet_ExePath_Custom,
                 string.Empty);
 
-            string? nuGetExePath =
+            var nuGetExePath =
                 await EnsureNuGetExeExistsAsync(logger, userSpecifiedNuGetExePath).ConfigureAwait(false);
 
             var variables = new List<IVariable>
             {
-                new BuildVariable(WellKnownVariables.ExternalTools_NuGet_ExePath, nuGetExePath)
+                new BuildVariable(WellKnownVariables.ExternalTools_NuGet_ExePath, nuGetExePath?.FullName)
             };
 
             if (string.IsNullOrWhiteSpace(
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetRestoreEnabled, string.Empty)))
             {
-                string sourceDir = buildVariables.Require(WellKnownVariables.SourceRoot).Value!;
+                var uPath = buildVariables.Require(WellKnownVariables.SourceRoot).Value!.AsFullPath();
+
+                DirectoryEntry sourceDir = new DirectoryEntry(_fileSystem, uPath);
 
                 var pathLookupSpecification = new PathLookupSpecification();
-                var packageConfigFiles = new DirectoryInfo(sourceDir)
-                    .GetFiles("packages.config", SearchOption.AllDirectories).Where(
-                        file => !pathLookupSpecification.IsFileExcluded(file.FullName, sourceDir).Item1).ToArray();
+                var packageConfigFiles = sourceDir
+                    .EnumerateFiles("packages.config", SearchOption.AllDirectories).Where(
+                        file => !pathLookupSpecification.IsFileExcluded(file, sourceDir).Item1).ToArray();
 
                 if (packageConfigFiles.Any())
                 {

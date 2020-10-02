@@ -35,7 +35,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             string nugetExePath,
             string? serverUri,
             string? apiKey,
-            string nugetPackage,
+            FileEntry nugetPackage,
             ILogger logger,
             int timeoutInSeconds,
             bool checkNuGetPackagesExists,
@@ -44,7 +44,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             string? configFile,
             PackageUploadFilter? filter = default)
         {
-            if (!File.Exists(nugetPackage))
+            if (!nugetPackage.Exists)
             {
                 logger.Error("The NuGet package '{NugetPackage}' does not exist, when trying to push to nuget source",
                     nugetPackage);
@@ -53,7 +53,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             logger.Debug("Pushing NuGet package '{NugetPackage}'", nugetPackage);
 
-            var args = new List<string> { "push", nugetPackage };
+            var args = new List<string> { "push", nugetPackage.FileSystem.ConvertPathToInternal(nugetPackage.Path) };
 
             if (!string.IsNullOrWhiteSpace(configFile))
             {
@@ -295,23 +295,23 @@ namespace Arbor.Build.Core.Tools.NuGet
             {
                 logger.Information("Checking if packages already exists in NuGet source");
 
-                foreach (var fileInfo in sortedPackages)
+                foreach (var nugetPackage in sortedPackages)
                 {
                     bool? packageExists =
-                        await CheckPackageExistsAsync(fileInfo, nugetExePath, logger, sourceName).ConfigureAwait(false);
+                        await CheckPackageExistsAsync(nugetPackage, nugetExePath, logger, sourceName).ConfigureAwait(false);
 
                     if (!packageExists.HasValue)
                     {
                         logger.Error(
                             "The NuGet package '{Name}' could not be determined if exists or not, skipping package push",
-                            fileInfo.Name);
+                            nugetPackage.Name);
                         return ExitCode.Failure;
                     }
 
                     if (packageExists.Value)
                     {
                         logger.Error("The NuGet package '{Name}' was found at the NuGet source, skipping package push",
-                            fileInfo.Name);
+                            nugetPackage.Name);
 
                         return ExitCode.Failure;
                     }
@@ -322,10 +322,8 @@ namespace Arbor.Build.Core.Tools.NuGet
                 logger.Information("Skipping checking if packages already exists in NuGet source");
             }
 
-            foreach (var fileInfo in sortedPackages)
+            foreach (var nugetPackage in sortedPackages)
             {
-                string nugetPackage = fileInfo.FullName;
-
                 ExitCode exitCode = await UploadNugetPackageAsync(
                     nugetExePath,
                     serverUri,
@@ -353,7 +351,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             ILogger logger,
             string? sourceName)
         {
-            if (!File.Exists(nugetPackage.FullName))
+            if (!nugetPackage.Exists)
             {
                 logger.Error("The NuGet package '{NugetPackage}' does not exist", nugetPackage);
                 return null;

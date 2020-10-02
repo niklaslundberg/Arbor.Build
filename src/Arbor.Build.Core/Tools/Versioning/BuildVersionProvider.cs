@@ -9,12 +9,14 @@ using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.GenericExtensions.Int;
 using Arbor.Build.Core.Tools.Cleanup;
+using Arbor.Build.Core.Tools.MSBuild;
 using Arbor.Exceptions;
 using Arbor.KVConfiguration.Core.Extensions.StringExtensions;
 using Arbor.KVConfiguration.Core.Metadata;
 using Arbor.KVConfiguration.JsonConfiguration;
 using JetBrains.Annotations;
 using Serilog;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.Versioning
 {
@@ -22,8 +24,13 @@ namespace Arbor.Build.Core.Tools.Versioning
     public class BuildVersionProvider : IVariableProvider
     {
         private readonly ITimeService _timeService;
+        private BuildContext _buildContext;
 
-        public BuildVersionProvider(ITimeService timeService) => _timeService = timeService;
+        public BuildVersionProvider(ITimeService timeService, BuildContext buildContext)
+        {
+            _timeService = timeService;
+            _buildContext = buildContext;
+        }
 
         public int Order => VariableProviderOrder.Ignored;
 
@@ -69,13 +76,13 @@ namespace Arbor.Build.Core.Tools.Versioning
             int patch = -1;
             int build = -1;
 
-            string sourceRoot = buildVariables.GetVariable(WellKnownVariables.SourceRoot).GetValueOrThrow();
-
             const string fileName = "version.json";
 
-            string versionFileName = Path.Combine(sourceRoot, fileName);
+            var sourceRoot = _buildContext.SourceRoot;
 
-            if (File.Exists(versionFileName))
+            var versionFileName = UPath.Combine(sourceRoot.Path, fileName);
+
+            if (sourceRoot.FileSystem.FileExists(versionFileName))
             {
                 logger.Verbose("A version file was found with name {VersionFileName} at source root '{SourceRoot}'",
                     versionFileName,
@@ -84,7 +91,7 @@ namespace Arbor.Build.Core.Tools.Versioning
                 try
                 {
                     keyValueConfigurationItems =
-                        new JsonFileReader(versionFileName).ReadConfiguration();
+                        new JsonFileReader(_buildContext.SourceRoot.FileSystem.ConvertPathToInternal(versionFileName)).ReadConfiguration();
                 }
                 catch (Exception ex) when (!ex.IsFatal())
                 {

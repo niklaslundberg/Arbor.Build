@@ -1,11 +1,13 @@
-﻿namespace Arbor.Build.Core.Tools.MSBuild
+﻿using Zio;
+
+namespace Arbor.Build.Core.Tools.MSBuild
 {
     public class SolutionProject
     {
         public SolutionProject(
-            string fullPath,
+            FileEntry fullPath,
             string projectName,
-            string projectDirectory,
+            DirectoryEntry projectDirectory,
             MSBuildProject msbuildProject,
             NetFrameworkGeneration netFrameworkGeneration)
         {
@@ -16,13 +18,13 @@
             Project = msbuildProject;
         }
 
-        public string FullPath { get; }
+        public FileEntry FullPath { get; }
 
         public string ProjectName { get; }
 
         public NetFrameworkGeneration NetFrameworkGeneration { get; }
 
-        public string ProjectDirectory { get; }
+        public DirectoryEntry ProjectDirectory { get; }
 
         public MSBuildProject Project { get; }
 

@@ -7,15 +7,15 @@
         },
         {
             "key": "Version.Minor",
-            "value": 2
+            "value": 0
         },
         {
             "key":  "Version.Patch",
-            "value": 3
+            "value": 0
         },
         {
             "key":  "Version.Build",
-            "value": 4
+            "value": 0
         },
         {
             "key":  "Arbor.Build.Tools.External.MSBuild.DotNet.Enabled",

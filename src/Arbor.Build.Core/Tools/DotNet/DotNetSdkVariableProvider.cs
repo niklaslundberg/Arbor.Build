@@ -6,10 +6,13 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.Cleanup;
+using Arbor.Build.Core.Tools.NuGet;
 using JetBrains.Annotations;
 using NuGet.Versioning;
 using Serilog;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.DotNet
 {
@@ -17,9 +20,14 @@ namespace Arbor.Build.Core.Tools.DotNet
     public class DotNetSdkVariableProvider : IVariableProvider
     {
         private readonly IEnvironmentVariables _environmentVariables;
+        private IFileSystem _fileSystem;
         private const string MSBuildSdksPath = "MSBuildSDKsPath";
 
-        public DotNetSdkVariableProvider(IEnvironmentVariables environmentVariables) => _environmentVariables = environmentVariables;
+        public DotNetSdkVariableProvider(IEnvironmentVariables environmentVariables, IFileSystem fileSystem)
+        {
+            _environmentVariables = environmentVariables;
+            _fileSystem = fileSystem;
+        }
 
         public int Order => VariableProviderOrder.Ignored;
 
@@ -35,20 +43,20 @@ namespace Arbor.Build.Core.Tools.DotNet
                 return ImmutableArray<IVariable>.Empty;
             }
 
-            string? programFilesX64 = _environmentVariables.GetEnvironmentVariable("ProgramW6432");
+            var programFilesX64 = _environmentVariables.GetEnvironmentVariable("ProgramW6432")?.AsFullPath();
 
-            if (!string.IsNullOrWhiteSpace(programFilesX64))
+            if (programFilesX64 is {})
             {
-                string programFilesX64FullPath = Path.Combine(
-                    programFilesX64,
+                var programFilesX64FullPath = UPath.Combine(
+                    programFilesX64.Value,
                     "dotnet",
                     "sdk");
 
-                var directoryInfo = new DirectoryInfo(programFilesX64FullPath);
+                var directoryEntry = new DirectoryEntry(_fileSystem, programFilesX64FullPath);
 
-                if (directoryInfo.Exists)
+                if (directoryEntry.Exists)
                 {
-                    var semanticVersions = directoryInfo.GetDirectories()
+                    var semanticVersions = directoryEntry.GetDirectories()
                         .Select(dir =>
                             (Directory: dir,
                                 HasVersion: SemanticVersion.TryParse(dir.Name, out SemanticVersion version),
@@ -60,11 +68,11 @@ namespace Arbor.Build.Core.Tools.DotNet
                     {
                         var version = semanticVersions.OrderByDescending(s => s.Version).First();
 
-                        string sdksPath = Path.Combine(version.Directory.FullName, "sdks");
+                        var sdksPath = UPath.Combine(version.Directory.Path, "sdks");
 
-                        if (Directory.Exists(sdksPath))
+                        if (_fileSystem.DirectoryExists(sdksPath))
                         {
-                            return new IVariable[] { new BuildVariable(MSBuildSdksPath, sdksPath) }.ToImmutableArray();
+                            return new IVariable[] { new BuildVariable(MSBuildSdksPath, sdksPath.FullName) }.ToImmutableArray();
                         }
                     }
                 }

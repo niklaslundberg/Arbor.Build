@@ -4,40 +4,57 @@ using System.IO;
 using System.Linq;
 using Arbor.Build.Core.IO;
 using Arbor.FS;
+using FluentAssertions;
 using Xunit;
 using Zio;
 using Zio.FileSystems;
 
 namespace Arbor.Build.Tests.Integration.DirectoryExtensions
 {
-    public class DirectoryListFilesTest
+    public class DirectoryListFilesTest : IDisposable
     {
+        readonly IFileSystem _fs;
+        readonly DirectoryEntry _tempDirectory;
+
+        public DirectoryListFilesTest()
+        {
+            _fs = new WindowsFs(new PhysicalFileSystem());
+
+            _tempDirectory = new DirectoryEntry(_fs,
+                    UPath.Combine(Path.GetTempPath().AsFullPath(), Guid.NewGuid().ToString()))
+                .EnsureExists();
+        }
+
+        public void Dispose()
+        {
+            _tempDirectory?.DeleteIfExists();
+            _fs.Dispose();
+        }
+
         [Fact]
         public void WhenGettingFilesExcludingUserFiles()
         {
-            using var fs = new WindowsFs(new PhysicalFileSystem());
-            DirectoryEntry tempDirectory = new DirectoryEntry(fs,UPath.Combine(fs.ConvertPathFromInternal(Path.GetTempPath()), Guid.NewGuid().ToString()))
-                .EnsureExists();
+            var subDirectoryA = _tempDirectory.CreateSubdirectory("Abc");
 
-            var subDirectoryA = tempDirectory.CreateSubdirectory("Abc");
-
-            string fileName = Path.Combine(subDirectoryA.FullName, "def.txt");
-            using (fs.CreateFile(fileName))
+            var fileName = UPath.Combine(subDirectoryA.FullName, "def.txt");
+            using (_fs.CreateFile(fileName))
             {
             }
 
-            string userFile = Path.Combine(subDirectoryA.FullName, "def.user");
-            using (fs.CreateFile(userFile))
+            var userFile = UPath.Combine(subDirectoryA.FullName, "def.user");
+            using (_fs.CreateFile(userFile))
             {
             }
 
-            ImmutableArray<string> files = tempDirectory.GetFilesWithWithExclusions(fs,new[] { "*.user" }).Select(file => file.FullName).ToImmutableArray();
+            subDirectoryA.Parent.Path.Should().Be(_tempDirectory.Path);
 
-            tempDirectory.DeleteIfExists();
+            var files = _tempDirectory.GetFilesWithWithExclusions(new[] {"*.user"})
+                .Select(file => file.Path.NormalizePath().FullName)
+                .ToImmutableArray();
 
-            Assert.Contains(fileName, files);
-            Assert.DoesNotContain(userFile, files);
+            Assert.DoesNotContain(userFile.NormalizePath().FullName, files);
             Assert.Single(files);
+            Assert.Contains(fileName.NormalizePath().FullName, files, StringComparer.OrdinalIgnoreCase);
         }
     }
 }

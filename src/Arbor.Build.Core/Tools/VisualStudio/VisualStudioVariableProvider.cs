@@ -11,6 +11,7 @@ using Arbor.Build.Core.Tools.Cleanup;
 using JetBrains.Annotations;
 using Microsoft.Win32;
 using Serilog;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.VisualStudio
 {
@@ -18,6 +19,9 @@ namespace Arbor.Build.Core.Tools.VisualStudio
     public class VisualStudioVariableProvider : IVariableProvider
     {
         private bool _allowPreReleaseVersions;
+        private IFileSystem _fileSystem;
+
+        public VisualStudioVariableProvider(IFileSystem fileSystem) => _fileSystem = fileSystem;
 
         public int Order => VariableProviderOrder.Ignored;
 
@@ -51,7 +55,7 @@ namespace Arbor.Build.Core.Tools.VisualStudio
 
             string? visualStudioVersion = GetVisualStudioVersion(logger, registryKeyName);
 
-            string? vsTestExePath = null;
+            UPath? vsTestExePath = null;
 
             if (!string.IsNullOrWhiteSpace(visualStudioVersion))
             {
@@ -69,15 +73,15 @@ namespace Arbor.Build.Core.Tools.VisualStudio
                 new BuildVariable(
                     WellKnownVariables.ExternalTools_VisualStudio_Version,
                     visualStudioVersion),
-                new BuildVariable(WellKnownVariables.ExternalTools_VSTest_ExePath, vsTestExePath)
+                new BuildVariable(WellKnownVariables.ExternalTools_VSTest_ExePath, vsTestExePath?.FullName)
             };
 
             return Task.FromResult(environmentVariables.ToImmutableArray());
         }
 
-        private static string? GetVSTestExePath(ILogger logger, string registryKeyName, string visualStudioVersion)
+        private UPath? GetVSTestExePath(ILogger logger, string registryKeyName, string visualStudioVersion)
         {
-            string? path = null;
+            UPath? path = null;
 
             using (RegistryKey view32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
             {
@@ -103,14 +107,14 @@ namespace Arbor.Build.Core.Tools.VisualStudio
                         return null;
                     }
 
-                    string exePath = Path.Combine(
+                    UPath exePath = UPath.Combine(
                         installDir,
                         "CommonExtensions",
                         "Microsoft",
                         "TestWindow",
                         "vstest.console.exe");
 
-                    if (!File.Exists(exePath))
+                    if (!_fileSystem.FileExists(exePath))
                     {
                         throw new InvalidOperationException($"The file '{exePath}' does not exist");
                     }

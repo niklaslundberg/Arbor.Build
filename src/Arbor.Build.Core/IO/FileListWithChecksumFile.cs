@@ -1,23 +1,19 @@
 ﻿using System;
 using JetBrains.Annotations;
+using Zio;
 
 namespace Arbor.Build.Core.IO
 {
     public class FileListWithChecksumFile
     {
-        public FileListWithChecksumFile([NotNull] string contentFilesFile, string checksumFile)
+        public FileListWithChecksumFile(FileEntry contentFilesFile, FileEntry checksumFile)
         {
-            if (string.IsNullOrWhiteSpace(contentFilesFile))
-            {
-                throw new ArgumentException(Resources.ValueCannotBeNullOrWhitespace, nameof(contentFilesFile));
-            }
-
             ContentFilesFile = contentFilesFile;
             ChecksumFile = checksumFile;
         }
 
-        public string ContentFilesFile { get; }
+        public FileEntry ContentFilesFile { get; }
 
-        public string ChecksumFile { get; }
+        public FileEntry ChecksumFile { get; }
     }
 }

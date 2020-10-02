@@ -5,27 +5,37 @@ using System.IO;
 using System.Threading.Tasks;
 using Arbor.Build.Core;
 using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Logging;
 using Arbor.Build.Tests.Integration.Tests.MSpec;
+using Arbor.FS;
 using Serilog;
 using Xunit;
 using Xunit.Abstractions;
+using Zio;
+using Zio.FileSystems;
 
 namespace Arbor.Build.Tests.Integration
 {
-    public class TestSamples
+    public sealed class TestSamples : IDisposable
     {
         readonly ITestOutputHelper _testOutputHelper;
+        WindowsFs _fs = new WindowsFs(new PhysicalFileSystem());
 
-        public TestSamples(ITestOutputHelper testOutputHelper) => _testOutputHelper = testOutputHelper;
+        public TestSamples(ITestOutputHelper testOutputHelper)
+        {
+            _testOutputHelper = testOutputHelper;
+            _fs = new WindowsFs(new PhysicalFileSystem());
+        }
 
         [MemberData(nameof(Data))]
         [Theory]
-        public async Task Do(string path)
+        public async Task Do(string fullPath)
         {
+            UPath path = fullPath.AsFullPath();
             var samplesDirectory = GetSamplesDirectory();
 
-            if (samplesDirectory.FullName == path)
+            if (samplesDirectory.Path == path)
             {
                 _testOutputHelper.WriteLine("Skipping test for " + path + ", no samples found starting with _");
                 return;
@@ -37,27 +47,24 @@ namespace Arbor.Build.Tests.Integration
                 new FallbackEnvironment(new EnvironmentVariables(), new DefaultEnvironmentVariables());
 
             environmentVariables.SetEnvironmentVariable(WellKnownVariables.BranchName, "develop");
-            environmentVariables.SetEnvironmentVariable(WellKnownVariables.SourceRoot, path);
+            environmentVariables.SetEnvironmentVariable(WellKnownVariables.SourceRoot, fullPath);
             environmentVariables.SetEnvironmentVariable("AllowDebug", "false");
 
             var xunitLogger = _testOutputHelper.CreateTestLogger();
 
-            var expectedFiles = await GetExpectedFiles(path);
+            var expectedFiles = await GetExpectedFiles(fullPath);
 
-            string logFile = Path.Combine(path, "build.log");
+            var logFile = new FileEntry(_fs,UPath.Combine(fullPath, "build.log"));
 
-            if (File.Exists(logFile))
-            {
-                File.Delete(logFile);
-            }
+            logFile.DeleteIfExists();
 
             var logger = new LoggerConfiguration()
                 .WriteTo.Logger(xunitLogger)
-                .WriteTo.File(logFile)
+                .WriteTo.File(_fs.ConvertPathToInternal(logFile.Path))
                 .MinimumLevel.Verbose()
                 .CreateLogger();
 
-            var buildApplication = new BuildApplication(logger, environmentVariables, SpecialFolders.Default);
+            using var buildApplication = new BuildApplication(logger, environmentVariables, SpecialFolders.Default, _fs);
 
             var args = Array.Empty<string>();
 
@@ -67,24 +74,25 @@ namespace Arbor.Build.Tests.Integration
 
             Assert.All(expectedFiles, file =>
             {
-                string filePath = Path.Combine(path, file);
-                Assert.True(File.Exists(filePath), $"File.Exists({filePath})");
+                var filePath = UPath.Combine(fullPath, file);
+                Assert.True(_fs.FileExists(filePath), $"Exists({filePath})");
             });
 
             logger.Dispose();
             xunitLogger.Dispose();
         }
 
-        async Task<ImmutableArray<string>> GetExpectedFiles(string path)
+        async Task<ImmutableArray<string>> GetExpectedFiles(UPath path)
         {
-            string expectedFilesDataPath = Path.Combine(path, "ExpectedFiles.txt");
+            var expectedFilesDataPath = UPath.Combine(path, "ExpectedFiles.txt");
 
-            if (!File.Exists(expectedFilesDataPath))
+            if (!_fs.FileExists(expectedFilesDataPath))
             {
                 return ImmutableArray<string>.Empty;
             }
 
-            var expectedFiles = await File.ReadAllLinesAsync(expectedFilesDataPath);
+            using var openFile = _fs.OpenFile(expectedFilesDataPath,FileMode.Open,FileAccess.Read);
+            var expectedFiles = await openFile.ReadAllLinesAsync();
 
             return expectedFiles.ToImmutableArray();
         }
@@ -93,11 +101,11 @@ namespace Arbor.Build.Tests.Integration
         {
             var samplesDirectory = GetSamplesDirectory();
 
-            var samplesDirectories = samplesDirectory.GetDirectories("_*");
+            var samplesDirectories = samplesDirectory.EnumerateDirectories("_*").ToImmutableArray();
 
-            foreach (var directoryInfo in samplesDirectories)
+            foreach (var directoryEntry in samplesDirectories)
             {
-                yield return new object[] {directoryInfo.FullName};
+                yield return new object[] {directoryEntry.FullName};
             }
 
             if (samplesDirectories.Length == 0)
@@ -106,12 +114,15 @@ namespace Arbor.Build.Tests.Integration
             }
         }
 
-        static DirectoryInfo GetSamplesDirectory()
+        static DirectoryEntry GetSamplesDirectory()
         {
-            string samples = Path.Combine(VcsTestPathHelper.FindVcsRootPath(), "samples");
+            var fs = new WindowsFs(new PhysicalFileSystem());
+            var samples = UPath.Combine(VcsTestPathHelper.FindVcsRootPath().Path, "samples");
 
-            var samplesDirectory = new DirectoryInfo(samples);
+            var samplesDirectory = fs.GetDirectoryEntry(samples);
             return samplesDirectory;
         }
+
+        public void Dispose() => _fs.Dispose();
     }
 }

@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Arbor.Defensive.Collections;
+using Arbor.FS;
 using Serilog;
+using Zio;
 
 namespace Arbor.Build.Core.IO
 {
@@ -11,8 +13,8 @@ namespace Arbor.Build.Core.IO
     {
         public static (bool, string) IsFileExcluded(
             this PathLookupSpecification pathLookupSpecification,
-            string sourceFile,
-            string? rootDir = null,
+            FileEntry sourceFile,
+            DirectoryEntry? rootDir = null,
             bool allowNonExistingFiles = false,
             ILogger? logger = null)
         {
@@ -21,22 +23,20 @@ namespace Arbor.Build.Core.IO
                 throw new ArgumentNullException(nameof(pathLookupSpecification));
             }
 
-            if (string.IsNullOrWhiteSpace(sourceFile))
+            if (sourceFile is null)
             {
                 throw new ArgumentNullException(nameof(sourceFile));
             }
 
-            if (!allowNonExistingFiles && !File.Exists(sourceFile))
+            if (!allowNonExistingFiles && !sourceFile.Exists)
             {
                 string messageMessage = $"File '{sourceFile}' does not exist";
                 logger?.Debug("{Reason}", messageMessage);
                 return (true, messageMessage);
             }
 
-            var sourceFileInfo = new FileInfo(sourceFile);
-
             (bool, string) directoryExcludeListed =
-                pathLookupSpecification.IsNotAllowed(sourceFileInfo.Directory!.FullName, rootDir);
+                pathLookupSpecification.IsNotAllowed(sourceFile.Directory, rootDir);
 
             if (directoryExcludeListed.Item1)
             {
@@ -46,7 +46,7 @@ namespace Arbor.Build.Core.IO
             }
 
             bool isNotAllowed = HasAnyPathSegmentStartsWith(
-                sourceFileInfo.Name,
+                sourceFile.Name,
                 pathLookupSpecification.IgnoredFileStartsWithPatterns);
 
             if (isNotAllowed)
@@ -59,7 +59,7 @@ namespace Arbor.Build.Core.IO
             IReadOnlyCollection<string> ignoredFileNameParts = pathLookupSpecification.IgnoredFileNameParts
                 .Where(part => !string.IsNullOrEmpty(part))
                 .Where(
-                    part => sourceFileInfo.Name.Contains(part, StringComparison.OrdinalIgnoreCase))
+                    part => sourceFile.Name.Contains(part, StringComparison.OrdinalIgnoreCase))
                 .SafeToReadOnlyCollection();
 
             if (ignoredFileNameParts.Count > 0)
@@ -75,8 +75,8 @@ namespace Arbor.Build.Core.IO
 
         public static (bool, string) IsNotAllowed(
             this PathLookupSpecification pathLookupSpecification,
-            string sourceDir,
-            string? rootDir = null,
+            DirectoryEntry sourceDir,
+            DirectoryEntry? rootDir = null,
             ILogger? logger = null)
         {
             if (pathLookupSpecification == null)
@@ -84,12 +84,12 @@ namespace Arbor.Build.Core.IO
                 throw new ArgumentNullException(nameof(pathLookupSpecification));
             }
 
-            if (string.IsNullOrWhiteSpace(sourceDir))
+            if (sourceDir is null)
             {
                 throw new ArgumentNullException(nameof(sourceDir));
             }
 
-            if (!Directory.Exists(sourceDir))
+            if (!sourceDir.Exists)
             {
                 return (true, $"Source directory '{sourceDir}' does not exist");
             }
@@ -136,14 +136,38 @@ namespace Arbor.Build.Core.IO
             return (false, string.Empty);
         }
 
-        private static string[] GetSourceDirSegments(string sourceDir, string? rootDir)
+        private static string[] GetSourceDirSegments(DirectoryEntry sourceDir, DirectoryEntry? rootDir)
         {
-            string path = string.IsNullOrWhiteSpace(rootDir) ? sourceDir : sourceDir.Replace(rootDir, string.Empty, StringComparison.OrdinalIgnoreCase);
+            string path = rootDir is null ? sourceDir.FullName : sourceDir.FullName.Replace(rootDir.FullName, string.Empty, StringComparison.OrdinalIgnoreCase);
 
             string[] sourceDirSegments = path.Split(
-                new[] { Path.DirectorySeparatorChar },
+                new[] { UPath.DirectorySeparator },
                 StringSplitOptions.RemoveEmptyEntries);
+
             return sourceDirSegments;
+        }
+
+        public static UPath AsFullPath(this string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                throw new ArgumentException("Value cannot be null or whitespace.", nameof(path));
+            }
+
+            if (!UPath.TryParse(path, out var parsed))
+            {
+                throw new FormatException($"Could not parse '{path}' as a full path");
+            }
+
+
+            var normalized = parsed.NormalizePath();
+
+            if (!normalized.IsAbsolute)
+            {
+                throw new FormatException($"Path {parsed.FullName} is not a full path");
+            }
+
+            return normalized;
         }
 
         private static bool HasAnyPathSegment(

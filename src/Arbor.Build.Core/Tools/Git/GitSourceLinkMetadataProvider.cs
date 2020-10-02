@@ -34,7 +34,7 @@ namespace Arbor.Build.Core.Tools.Git
                 return ExitCode.Success;
             }
 
-            var sourceRoot = _fileSystem.ConvertPathFromInternal(buildVariables.Require(WellKnownVariables.SourceRoot).Value!);
+            var sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).Value!.AsFullPath();
 
             var sourceRootDirectory = new DirectoryEntry(_fileSystem, sourceRoot);
 

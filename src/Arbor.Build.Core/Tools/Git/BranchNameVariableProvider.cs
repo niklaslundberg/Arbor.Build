@@ -8,10 +8,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Aesculus.Core;
 using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.Cleanup;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.Git
 {
@@ -21,12 +23,16 @@ namespace Arbor.Build.Core.Tools.Git
         private readonly ILogger _logger;
         private readonly IEnvironmentVariables _environmentVariables;
         private readonly ISpecialFolders _specialFolders;
+        private readonly IFileSystem _fileSystem;
+        private readonly GitHelper _gitHelper;
 
-        public BranchNameVariableProvider(ILogger logger, IEnvironmentVariables environmentVariables, ISpecialFolders specialFolders)
+        public BranchNameVariableProvider(ILogger logger, IEnvironmentVariables environmentVariables, ISpecialFolders specialFolders, IFileSystem fileSystem, GitHelper gitHelper)
         {
             _logger = logger;
             _environmentVariables = environmentVariables;
             _specialFolders = specialFolders;
+            _fileSystem = fileSystem;
+            _gitHelper = gitHelper;
         }
 
         public int Order => VariableProviderOrder.Priority - 2;
@@ -102,33 +108,35 @@ namespace Arbor.Build.Core.Tools.Git
             _logger.Information("Environment variable '{BranchName}' is not defined or has empty value",
                 WellKnownVariables.BranchName);
 
-            string gitExePath = GitHelper.GetGitExePath(_logger, _specialFolders, _environmentVariables);
+            UPath gitExePath = _gitHelper.GetGitExePath(_logger, _specialFolders, _environmentVariables);
 
-            if (!File.Exists(gitExePath))
+            if (!_fileSystem.FileExists(gitExePath))
             {
                 _logger.Debug("The git path '{GitExePath}' does not exist", gitExePath);
 
-                string githubForWindowsPath =
-                    Path.Combine(_specialFolders.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "GitHub");
+                var githubForWindowsPath =
+                    UPath.Combine(_specialFolders.GetFolderPath(Environment.SpecialFolder.LocalApplicationData).AsFullPath(), "GitHub");
 
-                if (Directory.Exists(githubForWindowsPath))
+                if (_fileSystem.DirectoryExists(githubForWindowsPath))
                 {
-                    string shellFile = Path.Combine(githubForWindowsPath, "shell.ps1");
+                    var shellFile = UPath.Combine(githubForWindowsPath, "shell.ps1");
 
-                    if (File.Exists(shellFile))
+                    if (_fileSystem.FileExists(shellFile))
                     {
-                        string[] lines = File.ReadAllLines(shellFile);
+                        using var fs = _fileSystem.OpenFile(shellFile, FileMode.Open, FileAccess.Read);
+
+                        var lines = await fs.ReadAllLinesAsync();
 
                         string pathLine = lines.SingleOrDefault(
                             line => line.Contains("$env:github_git = ", StringComparison.OrdinalIgnoreCase));
 
                         if (!string.IsNullOrWhiteSpace(pathLine))
                         {
-                            string directory = pathLine.Split('=').Last().Replace("\"", string.Empty, StringComparison.Ordinal);
+                            var directory = pathLine.Split('=').Last().Replace("\"", string.Empty, StringComparison.Ordinal).AsFullPath();
 
-                            string gitPath = Path.Combine(directory, "bin", "git.exe");
+                            var gitPath = UPath.Combine(directory, "bin", "git.exe");
 
-                            if (File.Exists(gitPath))
+                            if (_fileSystem.FileExists(gitPath))
                             {
                                 gitExePath = gitPath;
                             }
@@ -136,7 +144,7 @@ namespace Arbor.Build.Core.Tools.Git
                     }
                 }
 
-                if (!File.Exists(gitExePath))
+                if (!_fileSystem.FileExists(gitExePath))
                 {
                     _logger.Error("Could not find Git. '{GitExePath}' does not exist", gitExePath);
                     return Tuple.Create(-1, string.Empty);
@@ -164,7 +172,7 @@ namespace Arbor.Build.Core.Tools.Git
 
         private async Task<string> GetGitBranchNameAsync(
             string currentDirectory,
-            [NotNull] string gitExePath)
+            UPath gitExePath)
         {
             var argumentsLists = new List<List<string>>
             {
@@ -178,7 +186,7 @@ namespace Arbor.Build.Core.Tools.Git
                     { "status --porcelain --branch" }
             };
 
-            if (string.IsNullOrWhiteSpace(gitExePath))
+            if (gitExePath == UPath.Empty)
             {
                 throw new ArgumentException(Resources.ValueCannotBeNullOrWhitespace, nameof(gitExePath));
             }
@@ -201,7 +209,7 @@ namespace Arbor.Build.Core.Tools.Git
                         exitCode =
                             await
                                 ProcessRunner.ExecuteProcessAsync(
-                                    gitExePath,
+                                    _fileSystem.ConvertPathToInternal(gitExePath),
                                     arguments: argumentsList,
                                     standardErrorAction: _logger.Error,
                                     standardOutLog: (message, _) =>

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Serilog;
 using Serilog.Core;
+using Zio;
 
 namespace Arbor.Build.Core.IO
 {
@@ -51,46 +52,43 @@ namespace Arbor.Build.Core.IO
             }
         }
 
-        public void Delete(
-            string baseDir,
+        public bool Delete(
+            DirectoryEntry baseDirectory,
             bool deleteSelf = false,
             bool deleteSelfFiles = true)
         {
-            if (string.IsNullOrWhiteSpace(baseDir))
-            {
-                throw new ArgumentNullException(nameof(baseDir));
-            }
+            bool deletedSelf = true;
 
-            var baseDirectory = new DirectoryInfo(baseDir);
+            if (baseDirectory is null)
+            {
+                throw new ArgumentNullException(nameof(baseDirectory));
+            }
 
             if (!baseDirectory.Exists)
             {
-                return;
+                return false;
             }
 
-            if (
-                _directoryFilters.Any(
+            if (_directoryFilters.Any(
                     filter => baseDirectory.Name.Equals(filter, StringComparison.OrdinalIgnoreCase)))
             {
-                string filterList = DirectoryFilterList;
                 _logger.Verbose("Directory name '{Name} is in filter list {FilterList}, ignoring deleting directory",
                     baseDirectory.Name,
-                    filterList);
-                return;
+                    DirectoryFilterList);
+                return false;
             }
 
             if (deleteSelfFiles)
             {
-                foreach (FileInfo fileToDelete in baseDirectory.EnumerateFiles())
+                foreach (var fileToDelete in baseDirectory.EnumerateFiles())
                 {
-                    if (
-                        _fileFilters.Any(
+                    if (_fileFilters.Any(
                             filter => fileToDelete.Name.Equals(filter, StringComparison.OrdinalIgnoreCase)))
                     {
-                        string filterList = FileFilterList;
                         _logger.Verbose("File name '{Name} is in filter list {FilterList}, ignoring deleting directory",
                             fileToDelete.Name,
-                            filterList);
+                            FileFilterList);
+                        deletedSelf = false;
                         continue;
                     }
 
@@ -108,20 +106,33 @@ namespace Arbor.Build.Core.IO
             else
             {
                 _logger.Verbose("Delete self files is false, skipping deleting files in directory '{BaseDir}'",
-                    baseDir);
+                    baseDirectory.Path.FullName);
             }
 
-            foreach (DirectoryInfo directoryToDelete in baseDirectory.EnumerateDirectories())
+            bool allChildrenDeleted = true;
+
+            foreach (var directoryToDelete in baseDirectory.EnumerateDirectories())
             {
-                Delete(directoryToDelete.FullName);
+               bool deleted = Delete(directoryToDelete, true, true);
+
+               if (!deleted)
+               {
+                   allChildrenDeleted = false;
+               }
+            }
+
+            if (!allChildrenDeleted)
+            {
+                return false;
             }
 
             if (!deleteSelf)
             {
-                _logger.Verbose("Delete self is false, skipping deleting directory '{BaseDir}'", baseDir);
+                _logger.Verbose("Delete self is false, skipping deleting directory '{BaseDir}'", baseDirectory.Path.FullName);
+                return false;
             }
 
-            if (!baseDirectory.EnumerateFileSystemInfos().Any())
+            if (!baseDirectory.EnumerateFiles().Any())
             {
                 try
                 {
@@ -137,6 +148,8 @@ namespace Arbor.Build.Core.IO
             {
                 _logger.Verbose("Directory '{FullName}' still has files or directories", baseDirectory.FullName);
             }
+
+            return deletedSelf;
         }
 
         private void WriteFilters()

@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using JetBrains.Annotations;
 using Serilog;
-using Serilog.Core;
 
 namespace Arbor.Build.Core.Debugging
 {
@@ -15,10 +14,8 @@ namespace Arbor.Build.Core.Debugging
     {
         private readonly IEnvironmentVariables _environmentVariables;
 
-        public DebugVariableProvider(IEnvironmentVariables environmentVariables)
-        {
+        public DebugVariableProvider(IEnvironmentVariables environmentVariables) =>
             _environmentVariables = environmentVariables;
-        }
 
         public int Order => int.MinValue + 1;
 
@@ -27,8 +24,6 @@ namespace Arbor.Build.Core.Debugging
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            logger ??= Logger.None;
-
             if (!DebugHelper.IsDebugging(_environmentVariables))
             {
                 logger.Verbose("Skipping debug variables, not running in debug mode");
@@ -39,7 +34,6 @@ namespace Arbor.Build.Core.Debugging
             {
                 [WellKnownVariables.BranchNameVersionOverrideEnabled] = "false",
                 [WellKnownVariables.VariableOverrideEnabled] = "true",
-
                 [WellKnownVariables.BranchName] = "develop",
                 [WellKnownVariables.VersionMajor] = "3",
                 [WellKnownVariables.VersionMinor] = "0",
@@ -76,7 +70,7 @@ namespace Arbor.Build.Core.Debugging
                 [WellKnownVariables.DeterministicBuildEnabled] = "true",
                 [WellKnownVariables.RepositoryUrl] = "http://ignore.local",
                 [WellKnownVariables.ExternalTools_VisualStudio_Version_Allow_PreRelease] = "true",
-                [WellKnownVariables.ExternalTools_MSBuild_AllowPreReleaseEnabled] = "true",
+                [WellKnownVariables.ExternalTools_MSBuild_AllowPreReleaseEnabled] = "true"
             };
 
             Task<ImmutableArray<IVariable>> result = Task.FromResult(environmentVariables.Select(

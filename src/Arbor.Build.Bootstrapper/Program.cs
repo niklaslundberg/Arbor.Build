@@ -2,9 +2,12 @@
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.Logging;
+using Arbor.FS;
 using Arbor.Processing;
 using Serilog;
 using Serilog.Core;
+using Zio;
+using Zio.FileSystems;
 
 namespace Arbor.Build.Bootstrapper
 {
@@ -15,7 +18,7 @@ namespace Arbor.Build.Bootstrapper
             return RunAsync(args);
         }
 
-        public static async Task<int> RunAsync(string[] args, IEnvironmentVariables? environmentVariables = default)
+        public static async Task<int> RunAsync(string[] args, IEnvironmentVariables? environmentVariables = default, IFileSystem? fileSystem = default)
         {
             environmentVariables ??= new DefaultEnvironmentVariables();
 
@@ -23,7 +26,7 @@ namespace Arbor.Build.Bootstrapper
                 .WriteTo.Console(outputTemplate: "{Message:lj}{NewLine}{Exception}")
                 .CreateLogger();
 
-            var bootstrapper = new Core.Bootstrapper.AppBootstrapper(logger, environmentVariables);
+            var bootstrapper = new Core.Bootstrapper.AppBootstrapper(logger, environmentVariables, fileSystem ?? new WindowsFs(new PhysicalFileSystem()));
 
             ExitCode exitCode = await bootstrapper.StartAsync(args).ConfigureAwait(false);
 

@@ -7,11 +7,13 @@ using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Logging;
 using Arbor.Build.Core.ProcessUtils;
+using Arbor.Build.Core.Tools.MSBuild;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.NuGet
 {
@@ -19,6 +21,15 @@ namespace Arbor.Build.Core.Tools.NuGet
     [UsedImplicitly]
     public class MsBuildNuGetRestorer : ITool
     {
+        private IFileSystem _fileSystem;
+        private readonly BuildContext _buildContext;
+
+        public MsBuildNuGetRestorer(IFileSystem fileSystem, BuildContext buildContext)
+        {
+            _fileSystem = fileSystem;
+            _buildContext = buildContext;
+        }
+
         private static Logger CreateProcessLogger(
             ILogger logger,
             List<(string Message, LogEventLevel Level)> allMessages,
@@ -51,12 +62,12 @@ namespace Arbor.Build.Core.Tools.NuGet
                 return ExitCode.Success;
             }
 
-            string msbuildExePath = buildVariables.GetVariable(WellKnownVariables.ExternalTools_MSBuild_ExePath)
-                .GetValueOrThrow();
+            var msbuildExePath = buildVariables.GetVariable(WellKnownVariables.ExternalTools_MSBuild_ExePath)
+                .GetValueOrThrow().AsFullPath();
 
-            string rootPath = buildVariables.GetVariable(WellKnownVariables.SourceRoot).GetValueOrThrow();
+            DirectoryEntry rootPath = _buildContext.SourceRoot;
 
-            string[] solutionFiles = Directory.GetFiles(rootPath, "*.sln", SearchOption.AllDirectories);
+            FileEntry[] solutionFiles = rootPath.EnumerateFiles("*.sln", SearchOption.AllDirectories).ToArray();
 
             PathLookupSpecification pathLookupSpecification =
                 DefaultPaths.DefaultPathLookupSpecification.AddExcludedDirectorySegments(new[] { "node_modules" });
@@ -65,7 +76,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 .Select(file => new {File = file, Status = pathLookupSpecification.IsFileExcluded(file, rootPath)})
                 .ToArray();
 
-            string[] included = excludeListStatus
+            FileEntry[] included = excludeListStatus
                 .Where(file => !file.Status.Item1)
                 .Select(file => file.File)
                 .ToArray();
@@ -79,7 +90,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 logger.Error(
                     "Expected exactly 1 solution file, found {Length}, {SolutionFiles}",
                     included.Length,
-                    string.Join(", ", included));
+                    string.Join(", ", included.Select(fi => fi.FullName)));
                 return ExitCode.Failure;
             }
 
@@ -98,12 +109,12 @@ namespace Arbor.Build.Core.Tools.NuGet
                         excluded.Select(excludedItem => $"{excludedItem.File} ({excludedItem.Status.Item2})")));
             }
 
-            string solutionFile = included.Single();
+            var solutionFile = included.Single();
 
             string? runtimeIdentifier =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.PublishRuntimeIdentifier);
 
-            var arguments = new List<string> { solutionFile, "/t:restore" };
+            var arguments = new List<string> { _fileSystem.ConvertPathToInternal(solutionFile.FullName), "/t:restore" };
 
             if (!string.IsNullOrWhiteSpace(runtimeIdentifier))
             {
@@ -119,7 +130,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             using (Logger processLogger = CreateProcessLogger(logger, allMessages, defaultMessages))
             {
                 exitCode = await ProcessHelper.ExecuteAsync(
-                    msbuildExePath,
+                   _fileSystem.ConvertPathToInternal(msbuildExePath),
                     arguments,
                     processLogger,
                     cancellationToken: cancellationToken).ConfigureAwait(false);

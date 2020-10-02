@@ -11,9 +11,12 @@ namespace Arbor.Build.Core.IO
     {
         public static async Task WriteAllTextAsync(this FileEntry fileEntry, string text, Encoding? encoding = default, CancellationToken cancellationToken = default)
         {
-            await using Stream stream = fileEntry.Create();
+            fileEntry.Directory.EnsureExists();
 
-            await stream.WriteAllTextAsync(text.AsMemory(), encoding, cancellationToken);
+            await using (Stream stream = fileEntry.Open(FileMode.Create, FileAccess.Write))
+            {
+                await stream.WriteAllTextAsync(text.AsMemory(), encoding, cancellationToken);
+            }
         }
     }
 }

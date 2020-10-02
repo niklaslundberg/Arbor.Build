@@ -7,6 +7,8 @@ using Arbor.Processing;
 using Machine.Specifications;
 using Serilog;
 using Serilog.Core;
+using Zio;
+using Zio.FileSystems;
 
 namespace Arbor.Build.Tests.Integration.ProcessRunner
 {
@@ -14,30 +16,34 @@ namespace Arbor.Build.Tests.Integration.ProcessRunner
     [Tags(Core.Tools.Testing.MSpecInternalConstants.RecursiveArborXTest)]
     public class when_running_a_failing_process
     {
-        static string testPath;
+        static UPath testPath;
         static ILogger logger = Logger.None;
         static ExitCode exitCode;
 
         Cleanup after = () =>
         {
-            if (File.Exists(testPath))
-            {
-                File.Delete(testPath);
-            }
+            fs.DeleteFile(testPath);
+
+            fs.Dispose();
         };
 
         Establish context = () =>
         {
-            testPath = Path.Combine(Path.GetTempPath(), $"{DefaultPaths.TempPathPrefix}Test_fail.tmp.bat");
+            fs = new PhysicalFileSystem();
+            testPath = UPath.Combine(Path.GetTempPath().AsFullPath(), $"{DefaultPaths.TempPathPrefix}Test_fail.tmp.bat");
             const string batchContent = @"@ECHO OFF
 EXIT /b 3
 ";
-            File.WriteAllText(testPath, batchContent, Encoding.Default);
+
+            using var stream = fs.OpenFile(testPath, FileMode.Create, FileAccess.Write);
+
+            stream.WriteAllTextAsync(batchContent).Wait();
         };
 
         Because of = () => RunAsync().Wait();
 
         It should_return_exit_code_from_process = () => exitCode.Code.ShouldEqual(3);
+        static IFileSystem fs;
 
         static async Task RunAsync()
         {
@@ -45,7 +51,7 @@ EXIT /b 3
             {
                 exitCode =
                     await
-                        Processing.ProcessRunner.ExecuteProcessAsync(testPath,
+                        Processing.ProcessRunner.ExecuteProcessAsync(fs.ConvertPathToInternal(testPath),
                                 standardOutLog: (message, prefix) => logger.Information(message, "STANDARD"),
                                 standardErrorAction: (message, prefix) => logger.Error(message, "ERROR"),
                                 toolAction: (message, prefix) => logger.Information(message, "TOOL"),

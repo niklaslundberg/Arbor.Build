@@ -2,8 +2,12 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using System.Xml.Linq;
+using Arbor.Build.Core.IO;
 using NuGet.Versioning;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.NuGet
 {
@@ -11,62 +15,78 @@ namespace Arbor.Build.Core.Tools.NuGet
     {
         private readonly string _xml;
 
-        public NuSpec(string packageId, SemanticVersion nuGetPackageVersion, string filePath)
+        public NuSpec(string packageId, SemanticVersion nuGetPackageVersion, FileEntry filePath)
         {
-            if (string.IsNullOrWhiteSpace(filePath))
+            if (filePath is null)
             {
                 throw new ArgumentNullException(nameof(filePath));
             }
 
-            if (!File.Exists(filePath))
+            if (!filePath.Exists)
             {
                 throw new ArgumentException($"The file '{filePath}' does not exist", nameof(filePath));
             }
 
             Version = nuGetPackageVersion;
             PackageId = packageId;
-            XDocument xml = XDocument.Load(filePath);
 
-            List<XElement> metaData = xml.Descendants()
-                .Where(item => item.Name.LocalName == "package")
-                .Descendants()
-                .Where(item => item.Name.LocalName == "metadata")
-                .ToList();
+            using (var nuspecStream = filePath.Open(FileMode.Open, FileAccess.Read))
+            {
+                using (TextReader reader = new StreamReader(nuspecStream, Encoding.UTF8))
+                {
+                    XDocument xml = XDocument.Load(reader);
 
-            metaData.Descendants().Single(item => item.Name.LocalName == "id").Value = packageId;
-            metaData.Descendants().Single(item => item.Name.LocalName == "version").Value =
-                nuGetPackageVersion.ToNormalizedString();
-            _xml = xml.ToString(SaveOptions.None);
+                    List<XElement> metaData = xml.Descendants()
+                        .Where(item => item.Name.LocalName == "package")
+                        .Descendants()
+                        .Where(item => item.Name.LocalName == "metadata")
+                        .ToList();
+
+                    metaData.Descendants().Single(item => item.Name.LocalName == "id").Value = packageId;
+                    metaData.Descendants().Single(item => item.Name.LocalName == "version").Value =
+                        nuGetPackageVersion.ToNormalizedString();
+
+                    _xml = xml.ToString(SaveOptions.None);
+                }
+            }
         }
 
         public string PackageId { get; }
 
         public SemanticVersion Version { get; }
 
-        public static NuSpec Parse(string nuspecFilePath)
+        public static NuSpec Parse(FileEntry nuspecFilePath)
         {
-            if (string.IsNullOrWhiteSpace(nuspecFilePath))
+            if (nuspecFilePath is null)
             {
                 throw new ArgumentNullException(nameof(nuspecFilePath));
             }
 
-            if (!File.Exists(nuspecFilePath))
+            if (!nuspecFilePath.Exists)
             {
                 throw new ArgumentException(
                     $"The file '{nuspecFilePath}' does not exist",
                     nameof(nuspecFilePath));
             }
 
-            XDocument document = XDocument.Load(nuspecFilePath);
+            string id;
+            string version;
+            using (var nuspecStream = nuspecFilePath.Open(FileMode.Open, FileAccess.Read))
+            {
+                using (TextReader reader = new StreamReader(nuspecStream, Encoding.UTF8))
+                {
+                    XDocument document = XDocument.Load(reader);
 
-            List<XElement> metaData = document.Descendants()
-                .Where(item => item.Name.LocalName == "package")
-                .Descendants()
-                .Where(item => item.Name.LocalName == "metadata")
-                .ToList();
+                    List<XElement> metaData = document.Descendants()
+                        .Where(item => item.Name.LocalName == "package")
+                        .Descendants()
+                        .Where(item => item.Name.LocalName == "metadata")
+                        .ToList();
 
-            string id = metaData.Descendants().Single(item => item.Name.LocalName == "id").Value;
-            string version = metaData.Descendants().Single(item => item.Name.LocalName == "version").Value;
+                    id = metaData.Descendants().Single(item => item.Name.LocalName == "id").Value;
+                    version = metaData.Descendants().Single(item => item.Name.LocalName == "version").Value;
+                }
+            }
 
             SemanticVersion semanticVersion = SemanticVersion.Parse(version);
 
@@ -83,14 +103,6 @@ namespace Arbor.Build.Core.Tools.NuGet
             return base.ToString()!;
         }
 
-        public void Save(string filePath)
-        {
-            if (string.IsNullOrWhiteSpace(filePath))
-            {
-                throw new ArgumentNullException(nameof(filePath));
-            }
-
-            File.WriteAllText(filePath, _xml);
-        }
+        public async Task Save(FileEntry filePath) => await filePath.WriteAllTextAsync(_xml, Encoding.UTF8);
     }
 }

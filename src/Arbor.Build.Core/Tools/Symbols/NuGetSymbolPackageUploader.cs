@@ -6,10 +6,12 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.IO;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
 using Serilog.Core;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.Symbols
 {
@@ -17,6 +19,10 @@ namespace Arbor.Build.Core.Tools.Symbols
     [UsedImplicitly]
     public class NuGetSymbolPackageUploader : ITool
     {
+        private readonly IFileSystem _fileSystem;
+
+        public NuGetSymbolPackageUploader(IFileSystem fileSystem) => _fileSystem = fileSystem;
+
         public Task<ExitCode> ExecuteAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
@@ -34,9 +40,9 @@ namespace Arbor.Build.Core.Tools.Symbols
                 return Task.FromResult(ExitCode.Success);
             }
 
-            IVariable artifacts = buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue();
+            var artifacts = buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue().Value.AsFullPath();
 
-            var packagesFolder = new DirectoryInfo(Path.Combine(artifacts.Value!, "packages"));
+            var packagesFolder = new DirectoryEntry(_fileSystem, UPath.Combine(artifacts, "packages"));
 
             if (!packagesFolder.Exists)
             {
@@ -80,7 +86,7 @@ namespace Arbor.Build.Core.Tools.Symbols
             {
                 return UploadNuGetPackagesAsync(
                     logger,
-                    packagesFolder.FullName,
+                    packagesFolder,
                     nugetExe.Value!,
                     symbolServer.Value!,
                     symbolServerApiKey.Value!,
@@ -96,14 +102,14 @@ namespace Arbor.Build.Core.Tools.Symbols
             string nugetExePath,
             string symbolServerUrl,
             string apiKey,
-            string nugetPackage,
+            FileEntry nugetPackage,
             ILogger logger,
             int timeout)
         {
             var args = new List<string>
             {
                 "push",
-                nugetPackage,
+                nugetPackage.FileSystem.ConvertPathToInternal(nugetPackage.Path),
                 "-source",
                 symbolServerUrl,
                 apiKey,
@@ -131,13 +137,13 @@ namespace Arbor.Build.Core.Tools.Symbols
 
         private async Task<ExitCode> UploadNuGetPackagesAsync(
             ILogger logger,
-            string packagesFolder,
+            DirectoryEntry packagesFolder,
             string nugetExePath,
             string symbolServerUrl,
             string apiKey,
             int timeout)
         {
-            if (string.IsNullOrWhiteSpace(packagesFolder))
+            if (packagesFolder is null)
             {
                 throw new ArgumentNullException(nameof(packagesFolder));
             }
@@ -157,12 +163,12 @@ namespace Arbor.Build.Core.Tools.Symbols
                 throw new ArgumentNullException(nameof(apiKey));
             }
 
-            List<FileInfo> oldSymbolPackages = new DirectoryInfo(packagesFolder)
+            List<FileEntry> oldSymbolPackages = packagesFolder
                 .EnumerateFiles("*.nupkg", SearchOption.AllDirectories)
                 .Where(file => file.Name.Contains("symbols", StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
-            List<FileInfo> newSymbolPackages = new DirectoryInfo(packagesFolder)
+            List<FileEntry> newSymbolPackages = packagesFolder
                 .EnumerateFiles("*.snupkg", SearchOption.AllDirectories)
                 .ToList();
 
@@ -170,10 +176,8 @@ namespace Arbor.Build.Core.Tools.Symbols
 
             var allPackages = oldSymbolPackages.Concat(newSymbolPackages).ToList();
 
-            foreach (FileInfo fileInfo in allPackages)
+            foreach (var nugetPackage in allPackages)
             {
-                string nugetPackage = fileInfo.FullName;
-
                 ExitCode exitCode =
                     await UploadNugetPackageAsync(nugetExePath, symbolServerUrl, apiKey, nugetPackage, logger, timeout)
                         .ConfigureAwait(false);

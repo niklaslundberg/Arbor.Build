@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.IO;
+using Arbor.Build.Core.Tools.MSBuild;
 using Arbor.Defensive.Collections;
 using Arbor.Processing;
 using JetBrains.Annotations;
@@ -23,12 +24,14 @@ namespace Arbor.Build.Core.Tools.NuGet
 
         private PathLookupSpecification _pathLookupSpecification = null!;
         private readonly NuGetPackager _nugetPackager;
-        private IFileSystem _fileSystem;
+        private readonly IFileSystem _fileSystem;
+        private readonly BuildContext _buildContext;
 
-        public NuGetPacker(NuGetPackager nuGetPackager, IFileSystem fileSystem)
+        public NuGetPacker(NuGetPackager nuGetPackager, IFileSystem fileSystem, BuildContext buildContext)
         {
             _nugetPackager = nuGetPackager;
             _fileSystem = fileSystem;
+            _buildContext = buildContext;
         }
 
         public async Task<ExitCode> ExecuteAsync(
@@ -55,12 +58,10 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             _pathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification;
 
-            string packageDirectory = PackageDirectory();
-
             var artifacts = buildVariables.Require(WellKnownVariables.Artifacts).GetValueOrThrow();
-            string packagesDirectory = Path.Combine(artifacts, "packages");
+            var packagesDirectory = new DirectoryEntry(_fileSystem, UPath.Combine(artifacts.AsFullPath(), "packages"));
 
-            string vcsRootDir = buildVariables.Require(WellKnownVariables.SourceRoot).GetValueOrThrow();
+            DirectoryEntry vcsRootDir = _buildContext.SourceRoot;
 
             NuGetPackageConfiguration? packageConfiguration =
                 _nugetPackager.GetNuGetPackageConfiguration(logger, buildVariables, packagesDirectory, vcsRootDir, "");
@@ -70,10 +71,10 @@ namespace Arbor.Build.Core.Tools.NuGet
                 return ExitCode.Success;
             }
 
-            IReadOnlyCollection<string> packageSpecifications = GetPackageSpecifications(
+            IReadOnlyCollection<FileEntry> packageSpecifications = GetPackageSpecifications(
                 logger,
                 vcsRootDir,
-                packageDirectory);
+                packagesDirectory);
 
             if (packageSpecifications.Count == 0)
             {
@@ -104,34 +105,31 @@ namespace Arbor.Build.Core.Tools.NuGet
             return result;
         }
 
-        private static string PackageDirectory()
+        private UPath PackageDirectory()
         {
-            string packageDirectory = $"{Path.DirectorySeparatorChar}packages{Path.DirectorySeparatorChar}";
+            string packageDirectory = $"{UPath.DirectorySeparator}packages{UPath.DirectorySeparator}";
             return packageDirectory;
         }
 
-        private IReadOnlyCollection<string> GetPackageSpecifications(
+        private IReadOnlyCollection<FileEntry> GetPackageSpecifications(
             ILogger logger,
-            string vcsRootDir,
-            string packageDirectory)
+            DirectoryEntry vcsRootDir,
+            DirectoryEntry packageDirectory)
         {
-            var vcsRootDirectory = new DirectoryEntry(_fileSystem, vcsRootDir);
-
-            List<string> packageSpecifications =
-                vcsRootDirectory.GetFilesRecursive(new List<string> { ".nuspec" }, _pathLookupSpecification, vcsRootDir)
-                    .Where(file => file.FullName.IndexOf(packageDirectory, StringComparison.Ordinal) < 0)
-                    .Select(f => f.FullName)
+            List<FileEntry> packageSpecifications =
+                vcsRootDir.GetFilesRecursive(new List<string> { ".nuspec" }, _pathLookupSpecification, vcsRootDir)
+                    .Where(file => file.FullName.IndexOf(packageDirectory.FullName, StringComparison.Ordinal) < 0)
                     .ToList();
 
             PathLookupSpecification pathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification;
 
-            IReadOnlyCollection<FileInfo> filtered =
+            IReadOnlyCollection<FileEntry> filtered =
                 packageSpecifications.Where(
                         packagePath => !pathLookupSpecification.IsFileExcluded(packagePath, vcsRootDir).Item1)
-                    .Select(file => new FileInfo(file))
+
                     .ToReadOnlyCollection();
 
-            IReadOnlyCollection<FileInfo> notExcluded =
+            IReadOnlyCollection<FileEntry> notExcluded =
                 filtered.Where(
                         nuspec =>
                             !_excludedNuSpecFiles.Any(
@@ -145,19 +143,19 @@ namespace Arbor.Build.Core.Tools.NuGet
                 Environment.NewLine,
                 string.Join(Environment.NewLine, filtered));
 
-            IReadOnlyCollection<string> allIncluded = notExcluded.Select(file => file.FullName)
+            IReadOnlyCollection<FileEntry> allIncluded = notExcluded.Select(file => file)
                 .SafeToReadOnlyCollection();
 
             return allIncluded;
         }
 
         private async Task<ExitCode> ProcessPackagesAsync(
-            IEnumerable<string> packageSpecifications,
+            IEnumerable<FileEntry> packageSpecifications,
             NuGetPackageConfiguration packageConfiguration,
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            foreach (string packageSpecification in packageSpecifications)
+            foreach (var packageSpecification in packageSpecifications)
             {
                 ExitCode packageResult =
                     await _nugetPackager.CreatePackageAsync(

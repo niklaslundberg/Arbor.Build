@@ -2,9 +2,13 @@
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.MSBuild;
+using Arbor.FS;
 using Xunit;
 using Xunit.Abstractions;
+using Zio;
+using Zio.FileSystems;
 
 namespace Arbor.Build.Tests.Integration.MSBuildProjects
 {
@@ -47,14 +51,16 @@ namespace Arbor.Build.Tests.Integration.MSBuildProjects
 </Project>
 ";
 
-            string? tempFile = null;
-
+            FileEntry? tempFile = null;
+            using var fs = new WindowsFs(new PhysicalFileSystem());
             try
             {
-                tempFile = Path.GetTempFileName();
-                await File.WriteAllTextAsync(tempFile, xml, Encoding.UTF8).ConfigureAwait(false);
 
-                var msBuildProject = MSBuildProject.LoadFrom(tempFile);
+                tempFile = fs.GetFileEntry(Path.GetTempFileName().AsFullPath());
+                var stream = tempFile.Open(FileMode.Open, FileAccess.Write);
+                await stream.WriteAllTextAsync(xml, Encoding.UTF8).ConfigureAwait(false);
+
+                var msBuildProject = await MSBuildProject.LoadFrom(tempFile);
 
                 output.WriteLine(msBuildProject.ToString());
 
@@ -66,10 +72,7 @@ namespace Arbor.Build.Tests.Integration.MSBuildProjects
             }
             finally
             {
-                if (!string.IsNullOrWhiteSpace(tempFile) && File.Exists(tempFile))
-                {
-                    File.Delete(tempFile);
-                }
+                tempFile?.Delete();
             }
         }
     }

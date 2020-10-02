@@ -10,6 +10,7 @@ using Arbor.Build.Tests.Integration.Bootstrapper;
 using Serilog.Core;
 using Xunit;
 using Xunit.Abstractions;
+using Zio.FileSystems;
 
 namespace Arbor.Build.Tests.Integration.MSBuild
 {
@@ -22,7 +23,7 @@ namespace Arbor.Build.Tests.Integration.MSBuild
         [Fact(Skip = "Requires VS 2019 installed")]
         public async Task GetMSbuildVariables()
         {
-            var msBuildVariableProvider = new MSBuildVariableProvider(EnvironmentVariables.Empty, SpecialFolders.Default);
+            var msBuildVariableProvider = new MSBuildVariableProvider(EnvironmentVariables.Empty, SpecialFolders.Default, new PhysicalFileSystem());
             var variables = await msBuildVariableProvider.GetBuildVariablesAsync(Logger.None,
                 ImmutableArray<IVariable>.Empty, CancellationToken.None).ConfigureAwait(false);
 

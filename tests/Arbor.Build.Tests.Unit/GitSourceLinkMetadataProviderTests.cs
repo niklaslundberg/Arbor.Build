@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.Git;
-using Arbor.FS;
 using FluentAssertions;
 using Serilog.Core;
 using Xunit;
@@ -18,12 +18,10 @@ namespace Arbor.Build.Tests.Unit
         [Fact]
         public async Task ShouldCreate()
         {
-            IFileSystem fs = new MemoryFileSystem();
+            using IFileSystem fs = new MemoryFileSystem();
             var provider = new GitSourceLinkMetadataProvider(fs);
 
-            var winFS = new WindowsFs(new PhysicalFileSystem());
-
-            UPath buildDirectory = winFS.ConvertPathFromInternal(@"c:\build");
+            var buildDirectory = @"c:\build".AsFullPath();
 
             fs.CreateDirectory(buildDirectory);
 
@@ -42,8 +40,8 @@ namespace Arbor.Build.Tests.Unit
 
             exitCode.IsSuccess.Should().BeTrue();
 
-            fs.FileExists(winFS.ConvertPathFromInternal(@"c:\build\.git\HEAD")).Should().BeTrue();
-            fs.FileExists(winFS.ConvertPathFromInternal(@"c:\build\.git\config")).Should().BeTrue();
+            fs.FileExists(@"c:\build\.git\HEAD".AsFullPath()).Should().BeTrue();
+            fs.FileExists(@"c:\build\.git\config".AsFullPath()).Should().BeTrue();
         }
     }
 }

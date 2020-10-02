@@ -2,28 +2,27 @@ using System;
 using Arbor.Build.Core.Logging;
 using Autofac;
 using JetBrains.Annotations;
+using Zio;
 
 namespace Arbor.Build.Core.BuildVariables
 {
     public class BuildVariableModule : Module
     {
-        private readonly string _sourceDirectory;
+        private readonly DirectoryEntry _sourceDirectory;
 
-        public BuildVariableModule([NotNull] string sourceDirectory)
+        public BuildVariableModule([NotNull] DirectoryEntry sourceDirectory)
         {
-            if (string.IsNullOrWhiteSpace(sourceDirectory))
+            if (sourceDirectory == null)
             {
-                throw new ArgumentException(Resources.ValueCannotBeNullOrWhitespace, nameof(sourceDirectory));
+                throw new ArgumentNullException(nameof(sourceDirectory));
             }
 
             _sourceDirectory = sourceDirectory;
         }
 
-        protected override void Load(ContainerBuilder builder)
-        {
+        protected override void Load(ContainerBuilder builder) =>
             builder.RegisterInstance(new SourceRootValue(_sourceDirectory))
                 .AsSelf()
                 .SingleInstance();
-        }
     }
 }

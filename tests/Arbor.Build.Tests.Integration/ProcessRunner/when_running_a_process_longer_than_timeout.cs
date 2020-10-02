@@ -9,6 +9,8 @@ using Arbor.Processing;
 using Machine.Specifications;
 using Serilog;
 using Serilog.Core;
+using Zio;
+using Zio.FileSystems;
 
 namespace Arbor.Build.Tests.Integration.ProcessRunner
 {
@@ -16,30 +18,26 @@ namespace Arbor.Build.Tests.Integration.ProcessRunner
     [Tags(MSpecInternalConstants.RecursiveArborXTest)]
     public class when_running_a_process_longer_than_timeout
     {
-        static string testPath;
+        static UPath testPath;
         static ExitCode exitCode = new ExitCode(99);
         static TaskCanceledException exception;
         static ILogger logger = Logger.None;
-        static string logFile;
+        static FileEntry logFile;
 
         Cleanup after = () =>
         {
-            if (File.Exists(testPath))
-            {
-                File.Delete(testPath);
-            }
+            fs.DeleteFile(testPath);
+            logFile.DeleteIfExists();
 
-            if (File.Exists(logFile))
-            {
-                File.Delete(logFile);
-            }
+            fs.Dispose();
         };
 
         Establish context = () =>
         {
-            testPath = Path.Combine(Path.GetTempPath(), $"{DefaultPaths.TempPathPrefix}_Test_timeout.tmp.bat");
+            fs = new PhysicalFileSystem();
+            testPath = UPath.Combine(Path.GetTempPath().AsFullPath(), $"{DefaultPaths.TempPathPrefix}_Test_timeout.tmp.bat");
 
-            logFile = @"C:\Temp\test.log";
+            logFile = new FileEntry(fs, @"C:\Temp\test.log".AsFullPath());
 
             string batchContent = $@"@ECHO OFF
 ECHO Waiting for 10 seconds
@@ -48,8 +46,8 @@ ECHO After batch file timeout
 ECHO 123 > {logFile}
 EXIT /b 2
 ";
-
-            File.WriteAllText(testPath, batchContent, Encoding.Default);
+            using var stream = fs.OpenFile(testPath, FileMode.Create, FileAccess.Write);
+            stream.WriteAllTextAsync(batchContent, Encoding.Default).Wait();
         };
 
         Because of = () => RunAsync().Wait();
@@ -57,6 +55,7 @@ EXIT /b 2
         It should_not_an_exit_code = () => exitCode.Code.ShouldEqual(99);
 
         It should_throw_a_task_canceled_exception = () => exception.ShouldNotBeNull();
+        static PhysicalFileSystem fs;
 
         static async Task RunAsync()
         {
@@ -65,7 +64,7 @@ EXIT /b 2
             {
                 exitCode =
                     await
-                        Processing.ProcessRunner.ExecuteProcessAsync(testPath,
+                        Processing.ProcessRunner.ExecuteProcessAsync(fs.ConvertPathToInternal(testPath),
                             standardOutLog: (message, prefix) =>
                                 logger.Information("[{Level}] {Message}", "STANDARD", message),
                             standardErrorAction: (message, prefix) =>

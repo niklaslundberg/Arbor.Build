@@ -11,6 +11,7 @@ using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
 using Serilog.Core;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.NuGet
 {
@@ -18,6 +19,10 @@ namespace Arbor.Build.Core.Tools.NuGet
     [UsedImplicitly]
     public class NuGetRestorer : ITool
     {
+        private IFileSystem _fileSystem;
+
+        public NuGetRestorer(IFileSystem fileSystem) => _fileSystem = fileSystem;
+
         public async Task<ExitCode> ExecuteAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
@@ -38,9 +43,9 @@ namespace Arbor.Build.Core.Tools.NuGet
             string nugetExePath =
                 buildVariables.GetVariable(WellKnownVariables.ExternalTools_NuGet_ExePath).GetValueOrThrow();
 
-            string rootPath = buildVariables.GetVariable(WellKnownVariables.SourceRoot).GetValueOrThrow();
+            var rootPath = new DirectoryEntry(_fileSystem, buildVariables.GetVariable(WellKnownVariables.SourceRoot).GetValueOrThrow());
 
-            string[] solutionFiles = Directory.GetFiles(rootPath, "*.sln", SearchOption.AllDirectories);
+            FileEntry[] solutionFiles = rootPath.GetFiles( "*.sln", SearchOption.AllDirectories).ToArray();
 
             PathLookupSpecification pathLookupSpecification =
                 DefaultPaths.DefaultPathLookupSpecification.AddExcludedDirectorySegments(new[] { "node_modules" });
@@ -49,7 +54,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 .Select(file => new { File = file, Status = pathLookupSpecification.IsFileExcluded(file, rootPath) })
                 .ToArray();
 
-            string[] included = excludeListStatus
+            FileEntry[] included = excludeListStatus
                 .Where(file => !file.Status.Item1)
                 .Select(file => file.File)
                 .ToArray();
@@ -62,7 +67,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             {
                 logger.Error("Expected exactly 1 solution file, found {Length}, {V}",
                     included.Length,
-                    string.Join(", ", included));
+                    string.Join(", ", included.Select(s => s.FullName)));
                 return ExitCode.Failure;
             }
 
@@ -79,9 +84,9 @@ namespace Arbor.Build.Core.Tools.NuGet
                         excluded.Select(excludedItem => $"{excludedItem.File} ({excludedItem.Status.Item2})")));
             }
 
-            string solutionFile = included.Single();
+            var solutionFile = included.Single();
 
-            var arguments = new List<string> { "restore", solutionFile };
+            var arguments = new List<string> { "restore", _fileSystem.ConvertPathToInternal(solutionFile.Path) };
 
             ExitCode result = await ProcessHelper.ExecuteAsync(
                 nugetExePath,

@@ -5,10 +5,12 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.Tools.MSBuild;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
 using Serilog.Core;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.VisualStudio
 {
@@ -16,34 +18,34 @@ namespace Arbor.Build.Core.Tools.VisualStudio
     [UsedImplicitly]
     public class VisualStudioEnvironmentVerification : ITool
     {
+        private readonly BuildContext _buildContext;
+
+        public VisualStudioEnvironmentVerification(BuildContext buildContext) => _buildContext = buildContext;
+
         public Task<ExitCode> ExecuteAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             string[] args,
             CancellationToken cancellationToken)
         {
-            logger ??= Logger.None;
-
-            string sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).GetValueOrThrow();
+            var rootDir = _buildContext.SourceRoot;
 
             string visualStudioVersion =
                 buildVariables.Require(WellKnownVariables.ExternalTools_VisualStudio_Version).GetValueOrThrow();
 
             if (!visualStudioVersion.Equals("12.0", StringComparison.Ordinal))
             {
-                var rootDir = new DirectoryInfo(sourceRoot);
-
                 string[] extensionPatterns = { ".csproj", ".vcxproj" };
 
-                IEnumerable<FileInfo> projectFiles = rootDir.EnumerateFiles()
+                IEnumerable<FileEntry> projectFiles = rootDir.EnumerateFiles()
                     .Where(
                         file =>
                             extensionPatterns.Any(
-                                pattern => file.Extension.Equals(
+                                pattern => file.ExtensionWithDot.Equals(
                                     pattern,
                                     StringComparison.OrdinalIgnoreCase)));
 
-                List<FileInfo> projectFiles81 = projectFiles.Where(Contains81).ToList();
+                List<FileEntry> projectFiles81 = projectFiles.Where(Contains81).ToList();
 
                 if (projectFiles81.Count > 0)
                 {
@@ -61,7 +63,7 @@ namespace Arbor.Build.Core.Tools.VisualStudio
             return Task.FromResult(ExitCode.Success);
         }
 
-        private bool Contains81(FileInfo file)
+        private bool Contains81(FileEntry file)
         {
             var lookupPatterns = new[]
             {
@@ -69,7 +71,7 @@ namespace Arbor.Build.Core.Tools.VisualStudio
                 "<TargetPlatformVersion>8.1</TargetPlatformVersion>"
             };
 
-            using FileStream fs = file.OpenRead();
+            using var fs = file.Open(FileMode.Open, FileAccess.Read);
 
             using var sr = new StreamReader(fs);
             while (sr.Peek() >= 0)

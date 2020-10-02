@@ -1,6 +1,10 @@
+using System.IO;
 using Arbor.Build.Core.IO;
+using Arbor.FS;
 using Machine.Specifications;
 using Serilog.Core;
+using Zio;
+using Zio.FileSystems;
 
 namespace Arbor.Build.Tests.Integration.PathExtensions
 {
@@ -12,16 +16,23 @@ namespace Arbor.Build.Tests.Integration.PathExtensions
 
         static bool result;
 
-        Establish context = () => { };
+        Establish context = () =>
+        {
+            fs = new MemoryFileSystem();
+            using var file = fs.OpenFile("/test.vshost.exe", FileMode.Create, FileAccess.Write);
+        };
 
         Because of = () =>
         {
             result = path_lookup_specification.IsFileExcluded(
-                @"C:\test.vshost.exe",
+              fs.GetFileEntry("/test.vshost.exe"),
                 allowNonExistingFiles: true,
                 logger: Logger.None).Item1;
         };
 
         It should_be_true = () => result.ShouldBeTrue();
+
+        Cleanup after = () => fs.Dispose();
+        static IFileSystem fs;
     }
 }

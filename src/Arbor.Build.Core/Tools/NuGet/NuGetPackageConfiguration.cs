@@ -4,6 +4,7 @@ using Arbor.Build.Core.IO;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
 using NuGet.Versioning;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.NuGet
 {
@@ -12,8 +13,8 @@ namespace Arbor.Build.Core.Tools.NuGet
         public NuGetPackageConfiguration(
             [NotNull] string configuration,
             [NotNull] SemanticVersion version,
-            [NotNull] string packagesDirectory,
-            [NotNull] string nugetExePath,
+            [NotNull] DirectoryEntry packagesDirectory,
+            [NotNull] UPath nugetExePath,
             string? suffix = null,
             bool branchNameEnabled = false,
             string? packageIdOverride = null,
@@ -24,7 +25,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             bool isReleaseBuild = false,
             string? branchName = null,
             bool buildNumberEnabled = true,
-            string? tempPath = null,
+            DirectoryEntry? tempPath = null,
             string? packageBuildMetadata = null,
             string nuGetSymbolPackagesFormat = NuGetPackager.SnupkgPackageFormat,
             string? packageNameSuffix = null,
@@ -35,22 +36,22 @@ namespace Arbor.Build.Core.Tools.NuGet
                 throw new ArgumentNullException(nameof(configuration));
             }
 
-            if (string.IsNullOrWhiteSpace(packagesDirectory))
+            if (packagesDirectory is null)
             {
                 throw new ArgumentNullException(nameof(packagesDirectory));
             }
 
-            if (string.IsNullOrWhiteSpace(nugetExePath))
+            if (nugetExePath == UPath.Empty)
             {
                 throw new ArgumentNullException(nameof(nugetExePath));
             }
 
-            if (!File.Exists(nugetExePath))
+            if (!packagesDirectory.FileSystem.FileExists(nugetExePath))
             {
                 throw new FileNotFoundException($"Could not find NuGet exe path, '{nugetExePath}'");
             }
 
-            if (!Directory.Exists(packagesDirectory))
+            if (!packagesDirectory.Exists)
             {
                 throw new DirectoryNotFoundException($"Could not find package directory, '{packagesDirectory}'");
             }
@@ -61,7 +62,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             BranchName = branchName;
             BuildNumberEnabled = buildNumberEnabled;
             PackageBuildMetadata = packageBuildMetadata;
-            TempPath = tempPath ?? Path.Combine(Path.GetTempPath(), $"{DefaultPaths.TempPathPrefix}_Nuget");
+            TempPath = tempPath ?? new DirectoryEntry(packagesDirectory.FileSystem, UPath.Combine(Path.GetTempPath().AsFullPath(), $"{DefaultPaths.TempPathPrefix}_Nuget")).EnsureExists();
             BranchNameEnabled = branchNameEnabled;
             PackageIdOverride = packageIdOverride;
             NuGetPackageVersionOverride = nuGetPackageVersionOverride;
@@ -101,11 +102,11 @@ namespace Arbor.Build.Core.Tools.NuGet
 
         public string? Suffix { get; }
 
-        public string TempPath { get; }
+        public DirectoryEntry TempPath { get; }
 
-        public string NuGetExePath { get; }
+        public UPath NuGetExePath { get; }
 
-        public string PackagesDirectory { get; }
+        public DirectoryEntry PackagesDirectory { get; }
 
         public bool BuildNumberEnabled { get; }
 

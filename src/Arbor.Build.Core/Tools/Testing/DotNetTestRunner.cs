@@ -8,10 +8,12 @@ using System.Xml.Linq;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.MSBuild;
+using Arbor.Build.Core.Tools.NuGet;
 using Arbor.Defensive.Collections;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.Testing
 {
@@ -21,8 +23,12 @@ namespace Arbor.Build.Core.Tools.Testing
     {
         private const string AnyConfiguration = "[Any]";
         private readonly BuildContext _buildContext;
-        private string _sourceRoot;
-        public DotNetTestRunner(BuildContext buildContext) => _buildContext = buildContext;
+        private IFileSystem _fileSystem;
+        public DotNetTestRunner(BuildContext buildContext, IFileSystem fileSystem)
+        {
+            _buildContext = buildContext;
+            _fileSystem = fileSystem;
+        }
 
         public async Task<ExitCode> ExecuteAsync(
             [NotNull] ILogger logger,
@@ -55,7 +61,6 @@ namespace Arbor.Build.Core.Tools.Testing
                 ".NET test runner is enabled, defined in key {Key}",
                 WellKnownVariables.XUnitNetCoreAppV2Enabled);
 
-            _sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).GetValueOrThrow();
             IVariable reportPath = buildVariables.Require(WellKnownVariables.ReportPath).ThrowIfEmptyValue();
 
             bool? runTestsInReleaseConfiguration =
@@ -100,22 +105,22 @@ namespace Arbor.Build.Core.Tools.Testing
 
             logger.Debug("Using dotnet.exe in path '{DotNetExePath}'", dotNetExePath);
 
-            var testDirectories = new DirectoryInfo(_sourceRoot)
+            var testDirectories = _buildContext.SourceRoot
                 .GetFiles("*test*.csproj", SearchOption.AllDirectories)
                 .Where(file =>
                     file?.Directory != null && (assemblyFilePrefix.Length == 0 || assemblyFilePrefix.Any(prefix =>
                         file.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))))
-                .Select(file => file.Directory.FullName)
+                .Select(file => file.Directory)
                 .ToHashSet();
 
             var exitCode = ExitCode.Success;
 
-            foreach (string testDirectory in testDirectories)
+            foreach (var testDirectory in testDirectories)
             {
-                var directoryInfo = new DirectoryInfo(testDirectory);
-                string xmlReportName = $"dotnet.{directoryInfo.Name}.trx";
+                var directoryEntry = testDirectory;
+                string xmlReportName = $"dotnet.{directoryEntry.Name}.trx";
 
-                var arguments = new List<string> {"test", testDirectory};
+                var arguments = new List<string> {"test", _fileSystem.ConvertPathToInternal(testDirectory.Path)};
 
                 if (!configuration.Equals(AnyConfiguration, StringComparison.OrdinalIgnoreCase))
                 {
@@ -127,14 +132,14 @@ namespace Arbor.Build.Core.Tools.Testing
                 bool xmlEnabled =
                     buildVariables.GetBooleanByKey(WellKnownVariables.XUnitNetCoreAppXmlEnabled, true);
 
-                string reportFile = Path.Combine(reportPath.Value!, "dotnet", xmlReportName);
+                var reportFile = UPath.Combine(reportPath.Value!.AsFullPath(), "dotnet", xmlReportName);
 
-                var reportFileInfo = new FileInfo(reportFile);
-                reportFileInfo.Directory!.EnsureExists();
+                var reportFileEntry = new FileEntry(_fileSystem, reportFile);
+                reportFileEntry.Directory!.EnsureExists();
 
                 if (xmlEnabled)
                 {
-                    arguments.Add($"--logger:trx;LogFileName={reportFileInfo.FullName}");
+                    arguments.Add($"--logger:trx;LogFileName={_fileSystem.ConvertPathToInternal(reportFileEntry.FullName)}");
                 }
 
                 var result = await ProcessRunner.ExecuteProcessAsync(
@@ -162,7 +167,7 @@ namespace Arbor.Build.Core.Tools.Testing
                                 WellKnownVariables.XUnitNetCoreAppXmlAnalysisEnabled,
                                 result);
 
-                            var projectExitCode = AnalyzeXml(reportFileInfo,
+                            var projectExitCode = AnalyzeXml(reportFileEntry,
                                 message => logger.Debug("{Message}", message));
 
                             if (!projectExitCode.IsSuccess)
@@ -179,17 +184,17 @@ namespace Arbor.Build.Core.Tools.Testing
                     logger.Verbose(
                         "Transforming TRX test reports to JUnit format");
 
-                    DirectoryInfo xmlReportDirectory = reportFileInfo.Directory;
+                    DirectoryEntry xmlReportDirectory = reportFileEntry.Directory;
 
                     // ReSharper disable once PossibleNullReferenceException
-                    IReadOnlyCollection<FileInfo> xmlReports = xmlReportDirectory
+                    IReadOnlyCollection<FileEntry> xmlReports = xmlReportDirectory
                         .GetFiles("*.xml")
                         .Where(report => !report.Name.EndsWith(TestReportXslt.JUnitSuffix, StringComparison.Ordinal))
                         .ToReadOnlyCollection();
 
                     if (xmlReports.Count > 0)
                     {
-                        foreach (FileInfo xmlReport in xmlReports)
+                        foreach (var xmlReport in xmlReports)
                         {
                             logger.Debug("Transforming '{FullName}' to JUnit XML format", xmlReport.FullName);
 
@@ -221,17 +226,17 @@ namespace Arbor.Build.Core.Tools.Testing
                     logger.Verbose(
                         "Transforming TRX test reports to JUnit format");
 
-                    DirectoryInfo xmlReportDirectory = reportFileInfo.Directory;
+                    DirectoryEntry xmlReportDirectory = reportFileEntry.Directory;
 
                     // ReSharper disable once PossibleNullReferenceException
-                    IReadOnlyCollection<FileInfo> xmlReports = xmlReportDirectory
+                    IReadOnlyCollection<FileEntry> xmlReports = xmlReportDirectory
                         .GetFiles("*.trx")
                         .Where(report => !report.Name.EndsWith(TestReportXslt.JUnitSuffix, StringComparison.Ordinal))
                         .ToReadOnlyCollection();
 
                     if (xmlReports.Count > 0)
                     {
-                        foreach (FileInfo xmlReport in xmlReports)
+                        foreach (var xmlReport in xmlReports)
                         {
                             logger.Debug("Transforming '{FullName}' to JUnit XML format", xmlReport.FullName);
 
@@ -268,16 +273,14 @@ namespace Arbor.Build.Core.Tools.Testing
             return exitCode;
         }
 
-        private static ExitCode AnalyzeXml(FileInfo reportFileInfo, Action<string> logger)
+        private static ExitCode AnalyzeXml(FileEntry reportFileEntry, Action<string> logger)
         {
-            reportFileInfo.Refresh();
-
-            if (!reportFileInfo.Exists)
+            if (!reportFileEntry.Exists)
             {
                 return ExitCode.Failure;
             }
 
-            string fullName = reportFileInfo.FullName;
+            string fullName = reportFileEntry.FullName;
 
             using var fs = new FileStream(fullName, FileMode.Open);
             XDocument xdoc = XDocument.Load(fs);

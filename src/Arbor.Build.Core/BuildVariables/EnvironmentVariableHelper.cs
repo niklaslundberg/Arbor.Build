@@ -5,12 +5,14 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Arbor.Aesculus.Core;
+using Arbor.Build.Core.IO;
 using Arbor.Exceptions;
 using Arbor.KVConfiguration.JsonConfiguration;
 using Arbor.KVConfiguration.Schema.Json;
 using JetBrains.Annotations;
 using Serilog;
 using Serilog.Core;
+using Zio;
 
 namespace Arbor.Build.Core.BuildVariables
 {
@@ -61,28 +63,20 @@ namespace Arbor.Build.Core.BuildVariables
 
         public static ImmutableArray<KeyValue> GetBuildVariablesFromFile([NotNull] ILogger logger,
             string fileName,
-            string? sourceRoot)
+            DirectoryEntry sourceRoot)
         {
             if (logger == null)
             {
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            sourceRoot ??= VcsPathHelper.FindVcsRootPath(Directory.GetCurrentDirectory());
+            var file = new FileEntry(sourceRoot.FileSystem, sourceRoot.Path / fileName);
 
-            if (sourceRoot == null)
-            {
-                logger.Error("Could not find source root");
-                return ImmutableArray<KeyValue>.Empty;
-            }
-
-            var fileInfo = new FileInfo(Path.Combine(sourceRoot, fileName));
-
-            if (!fileInfo.Exists)
+            if (!file.Exists)
             {
                 logger.Debug(
-                    "The environment variable file '{FileInfo}' does not exist, skipping setting environment variables from file '{FileName}'",
-                    fileInfo,
+                    $"The environment variable file '{file}' does not exist, skipping setting environment variables from file '{file}'",
+                    file,
                     fileName);
 
                 return ImmutableArray<KeyValue>.Empty;
@@ -92,19 +86,19 @@ namespace Arbor.Build.Core.BuildVariables
 
             try
             {
-                configurationItems = new JsonFileReader(fileInfo.FullName)
+                configurationItems = new JsonFileReader(sourceRoot.FileSystem.ConvertPathToInternal(file.FullName))
                     .GetConfigurationItems();
             }
             catch (Exception ex) when (!ex.IsFatal())
             {
-                logger.Error(ex, "Could not parse key value pairs in file '{FullName}'", fileInfo.FullName);
+                logger.Error(ex, "Could not parse key value pairs in file '{FullName}'", file.FullName);
 
                 return ImmutableArray<KeyValue>.Empty;
             }
 
             if (configurationItems == null)
             {
-                logger.Error("Could not parse key value pairs in file '{FullName}'", fileInfo.FullName);
+                logger.Error("Could not parse key value pairs in file '{FullName}'", file.FullName);
                 return ImmutableArray<KeyValue>.Empty;
             }
 

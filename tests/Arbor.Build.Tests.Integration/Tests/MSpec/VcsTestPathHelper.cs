@@ -1,24 +1,45 @@
 ﻿using System;
-using System.IO;
 using Arbor.Aesculus.Core;
+using Arbor.Build.Core.IO;
 using NCrunch.Framework;
+using Zio;
+using Zio.FileSystems;
 
 namespace Arbor.Build.Tests.Integration.Tests.MSpec
 {
     static class VcsTestPathHelper
     {
-        public static string FindVcsRootPath(string baseDir = default)
+        public static DirectoryEntry FindVcsRootPath()
         {
-            if (NCrunchEnvironment.NCrunchIsResident())
+            var startDir = NCrunchEnvironment.NCrunchIsResident()
+                ? NCrunchEnvironment.GetOriginalSolutionPath().AsFullPath().GetDirectory()
+                : UPath.Empty;
+
+            return FindVcsRootPath(startDir);
+        }
+
+        public static DirectoryEntry FindVcsRootPath(UPath baseDir)
+        {
+            var fs = new PhysicalFileSystem();
+
+            if (baseDir != UPath.Empty && !fs.DirectoryExists(baseDir))
             {
-                return VcsPathHelper.FindVcsRootPath(new FileInfo(NCrunchEnvironment.GetOriginalSolutionPath())
-                    .Directory?.FullName);
+                throw new InvalidOperationException($"The base directory {baseDir} does not exist");
             }
 
-            var startDir = baseDir ?? "N/A";
-            Console.WriteLine($"Finding source root dir from start directory {startDir}");
+            string? startDirectory = baseDir == UPath.Empty
+                ? null
+                : fs.ConvertPathToInternal(baseDir);
 
-            return VcsPathHelper.FindVcsRootPath(baseDir);
+            string vcsRootPath = VcsPathHelper.FindVcsRootPath(startDirectory);
+
+
+            if (string.IsNullOrWhiteSpace(vcsRootPath))
+            {
+                throw new InvalidOperationException("Could not find source root");
+            }
+
+            return new DirectoryEntry(fs, vcsRootPath.AsFullPath());
         }
     }
 }

@@ -1,53 +1,65 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
+using Arbor.Build.Core.IO;
 using Arbor.Defensive.Collections;
 using JetBrains.Annotations;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.MSBuild
 {
     internal class Solution
     {
-        public Solution(string fullPath, ImmutableArray<SolutionProject> projects)
+        public Solution(FileEntry fullPath, ImmutableArray<SolutionProject> projects)
         {
             FullPath = fullPath;
             Projects = projects;
-            Name = Path.GetFileName(fullPath);
+            Name = fullPath.Name;
         }
 
         public string Name { get; }
 
-        public string FullPath { get; }
+        public FileEntry FullPath { get; }
 
         public override string ToString() => Name;
 
         public ImmutableArray<SolutionProject> Projects { get; }
 
-        public static Solution LoadFrom([NotNull] string solutionFileFullName)
+        public static async Task<Solution> LoadFrom([NotNull] FileEntry solutionFileFullName)
         {
-            if (string.IsNullOrWhiteSpace(solutionFileFullName))
+            if (solutionFileFullName is null)
             {
                 throw new ArgumentException(Resources.ValueCannotBeNullOrWhitespace, nameof(solutionFileFullName));
             }
 
-            if (!File.Exists(solutionFileFullName))
+            if (!solutionFileFullName.Exists)
             {
                 throw new ArgumentException($"The file '{solutionFileFullName}' does not exists");
             }
 
-            string[] lines = File.ReadAllLines(solutionFileFullName);
+            var stream = solutionFileFullName.Open(FileMode.Open, FileAccess.Read);
 
-            var fileInfo = new FileInfo(solutionFileFullName);
+            var lines = await stream.ReadAllLinesAsync();
 
-            return new Solution(solutionFileFullName, lines
-                .Select(line => GetProject(line, fileInfo))
-                .Where(item => item != null)
-                .NotNull()
-                .ToImmutableArray());
+            var projects = new List<SolutionProject>();
+
+            foreach (string line in lines)
+            {
+                var project = await GetProject(line, solutionFileFullName);
+
+                if (project is {})
+                {
+                    projects.Add(project);
+                }
+            }
+
+            return new Solution(solutionFileFullName, projects.ToImmutableArray());
         }
 
-        private static SolutionProject? GetProject(string line, FileInfo fileInfo)
+        private static async Task<SolutionProject?> GetProject(string line, FileEntry fileEntry)
         {
             //Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NCinema.Web.IisHost", "NCinema.Web.IisHost\NCinema.Web.IisHost.csproj", "{04854B5C-247C-4F59-834D-9ACF5048F29C}"
 
@@ -80,20 +92,21 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 return null;
             }
 
-            if (fileInfo.Directory is null)
+            if (fileEntry.Directory is null)
             {
                 throw new InvalidOperationException("Directory property is null");
             }
 
-            string projectFullPath = Path.Combine(fileInfo.Directory.FullName, projectFile);
+            var projectFullPath = UPath.Combine(fileEntry.Directory.Path, projectFile);
 
-            MSBuildProject msBuildProject = MSBuildProject.LoadFrom(projectFullPath);
+            var projectFileFullName = fileEntry.FileSystem.GetFileEntry(projectFullPath);
+            MSBuildProject msBuildProject = await MSBuildProject.LoadFrom(projectFileFullName);
 
-            NetFrameworkGeneration netFrameworkGeneration = MSBuildProject.IsNetSdkProject(new FileInfo(projectFullPath))
+            NetFrameworkGeneration netFrameworkGeneration = await MSBuildProject.IsNetSdkProject(projectFileFullName)
                 ? NetFrameworkGeneration.NetCoreApp
                 : NetFrameworkGeneration.NetFramework;
 
-            return new SolutionProject(projectFullPath,
+            return new SolutionProject(projectFileFullName,
                 msBuildProject.ProjectName,
                 msBuildProject.ProjectDirectory,
                 msBuildProject,

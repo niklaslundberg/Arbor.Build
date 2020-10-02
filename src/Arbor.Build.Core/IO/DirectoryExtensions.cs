@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using Arbor.Defensive.Collections;
 using Arbor.Exceptions;
+using Arbor.FS;
 using JetBrains.Annotations;
 using Zio;
 
@@ -12,34 +13,6 @@ namespace Arbor.Build.Core.IO
 {
     public static class DirectoryExtensions
     {
-        public static DirectoryInfo EnsureExists(this DirectoryInfo directoryInfo)
-        {
-            if (directoryInfo == null)
-            {
-                throw new ArgumentNullException(nameof(directoryInfo));
-            }
-
-            try
-            {
-                directoryInfo.Refresh();
-
-                if (!directoryInfo.Exists)
-                {
-                    directoryInfo.Create();
-                }
-            }
-            catch (PathTooLongException ex)
-            {
-                throw new PathTooLongException(
-                    $"Could not create directory '{directoryInfo.FullName}', path length {directoryInfo.FullName.Length}",
-                    ex);
-            }
-
-            directoryInfo.Refresh();
-
-            return directoryInfo;
-        }
-
         public static DirectoryEntry EnsureExists(this DirectoryEntry directoryEntry)
         {
             if (directoryEntry == null)
@@ -49,10 +22,13 @@ namespace Arbor.Build.Core.IO
 
             try
             {
-                if (!directoryEntry.FileSystem.DirectoryExists(directoryEntry.Path))
-                {
-                    directoryEntry.Create();
-                }
+
+                directoryEntry.Create();
+
+            }
+            catch (System.IO.IOException ex) when (ex.Message.Contains("already exists"))
+            {
+                return directoryEntry;
             }
             catch (PathTooLongException ex)
             {
@@ -64,24 +40,22 @@ namespace Arbor.Build.Core.IO
             return new DirectoryEntry(directoryEntry.FileSystem, directoryEntry.Path);
         }
 
-        public static void DeleteIfExists(this DirectoryInfo? directoryInfo, bool recursive = true)
+        public static void DeleteIfExists(this DirectoryEntry? directoryEntry, bool recursive = true)
         {
-            if (directoryInfo is null)
+            if (directoryEntry is null)
             {
                 return;
             }
 
             try
             {
-                directoryInfo.Refresh();
-
-                if (directoryInfo.Exists)
+                if (directoryEntry.Exists)
                 {
-                    FileInfo[] fileInfos;
+                    FileEntry[] files;
 
                     try
                     {
-                        fileInfos = directoryInfo.GetFiles();
+                        files = directoryEntry.EnumerateFiles().ToArray();
                     }
                     catch (Exception ex)
                     {
@@ -91,11 +65,11 @@ namespace Arbor.Build.Core.IO
                         }
 
                         throw new IOException(
-                            $"Could not get files for directory '{directoryInfo.FullName}' for deletion",
+                            $"Could not get files for directory '{directoryEntry.FullName}' for deletion",
                             ex);
                     }
 
-                    foreach (FileInfo file in fileInfos)
+                    foreach (var file in files)
                     {
                         file.Attributes = FileAttributes.Normal;
 
@@ -114,88 +88,37 @@ namespace Arbor.Build.Core.IO
                         }
                     }
 
-                    foreach (DirectoryInfo subDirectory in directoryInfo.GetDirectories())
+                    foreach (var subDirectory in directoryEntry.EnumerateDirectories())
                     {
                         subDirectory.DeleteIfExists(recursive);
                     }
                 }
 
-                directoryInfo.Refresh();
-
-                if (directoryInfo.Exists)
+                if (directoryEntry.Exists)
                 {
-                    directoryInfo.Delete(recursive);
+                    directoryEntry.Delete(recursive);
                 }
-
-                directoryInfo.Refresh();
             }
             catch (UnauthorizedAccessException ex)
             {
-                throw new InvalidOperationException($"Could not delete directory '{directoryInfo.FullName}'", ex);
+                throw new InvalidOperationException($"Could not delete directory '{directoryEntry.FullName}'", ex);
             }
         }
-        public static void DeleteIfExists(this DirectoryEntry? directoryInfo, bool recursive = true)
+
+        public static void DeleteIfExists(this FileEntry? file)
         {
-            if (directoryInfo is null)
+            if (file is null)
             {
                 return;
             }
 
             try
             {
-                if (directoryInfo.Exists)
-                {
-                    FileEntry[] fileInfos;
-
-                    try
-                    {
-                        fileInfos = directoryInfo.EnumerateFiles().ToArray();
-                    }
-                    catch (Exception ex)
-                    {
-                        if (ex.IsFatal())
-                        {
-                            throw;
-                        }
-
-                        throw new IOException(
-                            $"Could not get files for directory '{directoryInfo.FullName}' for deletion",
-                            ex);
-                    }
-
-                    foreach (var file in fileInfos)
-                    {
-                        file.Attributes = FileAttributes.Normal;
-
-                        try
-                        {
-                            file.Delete();
-                        }
-                        catch (Exception ex)
-                        {
-                            if (ex.IsFatal())
-                            {
-                                throw;
-                            }
-
-                            throw new IOException($"Could not delete file '{file.FullName}'", ex);
-                        }
-                    }
-
-                    foreach (var subDirectory in directoryInfo.EnumerateDirectories())
-                    {
-                        subDirectory.DeleteIfExists(recursive);
-                    }
-                }
-
-                if (directoryInfo.Exists)
-                {
-                    directoryInfo.Delete(recursive);
-                }
+                file.Delete();
             }
             catch (UnauthorizedAccessException ex)
             {
-                throw new InvalidOperationException($"Could not delete directory '{directoryInfo.FullName}'", ex);
+                throw new IOException($"Unauthorized to delete file '{file.FullName}'", ex);
             }
         }
 
@@ -203,7 +126,7 @@ namespace Arbor.Build.Core.IO
             this DirectoryEntry directory,
             IEnumerable<string>? fileExtensions = null,
             PathLookupSpecification? pathLookupSpecification = null,
-            string? rootDir = null)
+            DirectoryEntry? rootDir = null)
         {
             if (directory == null)
             {
@@ -220,7 +143,7 @@ namespace Arbor.Build.Core.IO
 
             var usedFileExtensions = fileExtensions.SafeToReadOnlyCollection();
 
-            if (usedPathLookupSpecification.IsNotAllowed(directory.FullName, rootDir).Item1)
+            if (usedPathLookupSpecification.IsNotAllowed(directory, rootDir).Item1)
             {
                 return ImmutableArray<FileEntry>.Empty;
             }
@@ -238,7 +161,7 @@ namespace Arbor.Build.Core.IO
 
             List<FileEntry> directoryFiles = directory
                 .EnumerateFiles()
-                .Where(file => !usedPathLookupSpecification.IsFileExcluded(file.FullName, rootDir).Item1)
+                .Where(file => !usedPathLookupSpecification.IsFileExcluded(file, rootDir).Item1)
                 .ToList();
 
             List<FileEntry> filtered = (usedFileExtensions.Any()
@@ -259,13 +182,12 @@ namespace Arbor.Build.Core.IO
         }
 
         public static ImmutableArray<FileEntry> GetFilesWithWithExclusions(
-            [NotNull] this DirectoryEntry siteArtifactDirectory,
-            IFileSystem fileSystem,
+            [NotNull] this DirectoryEntry directory,
             [NotNull] IReadOnlyCollection<string> excludedPatterns)
         {
-            if (siteArtifactDirectory == null)
+            if (directory == null)
             {
-                throw new ArgumentNullException(nameof(siteArtifactDirectory));
+                throw new ArgumentNullException(nameof(directory));
             }
 
             if (excludedPatterns == null)
@@ -273,9 +195,11 @@ namespace Arbor.Build.Core.IO
                 throw new ArgumentNullException(nameof(excludedPatterns));
             }
 
+            var fileSystem = directory.FileSystem;
+
 
             var allFiles = fileSystem
-                .EnumerateFileEntries(siteArtifactDirectory.Path, "*", SearchOption.AllDirectories)
+                .EnumerateFileEntries(directory.Path, "*", SearchOption.AllDirectories)
                 .ToArray();
 
             FileEntry[] allIncludedFiles;
@@ -294,17 +218,17 @@ namespace Arbor.Build.Core.IO
 
                     try
                     {
-                        if (excludedPattern.Contains(Path.DirectorySeparatorChar, StringComparison.InvariantCulture))
+                        if (excludedPattern.Contains(UPath.DirectorySeparator, StringComparison.InvariantCulture))
                         {
                             excludedFiles = allFiles.Where(file =>
-                                    file.FullName.Substring(siteArtifactDirectory.FullName.Length)
+                                    file.FullName.Substring(directory.FullName.Length)
                                         .Contains(excludedPattern, StringComparison.OrdinalIgnoreCase))
                                 .ToArray();
                         }
                         else
                         {
                             excludedFiles =
-                                fileSystem.EnumerateFileEntries(siteArtifactDirectory.Path,excludedPattern, SearchOption.AllDirectories)
+                                fileSystem.EnumerateFileEntries(directory.Path,excludedPattern, SearchOption.AllDirectories)
                                     .ToArray();
                         }
                     }
@@ -335,4 +259,6 @@ namespace Arbor.Build.Core.IO
             return allIncludedFiles.ToImmutableArray();
         }
     }
+
+
 }

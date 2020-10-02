@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
@@ -10,6 +9,7 @@ using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
 using Serilog.Core;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.Cleanup
 {
@@ -17,6 +17,10 @@ namespace Arbor.Build.Core.Tools.Cleanup
     [UsedImplicitly]
     public class ArtifactCleanup : ITool
     {
+        private readonly IFileSystem _fileSystem;
+
+        public ArtifactCleanup(IFileSystem fileSystem) => _fileSystem = fileSystem;
+
         public async Task<ExitCode> ExecuteAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
@@ -36,9 +40,9 @@ namespace Arbor.Build.Core.Tools.Cleanup
                 return ExitCode.Success;
             }
 
-            string artifactsPath = buildVariables.Require(WellKnownVariables.Artifacts).GetValueOrThrow();
+            var artifactsPath = buildVariables.Require(WellKnownVariables.Artifacts).GetValueOrThrow().AsFullPath();
 
-            var artifactsDirectory = new DirectoryInfo(artifactsPath);
+            var artifactsDirectory = new DirectoryEntry(_fileSystem, artifactsPath);
 
             if (!artifactsDirectory.Exists)
             {
@@ -77,7 +81,7 @@ namespace Arbor.Build.Core.Tools.Cleanup
 
         private static bool TryCleanup(
             ILogger logger,
-            DirectoryInfo artifactsDirectory,
+            DirectoryEntry artifactsDirectory,
             bool throwExceptionOnFailure = false)
         {
             try
@@ -102,13 +106,12 @@ namespace Arbor.Build.Core.Tools.Cleanup
             return true;
         }
 
-        private static void DoCleanup(ILogger logger, DirectoryInfo artifactsDirectory)
+        private static void DoCleanup(ILogger logger, DirectoryEntry artifactsDirectory)
         {
             logger.Information("Artifact cleanup is enabled, removing all files and folders in '{FullName}'",
                 artifactsDirectory.FullName);
 
             artifactsDirectory.DeleteIfExists();
-            artifactsDirectory.Refresh();
             artifactsDirectory.EnsureExists();
         }
     }

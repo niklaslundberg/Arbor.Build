@@ -10,6 +10,7 @@ using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
 using Serilog.Core;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.NuGet
 {
@@ -17,6 +18,10 @@ namespace Arbor.Build.Core.Tools.NuGet
     [UsedImplicitly]
     public class DotNetRestorer : ITool
     {
+        private IFileSystem _fileSystem;
+
+        public DotNetRestorer(IFileSystem fileSystem) => _fileSystem = fileSystem;
+
         public async Task<ExitCode> ExecuteAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
@@ -31,7 +36,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 return ExitCode.Success;
             }
 
-            string rootPath = buildVariables.GetVariable(WellKnownVariables.SourceRoot).GetValueOrThrow();
+            DirectoryEntry rootPath = new DirectoryEntry(_fileSystem, buildVariables.GetVariable(WellKnownVariables.SourceRoot).GetValueOrThrow());
 
             string dotNetExePath =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.DotNetExePath, string.Empty)!;
@@ -45,15 +50,15 @@ namespace Arbor.Build.Core.Tools.NuGet
             }
 
             var pathLookupSpecification = new PathLookupSpecification();
-            FileInfo[] solutionFiles = new DirectoryInfo(rootPath)
-                .GetFiles("*.sln", SearchOption.AllDirectories)
-                .Where(file => !pathLookupSpecification.IsFileExcluded(file.FullName, rootPath).Item1)
+            FileEntry[] solutionFiles = rootPath
+                .EnumerateFiles("*.sln", SearchOption.AllDirectories)
+                .Where(file => !pathLookupSpecification.IsFileExcluded(file, rootPath).Item1)
                 .ToArray();
 
             string? runtimeIdentifier =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.ProjectMSBuildPublishRuntimeIdentifier);
 
-            foreach (FileInfo solutionFile in solutionFiles)
+            foreach (var solutionFile in solutionFiles)
             {
                 var arguments = new List<string> { "restore", solutionFile.FullName };
                 if (!string.IsNullOrWhiteSpace(runtimeIdentifier))

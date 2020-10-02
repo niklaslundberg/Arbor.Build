@@ -1,7 +1,10 @@
 using System;
 using System.IO;
 using Arbor.Build.Core.IO;
+using Arbor.FS;
 using Machine.Specifications;
+using Zio;
+using Zio.FileSystems;
 
 namespace Arbor.Build.Tests.Integration.PathExtensions
 {
@@ -12,16 +15,19 @@ namespace Arbor.Build.Tests.Integration.PathExtensions
 
         static PathLookupSpecification specification;
 
-        static string root;
+        static DirectoryEntry root;
 
-        Cleanup after = () => new DirectoryInfo(root).DeleteIfExists();
-
+        static IFileSystem fs;
         Establish context = () =>
         {
-            root = $@"C:\Temp\root-{Guid.NewGuid()}";
+            fs = new WindowsFs(new PhysicalFileSystem());
 
-            new DirectoryInfo(Path.Combine(root, "afolder")).EnsureExists();
-            using (File.Create(Path.Combine(root, "afile.txt")))
+            UPath rootPath = $@"C:\Temp\root-{Guid.NewGuid()}".AsFullPath();
+            fs.CreateDirectory(rootPath);
+            root = fs.GetDirectoryEntry(rootPath);
+
+            new DirectoryEntry(fs,UPath.Combine(root.Path, "afolder")).EnsureExists();
+            using (fs.OpenFile(UPath.Combine(root.Path, "afile.txt"), FileMode.Create, FileAccess.Write))
             {
             }
 
@@ -29,8 +35,14 @@ namespace Arbor.Build.Tests.Integration.PathExtensions
         };
 
         Because of =
-            () => isNotAllowed = specification.IsFileExcluded($@"{root}\afile.txt", @"C:\Temp\root").Item1;
+            () => isNotAllowed = specification.IsFileExcluded(fs.GetFileEntry(UPath.Combine(root.Path, "afile.txt")), fs.GetDirectoryEntry(@"C:\Temp\root".AsFullPath())).Item1;
 
         It should_return_false = () => isNotAllowed.ShouldBeFalse();
+
+        Cleanup after = () =>
+        {
+            root.DeleteIfExists();
+            fs.Dispose();
+        };
     }
 }

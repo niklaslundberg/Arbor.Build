@@ -4,59 +4,58 @@ using System.Threading.Tasks;
 using Arbor.Processing;
 using Serilog;
 using Serilog.Core;
+using Zio;
 
 namespace Arbor.Build.Core.IO
 {
     public static class DirectoryCopy
     {
         public static async Task<ExitCode> CopyAsync(
-            string sourceDir,
-            string targetDir,
+            DirectoryEntry sourceDirectory,
+            DirectoryEntry targetDir,
             ILogger? optionalLogger = null,
             PathLookupSpecification? pathLookupSpecificationOption = null,
-            string? rootDir = null)
+            DirectoryEntry? rootDir = null)
         {
             PathLookupSpecification pathLookupSpecification =
                 pathLookupSpecificationOption ?? DefaultPaths.DefaultPathLookupSpecification;
 
             ILogger logger = optionalLogger ?? Logger.None;
 
-            if (string.IsNullOrWhiteSpace(sourceDir))
+            if (sourceDirectory is null)
             {
-                throw new ArgumentNullException(nameof(sourceDir));
+                throw new ArgumentNullException(nameof(sourceDirectory));
             }
 
-            if (string.IsNullOrWhiteSpace(targetDir))
+            if (targetDir is null)
             {
                 throw new ArgumentNullException(nameof(targetDir));
             }
 
-            var sourceDirectory = new DirectoryInfo(sourceDir);
-
             if (!sourceDirectory.Exists)
             {
-                throw new ArgumentException($"Source directory '{sourceDir}' does not exist");
+                throw new ArgumentException($"Source directory '{sourceDirectory}' does not exist");
             }
 
-            (bool, string) isNotAllowed = pathLookupSpecification.IsNotAllowed(sourceDir, rootDir);
+            (bool, string) isNotAllowed = pathLookupSpecification.IsNotAllowed(sourceDirectory, rootDir);
             if (isNotAllowed.Item1)
             {
                 logger?.Debug(
                     "Directory '{SourceDir}' is notallowed from specification {PathLookupSpecification}, {Item2}",
-                    sourceDir,
+                    sourceDirectory,
                     pathLookupSpecification,
                     isNotAllowed.Item2);
                 return ExitCode.Success;
             }
 
-            new DirectoryInfo(targetDir).EnsureExists();
+            targetDir.EnsureExists();
 
-            foreach (FileInfo file in sourceDirectory.GetFiles())
+            foreach (FileEntry file in sourceDirectory.EnumerateFiles())
             {
-                string destFileName = Path.Combine(targetDir, file.Name);
+                var destFileName = UPath.Combine(targetDir.Path, file.Name);
 
                 (bool, string) isFileExcludeListed =
-                    pathLookupSpecification.IsFileExcluded(file.FullName, rootDir, logger: optionalLogger);
+                    pathLookupSpecification.IsFileExcluded(file, rootDir, logger: optionalLogger);
 
                 if (isFileExcludeListed.Item1)
                 {
@@ -78,7 +77,7 @@ namespace Arbor.Build.Core.IO
                 {
                     logger?.Error(ex,
                         "{Message}",
-                        $"Could not copy file to '{destFileName}', path length is too long ({destFileName.Length})"
+                        $"Could not copy file to '{destFileName}', path length is too long ({destFileName.FullName.Length})"
                     );
                     return ExitCode.Failure;
                 }
@@ -91,11 +90,11 @@ namespace Arbor.Build.Core.IO
                 }
             }
 
-            foreach (DirectoryInfo directory in sourceDirectory.GetDirectories())
+            foreach (DirectoryEntry directory in sourceDirectory.EnumerateDirectories())
             {
                 ExitCode exitCode = await CopyAsync(
-                    directory.FullName,
-                    Path.Combine(targetDir, directory.Name),
+                    directory, new DirectoryEntry(sourceDirectory.FileSystem,
+                    UPath.Combine(targetDir.Path, directory.Name)),
                     pathLookupSpecificationOption: pathLookupSpecification).ConfigureAwait(false);
 
                 if (!exitCode.IsSuccess)

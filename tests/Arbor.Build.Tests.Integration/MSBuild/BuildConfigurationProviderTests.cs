@@ -7,6 +7,7 @@ using Arbor.Build.Core.Tools.Versioning;
 using Serilog.Core;
 using Xunit;
 using Xunit.Abstractions;
+using Zio.FileSystems;
 
 namespace Arbor.Build.Tests.Integration.MSBuild
 {
@@ -20,7 +21,7 @@ namespace Arbor.Build.Tests.Integration.MSBuild
         [Fact]
         public async Task DefaultConfigurationShouldBeDebug()
         {
-            var buildContext = new BuildContext();
+            var buildContext = new BuildContext(new MemoryFileSystem());
 
             var buildConfigurationProvider = new BuildConfigurationProvider(buildContext);
 
@@ -41,7 +42,7 @@ namespace Arbor.Build.Tests.Integration.MSBuild
         [Theory]
         public async Task BranchConfigurationShouldBeDebug(string branchName)
         {
-            var buildContext = new BuildContext();
+            var buildContext = new BuildContext(new MemoryFileSystem());
 
             var buildConfigurationProvider = new BuildConfigurationProvider(buildContext);
 
@@ -65,7 +66,7 @@ namespace Arbor.Build.Tests.Integration.MSBuild
         [Theory]
         public async Task BranchConfigurationShouldBeDefaultForFeatureBranch(string branchName)
         {
-            var buildContext = new BuildContext();
+            var buildContext = new BuildContext(new MemoryFileSystem());
 
             var buildConfigurationProvider = new BuildConfigurationProvider(buildContext);
 
@@ -91,7 +92,7 @@ namespace Arbor.Build.Tests.Integration.MSBuild
         [Theory]
         public async Task BranchConfigurationShouldBeRelease(string branchName)
         {
-            var buildContext = new BuildContext();
+            var buildContext = new BuildContext(new MemoryFileSystem());
 
             var buildConfigurationProvider = new BuildConfigurationProvider(buildContext);
 

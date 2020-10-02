@@ -16,6 +16,7 @@ using Arbor.Build.Core.GenericExtensions.Bools;
 using Arbor.Build.Core.GenericExtensions.Int;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools;
+using Arbor.Build.Core.Tools.MSBuild;
 using Arbor.Defensive.Collections;
 using Arbor.Exceptions;
 using Arbor.KVConfiguration.Core;
@@ -27,10 +28,11 @@ using JetBrains.Annotations;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
+using Zio;
 
 namespace Arbor.Build.Core
 {
-    public class BuildApplication
+    public sealed class BuildApplication : IDisposable
     {
         private readonly bool _debugEnabled;
         private readonly ILogger _logger;
@@ -40,12 +42,14 @@ namespace Arbor.Build.Core
         private string[] _args;
         private readonly IEnvironmentVariables _environmentVariables;
         private readonly ISpecialFolders _specialFolders;
+        private readonly IFileSystem _fileSystem;
 
-        public BuildApplication(ILogger? logger, IEnvironmentVariables environmentVariables, ISpecialFolders specialFolders)
+        public BuildApplication(ILogger? logger, IEnvironmentVariables environmentVariables, ISpecialFolders specialFolders, IFileSystem fileSystem)
         {
             _args = Array.Empty<string>();
             _environmentVariables = environmentVariables;
             _specialFolders = specialFolders;
+            _fileSystem = fileSystem;
             _logger = logger ?? Logger.None;
             _verboseEnabled = _logger.IsEnabled(LogEventLevel.Verbose);
             _debugEnabled = _logger.IsEnabled(LogEventLevel.Debug);
@@ -80,14 +84,14 @@ namespace Arbor.Build.Core
             return displayTable;
         }
 
-        private async Task<string> StartWithDebuggerAsync([NotNull] string[] args)
+        private async Task<DirectoryEntry?> StartWithDebuggerAsync([NotNull] string[] args)
         {
             if (args == null)
             {
                 throw new ArgumentNullException(nameof(args));
             }
 
-            string baseDir = VcsPathHelper.FindVcsRootPath(AppDomain.CurrentDomain.BaseDirectory);
+            DirectoryEntry baseDir = new DirectoryEntry(_fileSystem, VcsPathHelper.FindVcsRootPath(AppDomain.CurrentDomain.BaseDirectory).AsFullPath());
 
             if (Environment.UserInteractive)
             {
@@ -96,21 +100,22 @@ namespace Arbor.Build.Core
 
                 if (baseDirectory == "-")
                 {
-                    return "";
+                    return null;
                 }
 
                 if (!string.IsNullOrWhiteSpace(baseDirectory))
                 {
-                    baseDir = baseDirectory;
+                    var asFullPath = baseDirectory.AsFullPath();
+                    baseDir = new DirectoryEntry(_fileSystem, asFullPath);
 
-                    Directory.SetCurrentDirectory(baseDirectory);
+                    Directory.SetCurrentDirectory(_fileSystem.ConvertPathToInternal(asFullPath));
                 }
             }
 
             const string tempPath = @"C:\Work\Arbor.Build";
 
-            var tempDirectory = new DirectoryInfo(Path.Combine(
-                tempPath,
+            var tempDirectory = new DirectoryEntry( _fileSystem, UPath.Combine(
+                tempPath.AsFullPath(),
                 "D",
                 DateTime.UtcNow.ToFileTimeUtc().ToString(CultureInfo.InvariantCulture)));
 
@@ -120,14 +125,14 @@ namespace Arbor.Build.Core
 
             await DirectoryCopy.CopyAsync(
                 baseDir,
-                tempDirectory.FullName,
+                tempDirectory,
                 pathLookupSpecificationOption: DefaultPaths.DefaultPathLookupSpecification.AddExcludedDirectorySegments(
                     new[] { "paket-files" }),
                 rootDir: baseDir).ConfigureAwait(false);
 
             WriteDebug("Starting with debugger attached");
 
-            return tempDirectory.FullName;
+            return tempDirectory;
         }
 
         private void WriteDebug(string message)
@@ -311,7 +316,15 @@ namespace Arbor.Build.Core
             _ = _environmentVariables.GetEnvironmentVariable(WellKnownVariables.VariableFileSourceEnabled)
                 .TryParseBool(out bool enabled, defaultValue: true);
 
-            string? sourceRoot = _environmentVariables.GetEnvironmentVariable(WellKnownVariables.SourceRoot);
+            string? sourceRootPath = _environmentVariables.GetEnvironmentVariable(WellKnownVariables.SourceRoot);
+
+            if (string.IsNullOrWhiteSpace(sourceRootPath))
+            {
+                _logger.Error("Source root is not set");
+                return ImmutableArray<IVariable>.Empty;
+            }
+
+            DirectoryEntry sourceRoot = new DirectoryEntry(_fileSystem, sourceRootPath!.AsFullPath());
 
             if (enabled)
             {
@@ -527,7 +540,7 @@ namespace Arbor.Build.Core
 
             const bool debugLoggerEnabled = false;
 
-            string? sourceDir = null;
+            DirectoryEntry? sourceDir = null;
 
             if (DebugHelper.IsDebugging(_environmentVariables))
             {
@@ -602,6 +615,12 @@ namespace Arbor.Build.Core
             }
 
             return exitCode;
+        }
+
+        public void Dispose()
+        {
+            _container?.Dispose();
+            _fileSystem.Dispose();
         }
     }
 }

@@ -5,9 +5,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core;
 using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.IO;
+using Arbor.Build.Core.Tools.MSBuild;
 using Arbor.Build.Core.Tools.Versioning;
 using Serilog.Core;
 using Xunit;
+using Zio;
+using Zio.FileSystems;
 
 namespace Arbor.Build.Tests.Unit
 {
@@ -17,12 +21,16 @@ namespace Arbor.Build.Tests.Unit
         public async Task Should()
         {
             ITimeService testTimeService = new TestTimeService(new DateTime(637134888390000000));
-            var buildVersionProvider = new BuildVersionProvider(testTimeService);
+            using var memoryFileSystem = new MemoryFileSystem();
+            var buildVersionProvider = new BuildVersionProvider(testTimeService, new BuildContext(memoryFileSystem)
+            {
+                SourceRoot = new DirectoryEntry(memoryFileSystem, "/temp/build").EnsureExists()
+            });
 
             var buildVariables =
                 new List<IVariable>
                 {
-                    new BuildVariable(WellKnownVariables.SourceRoot, Path.GetTempPath()),
+                    new BuildVariable(WellKnownVariables.SourceRoot, Path.GetTempPath().AsFullPath().FullName),
                     new BuildVariable(WellKnownVariables.BuildNumberAsUnixEpochSecondsEnabled, "true")
                 };
 
