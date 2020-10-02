@@ -50,7 +50,7 @@ namespace Arbor.Build.Core.Tools.Versioning
                 logger.Verbose("Un-patching assembly info files for directory source root directory '{SourceRoot}'",
                     sourceRoot);
 
-                app.Unpatch(_fileSystem.ConvertPathToInternal(sourceRoot));
+                app.Unpatch(_fileSystem.ConvertPathToInternal(sourceRoot.Path));
             }
             catch (Exception ex)
             {
