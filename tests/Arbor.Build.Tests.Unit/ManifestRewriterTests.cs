@@ -1,4 +1,8 @@
-﻿using System.Text;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
+using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.NuGet;
 using FluentAssertions;
 using Xunit;
@@ -80,32 +84,58 @@ namespace Arbor.Build.Tests.Unit
 </package>
 ";
 
-        [Fact]
-        public void Rewrite()
+        public static IEnumerable<object[]> GetFileSystemsData()
         {
-            IFileSystem fileSystem = new MemoryFileSystem();
+            yield return new object[] {new MemoryFileSystem()};
+            yield return new object[] {new PhysicalFileSystem()};
+        }
 
-            var path = new UPath("/my.nuspec");
-            fileSystem.WriteAllText(path, NuSpecNoTags, Encoding.UTF8);
+        [MemberData(nameof(GetFileSystemsData))]
+        [Theory]
+        public async Task Rewrite(IFileSystem fileSystem)
+        {
+            using (fileSystem)
+            {
+                FileEntry? tempFile = null;
 
-            var manifestReWriter = new ManifestReWriter(fileSystem);
+                try
+                {
+                    tempFile = new FileEntry(fileSystem, UPath.Combine(Path.GetTempPath().AsFullPath(), Guid.NewGuid().ToString(), "my.nuspec"));
 
-            var result = manifestReWriter.Rewrite(path.FullName);
+                    tempFile.Directory.EnsureExists();
 
-            result.RemoveTags.Should().BeEmpty();
+                    await using var stream = tempFile.Open(FileMode.Create, FileAccess.Write);
+                    await stream.WriteAllTextAsync(NuSpecNoTags);
+
+                    var manifestReWriter = new ManifestReWriter(fileSystem);
+
+                    var result = await manifestReWriter.Rewrite(tempFile);
+
+                    result.RemoveTags.Should().BeEmpty();
+                }
+                finally
+                {
+                    tempFile?.DeleteIfExists();
+                    tempFile?.Directory.DeleteIfExists();
+                }
+            }
         }
 
         [Fact]
-        public void RewriteNoSource()
+        public async Task RewriteNoSource()
         {
-            IFileSystem fileSystem = new MemoryFileSystem();
+            using IFileSystem fileSystem = new MemoryFileSystem();
 
-            var path = new UPath("/my.nuspec");
-            fileSystem.WriteAllText(path, NuSpecNoSourceTags, Encoding.UTF8);
+            var fileEntry = new FileEntry(fileSystem, new UPath("/my.nuspec"));
+
+            await using (var stream = fileEntry.Open(FileMode.Create, FileAccess.Write))
+            {
+                await stream.WriteAllTextAsync(NuSpecNoSourceTags);
+            }
 
             var manifestReWriter = new ManifestReWriter(fileSystem);
 
-            var result = manifestReWriter.Rewrite(path.FullName);
+            var result = await manifestReWriter.Rewrite(fileEntry);
 
             result.RemoveTags.Should().NotBeEmpty();
         }

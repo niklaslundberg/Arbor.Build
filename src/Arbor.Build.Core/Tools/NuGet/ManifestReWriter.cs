@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
+using Arbor.Build.Core.IO;
 using NuGet.Packaging;
 using Serilog;
 using Zio;
@@ -14,51 +16,39 @@ namespace Arbor.Build.Core.Tools.NuGet
 
         public ManifestReWriter(IFileSystem fileSystem) => _fileSystem = fileSystem;
 
-        public ManifestReWriteResult Rewrite(
-            UPath nuspecFullPath,
+        public async Task<ManifestReWriteResult> Rewrite(
+            FileEntry nuspecFullPath,
             Func<string, string?>? propertyProvider = null,
             string tagPrefix = "x-arbor-build",
             ILogger? logger = null)
         {
-            if (nuspecFullPath.FullName is null)
-            {
-                throw new ArgumentNullException(nameof(nuspecFullPath));
-            }
-
-            if (string.IsNullOrWhiteSpace(tagPrefix))
-            {
-                throw new ArgumentNullException(nameof(tagPrefix));
-            }
-
-
-            if (!_fileSystem.FileExists(nuspecFullPath))
-            {
-                throw new FileNotFoundException($"The file '{nuspecFullPath}' does not exist",
-                    nuspecFullPath.FullName);
-            }
-
             bool isReWritten = false;
 
             FileEntry? tempFile = null;
 
             var removeTags = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            DirectoryEntry baseDir = new FileEntry(_fileSystem, nuspecFullPath).Directory;
-            string? baseDirFileSystemPath = _fileSystem.ConvertPathToInternal(baseDir.Path);
+            DirectoryEntry baseDir = nuspecFullPath.Directory;
+            string baseDirFileSystemPath = _fileSystem.ConvertPathToInternal(baseDir.Path);
 
-            ISet<string> tags;
+            await using var memoryStream = new MemoryStream();
 
-            using (var nuspecReadStream = _fileSystem.OpenFile(nuspecFullPath, FileMode.Open, FileAccess.Read))
+            await using (var nuspecReadStream = nuspecFullPath.Open(FileMode.Open, FileAccess.Read))
             {
-                var packageBuilder = new PackageBuilder(nuspecReadStream, baseDirFileSystemPath, propertyProvider);
-                tags = packageBuilder.Tags;
+                await nuspecReadStream.CopyToAsync(memoryStream);
+                memoryStream.Position = 0;
             }
+
+            var packageBuilder = new PackageBuilder(memoryStream, baseDirFileSystemPath, propertyProvider);
+            ISet<string> tags = packageBuilder.Tags;
+
+            memoryStream.Position = 0;
 
             if (tags.Count > 0)
             {
                 tempFile = new FileEntry(_fileSystem,
-                    UPath.Combine(nuspecFullPath.GetDirectory(),
-                        $"{nuspecFullPath.GetNameWithoutExtension()}.rewrite.nuspec"));
+                    UPath.Combine(nuspecFullPath.Directory.Path,
+                        $"{nuspecFullPath.Path.GetNameWithoutExtension()}.rewrite.nuspec"));
 
                 logger?.Verbose("Using starts with-pattern '{TagPrefix}' to exclude tags from NuSpec", tagPrefix);
 
@@ -87,9 +77,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                         tags.Remove(tagToRemove);
                     }
 
-                    using var nuspecReadStream =
-                        _fileSystem.OpenFile(nuspecFullPath, FileMode.Open, FileAccess.Read);
-                    var manifest = Manifest.ReadFrom(nuspecReadStream, propertyProvider, true);
+                    var manifest = Manifest.ReadFrom(memoryStream, propertyProvider, true);
 
                     manifest.Metadata.Tags = string.Join(" ", tags);
 
@@ -103,7 +91,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             if (isReWritten && tempFile is {})
             {
                 logger?.Verbose("Deleting NuSpec file '{NuspecFullPath}'", nuspecFullPath);
-                _fileSystem.DeleteFile(nuspecFullPath);
+                nuspecFullPath.DeleteIfExists();
 
                 logger?.Verbose("Moving NuSpec temp copy '{TempFile}' to file '{NuspecFullPath}'",
                     tempFile,

@@ -259,8 +259,8 @@ namespace Arbor.Build.Core.Tools.NuGet
             {
                 _logger.Verbose("Rewriting manifest in NuSpec '{NuSpecFileCopyPath}'", nuSpecFileCopyPath);
 
-                ManifestReWriteResult manifestReWriteResult =
-                    _manifestReWriter.Rewrite(nuSpecFileCopyPath, key => properties[key]);
+                ManifestReWriteResult manifestReWriteResult = await
+                    _manifestReWriter.Rewrite(fileEntry, key => properties[key]);
 
                 removedTags.AddRange(manifestReWriteResult.RemoveTags);
 
