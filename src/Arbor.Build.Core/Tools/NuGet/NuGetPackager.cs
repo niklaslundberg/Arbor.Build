@@ -242,6 +242,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             var nuSpecCopy = new NuSpec(packageId, packageConfiguration.Version, packageSpecificationPath);
 
+
             var nuSpecTempDirectory = UPath.Combine(packageConfiguration.TempPath.Path, "nuspecs");
 
             new DirectoryEntry(_fileSystem, nuSpecTempDirectory).EnsureExists();
@@ -253,7 +254,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             var removedTags = new List<string>();
 
-            UPath? nuspec = null;
+            FileEntry? nuspec = null;
 
             if (packageConfiguration.AllowManifestReWrite)
             {
@@ -264,27 +265,29 @@ namespace Arbor.Build.Core.Tools.NuGet
 
                 removedTags.AddRange(manifestReWriteResult.RemoveTags);
 
-                nuspec = manifestReWriteResult.RewrittenNuSpec?.Path;
+                nuspec = manifestReWriteResult.RewrittenNuSpec;
             }
             else
             {
                 _logger.Verbose("Rewriting nuspec manifest is disabled");
             }
 
-            nuspec ??= nuSpecFileCopyPath;
+            nuspec ??= fileEntry;
 
             if (_logger.IsEnabled(LogEventLevel.Verbose))
             {
+                string nuSpecContent = await GetNuSpecContent(fileEntry);
+
                 _logger.Verbose("Created nuspec content: {NewLine}{PackageContent}",
                     Environment.NewLine,
-                    GetNuSpecContent(fileEntry));
+                    nuSpecContent);
             }
 
             var result = await ExecuteNuGetPackAsync(
                 packageConfiguration.NuGetExePath,
                 packageConfiguration.PackagesDirectory,
                 _logger,
-                nuspec.Value,
+                nuspec,
                 properties,
                 nuSpecCopy,
                 removedTags,
@@ -301,12 +304,8 @@ namespace Arbor.Build.Core.Tools.NuGet
                     content);
             }
 
-            _fileSystem.DeleteFile(nuSpecFileCopyPath);
-
-            if (_fileSystem.FileExists(nuspec.Value))
-            {
-                new FileEntry(_fileSystem, nuspec.Value).DeleteIfExists();
-            }
+            fileEntry.DeleteIfExists();
+            nuspec.DeleteIfExists();
 
             return result;
         }
@@ -338,7 +337,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             UPath nuGetExePath,
             DirectoryEntry packagesDirectoryPath,
             ILogger logger,
-            UPath nuSpecFileCopyPath,
+            FileEntry nuSpecFileCopyPath,
             IDictionary<string, string?> properties,
             NuSpec nuSpecCopy,
             List<string> removedTags,
@@ -356,7 +355,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             var arguments = new List<string>
             {
                 "pack",
-                _fileSystem.ConvertPathToInternal(nuSpecFileCopyPath),
+                _fileSystem.ConvertPathToInternal(nuSpecFileCopyPath.Path),
                 "-Properties",
                 string.Join(";", properties.Select(pair => $"{pair.Key}={pair.Value}")),
                 "-OutputDirectory",

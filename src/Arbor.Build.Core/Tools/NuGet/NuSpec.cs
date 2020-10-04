@@ -32,9 +32,9 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             using var nuspecStream = filePath.Open(FileMode.Open, FileAccess.Read);
             using TextReader reader = new StreamReader(nuspecStream, Encoding.UTF8);
-            XDocument xml = XDocument.Load(reader);
+            var xml = XDocument.Load(reader);
 
-            List<XElement> metaData = xml.Descendants()
+            var metaData = xml.Descendants()
                 .Where(item => item.Name.LocalName == "package")
                 .Descendants()
                 .Where(item => item.Name.LocalName == "metadata")
@@ -53,26 +53,14 @@ namespace Arbor.Build.Core.Tools.NuGet
 
         public static NuSpec Parse(FileEntry nuspecFilePath)
         {
-            if (nuspecFilePath is null)
-            {
-                throw new ArgumentNullException(nameof(nuspecFilePath));
-            }
-
-            if (!nuspecFilePath.Exists)
-            {
-                throw new ArgumentException(
-                    $"The file '{nuspecFilePath}' does not exist",
-                    nameof(nuspecFilePath));
-            }
-
             string id;
             string version;
             using (var nuspecStream = nuspecFilePath.Open(FileMode.Open, FileAccess.Read))
             {
                 using TextReader reader = new StreamReader(nuspecStream, Encoding.UTF8);
-                XDocument document = XDocument.Load(reader);
+                var document = XDocument.Load(reader);
 
-                List<XElement> metaData = document.Descendants()
+                var metaData = document.Descendants()
                     .Where(item => item.Name.LocalName == "package")
                     .Descendants()
                     .Where(item => item.Name.LocalName == "metadata")
@@ -82,7 +70,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 version = metaData.Descendants().Single(item => item.Name.LocalName == "version").Value;
             }
 
-            SemanticVersion semanticVersion = SemanticVersion.Parse(version);
+            var semanticVersion = SemanticVersion.Parse(version);
 
             return new NuSpec(id, semanticVersion, nuspecFilePath);
         }

@@ -17,17 +17,24 @@ namespace Arbor.Build.Tests.Integration.PathExtensions
         static DirectoryEntry root;
 
         static IFileSystem fs;
+
+        Cleanup after = () =>
+        {
+            root.DeleteIfExists();
+            fs.Dispose();
+        };
+
         Establish context = () =>
         {
             fs = new PhysicalFileSystem();
 
             var tempPath = Path.GetTempPath().AsFullPath();
 
-            UPath rootPath = UPath.Combine(tempPath, $"root-{Guid.NewGuid()}");
+            var rootPath = UPath.Combine(tempPath, $"root-{Guid.NewGuid()}");
             fs.CreateDirectory(rootPath);
             root = fs.GetDirectoryEntry(rootPath);
 
-            new DirectoryEntry(fs,UPath.Combine(root.Path, "afolder")).EnsureExists();
+            new DirectoryEntry(fs, UPath.Combine(root.Path, "afolder")).EnsureExists();
             using (fs.OpenFile(UPath.Combine(root.Path, "afile.txt"), FileMode.Create, FileAccess.Write))
             {
             }
@@ -36,14 +43,9 @@ namespace Arbor.Build.Tests.Integration.PathExtensions
         };
 
         Because of =
-            () => isNotAllowed = specification.IsFileExcluded(fs.GetFileEntry(UPath.Combine(root.Path, "afile.txt")), root).Item1;
+            () => isNotAllowed = specification
+                .IsFileExcluded(fs.GetFileEntry(UPath.Combine(root.Path, "afile.txt")), root).Item1;
 
         It should_return_false = () => isNotAllowed.ShouldBeFalse();
-
-        Cleanup after = () =>
-        {
-            root.DeleteIfExists();
-            fs.Dispose();
-        };
     }
 }
