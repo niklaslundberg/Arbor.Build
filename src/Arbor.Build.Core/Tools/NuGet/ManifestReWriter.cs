@@ -12,6 +12,13 @@ namespace Arbor.Build.Core.Tools.NuGet
 {
     public class ManifestReWriter
     {
+        private static readonly char[] _separator = { ' ' };
+
+        private static ISet<string> ParseTags(string tags) =>
+            tags.Split(_separator, StringSplitOptions.RemoveEmptyEntries)
+                .Select(tag => tag.Trim())
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
         private readonly IFileSystem _fileSystem;
 
         public ManifestReWriter(IFileSystem fileSystem) => _fileSystem = fileSystem;
@@ -28,25 +35,14 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             var removeTags = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            DirectoryEntry baseDir = nuspecFullPath.Directory;
-            string baseDirFileSystemPath = _fileSystem.ConvertPathToInternal(baseDir.Path);
-
-            await using var memoryStream = new MemoryStream();
-            await using var packageBuilderStream = new MemoryStream();
+            Manifest manifest;
 
             await using (var nuspecReadStream = nuspecFullPath.Open(FileMode.Open, FileAccess.Read))
             {
-                await nuspecReadStream.CopyToAsync(memoryStream);
-                memoryStream.Position = 0;
+                manifest = Manifest.ReadFrom(nuspecReadStream, propertyProvider, true);
             }
 
-            await memoryStream.CopyToAsync(packageBuilderStream);
-            packageBuilderStream.Position = 0;
-
-            var packageBuilder = new PackageBuilder(packageBuilderStream, baseDirFileSystemPath, propertyProvider);
-            ISet<string> tags = packageBuilder.Tags;
-
-            memoryStream.Position = 0;
+            ISet<string> tags = ParseTags(manifest.Metadata.Tags);
 
             if (tags.Count > 0)
             {
@@ -81,11 +77,9 @@ namespace Arbor.Build.Core.Tools.NuGet
                         tags.Remove(tagToRemove);
                     }
 
-                    var manifest = Manifest.ReadFrom(memoryStream, propertyProvider, true);
-
                     manifest.Metadata.Tags = string.Join(" ", tags);
 
-                    using var tempStream = tempFile.Open(FileMode.Create, FileAccess.Write);
+                    await using var tempStream = tempFile.Open(FileMode.Create, FileAccess.Write);
                     manifest.Save(tempStream);
 
                     isReWritten = true;

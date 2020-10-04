@@ -100,7 +100,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             string patterns =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables
-                    .NuGetServerUploadPackageExclueStartsWithPatterns, "") ?? "";
+                    .NuGetServerUploadPackageExcludeStartsWithPatterns, "") ?? "";
 
             if (isRunningOnBuildAgent)
             {

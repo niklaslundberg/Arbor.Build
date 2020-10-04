@@ -130,6 +130,6 @@
         public const string NuGetSelfUpdateEnabled = "Arbor.Build.NuGet.SelfUpdate.Enabled";
 
         [VariableDescription("Semicolon separated list of file patterns for nuget packages to upload.")]
-        public const string NuGetServerUploadPackageExclueStartsWithPatterns = "Arbor.Build.NuGet.PackageUpload.PackagePatterns";
+        public const string NuGetServerUploadPackageExcludeStartsWithPatterns = "Arbor.Build.NuGet.PackageUpload.PackageExcludeStartsWithPatterns";
     }
 }

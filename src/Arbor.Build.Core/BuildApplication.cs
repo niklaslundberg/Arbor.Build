@@ -365,9 +365,7 @@ namespace Arbor.Build.Core
                     WellKnownVariables.VariableFileSourceEnabled);
             }
 
-            IEnumerable<IVariable> result = CheckEnvironmentLinesInVariables();
-
-            buildVariables.AddRange(result);
+            CheckEnvironmentLinesInVariables(buildVariables);
 
             buildVariables.AddRange(
                 EnvironmentVariableHelper.GetBuildVariablesFromEnvironmentVariables(_logger, _environmentVariables, buildVariables));
@@ -493,12 +491,10 @@ namespace Arbor.Build.Core
         }
 
 
-        private ImmutableArray<BuildVariable> CheckEnvironmentLinesInVariables()
+        private void CheckEnvironmentLinesInVariables(List<IVariable> buildVariables)
         {
-            var variables = new Dictionary<string, string>();
-
             var newLines =
-                variables.Where(item => item.Value.Contains(Environment.NewLine, StringComparison.Ordinal)).ToList();
+                buildVariables.Where(item => item.Value is {} && item.Value.Contains(Environment.NewLine, StringComparison.Ordinal)).ToList();
 
             if (newLines.Count > 0)
             {
@@ -506,7 +502,7 @@ namespace Arbor.Build.Core
 
                 variablesWithNewLinesBuilder.AppendLine("Variables containing new lines: ");
 
-                foreach (KeyValuePair<string, string> keyValuePair in newLines)
+                foreach (var keyValuePair in newLines)
                 {
                     variablesWithNewLinesBuilder.Append("Key ").Append(keyValuePair.Key).AppendLine(": ").AppendLine();
                     variablesWithNewLinesBuilder.Append('\'').Append(keyValuePair.Value).Append('\'').AppendLine();
@@ -516,8 +512,6 @@ namespace Arbor.Build.Core
 
                 throw new InvalidOperationException(variablesWithNewLinesBuilder.ToString());
             }
-
-            return variables.Select(item => new BuildVariable(item.Key, item.Value)).ToImmutableArray();
         }
 
         public async Task<ExitCode> RunAsync(string[]? args)
@@ -603,16 +597,6 @@ namespace Arbor.Build.Core
 
                 await Task.Delay(TimeSpan.FromMilliseconds(exitDelayInMilliseconds), _cancellationToken)
                     .ConfigureAwait(false);
-            }
-
-            if (Debugger.IsAttached)
-            {
-                WriteDebug($"Exiting build application with exit code {exitCode}");
-
-                if (!debugLoggerEnabled)
-                {
-                    Debugger.Break();
-                }
             }
 
             return exitCode;
