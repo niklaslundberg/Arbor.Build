@@ -142,9 +142,9 @@ namespace Arbor.Build.Core
             _logger.Debug("{Message}", message);
         }
 
-        private async Task<ExitCode> RunSystemToolsAsync()
+        private async Task<ExitCode> RunSystemToolsAsync(DirectoryEntry? sourceRoot)
         {
-            IReadOnlyCollection<IVariable> buildVariables = await GetBuildVariablesAsync().ConfigureAwait(false);
+            IReadOnlyCollection<IVariable> buildVariables = await GetBuildVariablesAsync(sourceRoot).ConfigureAwait(false);
 
             if (buildVariables.GetBooleanByKey(WellKnownVariables.ShowAvailableVariablesEnabled, true))
             {
@@ -310,7 +310,7 @@ namespace Arbor.Build.Core
             _logger.Information("{Tools}", sb.ToString());
         }
 
-        private async Task<IReadOnlyCollection<IVariable>> GetBuildVariablesAsync()
+        private async Task<IReadOnlyCollection<IVariable>> GetBuildVariablesAsync(DirectoryEntry? sourceRoot)
         {
             var buildVariables = new List<IVariable>(500);
 
@@ -319,13 +319,13 @@ namespace Arbor.Build.Core
 
             string? sourceRootPath = _environmentVariables.GetEnvironmentVariable(WellKnownVariables.SourceRoot);
 
-            if (string.IsNullOrWhiteSpace(sourceRootPath))
+            if (string.IsNullOrWhiteSpace(sourceRootPath) && sourceRoot is null)
             {
                 _logger.Error("Source root is not set");
                 return ImmutableArray<IVariable>.Empty;
             }
 
-            var sourceRoot = new DirectoryEntry(_fileSystem, sourceRootPath!.AsFullPath());
+            sourceRoot ??= new DirectoryEntry(_fileSystem, sourceRootPath!.AsFullPath());
 
             if (enabled)
             {
@@ -561,7 +561,7 @@ namespace Arbor.Build.Core
 
             try
             {
-                ExitCode systemToolsResult = await RunSystemToolsAsync().ConfigureAwait(false);
+                ExitCode systemToolsResult = await RunSystemToolsAsync(sourceDir).ConfigureAwait(false);
 
                 if (!systemToolsResult.IsSuccess)
                 {

@@ -261,7 +261,17 @@ namespace Arbor.Build.Core.Tools.NuGet
                 _logger.Verbose("Rewriting manifest in NuSpec '{NuSpecFileCopyPath}'", nuSpecFileCopyPath);
 
                 ManifestReWriteResult manifestReWriteResult = await
-                    _manifestReWriter.Rewrite(fileEntry, key => properties[key]);
+                    _manifestReWriter.Rewrite(fileEntry, key =>
+                    {
+                        if (!properties.TryGetValue(key, out string? value))
+                        {
+                            value = null;
+                        }
+
+                        _logger.Debug($"Fetching nuspec property with key '{key}', value '{value ?? "N/A"}'");
+
+                        return value;
+                    });
 
                 removedTags.AddRange(manifestReWriteResult.RemoveTags);
 
@@ -276,7 +286,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             if (_logger.IsEnabled(LogEventLevel.Verbose))
             {
-                string nuSpecContent = await GetNuSpecContent(fileEntry);
+                string nuSpecContent = await GetNuSpecContent(nuspec);
 
                 _logger.Verbose("Created nuspec content: {NewLine}{PackageContent}",
                     Environment.NewLine,
@@ -319,7 +329,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
         private static IDictionary<string, string?> GetProperties(NuGetPackageConfiguration configuration)
         {
-            var propertyValues = new Dictionary<string, string?>
+            var propertyValues = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase)
             {
                 ["configuration"] = configuration.Configuration, ["RepositoryCommit"] = configuration.GitHash
             };

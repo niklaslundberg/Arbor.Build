@@ -31,8 +31,8 @@ namespace Arbor.Build.Core.Tools.NuGet
             DirectoryEntry baseDir = nuspecFullPath.Directory;
             string baseDirFileSystemPath = _fileSystem.ConvertPathToInternal(baseDir.Path);
 
-            await using var memoryStream              = new MemoryStream();
-            await using var packageBuilderStream              = new MemoryStream();
+            await using var memoryStream = new MemoryStream();
+            await using var packageBuilderStream = new MemoryStream();
 
             await using (var nuspecReadStream = nuspecFullPath.Open(FileMode.Open, FileAccess.Read))
             {

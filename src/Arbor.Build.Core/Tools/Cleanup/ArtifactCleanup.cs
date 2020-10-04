@@ -8,7 +8,6 @@ using Arbor.Exceptions;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
-using Serilog.Core;
 using Zio;
 
 namespace Arbor.Build.Core.Tools.Cleanup
@@ -27,8 +26,6 @@ namespace Arbor.Build.Core.Tools.Cleanup
             string[] args,
             CancellationToken cancellationToken)
         {
-            logger ??= Logger.None;
-
             bool cleanupBeforeBuildEnabled =
                 buildVariables.GetBooleanByKey(
                     WellKnownVariables.CleanupArtifactsBeforeBuildEnabled,
