@@ -61,10 +61,6 @@ namespace Arbor.Build.Core.BuildVariables
         public const string Version =
             "Arbor.Build.Version";
 
-        [VariableDescription("Max number of CPUs for MSBuild to use")]
-        public const string CpuLimit =
-            "Arbor.Build.CpuLimit";
-
         [VariableDescription(".NET assembly version")]
         public const string NetAssemblyVersion =
             "Arbor.Build.NetAssembly.Version";
@@ -127,7 +123,7 @@ namespace Arbor.Build.Core.BuildVariables
         [VariableDescription("NuGet source to use when downloading Arbor.Build NuGet package")]
         public const string ArborBuildNuGetPackageSource = "Arbor.Build.NuGetPackage.Source";
 
-        [VariableDescription("MSBuild executable path (eg. C:\\MSbuild.exe)")]
+        [VariableDescription("MSBuild executable path (eg. C:\\MSBuild.exe)")]
         public const string ExternalTools_MSBuild_ExePath = "Arbor.Build.Tools.External.MSBuild.ExePath";
 
         [VariableDescription("Use dotnet msbuild instead of .NET Framework MSBuild")]
@@ -172,7 +168,7 @@ namespace Arbor.Build.Core.BuildVariables
         public const string ExternalTools_MSBuild_CodeAnalysisEnabled =
             "Arbor.Build.Tools.External.MSBuild.CodeAnalysis.Enabled";
 
-        [VariableDescription("MSBuild detault target when building")]
+        [VariableDescription("MSBuild default target when building")]
         public const string ExternalTools_MSBuild_DefaultTarget =
             "Arbor.Build.Tools.External.MSBuild.DefaultTarget";
 
@@ -189,7 +185,7 @@ namespace Arbor.Build.Core.BuildVariables
         public const string DebugBuildEnabled = "Arbor.Build.Configuration.Debug.Enabled";
 
         [VariableDescription(
-            "Comma separated list to filter assemblies, to only run tests dlls starting with prefix, case insensitive",
+            "Comma separated list to filter assemblies, to only run tests DLL files starting with prefix, case insensitive",
             "")]
         public const string TestsAssemblyStartsWith = "Arbor.Build.Tests.AssemblyStartsWith";
 
