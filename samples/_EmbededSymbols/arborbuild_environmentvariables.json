@@ -36,6 +36,14 @@
         {
             "key":  "Arbor.Build.Vcs.Git.RepositoryUrl",
             "value": "https://github.com/niklaslundberg/Arbor.Build.git"
+        },
+        {
+            "key":  "Arbor.Build.NuGet.PackageUpload.Enabled",
+            "value": "false"
+        },
+        {
+            "key":  "Arbor.Build.NuGet.PackageUpload.ForceUploadEnabled",
+            "value": "false"
         }
     ]
 }

@@ -155,8 +155,11 @@
       },
       "Autofac": {
         "type": "Transitive",
-        "resolved": "5.2.0",
-        "contentHash": "V8dBH0dsv75uDzl7Sw+HkhKDPUw2eXnlMjcSVMH+tLo2s67MpTKGyDj1pDcpR+IF2u4YRs0s3/x7R88YJzIWvg=="
+        "resolved": "6.0.0",
+        "contentHash": "tRVRXGxwXbQmPy1ZGso115O55ffVW4mWtufjOy7hduQ1BNVR1j7RQQjxpYuB6tJw5OrgqRWYVJLJ8RwYNz/j+A==",
+        "dependencies": {
+          "System.Diagnostics.DiagnosticSource": "4.7.1"
+        }
       },
       "Machine.Specifications": {
         "type": "Transitive",
@@ -575,8 +578,8 @@
       },
       "Serilog": {
         "type": "Transitive",
-        "resolved": "2.9.0",
-        "contentHash": "QzcrD33A3+CsVvwi1I5CSei67ikQnkGrw7SscgL+vZTghaC2aNYg8fiUcedXHzKJFNjgje9rBjzwYGQTKEaXaA=="
+        "resolved": "2.10.0",
+        "contentHash": "+QX0hmf37a0/OZLxM3wL7V6/ADvC1XihXN4Kq/p6d8lCPfgkRdiuhbWlMaFjR9Av0dy5F0+MBeDmDdRZN/YwQA=="
       },
       "Serilog.Formatting.Compact": {
         "type": "Transitive",
@@ -747,15 +750,8 @@
       },
       "System.Diagnostics.DiagnosticSource": {
         "type": "Transitive",
-        "resolved": "4.3.0",
-        "contentHash": "tD6kosZnTAGdrEa0tZSuFyunMbt/5KYDnHdndJYGqZoNy00XVXyACd5d6KnE1YgYv3ne2CjtAfNXo/fwEhnKUA==",
-        "dependencies": {
-          "System.Collections": "4.3.0",
-          "System.Diagnostics.Tracing": "4.3.0",
-          "System.Reflection": "4.3.0",
-          "System.Runtime": "4.3.0",
-          "System.Threading": "4.3.0"
-        }
+        "resolved": "4.7.1",
+        "contentHash": "j81Lovt90PDAq8kLpaJfJKV/rWdWuEk6jfV+MBkee33vzYLEUsy4gXK8laa9V2nZlLM9VM9yA/OOQxxPEJKAMw=="
       },
       "System.Diagnostics.EventLog": {
         "type": "Transitive",
@@ -1792,7 +1788,7 @@
           "Arbor.Processing": "0.6.0",
           "Arbor.Sorbus": "3.1.0",
           "Arbor.Tooler": "0.9.1",
-          "Autofac": "5.2.0",
+          "Autofac": "6.0.0",
           "JetBrains.Annotations": "2020.1.0",
           "MSTest.TestFramework": "2.1.2",
           "Machine.Specifications": "1.0.0",
@@ -1803,7 +1799,7 @@
           "Newtonsoft.Json": "12.0.3",
           "NuGet.Packaging": "5.7.0",
           "NuGet.Versioning": "5.7.0",
-          "Serilog": "2.9.0",
+          "Serilog": "2.10.0",
           "Serilog.Sinks.Console": "3.1.1",
           "Serilog.Sinks.Seq": "4.0.0",
           "System.ComponentModel.Annotations": "4.7.0",

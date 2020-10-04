@@ -29,7 +29,7 @@ namespace Arbor.Build.Core.IO
 
             var contentFilesFile = UPath.Combine(tempDirectory.Path, "contentFiles.json");
 
-            await using var contentStream = tempDirectory.FileSystem.OpenFile(contentFilesFile, FileMode.Open, FileAccess.Write);
+            await using var contentStream = tempDirectory.FileSystem.OpenFile(contentFilesFile, FileMode.Create, FileAccess.Write);
 
             await contentStream.WriteAllTextAsync(json);
 
@@ -40,7 +40,7 @@ namespace Arbor.Build.Core.IO
 
             var hashFile = new FileEntry(tempDirectory.FileSystem, hashFilePath);
 
-            var hashFs = hashFile.Open(FileMode.Open, FileAccess.Write);
+            var hashFs = hashFile.Open(FileMode.Create, FileAccess.Write);
 
             await hashFs.WriteAllTextAsync(contentFilesFileChecksum);
 

@@ -28,6 +28,10 @@
         {
             "key":  "Arbor.Build.NuGet.PackageUpload.Enabled",
             "value": "false"
+        },
+        {
+            "key":  "Arbor.Build.NuGet.PackageUpload.ForceUploadEnabled",
+            "value": "false"
         }
     ]
 }
