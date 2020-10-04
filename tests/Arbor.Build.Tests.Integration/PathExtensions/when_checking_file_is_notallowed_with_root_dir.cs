@@ -21,7 +21,9 @@ namespace Arbor.Build.Tests.Integration.PathExtensions
         {
             fs = new PhysicalFileSystem();
 
-            UPath rootPath = $@"C:\Temp\root-{Guid.NewGuid()}".AsFullPath();
+            var tempPath = Path.GetTempPath().AsFullPath();
+
+            UPath rootPath = UPath.Combine(tempPath, $"root-{Guid.NewGuid()}");
             fs.CreateDirectory(rootPath);
             root = fs.GetDirectoryEntry(rootPath);
 
@@ -34,7 +36,7 @@ namespace Arbor.Build.Tests.Integration.PathExtensions
         };
 
         Because of =
-            () => isNotAllowed = specification.IsFileExcluded(fs.GetFileEntry(UPath.Combine(root.Path, "afile.txt")), fs.GetDirectoryEntry(@"C:\Temp\root".AsFullPath())).Item1;
+            () => isNotAllowed = specification.IsFileExcluded(fs.GetFileEntry(UPath.Combine(root.Path, "afile.txt")), root).Item1;
 
         It should_return_false = () => isNotAllowed.ShouldBeFalse();
 

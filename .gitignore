@@ -23,6 +23,7 @@ src/Arbor.Build.Tests.Integration/xunit_v2.Arbor.Build.Tests.SampleXunitNetCoreA
 **\*.*_copy.nuspec
 *_copy.nuspec
 **\_*\Artifacts\**\*
+samples/_*/**/*.*
 
 
 #################

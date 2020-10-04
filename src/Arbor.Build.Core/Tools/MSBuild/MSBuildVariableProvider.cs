@@ -385,11 +385,14 @@ namespace Arbor.Build.Core.Tools.MSBuild
                         registryKeyName,
                         valueKey);
 
-                    using (var view32 =
-                        RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
+                    using var view32 =
+                        RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
+
+                    RegistryKey? key = view32.OpenSubKey(registryKeyName);
+
+                    if (key != null)
                     {
-                        using RegistryKey key = view32.OpenSubKey(registryKeyName);
-                        if (key != null)
+                        using (key)
                         {
                             msBuildPathRegistryKeyValue = key.GetValue(valueKey, null);
                         }

@@ -31,7 +31,8 @@ namespace Arbor.Build.Core.Tools.NuGet
             DirectoryEntry baseDir = nuspecFullPath.Directory;
             string baseDirFileSystemPath = _fileSystem.ConvertPathToInternal(baseDir.Path);
 
-            await using var memoryStream = new MemoryStream();
+            await using var memoryStream              = new MemoryStream();
+            await using var packageBuilderStream              = new MemoryStream();
 
             await using (var nuspecReadStream = nuspecFullPath.Open(FileMode.Open, FileAccess.Read))
             {
@@ -39,7 +40,10 @@ namespace Arbor.Build.Core.Tools.NuGet
                 memoryStream.Position = 0;
             }
 
-            var packageBuilder = new PackageBuilder(memoryStream, baseDirFileSystemPath, propertyProvider);
+            await memoryStream.CopyToAsync(packageBuilderStream);
+            packageBuilderStream.Position = 0;
+
+            var packageBuilder = new PackageBuilder(packageBuilderStream, baseDirFileSystemPath, propertyProvider);
             ISet<string> tags = packageBuilder.Tags;
 
             memoryStream.Position = 0;
