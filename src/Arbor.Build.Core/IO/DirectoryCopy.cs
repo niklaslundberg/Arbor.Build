@@ -22,26 +22,11 @@ namespace Arbor.Build.Core.IO
 
             ILogger logger = optionalLogger ?? Logger.None;
 
-            if (sourceDirectory is null)
-            {
-                throw new ArgumentNullException(nameof(sourceDirectory));
-            }
-
-            if (targetDir is null)
-            {
-                throw new ArgumentNullException(nameof(targetDir));
-            }
-
-            if (!sourceDirectory.Exists)
-            {
-                throw new ArgumentException($"Source directory '{sourceDirectory}' does not exist");
-            }
-
             (bool, string) isNotAllowed = pathLookupSpecification.IsNotAllowed(sourceDirectory, rootDir);
             if (isNotAllowed.Item1)
             {
                 logger?.Debug(
-                    "Directory '{SourceDir}' is notallowed from specification {PathLookupSpecification}, {Item2}",
+                    "Directory '{SourceDir}' is not allowed from specification {PathLookupSpecification}, {Item2}",
                     sourceDirectory,
                     pathLookupSpecification,
                     isNotAllowed.Item2);

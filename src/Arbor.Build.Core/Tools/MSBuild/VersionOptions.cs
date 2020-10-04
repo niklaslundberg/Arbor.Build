@@ -6,10 +6,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 {
     public class VersionOptions
     {
-        public VersionOptions(string version)
-        {
-            Version = version;
-        }
+        public VersionOptions(string version) => Version = version;
 
         public GitBranchModel? GitModel { get; set; }
 

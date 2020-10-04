@@ -29,7 +29,7 @@ namespace Arbor.Build.Core.Tools.DotNet
 
         public int Order => VariableProviderOrder.Ignored;
 
-        public async Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
+        public Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
@@ -38,14 +38,14 @@ namespace Arbor.Build.Core.Tools.DotNet
 
             if (!string.IsNullOrWhiteSpace(definedValue))
             {
-                return ImmutableArray<IVariable>.Empty;
+                return Task.FromResult(ImmutableArray<IVariable>.Empty);
             }
 
             var programFilesX64 = _environmentVariables.GetEnvironmentVariable("ProgramW6432")?.AsFullPath();
 
             if (programFilesX64 is null)
             {
-                return ImmutableArray<IVariable>.Empty;
+                return Task.FromResult(ImmutableArray<IVariable>.Empty);
             }
 
             var programFilesX64FullPath = UPath.Combine(
@@ -67,18 +67,18 @@ namespace Arbor.Build.Core.Tools.DotNet
 
                 if (semanticVersions.Length > 0)
                 {
-                    var version = semanticVersions.OrderByDescending(s => s.Version).First();
+                    var (directory, _, _) = semanticVersions.OrderByDescending(tuple => tuple.Version).First();
 
-                    var sdksPath = UPath.Combine(version.Directory.Path, "sdks");
+                    var sdksPath = UPath.Combine(directory.Path, "sdks");
 
                     if (_fileSystem.DirectoryExists(sdksPath))
                     {
-                        return new IVariable[] { new BuildVariable(MSBuildSdksPath, sdksPath.FullName) }.ToImmutableArray();
+                        return Task.FromResult(new IVariable[] { new BuildVariable(MSBuildSdksPath, sdksPath.FullName) }.ToImmutableArray());
                     }
                 }
             }
 
-            return ImmutableArray<IVariable>.Empty;
+            return Task.FromResult(ImmutableArray<IVariable>.Empty);
         }
     }
 }

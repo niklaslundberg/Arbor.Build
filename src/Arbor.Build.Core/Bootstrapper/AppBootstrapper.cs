@@ -19,7 +19,6 @@ using Arbor.Build.Core.Tools.NuGet;
 using Arbor.Exceptions;
 using Arbor.Processing;
 using Arbor.Tooler;
-using JetBrains.Annotations;
 using Serilog;
 using Zio;
 
@@ -34,7 +33,7 @@ namespace Arbor.Build.Core.Bootstrapper
         private bool _directoryCloneEnabled;
 
         private bool _failed;
-        private BootstrapStartOptions _startOptions;
+        private BootstrapStartOptions _startOptions = null!;
         private readonly IEnvironmentVariables _environmentVariables;
         private readonly IFileSystem _fileSystem;
 
@@ -109,10 +108,10 @@ namespace Arbor.Build.Core.Bootstrapper
                 _logger.Error(ex, "{Prefix} Could not start process", Prefix);
             }
 
-            _environmentVariables.GetEnvironmentVariable(WellKnownVariables.BootstrapperExitDelayInMilliseconds)
+            bool parsed = _environmentVariables.GetEnvironmentVariable(WellKnownVariables.BootstrapperExitDelayInMilliseconds)
                 .TryParseInt32(out int exitDelayInMilliseconds);
 
-            if (exitDelayInMilliseconds > 0)
+            if (parsed && exitDelayInMilliseconds > 0)
             {
                 _logger.Information(
                     "Delaying bootstrapper exit with {ExitDelayInMilliseconds} milliseconds as specified in '{BootstrapperExitDelayInMilliseconds}'",
@@ -159,7 +158,7 @@ namespace Arbor.Build.Core.Bootstrapper
                         {
                             using var childProcess = Process.GetProcessById((int)childProcessId);
 
-                            if (childProcess?.HasExited == false)
+                            if (!childProcess.HasExited)
                             {
                                 logger.Debug("Killing child process [{ProcessName}] with Id [{ChildProcessId}]",
                                     childProcess.ProcessName,
@@ -181,16 +180,11 @@ namespace Arbor.Build.Core.Bootstrapper
             }
         }
 
-        private async Task<BootstrapStartOptions> StartWithDebuggerAsync([NotNull] string[] args)
+        private async Task<BootstrapStartOptions> StartWithDebuggerAsync(string[] args)
         {
-            if (args == null)
-            {
-                throw new ArgumentNullException(nameof(args));
-            }
-
             var startOptions = BootstrapStartOptions.Parse(args);
 
-            DirectoryEntry baseDir = new DirectoryEntry(_fileSystem, VcsPathHelper.FindVcsRootPath(AppDomain.CurrentDomain.BaseDirectory));
+            var baseDir = new DirectoryEntry(_fileSystem, VcsPathHelper.FindVcsRootPath(AppDomain.CurrentDomain.BaseDirectory));
 
             var tempDirectory = new DirectoryEntry(_fileSystem, UPath.Combine(
                 Path.GetTempPath().AsFullPath(),
@@ -315,9 +309,9 @@ namespace Arbor.Build.Core.Bootstrapper
             {
                 try
                 {
-                    _environmentVariables.GetEnvironmentVariable("KillSpawnedProcess").TryParseBool(out bool enabled, true);
+                    bool parsed = _environmentVariables.GetEnvironmentVariable("KillSpawnedProcess").TryParseBool(out bool enabled, true);
 
-                    if (enabled)
+                    if (parsed && enabled)
                     {
                         KillAllProcessesSpawnedBy((uint)Process.GetCurrentProcess().Id, _logger);
                     }
@@ -341,10 +335,10 @@ namespace Arbor.Build.Core.Bootstrapper
 
             string? nuGetSource = _environmentVariables.GetEnvironmentVariable(WellKnownVariables.ArborBuildNuGetPackageSource);
 
-            _environmentVariables.GetEnvironmentVariable(WellKnownVariables.AllowPreRelease)
-                .TryParseBool(out bool preReleaseIsAllowed);
+            bool parsed = _environmentVariables.GetEnvironmentVariable(WellKnownVariables.AllowPreRelease)
+                .TryParseBool(out bool parsedValue);
 
-            preReleaseIsAllowed = _startOptions.PreReleaseEnabled ?? preReleaseIsAllowed;
+            bool preReleaseIsAllowed = _startOptions.PreReleaseEnabled ?? (parsed && parsedValue);
 
             bool parsedPackageVersion = NuGetPackageVersion.TryParse(version, out NuGetPackageVersion? packageVersion);
 
@@ -394,7 +388,7 @@ namespace Arbor.Build.Core.Bootstrapper
             return nuGetPackageInstallResult.PackageDirectory.FullName;
         }
 
-        private async Task<DirectoryEntry> GetBaseDirectoryAsync(BootstrapStartOptions startOptions)
+        private Task<DirectoryEntry> GetBaseDirectoryAsync(BootstrapStartOptions startOptions)
         {
             DirectoryEntry baseDir;
 
@@ -416,12 +410,12 @@ namespace Arbor.Build.Core.Bootstrapper
                 baseDir = new DirectoryEntry(_fileSystem, foundPath.AsFullPath());
             }
 
-            return baseDir;
+            return Task.FromResult(baseDir);
         }
 
         private async Task<(string?, List<string>)> GetExePath(DirectoryEntry buildToolDirectory, CancellationToken cancellationToken)
         {
-            List<FileEntry> arborBuild =
+            var arborBuild =
                 buildToolDirectory.GetFiles("Arbor.Build.*")
                     .Where(file => !file.Name.Equals("nuget.exe", StringComparison.OrdinalIgnoreCase))
                     .ToList();
@@ -505,7 +499,7 @@ namespace Arbor.Build.Core.Bootstrapper
 
                 arguments.Add($"-buildDirectory={buildDir}");
 
-                if (_startOptions?.Args?.Any() ?? false)
+                if (_startOptions.Args.Any())
                 {
                     arguments.AddRange(_startOptions.Args);
                 }

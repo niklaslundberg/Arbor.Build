@@ -17,7 +17,6 @@ SET Arbor.Build.Vcs.Branch.Name=%GITHUB_REF%
 SET Arbor.Build.Vcs.Branch.Name.Version.OverrideEnabled=true
 SET Arbor.Build.VariableOverrideEnabled=true
 SET Arbor.Build.Artifacts.CleanupBeforeBuildEnabled=true
-SET Arbor.Build.NetAssembly.Configuration=
 SET Arbor.Build.Tools.External.LibZ.Enabled=true
 REM SET Arbor.Build.Tools.External.MSBuild.DeterministicBuild.Enabled=true
 
@@ -65,6 +64,5 @@ SET Arbor.Build.NuGetPackageVersion=
 SET Arbor.Build.Vcs.Branch.Name.Version.OverrideEnabled=
 SET Arbor.Build.VariableOverrideEnabled=
 SET Arbor.Build.Artifacts.CleanupBeforeBuildEnabled=
-SET Arbor.Build.NetAssembly.Configuration=
 
 EXIT /B %ERRORLEVEL%

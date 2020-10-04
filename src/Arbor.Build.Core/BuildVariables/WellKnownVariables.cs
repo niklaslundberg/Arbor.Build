@@ -76,7 +76,7 @@ namespace Arbor.Build.Core.BuildVariables
         [VariableDescription("Enable assembly version patching")]
         public const string AssemblyFilePatchingEnabled = "Arbor.Build.NetAssembly.PatchingEnabled";
 
-        [Obsolete]
+        [Obsolete("Kept for backward compatibility")]
         [VariableDescription("MSBuild configuration (eg. Debug/Release)")]
         public const string Configuration =
             "Arbor.Build.Configuration";
@@ -144,6 +144,9 @@ namespace Arbor.Build.Core.BuildVariables
         [VariableDescription("MSBuild verbosity level", "normal")]
         public const string ExternalTools_MSBuild_Verbosity = "Arbor.Build.Tools.External.MSBuild.Verbosity";
 
+        [VariableDescription("MSBuild CPU count")]
+        public const string ExternalTools_MSBuild_CpuCount = "Arbor.Build.Tools.External.MSBuild.CpuCount";
+
         [VariableDescription("MSBuild show warnings", "normal")]
         public const string ExternalTools_MSBuild_LogWarnings = "Arbor.Build.Tools.External.MSBuild.Logging.Warnings.Enabled";
 
@@ -151,7 +154,7 @@ namespace Arbor.Build.Core.BuildVariables
         public const string ExternalTools_MSBuild_SummaryEnabled =
             "Arbor.Build.Tools.External.MSBuild.SummaryEnabled";
 
-        [Obsolete]
+        [Obsolete("Kept for backward compatibility")]
         [VariableDescription(
             "MSBuild build configuration, if not specified, all well-known configurations will be built")]
         public const string ExternalTools_MSBuild_BuildConfiguration =
@@ -317,7 +320,7 @@ namespace Arbor.Build.Core.BuildVariables
 
                 classes.AddRange(GetNestedClassTypes(item));
 
-                ImmutableArray<FieldInfo> fields = classes
+                var fields = classes
                     .Select(@class => @class
                         .GetFields()
                         .Where(field => field.IsPublicConstantOrStatic()))
@@ -352,7 +355,7 @@ namespace Arbor.Build.Core.BuildVariables
 
         private static ImmutableArray<Type> GetNestedClassTypes(Type staticClass)
         {
-            List<Type> nestedPublicStaticClasses = staticClass
+            var nestedPublicStaticClasses = staticClass
                 .GetNestedTypes(BindingFlags.Static | BindingFlags.Public)
                 .Where(type => type.IsClass)
                 .ToList();

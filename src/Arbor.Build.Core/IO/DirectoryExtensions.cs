@@ -25,7 +25,7 @@ namespace Arbor.Build.Core.IO
                 directoryEntry.Create();
 
             }
-            catch (System.IO.IOException ex) when (ex.Message.Contains("already exists"))
+            catch (System.IO.IOException ex) when (ex.Message.Contains("already exists", StringComparison.InvariantCultureIgnoreCase))
             {
                 return directoryEntry;
             }
@@ -159,12 +159,12 @@ namespace Arbor.Build.Core.IO
 
             var files = new List<FileEntry>();
 
-            List<FileEntry> directoryFiles = directory
+            var directoryFiles = directory
                 .EnumerateFiles()
                 .Where(file => !usedPathLookupSpecification.IsFileExcluded(file, rootDir).Item1)
                 .ToList();
 
-            List<FileEntry> filtered = (usedFileExtensions.Any()
+            var filtered = (usedFileExtensions.Any()
                     ? directoryFiles.Where(file => usedFileExtensions.Any(extension => file.Path.GetExtensionWithDot().Equals(
                         extension,
                         StringComparison.OrdinalIgnoreCase)))

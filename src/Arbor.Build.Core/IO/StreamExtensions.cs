@@ -28,8 +28,7 @@ namespace Arbor.Build.Core.IO
 
         public static async Task<string> ReadAllTextAsync(this Stream stream,
             Encoding? encoding = default,
-            bool leaveOpen = false,
-            CancellationToken cancellationToken = default)
+            bool leaveOpen = false)
         {
             using var streamReader = new StreamReader(stream, encoding ?? Encoding.UTF8, leaveOpen);
 
@@ -51,7 +50,7 @@ namespace Arbor.Build.Core.IO
                 }
 
                 yield return line;
-            };
+            }
         }
         public static async Task<ImmutableArray<string>> ReadAllLinesAsync(this Stream stream,
             Encoding? encoding = default,

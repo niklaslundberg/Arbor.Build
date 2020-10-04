@@ -30,25 +30,21 @@ namespace Arbor.Build.Core.Tools.NuGet
             Version = nuGetPackageVersion;
             PackageId = packageId;
 
-            using (var nuspecStream = filePath.Open(FileMode.Open, FileAccess.Read))
-            {
-                using (TextReader reader = new StreamReader(nuspecStream, Encoding.UTF8))
-                {
-                    XDocument xml = XDocument.Load(reader);
+            using var nuspecStream = filePath.Open(FileMode.Open, FileAccess.Read);
+            using TextReader reader = new StreamReader(nuspecStream, Encoding.UTF8);
+            XDocument xml = XDocument.Load(reader);
 
-                    List<XElement> metaData = xml.Descendants()
-                        .Where(item => item.Name.LocalName == "package")
-                        .Descendants()
-                        .Where(item => item.Name.LocalName == "metadata")
-                        .ToList();
+            List<XElement> metaData = xml.Descendants()
+                .Where(item => item.Name.LocalName == "package")
+                .Descendants()
+                .Where(item => item.Name.LocalName == "metadata")
+                .ToList();
 
-                    metaData.Descendants().Single(item => item.Name.LocalName == "id").Value = packageId;
-                    metaData.Descendants().Single(item => item.Name.LocalName == "version").Value =
-                        nuGetPackageVersion.ToNormalizedString();
+            metaData.Descendants().Single(item => item.Name.LocalName == "id").Value = packageId;
+            metaData.Descendants().Single(item => item.Name.LocalName == "version").Value =
+                nuGetPackageVersion.ToNormalizedString();
 
-                    _xml = xml.ToString(SaveOptions.None);
-                }
-            }
+            _xml = xml.ToString(SaveOptions.None);
         }
 
         public string PackageId { get; }
@@ -73,19 +69,17 @@ namespace Arbor.Build.Core.Tools.NuGet
             string version;
             using (var nuspecStream = nuspecFilePath.Open(FileMode.Open, FileAccess.Read))
             {
-                using (TextReader reader = new StreamReader(nuspecStream, Encoding.UTF8))
-                {
-                    XDocument document = XDocument.Load(reader);
+                using TextReader reader = new StreamReader(nuspecStream, Encoding.UTF8);
+                XDocument document = XDocument.Load(reader);
 
-                    List<XElement> metaData = document.Descendants()
-                        .Where(item => item.Name.LocalName == "package")
-                        .Descendants()
-                        .Where(item => item.Name.LocalName == "metadata")
-                        .ToList();
+                List<XElement> metaData = document.Descendants()
+                    .Where(item => item.Name.LocalName == "package")
+                    .Descendants()
+                    .Where(item => item.Name.LocalName == "metadata")
+                    .ToList();
 
-                    id = metaData.Descendants().Single(item => item.Name.LocalName == "id").Value;
-                    version = metaData.Descendants().Single(item => item.Name.LocalName == "version").Value;
-                }
+                id = metaData.Descendants().Single(item => item.Name.LocalName == "id").Value;
+                version = metaData.Descendants().Single(item => item.Name.LocalName == "version").Value;
             }
 
             SemanticVersion semanticVersion = SemanticVersion.Parse(version);

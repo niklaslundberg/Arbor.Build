@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
@@ -18,7 +19,7 @@ namespace Arbor.Build.Core.Tools.Cleanup
     public class ProcessCleanup : ITool
     {
         private readonly ILogger _logger;
-        private static readonly string[] _processNames = {"msbuild.exe", "vbcscompiler.exe", "csc.exe"};
+        private static ImmutableArray<string> ProcessNames { get; } = new string[] {"msbuild.exe", "vbcscompiler.exe", "csc.exe"}.ToImmutableArray();
 
         public ProcessCleanup(ILogger logger) => _logger = logger;
 
@@ -82,7 +83,7 @@ namespace Arbor.Build.Core.Tools.Cleanup
                 {
                     string? fileName = process.MainModule?.FileName;
 
-                    if (!string.IsNullOrWhiteSpace(fileName) && _processNames.Any(name =>
+                    if (!string.IsNullOrWhiteSpace(fileName) && ProcessNames.Any(name =>
                         fileName.Equals(name, StringComparison.OrdinalIgnoreCase)))
                     {
                         process.Kill(true);

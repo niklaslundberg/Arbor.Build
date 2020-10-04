@@ -1,6 +1,4 @@
-using System;
 using Autofac;
-using JetBrains.Annotations;
 using Zio;
 
 namespace Arbor.Build.Core.BuildVariables
@@ -9,15 +7,7 @@ namespace Arbor.Build.Core.BuildVariables
     {
         private readonly DirectoryEntry _sourceDirectory;
 
-        public BuildVariableModule([NotNull] DirectoryEntry sourceDirectory)
-        {
-            if (sourceDirectory == null)
-            {
-                throw new ArgumentNullException(nameof(sourceDirectory));
-            }
-
-            _sourceDirectory = sourceDirectory;
-        }
+        public BuildVariableModule(DirectoryEntry sourceDirectory) => _sourceDirectory = sourceDirectory;
 
         protected override void Load(ContainerBuilder builder) =>
             builder.RegisterInstance(new SourceRootValue(_sourceDirectory))

@@ -2,7 +2,6 @@
 using System.IO;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.NuGet;
-using Arbor.FS;
 using Serilog.Core;
 using Xunit;
 using Xunit.Abstractions;
@@ -28,14 +27,14 @@ namespace Arbor.Build.Tests.Integration.NuGet
 
             DirectoryEntry subDirectoryA = tempDirectory.CreateSubdirectory("Abc");
 
-            UPath fileName = UPath.Combine(subDirectoryA.FullName, "def.txt");
+            var fileName = UPath.Combine(subDirectoryA.FullName, "def.txt");
 
 
             using (fs.CreateFile(fileName))
             {
             }
 
-            var includedFile = NuSpecHelper.IncludedFile(new FileEntry(fs, fileName), tempDirectory, Logger.None);
+            string? includedFile = NuSpecHelper.IncludedFile(new FileEntry(fs, fileName), tempDirectory, Logger.None);
 
             tempDirectory.DeleteIfExists();
 

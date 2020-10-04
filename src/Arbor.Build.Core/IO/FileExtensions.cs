@@ -13,10 +13,8 @@ namespace Arbor.Build.Core.IO
         {
             fileEntry.Directory.EnsureExists();
 
-            await using (Stream stream = fileEntry.Open(FileMode.Create, FileAccess.Write))
-            {
-                await stream.WriteAllTextAsync(text.AsMemory(), encoding, cancellationToken);
-            }
+            await using Stream stream = fileEntry.Open(FileMode.Create, FileAccess.Write);
+            await stream.WriteAllTextAsync(text.AsMemory(), encoding, cancellationToken);
         }
     }
 }

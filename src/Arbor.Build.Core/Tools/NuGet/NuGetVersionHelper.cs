@@ -21,7 +21,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             GitBranchModel? gitModel = null,
             BranchName? branchName = null)
         {
-            string GetStableSemanticVersion(Version result)
+            static string GetStableSemanticVersion(Version result)
             {
                 string parsed = result.ToString(3);
 

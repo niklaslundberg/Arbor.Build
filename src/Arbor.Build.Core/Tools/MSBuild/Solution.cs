@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Arbor.Build.Core.IO;
-using JetBrains.Annotations;
 using Zio;
 
 namespace Arbor.Build.Core.Tools.MSBuild
@@ -27,18 +26,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
         public ImmutableArray<SolutionProject> Projects { get; }
 
-        public static async Task<Solution> LoadFrom([NotNull] FileEntry solutionFileFullName)
+        public static async Task<Solution> LoadFrom(FileEntry solutionFileFullName)
         {
-            if (solutionFileFullName is null)
-            {
-                throw new ArgumentException(Resources.ValueCannotBeNullOrWhitespace, nameof(solutionFileFullName));
-            }
-
-            if (!solutionFileFullName.Exists)
-            {
-                throw new ArgumentException($"The file '{solutionFileFullName}' does not exists");
-            }
-
             var stream = solutionFileFullName.Open(FileMode.Open, FileAccess.Read);
 
             var lines = await stream.ReadAllLinesAsync();
@@ -99,9 +88,9 @@ namespace Arbor.Build.Core.Tools.MSBuild
             var projectFullPath = UPath.Combine(fileEntry.Directory.Path, projectFile);
 
             var projectFileFullName = fileEntry.FileSystem.GetFileEntry(projectFullPath);
-            MSBuildProject msBuildProject = await MSBuildProject.LoadFrom(projectFileFullName);
+            MsBuildProject msBuildProject = await MsBuildProject.LoadFrom(projectFileFullName);
 
-            NetFrameworkGeneration netFrameworkGeneration = await MSBuildProject.IsNetSdkProject(projectFileFullName)
+            NetFrameworkGeneration netFrameworkGeneration = await MsBuildProject.IsNetSdkProject(projectFileFullName)
                 ? NetFrameworkGeneration.NetCoreApp
                 : NetFrameworkGeneration.NetFramework;
 

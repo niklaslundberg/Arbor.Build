@@ -65,12 +65,12 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                 var resultBuilder = new StringBuilder();
 
-                CategoryLog standardOutLog = (message, _) => resultBuilder.Append(message);
+                void StandardOutLog(string message, string _) => resultBuilder.Append(message);
 
                 ExitCode exitCode = await ProcessRunner.ExecuteProcessAsync(
                   _fileSystem.ConvertPathToInternal( vsWherePath),
                     vsWhereArgs,
-                    standardOutLog,
+                    StandardOutLog,
                     cancellationToken: cancellationToken,
                     toolAction: logger.Debug,
                     standardErrorAction: logger.Error).ConfigureAwait(false);
@@ -210,7 +210,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 Process.GetCurrentProcess().Id,
                 currentProcessBits);
 
-            List<SemanticVersion> possibleMajorVersions = new List<string>
+            var possibleMajorVersions = new List<string>
                 {
                     "16.0.0",
                     "15.0.0",
@@ -385,7 +385,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                         registryKeyName,
                         valueKey);
 
-                    using (RegistryKey view32 =
+                    using (var view32 =
                         RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
                     {
                         using RegistryKey key = view32.OpenSubKey(registryKeyName);

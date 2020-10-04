@@ -32,6 +32,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
             return Name == other.Name;
         }
 
+        public override bool Equals(object? obj) => Equals(obj as GitBranchModel);
+
         public static bool TryParse(string? value, out GitBranchModel? model)
         {
             if (string.IsNullOrWhiteSpace(value))
@@ -56,8 +58,6 @@ namespace Arbor.Build.Core.Tools.MSBuild
             return false;
         }
 
-        public override bool Equals(object? obj) =>
-            ReferenceEquals(this, obj) || (obj is GitBranchModel other && Equals(other));
 
         public override int GetHashCode() => Name.GetHashCode(StringComparison.Ordinal);
 

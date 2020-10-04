@@ -46,7 +46,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             }
             else
             {
-                List<FileEntry> standardPackages =
+                var standardPackages =
                     artifactPackagesDirectory.EnumerateFiles("*.nupkg", SearchOption.AllDirectories)
                         .Where(file => file.Name.IndexOf("symbols", StringComparison.OrdinalIgnoreCase) < 0)
                         .ToList();
@@ -58,10 +58,8 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             foreach (var nuGetPackageFile in nuGetPackageFiles)
             {
-                using (var package = new PackageArchiveReader(nuGetPackageFile.FileSystem.ConvertPathToInternal(nuGetPackageFile.FullName)))
-                {
-                    versions.Add(SemanticVersion.Parse(package.NuspecReader.GetVersion().ToNormalizedString()).ToNormalizedString());
-                }
+                using var package = new PackageArchiveReader(nuGetPackageFile.FileSystem.ConvertPathToInternal(nuGetPackageFile.FullName));
+                versions.Add(SemanticVersion.Parse(package.NuspecReader.GetVersion().ToNormalizedString()).ToNormalizedString());
             }
 
             bool? isRunningInTeamCity =
@@ -73,7 +71,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 {
                     _logger.Verbose("Setting TeamCity variable env.{Key}",
                         WellKnownVariables.NuGetPackageVersionResult);
-                    var version = versions.Single();
+                    string? version = versions.Single();
                     _logger.Information(
                         "##teamcity[setParameter name='env." + WellKnownVariables.NuGetPackageVersionResult +
                         "' value='{Version}']", version);

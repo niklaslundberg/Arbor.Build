@@ -9,7 +9,7 @@ namespace Arbor.Build.Tests.Unit
 {
     public class ManifestRewriterTests
     {
-        private string NuSpecNoTags => @"<?xml version=""1.0""?>
+        private static string NuSpecNoTags => @"<?xml version=""1.0""?>
 
 <package>
   <metadata>
@@ -44,7 +44,7 @@ namespace Arbor.Build.Tests.Unit
   </files>
 </package>
 ";
-        private string NuSpecNoSourceTags => $@"<?xml version=""1.0""?>
+        private static string NuSpecNoSourceTags => $@"<?xml version=""1.0""?>
 
 <package>
   <metadata>

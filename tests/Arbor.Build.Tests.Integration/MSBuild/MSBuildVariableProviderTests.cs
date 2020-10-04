@@ -15,19 +15,19 @@ namespace Arbor.Build.Tests.Integration.MSBuild
 {
     public class MSBuildVariableProviderTests
     {
-        public MSBuildVariableProviderTests(ITestOutputHelper output) => this.output = output;
+        public MSBuildVariableProviderTests(ITestOutputHelper output) => this._output = output;
 
-        readonly ITestOutputHelper output;
+        readonly ITestOutputHelper _output;
 
         [Fact(Skip = "Requires VS 2019 installed")]
-        public async Task GetMSbuildVariables()
+        public async Task GetMSBuildVariables()
         {
             using var physicalFileSystem = new PhysicalFileSystem();
             var msBuildVariableProvider = new MSBuildVariableProvider(EnvironmentVariables.Empty, SpecialFolders.Default, physicalFileSystem);
             var variables = await msBuildVariableProvider.GetBuildVariablesAsync(Logger.None,
                 ImmutableArray<IVariable>.Empty, CancellationToken.None).ConfigureAwait(false);
 
-            output.WriteLine(string.Join(Environment.NewLine, variables.Select(s => s.Key + " " + s.Value)));
+            _output.WriteLine(string.Join(Environment.NewLine, variables.Select(s => s.Key + " " + s.Value)));
 
         }
     }

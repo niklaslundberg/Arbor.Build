@@ -18,9 +18,6 @@ namespace Arbor.Build.Core.ProcessUtils
             IEnumerable<string>? arguments = null,
             ILogger? logger = null,
             IEnumerable<KeyValuePair<string, string>>? environmentVariables = null,
-            bool addProcessNameAsLogCategory = false,
-            bool addProcessRunnerCategory = false,
-            string? parentPrefix = null,
             CancellationToken cancellationToken = default)
         {
             ILogger usedLogger = logger ?? Logger.None;

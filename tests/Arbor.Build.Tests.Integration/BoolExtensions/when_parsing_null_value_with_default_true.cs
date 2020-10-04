@@ -10,7 +10,7 @@ namespace Arbor.Build.Tests.Integration.BoolExtensions
 
         Because of = () =>
         {
-            ((string)null).TryParseBool(out bool result, true);
+            ((string?)null).TryParseBool(out bool result, true);
             result_value = result;
         };
 

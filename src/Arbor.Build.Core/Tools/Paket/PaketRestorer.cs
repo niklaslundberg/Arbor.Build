@@ -45,7 +45,7 @@ namespace Arbor.Build.Core.Tools.Paket
 
             FileEntry? paketExe = null;
 
-            List<FileEntry> packageSpecifications =
+            var packageSpecifications =
                 sourceRoot.GetFilesRecursive(new List<string> { ".exe" }, pathLookupSpecification)
                     .Where(file => file.Name.Equals("paket.exe", StringComparison.Ordinal))
                     .ToList();

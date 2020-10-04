@@ -1,5 +1,4 @@
 using Arbor.Build.Core.Tools.Git;
-using JetBrains.Annotations;
 using Machine.Specifications;
 
 namespace Arbor.Build.Tests.Integration.GitBranchNameExtensions
@@ -7,7 +6,7 @@ namespace Arbor.Build.Tests.Integration.GitBranchNameExtensions
     [Subject(typeof(Core.Tools.Git.GitBranchNameExtensions))]
     public class when_getting_branch_name_for_branch_with_other_remote_name
     {
-        [CanBeNull] static string result;
+        static string? result;
 
         static string name;
 

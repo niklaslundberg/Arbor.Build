@@ -11,9 +11,9 @@ using Zio;
 
 namespace Arbor.Build.Core.Tools.MSBuild
 {
-    public class MSBuildProject
+    public class MsBuildProject
     {
-        private MSBuildProject(
+        private MsBuildProject(
             IReadOnlyList<MSBuildPropertyGroup> propertyGroups,
             FileEntry fileName,
             string projectName,
@@ -49,13 +49,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
         public ImmutableArray<PackageReferenceElement> PackageReferences { get; }
 
-        public static async Task<bool> IsNetSdkProject([NotNull] FileEntry projectFile)
+        public static async Task<bool> IsNetSdkProject(FileEntry projectFile)
         {
-            if (projectFile == null)
-            {
-                throw new ArgumentNullException(nameof(projectFile));
-            }
-
             if (projectFile.FullName.IndexOfAny(Path.GetInvalidPathChars()) >= 0)
             {
                 throw new InvalidOperationException(Resources.ThePathContainsInvalidCharacters);
@@ -68,7 +63,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             var fs = projectFile.Open(FileMode.Open, FileAccess.Read);
 
-            await foreach (var line in fs.EnumerateLinesAsync())
+            await foreach (string line in fs.EnumerateLinesAsync())
             {
                 return line.Contains("Microsoft.NET.Sdk", StringComparison.OrdinalIgnoreCase);
             }
@@ -77,7 +72,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
         }
 
 
-        public static async Task<MSBuildProject> LoadFrom(FileEntry projectFileFullName)
+        public static async Task<MsBuildProject> LoadFrom(FileEntry projectFileFullName)
         {
 
             using var fs = projectFileFullName.Open(FileMode.Open, FileAccess.Read);
@@ -85,17 +80,17 @@ namespace Arbor.Build.Core.Tools.MSBuild
             return await LoadFrom(fs, projectFileFullName);
         }
 
-        public static async Task<MSBuildProject> LoadFrom(Stream fs, FileEntry projectFileFullName)
+        public static Task<MsBuildProject> LoadFrom(Stream fs, FileEntry projectFileFullName)
         {
             var msbuildPropertyGroups = new List<MSBuildPropertyGroup>();
 
             Guid? projectId = default;
 
-            XDocument document = XDocument.Load(fs);
+            var document = XDocument.Load(fs);
 
             const string projectElementName = "Project";
 
-            XElement project = document.Elements().SingleOrDefault(element =>
+            XElement? project = document.Elements().SingleOrDefault(element =>
                 element.Name.LocalName.Equals(projectElementName, StringComparison.Ordinal));
 
             if (project is null)
@@ -104,26 +99,23 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     $"Could not find element <{projectElementName}> in file '{projectFileFullName}'");
             }
 
-            ImmutableArray<XElement> propertyGroups = project
+            var propertyGroups = project
                 .Elements()
                 .Where(e => e.Name.LocalName.Equals("PropertyGroup", StringComparison.Ordinal))
                 .ToImmutableArray();
 
-            ImmutableArray<XElement> itemGroups = project
+            var itemGroups = project
                 .Elements()
                 .Where(e => e.Name.LocalName.Equals("ItemGroup", StringComparison.Ordinal))
                 .ToImmutableArray();
 
-            XElement idElement = propertyGroups
+            XElement? idElement = propertyGroups
                 .Elements()
                 .FirstOrDefault(e => e.Name.LocalName.Equals("ProjectGuid", StringComparison.Ordinal));
 
-            if (idElement?.Value != null)
+            if (idElement?.Value != null && Guid.TryParse(idElement.Value, out Guid id))
             {
-                if (Guid.TryParse(idElement.Value, out Guid id))
-                {
-                    projectId = id;
-                }
+                projectId = id;
             }
 
             foreach (XElement propertyGroup in propertyGroups)
@@ -157,9 +149,9 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             string? sdkValue = project.Attribute("Sdk")?.Value;
 
-            DotNetSdk sdk = DotNetSdk.ParseOrDefault(sdkValue);
+            var sdk = DotNetSdk.ParseOrDefault(sdkValue);
 
-            ImmutableArray<PackageReferenceElement> packageReferences = itemGroups
+            var packageReferences = itemGroups
                 .Elements()
                 .Where(e => e.Name.LocalName.Equals("PackageReference", StringComparison.Ordinal))
                 .Select(packageReference => new PackageReferenceElement(
@@ -168,14 +160,14 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 .Where(reference => reference.IsValid)
                 .ToImmutableArray();
 
-            return new MSBuildProject(msbuildPropertyGroups,
+            return Task.FromResult(new MsBuildProject(msbuildPropertyGroups,
                 projectFileFullName,
                 name,
                 projectFileFullName.Directory,
                 projectTypes,
                 projectId,
                 sdk,
-                packageReferences);
+                packageReferences));
         }
 
         public override string ToString() => $"{FileName} {nameof(Properties)} [{PropertyGroups.SelectMany(g => g.Properties).Count()}]:{Environment.NewLine}{string.Join(Environment.NewLine, PropertyGroups.SelectMany(g => g.Properties).Select(p => "\t" + p.ToString()))}{Environment.NewLine}{nameof(FileName)}: {FileName}{Environment.NewLine}{nameof(ProjectName)}: {ProjectName}{Environment.NewLine}{nameof(ProjectDirectory)}: {ProjectDirectory}{nameof(ProjectTypes)}: {string.Join(", ", ProjectTypes.Select(t => t.ToString()))},{Environment.NewLine}{nameof(ProjectId)}: {ProjectId}{Environment.NewLine}{nameof(Sdk)}: {Sdk}{Environment.NewLine}{nameof(PackageReferences)} [{PackageReferences.Length}]:{Environment.NewLine} {string.Join(Environment.NewLine, PackageReferences.Select(r => r.ToString()))}";
@@ -204,7 +196,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 throw new ArgumentNullException(nameof(name));
             }
 
-            List<MSBuildProperty> msBuildProperties = PropertyGroups
+            var msBuildProperties = PropertyGroups
                 .SelectMany(propertyGroup =>
                     propertyGroup.Properties.Where(property =>
                         property.Name.Equals(name, StringComparison.Ordinal)))

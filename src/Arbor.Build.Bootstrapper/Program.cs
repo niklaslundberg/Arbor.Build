@@ -13,13 +13,10 @@ namespace Arbor.Build.Bootstrapper
 {
     internal static class Program
     {
-        private static PhysicalFileSystem _physicalFileSystem;
-        private static WindowsFs _fileSystem;
+        private static PhysicalFileSystem _physicalFileSystem = null!;
+        private static WindowsFs _fileSystem = null!;
 
-        private static Task<int> Main(string[] args)
-        {
-            return RunAsync(args);
-        }
+        private static Task<int> Main(string[] args) => RunAsync(args);
 
         public static async Task<int> RunAsync(string[] args, IEnvironmentVariables? environmentVariables = default, IFileSystem? fileSystem = default)
         {

@@ -30,17 +30,10 @@ namespace Arbor.Build.Core.BuildVariables
 
         public string Description => _description ?? string.Empty;
 
-        public static implicit operator string([NotNull] VariableDescription variableDescription)
-        {
-            if (variableDescription is null)
-            {
-                throw new ArgumentNullException(nameof(variableDescription));
-            }
-
-            return variableDescription.InvariantName;
-        }
+        public static implicit operator string([NotNull] VariableDescription variableDescription) => variableDescription.InvariantName;
 
         public static implicit operator VariableDescription(string invariantName) => Create(invariantName);
+        public static string FromString(string invariantName) => Create(invariantName);
 
         public static bool operator ==(VariableDescription left, VariableDescription right) => Equals(left, right);
 

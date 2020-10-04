@@ -36,12 +36,12 @@ namespace Arbor.Build.Core.Tools.DotNet
             UPath? dotNetExePath =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.DotNetExePath)?.AsFullPath();
 
-            if (dotNetExePath.HasValue)
+            if (dotNetExePath.HasValue && dotNetExePath.Value != UPath.Empty)
             {
                 return ImmutableArray<IVariable>.Empty;
             }
 
-            if (dotNetExePath == UPath.Empty || string.IsNullOrWhiteSpace(dotNetExePath?.FullName))
+            if (string.IsNullOrWhiteSpace(dotNetExePath?.FullName))
             {
                 var sb = new List<string>(10);
 

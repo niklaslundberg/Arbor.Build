@@ -87,18 +87,14 @@ namespace Arbor.Build.Core.Tools.NuGet
                         tags.Remove(tagToRemove);
                     }
 
-                    using (var nuspecReadStream =
-                        _fileSystem.OpenFile(nuspecFullPath, FileMode.Open, FileAccess.Read))
-                    {
-                        var manifest = Manifest.ReadFrom(nuspecReadStream, propertyProvider, true);
+                    using var nuspecReadStream =
+                        _fileSystem.OpenFile(nuspecFullPath, FileMode.Open, FileAccess.Read);
+                    var manifest = Manifest.ReadFrom(nuspecReadStream, propertyProvider, true);
 
-                        manifest.Metadata.Tags = string.Join(" ", tags);
+                    manifest.Metadata.Tags = string.Join(" ", tags);
 
-                        using (var tempStream = tempFile.Open(FileMode.Create, FileAccess.Write))
-                        {
-                            manifest.Save(tempStream);
-                        }
-                    }
+                    using var tempStream = tempFile.Open(FileMode.Create, FileAccess.Write);
+                    manifest.Save(tempStream);
 
                     isReWritten = true;
                 }

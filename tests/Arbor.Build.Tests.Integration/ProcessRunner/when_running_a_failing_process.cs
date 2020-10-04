@@ -51,10 +51,10 @@ EXIT /b 3
                 exitCode =
                     await
                         Processing.ProcessRunner.ExecuteProcessAsync(fs.ConvertPathToInternal(testPath),
-                                standardOutLog: (message, prefix) => logger.Information(message, "STANDARD"),
-                                standardErrorAction: (message, prefix) => logger.Error(message, "ERROR"),
-                                toolAction: (message, prefix) => logger.Information(message, "TOOL"),
-                                verboseAction: (message, prefix) => logger.Information(message, "VERBOSE"))
+                                standardOutLog: (message, prefix) => logger.Information("{Message}", message),
+                                standardErrorAction: (message, prefix) => logger.Error("{Message}", message),
+                                toolAction: (message, prefix) => logger.Information("{Message}", message),
+                                verboseAction: (message, prefix) => logger.Information("{Message}", message))
                             .ConfigureAwait(false);
             }
             catch (Exception ex)

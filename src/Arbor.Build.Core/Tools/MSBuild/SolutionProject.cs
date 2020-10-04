@@ -8,7 +8,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             FileEntry fullPath,
             string projectName,
             DirectoryEntry projectDirectory,
-            MSBuildProject msbuildProject,
+            MsBuildProject msbuildProject,
             NetFrameworkGeneration netFrameworkGeneration)
         {
             FullPath = fullPath;
@@ -26,7 +26,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
         public DirectoryEntry ProjectDirectory { get; }
 
-        public MSBuildProject Project { get; }
+        public MsBuildProject Project { get; }
 
         public override string ToString() => ProjectName;
     }

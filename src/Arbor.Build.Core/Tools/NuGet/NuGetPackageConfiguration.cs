@@ -15,7 +15,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             [NotNull] SemanticVersion version,
             [NotNull] DirectoryEntry packagesDirectory,
             [NotNull] UPath nugetExePath,
-            string? branchName,
+            string branchName,
             string? suffix = null,
             bool branchNameEnabled = false,
             string? packageIdOverride = null,

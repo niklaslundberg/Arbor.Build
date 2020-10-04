@@ -8,7 +8,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             FileEntry fullPath,
             string projectName,
             DirectoryEntry projectDirectory,
-            MSBuildProject msbuildProject,
+            MsBuildProject msbuildProject,
             NetFrameworkGeneration netFrameworkGeneration) : base(fullPath, projectName, projectDirectory, msbuildProject, netFrameworkGeneration)
         {
         }

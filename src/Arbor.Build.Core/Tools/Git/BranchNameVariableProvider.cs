@@ -186,11 +186,6 @@ namespace Arbor.Build.Core.Tools.Git
                     { "status --porcelain --branch" }
             };
 
-            if (gitExePath == UPath.Empty)
-            {
-                throw new ArgumentException(Resources.ValueCannotBeNullOrWhitespace, nameof(gitExePath));
-            }
-
             string branchName = string.Empty;
             var gitBranchBuilder = new StringBuilder();
 
@@ -234,7 +229,7 @@ namespace Arbor.Build.Core.Tools.Git
                                                    StringSplitOptions.RemoveEmptyEntries)
                                                .FirstOrDefault() ?? string.Empty;
 
-                        var mayBeBranchName = firstLine.GetBranchName();
+                        string? mayBeBranchName = firstLine.GetBranchName();
 
                         if (!string.IsNullOrWhiteSpace(mayBeBranchName))
                         {

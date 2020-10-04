@@ -134,7 +134,7 @@ namespace Arbor.Build.Core.Tools.Versioning
                     .ToReadOnlyCollection();
 
                 logger.Debug(
-                    "Using file pattern '{_filePattern}' to find assembly info files. Found these files: [{Count}] {NewLine}{V}",
+                    "Using file pattern '{Pattern}' to find assembly info files. Found these files: [{Count}] {NewLine}{V}",
                     _filePattern,
                     assemblyFiles.Count,
                     Environment.NewLine,

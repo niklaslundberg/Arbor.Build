@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using Arbor.Build.Core.IO;
-using Arbor.FS;
 using FluentAssertions;
 using Machine.Specifications;
 using Xunit;

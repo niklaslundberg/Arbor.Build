@@ -3,7 +3,6 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Newtonsoft.Json;
 using Zio;
 
@@ -11,13 +10,8 @@ namespace Arbor.Build.Core.IO
 {
     public static class ChecksumHelper
     {
-        public static async Task<FileListWithChecksumFile> CreateFileListForDirectory([NotNull] DirectoryEntry baseDirectory)
+        public static async Task<FileListWithChecksumFile> CreateFileListForDirectory(DirectoryEntry baseDirectory)
         {
-            if (baseDirectory == null)
-            {
-                throw new ArgumentNullException(nameof(baseDirectory));
-            }
-
             var files = baseDirectory
                 .EnumerateFiles("*", SearchOption.AllDirectories)
                 .OrderBy(file => file.FullName)

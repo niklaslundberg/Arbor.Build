@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
+using System.Threading;
 using JetBrains.Annotations;
 
 namespace Arbor.Build.Core
@@ -25,6 +26,7 @@ namespace Arbor.Build.Core
 
                 while (_queue.Count > Limit && _queue.TryDequeue(out _))
                 {
+                    Thread.SpinWait(10);
                 }
             }
         }
@@ -33,8 +35,9 @@ namespace Arbor.Build.Core
         {
             lock (_lockObject)
             {
-                while (_queue.Count > 0 && _queue.TryDequeue(out _))
+                while (!_queue.IsEmpty && _queue.TryDequeue(out _))
                 {
+                    Thread.SpinWait(10);
                 }
             }
         }
@@ -45,7 +48,7 @@ namespace Arbor.Build.Core
             {
                 lock (_lockObject)
                 {
-                    if (_queue.Count == 0)
+                    if (_queue.IsEmpty)
                     {
                         return ImmutableArray<T>.Empty;
                     }

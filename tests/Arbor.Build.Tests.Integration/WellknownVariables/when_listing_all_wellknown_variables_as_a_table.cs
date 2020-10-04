@@ -16,8 +16,8 @@ namespace Arbor.Build.Tests.Integration.WellknownVariables
 
         It should_print = () =>
         {
-            List<Dictionary<string, string>> dicts = readOnlyCollection
-                .Select(variableDescription => new Dictionary<string, string>
+            var dicts = readOnlyCollection
+                .Select(variableDescription => new Dictionary<string, string?>
                 {
                     {
                         "Name",

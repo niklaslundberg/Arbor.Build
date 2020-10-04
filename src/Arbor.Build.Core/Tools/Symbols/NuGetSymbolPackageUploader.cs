@@ -10,7 +10,6 @@ using Arbor.Build.Core.IO;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
-using Serilog.Core;
 using Zio;
 
 namespace Arbor.Build.Core.Tools.Symbols
@@ -29,8 +28,6 @@ namespace Arbor.Build.Core.Tools.Symbols
             string[] args,
             CancellationToken cancellationToken)
         {
-            logger ??= Logger.None;
-
             bool enabled = buildVariables.GetBooleanByKey(
                 WellKnownVariables.ExternalTools_SymbolServer_Enabled);
 
@@ -40,7 +37,7 @@ namespace Arbor.Build.Core.Tools.Symbols
                 return Task.FromResult(ExitCode.Success);
             }
 
-            var artifacts = buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue().Value.AsFullPath();
+            var artifacts = buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue().Value!.AsFullPath();
 
             var packagesFolder = new DirectoryEntry(_fileSystem, UPath.Combine(artifacts, "packages"));
 
@@ -135,7 +132,7 @@ namespace Arbor.Build.Core.Tools.Symbols
             return exitCode;
         }
 
-        private async Task<ExitCode> UploadNuGetPackagesAsync(
+        private static async Task<ExitCode> UploadNuGetPackagesAsync(
             ILogger logger,
             DirectoryEntry packagesFolder,
             string nugetExePath,
@@ -143,32 +140,12 @@ namespace Arbor.Build.Core.Tools.Symbols
             string apiKey,
             int timeout)
         {
-            if (packagesFolder is null)
-            {
-                throw new ArgumentNullException(nameof(packagesFolder));
-            }
-
-            if (string.IsNullOrWhiteSpace(nugetExePath))
-            {
-                throw new ArgumentNullException(nameof(nugetExePath));
-            }
-
-            if (string.IsNullOrWhiteSpace(symbolServerUrl))
-            {
-                throw new ArgumentNullException(nameof(symbolServerUrl));
-            }
-
-            if (string.IsNullOrWhiteSpace(apiKey))
-            {
-                throw new ArgumentNullException(nameof(apiKey));
-            }
-
-            List<FileEntry> oldSymbolPackages = packagesFolder
+            var oldSymbolPackages = packagesFolder
                 .EnumerateFiles("*.nupkg", SearchOption.AllDirectories)
                 .Where(file => file.Name.Contains("symbols", StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
-            List<FileEntry> newSymbolPackages = packagesFolder
+            var newSymbolPackages = packagesFolder
                 .EnumerateFiles("*.snupkg", SearchOption.AllDirectories)
                 .ToList();
 

@@ -18,12 +18,9 @@ namespace Arbor.Build.Core.Logging
 
             var levelSwitch = new LoggingLevelSwitch();
 
-            if (!string.IsNullOrWhiteSpace(logLevelArg))
+            if (!string.IsNullOrWhiteSpace(logLevelArg) && Enum.TryParse(logLevelArg, true, out LogEventLevel logLevel))
             {
-                if (Enum.TryParse(logLevelArg, true, out LogEventLevel logLevel))
-                {
-                    levelSwitch.MinimumLevel = logLevel;
-                }
+                levelSwitch.MinimumLevel = logLevel;
             }
 
             return levelSwitch;

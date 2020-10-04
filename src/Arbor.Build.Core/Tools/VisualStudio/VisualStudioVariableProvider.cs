@@ -139,25 +139,22 @@ namespace Arbor.Build.Core.Tools.VisualStudio
                     .Select(
                         keyName =>
                         {
-                            if (!Version.TryParse(keyName, out Version? version))
+                            if (!Version.TryParse(keyName, out Version? version) && _allowPreReleaseVersions)
                             {
-                                if (_allowPreReleaseVersions)
+                                const string preReleaseSeparator = "_";
+
+                                int indexOf = keyName.IndexOf(
+                                    preReleaseSeparator,
+                                    StringComparison.OrdinalIgnoreCase);
+
+                                if (indexOf >= 0)
                                 {
-                                    const string preReleaseSeparator = "_";
+                                    string versionOnly = keyName.Substring(0, indexOf);
 
-                                    int indexOf = keyName.IndexOf(
-                                        preReleaseSeparator,
-                                        StringComparison.OrdinalIgnoreCase);
-
-                                    if (indexOf >= 0)
+                                    if (Version.TryParse(versionOnly, out version))
                                     {
-                                        string versionOnly = keyName.Substring(0, indexOf);
-
-                                        if (Version.TryParse(versionOnly, out version))
-                                        {
-                                            logger.Debug("Found pre-release Visual Studio version {Version}",
-                                                version!);
-                                        }
+                                        logger.Debug("Found pre-release Visual Studio version {Version}",
+                                            version!);
                                     }
                                 }
                             }

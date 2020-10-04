@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
-using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.MSBuild;
 using Arbor.Processing;
 using Arbor.Sorbus.Core;
@@ -54,7 +53,7 @@ namespace Arbor.Build.Core.Tools.Versioning
             }
             catch (Exception ex)
             {
-                logger.Error(ex, "Could not unpatch.");
+                logger.Error(ex, "Could not un-patch.");
                 return Task.FromResult(ExitCode.Failure);
             }
 

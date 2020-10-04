@@ -65,7 +65,7 @@ namespace Arbor.Build.Tests.Integration
 
             using var buildApplication = new BuildApplication(logger, environmentVariables, SpecialFolders.Default, _fs);
 
-            var args = Array.Empty<string>();
+            string[] args = Array.Empty<string>();
 
             var exitCode = await buildApplication.RunAsync(args);
 
@@ -93,7 +93,7 @@ namespace Arbor.Build.Tests.Integration
             await using var openFile = _fs.OpenFile(expectedFilesDataPath,FileMode.Open,FileAccess.Read);
             var expectedFiles = await openFile.ReadAllLinesAsync();
 
-            return expectedFiles.ToImmutableArray();
+            return expectedFiles;
         }
 
         public static IEnumerable<object[]> Data()
@@ -115,7 +115,9 @@ namespace Arbor.Build.Tests.Integration
 
         static DirectoryEntry GetSamplesDirectory()
         {
+#pragma warning disable CA2000 // Dispose objects before losing scope
             var fs = new PhysicalFileSystem();
+#pragma warning restore CA2000 // Dispose objects before losing scope
             var samples = UPath.Combine(VcsTestPathHelper.FindVcsRootPath().Path, "samples");
 
             var samplesDirectory = fs.GetDirectoryEntry(samples);

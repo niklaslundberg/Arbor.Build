@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Immutable;
 using System.Linq;
 using JetBrains.Annotations;
 using Zio;
@@ -17,7 +18,7 @@ namespace Arbor.Build.Core.Bootstrapper
             bool downloadOnly = false,
             string? arborBuildExePath = default)
         {
-            Args = args;
+            Args = args.ToImmutableArray();
             BaseDir = baseDir;
             PreReleaseEnabled = preReleaseEnabled;
             BranchName = branchName;
@@ -27,7 +28,7 @@ namespace Arbor.Build.Core.Bootstrapper
 
         public bool? PreReleaseEnabled { get; }
 
-        public string[] Args { get; }
+        public ImmutableArray<string> Args { get; }
 
         public DirectoryEntry? BaseDir { get; }
 

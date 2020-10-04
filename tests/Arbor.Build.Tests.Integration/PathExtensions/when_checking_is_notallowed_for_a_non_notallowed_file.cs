@@ -25,7 +25,7 @@ namespace Arbor.Build.Tests.Integration.PathExtensions
         {
             fs = new MemoryFileSystem();
             filePath = $@"/anyrandomfile{Guid.NewGuid()}.txt".AsFullPath();
-            using var file = fs.OpenFile(filePath, FileMode.CreateNew,
+            using var _ = fs.OpenFile(filePath, FileMode.CreateNew,
                 FileAccess.Write);
         };
 

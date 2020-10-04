@@ -24,6 +24,7 @@ namespace Arbor.Build.Core.Tools.Testing
         private const string AnyConfiguration = "[Any]";
         private readonly BuildContext _buildContext;
         private readonly IFileSystem _fileSystem;
+
         public DotNetTestRunner(BuildContext buildContext, IFileSystem fileSystem)
         {
             _buildContext = buildContext;
@@ -36,16 +37,6 @@ namespace Arbor.Build.Core.Tools.Testing
             string[] args,
             CancellationToken cancellationToken)
         {
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
-            if (buildVariables == null)
-            {
-                throw new ArgumentNullException(nameof(buildVariables));
-            }
-
             bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.XUnitNetCoreAppV2Enabled, true);
 
             if (!enabled)
@@ -139,7 +130,8 @@ namespace Arbor.Build.Core.Tools.Testing
 
                 if (xmlEnabled)
                 {
-                    arguments.Add($"--logger:trx;LogFileName={_fileSystem.ConvertPathToInternal(reportFileEntry.FullName)}");
+                    arguments.Add(
+                        $"--logger:trx;LogFileName={_fileSystem.ConvertPathToInternal(reportFileEntry.FullName)}");
                 }
 
                 var result = await ProcessRunner.ExecuteProcessAsync(
@@ -283,7 +275,7 @@ namespace Arbor.Build.Core.Tools.Testing
             string fullName = reportFileEntry.FullName;
 
             using var fs = new FileStream(fullName, FileMode.Open);
-            XDocument xdoc = XDocument.Load(fs);
+            var xdoc = XDocument.Load(fs);
 
             XElement[] collections = xdoc.Descendants("assemblies").Descendants("assembly")
                 .Descendants("collection").ToArray();

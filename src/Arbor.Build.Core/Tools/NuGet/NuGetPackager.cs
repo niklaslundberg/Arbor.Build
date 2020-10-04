@@ -106,9 +106,9 @@ namespace Arbor.Build.Core.Tools.NuGet
                 suffix = "";
             }
 
-            GitBranchModel.TryParse(gitModel, out var model);
+            bool parsed = GitBranchModel.TryParse(gitModel, out var model);
 
-            if (model is {})
+            if (parsed && model is {})
             {
                 buildPackagesOnAnyBranch = true;
             }
@@ -196,19 +196,9 @@ namespace Arbor.Build.Core.Tools.NuGet
             bool ignoreWarnings = false,
             CancellationToken cancellationToken = default)
         {
-            if (packageConfiguration == null)
-            {
-                throw new ArgumentNullException(nameof(packageConfiguration));
-            }
-
-            if (packageSpecificationPath is null)
-            {
-                throw new ArgumentException(Resources.ValueCannotBeNullOrWhitespace, nameof(packageSpecificationPath));
-            }
-
             _logger.Debug("Using NuGet package configuration {PackageConfiguration}", packageConfiguration);
 
-            NuSpec nuSpec = NuSpec.Parse(packageSpecificationPath);
+            var nuSpec = NuSpec.Parse(packageSpecificationPath);
 
             IDictionary<string, string?> properties = GetProperties(packageConfiguration);
 

@@ -57,7 +57,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             _pathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification;
 
-            var artifacts = buildVariables.Require(WellKnownVariables.Artifacts).GetValueOrThrow();
+            string? artifacts = buildVariables.Require(WellKnownVariables.Artifacts).GetValueOrThrow();
             var packagesDirectory = new DirectoryEntry(_fileSystem, UPath.Combine(artifacts.AsFullPath(), "packages"));
 
             DirectoryEntry vcsRootDir = _buildContext.SourceRoot;
@@ -104,18 +104,12 @@ namespace Arbor.Build.Core.Tools.NuGet
             return result;
         }
 
-        private UPath PackageDirectory()
-        {
-            string packageDirectory = $"{UPath.DirectorySeparator}packages{UPath.DirectorySeparator}";
-            return packageDirectory;
-        }
-
         private IReadOnlyCollection<FileEntry> GetPackageSpecifications(
             ILogger logger,
             DirectoryEntry vcsRootDir,
             DirectoryEntry packageDirectory)
         {
-            List<FileEntry> packageSpecifications =
+            var packageSpecifications =
                 vcsRootDir.GetFilesRecursive(new List<string> { ".nuspec" }, _pathLookupSpecification, vcsRootDir)
                     .Where(file => file.FullName.IndexOf(packageDirectory.FullName, StringComparison.Ordinal) < 0)
                     .ToList();

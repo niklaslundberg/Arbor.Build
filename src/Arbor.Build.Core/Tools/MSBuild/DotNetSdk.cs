@@ -12,7 +12,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
         public static readonly DotNetSdk None = new DotNetSdk("N/A");
         public static readonly DotNetSdk Test = new DotNetSdk("Microsoft.NET.Test.Sdk");
 
-        private static readonly Lazy<ImmutableArray<DotNetSdk>> _LazyAll =
+        private static readonly Lazy<ImmutableArray<DotNetSdk>> LazyAll =
             new Lazy<ImmutableArray<DotNetSdk>>(() => new[]
             {
                 None,
@@ -37,7 +37,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
         public static bool operator !=(DotNetSdk left, DotNetSdk right) => !Equals(left, right);
 
-        public static ImmutableArray<DotNetSdk> All => _LazyAll.Value;
+        public static ImmutableArray<DotNetSdk> All => LazyAll.Value;
 
         public static DotNetSdk ParseOrDefault(string? sdkValue)
         {

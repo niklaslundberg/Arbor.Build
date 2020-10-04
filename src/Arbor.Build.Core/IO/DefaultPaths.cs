@@ -7,10 +7,10 @@ namespace Arbor.Build.Core.IO
     {
         public const string TempPathPrefix = "ABX";
 
-        private static readonly Lazy<PathLookupSpecification> _PathLookupSpecification =
+        private static readonly Lazy<PathLookupSpecification> PathLookupSpecification =
             new Lazy<PathLookupSpecification>(Initialize);
 
-        public static PathLookupSpecification DefaultPathLookupSpecification => _PathLookupSpecification.Value;
+        public static PathLookupSpecification DefaultPathLookupSpecification => PathLookupSpecification.Value;
 
         private static PathLookupSpecification Initialize()
         {

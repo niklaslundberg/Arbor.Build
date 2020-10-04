@@ -102,11 +102,11 @@ namespace Arbor.Build.Core.Tools.Versioning
                 {
                     var jsonKeyValueConfiguration = new JsonKeyValueConfiguration(keyValueConfigurationItems);
 
-                    const string majorKey = "major"; // TODO defined major key
+                    const string majorKey = "major";
 
-                    const string minorKey = "minor"; // TODO defined minor key
+                    const string minorKey = "minor";
 
-                    const string patchKey = "patch"; // TODO defined patch key
+                    const string patchKey = "patch";
 
                     var required = new Dictionary<string, string>
                     {

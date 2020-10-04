@@ -18,3 +18,6 @@ dotnet_naming_rule.private_fields_must_be_lower_case.style = all_lower
 
 # CA2007: Consider calling ConfigureAwait on the awaited task
 dotnet_diagnostic.CA2007.severity = none
+dotnet_diagnostic.CS8618.severity = none
+dotnet_diagnostic.S108.severity = none
+dotnet_diagnostic.S1481.severity = none

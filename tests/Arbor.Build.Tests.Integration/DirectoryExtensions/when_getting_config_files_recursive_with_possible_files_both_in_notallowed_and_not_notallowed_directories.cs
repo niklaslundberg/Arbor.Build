@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Arbor.Build.Core.IO;
-using Arbor.FS;
 using Machine.Specifications;
 using Machine.Specifications.Model;
 using Zio;

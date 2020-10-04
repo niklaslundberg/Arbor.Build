@@ -16,10 +16,7 @@ namespace Arbor.Build.Core.Tools.Scripts
     {
         private readonly BuildContext _buildContext;
 
-        public ScriptTool(BuildContext buildContext)
-        {
-            _buildContext = buildContext;
-        }
+        public ScriptTool(BuildContext buildContext) => _buildContext = buildContext;
 
         public async Task<ExitCode> ExecuteAsync(ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,

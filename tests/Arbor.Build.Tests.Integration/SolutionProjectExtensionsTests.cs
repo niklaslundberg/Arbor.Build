@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Arbor.Build.Core.Tools.MSBuild;
 using Arbor.Build.Tests.Integration.Tests.MSpec;
-using Arbor.FS;
 using FluentAssertions;
 using Xunit;
 using Zio;
@@ -17,7 +16,7 @@ namespace Arbor.Build.Tests.Integration
             using var fs = new PhysicalFileSystem();
             var projectFileFullName = fs.GetFileEntry(UPath.Combine(VcsTestPathHelper.FindVcsRootPath().Path, "tests",
                 "Arbor.Build.Tests.Integration", "Arbor.Build.Tests.Integration.csproj"));
-            var msbuildProject = await MSBuildProject.LoadFrom(projectFileFullName);
+            var msbuildProject = await MsBuildProject.LoadFrom(projectFileFullName);
 
             var solutionFile = fs.GetFileEntry(UPath.Combine(projectFileFullName.Parent.Parent.Parent.Path, "Arbor.Build.sln"));
 

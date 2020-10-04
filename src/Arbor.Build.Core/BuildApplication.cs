@@ -23,7 +23,6 @@ using Arbor.KVConfiguration.Schema.Json;
 using Arbor.KVConfiguration.UserConfiguration;
 using Arbor.Processing;
 using Autofac;
-using JetBrains.Annotations;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
@@ -49,7 +48,7 @@ namespace Arbor.Build.Core
             _environmentVariables = environmentVariables;
             _specialFolders = specialFolders;
             _fileSystem = fileSystem;
-            _logger = logger ?? Logger.None;
+            _logger = logger ?? Logger.None!;
             _verboseEnabled = _logger.IsEnabled(LogEventLevel.Verbose);
             _debugEnabled = _logger.IsEnabled(LogEventLevel.Debug);
         }
@@ -60,42 +59,45 @@ namespace Arbor.Build.Core
             const string Succeeded = "Succeeded";
             const string Failed = "Failed";
 
+            static string GetResult(ToolResult toolResult)
+            {
+                string succeeded = toolResult.ResultType.IsSuccess ? Succeeded : Failed;
+
+                return toolResult.ResultType.WasRun
+                    ? succeeded
+                    : NotRun;
+            }
+
+            static string GetExecutionTime(ToolResult result1)
+            {
+                return result1.ExecutionTime == default
+                    ? "N/A"
+                    : ((int)result1.ExecutionTime.TotalMilliseconds).ToString("D",
+                        CultureInfo.InvariantCulture) + " ms";
+            }
+
             string displayTable = toolResults.Select(
                     result =>
                         new Dictionary<string, string?>
                         {
-                            { "Tool", result.ToolWithPriority.Tool.Name() },
-                            {
-                                "Result", result.ResultType.WasRun
-                                    ? result.ResultType.IsSuccess ? Succeeded : Failed
-                                    : NotRun
-                            },
-                            {
-                                "Execution time", result.ExecutionTime == default
-                                    ? "N/A"
-                                    : ((int)result.ExecutionTime.TotalMilliseconds).ToString("D",
-                                          CultureInfo.InvariantCulture) + " ms"
-                            },
-                            { "Message", result.Message }
+                            {"Tool", result.ToolWithPriority.Tool.Name()},
+                            {"Result", GetResult(result)},
+                            {"Execution time", GetExecutionTime(result)},
+                            {"Message", result.Message}
                         })
                 .DisplayAsTable();
 
             return displayTable;
         }
 
-        private async Task<DirectoryEntry?> StartWithDebuggerAsync([NotNull] string[] args)
+        private async Task<DirectoryEntry?> StartWithDebuggerAsync()
         {
-            if (args == null)
-            {
-                throw new ArgumentNullException(nameof(args));
-            }
-
-            DirectoryEntry baseDir = new DirectoryEntry(_fileSystem, VcsPathHelper.FindVcsRootPath(AppDomain.CurrentDomain.BaseDirectory).AsFullPath());
+            var baseDir = new DirectoryEntry(_fileSystem, VcsPathHelper.FindVcsRootPath(AppDomain.CurrentDomain.BaseDirectory).AsFullPath());
 
             if (Environment.UserInteractive)
             {
                 Console.WriteLine("Enter base directory");
-                string baseDirectory = Console.ReadLine();
+                string? baseDirectory = Console.ReadLine();
 
                 if (baseDirectory == "-")
                 {
@@ -174,7 +176,7 @@ namespace Arbor.Build.Core
                     buildVariables.OrderBy(variable => variable.Key).Print());
             }
 
-            IReadOnlyCollection<ToolWithPriority> toolWithPriorities = ToolFinder.GetTools(_container, _logger);
+            IReadOnlyCollection<ToolWithPriority> toolWithPriorities = ToolFinder.GetTools(_container!, _logger);
 
             LogToolsAsTable(toolWithPriorities);
 
@@ -273,13 +275,13 @@ namespace Arbor.Build.Core
 
             if (result != 0)
             {
-                foreach (var tuple in toolResults
+                foreach (var (toolResultValue, reportLogTail) in toolResults
                     .Where(tool => tool.ResultType == ToolResultType.Failed)
                     .Select(toolResult => (Result:toolResult, LogTail:toolResult.ToolWithPriority.Tool as IReportLogTail))
                     .Where(item => item.LogTail is {}))
                 {
-                    string logTail = string.Join(Environment.NewLine, tuple.LogTail!.LogTail.AllCurrentItems);
-                    _logger.Error("Tool {Tool} failed with log tail {NewLine}{LogTail}", tuple.Result.ToolWithPriority.Tool.Name(), Environment.NewLine, logTail);
+                    string logTail = string.Join(Environment.NewLine, reportLogTail!.LogTail.AllCurrentItems);
+                    _logger.Error("Tool {Tool} failed with log tail {NewLine}{LogTail}", toolResultValue.ToolWithPriority.Tool.Name(), Environment.NewLine, logTail);
                 }
 
                 return ExitCode.Failure;
@@ -323,7 +325,7 @@ namespace Arbor.Build.Core
                 return ImmutableArray<IVariable>.Empty;
             }
 
-            DirectoryEntry sourceRoot = new DirectoryEntry(_fileSystem, sourceRootPath!.AsFullPath());
+            var sourceRoot = new DirectoryEntry(_fileSystem, sourceRootPath!.AsFullPath());
 
             if (enabled)
             {
@@ -370,7 +372,7 @@ namespace Arbor.Build.Core
             buildVariables.AddRange(
                 EnvironmentVariableHelper.GetBuildVariablesFromEnvironmentVariables(_logger, _environmentVariables, buildVariables));
 
-            IReadOnlyCollection<IVariableProvider> providers = _container.Resolve<IEnumerable<IVariableProvider>>()
+            IReadOnlyCollection<IVariableProvider> providers = _container!.Resolve<IEnumerable<IVariableProvider>>()
                 .OrderBy(provider => provider.Order)
                 .ToReadOnlyCollection();
 
@@ -506,8 +508,8 @@ namespace Arbor.Build.Core
 
                 foreach (KeyValuePair<string, string> keyValuePair in newLines)
                 {
-                    variablesWithNewLinesBuilder.Append("Key ").Append(keyValuePair.Key).AppendLine(": ");
-                    variablesWithNewLinesBuilder.Append("'").Append(keyValuePair.Value).AppendLine("'");
+                    variablesWithNewLinesBuilder.Append("Key ").Append(keyValuePair.Key).AppendLine(": ").AppendLine();
+                    variablesWithNewLinesBuilder.Append('\'').Append(keyValuePair.Value).Append('\'').AppendLine();
                 }
 
                 _logger.Error("{Variables}", variablesWithNewLinesBuilder.ToString());
@@ -543,7 +545,7 @@ namespace Arbor.Build.Core
 
             if (DebugHelper.IsDebugging(_environmentVariables))
             {
-                sourceDir = await StartWithDebuggerAsync(_args).ConfigureAwait(false);
+                sourceDir = await StartWithDebuggerAsync().ConfigureAwait(false);
             }
 
             _container = await BuildBootstrapper.StartAsync(_logger, _environmentVariables, _specialFolders, sourceDir).ConfigureAwait(false);

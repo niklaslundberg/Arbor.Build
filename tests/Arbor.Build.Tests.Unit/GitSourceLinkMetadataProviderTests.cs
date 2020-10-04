@@ -34,7 +34,7 @@ namespace Arbor.Build.Tests.Unit
                     new BuildVariable(WellKnownVariables.SourceRoot, buildDirectory.FullName)
                 };
 
-            var args = Array.Empty<string>();
+            string[] args = Array.Empty<string>();
 
             var exitCode = await provider.ExecuteAsync(Logger.None, buildVariables, args, CancellationToken.None);
 

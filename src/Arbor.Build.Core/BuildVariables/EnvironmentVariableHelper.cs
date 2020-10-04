@@ -72,7 +72,7 @@ namespace Arbor.Build.Core.BuildVariables
             if (!file.Exists)
             {
                 logger.Debug(
-                    $"The environment variable file '{file}' does not exist, skipping setting environment variables from file '{file}'",
+                    "The environment variable file '{File}' does not exist, skipping setting environment variables from file '{FileName}'",
                     file,
                     fileName);
 

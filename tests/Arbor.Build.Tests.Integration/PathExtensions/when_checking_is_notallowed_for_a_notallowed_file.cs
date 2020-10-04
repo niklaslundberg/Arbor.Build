@@ -18,7 +18,7 @@ namespace Arbor.Build.Tests.Integration.PathExtensions
         Establish context = () =>
         {
             fs = new MemoryFileSystem();
-            using var file = fs.OpenFile("/test.vshost.exe", FileMode.Create, FileAccess.Write);
+            using var _ = fs.OpenFile("/test.vshost.exe", FileMode.Create, FileAccess.Write);
         };
 
         Because of = () =>

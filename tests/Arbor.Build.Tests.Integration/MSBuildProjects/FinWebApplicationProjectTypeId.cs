@@ -4,7 +4,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.MSBuild;
-using Arbor.FS;
 using Xunit;
 using Xunit.Abstractions;
 using Zio;
@@ -60,7 +59,7 @@ namespace Arbor.Build.Tests.Integration.MSBuildProjects
                 var stream = tempFile.Open(FileMode.Open, FileAccess.Write);
                 await stream.WriteAllTextAsync(xml, Encoding.UTF8).ConfigureAwait(false);
 
-                var msBuildProject = await MSBuildProject.LoadFrom(tempFile);
+                var msBuildProject = await MsBuildProject.LoadFrom(tempFile);
 
                 output.WriteLine(msBuildProject.ToString());
 

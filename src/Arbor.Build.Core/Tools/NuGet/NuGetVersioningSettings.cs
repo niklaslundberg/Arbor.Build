@@ -4,7 +4,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 {
     public class NuGetVersioningSettings
     {
-        private static readonly Lazy<NuGetVersioningSettings> _Lazy = new Lazy<NuGetVersioningSettings>(() =>
+        private static readonly Lazy<NuGetVersioningSettings> Lazy = new Lazy<NuGetVersioningSettings>(() =>
             new NuGetVersioningSettings
             {
                 MaxZeroPaddingLength = 0,
@@ -15,6 +15,6 @@ namespace Arbor.Build.Core.Tools.NuGet
 
         public int SemVerVersion { get; set; }
 
-        public static NuGetVersioningSettings Default => _Lazy.Value;
+        public static NuGetVersioningSettings Default => Lazy.Value;
     }
 }
