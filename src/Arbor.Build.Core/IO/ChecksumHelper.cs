@@ -17,7 +17,7 @@ namespace Arbor.Build.Core.IO
                 .OrderBy(file => file.FullName)
                 .Select(file => new
                 {
-                    file = file.FullName[baseDirectory.FullName.Length..],
+                    file = baseDirectory.FileSystem.ConvertPathToInternal(file.FullName)[baseDirectory.FileSystem.ConvertPathToInternal(baseDirectory.Path).Length..],
                     sha512Base64Encoded = GetFileHashSha512Base64Encoded(file)
                 })
                 .ToArray();

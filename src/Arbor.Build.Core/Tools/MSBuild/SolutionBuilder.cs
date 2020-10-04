@@ -126,13 +126,13 @@ namespace Arbor.Build.Core.Tools.MSBuild
         public FixedSizedQueue<string> LogTail { get; }
 
         public async Task<ExitCode> ExecuteAsync(
-            ILogger? logger,
+            ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             string[] args,
             CancellationToken cancellationToken)
         {
             _buildVariables = buildVariables;
-            _logger = logger ??= Logger.None ?? throw new ArgumentNullException(nameof(logger));
+            _logger = logger;
             _debugLoggingEnabled = _logger.IsEnabled(LogEventLevel.Debug);
             _verboseLoggingEnabled = _logger.IsEnabled(LogEventLevel.Verbose);
             _cancellationToken = cancellationToken;
@@ -2109,16 +2109,18 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             FileListWithChecksumFile contentFilesInfo = await ChecksumHelper.CreateFileListForDirectory(baseDirectory);
 
-            string metaDir = contentFilesInfo.ContentFilesFile.Directory.Path.WindowsPath();
+            string nativeMetadataDirectory = contentFilesInfo.ContentFilesFile.Directory.Path.WindowsPath();
 
             string nativePath = contentFilesInfo.ContentFilesFile.Path.WindowsPath();
             string nativeChecksumPath = contentFilesInfo.ContentFilesFile.Path.WindowsPath();
 
+            string? nativeFullPath = _fileSystem.ConvertPathToInternal(contentFilesInfo.ContentFilesFile.Path);
+            string? nativeChecksumFileFullPath = _fileSystem.ConvertPathToInternal(contentFilesInfo.ChecksumFile.Path);
 
             string contentFileListFile =
-                $@"<file src=""{contentFilesInfo.ContentFilesFile}"" target=""{nativePath.Substring(metaDir.Length).TrimStart(Path.DirectorySeparatorChar)}"" />";
+                $@"<file src=""{nativeFullPath}"" target=""{nativePath.Substring(nativeMetadataDirectory.Length).TrimStart(Path.DirectorySeparatorChar)}"" />";
             string checksumFile =
-                $@"<file src=""{contentFilesInfo.ChecksumFile}"" target=""{nativeChecksumPath.Substring(metaDir.Length).TrimStart(Path.DirectorySeparatorChar)}"" />";
+                $@"<file src=""{nativeChecksumFileFullPath}"" target=""{nativeChecksumPath.Substring(nativeMetadataDirectory.Length).TrimStart(Path.DirectorySeparatorChar)}"" />";
 
             string nuspecContent = $@"<?xml version=""1.0""?>
 <package>
@@ -2172,13 +2174,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 true,
                 _cancellationToken).ConfigureAwait(false);
 
-            if (Directory.Exists(metaDir))
-            {
-                new DirectoryEntry(_fileSystem, metaDir).DeleteIfExists();
-            }
-
-            packageSpecificationPath.Delete();
-
+            packageSpecificationPath.DeleteIfExists();
+            contentFilesInfo.ContentFilesFile.Directory.DeleteIfExists();
             tempDir.DeleteIfExists();
 
             return exitCode;

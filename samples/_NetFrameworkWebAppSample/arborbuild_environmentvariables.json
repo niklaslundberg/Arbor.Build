@@ -23,11 +23,15 @@
         },
         {
             "key":  "Arbor.Build.NuGet.PackageUpload.Enabled",
-            "value": "false"
+            "value": false
         },
         {
             "key":  "Arbor.Build.NuGet.PackageUpload.ForceUploadEnabled",
-            "value": "false"
+            "value": false
+        },
+        {
+            "key":  "Arbor.Build.NuGet.Package.CreateNuGetWebPackages.Enabled",
+            "value": true
         }
     ]
 }

@@ -17,6 +17,7 @@ namespace Arbor.Build.Core.Tools
         /// </summary>
         /// <param name="logger"></param>
         /// <param name="buildVariables"></param>
+        /// <param name="args">Command line args</param>
         /// <param name="cancellationToken"></param>
         /// <returns>ExitCode, value 0 meaning success; any other value failure</returns>
         Task<ExitCode> ExecuteAsync(
