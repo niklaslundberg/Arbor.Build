@@ -40,6 +40,8 @@ namespace Arbor.Build.Core.Tools.Environments
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools)?.AsFullPath();
             UPath sourceRoot;
 
+            var variables = new List<IVariable>();
+
             if (existingSourceRoot?.FullName is {})
             {
                 if (!_fileSystem.DirectoryExists(existingSourceRoot.Value))
@@ -50,26 +52,25 @@ namespace Arbor.Build.Core.Tools.Environments
 
                 sourceRoot = existingSourceRoot.Value;
             }
-            else
+
+            if (sourceRoot.IsNull || sourceRoot.IsEmpty)
             {
-                sourceRoot = VcsPathHelper.FindVcsRootPath(Directory.GetCurrentDirectory()).AsFullPath();
+                sourceRoot = _buildContext.SourceRoot.Path;
             }
 
-            var tempPath = new DirectoryEntry(_fileSystem, UPath.Combine(sourceRoot, "temp")).EnsureExists();
-
-            var variables = new List<IVariable>
-            {
-                new BuildVariable(
-                    WellKnownVariables.TempDirectory,
-                    tempPath.Path.FullName)
-            };
-
-            if (existingSourceRoot == UPath.Empty)
+            if (!existingSourceRoot.HasValue)
             {
                 variables.Add(new BuildVariable(WellKnownVariables.SourceRoot, sourceRoot.FullName));
             }
 
-            if (existingToolsDirectory is null || existingToolsDirectory == UPath.Empty)
+            var tempPath = new DirectoryEntry(_fileSystem, UPath.Combine(sourceRoot, "temp")).EnsureExists();
+
+            variables.Add(
+                new BuildVariable(
+                    WellKnownVariables.TempDirectory,
+                    tempPath.Path.FullName));
+
+            if (existingToolsDirectory is null || existingToolsDirectory.Value.IsAbsolute)
             {
                 var externalToolsRelativeApp =
                     new DirectoryEntry(_fileSystem, UPath.Combine(AppDomain.CurrentDomain.BaseDirectory!.AsFullPath(),
@@ -96,8 +97,6 @@ namespace Arbor.Build.Core.Tools.Environments
                         externalTools.Path.FullName));
                 }
             }
-
-            _buildContext.SourceRoot = new DirectoryEntry(_fileSystem, sourceRoot);
 
             return Task.FromResult(variables.ToImmutableArray());
         }

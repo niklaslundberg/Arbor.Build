@@ -201,3 +201,4 @@ _patchedAssemblyInfos
 *.log
 **/nCrunchTemp_*/*.*
 **/nCrunchTemp_*.*
+**/ncruncherror

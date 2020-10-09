@@ -16,6 +16,7 @@ using Arbor.Build.Core.GenericExtensions.Bools;
 using Arbor.Build.Core.GenericExtensions.Int;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools;
+using Arbor.Build.Core.Tools.MSBuild;
 using Arbor.Defensive.Collections;
 using Arbor.Exceptions;
 using Arbor.KVConfiguration.Core;
@@ -41,6 +42,7 @@ namespace Arbor.Build.Core
         private readonly IEnvironmentVariables _environmentVariables;
         private readonly ISpecialFolders _specialFolders;
         private readonly IFileSystem _fileSystem;
+        private BuildContext _buildContext = null!;
 
         public BuildApplication(ILogger? logger, IEnvironmentVariables environmentVariables, ISpecialFolders specialFolders, IFileSystem fileSystem)
         {
@@ -317,15 +319,26 @@ namespace Arbor.Build.Core
             _ = _environmentVariables.GetEnvironmentVariable(WellKnownVariables.VariableFileSourceEnabled)
                 .TryParseBool(out bool enabled, defaultValue: true);
 
-            string? sourceRootPath = _environmentVariables.GetEnvironmentVariable(WellKnownVariables.SourceRoot);
+            UPath? sourceRootPath = _environmentVariables.GetEnvironmentVariable(WellKnownVariables.SourceRoot)?.AsFullPath();
 
-            if (string.IsNullOrWhiteSpace(sourceRootPath) && sourceRoot is null)
+            if (sourceRoot is null && sourceRootPath is null)
             {
-                _logger.Error("Source root is not set");
-                return ImmutableArray<IVariable>.Empty;
+               string vcsRootPath = VcsPathHelper.FindVcsRootPath(Directory.GetCurrentDirectory());
+
+               if (!string.IsNullOrWhiteSpace(vcsRootPath))
+               {
+                   sourceRootPath = vcsRootPath.AsFullPath();
+               }
+               else
+               {
+                   _logger.Error("Source root is not set");
+                   return ImmutableArray<IVariable>.Empty;
+               }
             }
 
-            sourceRoot ??= new DirectoryEntry(_fileSystem, sourceRootPath!.AsFullPath());
+            sourceRoot ??= new DirectoryEntry(_fileSystem, sourceRootPath!.Value);
+
+            _buildContext.SourceRoot = sourceRoot;
 
             if (enabled)
             {
@@ -543,6 +556,8 @@ namespace Arbor.Build.Core
             }
 
             _container = await BuildBootstrapper.StartAsync(_logger, _environmentVariables, _specialFolders, sourceDir).ConfigureAwait(false);
+
+            _buildContext = _container.Resolve<BuildContext>();
 
             _logger.Information("Using logger '{Type}'", _logger.GetType());
 

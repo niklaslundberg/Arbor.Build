@@ -8,6 +8,7 @@ using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Logging;
 using Arbor.Build.Tests.Integration.Tests.MSpec;
+using Arbor.FS;
 using Serilog;
 using Xunit;
 using Xunit.Abstractions;
@@ -46,7 +47,15 @@ namespace Arbor.Build.Tests.Integration
                 new FallbackEnvironment(new EnvironmentVariables(), new DefaultEnvironmentVariables());
 
             environmentVariables.SetEnvironmentVariable(WellKnownVariables.BranchName, "develop");
-            environmentVariables.SetEnvironmentVariable(WellKnownVariables.SourceRoot, fullPath);
+            if (path.FullName.Contains("NoSourceRootDefined"))
+            {
+                Directory.SetCurrentDirectory(_fs.ConvertPathToInternal(path));
+            }
+            else
+            {
+                environmentVariables.SetEnvironmentVariable(WellKnownVariables.SourceRoot, path.FullName);
+            }
+
             environmentVariables.SetEnvironmentVariable("AllowDebug", "false");
 
             var xunitLogger = _testOutputHelper.CreateTestLogger();

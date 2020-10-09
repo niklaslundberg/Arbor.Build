@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.IO;
+using Arbor.Build.Core.Tools.MSBuild;
 using Arbor.Exceptions;
 using Arbor.Processing;
 using JetBrains.Annotations;
@@ -17,8 +18,13 @@ namespace Arbor.Build.Core.Tools.Cleanup
     public class ArtifactCleanup : ITool
     {
         private readonly IFileSystem _fileSystem;
+        private readonly BuildContext _buildContext;
 
-        public ArtifactCleanup(IFileSystem fileSystem) => _fileSystem = fileSystem;
+        public ArtifactCleanup(IFileSystem fileSystem, BuildContext buildContext)
+        {
+            _fileSystem = fileSystem;
+            _buildContext = buildContext;
+        }
 
         public async Task<ExitCode> ExecuteAsync(
             ILogger logger,
