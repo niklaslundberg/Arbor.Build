@@ -218,18 +218,23 @@ namespace Arbor.Build.Core.IO
 
                     try
                     {
-                        if (excludedPattern.Contains(UPath.DirectorySeparator, StringComparison.InvariantCulture))
+                        if (excludedPattern.Contains('/', StringComparison.InvariantCulture) || excludedPattern.Contains('\\', StringComparison.InvariantCulture))
                         {
                             excludedFiles = allFiles.Where(file =>
-                                    file.FullName.Substring(directory.FullName.Length)
-                                        .Contains(excludedPattern, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    string pathInvariant = excludedPattern.Replace('\\', '/');
+
+                                    string filePath = file.FullName.Substring(directory.FullName.Length);
+                                    return filePath.Contains(pathInvariant, StringComparison.OrdinalIgnoreCase);
+                                })
                                 .ToArray();
                         }
                         else
                         {
-                            excludedFiles =
-                                fileSystem.EnumerateFileEntries(directory.Path,excludedPattern, SearchOption.AllDirectories)
-                                    .ToArray();
+                            excludedFiles = fileSystem.EnumerateFileEntries(
+                                    directory.Path, excludedPattern,
+                                    SearchOption.AllDirectories)
+                                .ToArray();
                         }
                     }
                     catch (Exception ex) when (!ex.IsFatal())

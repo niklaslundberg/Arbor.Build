@@ -1664,9 +1664,11 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     applicationmetadataJson);
             }
 
-            using var stream = _fileSystem.OpenFile(applicationMetadataJsonFilePath, FileMode.Open, FileAccess.Write);
+            new DirectoryEntry(_fileSystem, applicationMetadataJsonFilePath.GetDirectory()).EnsureExists();
 
-            await stream.WriteAllTextAsync(serialize);
+            await using var stream = _fileSystem.OpenFile(applicationMetadataJsonFilePath, FileMode.OpenOrCreate, FileAccess.Write);
+
+            await stream.WriteAllTextAsync(serialize, cancellationToken: _cancellationToken);
 
             string keyPluralSingular = items.Count == 1 ? "key" : "keys";
             string verb = items.Count == 1 ? "has" : "have";

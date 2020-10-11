@@ -55,8 +55,6 @@ namespace Arbor.Build.Core.Debugging
                 [WellKnownVariables.WebJobsExcludedDirectorySegments] = "roslyn",
                 [WellKnownVariables.AppDataJobsEnabled] = "false",
                 [WellKnownVariables.WebDeployPreCompilationEnabled] = "false",
-                [WellKnownVariables.ExcludedNuGetWebPackageFiles] =
-                    @"bin\roslyn\*.*,bin\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll",
                 //[WellKnownVariables.TestsAssemblyStartsWith] = "",
                 [WellKnownVariables.DotNetRestoreEnabled] = "false",
                 [WellKnownVariables.XUnitNetCoreAppV2XmlXsltToJunitEnabled] = "true",

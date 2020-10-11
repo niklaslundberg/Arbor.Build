@@ -56,5 +56,29 @@ namespace Arbor.Build.Tests.Integration.DirectoryExtensions
             Assert.Single(files);
             Assert.Contains(fileName.NormalizePath().FullName, files, StringComparer.OrdinalIgnoreCase);
         }
+
+        [Fact]
+        public void WhenGettingFilesExcludingDirectoryPath()
+        {
+            var subDirectoryA = _tempDirectory.CreateSubdirectory("test/bin/roslyn");
+
+            var aFile = UPath.Combine(subDirectoryA.FullName, "a.txt");
+            using (_fs.CreateFile(aFile))
+            {
+            }
+
+            var bFile = UPath.Combine(subDirectoryA.FullName, "b.user");
+            using (_fs.CreateFile(bFile))
+            {
+            }
+
+            var files = _tempDirectory.GetFilesWithWithExclusions(new[] {"bin\\roslyn\\"})
+                .Select(file => file.Path.NormalizePath().FullName)
+                .ToImmutableArray();
+
+            Assert.DoesNotContain(aFile.NormalizePath().FullName, files);
+            Assert.DoesNotContain(bFile.NormalizePath().FullName, files);
+            Assert.Empty(files);
+        }
     }
 }
