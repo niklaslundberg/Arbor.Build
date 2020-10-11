@@ -16,5 +16,7 @@ namespace Arbor.Build.Core.IO
             await using Stream stream = fileEntry.Open(FileMode.Create, FileAccess.Write);
             await stream.WriteAllTextAsync(text.AsMemory(), encoding, cancellationToken);
         }
+
+        public static string ConvertPathToInternal(this FileEntry file) => file.FileSystem.ConvertPathToInternal(file.Path.FullName);
     }
 }

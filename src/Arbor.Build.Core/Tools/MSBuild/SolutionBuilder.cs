@@ -972,49 +972,13 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             foreach (SolutionProject solutionProject in publishProjects)
             {
-                if (solutionProject.Project.HasPropertyWithValue(WellKnownVariables.DotNetPublishExeEnabled, "false"))
-                {
-                    if (logger.IsEnabled(LogEventLevel.Debug))
-                    {
-                        logger.Debug(
-                            "Skipping publish of project {Project} because it has property {Property} set to false",
-                            solutionProject.FullPath,
-                            WellKnownVariables.DotNetPublishExeEnabled);
-                    }
-
-                    continue;
-                }
-
-                if (string.IsNullOrWhiteSpace(_publishTargetFramework) && solutionProject.Project.TargetFrameworks.Length > 1)
-                {
-                    logger.Warning(
-                        "Skipping publish of project {Project} because it has no single target framework defined",
-                        solutionProject.FullPath);
-                    continue;
-                }
-
-                var args = new List<string>
-                {
-                    "publish",
-                    solutionProject.FullPath.FileSystem.ConvertPathToInternal(solutionProject.FullPath.Path),
-                    "-c",
-                    configuration
-                };
-
-                if (!logger.IsEnabled(LogEventLevel.Debug))
-                {
-                    args.Add("--verbosity");
-                    args.Add("minimal");
-                }
-
-                if (_deterministicBuildEnabled)
-                {
-                    args.Add("-p:ContinuousIntegrationBuild=true");
-                }
-
                 var packageLookupDirectories = new List<DirectoryEntry>();
 
-                DirectoryEntry? tempDirectory = default;
+                var targetFrameworks = string.IsNullOrWhiteSpace(_publishTargetFramework)
+                    ? solutionProject.Project.TargetFrameworks
+                    : solutionProject.Project.TargetFrameworks.Where(target =>
+                        target.Value.Equals(_publishTargetFramework, StringComparison.Ordinal));
+
 
                 bool isReleaseBuild =
                     configuration.Equals(WellKnownConfigurations.Release, StringComparison.OrdinalIgnoreCase);
@@ -1023,60 +987,102 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                 string packageVersion = NuGetVersionHelper.GetPackageVersion(options);
 
+
+                DirectoryEntry? tempDirectory = default;
+
                 try
                 {
-                    if (solutionProject.HasPublishPackageEnabled())
+                    var tempDirPath =
+                        UPath.Combine(Path.GetTempPath().AsFullPath(),
+                            "Arbor.Build-pkg" + DateTime.UtcNow.Ticks);
+                    tempDirectory = new DirectoryEntry(_fileSystem, tempDirPath);
+                    tempDirectory.EnsureExists();
+
+                    packageLookupDirectories.Add(solutionProject.ProjectDirectory);
+                    packageLookupDirectories.Add(tempDirectory);
+
+                    foreach (var targetFramework in targetFrameworks)
                     {
-                        args.Add(_argHelper.FormatPropertyArg("version", packageVersion));
-                        args.Add("--output");
-
-                        var tempDirPath =
-                            UPath.Combine(Path.GetTempPath().AsFullPath(), "Arbor.Build-pkg" + DateTime.UtcNow.Ticks);
-                        tempDirectory = new DirectoryEntry(_fileSystem, tempDirPath);
-                        tempDirectory.EnsureExists();
-
-                        packageLookupDirectories.Add(solutionProject.ProjectDirectory);
-                        packageLookupDirectories.Add(tempDirectory);
-
-                        args.Add(tempDirectory.FullName);
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(_publishRuntimeIdentifier))
-                    {
-                        args.Add("-r");
-                        args.Add(_publishRuntimeIdentifier);
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(_publishTargetFramework))
-                    {
-                        args.Add("-f");
-                        args.Add(_publishTargetFramework);
-                    }
-
-                    void Log(string message, string category)
-                    {
-                        if (message.Trim().Contains("): warning ", StringComparison.OrdinalIgnoreCase))
+                        if (solutionProject.Project.HasPropertyWithValue(WellKnownVariables.DotNetPublishExeEnabled,
+                            "false"))
                         {
-                            if (_logMsBuildWarnings)
+                            if (logger.IsEnabled(LogEventLevel.Debug))
                             {
-                                logger.Warning("{Category} {Message}", category, message);
+                                logger.Debug(
+                                    "Skipping publish of project {Project} because it has property {Property} set to false",
+                                    solutionProject.FullPath,
+                                    WellKnownVariables.DotNetPublishExeEnabled);
+                            }
+
+                            continue;
+                        }
+
+                        var args = new List<string>
+                        {
+                            "publish", solutionProject.FullPath.ConvertPathToInternal(), "-c", configuration
+                        };
+
+                        if (!logger.IsEnabled(LogEventLevel.Debug))
+                        {
+                            args.Add("--verbosity");
+                            args.Add("minimal");
+                        }
+
+                        if (_deterministicBuildEnabled)
+                        {
+                            args.Add("-p:ContinuousIntegrationBuild=true");
+                        }
+
+
+                        try
+                        {
+                            if (solutionProject.HasPublishPackageEnabled())
+                            {
+                                args.Add(_argHelper.FormatPropertyArg("version", packageVersion));
+                                args.Add("--output");
+
+
+                                args.Add(tempDirectory.FullName);
+                            }
+
+                            if (!string.IsNullOrWhiteSpace(_publishRuntimeIdentifier))
+                            {
+                                args.Add("-r");
+                                args.Add(_publishRuntimeIdentifier);
+                            }
+
+                            args.Add("-f");
+                            args.Add(targetFramework.Value);
+
+
+                            void Log(string message, string category)
+                            {
+                                if (message.Trim().Contains("): warning ", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    if (_logMsBuildWarnings)
+                                    {
+                                        logger.Warning("{Category} {Message}", category, message);
+                                    }
+                                }
+                                else
+                                {
+                                    logger.Information("{Category} {Message}", category, message);
+                                }
+                            }
+
+                            var projectExitCode = await ProcessRunner.ExecuteProcessAsync(
+                                _fileSystem.ConvertPathToInternal(_dotNetExePath.Value),
+                                args,
+                                Log,
+                                cancellationToken: _cancellationToken).ConfigureAwait(false);
+
+                            if (!projectExitCode.IsSuccess)
+                            {
+                                return projectExitCode;
                             }
                         }
-                        else
-                        {
-                            logger.Information("{Category} {Message}", category, message);
-                        }
-                    }
+                        finally { }
 
-                    var projectExitCode = await ProcessRunner.ExecuteProcessAsync(
-                        _fileSystem.ConvertPathToInternal(_dotNetExePath.Value),
-                        args,
-                        Log,
-                        cancellationToken: _cancellationToken).ConfigureAwait(false);
-
-                    if (!projectExitCode.IsSuccess)
-                    {
-                        return projectExitCode;
                     }
                 }
                 finally
@@ -1125,6 +1131,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     }
                 }
             }
+
 
             return ExitCode.Success;
         }

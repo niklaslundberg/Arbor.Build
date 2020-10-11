@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Arbor.Build.Core;
 using Arbor.Build.Core.BuildVariables;
@@ -37,11 +38,11 @@ namespace Arbor.Build.Tests.Integration
 
             if (samplesDirectory.Path == path)
             {
-                _testOutputHelper.WriteLine("Skipping test for " + path + ", no samples found starting with _");
+                _testOutputHelper.WriteLine($"Skipping test for {path}, no samples found starting with _");
                 return;
             }
 
-            _testOutputHelper.WriteLine("Testing " + path);
+            _testOutputHelper.WriteLine($"Testing {path}");
 
             var environmentVariables =
                 new FallbackEnvironment(new EnvironmentVariables(), new DefaultEnvironmentVariables());
@@ -90,19 +91,19 @@ namespace Arbor.Build.Tests.Integration
             xunitLogger.Dispose();
         }
 
-        async Task<ImmutableArray<string>> GetExpectedFiles(UPath path)
+        async Task<ImmutableArray<UPath>> GetExpectedFiles(UPath path)
         {
             var expectedFilesDataPath = UPath.Combine(path, "ExpectedFiles.txt");
 
             if (!_fs.FileExists(expectedFilesDataPath))
             {
-                return ImmutableArray<string>.Empty;
+                return ImmutableArray<UPath>.Empty;
             }
 
             await using var openFile = _fs.OpenFile(expectedFilesDataPath,FileMode.Open,FileAccess.Read);
             var expectedFiles = await openFile.ReadAllLinesAsync();
 
-            return expectedFiles;
+            return expectedFiles.Select(expectedPath => new UPath(expectedPath)).ToImmutableArray();
         }
 
         public static IEnumerable<object[]> Data()
