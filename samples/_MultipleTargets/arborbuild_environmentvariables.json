@@ -1,0 +1,37 @@
+{
+    "version": "1.0",
+    "keys": [
+        {
+            "key": "Version.Major",
+            "value": 1
+        },
+        {
+            "key": "Version.Minor",
+            "value": 2
+        },
+        {
+            "key":  "Version.Patch",
+            "value": 3
+        },
+        {
+            "key":  "Version.Build",
+            "value": 4
+        },
+        {
+            "key":  "Arbor.Build.Tools.External.MSBuild.DeterministicBuild.Enabled",
+            "value": false
+        },
+        {
+            "key":  "Arbor.Build.Tools.External.MSBuild.DotNet.Enabled",
+            "value": true
+        },
+        {
+            "key":  "Arbor.Build.NuGet.PackageUpload.Enabled",
+            "value": "false"
+        },
+        {
+            "key":  "Arbor.Build.NuGet.PackageUpload.ForceUploadEnabled",
+            "value": "false"
+        }
+    ]
+}

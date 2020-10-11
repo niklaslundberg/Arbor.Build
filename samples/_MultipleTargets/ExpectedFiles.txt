@@ -1,0 +1,2 @@
+MultiTargetLib\bin\Debug\netcoreapp3.1\MultiTargetLib.dll
+MultiTargetLib\bin\Debug\netstandard2.1\MultiTargetLib.dll
