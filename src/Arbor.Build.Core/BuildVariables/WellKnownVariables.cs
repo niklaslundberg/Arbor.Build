@@ -294,6 +294,10 @@ namespace Arbor.Build.Core.BuildVariables
         public const string PublishRuntimeIdentifier =
             "Arbor.Build.PublishRuntimeIdentifier";
 
+        [VariableDescription(".NET Core publish target framework")]
+        public const string PublishTargetFramework =
+            "Arbor.Build.PublishTargetFramework";
+
         [VariableDescription("Paket Enabled")]
         public const string PaketEnabled =
             "Arbor.Build.Paket.Enabled";

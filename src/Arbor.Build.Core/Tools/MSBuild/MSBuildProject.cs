@@ -21,7 +21,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
             ImmutableArray<ProjectType> projectTypes,
             Guid? projectId,
             DotNetSdk sdk,
-            ImmutableArray<PackageReferenceElement> packageReferences)
+            ImmutableArray<PackageReferenceElement> packageReferences,
+            ImmutableArray<TargetFramework> targetFrameworks)
         {
             PropertyGroups = propertyGroups.ToImmutableArray();
             FileName = fileName;
@@ -31,6 +32,9 @@ namespace Arbor.Build.Core.Tools.MSBuild
             ProjectId = projectId;
             Sdk = sdk;
             PackageReferences = packageReferences;
+            TargetFrameworks = targetFrameworks;
+
+            TargetFramework = targetFrameworks.Length == 1 ? targetFrameworks[0] : TargetFramework.Empty;
         }
 
         public ImmutableArray<MSBuildPropertyGroup> PropertyGroups { get; }
@@ -48,6 +52,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
         public DotNetSdk Sdk { get; }
 
         public ImmutableArray<PackageReferenceElement> PackageReferences { get; }
+        public TargetFramework TargetFramework { get; }
+        public ImmutableArray<TargetFramework> TargetFrameworks { get; }
 
         public static async Task<bool> IsNetSdkProject(FileEntry projectFile)
         {
@@ -160,6 +166,30 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 .Where(reference => reference.IsValid)
                 .ToImmutableArray();
 
+            var targetFrameworkValue = msbuildPropertyGroups.SelectMany(p => p.Properties)
+                .SingleOrDefault(s => s.Name.Equals("TargetFramework"))?.Value;
+
+            var targetFrameworksValue = msbuildPropertyGroups.SelectMany(p => p.Properties)
+                .SingleOrDefault(s => s.Name.Equals("TargetFrameworks"))?.Value;
+
+            ImmutableArray<TargetFramework> targetFrameworks;
+
+            if (string.IsNullOrWhiteSpace(targetFrameworkValue) && string.IsNullOrWhiteSpace(targetFrameworksValue))
+            {
+                targetFrameworks = ImmutableArray<TargetFramework>.Empty;
+            }
+            else if (!string.IsNullOrWhiteSpace(targetFrameworksValue))
+            {
+                targetFrameworks = targetFrameworksValue
+                    .Split(';', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(t => new TargetFramework(t))
+                    .ToImmutableArray();
+            }
+            else
+            {
+                targetFrameworks = new[]{new TargetFramework(targetFrameworkValue!) }.ToImmutableArray();
+            }
+
             return Task.FromResult(new MsBuildProject(msbuildPropertyGroups,
                 projectFileFullName,
                 name,
@@ -167,7 +197,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 projectTypes,
                 projectId,
                 sdk,
-                packageReferences));
+                packageReferences, targetFrameworks));
         }
 
         public override string ToString() => $"{FileName} {nameof(Properties)} [{PropertyGroups.SelectMany(g => g.Properties).Count()}]:{Environment.NewLine}{string.Join(Environment.NewLine, PropertyGroups.SelectMany(g => g.Properties).Select(p => "\t" + p.ToString()))}{Environment.NewLine}{nameof(FileName)}: {FileName}{Environment.NewLine}{nameof(ProjectName)}: {ProjectName}{Environment.NewLine}{nameof(ProjectDirectory)}: {ProjectDirectory}{nameof(ProjectTypes)}: {string.Join(", ", ProjectTypes.Select(t => t.ToString()))},{Environment.NewLine}{nameof(ProjectId)}: {ProjectId}{Environment.NewLine}{nameof(Sdk)}: {Sdk}{Environment.NewLine}{nameof(PackageReferences)} [{PackageReferences.Length}]:{Environment.NewLine} {string.Join(Environment.NewLine, PackageReferences.Select(r => r.ToString()))}";

@@ -103,6 +103,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
         private bool _preCompilationEnabled;
         private int? _processorCount;
         private string? _publishRuntimeIdentifier;
+        private string? _publishTargetFramework;
 
         private UPath? _ruleset;
         private bool _showSummary;
@@ -212,6 +213,9 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             _publishRuntimeIdentifier =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.PublishRuntimeIdentifier, "");
+
+            _publishTargetFramework =
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.PublishTargetFramework, "");
 
             _preCompilationEnabled =
                 buildVariables.GetBooleanByKey(WellKnownVariables.WebDeployPreCompilationEnabled);
@@ -981,6 +985,14 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     continue;
                 }
 
+                if (string.IsNullOrWhiteSpace(_publishTargetFramework) && solutionProject.Project.TargetFrameworks.Length > 1)
+                {
+                    logger.Warning(
+                        "Skipping publish of project {Project} because it has no single target framework defined",
+                        solutionProject.FullPath);
+                    continue;
+                }
+
                 var args = new List<string>
                 {
                     "publish",
@@ -1033,6 +1045,12 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     {
                         args.Add("-r");
                         args.Add(_publishRuntimeIdentifier);
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(_publishTargetFramework))
+                    {
+                        args.Add("-f");
+                        args.Add(_publishTargetFramework);
                     }
 
                     void Log(string message, string category)
