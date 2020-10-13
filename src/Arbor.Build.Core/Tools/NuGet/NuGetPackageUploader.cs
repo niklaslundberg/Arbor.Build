@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
@@ -317,10 +316,10 @@ namespace Arbor.Build.Core.Tools.NuGet
             {
                 var allStandardPackages = new List<FileEntry>();
 
-                allStandardPackages.AddRange(filter.Exclusions.Any()
+                allStandardPackages.AddRange(!filter.Exclusions.Any()
                     ? artifactPackagesDirectory.EnumerateFiles("*.nupkg", SearchOption.AllDirectories)
                     : artifactPackagesDirectory.EnumerateFiles("*.nupkg", SearchOption.AllDirectories)
-                        .Where(f => filter.UploadEnable(f.Path.FullName)));
+                        .Where(file => filter.UploadEnable(file.Path.FullName)));
 
                 var standardPackages = allStandardPackages
                     .Where(file => file.Name.IndexOf("symbols", StringComparison.OrdinalIgnoreCase) < 0)
@@ -341,10 +340,10 @@ namespace Arbor.Build.Core.Tools.NuGet
             {
                 var allWebSitePackages = new List<FileEntry>();
 
-                allWebSitePackages.AddRange(filter.Exclusions.Any()
+                allWebSitePackages.AddRange(!filter.Exclusions.Any()
                     ? websitesDirectory.EnumerateFiles("*.nupkg", SearchOption.AllDirectories)
                     : websitesDirectory.EnumerateFiles("*.nupkg", SearchOption.AllDirectories)
-                        .Where(f => filter.UploadEnable(f.Path.FullName)));
+                        .Where(file => filter.UploadEnable(file.Path.FullName)));
 
                 var websitePackages = allWebSitePackages
                     .Where(file => file.Name.IndexOf("symbols", StringComparison.OrdinalIgnoreCase) < 0)
@@ -353,11 +352,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 nuGetPackageFiles.AddRange(websitePackages);
             }
 
-            var enabledUploadPackages = nuGetPackageFiles
-                .Where(package => filter.UploadEnable(package.FullName))
-                .ToImmutableArray();
-
-            if (enabledUploadPackages.Length == 0)
+            if (nuGetPackageFiles.Count == 0)
             {
                 string websiteUploadMissingMessage = websitePackagesUploadEnabled
                     ? $" or in folder websites folder '{websitesDirectory.FullName}'"
@@ -373,14 +368,14 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             string files =
                 string.Join(Environment.NewLine,
-                    enabledUploadPackages.Select(
+                    nuGetPackageFiles.Select(
                         file => $"{file.FullName}: {file.Length / 1024.0:F1} KiB"));
 
-            logger.Information("Found {Count} NuGet packages to upload {Files}", enabledUploadPackages.Length, files);
+            logger.Information("Found {Count} NuGet packages to upload {Files}", nuGetPackageFiles.Count, files);
 
             bool result = true;
 
-            IReadOnlyCollection<FileEntry> sortedPackages = enabledUploadPackages
+            IReadOnlyCollection<FileEntry> sortedPackages = nuGetPackageFiles
                 .OrderByDescending(package => package.Name.Length)
                 .SafeToReadOnlyCollection();
 
@@ -439,7 +434,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             return result ? ExitCode.Success : ExitCode.Failure;
         }
 
-        private async static Task<bool?> CheckPackageExistsAsync(
+        private static async Task<bool?> CheckPackageExistsAsync(
             FileEntry nugetPackage,
             string nugetExePath,
             ILogger logger,

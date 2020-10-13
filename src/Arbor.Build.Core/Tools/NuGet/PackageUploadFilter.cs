@@ -8,12 +8,13 @@ namespace Arbor.Build.Core.Tools.NuGet
     public class PackageUploadFilter
     {
         public ImmutableArray<string> Exclusions { get; }
+
         private readonly StringComparison _stringComparison;
 
         public PackageUploadFilter(string startsWithExclusions, IFileSystem fileSystem)
         {
             _stringComparison = fileSystem.GetPathComparison();
-            Exclusions = startsWithExclusions.Split(";").ToImmutableArray();
+            Exclusions = startsWithExclusions.Split(';', StringSplitOptions.RemoveEmptyEntries).ToImmutableArray();
         }
 
 
