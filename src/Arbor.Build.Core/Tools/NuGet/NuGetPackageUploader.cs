@@ -319,7 +319,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 allStandardPackages.AddRange(!filter.Exclusions.Any()
                     ? artifactPackagesDirectory.EnumerateFiles("*.nupkg", SearchOption.AllDirectories)
                     : artifactPackagesDirectory.EnumerateFiles("*.nupkg", SearchOption.AllDirectories)
-                        .Where(file => filter.UploadEnable(file.Path.FullName)));
+                        .Where(file => filter.UploadEnable(file.Path.GetName())));
 
                 var standardPackages = allStandardPackages
                     .Where(file => file.Name.IndexOf("symbols", StringComparison.OrdinalIgnoreCase) < 0)
@@ -343,7 +343,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 allWebSitePackages.AddRange(!filter.Exclusions.Any()
                     ? websitesDirectory.EnumerateFiles("*.nupkg", SearchOption.AllDirectories)
                     : websitesDirectory.EnumerateFiles("*.nupkg", SearchOption.AllDirectories)
-                        .Where(file => filter.UploadEnable(file.Path.FullName)));
+                        .Where(file => filter.UploadEnable(file.Path.GetName())));
 
                 var websitePackages = allWebSitePackages
                     .Where(file => file.Name.IndexOf("symbols", StringComparison.OrdinalIgnoreCase) < 0)
