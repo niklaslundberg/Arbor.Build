@@ -136,7 +136,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                         if (_fileSystem.FileExists(msbuild2019Path))
                         {
-                            logger.Information("Found MSBuild with vswhere.exe at '{MsbuildPath}'", msbuild2019Path);
+                            logger.Information("Found MSBuild with vswhere.exe at '{MsbuildPath}'",  _fileSystem.ConvertPathToInternal(msbuild2019Path));
 
                             IVariable[] variables =
                             {
@@ -157,7 +157,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                         if (_fileSystem.FileExists(msbuild2017Path))
                         {
-                            logger.Information("Found MSBuild with vswhere.exe at '{MsbuildPath}'", msbuild2017Path);
+                            logger.Information("Found MSBuild with vswhere.exe at '{MsbuildPath}'",  _fileSystem.ConvertPathToInternal(msbuild2017Path));
 
                             IVariable[] variables =
                             {

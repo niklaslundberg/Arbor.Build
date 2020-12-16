@@ -139,11 +139,9 @@ namespace Arbor.Build.Core.IO
         {
             string path = rootDir is null ? sourceDir.FullName : sourceDir.FullName.Replace(rootDir.FullName, string.Empty, StringComparison.OrdinalIgnoreCase);
 
-            string[] sourceDirSegments = path.Split(
+            return path.Split(
                 new[] { UPath.DirectorySeparator },
                 StringSplitOptions.RemoveEmptyEntries);
-
-            return sourceDirSegments;
         }
 
         public static UPath AsFullPath(this string path)
@@ -157,7 +155,6 @@ namespace Arbor.Build.Core.IO
             {
                 throw new FormatException($"Could not parse '{path}' as a full path");
             }
-
 
             var normalized = parsed.NormalizePath();
 

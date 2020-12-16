@@ -46,7 +46,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 throw new InvalidOperationException("Could not download nuget.exe");
             }
 
-            return nuGetDownloadResult.NuGetExePath;
+            return nuGetDownloadResult.NuGetExePath?.AsFullPath();
         }
 
         public int Order => 3;
@@ -65,9 +65,13 @@ namespace Arbor.Build.Core.Tools.NuGet
             var nuGetExePath =
                 await EnsureNuGetExeExistsAsync(logger, userSpecifiedNuGetExePath).ConfigureAwait(false);
 
+            string? path = nuGetExePath.HasValue
+                ? _fileSystem.ConvertPathToInternal(nuGetExePath.Value)
+                : "";
+
             var variables = new List<IVariable>
             {
-                new BuildVariable(WellKnownVariables.ExternalTools_NuGet_ExePath, nuGetExePath?.FullName)
+                new BuildVariable(WellKnownVariables.ExternalTools_NuGet_ExePath, path)
             };
 
             if (string.IsNullOrWhiteSpace(

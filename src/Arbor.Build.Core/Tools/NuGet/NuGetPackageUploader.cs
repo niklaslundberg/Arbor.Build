@@ -369,7 +369,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             string files =
                 string.Join(Environment.NewLine,
                     nuGetPackageFiles.Select(
-                        file => $"{file.FullName}: {file.Length / 1024.0:F1} KiB"));
+                        file => $"{_fileSystem.ConvertPathToInternal(file.Path)}: {file.Length / 1024.0:F1} KiB"));
 
             logger.Information("Found {Count} NuGet packages to upload {Files}", nuGetPackageFiles.Count, files);
 

@@ -441,8 +441,8 @@ namespace Arbor.Build.Core.Tools.NuGet
                     targetBinaryFile.DeleteIfExists();
 
                     logger.Debug("Copying NuGet binary package '{BinaryPackage}' to '{TargetBinaryFile}'",
-                        binaryPackage,
-                        targetBinaryFile);
+                         _fileSystem.ConvertPathToInternal(binaryPackage.Path),
+                        _fileSystem.ConvertPathToInternal(targetBinaryFile.Path));
                     sourceFile.MoveTo(targetBinaryFile.Path);
                 }
 
@@ -458,8 +458,9 @@ namespace Arbor.Build.Core.Tools.NuGet
                     }
 
                     logger.Debug("Copying NuGet symbol package '{SourcePackage}' to '{TargetSymbolFile}'",
-                        sourcePackage,
-                        targetSymbolFile);
+                        _fileSystem.ConvertPathToInternal(sourcePackage.Path),
+                        _fileSystem.ConvertPathToInternal(targetSymbolFile.Path));
+
                     sourceFile.MoveTo(targetSymbolFile.FullName);
                 }
             }

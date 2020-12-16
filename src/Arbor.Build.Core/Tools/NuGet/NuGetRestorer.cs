@@ -81,9 +81,9 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             if (excluded.Length > 0)
             {
-                logger.Warning("Found notallowed solution files: {V}",
+                logger.Warning("Found not allowed solution files: {Files}",
                     string.Join(", ",
-                        excluded.Select(excludedItem => $"{excludedItem.File} ({excludedItem.Status.Item2})")));
+                        excluded.Select(excludedItem => $"{_fileSystem.ConvertPathToInternal(excludedItem.File.Path)} ({excludedItem.Status.Item2})")));
             }
 
             var solutionFile = included.Single();

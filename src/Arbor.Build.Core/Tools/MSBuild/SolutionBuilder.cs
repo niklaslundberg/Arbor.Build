@@ -2392,7 +2392,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                             }
 
                             var binDirectory = new DirectoryEntry(_fileSystem,
-                                UPath.Combine(artifactJobAppDataDirectory.FullName));
+                                UPath.Combine(artifactJobAppDataDirectory.Path, "bin"));
 
                             if (binDirectory.Exists)
                             {
@@ -2543,7 +2543,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 {
                     logger.Debug(
                         "Skipping directory '{FullName}' when searching for solution files because the directory is not allowed, {Item2}",
-                        directoryEntry.FullName,
+                         _fileSystem.ConvertPathToInternal(directoryEntry.Path),
                         isExcludeListed.Item2);
                 }
 

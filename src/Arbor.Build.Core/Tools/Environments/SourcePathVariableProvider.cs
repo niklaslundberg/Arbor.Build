@@ -68,7 +68,7 @@ namespace Arbor.Build.Core.Tools.Environments
             variables.Add(
                 new BuildVariable(
                     WellKnownVariables.TempDirectory,
-                    tempPath.Path.FullName));
+                    _fileSystem.ConvertPathToInternal(tempPath.Path)));
 
             if (existingToolsDirectory is null || existingToolsDirectory.Value.IsAbsolute)
             {
@@ -81,7 +81,7 @@ namespace Arbor.Build.Core.Tools.Environments
                 {
                     variables.Add(new BuildVariable(
                         WellKnownVariables.ExternalTools,
-                        externalToolsRelativeApp.Path.FullName));
+                       _fileSystem.ConvertPathToInternal(externalToolsRelativeApp.Path)));
                 }
                 else
                 {
@@ -94,7 +94,7 @@ namespace Arbor.Build.Core.Tools.Environments
 
                     variables.Add(new BuildVariable(
                         WellKnownVariables.ExternalTools,
-                        externalTools.Path.FullName));
+                        _fileSystem.ConvertPathToInternal(externalTools.Path)));
                 }
             }
 

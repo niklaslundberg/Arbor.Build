@@ -82,10 +82,10 @@ namespace Arbor.Build.Core.Tools.Testing
 
             var assemblyFilePrefix = buildVariables.AssemblyFilePrefixes();
 
-            string? dotNetExePath =
-                buildVariables.GetVariableValueOrDefault(WellKnownVariables.DotNetExePath, string.Empty);
+            UPath? dotNetExePath =
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.DotNetExePath, null)?.AsFullPath();
 
-            if (string.IsNullOrWhiteSpace(dotNetExePath))
+            if (!dotNetExePath.HasValue)
             {
                 logger.Error(
                     "Path to 'dotnet.exe' has not been specified, set variable '{DotNetExePath}' or ensure the dotnet.exe is installed in its standard location",
@@ -135,7 +135,7 @@ namespace Arbor.Build.Core.Tools.Testing
                 }
 
                 var result = await ProcessRunner.ExecuteProcessAsync(
-                    dotNetExePath,
+                    _fileSystem.ConvertPathToInternal(dotNetExePath.Value),
                     arguments,
                     logger.Information,
                     logger.Error,
@@ -188,7 +188,7 @@ namespace Arbor.Build.Core.Tools.Testing
                     {
                         foreach (var xmlReport in xmlReports)
                         {
-                            logger.Debug("Transforming '{FullName}' to JUnit XML format", xmlReport.FullName);
+                            logger.Debug("Transforming '{FullName}' to JUnit XML format", _fileSystem.ConvertPathToInternal(xmlReport.Path));
 
                             try
                             {
@@ -202,7 +202,7 @@ namespace Arbor.Build.Core.Tools.Testing
                             }
                             catch (Exception ex)
                             {
-                                logger.Error(ex, "Could not transform '{FullName}'", xmlReport.FullName);
+                                logger.Error(ex, "Could not transform '{FullName}'", _fileSystem.ConvertPathToInternal(xmlReport.FullName));
                                 return ExitCode.Failure;
                             }
 
@@ -230,7 +230,7 @@ namespace Arbor.Build.Core.Tools.Testing
                     {
                         foreach (var xmlReport in xmlReports)
                         {
-                            logger.Debug("Transforming '{FullName}' to JUnit XML format", xmlReport.FullName);
+                            logger.Debug("Transforming '{FullName}' to JUnit XML format", _fileSystem.ConvertPathToInternal(xmlReport.Path));
 
                             try
                             {
@@ -244,7 +244,7 @@ namespace Arbor.Build.Core.Tools.Testing
                             }
                             catch (Exception ex)
                             {
-                                logger.Error(ex, "Could not transform '{FullName}'", xmlReport.FullName);
+                                logger.Error(ex, "Could not transform '{FullName}'", _fileSystem.ConvertPathToInternal(xmlReport.Path));
                                 return ExitCode.Failure;
                             }
 
@@ -265,16 +265,16 @@ namespace Arbor.Build.Core.Tools.Testing
             return exitCode;
         }
 
-        private static ExitCode AnalyzeXml(FileEntry reportFileEntry, Action<string> logger)
+        private ExitCode AnalyzeXml(FileEntry reportFileEntry, Action<string> logger)
         {
             if (!reportFileEntry.Exists)
             {
                 return ExitCode.Failure;
             }
 
-            string fullName = reportFileEntry.FullName;
+            string fullName = _fileSystem.ConvertPathToInternal(reportFileEntry.Path);
 
-            using var fs = new FileStream(fullName, FileMode.Open);
+            using var fs = _fileSystem.OpenFile(reportFileEntry.Path, FileMode.Open, FileAccess.Read);
             var xdoc = XDocument.Load(fs);
 
             XElement[] collections = xdoc.Descendants("assemblies").Descendants("assembly")

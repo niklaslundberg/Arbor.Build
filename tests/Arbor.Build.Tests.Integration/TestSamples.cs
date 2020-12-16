@@ -10,11 +10,14 @@ using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Logging;
 using Arbor.Build.Tests.Integration.Tests.MSpec;
 using Arbor.FS;
+using NUnit.Framework;
 using Serilog;
+using Serilog.Events;
 using Xunit;
 using Xunit.Abstractions;
 using Zio;
 using Zio.FileSystems;
+using Assert = Xunit.Assert;
 
 namespace Arbor.Build.Tests.Integration
 {
@@ -30,7 +33,7 @@ namespace Arbor.Build.Tests.Integration
         }
 
         [MemberData(nameof(Data))]
-        [Theory]
+        [Xunit.Theory]
         public async Task Do(string fullPath)
         {
             UPath path = fullPath.AsFullPath();
@@ -59,7 +62,7 @@ namespace Arbor.Build.Tests.Integration
 
             environmentVariables.SetEnvironmentVariable("AllowDebug", "false");
 
-            var xunitLogger = _testOutputHelper.CreateTestLogger();
+            using var xunitLogger = _testOutputHelper.CreateTestLogger();
 
             var expectedFiles = await GetExpectedFiles(fullPath);
 
@@ -67,10 +70,25 @@ namespace Arbor.Build.Tests.Integration
 
             logFile.DeleteIfExists();
 
-            var logger = new LoggerConfiguration()
+            var mountMessages = new List<string>();
+
+            void FindFilePath(LogEvent obj)
+            {
+                string? message = obj.RenderMessage();
+
+                if (message.Contains("/mnt/", StringComparison.OrdinalIgnoreCase))
+                {
+                    mountMessages.Add(message);
+                }
+            }
+
+            var conditionalLogger = new LoggerConfiguration().WriteTo.Sink(new DelegatingSink(FindFilePath)).CreateLogger();
+
+            using var logger = new LoggerConfiguration()
                 .WriteTo.Logger(xunitLogger)
                 .WriteTo.File(_fs.ConvertPathToInternal(logFile.Path))
                 .MinimumLevel.Verbose()
+                .WriteTo.Logger(conditionalLogger)
                 .CreateLogger();
 
             using var buildApplication = new BuildApplication(logger, environmentVariables, SpecialFolders.Default, _fs);
@@ -87,9 +105,10 @@ namespace Arbor.Build.Tests.Integration
                 Assert.True(_fs.FileExists(filePath), $"Exists({filePath})");
             });
 
-            logger.Dispose();
-            xunitLogger.Dispose();
+            Assert.Empty(mountMessages);
         }
+
+
 
         async Task<ImmutableArray<UPath>> GetExpectedFiles(UPath path)
         {
