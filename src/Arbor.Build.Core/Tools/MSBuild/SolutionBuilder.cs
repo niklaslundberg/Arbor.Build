@@ -1033,14 +1033,12 @@ namespace Arbor.Build.Core.Tools.MSBuild
                             args.Add("-p:ContinuousIntegrationBuild=true");
                         }
 
-
                         try
                         {
                             if (solutionProject.HasPublishPackageEnabled())
                             {
                                 args.Add(_argHelper.FormatPropertyArg("version", packageVersion));
                                 args.Add("--output");
-
 
                                 args.Add(tempDirectory.FullName);
                             }
@@ -1053,7 +1051,6 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                             args.Add("-f");
                             args.Add(targetFramework.Value);
-
 
                             void Log(string message, string category)
                             {
@@ -1702,10 +1699,10 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     _fileSystem.ConvertPathToInternal(solutionProject.FullPath.Path),
                     _argHelper.FormatPropertyArg("configuration", configuration),
                     _argHelper.FormatPropertyArg("platform", platformName),
-                    _argHelper.FormatPropertyArg("_PackageTempDir", siteArtifactDirectory.FullName),
+                    _argHelper.FormatPropertyArg("_PackageTempDir", _fileSystem.ConvertPathToInternal(siteArtifactDirectory.FullName)),
 
                     // ReSharper disable once PossibleNullReferenceException
-                    _argHelper.FormatPropertyArg("SolutionDir", solutionFile.Directory.FullName),
+                    _argHelper.FormatPropertyArg("SolutionDir", _fileSystem.ConvertPathToInternal(solutionFile.Directory.FullName)),
                     _argHelper.FormatArg("verbosity", _verbosity.Level),
                     _argHelper.FormatPropertyArg("AutoParameterizationWebConfigConnectionStrings", "false")
                 };
@@ -1725,7 +1722,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     _fileSystem.ConvertPathToInternal(solutionProject.FullPath.Path),
                     _argHelper.FormatPropertyArg("configuration", configuration),
                     _argHelper.FormatArg("verbosity", _verbosity.Level),
-                    _argHelper.FormatPropertyArg("publishdir", siteArtifactDirectory.FullName),
+                    _argHelper.FormatPropertyArg("publishdir", _fileSystem.ConvertPathToInternal(siteArtifactDirectory.FullName)),
                     _argHelper.FormatPropertyArg("AssemblyVersion", _assemblyVersion),
                     _argHelper.FormatPropertyArg("FileVersion", _assemblyFileVersion)
                 };
@@ -1792,7 +1789,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     {
                         if (_debugLoggingEnabled)
                         {
-                            _logger.Debug("The bin directory '{FullName}' does exist", binDirectory.FullName);
+                            _logger.Debug("The bin directory '{FullName}' does exist", _fileSystem.ConvertPathToInternal(binDirectory.FullName));
                         }
 
                         RemoveXmlFilesForAssemblies(binDirectory);
@@ -1801,7 +1798,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     {
                         if (_debugLoggingEnabled)
                         {
-                            _logger.Debug("The bin directory '{FullName}' does not exist", binDirectory.FullName);
+                            _logger.Debug("The bin directory '{FullName}' does not exist", _fileSystem.ConvertPathToInternal(binDirectory.FullName));
                         }
                     }
                 }
@@ -1868,7 +1865,6 @@ namespace Arbor.Build.Core.Tools.MSBuild
             logger.Information("Creating NuGet web package for project '{ProjectName}'", solutionProject.ProjectName);
 
             string packageId = solutionProject.ProjectName;
-
 
             var artifactDirectory = new DirectoryEntry(_fileSystem, siteArtifactDirectory);
 
