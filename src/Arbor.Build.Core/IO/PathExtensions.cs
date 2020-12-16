@@ -27,9 +27,11 @@ namespace Arbor.Build.Core.IO
                 throw new ArgumentNullException(nameof(sourceFile));
             }
 
+            string internalPath = sourceFile.ConvertPathToInternal();
+
             if (!allowNonExistingFiles && !sourceFile.Exists)
             {
-                string messageMessage = $"File '{sourceFile}' does not exist";
+                string messageMessage = $"File '{internalPath}' does not exist";
                 logger?.Debug("{Reason}", messageMessage);
                 return (true, messageMessage);
             }
@@ -39,7 +41,7 @@ namespace Arbor.Build.Core.IO
 
             if (directoryExcludeListed.Item1)
             {
-                string reasonMessage = $"Directory of '{sourceFile}' is not allowed, {directoryExcludeListed.Item2}";
+                string reasonMessage = $"Directory of '{internalPath}' is not allowed, {directoryExcludeListed.Item2}";
                 logger?.Debug("{Reason}", reasonMessage);
                 return (true, reasonMessage);
             }
@@ -50,7 +52,7 @@ namespace Arbor.Build.Core.IO
 
             if (isNotAllowed)
             {
-                string reasonMessage = $"Path segments of '{sourceFile}' makes it not allowed";
+                string reasonMessage = $"Path segments of '{internalPath}' makes it not allowed";
                 logger?.Debug("{Reason}", reasonMessage);
                 return (true, reasonMessage);
             }
@@ -64,7 +66,7 @@ namespace Arbor.Build.Core.IO
             if (ignoredFileNameParts.Count > 0)
             {
                 string reasonMessage =
-                    $"Ignored file name parts of '{sourceFile}' makes it not allowed: {string.Join(", ", ignoredFileNameParts.Select(item => $"'{item}'"))}";
+                    $"Ignored file name parts of '{internalPath}' makes it not allowed: {string.Join(", ", ignoredFileNameParts.Select(item => $"'{item}'"))}";
                 logger?.Debug("{Reason}", reasonMessage);
                 return (true, reasonMessage);
             }
@@ -88,9 +90,10 @@ namespace Arbor.Build.Core.IO
                 throw new ArgumentNullException(nameof(sourceDir));
             }
 
+            string sourceInternalPath = sourceDir.ConvertPathToInternal();
             if (!sourceDir.Exists)
             {
-                return (true, $"Source directory '{sourceDir}' does not exist");
+                return (true, $"Source directory '{sourceInternalPath}' does not exist");
             }
 
             string[] sourceDirSegments = GetSourceDirSegments(sourceDir, rootDir);
@@ -102,7 +105,7 @@ namespace Arbor.Build.Core.IO
 
             if (hasAnyPathSegment)
             {
-                string reasonMessage = $"The directory '{sourceDir}' has a path segment that is not allowed";
+                string reasonMessage = $"The directory '{sourceInternalPath}' has a path segment that is not allowed";
                 logger?.Debug("{Reason}", reasonMessage);
                 return (true, reasonMessage);
             }
@@ -113,7 +116,7 @@ namespace Arbor.Build.Core.IO
 
             if (hasAnyPathSegmentPart)
             {
-                string reasonMessage = $"The directory '{sourceDir}' has a path segment part that is not allowed";
+                string reasonMessage = $"The directory '{sourceInternalPath}' has a path segment part that is not allowed";
                 logger?.Debug("{Reason}", reasonMessage);
                 return (true, reasonMessage);
             }
@@ -125,12 +128,12 @@ namespace Arbor.Build.Core.IO
             if (hasAnyPartStartsWith)
             {
                 string reasonMessage =
-                    $"The directory '{sourceDir}' has a path that starts with a pattern that is not allowed";
+                    $"The directory '{sourceInternalPath}' has a path that starts with a pattern that is not allowed";
                 logger?.Debug("{Reason}", reasonMessage);
                 return (true, reasonMessage);
             }
 
-            logger?.Debug("The directory '{SourceDir}' is not not allowed", sourceDir);
+            logger?.Debug("The directory '{SourceDir}' is not not allowed", sourceInternalPath);
 
             return (false, string.Empty);
         }

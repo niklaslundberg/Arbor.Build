@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
+using Arbor.Build.Core.IO;
 using Arbor.Exceptions;
 using Arbor.KVConfiguration.JsonConfiguration;
 using Arbor.KVConfiguration.Schema.Json;
@@ -73,7 +74,7 @@ namespace Arbor.Build.Core.BuildVariables
             {
                 logger.Debug(
                     "The environment variable file '{File}' does not exist, skipping setting environment variables from file '{FileName}'",
-                    file,
+                    file.ConvertPathToInternal(),
                     fileName);
 
                 return ImmutableArray<KeyValue>.Empty;

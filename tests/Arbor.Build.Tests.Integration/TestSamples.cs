@@ -114,12 +114,12 @@ namespace Arbor.Build.Tests.Integration
 
             foreach (var directoryEntry in samplesDirectories)
             {
-                yield return new object[] {directoryEntry.FullName};
+                yield return new object[] {directoryEntry.ConvertPathToInternal()};
             }
 
             if (samplesDirectories.Length == 0)
             {
-                yield return new object[] {samplesDirectory.FullName};
+                yield return new object[] {samplesDirectory.ConvertPathToInternal()};
             }
         }
 

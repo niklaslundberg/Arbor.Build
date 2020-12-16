@@ -27,7 +27,7 @@ namespace Arbor.Build.Core.IO
             {
                 logger?.Debug(
                     "Directory '{SourceDir}' is not allowed from specification {PathLookupSpecification}, {Item2}",
-                    sourceDirectory,
+                    sourceDirectory.ConvertPathToInternal(),
                     pathLookupSpecification,
                     isNotAllowed.Item2);
                 return ExitCode.Success;
@@ -45,14 +45,15 @@ namespace Arbor.Build.Core.IO
                 if (isFileExcludeListed.Item1)
                 {
                     logger?.Verbose("File '{FullName}' is not allowed, skipping copying file, {Item2}",
-                        file.FullName,
+                        file.ConvertPathToInternal(),
                         isFileExcludeListed.Item2);
                     continue;
                 }
 
+                string pathToInternal = file.FileSystem.ConvertPathToInternal(destFileName);
                 logger?.Verbose("Copying file '{FullName}' to destination '{DestFileName}'",
-                    file.FullName,
-                    destFileName);
+                    file.ConvertPathToInternal(),
+                    pathToInternal);
 
                 try
                 {
@@ -62,7 +63,7 @@ namespace Arbor.Build.Core.IO
                 {
                     logger?.Error(ex,
                         "{Message}",
-                        $"Could not copy file to '{destFileName}', path length is too long ({destFileName.FullName.Length})"
+                        $"Could not copy file to '{pathToInternal}', path length is too long ({pathToInternal.Length})"
                     );
                     return ExitCode.Failure;
                 }
@@ -70,7 +71,7 @@ namespace Arbor.Build.Core.IO
                 {
                     logger?.Error(ex,
                         "{Message}",
-                        $"Could not copy file '{file.FullName}' to destination '{destFileName}'");
+                        $"Could not copy file '{file.ConvertPathToInternal()}' to destination '{pathToInternal}'");
                     return ExitCode.Failure;
                 }
             }

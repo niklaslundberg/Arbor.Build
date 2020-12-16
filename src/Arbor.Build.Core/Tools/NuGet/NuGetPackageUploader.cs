@@ -53,8 +53,13 @@ namespace Arbor.Build.Core.Tools.NuGet
             var packagesFolder = new DirectoryEntry(_fileSystem, UPath.Combine(artifactsPath.Path, "packages"));
             var websitesDirectory = new DirectoryEntry(_fileSystem, UPath.Combine(artifactsPath.Path, "websites"));
 
-            string nugetExe = buildVariables.Require(WellKnownVariables.ExternalTools_NuGet_ExePath)
-                .ThrowIfEmptyValue().Value!;
+            UPath? nugetExe = buildVariables.Require(WellKnownVariables.ExternalTools_NuGet_ExePath)
+                .ThrowIfEmptyValue().Value?.AsFullPath();
+
+            if (!nugetExe.HasValue)
+            {
+                throw new InvalidOperationException("NuGet.exe is not valid");
+            }
 
             string? nugetServer =
                 buildVariables.GetVariableValueOrDefault(
@@ -127,7 +132,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 return UploadNuGetPackagesAsync(
                     logger,
                     packagesFolder,
-                    nugetExe,
+                    _fileSystem.GetFileEntry(nugetExe.Value),
                     nugetServer,
                     nuGetServerApiKey,
                     websitePackagesUploadEnabled,
@@ -148,7 +153,7 @@ namespace Arbor.Build.Core.Tools.NuGet
         }
 
         private static async Task<ExitCode> UploadNugetPackageAsync(
-            string nugetExePath,
+            FileEntry nugetExePath,
             string? serverUri,
             string? apiKey,
             FileEntry nugetPackage,
@@ -166,9 +171,9 @@ namespace Arbor.Build.Core.Tools.NuGet
                 return ExitCode.Failure;
             }
 
-            logger.Debug("Pushing NuGet package '{NugetPackage}'", nugetPackage);
+            logger.Debug("Pushing NuGet package '{NugetPackage}'", nugetPackage.ConvertPathToInternal());
 
-            var args = new List<string> {"push", nugetPackage.FileSystem.ConvertPathToInternal(nugetPackage.Path)};
+            var args = new List<string> {"push", nugetPackage.ConvertPathToInternal()};
 
             if (!string.IsNullOrWhiteSpace(configFile))
             {
@@ -236,7 +241,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 exitCode =
                     await
                         ProcessRunner.ExecuteProcessAsync(
-                            nugetExePath,
+                            nugetExePath.ConvertPathToInternal(),
                             runSpecificArgs,
                             logger.Information,
                             (message, prefix) =>
@@ -292,7 +297,7 @@ namespace Arbor.Build.Core.Tools.NuGet
         private async Task<ExitCode> UploadNuGetPackagesAsync(
             ILogger logger,
             DirectoryEntry artifactPackagesDirectory,
-            string nugetExePath,
+            FileEntry nugetExePath,
             string? serverUri,
             string? apiKey,
             bool websitePackagesUploadEnabled,
@@ -436,7 +441,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
         private static async Task<bool?> CheckPackageExistsAsync(
             FileEntry nugetPackage,
-            string nugetExePath,
+            FileEntry nugetExePath,
             ILogger logger,
             string? sourceName)
         {
@@ -506,7 +511,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             var exitCode =
                 await
                     ProcessRunner.ExecuteProcessAsync(
-                        nugetExePath,
+                        nugetExePath.ConvertPathToInternal(),
                         args,
                         (message, prefix) =>
                         {

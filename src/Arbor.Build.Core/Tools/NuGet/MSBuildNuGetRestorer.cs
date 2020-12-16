@@ -106,7 +106,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                     "Found ignored solution files: {IgnoredSolutionFiles}",
                     string.Join(
                         ", ",
-                        excluded.Select(excludedItem => $"{excludedItem.File} ({excludedItem.Status.Item2})")));
+                        excluded.Select(excludedItem => $"{excludedItem.File.ConvertPathToInternal()} ({excludedItem.Status.Item2})")));
             }
 
             var solutionFile = included.Single();
@@ -114,7 +114,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             string? runtimeIdentifier =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.PublishRuntimeIdentifier);
 
-            var arguments = new List<string> { _fileSystem.ConvertPathToInternal(solutionFile.FullName), "/t:restore" };
+            var arguments = new List<string> { solutionFile.ConvertPathToInternal(), "/t:restore" };
 
             if (!string.IsNullOrWhiteSpace(runtimeIdentifier))
             {

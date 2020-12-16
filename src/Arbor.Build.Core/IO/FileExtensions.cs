@@ -17,6 +17,8 @@ namespace Arbor.Build.Core.IO
             await stream.WriteAllTextAsync(text.AsMemory(), encoding, cancellationToken);
         }
 
-        public static string ConvertPathToInternal(this FileEntry file) => file.FileSystem.ConvertPathToInternal(file.Path.FullName);
+        public static string ConvertPathToInternal(this FileEntry file) => file.FileSystem.ConvertPathToInternal(file.Path);
+
+        public static string ConvertPathToInternal(this DirectoryEntry directoryEntry) => directoryEntry.FileSystem.ConvertPathToInternal(directoryEntry.Path);
     }
 }
