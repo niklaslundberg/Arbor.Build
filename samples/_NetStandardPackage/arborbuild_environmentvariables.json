@@ -27,11 +27,15 @@
         },
         {
             "key":  "Arbor.Build.NuGet.PackageUpload.Enabled",
-            "value": "false"
+            "value": false
         },
         {
             "key":  "Arbor.Build.NuGet.PackageUpload.ForceUploadEnabled",
-            "value": "false"
+            "value": false
+        },
+        {
+            "key":  "Arbor.Build.Tools.External.NuGet.Restore.Enabled",
+            "value": true
         }
     ]
 }

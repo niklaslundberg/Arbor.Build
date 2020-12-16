@@ -90,7 +90,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 logger.Error(
                     "Expected exactly 1 solution file, found {Length}, {SolutionFiles}",
                     included.Length,
-                    string.Join(", ", included.Select(fi => fi.FullName)));
+                    string.Join(", ", included.Select(fi => _fileSystem.ConvertPathToInternal(fi.Path))));
                 return ExitCode.Failure;
             }
 
@@ -106,7 +106,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                     "Found ignored solution files: {IgnoredSolutionFiles}",
                     string.Join(
                         ", ",
-                        excluded.Select(excludedItem => $"{excludedItem.File} ({excludedItem.Status.Item2})")));
+                        excluded.Select(excludedItem => $"{_fileSystem.ConvertPathToInternal(excludedItem.File.Path)} ({excludedItem.Status.Item2})")));
             }
 
             var solutionFile = included.Single();

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.ProcessUtils;
+using Arbor.Build.Core.Tools.MSBuild;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
@@ -20,8 +21,13 @@ namespace Arbor.Build.Core.Tools.NuGet
     public class NuGetRestorer : ITool
     {
         private readonly IFileSystem _fileSystem;
+        private readonly BuildContext _buildContext;
 
-        public NuGetRestorer(IFileSystem fileSystem) => _fileSystem = fileSystem;
+        public NuGetRestorer(IFileSystem fileSystem, BuildContext buildContext)
+        {
+            _fileSystem = fileSystem;
+            _buildContext = buildContext;
+        }
 
         public async Task<ExitCode> ExecuteAsync(
             ILogger logger,
@@ -29,8 +35,6 @@ namespace Arbor.Build.Core.Tools.NuGet
             string[] args,
             CancellationToken cancellationToken)
         {
-            logger ??= Logger.None ?? throw new ArgumentNullException(nameof(logger));
-
             bool enabled = buildVariables.GetBooleanByKey(
                 WellKnownVariables.NuGetRestoreEnabled);
 
@@ -40,18 +44,16 @@ namespace Arbor.Build.Core.Tools.NuGet
                 return ExitCode.Success;
             }
 
-            string nugetExePath =
-                buildVariables.GetVariable(WellKnownVariables.ExternalTools_NuGet_ExePath).GetValueOrThrow();
+            var nugetExePath =
+                buildVariables.GetVariable(WellKnownVariables.ExternalTools_NuGet_ExePath).GetValueOrThrow().AsFullPath();
 
-            var rootPath = new DirectoryEntry(_fileSystem, buildVariables.GetVariable(WellKnownVariables.SourceRoot).GetValueOrThrow());
-
-            FileEntry[] solutionFiles = rootPath.GetFiles( "*.sln", SearchOption.AllDirectories).ToArray();
+            FileEntry[] solutionFiles = _buildContext.SourceRoot.GetFiles( "*.sln", SearchOption.AllDirectories).ToArray();
 
             PathLookupSpecification pathLookupSpecification =
                 DefaultPaths.DefaultPathLookupSpecification.AddExcludedDirectorySegments(new[] { "node_modules" });
 
             var excludeListStatus = solutionFiles
-                .Select(file => new { File = file, Status = pathLookupSpecification.IsFileExcluded(file, rootPath) })
+                .Select(file => new { File = file, Status = pathLookupSpecification.IsFileExcluded(file, _buildContext.SourceRoot) })
                 .ToArray();
 
             FileEntry[] included = excludeListStatus
@@ -89,7 +91,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             var arguments = new List<string> { "restore", _fileSystem.ConvertPathToInternal(solutionFile.Path) };
 
             ExitCode result = await ProcessHelper.ExecuteAsync(
-                nugetExePath,
+                _fileSystem.ConvertPathToInternal(nugetExePath),
                 arguments,
                 logger,
                 cancellationToken: cancellationToken).ConfigureAwait(false);

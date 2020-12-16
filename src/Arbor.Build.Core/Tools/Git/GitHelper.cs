@@ -55,7 +55,7 @@ namespace Arbor.Build.Core.Tools.Git
                                      bool exists = _fileSystem.FileExists(location);
 
                                      logger.Debug("Testing Git exe path '{Location}', exists: {Exists}",
-                                         location,
+                                        _fileSystem.ConvertPathToInternal(location),
                                          exists);
 
                                      return exists;
