@@ -134,7 +134,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             logger.Verbose("Found nuspec files [{Count}]: {NewLine}{V}",
                 filtered.Count,
                 Environment.NewLine,
-                string.Join(Environment.NewLine, filtered));
+                string.Join(Environment.NewLine, filtered.Select(file => file.ConvertPathToInternal())));
 
             IReadOnlyCollection<FileEntry> allIncluded = notExcluded.Select(file => file)
                 .SafeToReadOnlyCollection();
@@ -159,7 +159,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 if (!packageResult.IsSuccess)
                 {
                     logger.Error("Could not create NuGet package from specification '{PackageSpecification}'",
-                        packageSpecification);
+                        packageSpecification.ConvertPathToInternal());
                     return packageResult;
                 }
             }

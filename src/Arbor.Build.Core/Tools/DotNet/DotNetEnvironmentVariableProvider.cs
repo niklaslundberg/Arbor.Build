@@ -67,18 +67,18 @@ namespace Arbor.Build.Core.Tools.DotNet
                 }
 
                 dotNetExePath =
-                    sb.FirstOrDefault(item => item.EndsWith("dotnet.exe", StringComparison.OrdinalIgnoreCase))?.Trim();
+                    sb.FirstOrDefault(item => item.EndsWith("dotnet.exe", StringComparison.OrdinalIgnoreCase))?.Trim().AsFullPath();
             }
             else if (!_fileSystem.FileExists(dotNetExePath.Value))
             {
                 logger.Warning(
                     "The specified path to dotnet.exe is from variable '{DotNetExePath}' is set to '{DotNetExePath1}' but the file does not exist",
                     WellKnownVariables.DotNetExePath,
-                    dotNetExePath);
+                   _fileSystem.ConvertPathToInternal(dotNetExePath.Value));
                 return ImmutableArray<IVariable>.Empty;
             }
 
-            return new IVariable[] { new BuildVariable(WellKnownVariables.DotNetExePath, dotNetExePath?.FullName ?? "") }
+            return new IVariable[] { new BuildVariable(WellKnownVariables.DotNetExePath, string.IsNullOrWhiteSpace(dotNetExePath?.FullName) ? "" : _fileSystem.ConvertPathToInternal(dotNetExePath.Value)) }
                 .ToImmutableArray();
         }
     }

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
+using Arbor.Build.Core.IO;
 using JetBrains.Annotations;
 using Serilog;
 using Zio;
@@ -27,8 +28,8 @@ namespace Arbor.Build.Core.BuildVariables
 
             if (_sourceDirectory is {})
             {
-                logger.Verbose("Source directory is specified as {SourceDirectory}", _sourceDirectory);
-                variables.Add(new BuildVariable(WellKnownVariables.SourceRoot, _sourceDirectory.Path.FullName));
+                logger.Verbose("Source directory is specified as {SourceDirectory}", _sourceDirectory.ConvertPathToInternal());
+                variables.Add(new BuildVariable(WellKnownVariables.SourceRoot, _sourceDirectory.ConvertPathToInternal()));
             }
 
             return Task.FromResult(variables.ToImmutableArray());

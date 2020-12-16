@@ -47,7 +47,7 @@ namespace Arbor.Build.Core.Tools.Environments
                 if (!_fileSystem.DirectoryExists(existingSourceRoot.Value))
                 {
                     throw new InvalidOperationException(
-                        $"The defined variable {WellKnownVariables.SourceRoot} has value set to '{existingSourceRoot}' but the directory does not exist");
+                        $"The defined variable {WellKnownVariables.SourceRoot} has value set to '{_fileSystem.ConvertPathToInternal(existingSourceRoot.Value)}' but the directory does not exist");
                 }
 
                 sourceRoot = existingSourceRoot.Value;
@@ -60,15 +60,15 @@ namespace Arbor.Build.Core.Tools.Environments
 
             if (!existingSourceRoot.HasValue)
             {
-                variables.Add(new BuildVariable(WellKnownVariables.SourceRoot, sourceRoot.FullName));
+                variables.Add(new BuildVariable(WellKnownVariables.SourceRoot, _fileSystem.ConvertPathToInternal(sourceRoot)));
             }
 
-            var tempPath = new DirectoryEntry(_fileSystem, UPath.Combine(sourceRoot, "temp")).EnsureExists();
+            var tempPath = new DirectoryEntry(_fileSystem, sourceRoot / "temp").EnsureExists();
 
             variables.Add(
                 new BuildVariable(
                     WellKnownVariables.TempDirectory,
-                    tempPath.Path.FullName));
+                    _fileSystem.ConvertPathToInternal(tempPath.Path)));
 
             if (existingToolsDirectory is null || existingToolsDirectory.Value.IsAbsolute)
             {
@@ -81,7 +81,7 @@ namespace Arbor.Build.Core.Tools.Environments
                 {
                     variables.Add(new BuildVariable(
                         WellKnownVariables.ExternalTools,
-                        externalToolsRelativeApp.Path.FullName));
+                       _fileSystem.ConvertPathToInternal(externalToolsRelativeApp.Path)));
                 }
                 else
                 {
@@ -94,7 +94,7 @@ namespace Arbor.Build.Core.Tools.Environments
 
                     variables.Add(new BuildVariable(
                         WellKnownVariables.ExternalTools,
-                        externalTools.Path.FullName));
+                        _fileSystem.ConvertPathToInternal(externalTools.Path)));
                 }
             }
 

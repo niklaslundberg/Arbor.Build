@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.GenericExtensions.Int;
+using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.Cleanup;
 using Arbor.Build.Core.Tools.MSBuild;
 using Arbor.Exceptions;
@@ -149,8 +150,8 @@ namespace Arbor.Build.Core.Tools.Versioning
             {
                 logger.Verbose(
                     "No version file found with name {VersionFileName} at source root '{SourceRoot}' was found",
-                    versionFileName,
-                    sourceRoot);
+                    sourceRoot.FileSystem.ConvertPathToInternal(versionFileName),
+                    sourceRoot.ConvertPathToInternal());
             }
 
             int envMajor = environmentVariables.IntValueOrDefault(WellKnownVariables.VersionMajor, -1);

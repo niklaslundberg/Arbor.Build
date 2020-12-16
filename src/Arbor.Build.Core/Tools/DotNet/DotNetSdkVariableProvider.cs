@@ -73,7 +73,7 @@ namespace Arbor.Build.Core.Tools.DotNet
 
                     if (_fileSystem.DirectoryExists(sdksPath))
                     {
-                        return Task.FromResult(new IVariable[] { new BuildVariable(MSBuildSdksPath, sdksPath.FullName) }.ToImmutableArray());
+                        return Task.FromResult(new IVariable[] { new BuildVariable(MSBuildSdksPath, _fileSystem.ConvertPathToInternal(sdksPath)) }.ToImmutableArray());
                     }
                 }
             }

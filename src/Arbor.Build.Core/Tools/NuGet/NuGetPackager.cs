@@ -172,7 +172,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                     nuGetExePath);
             }
 
-            logger.Verbose("Scanning directory '{VcsRootDir}' for .nuspec files", vcsRootDir);
+            logger.Verbose("Scanning directory '{VcsRootDir}' for .nuspec files", vcsRootDir.ConvertPathToInternal());
 
             var packageConfiguration = new NuGetPackageConfiguration(
                 buildConfiguration,
@@ -247,7 +247,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             new DirectoryEntry(_fileSystem, nuSpecTempDirectory).EnsureExists();
 
-            _logger.Verbose("Saving new nuspec '{NuSpecFileCopyPath}'", nuSpecFileCopyPath);
+            _logger.Verbose("Saving new nuspec '{NuSpecFileCopyPath}'", _fileSystem.ConvertPathToInternal(nuSpecFileCopyPath));
 
             var fileEntry = new FileEntry(_fileSystem, nuSpecFileCopyPath);
             await nuSpecCopy.Save(fileEntry);
@@ -258,7 +258,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             if (packageConfiguration.AllowManifestReWrite)
             {
-                _logger.Verbose("Rewriting manifest in NuSpec '{NuSpecFileCopyPath}'", nuSpecFileCopyPath);
+                _logger.Verbose("Rewriting manifest in NuSpec '{NuSpecFileCopyPath}'", _fileSystem.ConvertPathToInternal(nuSpecFileCopyPath));
 
                 ManifestReWriteResult manifestReWriteResult = await
                     _manifestReWriter.Rewrite(fileEntry, key =>
@@ -441,8 +441,8 @@ namespace Arbor.Build.Core.Tools.NuGet
                     targetBinaryFile.DeleteIfExists();
 
                     logger.Debug("Copying NuGet binary package '{BinaryPackage}' to '{TargetBinaryFile}'",
-                        binaryPackage,
-                        targetBinaryFile);
+                         _fileSystem.ConvertPathToInternal(binaryPackage.Path),
+                        _fileSystem.ConvertPathToInternal(targetBinaryFile.Path));
                     sourceFile.MoveTo(targetBinaryFile.Path);
                 }
 
@@ -458,8 +458,9 @@ namespace Arbor.Build.Core.Tools.NuGet
                     }
 
                     logger.Debug("Copying NuGet symbol package '{SourcePackage}' to '{TargetSymbolFile}'",
-                        sourcePackage,
-                        targetSymbolFile);
+                        _fileSystem.ConvertPathToInternal(sourcePackage.Path),
+                        _fileSystem.ConvertPathToInternal(targetSymbolFile.Path));
+
                     sourceFile.MoveTo(targetSymbolFile.FullName);
                 }
             }

@@ -123,7 +123,7 @@ namespace Arbor.Build.Core.Tools.Versioning
                     "Patching assembly info files with assembly version {AssemblyVersion}, assembly file version {AssemblyFileVersion} for directory source root directory '{SourceRoot}'",
                     assemblyVersion,
                     assemblyFileVersion,
-                    sourceRoot);
+                    sourceRoot.ConvertPathToInternal());
 
                 PathLookupSpecification defaultPathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification;
 
@@ -138,7 +138,7 @@ namespace Arbor.Build.Core.Tools.Versioning
                     _filePattern,
                     assemblyFiles.Count,
                     Environment.NewLine,
-                    string.Join(Environment.NewLine, assemblyFiles.Select(item => " * " + item.FullPath)));
+                    string.Join(Environment.NewLine, assemblyFiles.Select(item => " * " + _fileSystem.ConvertPathToInternal(item.FullPath.AsFullPath()))));
 
                 app.Patch(
                     new AssemblyVersion(assemblyVersion),

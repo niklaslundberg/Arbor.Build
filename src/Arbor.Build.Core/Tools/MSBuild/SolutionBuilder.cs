@@ -445,7 +445,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 logger.Verbose("Found solutions and platforms: {NewLine}{V}",
                     Environment.NewLine,
                     string.Join(Environment.NewLine,
-                        solutionPlatforms.Select(item => $"{item.Key}: [{string.Join(", ", item.Value)}]")));
+                        solutionPlatforms.Select(item => $"{item.Key.ConvertPathToInternal()}: [{string.Join(", ", item.Value)}]")));
             }
 
             foreach (var solutionPlatform in solutionPlatforms)
@@ -459,7 +459,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                         solutionPlatform.Value.Remove(platform);
                         logger.Debug("Removing found platform {Platform} found in file {SolutionFile}",
                             platform,
-                            solutionPlatform.Key.FullName);
+                            solutionPlatform.Key.ConvertPathToInternal());
                     }
                 }
             }
@@ -704,7 +704,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 {
                     logger.Error(
                         "Could not build solution file {FullName} with configuration {Configuration} and platform {KnownPlatform}",
-                        solutionFile.FullName,
+                        _fileSystem.ConvertPathToInternal(solutionFile.FullName),
                         configuration,
                         knownPlatform);
                     return result;
@@ -1033,14 +1033,12 @@ namespace Arbor.Build.Core.Tools.MSBuild
                             args.Add("-p:ContinuousIntegrationBuild=true");
                         }
 
-
                         try
                         {
                             if (solutionProject.HasPublishPackageEnabled())
                             {
                                 args.Add(_argHelper.FormatPropertyArg("version", packageVersion));
                                 args.Add("--output");
-
 
                                 args.Add(tempDirectory.FullName);
                             }
@@ -1053,7 +1051,6 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                             args.Add("-f");
                             args.Add(targetFramework.Value);
-
 
                             void Log(string message, string category)
                             {
@@ -1313,7 +1310,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 if (_debugLoggingEnabled)
                 {
                     _logger.Debug("Found files as PDB artifacts {V}",
-                        string.Join(Environment.NewLine, pdbFiles.Select(file => "\tPDB: " + file.FullName)));
+                        string.Join(Environment.NewLine, pdbFiles.Select(file => "\tPDB: " + file.ConvertPathToInternal())));
                 }
 
                 var pairs = pdbFiles
@@ -1347,8 +1344,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
                         if (_debugLoggingEnabled)
                         {
                             _logger.Debug("Copying PDB file '{FullName}' to '{TargetFilePath}'",
-                                pair.PdbFile.FullName,
-                                targetFilePath);
+                                pair.PdbFile.ConvertPathToInternal(),
+                                _fileSystem.ConvertPathToInternal(targetFilePath));
                         }
 
                         pair.PdbFile.CopyTo(targetFilePath, true);
@@ -1358,7 +1355,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                         if (_debugLoggingEnabled)
                         {
                             _logger.Debug("Target file '{TargetFilePath}' already exists, skipping file",
-                                targetFilePath);
+                              _fileSystem.ConvertPathToInternal(targetFilePath));
                         }
                     }
 
@@ -1371,8 +1368,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
                             if (_debugLoggingEnabled)
                             {
                                 _logger.Debug("Copying DLL file '{FullName}' to '{TargetFilePath}'",
-                                    pair.DllFile.FullName,
-                                    targetFilePath);
+                                    pair.DllFile.ConvertPathToInternal(),
+                                   _fileSystem.ConvertPathToInternal(targetFilePath));
                             }
 
                             pair.DllFile.CopyTo(targetDllFilePath, true);
@@ -1382,7 +1379,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                             if (_debugLoggingEnabled)
                             {
                                 _logger.Debug("Target DLL file '{TargetDllFilePath}' already exists, skipping file",
-                                    targetDllFilePath);
+                                  _fileSystem.ConvertPathToInternal( targetDllFilePath));
                             }
                         }
                     }
@@ -1390,7 +1387,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     {
                         if (_debugLoggingEnabled)
                         {
-                            _logger.Debug("DLL file for PDB '{FullName}' was not found", pair.PdbFile.FullName);
+                            _logger.Debug("DLL file for PDB '{FullName}' was not found", pair.PdbFile.ConvertPathToInternal());
                         }
                     }
                 }
@@ -1424,7 +1421,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             logger.Information("WebApplication projects to build [{Count}]: {Projects}",
                 webProjects.Count,
-                string.Join(", ", webProjects.Select(wp => wp.Project.FileName)));
+                string.Join(", ", webProjects.Select(wp => _fileSystem.ConvertPathToInternal(wp.Project.FileName.Path))));
 
             var webSolutionProjects = new List<WebSolutionProject>();
 
@@ -1702,10 +1699,10 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     _fileSystem.ConvertPathToInternal(solutionProject.FullPath.Path),
                     _argHelper.FormatPropertyArg("configuration", configuration),
                     _argHelper.FormatPropertyArg("platform", platformName),
-                    _argHelper.FormatPropertyArg("_PackageTempDir", siteArtifactDirectory.FullName),
+                    _argHelper.FormatPropertyArg("_PackageTempDir", _fileSystem.ConvertPathToInternal(siteArtifactDirectory.FullName)),
 
                     // ReSharper disable once PossibleNullReferenceException
-                    _argHelper.FormatPropertyArg("SolutionDir", solutionFile.Directory.FullName),
+                    _argHelper.FormatPropertyArg("SolutionDir", _fileSystem.ConvertPathToInternal(solutionFile.Directory.FullName)),
                     _argHelper.FormatArg("verbosity", _verbosity.Level),
                     _argHelper.FormatPropertyArg("AutoParameterizationWebConfigConnectionStrings", "false")
                 };
@@ -1725,7 +1722,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     _fileSystem.ConvertPathToInternal(solutionProject.FullPath.Path),
                     _argHelper.FormatPropertyArg("configuration", configuration),
                     _argHelper.FormatArg("verbosity", _verbosity.Level),
-                    _argHelper.FormatPropertyArg("publishdir", siteArtifactDirectory.FullName),
+                    _argHelper.FormatPropertyArg("publishdir", _fileSystem.ConvertPathToInternal(siteArtifactDirectory.FullName)),
                     _argHelper.FormatPropertyArg("AssemblyVersion", _assemblyVersion),
                     _argHelper.FormatPropertyArg("FileVersion", _assemblyFileVersion)
                 };
@@ -1792,7 +1789,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     {
                         if (_debugLoggingEnabled)
                         {
-                            _logger.Debug("The bin directory '{FullName}' does exist", binDirectory.FullName);
+                            _logger.Debug("The bin directory '{FullName}' does exist", _fileSystem.ConvertPathToInternal(binDirectory.FullName));
                         }
 
                         RemoveXmlFilesForAssemblies(binDirectory);
@@ -1801,7 +1798,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     {
                         if (_debugLoggingEnabled)
                         {
-                            _logger.Debug("The bin directory '{FullName}' does not exist", binDirectory.FullName);
+                            _logger.Debug("The bin directory '{FullName}' does not exist", _fileSystem.ConvertPathToInternal(binDirectory.FullName));
                         }
                     }
                 }
@@ -1868,7 +1865,6 @@ namespace Arbor.Build.Core.Tools.MSBuild
             logger.Information("Creating NuGet web package for project '{ProjectName}'", solutionProject.ProjectName);
 
             string packageId = solutionProject.ProjectName;
-
 
             var artifactDirectory = new DirectoryEntry(_fileSystem, siteArtifactDirectory);
 
@@ -2036,7 +2032,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 {
                     _logger.Debug(
                         "Build NuGet web package is not configured in project file '{FullPath}'; property '{ExpectedName}'",
-                        solutionProject.FullPath,
+                        solutionProject.FullPath.ConvertPathToInternal(),
                         expectedName);
                 }
             }
@@ -2396,7 +2392,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                             }
 
                             var binDirectory = new DirectoryEntry(_fileSystem,
-                                UPath.Combine(artifactJobAppDataDirectory.FullName));
+                                UPath.Combine(artifactJobAppDataDirectory.Path, "bin"));
 
                             if (binDirectory.Exists)
                             {
@@ -2547,7 +2543,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 {
                     logger.Debug(
                         "Skipping directory '{FullName}' when searching for solution files because the directory is not allowed, {Item2}",
-                        directoryEntry.FullName,
+                         _fileSystem.ConvertPathToInternal(directoryEntry.Path),
                         isExcludeListed.Item2);
                 }
 

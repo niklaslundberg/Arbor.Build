@@ -225,7 +225,7 @@ namespace Arbor.Build.Core.Bootstrapper
         {
             if (!string.IsNullOrWhiteSpace(_startOptions?.BaseDir?.FullName) && _startOptions.BaseDir.Exists)
             {
-                _environmentVariables.SetEnvironmentVariable(WellKnownVariables.SourceRoot, _startOptions.BaseDir.Path.FullName);
+                _environmentVariables.SetEnvironmentVariable(WellKnownVariables.SourceRoot, _fileSystem.ConvertPathToInternal(_startOptions.BaseDir.Path.FullName));
             }
 
             if (_startOptions?.PreReleaseEnabled == true)

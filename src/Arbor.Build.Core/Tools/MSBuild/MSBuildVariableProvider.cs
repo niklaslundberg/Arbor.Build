@@ -44,7 +44,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
         {
             if (_fileSystem.FileExists(vsWherePath))
             {
-                logger.Debug("vswhere.exe exists at '{VsWherePath}'", vsWherePath);
+                logger.Debug("vswhere.exe exists at '{VsWherePath}'", _fileSystem.ConvertPathToInternal(vsWherePath));
 
                 ExitCode versionExitCode = await ProcessHelper.ExecuteAsync(
                    _fileSystem.ConvertPathToInternal(vsWherePath),
@@ -136,13 +136,13 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                         if (_fileSystem.FileExists(msbuild2019Path))
                         {
-                            logger.Information("Found MSBuild with vswhere.exe at '{MsbuildPath}'", msbuild2019Path);
+                            logger.Information("Found MSBuild with vswhere.exe at '{MsbuildPath}'",  _fileSystem.ConvertPathToInternal(msbuild2019Path));
 
                             IVariable[] variables =
                             {
                                 new BuildVariable(
                                     WellKnownVariables.ExternalTools_MSBuild_ExePath,
-                                    msbuild2019Path.FullName)
+                                    _fileSystem.ConvertPathToInternal(msbuild2019Path))
                             };
 
                             return variables.ToImmutableArray();
@@ -157,13 +157,13 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                         if (_fileSystem.FileExists(msbuild2017Path))
                         {
-                            logger.Information("Found MSBuild with vswhere.exe at '{MsbuildPath}'", msbuild2017Path);
+                            logger.Information("Found MSBuild with vswhere.exe at '{MsbuildPath}'",  _fileSystem.ConvertPathToInternal(msbuild2017Path));
 
                             IVariable[] variables =
                             {
                                 new BuildVariable(
                                     WellKnownVariables.ExternalTools_MSBuild_ExePath,
-                                    msbuild2017Path.FullName)
+                                    _fileSystem.ConvertPathToInternal(msbuild2017Path))
                             };
 
                             return variables.ToImmutableArray();
@@ -359,7 +359,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 {
                     new BuildVariable(
                         WellKnownVariables.ExternalTools_MSBuild_ExePath,
-                        fileBasedLookupResultPath.FullName)
+                        _fileSystem.ConvertPathToInternal(fileBasedLookupResultPath.FullName))
                 };
 
                 return variables.ToImmutableArray();
@@ -442,7 +442,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             {
                 new BuildVariable(
                     WellKnownVariables.ExternalTools_MSBuild_ExePath,
-                    foundPath)
+                    _fileSystem.ConvertPathToInternal(foundPath.AsFullPath()))
             };
             return environmentVariables.ToImmutableArray();
         }

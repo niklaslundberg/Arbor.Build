@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.MSBuild;
 using Arbor.Processing;
 using Arbor.Sorbus.Core;
@@ -47,7 +48,7 @@ namespace Arbor.Build.Core.Tools.Versioning
             try
             {
                 logger.Verbose("Un-patching assembly info files for directory source root directory '{SourceRoot}'",
-                    sourceRoot);
+                    sourceRoot.ConvertPathToInternal());
 
                 app.Unpatch(_fileSystem.ConvertPathToInternal(sourceRoot.Path));
             }

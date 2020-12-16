@@ -35,8 +35,8 @@ namespace Arbor.Build.Core.Tools.Cleanup
             {
                 new BuildVariable(
                     WellKnownVariables.Artifacts,
-                    artifactsDirectory.FullName),
-                new BuildVariable(WellKnownVariables.ReportPath, testReportsDirectory.FullName)
+                    sourceRoot.FileSystem.ConvertPathToInternal(artifactsDirectory.FullName)),
+                new BuildVariable(WellKnownVariables.ReportPath, sourceRoot.FileSystem.ConvertPathToInternal(testReportsDirectory.Path))
             };
 
             return Task.FromResult(variables.ToImmutableArray());

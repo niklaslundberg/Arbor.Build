@@ -267,7 +267,7 @@ namespace Arbor.Build.Core.Tools.Testing
             return exitCode;
         }
 
-        private static ExitCode AnalyzeXml(FileEntry reportFileEntry, Action<string> logger)
+        private ExitCode AnalyzeXml(FileEntry reportFileEntry, Action<string> logger)
         {
             if (!reportFileEntry.Exists)
             {

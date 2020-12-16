@@ -7,10 +7,12 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.IO;
 using Arbor.Exceptions;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.Cleanup
 {
@@ -19,9 +21,15 @@ namespace Arbor.Build.Core.Tools.Cleanup
     public class ProcessCleanup : ITool
     {
         private readonly ILogger _logger;
+        private readonly IFileSystem _fileSystem;
+
         private static ImmutableArray<string> ProcessNames { get; } = new string[] {"msbuild.exe", "vbcscompiler.exe", "csc.exe"}.ToImmutableArray();
 
-        public ProcessCleanup(ILogger logger) => _logger = logger;
+        public ProcessCleanup(ILogger logger, IFileSystem fileSystem)
+        {
+            _logger = logger;
+            _fileSystem = fileSystem;
+        }
 
         public async Task<ExitCode> ExecuteAsync(ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
@@ -44,7 +52,7 @@ namespace Arbor.Build.Core.Tools.Cleanup
                 };
 
                 var exitCode = await ProcessRunner.ExecuteProcessAsync(
-                        dotNetExe,
+                       _fileSystem.ConvertPathToInternal(dotNetExe.AsFullPath()),
                         shutdownArguments,
                         Log,
                         cancellationToken: cancellationToken)
