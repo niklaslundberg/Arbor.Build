@@ -60,7 +60,7 @@ namespace Arbor.Build.Core.Tools.Environments
 
             if (!existingSourceRoot.HasValue)
             {
-                variables.Add(new BuildVariable(WellKnownVariables.SourceRoot, sourceRoot.FullName));
+                variables.Add(new BuildVariable(WellKnownVariables.SourceRoot, _fileSystem.ConvertPathToInternal(sourceRoot.FullName)));
             }
 
             var tempPath = new DirectoryEntry(_fileSystem, UPath.Combine(sourceRoot, "temp")).EnsureExists();

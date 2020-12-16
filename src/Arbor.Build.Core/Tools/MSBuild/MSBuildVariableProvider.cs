@@ -142,7 +142,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                             {
                                 new BuildVariable(
                                     WellKnownVariables.ExternalTools_MSBuild_ExePath,
-                                    msbuild2019Path.FullName)
+                                    _fileSystem.ConvertPathToInternal(msbuild2019Path))
                             };
 
                             return variables.ToImmutableArray();
@@ -163,7 +163,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                             {
                                 new BuildVariable(
                                     WellKnownVariables.ExternalTools_MSBuild_ExePath,
-                                    msbuild2017Path.FullName)
+                                    _fileSystem.ConvertPathToInternal(msbuild2017Path))
                             };
 
                             return variables.ToImmutableArray();
@@ -359,7 +359,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 {
                     new BuildVariable(
                         WellKnownVariables.ExternalTools_MSBuild_ExePath,
-                        fileBasedLookupResultPath.FullName)
+                        _fileSystem.ConvertPathToInternal(fileBasedLookupResultPath.FullName))
                 };
 
                 return variables.ToImmutableArray();
@@ -442,7 +442,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             {
                 new BuildVariable(
                     WellKnownVariables.ExternalTools_MSBuild_ExePath,
-                    foundPath)
+                    _fileSystem.ConvertPathToInternal(foundPath.AsFullPath()))
             };
             return environmentVariables.ToImmutableArray();
         }

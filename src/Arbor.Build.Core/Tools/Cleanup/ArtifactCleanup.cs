@@ -112,7 +112,7 @@ namespace Arbor.Build.Core.Tools.Cleanup
         private static void DoCleanup(ILogger logger, DirectoryEntry artifactsDirectory)
         {
             logger.Information("Artifact cleanup is enabled, removing all files and folders in '{FullName}'",
-                artifactsDirectory.FullName);
+             artifactsDirectory.FileSystem.ConvertPathToInternal(artifactsDirectory.Path));
 
             artifactsDirectory.DeleteIfExists();
             artifactsDirectory.EnsureExists();

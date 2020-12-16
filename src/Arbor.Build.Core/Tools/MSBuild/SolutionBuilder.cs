@@ -704,7 +704,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 {
                     logger.Error(
                         "Could not build solution file {FullName} with configuration {Configuration} and platform {KnownPlatform}",
-                        solutionFile.FullName,
+                        _fileSystem.ConvertPathToInternal(solutionFile.FullName),
                         configuration,
                         knownPlatform);
                     return result;
@@ -1421,7 +1421,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             logger.Information("WebApplication projects to build [{Count}]: {Projects}",
                 webProjects.Count,
-                string.Join(", ", webProjects.Select(wp => wp.Project.FileName)));
+                string.Join(", ", webProjects.Select(wp => _fileSystem.ConvertPathToInternal(wp.Project.FileName.Path))));
 
             var webSolutionProjects = new List<WebSolutionProject>();
 

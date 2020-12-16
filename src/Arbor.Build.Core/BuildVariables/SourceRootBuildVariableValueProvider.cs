@@ -28,7 +28,7 @@ namespace Arbor.Build.Core.BuildVariables
             if (_sourceDirectory is {})
             {
                 logger.Verbose("Source directory is specified as {SourceDirectory}", _sourceDirectory);
-                variables.Add(new BuildVariable(WellKnownVariables.SourceRoot, _sourceDirectory.Path.FullName));
+                variables.Add(new BuildVariable(WellKnownVariables.SourceRoot, _sourceDirectory.FileSystem.ConvertPathToInternal(_sourceDirectory.Path.FullName)));
             }
 
             return Task.FromResult(variables.ToImmutableArray());
