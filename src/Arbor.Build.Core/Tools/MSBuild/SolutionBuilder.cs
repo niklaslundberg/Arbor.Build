@@ -2135,7 +2135,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             string nativeMetadataDirectory = contentFilesInfo.ContentFilesFile.Directory.Path.WindowsPath();
 
             string nativePath = contentFilesInfo.ContentFilesFile.Path.WindowsPath();
-            string nativeChecksumPath = contentFilesInfo.ContentFilesFile.Path.WindowsPath();
+            string nativeChecksumPath = contentFilesInfo.ChecksumFile.Path.WindowsPath();
 
             string? nativeFullPath = _fileSystem.ConvertPathToInternal(contentFilesInfo.ContentFilesFile.Path);
             string? nativeChecksumFileFullPath = _fileSystem.ConvertPathToInternal(contentFilesInfo.ChecksumFile.Path);
