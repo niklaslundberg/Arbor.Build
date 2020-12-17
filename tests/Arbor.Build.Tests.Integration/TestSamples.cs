@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
 using Arbor.Build.Core;
@@ -9,8 +10,6 @@ using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Logging;
 using Arbor.Build.Tests.Integration.Tests.MSpec;
-using Arbor.FS;
-using NUnit.Framework;
 using Serilog;
 using Serilog.Events;
 using Xunit;
@@ -33,15 +32,15 @@ namespace Arbor.Build.Tests.Integration
         }
 
         [MemberData(nameof(Data))]
-        [Xunit.Theory]
-        public async Task Do(string fullPath)
+        [Theory]
+        public async Task RunBuildOnExampleProject(string fullPath)
         {
             UPath path = fullPath.AsFullPath();
             var samplesDirectory = GetSamplesDirectory();
 
             if (samplesDirectory.Path == path)
             {
-                _testOutputHelper.WriteLine($"Skipping test for {path}, no samples found starting with _");
+                _testOutputHelper.WriteLine($"Skipping test for {fullPath}, no samples found starting with _");
                 return;
             }
 
@@ -106,7 +105,27 @@ namespace Arbor.Build.Tests.Integration
             Assert.All(expectedFiles, file =>
             {
                 var filePath = path / file;
-                Assert.True(_fs.FileExists(filePath), $"Exists({filePath})");
+                Assert.True(_fs.FileExists(filePath), $"Exists({_fs.ConvertPathToInternal(filePath)})");
+
+                if (file.GetExtensionWithDot().Equals(".nupkg", StringComparison.OrdinalIgnoreCase))
+                {
+                    using var packageStream = _fs.OpenFile(filePath, FileMode.Open, FileAccess.Read);
+
+                    DirectoryEntry? tempDir = null;
+                    try
+                    {
+                        UPath tempPath = Path.GetTempPath().AsFullPath() / Guid.NewGuid().ToString();
+                        tempDir = new DirectoryEntry(_fs, tempPath).EnsureExists();
+
+                        var archive = new ZipArchive(packageStream, ZipArchiveMode.Read);
+
+                        archive.ExtractToDirectory(tempDir.ConvertPathToInternal());
+                    }
+                    finally
+                    {
+                        tempDir.DeleteIfExists();
+                    }
+                }
             });
 
             Assert.Empty(invalidPathMessages);
@@ -151,8 +170,7 @@ namespace Arbor.Build.Tests.Integration
 #pragma warning restore CA2000 // Dispose objects before losing scope
             var samples = UPath.Combine(VcsTestPathHelper.FindVcsRootPath().Path, "samples");
 
-            var samplesDirectory = fs.GetDirectoryEntry(samples);
-            return samplesDirectory;
+            return fs.GetDirectoryEntry(samples);
         }
 
         public void Dispose() => _fs.Dispose();
