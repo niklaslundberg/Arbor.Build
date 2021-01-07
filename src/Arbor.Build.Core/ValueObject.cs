@@ -67,5 +67,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
         public static bool operator !=(ValueObject<T, TValue>? left, ValueObject<T, TValue>? right) =>
             !Equals(left, right);
+
+        public override string ToString() => Value.ToString() ?? base.ToString()!;
     }
 }

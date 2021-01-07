@@ -732,6 +732,13 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 return ExitCode.Failure;
             }
 
+            bool isReleaseBuild =
+                configuration.Equals(WellKnownConfigurations.Release, StringComparison.OrdinalIgnoreCase);
+
+            var options = GetVersionOptions(isReleaseBuild);
+
+            string packageVersion = NuGetVersionHelper.GetPackageVersion(options);
+
             var argList = new List<string>(10)
             {
                 _fileSystem.ConvertPathToInternal(solutionFile.FullName),
@@ -741,7 +748,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 _argHelper.FormatArg("target", _defaultTarget),
                 _argHelper.FormatPropertyArg("AssemblyVersion", _assemblyVersion),
                 _argHelper.FormatPropertyArg("FileVersion", _assemblyFileVersion),
-                _argHelper.FormatPropertyArg("Version", _version)
+                _argHelper.FormatPropertyArg("Version", packageVersion)
             };
 
             if (_deterministicBuildEnabled)
@@ -979,14 +986,12 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     : solutionProject.Project.TargetFrameworks.Where(target =>
                         target.Value.Equals(_publishTargetFramework, StringComparison.Ordinal));
 
-
                 bool isReleaseBuild =
                     configuration.Equals(WellKnownConfigurations.Release, StringComparison.OrdinalIgnoreCase);
 
                 var options = GetVersionOptions(isReleaseBuild);
 
                 string packageVersion = NuGetVersionHelper.GetPackageVersion(options);
-
 
                 DirectoryEntry? tempDirectory = default;
 
@@ -1038,7 +1043,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                             args.Add(_argHelper.FormatPropertyArg("version", packageVersion));
                             args.Add("--output");
 
-                            args.Add(tempDirectory.FullName);
+                            args.Add(tempDirectory.ConvertPathToInternal());
                         }
 
                         if (!string.IsNullOrWhiteSpace(_publishRuntimeIdentifier))
@@ -1090,11 +1095,11 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                             foreach (var nugetPackage in nugetPackages)
                             {
-                                var targetFile = UPath.Combine(_packagesDirectory.Path, nugetPackage.Name);
+                                var targetFilePath = _packagesDirectory.Path / nugetPackage.Name;
 
-                                if (!_fileSystem.FileExists(targetFile))
+                                if (!_fileSystem.FileExists(targetFilePath))
                                 {
-                                    nugetPackage.CopyTo(targetFile, true);
+                                    nugetPackage.CopyTo(targetFilePath, true);
                                 }
                             }
 
@@ -1719,7 +1724,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     _argHelper.FormatArg("verbosity", _verbosity.Level),
                     _argHelper.FormatPropertyArg("publishdir", _fileSystem.ConvertPathToInternal(siteArtifactDirectory.FullName)),
                     _argHelper.FormatPropertyArg("AssemblyVersion", _assemblyVersion),
-                    _argHelper.FormatPropertyArg("FileVersion", _assemblyFileVersion)
+                    _argHelper.FormatPropertyArg("FileVersion", _assemblyFileVersion),
+                    _argHelper.FormatPropertyArg("Version", _version)
                 };
 
                 if (_deterministicBuildEnabled)

@@ -16,6 +16,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
         public static readonly TargetFramework Net5_0 = new TargetFramework("net5.0");
         public static readonly TargetFramework Empty = new TargetFramework("N/A");
 
+        public override string ToString() => Value;
+
         public TargetFramework([NotNull] string value) : base(value)
         {
             if (string.IsNullOrWhiteSpace(value))
