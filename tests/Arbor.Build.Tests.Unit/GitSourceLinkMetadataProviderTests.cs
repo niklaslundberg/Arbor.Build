@@ -21,7 +21,7 @@ namespace Arbor.Build.Tests.Unit
             using IFileSystem fs = new MemoryFileSystem();
             var provider = new GitSourceLinkMetadataProvider(fs);
 
-            var buildDirectory = @"c:\build".AsFullPath();
+            var buildDirectory = @"c:\build".ParseAsPath();
 
             fs.CreateDirectory(buildDirectory);
 
@@ -40,8 +40,8 @@ namespace Arbor.Build.Tests.Unit
 
             exitCode.IsSuccess.Should().BeTrue();
 
-            fs.FileExists(@"c:\build\.git\HEAD".AsFullPath()).Should().BeTrue();
-            fs.FileExists(@"c:\build\.git\config".AsFullPath()).Should().BeTrue();
+            fs.FileExists(@"c:\build\.git\HEAD".ParseAsPath()).Should().BeTrue();
+            fs.FileExists(@"c:\build\.git\config".ParseAsPath()).Should().BeTrue();
         }
     }
 }

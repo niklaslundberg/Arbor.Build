@@ -34,10 +34,10 @@ namespace Arbor.Build.Core.Tools.Environments
             CancellationToken cancellationToken)
         {
             var existingSourceRoot =
-                buildVariables.GetVariableValueOrDefault(WellKnownVariables.SourceRoot)?.AsFullPath();
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.SourceRoot)?.ParseAsPath();
 
             var existingToolsDirectory =
-                buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools)?.AsFullPath();
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools)?.ParseAsPath();
             UPath sourceRoot;
 
             var variables = new List<IVariable>();
@@ -73,7 +73,7 @@ namespace Arbor.Build.Core.Tools.Environments
             if (existingToolsDirectory is null || existingToolsDirectory.Value.IsAbsolute)
             {
                 var externalToolsRelativeApp =
-                    new DirectoryEntry(_fileSystem, UPath.Combine(AppDomain.CurrentDomain.BaseDirectory!.AsFullPath(),
+                    new DirectoryEntry(_fileSystem, UPath.Combine(AppDomain.CurrentDomain.BaseDirectory!.ParseAsPath(),
                         "tools",
                         "external"));
 

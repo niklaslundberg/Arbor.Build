@@ -67,7 +67,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 }
 
                 ExitCode result = await ProcessHelper.ExecuteAsync(
-                    _fileSystem.ConvertPathToInternal(dotNetExePath.AsFullPath()),
+                    _fileSystem.ConvertPathToInternal(dotNetExePath.ParseAsPath()),
                     arguments,
                     logger,
                     cancellationToken: cancellationToken).ConfigureAwait(false);

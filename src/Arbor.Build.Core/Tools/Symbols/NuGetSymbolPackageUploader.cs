@@ -37,7 +37,7 @@ namespace Arbor.Build.Core.Tools.Symbols
                 return Task.FromResult(ExitCode.Success);
             }
 
-            var artifacts = buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue().Value!.AsFullPath();
+            var artifacts = buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue().Value!.ParseAsPath();
 
             var packagesFolder = new DirectoryEntry(_fileSystem, UPath.Combine(artifacts, "packages"));
 

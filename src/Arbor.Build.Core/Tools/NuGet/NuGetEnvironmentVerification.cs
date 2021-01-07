@@ -38,7 +38,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 return false;
             }
 
-            UPath nuGetExePath = variable.Value.AsFullPath();
+            UPath nuGetExePath = variable.Value.ParseAsPath();
 
             bool fileExists = _fileSystem.FileExists(nuGetExePath);
 

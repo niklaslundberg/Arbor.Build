@@ -28,7 +28,7 @@ namespace Arbor.Build.Tests.Integration.DirectoryDelete
         Establish context = () =>
         {
             fs = new PhysicalFileSystem();
-            tempDir = new DirectoryEntry(fs, UPath.Combine(Path.GetTempPath().AsFullPath(),
+            tempDir = new DirectoryEntry(fs, UPath.Combine(Path.GetTempPath().ParseAsPath(),
                 $"{DefaultPaths.TempPathPrefix}_DeleteDirs{Guid.NewGuid().ToString().Substring(0, 8)}"));
 
             tempDir.EnsureExists();

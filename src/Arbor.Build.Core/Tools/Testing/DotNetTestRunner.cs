@@ -94,7 +94,7 @@ namespace Arbor.Build.Core.Tools.Testing
                 return ExitCode.Failure;
             }
 
-            var dotNetExePath = dotNetExePathValue.AsFullPath();
+            var dotNetExePath = dotNetExePathValue.ParseAsPath();
 
             logger.Debug("Using dotnet.exe in path '{DotNetExePath}'", _fileSystem.ConvertPathToInternal(dotNetExePath));
 
@@ -125,7 +125,7 @@ namespace Arbor.Build.Core.Tools.Testing
                 bool xmlEnabled =
                     buildVariables.GetBooleanByKey(WellKnownVariables.XUnitNetCoreAppXmlEnabled, true);
 
-                var reportFile = UPath.Combine(reportPath.Value!.AsFullPath(), "dotnet", xmlReportName);
+                var reportFile = UPath.Combine(reportPath.Value!.ParseAsPath(), "dotnet", xmlReportName);
 
                 var reportFileEntry = new FileEntry(_fileSystem, reportFile);
                 reportFileEntry.Directory!.EnsureExists();

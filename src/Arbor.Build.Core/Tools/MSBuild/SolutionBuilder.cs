@@ -153,7 +153,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             _msBuildExe = _dotnetMsBuildEnabled
                 ? null
                 : buildVariables.Require(WellKnownVariables.ExternalTools_MSBuild_ExePath).GetValueOrThrow()
-                    .AsFullPath();
+                    .ParseAsPath();
 
             string msbuildParameterArgumentDelimiter = _dotnetMsBuildEnabled
                 ? "-"
@@ -163,7 +163,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             _artifactsPath =
                 new DirectoryEntry(_fileSystem,
-                    buildVariables.Require(WellKnownVariables.Artifacts).GetValueOrThrow().AsFullPath());
+                    buildVariables.Require(WellKnownVariables.Artifacts).GetValueOrThrow().ParseAsPath());
 
             _appDataJobsEnabled = buildVariables.GetBooleanByKey(
                 WellKnownVariables.AppDataJobsEnabled);
@@ -180,7 +180,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             IVariable artifacts = buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue();
             _packagesDirectory =
-                new DirectoryEntry(_fileSystem, UPath.Combine(artifacts.Value!.AsFullPath(), "packages"));
+                new DirectoryEntry(_fileSystem, UPath.Combine(artifacts.Value!.ParseAsPath(), "packages"));
 
             _dotnetPackToolsEnabled =
                 buildVariables.GetBooleanByKey(WellKnownVariables.DotNetPackToolProjectsEnabled, true);
@@ -192,7 +192,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 buildVariables.GetBooleanByKey(WellKnownVariables.WebProjectsBuildEnabled, true);
 
             _dotNetExePath =
-                buildVariables.GetVariableValueOrDefault(WellKnownVariables.DotNetExePath, string.Empty)?.AsFullPath();
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.DotNetExePath, string.Empty)?.ParseAsPath();
 
             _cleanBinXmlFilesForAssembliesEnabled =
                 buildVariables.GetBooleanByKey(
@@ -242,7 +242,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             }
 
             _vcsRoot = new DirectoryEntry(_fileSystem,
-                buildVariables.Require(WellKnownVariables.SourceRoot).GetValueOrThrow().AsFullPath());
+                buildVariables.Require(WellKnownVariables.SourceRoot).GetValueOrThrow().ParseAsPath());
 
             if (_codeAnalysisEnabled)
             {
@@ -993,7 +993,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 try
                 {
                     var tempDirPath =
-                        UPath.Combine(Path.GetTempPath().AsFullPath(),
+                        UPath.Combine(Path.GetTempPath().ParseAsPath(),
                             "Arbor.Build-pkg" + DateTime.UtcNow.Ticks);
                     tempDirectory = new DirectoryEntry(_fileSystem, tempDirPath);
                     tempDirectory.EnsureExists();
@@ -2182,7 +2182,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             logger.Information("{NuSpec}", nuspecContent);
 
             DirectoryEntry tempDir = new DirectoryEntry(_fileSystem, UPath.Combine(
-                    Path.GetTempPath().AsFullPath(),
+                    Path.GetTempPath().ParseAsPath(),
                     $"{DefaultPaths.TempPathPrefix}_sb_{DateTime.Now.Ticks}"))
                 .EnsureExists();
 

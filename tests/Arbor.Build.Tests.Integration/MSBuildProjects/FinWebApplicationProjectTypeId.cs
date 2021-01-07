@@ -55,7 +55,7 @@ namespace Arbor.Build.Tests.Integration.MSBuildProjects
             try
             {
 
-                tempFile = fs.GetFileEntry(Path.GetTempFileName().AsFullPath());
+                tempFile = fs.GetFileEntry(Path.GetTempFileName().ParseAsPath());
                 var stream = tempFile.Open(FileMode.Open, FileAccess.Write);
                 await stream.WriteAllTextAsync(xml, Encoding.UTF8).ConfigureAwait(false);
 

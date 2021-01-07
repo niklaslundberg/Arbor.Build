@@ -43,7 +43,7 @@ namespace Arbor.Build.Core.Tools.Cleanup
                 return ExitCode.Success;
             }
 
-            var artifactsPath = buildVariables.Require(WellKnownVariables.Artifacts).GetValueOrThrow().AsFullPath();
+            var artifactsPath = buildVariables.Require(WellKnownVariables.Artifacts).GetValueOrThrow().ParseAsPath();
 
             var artifactsDirectory = new DirectoryEntry(_fileSystem, artifactsPath);
 

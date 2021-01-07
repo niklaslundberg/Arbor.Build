@@ -34,7 +34,7 @@ namespace Arbor.Build.Core.Tools.DotNet
             CancellationToken cancellationToken)
         {
             UPath? dotNetExePath =
-                buildVariables.GetVariableValueOrDefault(WellKnownVariables.DotNetExePath)?.AsFullPath();
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.DotNetExePath)?.ParseAsPath();
 
             if (dotNetExePath.HasValue && dotNetExePath.Value != UPath.Empty)
             {
@@ -45,7 +45,7 @@ namespace Arbor.Build.Core.Tools.DotNet
             {
                 var sb = new List<string>(10);
 
-                var winDir = _environmentVariables.GetEnvironmentVariable("WINDIR")?.AsFullPath();
+                var winDir = _environmentVariables.GetEnvironmentVariable("WINDIR")?.ParseAsPath();
 
                 if (winDir is null)
                 {
@@ -67,7 +67,7 @@ namespace Arbor.Build.Core.Tools.DotNet
                 }
 
                 dotNetExePath =
-                    sb.FirstOrDefault(item => item.EndsWith("dotnet.exe", StringComparison.OrdinalIgnoreCase))?.Trim().AsFullPath();
+                    sb.FirstOrDefault(item => item.EndsWith("dotnet.exe", StringComparison.OrdinalIgnoreCase))?.Trim().ParseAsPath();
             }
             else if (!_fileSystem.FileExists(dotNetExePath.Value))
             {

@@ -20,14 +20,14 @@ namespace Arbor.Build.Tests.Integration.PathExtensions
         Establish context = () =>
         {
             fs = new PhysicalFileSystem();
-            var rootPath = @"C:\Temp\root".AsFullPath();
-            var aPath = @"C:\Temp\root\afolder".AsFullPath();
+            var rootPath = @"C:\Temp\root".ParseAsPath();
+            var aPath = @"C:\Temp\root\afolder".ParseAsPath();
             fs.CreateDirectory(aPath);
 
             tempDir = new DirectoryEntry(fs, aPath);
             specification = DefaultPaths.DefaultPathLookupSpecification;
             rootDir = new DirectoryEntry(fs, rootPath);
-            sourceDir = fs.GetDirectoryEntry(@"C:\Temp\root\afolder".AsFullPath());
+            sourceDir = fs.GetDirectoryEntry(@"C:\Temp\root\afolder".ParseAsPath());
         };
 
         Because of = () =>

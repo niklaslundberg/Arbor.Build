@@ -26,7 +26,7 @@ namespace Arbor.Build.Tests.Integration.PathExtensions
         Establish context = () =>
         {
             fs = new PhysicalFileSystem();
-            var rootPath = $@"C:\Temp\root-{Guid.NewGuid()}".AsFullPath();
+            var rootPath = $@"C:\Temp\root-{Guid.NewGuid()}".ParseAsPath();
             fs.CreateDirectory(rootPath);
             root = fs.GetDirectoryEntry(rootPath);
 

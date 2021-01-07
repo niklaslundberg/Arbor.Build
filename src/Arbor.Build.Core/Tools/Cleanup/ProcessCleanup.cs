@@ -52,7 +52,7 @@ namespace Arbor.Build.Core.Tools.Cleanup
                 };
 
                 var exitCode = await ProcessRunner.ExecuteProcessAsync(
-                       _fileSystem.ConvertPathToInternal(dotNetExe.AsFullPath()),
+                       _fileSystem.ConvertPathToInternal(dotNetExe.ParseAsPath()),
                         shutdownArguments,
                         Log,
                         cancellationToken: cancellationToken)

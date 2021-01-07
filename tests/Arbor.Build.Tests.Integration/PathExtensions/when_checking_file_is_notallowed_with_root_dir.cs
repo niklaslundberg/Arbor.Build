@@ -28,7 +28,7 @@ namespace Arbor.Build.Tests.Integration.PathExtensions
         {
             fs = new PhysicalFileSystem();
 
-            var tempPath = Path.GetTempPath().AsFullPath();
+            var tempPath = Path.GetTempPath().ParseAsPath();
 
             var rootPath = UPath.Combine(tempPath, $"root-{Guid.NewGuid()}");
             fs.CreateDirectory(rootPath);

@@ -46,7 +46,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 return Task.FromResult(ExitCode.Success);
             }
 
-            var artifacts = buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue().Value!.AsFullPath();
+            var artifacts = buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue().Value!.ParseAsPath();
 
             var artifactsPath = _fileSystem.GetDirectoryEntry(artifacts);
 
@@ -54,7 +54,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             var websitesDirectory = new DirectoryEntry(_fileSystem, UPath.Combine(artifactsPath.Path, "websites"));
 
             UPath? nugetExe = buildVariables.Require(WellKnownVariables.ExternalTools_NuGet_ExePath)
-                .ThrowIfEmptyValue().Value?.AsFullPath();
+                .ThrowIfEmptyValue().Value?.ParseAsPath();
 
             if (!nugetExe.HasValue)
             {
@@ -360,12 +360,12 @@ namespace Arbor.Build.Core.Tools.NuGet
             if (nuGetPackageFiles.Count == 0)
             {
                 string websiteUploadMissingMessage = websitePackagesUploadEnabled
-                    ? $" or in folder websites folder '{websitesDirectory.FullName}'"
+                    ? $" or in folder websites folder '{websitesDirectory.ConvertPathToInternal()}'"
                     : string.Empty;
 
                 logger.Information(
                     "Could not find any NuGet packages to upload in folder '{ArtifactPackagesDirectory}' or any subfolder {WebsiteUploadMissingMessage}",
-                    artifactPackagesDirectory,
+                    artifactPackagesDirectory.ConvertPathToInternal(),
                     websiteUploadMissingMessage);
 
                 return ExitCode.Success;

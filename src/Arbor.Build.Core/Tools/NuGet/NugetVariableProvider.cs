@@ -46,7 +46,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 throw new InvalidOperationException("Could not download nuget.exe");
             }
 
-            return nuGetDownloadResult.NuGetExePath?.AsFullPath();
+            return nuGetDownloadResult.NuGetExePath?.ParseAsPath();
         }
 
         public int Order => 3;
@@ -77,7 +77,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             if (string.IsNullOrWhiteSpace(
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetRestoreEnabled, string.Empty)))
             {
-                var uPath = buildVariables.Require(WellKnownVariables.SourceRoot).Value!.AsFullPath();
+                var uPath = buildVariables.Require(WellKnownVariables.SourceRoot).Value!.ParseAsPath();
 
                 DirectoryEntry sourceDir = new DirectoryEntry(_fileSystem, uPath);
 

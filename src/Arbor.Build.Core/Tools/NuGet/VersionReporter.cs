@@ -38,7 +38,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             var nuGetPackageFiles = new List<FileEntry>();
 
-            var artifactPackagesDirectory = new DirectoryEntry(_fileSystem, artifacts.Value!.AsFullPath());
+            var artifactPackagesDirectory = new DirectoryEntry(_fileSystem, artifacts.Value!.ParseAsPath());
 
             if (!artifactPackagesDirectory.Exists)
             {

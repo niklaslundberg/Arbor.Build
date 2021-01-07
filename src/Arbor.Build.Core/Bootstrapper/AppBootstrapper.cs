@@ -187,7 +187,7 @@ namespace Arbor.Build.Core.Bootstrapper
             var baseDir = new DirectoryEntry(_fileSystem, VcsPathHelper.FindVcsRootPath(AppDomain.CurrentDomain.BaseDirectory));
 
             var tempDirectory = new DirectoryEntry(_fileSystem, UPath.Combine(
-                Path.GetTempPath().AsFullPath(),
+                Path.GetTempPath().ParseAsPath(),
                 $"{DefaultPaths.TempPathPrefix}_Boot_Debug",
                 DateTime.Now.ToString("yyyyMMddHHmmssfff", CultureInfo.InvariantCulture)));
 
@@ -407,7 +407,7 @@ namespace Arbor.Build.Core.Bootstrapper
                     throw new InvalidOperationException("Could not get source root path");
                 }
 
-                baseDir = new DirectoryEntry(_fileSystem, foundPath.AsFullPath());
+                baseDir = new DirectoryEntry(_fileSystem, foundPath.ParseAsPath());
             }
 
             return Task.FromResult(baseDir);

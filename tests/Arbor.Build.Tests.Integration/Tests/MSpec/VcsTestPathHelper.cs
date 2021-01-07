@@ -12,7 +12,7 @@ namespace Arbor.Build.Tests.Integration.Tests.MSpec
         public static DirectoryEntry FindVcsRootPath()
         {
             var startDir = NCrunchEnvironment.NCrunchIsResident()
-                ? NCrunchEnvironment.GetOriginalSolutionPath().AsFullPath().GetDirectory()
+                ? NCrunchEnvironment.GetOriginalSolutionPath().ParseAsPath().GetDirectory()
                 : UPath.Empty;
 
             return FindVcsRootPath(startDir);
@@ -41,7 +41,7 @@ namespace Arbor.Build.Tests.Integration.Tests.MSpec
                 throw new InvalidOperationException("Could not find source root");
             }
 
-            return new DirectoryEntry(fs, vcsRootPath.AsFullPath());
+            return new DirectoryEntry(fs, vcsRootPath.ParseAsPath());
         }
     }
 }

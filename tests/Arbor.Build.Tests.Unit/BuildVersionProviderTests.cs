@@ -30,7 +30,7 @@ namespace Arbor.Build.Tests.Unit
             var buildVariables =
                 new List<IVariable>
                 {
-                    new BuildVariable(WellKnownVariables.SourceRoot, Path.GetTempPath().AsFullPath().FullName),
+                    new BuildVariable(WellKnownVariables.SourceRoot, Path.GetTempPath().ParseAsPath().FullName),
                     new BuildVariable(WellKnownVariables.BuildNumberAsUnixEpochSecondsEnabled, "true")
                 };
 

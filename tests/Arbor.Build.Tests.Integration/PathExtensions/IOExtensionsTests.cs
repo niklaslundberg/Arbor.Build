@@ -64,7 +64,7 @@ namespace Arbor.Build.Tests.Integration.PathExtensions
             {
                 string systemPath = Path.GetTempPath();
 
-                var tempPath = systemPath.AsFullPath();
+                var tempPath = systemPath.ParseAsPath();
 
                 var path = UPath.Combine(tempPath, "123" + Guid.NewGuid());
 

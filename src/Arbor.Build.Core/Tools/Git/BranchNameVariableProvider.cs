@@ -115,7 +115,7 @@ namespace Arbor.Build.Core.Tools.Git
                 _logger.Debug("The git path '{GitExePath}' does not exist", gitExePath);
 
                 var githubForWindowsPath =
-                    UPath.Combine(_specialFolders.GetFolderPath(Environment.SpecialFolder.LocalApplicationData).AsFullPath(), "GitHub");
+                    UPath.Combine(_specialFolders.GetFolderPath(Environment.SpecialFolder.LocalApplicationData).ParseAsPath(), "GitHub");
 
                 if (_fileSystem.DirectoryExists(githubForWindowsPath))
                 {
@@ -132,7 +132,7 @@ namespace Arbor.Build.Core.Tools.Git
 
                         if (!string.IsNullOrWhiteSpace(pathLine))
                         {
-                            var directory = pathLine.Split('=').Last().Replace("\"", string.Empty, StringComparison.Ordinal).AsFullPath();
+                            var directory = pathLine.Split('=').Last().Replace("\"", string.Empty, StringComparison.Ordinal).ParseAsPath();
 
                             var gitPath = UPath.Combine(directory, "bin", "git.exe");
 

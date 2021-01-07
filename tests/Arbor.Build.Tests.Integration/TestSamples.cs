@@ -35,7 +35,7 @@ namespace Arbor.Build.Tests.Integration
         [Theory]
         public async Task RunBuildOnExampleProject(string fullPath)
         {
-            UPath path = fullPath.AsFullPath();
+            UPath path = fullPath.ParseAsPath();
             var samplesDirectory = GetSamplesDirectory();
 
             if (samplesDirectory.Path == path)
@@ -114,7 +114,7 @@ namespace Arbor.Build.Tests.Integration
                     DirectoryEntry? tempDir = null;
                     try
                     {
-                        UPath tempPath = Path.GetTempPath().AsFullPath() / Guid.NewGuid().ToString();
+                        UPath tempPath = Path.GetTempPath().ParseAsPath() / Guid.NewGuid().ToString();
                         tempDir = new DirectoryEntry(_fs, tempPath).EnsureExists();
 
                         var archive = new ZipArchive(packageStream, ZipArchiveMode.Read);

@@ -39,7 +39,7 @@ namespace Arbor.Build.Tests.Integration.Bootstrapper
         Establish context = () =>
         {
             fs = new PhysicalFileSystem();
-            var tempDirectoryPath = UPath.Combine(Path.GetTempPath().AsFullPath(),
+            var tempDirectoryPath = UPath.Combine(Path.GetTempPath().ParseAsPath(),
                 $"{DefaultPaths.TempPathPrefix}_Bootstrapper_Test_{Guid.NewGuid()}");
 
             baseDirectory = new DirectoryEntry(fs, tempDirectoryPath).EnsureExists();

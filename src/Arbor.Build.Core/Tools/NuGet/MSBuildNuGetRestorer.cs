@@ -63,7 +63,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             }
 
             var msbuildExePath = buildVariables.GetVariable(WellKnownVariables.ExternalTools_MSBuild_ExePath)
-                .GetValueOrThrow().AsFullPath();
+                .GetValueOrThrow().ParseAsPath();
 
             DirectoryEntry rootPath = _buildContext.SourceRoot;
 

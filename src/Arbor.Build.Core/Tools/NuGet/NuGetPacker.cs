@@ -58,7 +58,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             _pathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification;
 
             string? artifacts = buildVariables.Require(WellKnownVariables.Artifacts).GetValueOrThrow();
-            var packagesDirectory = new DirectoryEntry(_fileSystem, UPath.Combine(artifacts.AsFullPath(), "packages"));
+            var packagesDirectory = new DirectoryEntry(_fileSystem, UPath.Combine(artifacts.ParseAsPath(), "packages"));
 
             DirectoryEntry vcsRootDir = _buildContext.SourceRoot;
 

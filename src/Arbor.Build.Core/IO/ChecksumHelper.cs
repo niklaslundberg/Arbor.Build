@@ -24,7 +24,7 @@ namespace Arbor.Build.Core.IO
 
             string json = JsonConvert.SerializeObject(new {files}, Formatting.Indented);
 
-            DirectoryEntry tempDirectory = new DirectoryEntry(baseDirectory.FileSystem, UPath.Combine(Path.GetTempPath().AsFullPath(), Guid.NewGuid().ToString()))
+            DirectoryEntry tempDirectory = new DirectoryEntry(baseDirectory.FileSystem, UPath.Combine(Path.GetTempPath().ParseAsPath(), Guid.NewGuid().ToString()))
                 .EnsureExists();
 
             var contentFilesFile = UPath.Combine(tempDirectory.Path, "contentFiles.json");

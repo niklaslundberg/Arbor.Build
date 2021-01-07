@@ -27,7 +27,7 @@ namespace Arbor.Build.Tests.Integration.DirectoryExtensions
         {
             fs = new PhysicalFileSystem();
             baseDir =
-                new DirectoryEntry(fs, UPath.Combine(Path.GetTempPath().AsFullPath(),
+                new DirectoryEntry(fs, UPath.Combine(Path.GetTempPath().ParseAsPath(),
                     $"{DefaultPaths.TempPathPrefix}_DirectoryExtensions_{Guid.NewGuid()}"));
             baseDir.EnsureExists();
 

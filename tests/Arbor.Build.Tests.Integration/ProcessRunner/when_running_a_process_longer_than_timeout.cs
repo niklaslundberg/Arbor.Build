@@ -35,9 +35,9 @@ namespace Arbor.Build.Tests.Integration.ProcessRunner
         Establish context = () =>
         {
             fs = new PhysicalFileSystem();
-            testPath = UPath.Combine(Path.GetTempPath().AsFullPath(), $"{DefaultPaths.TempPathPrefix}_Test_timeout.tmp.bat");
+            testPath = UPath.Combine(Path.GetTempPath().ParseAsPath(), $"{DefaultPaths.TempPathPrefix}_Test_timeout.tmp.bat");
 
-            logFile = new FileEntry(fs, @"C:\Temp\test.log".AsFullPath());
+            logFile = new FileEntry(fs, @"C:\Temp\test.log".ParseAsPath());
 
             string batchContent = $@"@ECHO OFF
 ECHO Waiting for 10 seconds

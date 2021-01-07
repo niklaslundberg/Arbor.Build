@@ -25,18 +25,18 @@ namespace Arbor.Build.Core.Tools.Git
             var gitExeLocations = new List<UPath>
             {
                 UPath.Combine(
-                    specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86).AsFullPath(),
+                    specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86).ParseAsPath(),
                     "Git",
                     "bin",
                     "git.exe"),
                 UPath.Combine(
-                    specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86).AsFullPath(),
+                    specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86).ParseAsPath(),
                     "Git",
                     "bin",
                     "git.exe")
             };
 
-            var programFilesX64 = environmentVariables.GetEnvironmentVariable("ProgramW6432")?.AsFullPath();
+            var programFilesX64 = environmentVariables.GetEnvironmentVariable("ProgramW6432")?.ParseAsPath();
 
             if (programFilesX64.HasValue)
             {

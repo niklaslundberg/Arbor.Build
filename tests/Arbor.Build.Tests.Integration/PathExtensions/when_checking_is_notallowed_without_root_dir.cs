@@ -21,12 +21,12 @@ namespace Arbor.Build.Tests.Integration.PathExtensions
         Establish context = () =>
         {
             fs = new PhysicalFileSystem();
-            var tempPath = @"C:\Temp\root\afolder".AsFullPath();
+            var tempPath = @"C:\Temp\root\afolder".ParseAsPath();
             tempDir = new DirectoryEntry(fs,tempPath).EnsureExists();
             specification = DefaultPaths.DefaultPathLookupSpecification;
         };
 
-        Because of = () => isNotAllowed = specification.IsNotAllowed(fs.GetDirectoryEntry( @"C:\Temp\root\afolder".AsFullPath())).Item1;
+        Because of = () => isNotAllowed = specification.IsNotAllowed(fs.GetDirectoryEntry( @"C:\Temp\root\afolder".ParseAsPath())).Item1;
         It should_return_true = () => isNotAllowed.ShouldBeTrue();
         static IFileSystem fs;
     }

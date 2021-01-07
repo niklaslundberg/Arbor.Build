@@ -21,7 +21,7 @@ namespace Arbor.Build.Tests.Integration.DirectoryExtensions
             _fs = new PhysicalFileSystem();
 
             _tempDirectory = new DirectoryEntry(_fs,
-                    UPath.Combine(Path.GetTempPath().AsFullPath(), Guid.NewGuid().ToString()))
+                    UPath.Combine(Path.GetTempPath().ParseAsPath(), Guid.NewGuid().ToString()))
                 .EnsureExists();
         }
 

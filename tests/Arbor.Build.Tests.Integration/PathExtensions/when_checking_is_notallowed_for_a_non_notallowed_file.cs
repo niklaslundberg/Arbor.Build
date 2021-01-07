@@ -24,7 +24,7 @@ namespace Arbor.Build.Tests.Integration.PathExtensions
         Establish context = () =>
         {
             fs = new MemoryFileSystem();
-            filePath = $@"/anyrandomfile{Guid.NewGuid()}.txt".AsFullPath();
+            filePath = $@"/anyrandomfile{Guid.NewGuid()}.txt".ParseAsPath();
             using var _ = fs.OpenFile(filePath, FileMode.CreateNew,
                 FileAccess.Write);
         };

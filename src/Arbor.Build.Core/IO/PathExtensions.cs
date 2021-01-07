@@ -147,7 +147,7 @@ namespace Arbor.Build.Core.IO
                 StringSplitOptions.RemoveEmptyEntries);
         }
 
-        public static UPath AsFullPath(this string path)
+        public static UPath ParseAsPath(this string path)
         {
             if (string.IsNullOrWhiteSpace(path))
             {

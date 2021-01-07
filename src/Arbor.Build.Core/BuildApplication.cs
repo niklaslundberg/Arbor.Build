@@ -94,7 +94,7 @@ namespace Arbor.Build.Core
 
         private async Task<DirectoryEntry?> StartWithDebuggerAsync()
         {
-            var baseDir = new DirectoryEntry(_fileSystem, VcsPathHelper.FindVcsRootPath(AppDomain.CurrentDomain.BaseDirectory).AsFullPath());
+            var baseDir = new DirectoryEntry(_fileSystem, VcsPathHelper.FindVcsRootPath(AppDomain.CurrentDomain.BaseDirectory).ParseAsPath());
 
             if (Environment.UserInteractive)
             {
@@ -108,7 +108,7 @@ namespace Arbor.Build.Core
 
                 if (!string.IsNullOrWhiteSpace(baseDirectory))
                 {
-                    var asFullPath = baseDirectory.AsFullPath();
+                    var asFullPath = baseDirectory.ParseAsPath();
                     baseDir = new DirectoryEntry(_fileSystem, asFullPath);
 
                     Directory.SetCurrentDirectory(_fileSystem.ConvertPathToInternal(asFullPath));
@@ -118,7 +118,7 @@ namespace Arbor.Build.Core
             const string tempPath = @"C:\Work\Arbor.Build";
 
             var tempDirectory = new DirectoryEntry( _fileSystem, UPath.Combine(
-                tempPath.AsFullPath(),
+                tempPath.ParseAsPath(),
                 "D",
                 DateTime.UtcNow.ToFileTimeUtc().ToString(CultureInfo.InvariantCulture)));
 
@@ -319,7 +319,7 @@ namespace Arbor.Build.Core
             _ = _environmentVariables.GetEnvironmentVariable(WellKnownVariables.VariableFileSourceEnabled)
                 .TryParseBool(out bool enabled, defaultValue: true);
 
-            UPath? sourceRootPath = _environmentVariables.GetEnvironmentVariable(WellKnownVariables.SourceRoot)?.AsFullPath();
+            UPath? sourceRootPath = _environmentVariables.GetEnvironmentVariable(WellKnownVariables.SourceRoot)?.ParseAsPath();
 
             if (sourceRoot is null && sourceRootPath is null)
             {
@@ -327,7 +327,7 @@ namespace Arbor.Build.Core
 
                if (!string.IsNullOrWhiteSpace(vcsRootPath))
                {
-                   sourceRootPath = vcsRootPath.AsFullPath();
+                   sourceRootPath = vcsRootPath.ParseAsPath();
                }
                else
                {

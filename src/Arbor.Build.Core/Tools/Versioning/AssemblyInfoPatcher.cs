@@ -138,7 +138,7 @@ namespace Arbor.Build.Core.Tools.Versioning
                     _filePattern,
                     assemblyFiles.Count,
                     Environment.NewLine,
-                    string.Join(Environment.NewLine, assemblyFiles.Select(item => " * " + _fileSystem.ConvertPathToInternal(item.FullPath.AsFullPath()))));
+                    string.Join(Environment.NewLine, assemblyFiles.Select(item => " * " + _fileSystem.ConvertPathToInternal(item.FullPath.ParseAsPath()))));
 
                 app.Patch(
                     new AssemblyVersion(assemblyVersion),

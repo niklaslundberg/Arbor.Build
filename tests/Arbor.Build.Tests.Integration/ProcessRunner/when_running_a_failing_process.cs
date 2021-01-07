@@ -29,7 +29,7 @@ namespace Arbor.Build.Tests.Integration.ProcessRunner
         Establish context = () =>
         {
             fs = new PhysicalFileSystem();
-            testPath = UPath.Combine(Path.GetTempPath().AsFullPath(), $"{DefaultPaths.TempPathPrefix}Test_fail.tmp.bat");
+            testPath = UPath.Combine(Path.GetTempPath().ParseAsPath(), $"{DefaultPaths.TempPathPrefix}Test_fail.tmp.bat");
             const string batchContent = @"@ECHO OFF
 EXIT /b 3
 ";

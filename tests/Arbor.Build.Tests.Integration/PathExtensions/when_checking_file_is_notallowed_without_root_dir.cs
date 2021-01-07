@@ -27,19 +27,19 @@ namespace Arbor.Build.Tests.Integration.PathExtensions
         Establish context = () =>
         {
             fs = new PhysicalFileSystem();
-            var rootPath = @"C:\Temp\root\afolder".AsFullPath();
+            var rootPath = @"C:\Temp\root\afolder".ParseAsPath();
             root = new DirectoryEntry(fs,rootPath).EnsureExists();
 
             rootParent = root.Parent;
 
-            using (fs.OpenFile(@"C:\Temp\root\afile.txt".AsFullPath(), FileMode.Create,FileAccess.Write))
+            using (fs.OpenFile(@"C:\Temp\root\afile.txt".ParseAsPath(), FileMode.Create,FileAccess.Write))
             {
             }
 
             specification = DefaultPaths.DefaultPathLookupSpecification;
         };
 
-        Because of = () => isNotAllowed = specification.IsFileExcluded(fs.GetFileEntry( @"C:\Temp\root\afile.txt".AsFullPath())).Item1;
+        Because of = () => isNotAllowed = specification.IsFileExcluded(fs.GetFileEntry( @"C:\Temp\root\afile.txt".ParseAsPath())).Item1;
 
         It should_return_true = () => isNotAllowed.ShouldBeTrue();
     }

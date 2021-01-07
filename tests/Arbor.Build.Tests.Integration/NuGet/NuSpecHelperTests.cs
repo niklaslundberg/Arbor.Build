@@ -20,7 +20,7 @@ namespace Arbor.Build.Tests.Integration.NuGet
         public void WhenGettingIncludedFiles()
         {
             using var fs = new PhysicalFileSystem();
-            var tempPath = Path.GetTempPath().AsFullPath();
+            var tempPath = Path.GetTempPath().ParseAsPath();
 
             DirectoryEntry tempDirectory = new DirectoryEntry(fs, UPath.Combine(tempPath, Guid.NewGuid().ToString()))
                 .EnsureExists();

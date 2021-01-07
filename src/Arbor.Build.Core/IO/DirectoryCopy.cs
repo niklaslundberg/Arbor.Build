@@ -17,7 +17,6 @@ namespace Arbor.Build.Core.IO
             PathLookupSpecification? pathLookupSpecificationOption = null,
             DirectoryEntry? rootDir = null)
         {
-            var fileSystem = sourceDirectory.FileSystem;
             PathLookupSpecification pathLookupSpecification =
                 pathLookupSpecificationOption ?? DefaultPaths.DefaultPathLookupSpecification;
 

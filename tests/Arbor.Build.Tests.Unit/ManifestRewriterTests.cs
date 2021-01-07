@@ -100,7 +100,7 @@ namespace Arbor.Build.Tests.Unit
 
                 try
                 {
-                    tempFile = new FileEntry(fileSystem, UPath.Combine(Path.GetTempPath().AsFullPath(), Guid.NewGuid().ToString(), "my.nuspec"));
+                    tempFile = new FileEntry(fileSystem, UPath.Combine(Path.GetTempPath().ParseAsPath(), Guid.NewGuid().ToString(), "my.nuspec"));
 
                     tempFile.Directory.EnsureExists();
 

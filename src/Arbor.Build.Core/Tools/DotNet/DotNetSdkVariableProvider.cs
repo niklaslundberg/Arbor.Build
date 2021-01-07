@@ -41,7 +41,7 @@ namespace Arbor.Build.Core.Tools.DotNet
                 return Task.FromResult(ImmutableArray<IVariable>.Empty);
             }
 
-            var programFilesX64 = _environmentVariables.GetEnvironmentVariable("ProgramW6432")?.AsFullPath();
+            var programFilesX64 = _environmentVariables.GetEnvironmentVariable("ProgramW6432")?.ParseAsPath();
 
             if (programFilesX64 is null)
             {

@@ -62,7 +62,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             BranchName = branchName;
             BuildNumberEnabled = buildNumberEnabled;
             PackageBuildMetadata = packageBuildMetadata;
-            TempPath = tempPath ?? new DirectoryEntry(packagesDirectory.FileSystem, UPath.Combine(Path.GetTempPath().AsFullPath(), $"{DefaultPaths.TempPathPrefix}_Nuget")).EnsureExists();
+            TempPath = tempPath ?? new DirectoryEntry(packagesDirectory.FileSystem, UPath.Combine(Path.GetTempPath().ParseAsPath(), $"{DefaultPaths.TempPathPrefix}_Nuget")).EnsureExists();
             BranchNameEnabled = branchNameEnabled;
             PackageIdOverride = packageIdOverride;
             NuGetPackageVersionOverride = nuGetPackageVersionOverride;

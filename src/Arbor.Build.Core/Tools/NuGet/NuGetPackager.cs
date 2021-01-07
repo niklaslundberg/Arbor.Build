@@ -61,10 +61,10 @@ namespace Arbor.Build.Core.Tools.NuGet
             string buildConfiguration = currentConfiguration ?? staticConfiguration ?? WellKnownConfigurations.Release;
 
             var tempDirectory = _fileSystem.GetDirectoryEntry(
-                buildVariables.Require(WellKnownVariables.TempDirectory).ThrowIfEmptyValue().Value!.AsFullPath());
+                buildVariables.Require(WellKnownVariables.TempDirectory).ThrowIfEmptyValue().Value!.ParseAsPath());
 
             var nuGetExePath = buildVariables.Require(WellKnownVariables.ExternalTools_NuGet_ExePath)
-                .GetValueOrThrow().AsFullPath();
+                .GetValueOrThrow().ParseAsPath();
 
             string? suffix =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageArtifactsSuffix);
