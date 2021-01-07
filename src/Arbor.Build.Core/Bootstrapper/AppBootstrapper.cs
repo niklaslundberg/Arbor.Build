@@ -413,8 +413,15 @@ namespace Arbor.Build.Core.Bootstrapper
             return Task.FromResult(baseDir);
         }
 
-        private async Task<(string?, List<string>)> GetExePath(DirectoryEntry buildToolDirectory, CancellationToken cancellationToken)
+        private async Task<(UPath?, List<string>)> GetExePath(DirectoryEntry buildToolDirectory, CancellationToken cancellationToken)
         {
+            var buildExeFile = buildToolDirectory.GetFiles("Arbor.Build.exe");
+
+            if (buildExeFile.Length == 1)
+            {
+                return (buildExeFile.Single().Path, new List<string>());
+            }
+
             var arborBuild =
                 buildToolDirectory.GetFiles("Arbor.Build.*")
                     .Where(file => !file.Name.Equals("nuget.exe", StringComparison.OrdinalIgnoreCase))
@@ -430,7 +437,7 @@ namespace Arbor.Build.Core.Bootstrapper
 
             if (buildToolExecutable is {})
             {
-                return (buildToolExecutable.FullName, new List<string>());
+                return (buildToolExecutable.Path, new List<string>());
             }
 
             FileEntry? buildToolDll = arborBuild.SingleOrDefault(file => file.ExtensionWithDot.Equals(".dll", StringComparison.OrdinalIgnoreCase));
@@ -455,7 +462,7 @@ namespace Arbor.Build.Core.Bootstrapper
                 return (null, new List<string>());
             }
 
-            return (dotnetExePath, new List<string> {"--", buildToolDll.FullName});
+            return (dotnetExePath, new List<string> {"--", buildToolDll.ConvertPathToInternal()});
         }
 
         private async Task<ExitCode> RunBuildToolsAsync(string buildDir, string buildToolDirectoryName, string? arborBuildExePath)
@@ -483,7 +490,7 @@ namespace Arbor.Build.Core.Bootstrapper
 
                 var arguments = new List<string>();
 
-                string? exePath = arborBuildExePath;
+                UPath? exePath = arborBuildExePath;
                 if (string.IsNullOrWhiteSpace(arborBuildExePath))
                 {
                     var (defaultExePath, args) = await GetExePath(buildToolDirectory, cancellationTokenSource.Token);
@@ -492,7 +499,7 @@ namespace Arbor.Build.Core.Bootstrapper
                     exePath = defaultExePath;
                 }
 
-                if (string.IsNullOrWhiteSpace(exePath))
+                if (exePath is null)
                 {
                     return ExitCode.Failure;
                 }
@@ -504,7 +511,7 @@ namespace Arbor.Build.Core.Bootstrapper
                     arguments.AddRange(_startOptions.Args);
                 }
 
-                result = await ProcessRunner.ExecuteProcessAsync(exePath,
+                result = await ProcessRunner.ExecuteProcessAsync(_fileSystem.ConvertPathToInternal(exePath.Value),
                         arguments,
                         (message, prefix) => _logger.Information("{Prefix}{Message}", buildApplicationPrefix, message),
                         (message, prefix) => _logger.Error("{Prefix}{Message}", buildApplicationPrefix, message),
