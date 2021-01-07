@@ -184,7 +184,7 @@ namespace Arbor.Build.Core.Bootstrapper
         {
             var startOptions = BootstrapStartOptions.Parse(args);
 
-            var baseDir = new DirectoryEntry(_fileSystem, VcsPathHelper.FindVcsRootPath(AppDomain.CurrentDomain.BaseDirectory));
+            var baseDir = new DirectoryEntry(_fileSystem, VcsPathHelper.FindVcsRootPath(AppContext.BaseDirectory));
 
             var tempDirectory = new DirectoryEntry(_fileSystem, UPath.Combine(
                 Path.GetTempPath().ParseAsPath(),

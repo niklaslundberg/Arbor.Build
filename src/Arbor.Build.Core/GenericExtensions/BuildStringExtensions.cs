@@ -62,5 +62,15 @@ namespace Arbor.Build.Core.GenericExtensions
         public static string Wrap(this string text, string wrap) => wrap + text + wrap;
 
         public static IEnumerable<string> WrapItems(this IEnumerable<string> enumerable, string wrap) => enumerable.Select(item => item.Wrap(wrap));
+
+        public static string? WithDefault(this string? text, string? defaultValue)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                return defaultValue;
+            }
+
+            return text;
+        }
     }
 }

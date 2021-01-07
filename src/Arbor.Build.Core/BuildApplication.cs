@@ -94,7 +94,7 @@ namespace Arbor.Build.Core
 
         private async Task<DirectoryEntry?> StartWithDebuggerAsync()
         {
-            var baseDir = new DirectoryEntry(_fileSystem, VcsPathHelper.FindVcsRootPath(AppDomain.CurrentDomain.BaseDirectory).ParseAsPath());
+            var baseDir = new DirectoryEntry(_fileSystem, VcsPathHelper.FindVcsRootPath(AppContext.BaseDirectory).ParseAsPath());
 
             if (Environment.UserInteractive)
             {

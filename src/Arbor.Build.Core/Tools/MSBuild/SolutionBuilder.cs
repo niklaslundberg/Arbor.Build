@@ -1046,10 +1046,12 @@ namespace Arbor.Build.Core.Tools.MSBuild
                             args.Add(tempDirectory.ConvertPathToInternal());
                         }
 
-                        if (!string.IsNullOrWhiteSpace(_publishRuntimeIdentifier))
+                        string? runtimeIdentifier =  solutionProject.Project.GetPropertyValue("RuntimeIdentifier").WithDefault(_publishRuntimeIdentifier);
+
+                        if (!string.IsNullOrWhiteSpace(runtimeIdentifier))
                         {
                             args.Add("-r");
-                            args.Add(_publishRuntimeIdentifier);
+                            args.Add(runtimeIdentifier);
                         }
 
                         args.Add("-f");
