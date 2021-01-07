@@ -184,7 +184,7 @@ namespace Arbor.Build.Core.Bootstrapper
         {
             var startOptions = BootstrapStartOptions.Parse(args);
 
-            var baseDir = new DirectoryEntry(_fileSystem, VcsPathHelper.FindVcsRootPath(AppContext.BaseDirectory));
+            var baseDir = new DirectoryEntry(_fileSystem, VcsPathHelper.FindVcsRootPath(AppContext.BaseDirectory).ParseAsPath());
 
             var tempDirectory = new DirectoryEntry(_fileSystem, UPath.Combine(
                 Path.GetTempPath().ParseAsPath(),
@@ -271,10 +271,10 @@ namespace Arbor.Build.Core.Bootstrapper
 
             _logger.Debug("Downloading nuget package {Package}", BuildToolPackageName);
 
-            string buildToolsDirectory =
-                await DownloadNuGetPackageAsync().ConfigureAwait(false);
+            UPath? buildToolsDirectory =
+                (await DownloadNuGetPackageAsync().ConfigureAwait(false))?.ParseAsPath();
 
-            if (string.IsNullOrWhiteSpace(buildToolsDirectory))
+            if (!buildToolsDirectory.HasValue)
             {
                 return ExitCode.Failure;
             }
@@ -290,7 +290,7 @@ namespace Arbor.Build.Core.Bootstrapper
                 else
                 {
                     ExitCode buildToolsResult =
-                        await RunBuildToolsAsync(buildDir.FullName, buildToolsDirectory, startOptions.ArborBuildExePath).ConfigureAwait(false);
+                        await RunBuildToolsAsync(buildDir.Path, buildToolsDirectory.Value, startOptions.ArborBuildExePath).ConfigureAwait(false);
 
                     if (buildToolsResult.IsSuccess)
                     {
@@ -465,7 +465,7 @@ namespace Arbor.Build.Core.Bootstrapper
             return (dotnetExePath, new List<string> {"--", buildToolDll.ConvertPathToInternal()});
         }
 
-        private async Task<ExitCode> RunBuildToolsAsync(string buildDir, string buildToolDirectoryName, string? arborBuildExePath)
+        private async Task<ExitCode> RunBuildToolsAsync(UPath buildDir, UPath buildToolDirectoryName, string? arborBuildExePath)
         {
             var buildToolDirectory = new DirectoryEntry(_fileSystem, buildToolDirectoryName);
 
@@ -504,7 +504,7 @@ namespace Arbor.Build.Core.Bootstrapper
                     return ExitCode.Failure;
                 }
 
-                arguments.Add($"-buildDirectory={buildDir}");
+                arguments.Add($"-buildDirectory={_fileSystem.ConvertPathToInternal(buildDir)}");
 
                 if (_startOptions.Args.Any())
                 {

@@ -384,8 +384,8 @@
       },
       "NUnit": {
         "type": "Transitive",
-        "resolved": "3.12.0",
-        "contentHash": "3oJTrcUcT9wmweBUwgUf0f1XIYy6RZq2ziV+RM95HMKAJGsHPN2i3MKK1dAPvDPMRLz799Llj4eyu/STB9Q7OA==",
+        "resolved": "3.13.0",
+        "contentHash": "G+BOONgJKtNtprjGQ54l0m+Vq2VFCMh/H6ljuHfqrRlX6YkNy0GjMd5Nn0NpJidGpRd4gAOJsBqNuxr7Kgc/5g==",
         "dependencies": {
           "NETStandard.Library": "2.0.0"
         }
@@ -1683,7 +1683,7 @@
           "Microsoft.CodeAnalysis.CSharp": "3.8.0",
           "Microsoft.Web.Xdt": "3.1.0",
           "Microsoft.Windows.Compatibility": "5.0.0",
-          "NUnit": "3.12.0",
+          "NUnit": "3.13.0",
           "Newtonsoft.Json": "12.0.3",
           "NuGet.Packaging": "5.8.0",
           "NuGet.Versioning": "5.8.0",
