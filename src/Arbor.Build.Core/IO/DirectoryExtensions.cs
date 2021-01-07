@@ -224,7 +224,7 @@ namespace Arbor.Build.Core.IO
                                 {
                                     string pathInvariant = excludedPattern.Replace('\\', '/');
 
-                                    string filePath = file.FullName.Substring(directory.FullName.Length);
+                                    string filePath = file.FullName[directory.FullName.Length..];
                                     return filePath.Contains(pathInvariant, StringComparison.OrdinalIgnoreCase);
                                 })
                                 .ToArray();

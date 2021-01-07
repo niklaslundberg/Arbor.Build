@@ -39,7 +39,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
         public static ImmutableArray<DotNetSdk> All => LazyAll.Value;
 
-        public static DotNetSdk ParseOrDefault(string? sdkValue)
+        public static DotNetSdk? ParseOrDefault(string? sdkValue)
         {
             if (string.IsNullOrWhiteSpace(sdkValue))
             {

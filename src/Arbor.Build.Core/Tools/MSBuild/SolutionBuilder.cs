@@ -1033,53 +1033,48 @@ namespace Arbor.Build.Core.Tools.MSBuild
                             args.Add("-p:ContinuousIntegrationBuild=true");
                         }
 
-                        try
+                        if (solutionProject.HasPublishPackageEnabled())
                         {
-                            if (solutionProject.HasPublishPackageEnabled())
+                            args.Add(_argHelper.FormatPropertyArg("version", packageVersion));
+                            args.Add("--output");
+
+                            args.Add(tempDirectory.FullName);
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(_publishRuntimeIdentifier))
+                        {
+                            args.Add("-r");
+                            args.Add(_publishRuntimeIdentifier);
+                        }
+
+                        args.Add("-f");
+                        args.Add(targetFramework.Value);
+
+                        void Log(string message, string category)
+                        {
+                            if (message.Trim().Contains("): warning ", StringComparison.OrdinalIgnoreCase))
                             {
-                                args.Add(_argHelper.FormatPropertyArg("version", packageVersion));
-                                args.Add("--output");
-
-                                args.Add(tempDirectory.FullName);
-                            }
-
-                            if (!string.IsNullOrWhiteSpace(_publishRuntimeIdentifier))
-                            {
-                                args.Add("-r");
-                                args.Add(_publishRuntimeIdentifier);
-                            }
-
-                            args.Add("-f");
-                            args.Add(targetFramework.Value);
-
-                            void Log(string message, string category)
-                            {
-                                if (message.Trim().Contains("): warning ", StringComparison.OrdinalIgnoreCase))
+                                if (_logMsBuildWarnings)
                                 {
-                                    if (_logMsBuildWarnings)
-                                    {
-                                        logger.Warning("{Category} {Message}", category, message);
-                                    }
-                                }
-                                else
-                                {
-                                    logger.Information("{Category} {Message}", category, message);
+                                    logger.Warning("{Category} {Message}", category, message);
                                 }
                             }
-
-                            var projectExitCode = await ProcessRunner.ExecuteProcessAsync(
-                                _fileSystem.ConvertPathToInternal(_dotNetExePath.Value),
-                                args,
-                                Log,
-                                cancellationToken: _cancellationToken).ConfigureAwait(false);
-
-                            if (!projectExitCode.IsSuccess)
+                            else
                             {
-                                return projectExitCode;
+                                logger.Information("{Category} {Message}", category, message);
                             }
                         }
-                        finally { }
 
+                        var projectExitCode = await ProcessRunner.ExecuteProcessAsync(
+                            _fileSystem.ConvertPathToInternal(_dotNetExePath.Value),
+                            args,
+                            Log,
+                            cancellationToken: _cancellationToken).ConfigureAwait(false);
+
+                        if (!projectExitCode.IsSuccess)
+                        {
+                            return projectExitCode;
+                        }
                     }
                 }
                 finally
@@ -2141,9 +2136,9 @@ namespace Arbor.Build.Core.Tools.MSBuild
             string? nativeChecksumFileFullPath = _fileSystem.ConvertPathToInternal(contentFilesInfo.ChecksumFile.Path);
 
             string contentFileListFile =
-                $@"<file src=""{nativeFullPath}"" target=""{nativePath.Substring(nativeMetadataDirectory.Length).TrimStart(Path.DirectorySeparatorChar)}"" />";
+                $@"<file src=""{nativeFullPath}"" target=""{nativePath[nativeMetadataDirectory.Length..].TrimStart(Path.DirectorySeparatorChar)}"" />";
             string checksumFile =
-                $@"<file src=""{nativeChecksumFileFullPath}"" target=""{nativeChecksumPath.Substring(nativeMetadataDirectory.Length).TrimStart(Path.DirectorySeparatorChar)}"" />";
+                $@"<file src=""{nativeChecksumFileFullPath}"" target=""{nativeChecksumPath[nativeMetadataDirectory.Length..].TrimStart(Path.DirectorySeparatorChar)}"" />";
 
             string nuspecContent = $@"<?xml version=""1.0""?>
 <package>

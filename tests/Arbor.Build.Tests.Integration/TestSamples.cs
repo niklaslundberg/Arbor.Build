@@ -50,7 +50,7 @@ namespace Arbor.Build.Tests.Integration
                 new FallbackEnvironment(new EnvironmentVariables(), new DefaultEnvironmentVariables());
 
             environmentVariables.SetEnvironmentVariable(WellKnownVariables.BranchName, "develop");
-            if (path.FullName.Contains("NoSourceRootDefined"))
+            if (path.FullName.Contains("NoSourceRootDefined", StringComparison.InvariantCulture))
             {
                 Directory.SetCurrentDirectory(_fs.ConvertPathToInternal(path));
             }

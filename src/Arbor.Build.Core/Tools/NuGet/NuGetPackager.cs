@@ -268,7 +268,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                             value = null;
                         }
 
-                        _logger.Debug($"Fetching nuspec property with key '{key}', value '{value ?? "N/A"}'");
+                        _logger.Debug("Fetching nuspec property with key '{Key}', value '{Value}'", key, value ?? "N/A");
 
                         return value;
                     });

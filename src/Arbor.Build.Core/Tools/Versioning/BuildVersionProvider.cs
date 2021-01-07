@@ -42,7 +42,7 @@ namespace Arbor.Build.Core.Tools.Versioning
             IEnumerable<KeyValuePair<string, string>> variables =
                 GetVersionVariables(buildVariables, logger);
 
-            List<IVariable> environmentVariables = variables
+            var environmentVariables = variables
                 .Select(item => (IVariable)new BuildVariable(item.Key, item.Value))
                 .ToList();
 
