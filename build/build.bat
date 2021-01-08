@@ -9,6 +9,7 @@ IF "%Arbor.Build.Build.Bootstrapper.AllowPrerelease%" == "" (
 )
 
 SET Arbor.Build.NuGet.PackageUpload.PackageExcludeStartsWithPatterns=Arbor.Build.Sample
+SET Arbor.Build.Vcs.Branch.BranchModel=GitFlowBuildOnMain
 SET Arbor.Build.Tools.External.MSpec.Enabled=true
 SET Arbor.Build.NuGet.Package.Artifacts.Suffix=
 SET Arbor.Build.NuGet.Package.Artifacts.BuildNumber.Enabled=
