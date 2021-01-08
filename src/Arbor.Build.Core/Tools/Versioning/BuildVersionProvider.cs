@@ -2,19 +2,21 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.GenericExtensions.Int;
 using Arbor.Build.Core.Tools.Cleanup;
+using Arbor.Build.Core.Tools.MSBuild;
 using Arbor.Exceptions;
+using Arbor.FS;
 using Arbor.KVConfiguration.Core.Extensions.StringExtensions;
 using Arbor.KVConfiguration.Core.Metadata;
 using Arbor.KVConfiguration.JsonConfiguration;
 using JetBrains.Annotations;
 using Serilog;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.Versioning
 {
@@ -22,8 +24,13 @@ namespace Arbor.Build.Core.Tools.Versioning
     public class BuildVersionProvider : IVariableProvider
     {
         private readonly ITimeService _timeService;
+        private readonly BuildContext _buildContext;
 
-        public BuildVersionProvider(ITimeService timeService) => _timeService = timeService;
+        public BuildVersionProvider(ITimeService timeService, BuildContext buildContext)
+        {
+            _timeService = timeService;
+            _buildContext = buildContext;
+        }
 
         public int Order => VariableProviderOrder.Ignored;
 
@@ -35,7 +42,7 @@ namespace Arbor.Build.Core.Tools.Versioning
             IEnumerable<KeyValuePair<string, string>> variables =
                 GetVersionVariables(buildVariables, logger);
 
-            List<IVariable> environmentVariables = variables
+            var environmentVariables = variables
                 .Select(item => (IVariable)new BuildVariable(item.Key, item.Value))
                 .ToList();
 
@@ -61,30 +68,30 @@ namespace Arbor.Build.Core.Tools.Versioning
             IReadOnlyCollection<IVariable> buildVariables,
             ILogger logger)
         {
-            List<KeyValuePair<string, string>> environmentVariables =
-                buildVariables.Select(item => new KeyValuePair<string, string>(item.Key, item.Value)).ToList();
+            var environmentVariables =
+                buildVariables.Select(item => new KeyValuePair<string, string?>(item.Key, item.Value)).ToList();
 
             int major = -1;
             int minor = -1;
             int patch = -1;
             int build = -1;
 
-            string sourceRoot = buildVariables.GetVariable(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
-
             const string fileName = "version.json";
 
-            string versionFileName = Path.Combine(sourceRoot, fileName);
+            var sourceRoot = _buildContext.SourceRoot;
 
-            if (File.Exists(versionFileName))
+            var versionFileName = UPath.Combine(sourceRoot.Path, fileName);
+
+            if (sourceRoot.FileSystem.FileExists(versionFileName))
             {
                 logger.Verbose("A version file was found with name {VersionFileName} at source root '{SourceRoot}'",
                     versionFileName,
                     sourceRoot);
-                IReadOnlyCollection<KeyValueConfigurationItem> keyValueConfigurationItems = null;
+                IReadOnlyCollection<KeyValueConfigurationItem>? keyValueConfigurationItems = null;
                 try
                 {
                     keyValueConfigurationItems =
-                        new JsonFileReader(versionFileName).ReadConfiguration();
+                        new JsonFileReader(_buildContext.SourceRoot.FileSystem.ConvertPathToInternal(versionFileName)).ReadConfiguration();
                 }
                 catch (Exception ex) when (!ex.IsFatal())
                 {
@@ -96,11 +103,11 @@ namespace Arbor.Build.Core.Tools.Versioning
                 {
                     var jsonKeyValueConfiguration = new JsonKeyValueConfiguration(keyValueConfigurationItems);
 
-                    const string majorKey = "major"; // TODO defined major key
+                    const string majorKey = "major";
 
-                    const string minorKey = "minor"; // TODO defined minor key
+                    const string minorKey = "minor";
 
-                    const string patchKey = "patch"; // TODO defined patch key
+                    const string patchKey = "patch";
 
                     var required = new Dictionary<string, string>
                     {
@@ -143,29 +150,14 @@ namespace Arbor.Build.Core.Tools.Versioning
             {
                 logger.Verbose(
                     "No version file found with name {VersionFileName} at source root '{SourceRoot}' was found",
-                    versionFileName,
-                    sourceRoot);
+                    sourceRoot.FileSystem.ConvertPathToInternal(versionFileName),
+                    sourceRoot.ConvertPathToInternal());
             }
 
-            int envMajor =
-                environmentVariables.Where(item => item.Key == WellKnownVariables.VersionMajor)
-                    .Select(item => (int?)int.Parse(item.Value, CultureInfo.InvariantCulture))
-                    .SingleOrDefault() ?? -1;
-
-            int envMinor =
-                environmentVariables.Where(item => item.Key == WellKnownVariables.VersionMinor)
-                    .Select(item => (int?)int.Parse(item.Value, CultureInfo.InvariantCulture))
-                    .SingleOrDefault() ?? -1;
-
-            int envPatch =
-                environmentVariables.Where(item => item.Key == WellKnownVariables.VersionPatch)
-                    .Select(item => (int?)int.Parse(item.Value, CultureInfo.InvariantCulture))
-                    .SingleOrDefault() ?? -1;
-
-            int envBuild =
-                environmentVariables.Where(item => item.Key == WellKnownVariables.VersionBuild)
-                    .Select(item => (int?)int.Parse(item.Value, CultureInfo.InvariantCulture))
-                    .SingleOrDefault() ?? -1;
+            int envMajor = environmentVariables.IntValueOrDefault(WellKnownVariables.VersionMajor, -1);
+            int envMinor = environmentVariables.IntValueOrDefault(WellKnownVariables.VersionMinor, -1);
+            int envPatch = environmentVariables.IntValueOrDefault(WellKnownVariables.VersionPatch, -1);
+            int envBuild = environmentVariables.IntValueOrDefault(WellKnownVariables.VersionBuild, -1);
 
             int? teamCityBuildVersion =
                 environmentVariables.Where(item => item.Key == WellKnownVariables.TeamCityVersionBuild)

@@ -3,18 +3,18 @@
     public static partial class WellKnownVariables
     {
         [VariableDescription("Flag to indicate if web projects should be built")]
-        public const string WebProjectsBuildEnabled = "Arbor.Build.Build.WebProjectsBuild.Enabled";
+        public const string WebProjectsBuildEnabled = "Arbor.Build.WebProjectsBuild.Enabled";
 
         [VariableDescription("Use assembly reflection only mode enabled")]
         public const string AssemblyUseReflectionOnlyMode = "Arbor.Build.ReflectionAssemblyLoad.Enabled";
 
         [VariableDescription("External tools path")]
         public const string ExternalTools =
-            "Arbor.Build.Build.Tools.External";
+            "Arbor.Build.Tools.External";
 
         [VariableDescription("Source root override")]
         public const string SourceRootOverride =
-            "Arbor.Build.Build.Source.Override";
+            "Arbor.Build.Source.Override";
 
         [VariableDescription("Test framework report path")]
         public const string ReportPath =

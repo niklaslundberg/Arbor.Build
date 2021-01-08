@@ -38,11 +38,11 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 return Default;
             }
 
-            MSBuildVerbosityLevel found =
+            MSBuildVerbosityLevel? found =
                 AllValues.SingleOrDefault(
                     level => level.Level.Equals(value, StringComparison.OrdinalIgnoreCase));
 
-            if (found == null)
+            if (found is null)
             {
                 return Default;
             }

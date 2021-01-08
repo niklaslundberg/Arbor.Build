@@ -14,7 +14,10 @@
         [VariableDescription("Build version")]
         public const string VersionBuild = "Version.Build";
 
+        [VariableDescription("Output NuGet version number")]
+        public const string NuGetPackageVersionResult = "Arbor.Build.Version.NuGetVersion.Result";
+
         [VariableDescription("Build number as unix time epoch in seconds")]
-        public const string BuildNumberAsUnixEpochSecondsEnabled = "Arbor.Build.BuilderNumber.UnixEpochSecondsEnabled";
+        public const string BuildNumberAsUnixEpochSecondsEnabled = "Arbor.Build.BuildNumber.UnixEpochSecondsEnabled";
     }
 }

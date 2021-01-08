@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+
+<package>
+  <metadata>
+    <id>Arbor.Build.Samples.Embedded</id>
+    <version>0.0.1</version>
+    <title>Arbor.Build</title>
+    <authors>Niklas Lundberg</authors>
+    <owners></owners>
+    <description>
+      Arbor.Build - convention-based builds
+    </description>
+    <releaseNotes>
+    </releaseNotes>
+    <summary>
+      Arbor.Build
+    </summary>
+    <language>en-US</language>
+    <projectUrl>https://github.com/niklaslundberg/Arbor.Build</projectUrl>
+    <repository type="git" url="https://github.com/niklaslundberg/Arbor.Build" commit="$RepositoryCommit$"></repository>
+    <iconUrl>https://nuget.org/Content/Images/packageDefaultIcon-50x50.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">MIT</license>
+    <copyright>Copyright Niklas Lundberg 2014 - 2020</copyright>
+    <dependencies>
+
+    </dependencies>
+    <references></references>
+    <tags>build tools convention NoSource</tags>
+  </metadata>
+  <files>
+    <file src="bin\debug\netstandard2.0\publish\**\*.*" target="lib\netstandard2.0" exclude="*.xml;cs\*.*;de\*.*;es\*.*;fr\*.*;en\*.*;it\*.*;ja\*.*;ko\*.*;pl\*.*;pt-BR\*.*;ru\*.*;tr\*.*;zh-Hans\*.*;zh-Hant\*.*;runtimes\linux\*.*;runtimes\unix\*.*;runtimes\osx\*.*" />
+  </files>
+</package>

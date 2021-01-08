@@ -13,7 +13,9 @@ namespace Arbor.Build.Core.Tools.EnvironmentVariables
 {
     public abstract class EnvironmentVerification : ITool
     {
-        protected readonly List<string> RequiredValues = new List<string>();
+        protected List<string> RequiredValues { get; }= new List<string>();
+
+        protected virtual bool Enabled(IReadOnlyCollection<IVariable> buildVariables) => true;
 
         public async Task<ExitCode> ExecuteAsync(
             ILogger logger,
@@ -23,18 +25,24 @@ namespace Arbor.Build.Core.Tools.EnvironmentVariables
         {
             logger ??= Logger.None;
 
-            List<string> missingKeys =
+            if (!Enabled(buildVariables))
+            {
+                logger.Debug("{Tool} is not enabled", GetType().Name);
+                return ExitCode.Success;
+            }
+
+            var missingKeys =
                 RequiredValues.Where(
                         var =>
                             !buildVariables.Any(
                                 required => required.Key.Equals(var, StringComparison.OrdinalIgnoreCase)))
                     .ToList();
 
-            List<string> missingValues =
+            var missingValues =
                 RequiredValues.Where(
                         var =>
                         {
-                            IVariable value =
+                            IVariable? value =
                                 buildVariables.SingleOrDefault(
                                     required => required.Key.Equals(var, StringComparison.OrdinalIgnoreCase));
 

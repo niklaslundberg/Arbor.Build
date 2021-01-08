@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.ProcessUtils;
 using Arbor.Build.Core.Tools.EnvironmentVariables;
+using Arbor.FS;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.NuGet
 {
@@ -17,14 +18,19 @@ namespace Arbor.Build.Core.Tools.NuGet
     [UsedImplicitly]
     public class NuGetEnvironmentVerification : EnvironmentVerification
     {
-        public NuGetEnvironmentVerification() => RequiredValues.Add(WellKnownVariables.ExternalTools_NuGet_ExePath);
+        private readonly IFileSystem _fileSystem;
+        public NuGetEnvironmentVerification(IFileSystem fileSystem)
+        {
+            _fileSystem = fileSystem;
+            RequiredValues.Add(WellKnownVariables.ExternalTools_NuGet_ExePath);
+        }
 
         protected override async Task<bool> PostVariableVerificationAsync(
             StringBuilder variableBuilder,
             IReadOnlyCollection<IVariable> buildVariables,
             ILogger logger)
         {
-            IVariable variable =
+            IVariable? variable =
                 buildVariables.SingleOrDefault(item => item.Key == WellKnownVariables.ExternalTools_NuGet_ExePath);
 
             if (variable?.Value is null)
@@ -32,9 +38,9 @@ namespace Arbor.Build.Core.Tools.NuGet
                 return false;
             }
 
-            string nuGetExePath = variable.Value;
+            UPath nuGetExePath = variable.Value.ParseAsPath();
 
-            bool fileExists = File.Exists(nuGetExePath);
+            bool fileExists = _fileSystem.FileExists(nuGetExePath);
 
             if (!fileExists)
             {
@@ -62,7 +68,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             return fileExists;
         }
 
-        private async Task EnsureMinNuGetVersionAsync(string nuGetExePath, ILogger logger)
+        private async Task EnsureMinNuGetVersionAsync(UPath nuGetExePath, ILogger logger)
         {
             var standardOut = new List<string>();
             ILogger versionLogger = InMemoryLoggerHelper.CreateInMemoryLogger((message, level) => standardOut.Add(message));
@@ -70,7 +76,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             try
             {
                 IEnumerable<string> args = new List<string>();
-                ExitCode versionExitCode = await ProcessHelper.ExecuteAsync(nuGetExePath, args, versionLogger)
+                ExitCode versionExitCode = await ProcessHelper.ExecuteAsync(_fileSystem.ConvertPathToInternal(nuGetExePath), args, versionLogger)
                     .ConfigureAwait(false);
 
                 if (!versionExitCode.IsSuccess)
@@ -80,7 +86,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 }
 
                 const string nugetVersion = "NuGet Version: ";
-                string versionLine =
+                string? versionLine =
                     standardOut.FirstOrDefault(
                         line => line.StartsWith(nugetVersion, StringComparison.OrdinalIgnoreCase));
 
@@ -90,12 +96,12 @@ namespace Arbor.Build.Core.Tools.NuGet
                     return;
                 }
 
-                char majorNuGetVersion = versionLine.Substring(nugetVersion.Length).FirstOrDefault();
+                char majorNuGetVersion = versionLine[nugetVersion.Length..].FirstOrDefault();
 
                 if (majorNuGetVersion == '2')
                 {
                     IEnumerable<string> updateSelfArgs = new List<string> { "update", "-self" };
-                    ExitCode exitCode = await ProcessHelper.ExecuteAsync(nuGetExePath, updateSelfArgs, logger)
+                    ExitCode exitCode = await ProcessHelper.ExecuteAsync(_fileSystem.ConvertPathToInternal(nuGetExePath), updateSelfArgs, logger)
                         .ConfigureAwait(false);
 
                     if (!exitCode.IsSuccess)

@@ -323,3 +323,17 @@ dotnet_naming_symbols.parameters_group.applicable_kinds = parameter
 dotnet_naming_rule.parameters_rule.symbols  = parameters_group
 dotnet_naming_rule.parameters_rule.style    = camel_case_style
 dotnet_naming_rule.parameters_rule.severity = warning
+
+dotnet_diagnostic.CA1031.severity = none
+dotnet_diagnostic.CA1032.severity = none
+dotnet_diagnostic.CA1062.severity = none
+dotnet_diagnostic.CA1303.severity = none
+dotnet_diagnostic.CA1707.severity = none
+dotnet_diagnostic.CA2007.severity = none
+dotnet_diagnostic.CA1308.severity = none
+dotnet_diagnostic.S1751.severity = none
+dotnet_diagnostic.S3966.severity = none
+dotnet_diagnostic.S1172.severity = none
+
+dotnet_diagnostic.S4035.severity = none
+dotnet_diagnostic.S1854.severity = none

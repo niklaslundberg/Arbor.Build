@@ -2,7 +2,7 @@ using System;
 
 namespace Arbor.Build.Core.Tools
 {
-    public class ToolResultType : IEquatable<ToolResultType>
+    public sealed class ToolResultType : IEquatable<ToolResultType>
     {
         private readonly bool? _succeeded;
 
@@ -24,9 +24,11 @@ namespace Arbor.Build.Core.Tools
 
         public static ToolResultType NotRun => new ToolResultType("Not run", null);
 
+        public override bool Equals(object? obj) => Equals(obj as ToolResultType);
+
         public bool Equals(ToolResultType? other)
         {
-            if (ReferenceEquals(null, other))
+            if (other is null)
             {
                 return false;
             }
@@ -41,27 +43,7 @@ namespace Arbor.Build.Core.Tools
 
         public override string ToString() => $"{nameof(Type)}: {Type}";
 
-        public override bool Equals(object? obj)
-        {
-            if (ReferenceEquals(null, obj))
-            {
-                return false;
-            }
-
-            if (ReferenceEquals(this, obj))
-            {
-                return true;
-            }
-
-            if (obj.GetType() != GetType())
-            {
-                return false;
-            }
-
-            return Equals((ToolResultType)obj);
-        }
-
-        public override int GetHashCode() => Type.GetHashCode();
+        public override int GetHashCode() => Type.GetHashCode(StringComparison.Ordinal);
 
         public static bool operator ==(ToolResultType? left, ToolResultType? right) => Equals(left, right);
 

@@ -4,6 +4,6 @@
     {
         [VariableDescription("Assembly version patching file pattern")]
         public const string AssemblyFilePatchingFilePattern =
-            "Arbor.Build.Build.NetAssembly.Patching.FilePattern";
+            "Arbor.Build.NetAssembly.Patching.FilePattern";
     }
 }

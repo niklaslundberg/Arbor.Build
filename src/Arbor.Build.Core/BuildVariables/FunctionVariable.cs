@@ -4,9 +4,9 @@ namespace Arbor.Build.Core.BuildVariables
 {
     public class FunctionVariable : IVariable
     {
-        private readonly Func<string> _getValue;
+        private readonly Func<string?> _getValue;
 
-        public FunctionVariable(string key, Func<string> getValue)
+        public FunctionVariable(string key, Func<string?> getValue)
         {
             if (string.IsNullOrWhiteSpace(key))
             {
@@ -20,6 +20,6 @@ namespace Arbor.Build.Core.BuildVariables
 
         public string Key { get; }
 
-        public string Value => _getValue.Invoke();
+        public string? Value => _getValue.Invoke();
     }
 }

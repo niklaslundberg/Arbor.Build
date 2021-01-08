@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -7,10 +6,12 @@ using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.ProcessUtils;
+using Arbor.Build.Core.Tools.MSBuild;
+using Arbor.FS;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
-using Serilog.Core;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.NuGet
 {
@@ -18,14 +19,21 @@ namespace Arbor.Build.Core.Tools.NuGet
     [UsedImplicitly]
     public class NuGetRestorer : ITool
     {
+        private readonly IFileSystem _fileSystem;
+        private readonly BuildContext _buildContext;
+
+        public NuGetRestorer(IFileSystem fileSystem, BuildContext buildContext)
+        {
+            _fileSystem = fileSystem;
+            _buildContext = buildContext;
+        }
+
         public async Task<ExitCode> ExecuteAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             string[] args,
             CancellationToken cancellationToken)
         {
-            logger ??= Logger.None ?? throw new ArgumentNullException(nameof(logger));
-
             bool enabled = buildVariables.GetBooleanByKey(
                 WellKnownVariables.NuGetRestoreEnabled);
 
@@ -35,26 +43,24 @@ namespace Arbor.Build.Core.Tools.NuGet
                 return ExitCode.Success;
             }
 
-            string nugetExePath =
-                buildVariables.GetVariable(WellKnownVariables.ExternalTools_NuGet_ExePath).ThrowIfEmptyValue().Value;
+            var nugetExePath =
+                buildVariables.GetVariable(WellKnownVariables.ExternalTools_NuGet_ExePath).GetValueOrThrow().ParseAsPath();
 
-            string rootPath = buildVariables.GetVariable(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
-
-            string[] solutionFiles = Directory.GetFiles(rootPath, "*.sln", SearchOption.AllDirectories);
+            FileEntry[] solutionFiles = _buildContext.SourceRoot.GetFiles( "*.sln", SearchOption.AllDirectories).ToArray();
 
             PathLookupSpecification pathLookupSpecification =
                 DefaultPaths.DefaultPathLookupSpecification.AddExcludedDirectorySegments(new[] { "node_modules" });
 
-            var blackListStatus = solutionFiles
-                .Select(file => new { File = file, Status = pathLookupSpecification.IsFileExcluded(file, rootPath) })
+            var excludeListStatus = solutionFiles
+                .Select(file => new { File = file, Status = pathLookupSpecification.IsFileExcluded(file, _buildContext.SourceRoot) })
                 .ToArray();
 
-            string[] included = blackListStatus
+            FileEntry[] included = excludeListStatus
                 .Where(file => !file.Status.Item1)
                 .Select(file => file.File)
                 .ToArray();
 
-            var excluded = blackListStatus
+            var excluded = excludeListStatus
                 .Where(file => file.Status.Item1)
                 .ToArray();
 
@@ -62,7 +68,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             {
                 logger.Error("Expected exactly 1 solution file, found {Length}, {V}",
                     included.Length,
-                    string.Join(", ", included));
+                    string.Join(", ", included.Select(s => s.FullName)));
                 return ExitCode.Failure;
             }
 
@@ -74,17 +80,17 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             if (excluded.Length > 0)
             {
-                logger.Warning("Found notallowed solution files: {V}",
+                logger.Warning("Found not allowed solution files: {Files}",
                     string.Join(", ",
-                        excluded.Select(excludedItem => $"{excludedItem.File} ({excludedItem.Status.Item2})")));
+                        excluded.Select(excludedItem => $"{_fileSystem.ConvertPathToInternal(excludedItem.File.Path)} ({excludedItem.Status.Item2})")));
             }
 
-            string solutionFile = included.Single();
+            var solutionFile = included.Single();
 
-            var arguments = new List<string> { "restore", solutionFile };
+            var arguments = new List<string> { "restore", _fileSystem.ConvertPathToInternal(solutionFile.Path) };
 
             ExitCode result = await ProcessHelper.ExecuteAsync(
-                nugetExePath,
+                _fileSystem.ConvertPathToInternal(nugetExePath),
                 arguments,
                 logger,
                 cancellationToken: cancellationToken).ConfigureAwait(false);

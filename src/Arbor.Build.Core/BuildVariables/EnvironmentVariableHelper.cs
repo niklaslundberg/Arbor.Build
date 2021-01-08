@@ -1,16 +1,16 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.IO;
 using System.Linq;
 using System.Text;
-using Arbor.Aesculus.Core;
 using Arbor.Exceptions;
+using Arbor.FS;
+using Arbor.KVConfiguration.JsonConfiguration;
 using Arbor.KVConfiguration.Schema.Json;
 using JetBrains.Annotations;
 using Serilog;
 using Serilog.Core;
+using Zio;
 
 namespace Arbor.Build.Core.BuildVariables
 {
@@ -18,34 +18,32 @@ namespace Arbor.Build.Core.BuildVariables
     {
         public static IReadOnlyCollection<IVariable> GetBuildVariablesFromEnvironmentVariables(
             ILogger logger,
+            IEnvironmentVariables environmentVariables,
             List<IVariable>? existingItems = null)
         {
             logger ??= Logger.None ?? throw new ArgumentNullException(nameof(logger));
             List<IVariable> existing = existingItems ?? new List<IVariable>();
             var buildVariables = new List<IVariable>();
 
-            IDictionary environmentVariables = Environment.GetEnvironmentVariables();
-
-            var variables = environmentVariables
-                .OfType<DictionaryEntry>()
-                .Where(item => item.Key is object)
-                .Select(entry => new BuildVariable(
-                    entry.Key?.ToString() ?? throw new InvalidOperationException("Build variable key cannot be null"),
-                    entry.Value?.ToString()))
-                .ToList();
+            var variables = environmentVariables.GetVariables()
+                .Where(pair => pair.Value is {})
+                .Select(pair => new BuildVariable(pair.Key, pair.Value));
 
             var nonExisting = variables
                 .Where(bv => !existing.Any(ebv => ebv.Key.Equals(bv.Key, StringComparison.OrdinalIgnoreCase)))
                 .ToList();
 
-            var existingVariables = variables.Except(nonExisting).ToList();
+            var existingVariables = variables
+                .Where(bv => nonExisting.Any(ebv => ebv.Key.Equals(bv.Key, StringComparison.OrdinalIgnoreCase)))
+                .OrderBy(item => item.Key)
+                .ToList();
 
             if (existingVariables.Count > 0)
             {
                 var builder = new StringBuilder();
 
                 builder.Append(
-                        "There are ").Append(existingVariables)
+                        "There are ").Append(string.Join(", ", existingVariables))
                     .AppendLine(" existing variables that will not be overriden by environment variables:");
 
                 foreach (BuildVariable environmentVariable in existingVariables)
@@ -61,29 +59,24 @@ namespace Arbor.Build.Core.BuildVariables
             return buildVariables;
         }
 
-        public static ImmutableArray<KeyValue> GetBuildVariablesFromFile([NotNull] ILogger logger, string fileName)
+        public static ImmutableArray<KeyValue> GetBuildVariablesFromFile([NotNull] ILogger logger,
+            string fileName,
+            DirectoryEntry sourceRoot)
         {
             if (logger == null)
             {
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            string currentDirectory = VcsPathHelper.FindVcsRootPath(Directory.GetCurrentDirectory());
+            var file = new FileEntry(sourceRoot.FileSystem, sourceRoot.Path / fileName);
 
-            if (currentDirectory == null)
+            if (!file.Exists)
             {
-                logger.Error("Could not find source root");
-                return ImmutableArray<KeyValue>.Empty;
-            }
-
-            var fileInfo = new FileInfo(Path.Combine(currentDirectory, fileName));
-
-            if (!fileInfo.Exists)
-            {
-                logger.Warning(
-                    "The environment variable file '{FileInfo}' does not exist, skipping setting environment variables from file '{FileName}'",
-                    fileInfo,
+                logger.Debug(
+                    "The environment variable file '{File}' does not exist, skipping setting environment variables from file '{FileName}'",
+                    file.ConvertPathToInternal(),
                     fileName);
+
                 return ImmutableArray<KeyValue>.Empty;
             }
 
@@ -91,19 +84,19 @@ namespace Arbor.Build.Core.BuildVariables
 
             try
             {
-                configurationItems = new KVConfiguration.JsonConfiguration.JsonFileReader(fileInfo.FullName)
+                configurationItems = new JsonFileReader(sourceRoot.FileSystem.ConvertPathToInternal(file.FullName))
                     .GetConfigurationItems();
             }
             catch (Exception ex) when (!ex.IsFatal())
             {
-                logger.Error(ex, "Could not parse key value pairs in file '{FullName}'", fileInfo.FullName);
+                logger.Error(ex, "Could not parse key value pairs in file '{FullName}'", file.FullName);
 
                 return ImmutableArray<KeyValue>.Empty;
             }
 
             if (configurationItems == null)
             {
-                logger.Error("Could not parse key value pairs in file '{FullName}'", fileInfo.FullName);
+                logger.Error("Could not parse key value pairs in file '{FullName}'", file.FullName);
                 return ImmutableArray<KeyValue>.Empty;
             }
 

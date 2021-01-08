@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Arbor.Defensive.Collections;
+using Arbor.FS;
 using Serilog;
+using Zio;
 
 namespace Arbor.Build.Core.IO
 {
@@ -11,47 +12,47 @@ namespace Arbor.Build.Core.IO
     {
         public static (bool, string) IsFileExcluded(
             this PathLookupSpecification pathLookupSpecification,
-            string sourceFile,
-            string rootDir = null,
+            FileEntry sourceFile,
+            DirectoryEntry? rootDir = null,
             bool allowNonExistingFiles = false,
-            ILogger logger = null)
+            ILogger? logger = null)
         {
             if (pathLookupSpecification == null)
             {
                 throw new ArgumentNullException(nameof(pathLookupSpecification));
             }
 
-            if (string.IsNullOrWhiteSpace(sourceFile))
+            if (sourceFile is null)
             {
                 throw new ArgumentNullException(nameof(sourceFile));
             }
 
-            if (!allowNonExistingFiles && !File.Exists(sourceFile))
+            string internalPath = sourceFile.ConvertPathToInternal();
+
+            if (!allowNonExistingFiles && !sourceFile.Exists)
             {
-                string messageMessage = $"File '{sourceFile}' does not exist";
+                string messageMessage = $"File '{internalPath}' does not exist";
                 logger?.Debug("{Reason}", messageMessage);
                 return (true, messageMessage);
             }
 
-            var sourceFileInfo = new FileInfo(sourceFile);
+            (bool, string) directoryExcludeListed =
+                pathLookupSpecification.IsNotAllowed(sourceFile.Directory, rootDir);
 
-            (bool, string) directoryBlackListed =
-                pathLookupSpecification.IsNotAllowed(sourceFileInfo.Directory?.FullName, rootDir);
-
-            if (directoryBlackListed.Item1)
+            if (directoryExcludeListed.Item1)
             {
-                string reasonMessage = $"Directory of '{sourceFile}' is not allowed, {directoryBlackListed.Item2}";
+                string reasonMessage = $"Directory of '{internalPath}' is not allowed, {directoryExcludeListed.Item2}";
                 logger?.Debug("{Reason}", reasonMessage);
                 return (true, reasonMessage);
             }
 
             bool isNotAllowed = HasAnyPathSegmentStartsWith(
-                sourceFileInfo.Name,
+                sourceFile.Name,
                 pathLookupSpecification.IgnoredFileStartsWithPatterns);
 
             if (isNotAllowed)
             {
-                string reasonMessage = $"Path segments of '{sourceFile}' makes it not allowed";
+                string reasonMessage = $"Path segments of '{internalPath}' makes it not allowed";
                 logger?.Debug("{Reason}", reasonMessage);
                 return (true, reasonMessage);
             }
@@ -59,13 +60,13 @@ namespace Arbor.Build.Core.IO
             IReadOnlyCollection<string> ignoredFileNameParts = pathLookupSpecification.IgnoredFileNameParts
                 .Where(part => !string.IsNullOrEmpty(part))
                 .Where(
-                    part => sourceFileInfo.Name.IndexOf(part, StringComparison.OrdinalIgnoreCase) >= 0)
+                    part => sourceFile.Name.Contains(part, StringComparison.OrdinalIgnoreCase))
                 .SafeToReadOnlyCollection();
 
             if (ignoredFileNameParts.Count > 0)
             {
                 string reasonMessage =
-                    $"Ignored file name parts of '{sourceFile}' makes it not allowed: {string.Join(", ", ignoredFileNameParts.Select(item => $"'{item}'"))}";
+                    $"Ignored file name parts of '{internalPath}' makes it not allowed: {string.Join(", ", ignoredFileNameParts.Select(item => $"'{item}'"))}";
                 logger?.Debug("{Reason}", reasonMessage);
                 return (true, reasonMessage);
             }
@@ -75,23 +76,24 @@ namespace Arbor.Build.Core.IO
 
         public static (bool, string) IsNotAllowed(
             this PathLookupSpecification pathLookupSpecification,
-            string sourceDir,
-            string rootDir = null,
-            ILogger logger = null)
+            DirectoryEntry sourceDir,
+            DirectoryEntry? rootDir = null,
+            ILogger? logger = null)
         {
             if (pathLookupSpecification == null)
             {
                 throw new ArgumentNullException(nameof(pathLookupSpecification));
             }
 
-            if (string.IsNullOrWhiteSpace(sourceDir))
+            if (sourceDir is null)
             {
                 throw new ArgumentNullException(nameof(sourceDir));
             }
 
-            if (!Directory.Exists(sourceDir))
+            string sourceInternalPath = sourceDir.ConvertPathToInternal();
+            if (!sourceDir.Exists)
             {
-                return (true, $"Source directory '{sourceDir}' does not exist");
+                return (true, $"Source directory '{sourceInternalPath}' does not exist");
             }
 
             string[] sourceDirSegments = GetSourceDirSegments(sourceDir, rootDir);
@@ -103,7 +105,7 @@ namespace Arbor.Build.Core.IO
 
             if (hasAnyPathSegment)
             {
-                string reasonMessage = $"The directory '{sourceDir}' has a path segment that is not allowed";
+                string reasonMessage = $"The directory '{sourceInternalPath}' has a path segment that is not allowed";
                 logger?.Debug("{Reason}", reasonMessage);
                 return (true, reasonMessage);
             }
@@ -114,7 +116,7 @@ namespace Arbor.Build.Core.IO
 
             if (hasAnyPathSegmentPart)
             {
-                string reasonMessage = $"The directory '{sourceDir}' has a path segment part that is not allowed";
+                string reasonMessage = $"The directory '{sourceInternalPath}' has a path segment part that is not allowed";
                 logger?.Debug("{Reason}", reasonMessage);
                 return (true, reasonMessage);
             }
@@ -126,30 +128,28 @@ namespace Arbor.Build.Core.IO
             if (hasAnyPartStartsWith)
             {
                 string reasonMessage =
-                    $"The directory '{sourceDir}' has a path that starts with a pattern that is not allowed";
+                    $"The directory '{sourceInternalPath}' has a path that starts with a pattern that is not allowed";
                 logger?.Debug("{Reason}", reasonMessage);
                 return (true, reasonMessage);
             }
 
-            logger?.Debug("The directory '{SourceDir}' is not not allowed", sourceDir);
+            logger?.Debug("The directory '{SourceDir}' is not not allowed", sourceInternalPath);
 
             return (false, string.Empty);
         }
 
-        private static string[] GetSourceDirSegments(string sourceDir, string rootDir)
+        private static string[] GetSourceDirSegments(DirectoryEntry sourceDir, DirectoryEntry? rootDir)
         {
-            string path = string.IsNullOrWhiteSpace(rootDir) ? sourceDir : sourceDir.Replace(rootDir, string.Empty);
+            string path = rootDir is null ? sourceDir.FullName : sourceDir.FullName.Replace(rootDir.FullName, string.Empty, StringComparison.OrdinalIgnoreCase);
 
-            string[] sourceDirSegments = path.Split(
-                new[] { Path.DirectorySeparatorChar },
+            return path.Split(
+                new[] { UPath.DirectorySeparator },
                 StringSplitOptions.RemoveEmptyEntries);
-            return sourceDirSegments;
         }
-
         private static bool HasAnyPathSegment(
             IEnumerable<string> segments,
             IEnumerable<string> patterns,
-            ILogger logger = null) => segments.Any(segment => HasAnyPathSegment(segment, patterns, logger));
+            ILogger? logger = null) => segments.Any(segment => HasAnyPathSegment(segment, patterns, logger));
 
         private static bool HasAnyPathSegment(string segment, IEnumerable<string> patterns, ILogger? logger = null) => patterns.Any(pattern =>
                                                                                                                                 {
@@ -169,6 +169,6 @@ namespace Arbor.Build.Core.IO
 
         private static bool HasAnyPathSegmentPart(IEnumerable<string> segments, IEnumerable<string> patterns) => segments.Any(segment => HasAnyPathSegmentPart(segment, patterns));
 
-        private static bool HasAnyPathSegmentPart(string segment, IEnumerable<string> patterns) => patterns.Any(pattern => segment.IndexOf(pattern, StringComparison.OrdinalIgnoreCase) >= 0);
+        private static bool HasAnyPathSegmentPart(string segment, IEnumerable<string> patterns) => patterns.Any(pattern => segment.Contains(pattern, StringComparison.OrdinalIgnoreCase));
     }
 }

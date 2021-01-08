@@ -5,63 +5,69 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
-using Arbor.Build.Core.IO;
+using Arbor.FS;
 using Arbor.Build.Core.Tools.Git;
 using Arbor.Build.Core.Tools.MSBuild;
-using Arbor.Defensive;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using NuGet.Versioning;
 using Serilog;
-using Serilog.Core;
 using Serilog.Events;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.NuGet
 {
     [UsedImplicitly]
     public class NuGetPackager
     {
+        public const string SnupkgPackageFormat = "snupkg";
         private readonly BuildContext _buildContext;
+        private readonly IFileSystem _fileSystem;
 
         private readonly ILogger _logger;
+        private readonly ManifestReWriter _manifestReWriter;
 
-        public const string SnupkgPackageFormat = "snupkg";
-
-        public NuGetPackager(ILogger logger, BuildContext buildContext)
+        public NuGetPackager(ILogger logger,
+            BuildContext buildContext,
+            ManifestReWriter manifestReWriter,
+            IFileSystem fileSystem)
         {
             _logger = logger;
             _buildContext = buildContext;
+            _manifestReWriter = manifestReWriter;
+            _fileSystem = fileSystem;
         }
 
-        public NuGetPackageConfiguration GetNuGetPackageConfiguration(
+        public NuGetPackageConfiguration? GetNuGetPackageConfiguration(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
-            string packagesDirectory,
-            string vcsRootDir,
+            DirectoryEntry packagesDirectory,
+            DirectoryEntry vcsRootDir,
             string packageNameSuffix)
         {
-            logger ??= Logger.None;
-            IVariable version = buildVariables.Require(WellKnownVariables.Version).ThrowIfEmptyValue();
+            string version = buildVariables.Require(WellKnownVariables.Version).GetValueOrThrow()!;
 
-            IVariable branchName = buildVariables.Require(WellKnownVariables.BranchLogicalName).ThrowIfEmptyValue();
+            string branchName = buildVariables.Require(WellKnownVariables.BranchLogicalName).GetValueOrThrow()!;
 
-            string? currentConfiguration = buildVariables.GetVariableValueOrDefault(WellKnownVariables.CurrentBuildConfiguration, null);
+            var branch = BranchName.TryParse(branchName);
+
+            string? currentConfiguration =
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.CurrentBuildConfiguration);
 
             string? staticConfiguration =
-                buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_MSBuild_BuildConfiguration,
-                    null) ??
-                buildVariables.GetVariableValueOrDefault(WellKnownVariables.Configuration, null);
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_MSBuild_BuildConfiguration)
+                ?? buildVariables.GetVariableValueOrDefault(WellKnownVariables.Configuration);
 
-            string? buildConfiguration = currentConfiguration
-                                        ?? staticConfiguration;
+            string buildConfiguration = currentConfiguration ?? staticConfiguration ?? WellKnownConfigurations.Release;
 
-            IVariable tempDirectory = buildVariables.Require(WellKnownVariables.TempDirectory).ThrowIfEmptyValue();
-            string nuGetExePath = buildVariables.Require(WellKnownVariables.ExternalTools_NuGet_ExePath)
-                .ThrowIfEmptyValue()
-                .Value;
+            var tempDirectory = _fileSystem.GetDirectoryEntry(
+                buildVariables.Require(WellKnownVariables.TempDirectory).ThrowIfEmptyValue().Value!.ParseAsPath());
+
+            var nuGetExePath = buildVariables.Require(WellKnownVariables.ExternalTools_NuGet_ExePath)
+                .GetValueOrThrow().ParseAsPath();
 
             string? suffix =
-                buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageArtifactsSuffix, "build");
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageArtifactsSuffix);
 
             bool buildNumberEnabled = buildVariables.GetBooleanByKey(
                 WellKnownVariables.BuildNumberInNuGetPackageArtifactsEnabled,
@@ -76,13 +82,13 @@ namespace Arbor.Build.Core.Tools.NuGet
                 buildVariables.GetBooleanByKey(WellKnownVariables.NuGetPackageIdBranchNameEnabled, true);
 
             string? packageIdOverride =
-                buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageIdOverride, null);
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageIdOverride);
 
             bool nuGetSymbolPackagesEnabled =
                 buildVariables.GetBooleanByKey(WellKnownVariables.NuGetSymbolPackagesEnabled);
 
             string? nuGetPackageVersionOverride =
-                buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageVersionOverride, null);
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetPackageVersionOverride);
 
             bool allowManifestReWrite =
                 buildVariables.GetBooleanByKey(WellKnownVariables.NuGetAllowManifestReWrite);
@@ -90,15 +96,32 @@ namespace Arbor.Build.Core.Tools.NuGet
             bool buildPackagesOnAnyBranch =
                 buildVariables.GetBooleanByKey(WellKnownVariables.NuGetCreatePackagesOnAnyBranchEnabled);
 
+            string? gitModel =
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.GitBranchModel);
+
+            string? gitHash = buildVariables.GetVariableValueOrDefault(WellKnownVariables.GitHash);
+
+            if (!buildVariables.GetBooleanByKey(WellKnownVariables.NuGetPackageArtifactsSuffixEnabled, true))
+            {
+                suffix = "";
+            }
+
+            bool parsed = GitBranchModel.TryParse(gitModel, out var model);
+
+            if (parsed && model is {})
+            {
+                buildPackagesOnAnyBranch = true;
+            }
+
             if (!buildPackagesOnAnyBranch)
             {
-                if (branchName.Value.Equals("master", StringComparison.OrdinalIgnoreCase))
+                if (BranchName.TryParse(branchName) is {IsMainBranch: true})
                 {
                     logger.Warning(
                         "NuGet package creation is not supported on 'master' branch. To force NuGet package creation, set environment variable '{NuGetCreatePackagesOnAnyBranchEnabled}' to value 'true'",
                         WellKnownVariables.NuGetCreatePackagesOnAnyBranchEnabled);
 
-                    // return ExitCode.Success;
+                    return default;
                 }
             }
             else
@@ -107,96 +130,77 @@ namespace Arbor.Build.Core.Tools.NuGet
                     WellKnownVariables.NuGetCreatePackagesOnAnyBranchEnabled);
             }
 
-            string? packageFormat = buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetSymbolPackageFormat, SnupkgPackageFormat);
+            string packageFormat =
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetSymbolPackageFormat,
+                    SnupkgPackageFormat)!;
 
-            Maybe<BranchName> branchNameMayBe = BranchName.TryParse(branchName.Value);
-
-            if (!branchNameMayBe.HasValue)
+            if (branch is null)
             {
                 throw new InvalidOperationException(Resources.TheBranchNameCouldNotBeFound);
             }
 
-            bool isReleaseBuild = IsStablePackage(branchNameMayBe.Value);
+            bool isReleaseBuild = IsStablePackage(branch);
 
-            string semVer = NuGetVersionHelper.GetVersion(
-                version.Value,
-                isReleaseBuild,
-                "build",
-                true,
-                null,
-                logger,
-                NuGetVersioningSettings.Default);
+            var options = new VersionOptions(version)
+            {
+                IsReleaseBuild = isReleaseBuild,
+                BuildSuffix = suffix,
+                BuildNumberEnabled = true,
+                Logger = logger,
+                GitModel = model,
+                BranchName = branch
+            };
+
+            string semVer = NuGetVersionHelper.GetPackageVersion(options);
 
             var semanticVersion = SemanticVersion.Parse(semVer);
 
-            //logger.Verbose("Based on branch {Value} and release build flags {Value1}, the build is considered {V}",
-            //    branchName.Value,
-            //    releaseBuild.Value,
-            //    isReleaseBuild ? WellKnownConfigurations.Release : "not release");
-
             if (!string.IsNullOrWhiteSpace(buildConfiguration)
-                && buildConfiguration.Equals(WellKnownConfigurations.Debug, StringComparison.OrdinalIgnoreCase) && isReleaseBuild)
+                && buildConfiguration.Equals(WellKnownConfigurations.Debug, StringComparison.OrdinalIgnoreCase) &&
+                isReleaseBuild)
             {
                 logger.Information(
                     "The current configuration is 'debug' but the build indicates that this is a release build, using 'release' configuration instead");
                 buildConfiguration = WellKnownConfigurations.Release;
             }
 
-            if (!Directory.Exists(packagesDirectory))
-            {
-                Directory.CreateDirectory(packagesDirectory);
-            }
+            packagesDirectory.EnsureExists();
 
-            if (!File.Exists(nuGetExePath))
+            if (!_fileSystem.FileExists(nuGetExePath))
             {
                 logger.Error("The NuGet.exe path {NuGetExePath} was not found or NuGet could not be downloaded",
                     nuGetExePath);
             }
 
-            logger.Verbose("Scanning directory '{VcsRootDir}' for .nuspec files", vcsRootDir);
+            logger.Verbose("Scanning directory '{VcsRootDir}' for .nuspec files", vcsRootDir.ConvertPathToInternal());
 
             var packageConfiguration = new NuGetPackageConfiguration(
                 buildConfiguration,
                 semanticVersion,
                 packagesDirectory,
                 nuGetExePath,
+                branchName,
                 suffix,
                 branchNameEnabled,
                 packageIdOverride,
                 nuGetPackageVersionOverride,
-                allowManifestReWrite,
-                nuGetSymbolPackagesEnabled,
-                keepBinaryAndSourcePackagesTogetherEnabled,
-                isReleaseBuild,
-                branchName.Value,
-                buildNumberEnabled,
-                tempDirectory.Value,
-                nuGetSymbolPackagesFormat: packageFormat,
-                packageNameSuffix: packageNameSuffix);
+                allowManifestReWrite, nuGetSymbolPackagesEnabled, keepBinaryAndSourcePackagesTogetherEnabled,
+                isReleaseBuild, buildNumberEnabled, tempDirectory, nuGetSymbolPackagesFormat: packageFormat,
+                packageNameSuffix: packageNameSuffix, gitHash: gitHash);
             return packageConfiguration;
         }
 
         public async Task<ExitCode> CreatePackageAsync(
-            [NotNull] string packageSpecificationPath,
+            [NotNull] FileEntry packageSpecificationPath,
             [NotNull] NuGetPackageConfiguration packageConfiguration,
             bool ignoreWarnings = false,
             CancellationToken cancellationToken = default)
         {
-            if (packageConfiguration == null)
-            {
-                throw new ArgumentNullException(nameof(packageConfiguration));
-            }
-
-            if (string.IsNullOrWhiteSpace(packageSpecificationPath))
-            {
-                throw new ArgumentException(Resources.ValueCannotBeNullOrWhitespace, nameof(packageSpecificationPath));
-            }
-
             _logger.Debug("Using NuGet package configuration {PackageConfiguration}", packageConfiguration);
 
-            NuSpec nuSpec = NuSpec.Parse(packageSpecificationPath);
+            var nuSpec = NuSpec.Parse(packageSpecificationPath);
 
-            string properties = GetProperties(packageConfiguration.Configuration);
+            IDictionary<string, string?> properties = GetProperties(packageConfiguration);
 
             if (!string.IsNullOrWhiteSpace(packageConfiguration.PackageIdOverride))
             {
@@ -230,54 +234,70 @@ namespace Arbor.Build.Core.Tools.NuGet
                     ? $"Using NuGet package version {nuGetPackageVersion}"
                     : $"Using NuGet package version override '{packageConfiguration.NuGetPackageVersionOverride}'");
 
-            var nuSpecInfo = new FileInfo(packageSpecificationPath);
-
             // ReSharper disable AssignNullToNotNullAttribute
-            string nuSpecFileCopyPath =
-                Path.Combine(nuSpecInfo.DirectoryName, $"{packageId}-{DateTime.Now.Ticks}.nuspec");
+            var nuSpecFileCopyPath =
+                UPath.Combine(packageSpecificationPath.Directory.Path, $"{packageId}-{DateTime.Now.Ticks}_copy.nuspec");
 
             // ReSharper restore AssignNullToNotNullAttribute
 
-            var nuSpecCopy = new NuSpec(packageId, packageConfiguration.Version, nuSpecInfo.FullName);
+            var nuSpecCopy = new NuSpec(packageId, packageConfiguration.Version, packageSpecificationPath);
 
-            string nuSpecTempDirectory = Path.Combine(packageConfiguration.TempPath, "nuspecs");
 
-            if (!Directory.Exists(nuSpecTempDirectory))
-            {
-                Directory.CreateDirectory(nuSpecTempDirectory);
-            }
+            var nuSpecTempDirectory = UPath.Combine(packageConfiguration.TempPath.Path, "nuspecs");
 
-            _logger.Verbose("Saving new nuspec '{NuSpecFileCopyPath}'", nuSpecFileCopyPath);
-            nuSpecCopy.Save(nuSpecFileCopyPath);
+            new DirectoryEntry(_fileSystem, nuSpecTempDirectory).EnsureExists();
+
+            _logger.Verbose("Saving new nuspec '{NuSpecFileCopyPath}'", _fileSystem.ConvertPathToInternal(nuSpecFileCopyPath));
+
+            var fileEntry = new FileEntry(_fileSystem, nuSpecFileCopyPath);
+            await nuSpecCopy.Save(fileEntry);
 
             var removedTags = new List<string>();
 
+            FileEntry? nuspec = null;
+
             if (packageConfiguration.AllowManifestReWrite)
             {
-                _logger.Verbose("Rewriting manifest in NuSpec '{NuSpecFileCopyPath}'", nuSpecFileCopyPath);
+                _logger.Verbose("Rewriting manifest in NuSpec '{NuSpecFileCopyPath}'", _fileSystem.ConvertPathToInternal(nuSpecFileCopyPath));
 
-                var manifestReWriter = new ManitestReWriter();
-                ManifestReWriteResult manifestReWriteResult = manifestReWriter.Rewrite(nuSpecFileCopyPath);
+                ManifestReWriteResult manifestReWriteResult = await
+                    _manifestReWriter.Rewrite(fileEntry, key =>
+                    {
+                        if (!properties.TryGetValue(key, out string? value))
+                        {
+                            value = null;
+                        }
+
+                        _logger.Debug("Fetching nuspec property with key '{Key}', value '{Value}'", key, value ?? "N/A");
+
+                        return value;
+                    });
 
                 removedTags.AddRange(manifestReWriteResult.RemoveTags);
+
+                nuspec = manifestReWriteResult.RewrittenNuSpec;
             }
             else
             {
-                _logger.Verbose("Rewriting manifest disabled");
+                _logger.Verbose("Rewriting nuspec manifest is disabled");
             }
+
+            nuspec ??= fileEntry;
 
             if (_logger.IsEnabled(LogEventLevel.Verbose))
             {
+                string nuSpecContent = await GetNuSpecContent(nuspec);
+
                 _logger.Verbose("Created nuspec content: {NewLine}{PackageContent}",
                     Environment.NewLine,
-                    GetNuSpecContent(nuSpecFileCopyPath));
+                    nuSpecContent);
             }
 
-            ExitCode result = await ExecuteNuGetPackAsync(
+            var result = await ExecuteNuGetPackAsync(
                 packageConfiguration.NuGetExePath,
                 packageConfiguration.PackagesDirectory,
                 _logger,
-                nuSpecFileCopyPath,
+                nuspec,
                 properties,
                 nuSpecCopy,
                 removedTags,
@@ -288,34 +308,33 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             if (!result.IsSuccess)
             {
-                string content = GetNuSpecContent(nuSpecFileCopyPath);
+                string content = await GetNuSpecContent(fileEntry);
                 _logger.Error("Could not create NuGet package from nuspec {NewLine}{NuSpec}",
                     Environment.NewLine,
                     content);
             }
 
-            if (File.Exists(nuSpecFileCopyPath))
-            {
-                File.Delete(nuSpecFileCopyPath);
-            }
+            fileEntry.DeleteIfExists();
+            nuspec.DeleteIfExists();
 
             return result;
         }
 
-        private static string GetNuSpecContent(string nuSpecFileCopyPath) => File.ReadAllText(nuSpecFileCopyPath);
-
-        private static string GetProperties(string configuration)
+        private static async Task<string> GetNuSpecContent(FileEntry nuSpecFileCopyPath)
         {
-            var propertyValues = new List<KeyValuePair<string, string>>
+            await using var stream = nuSpecFileCopyPath.Open(FileMode.Open, FileAccess.Read);
+
+            return await stream.ReadAllTextAsync();
+        }
+
+        private static IDictionary<string, string?> GetProperties(NuGetPackageConfiguration configuration)
+        {
+            var propertyValues = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase)
             {
-                new KeyValuePair<string, string>(
-                    "configuration",
-                    configuration)
+                ["configuration"] = configuration.Configuration, ["RepositoryCommit"] = configuration.GitHash
             };
 
-            IEnumerable<string> formattedValues = propertyValues.Select(item => $"{item.Key}={item.Value}");
-            string properties = string.Join(";", formattedValues);
-            return properties;
+            return propertyValues;
         }
 
         private bool IsStablePackage(BranchName branchName) =>
@@ -324,12 +343,12 @@ namespace Arbor.Build.Core.Tools.NuGet
                  .Equals(WellKnownConfigurations.Release, StringComparison.OrdinalIgnoreCase))
             || branchName.IsProductionBranch();
 
-        private static async Task<ExitCode> ExecuteNuGetPackAsync(
-            string nuGetExePath,
-            string packagesDirectoryPath,
+        private async Task<ExitCode> ExecuteNuGetPackAsync(
+            UPath nuGetExePath,
+            DirectoryEntry packagesDirectoryPath,
             ILogger logger,
-            string nuSpecFileCopyPath,
-            string properties,
+            FileEntry nuSpecFileCopyPath,
+            IDictionary<string, string?> properties,
             NuSpec nuSpecCopy,
             List<string> removedTags,
             bool keepBinaryAndSourcePackagesTogetherEnabled = false,
@@ -346,11 +365,11 @@ namespace Arbor.Build.Core.Tools.NuGet
             var arguments = new List<string>
             {
                 "pack",
-                nuSpecFileCopyPath,
+                _fileSystem.ConvertPathToInternal(nuSpecFileCopyPath.Path),
                 "-Properties",
-                properties,
+                string.Join(";", properties.Select(pair => $"{pair.Key}={pair.Value}")),
                 "-OutputDirectory",
-                packagesDirectoryPath,
+                _fileSystem.ConvertPathToInternal(packagesDirectoryPath.Path),
                 "-NoPackageAnalysis",
                 "-Version",
                 nuSpecCopy.Version.ToNormalizedString()
@@ -360,7 +379,8 @@ namespace Arbor.Build.Core.Tools.NuGet
             {
                 arguments.Add("-Symbols");
 
-                if (!string.IsNullOrWhiteSpace(symbolsFormat) && symbolsFormat.Equals(SnupkgPackageFormat, StringComparison.OrdinalIgnoreCase))
+                if (!string.IsNullOrWhiteSpace(symbolsFormat) &&
+                    symbolsFormat.Equals(SnupkgPackageFormat, StringComparison.OrdinalIgnoreCase))
                 {
                     arguments.Add("-SymbolPackageFormat");
                     arguments.Add(SnupkgPackageFormat);
@@ -378,19 +398,18 @@ namespace Arbor.Build.Core.Tools.NuGet
                 arguments.Add("-NoPackageAnalysis");
             }
 
-            ExitCode processResult =
+            var processResult =
                 await
                     ProcessRunner.ExecuteProcessAsync(
-                        nuGetExePath,
-                        arguments: arguments,
-                        standardOutLog: logger.Information,
-                        standardErrorAction: logger.Error,
-                        toolAction: logger.Information,
+                        _fileSystem.ConvertPathToInternal(nuGetExePath),
+                        arguments,
+                        logger.Information,
+                        logger.Error,
+                        logger.Information,
                         cancellationToken: cancellationToken,
                         verboseAction: logger.Verbose,
                         debugAction: logger.Debug).ConfigureAwait(false);
 
-            var packagesDirectory = new DirectoryInfo(packagesDirectoryPath);
 
             if (!keepBinaryAndSourcePackagesTogetherEnabled)
             {
@@ -398,45 +417,40 @@ namespace Arbor.Build.Core.Tools.NuGet
                     "The flag {NuGetKeepBinaryAndSymbolPackagesTogetherEnabled} is set to false, separating binary packages from symbol packages",
                     WellKnownVariables.NuGetKeepBinaryAndSymbolPackagesTogetherEnabled);
 
-                var nugetPackages = packagesDirectory.GetFiles("*.nupkg", SearchOption.TopDirectoryOnly)
-                    .Select(file => file.FullName)
+                var nugetPackages = packagesDirectoryPath.GetFiles("*.nupkg")
                     .ToList();
 
-                var nugetSymbolPackages = packagesDirectory
-                    .GetFiles("*.symbols.nupkg", SearchOption.TopDirectoryOnly)
-                    .Select(file => file.FullName)
+                var nugetSymbolPackages = packagesDirectoryPath
+                    .GetFiles("*.symbols.nupkg")
                     .ToList();
 
                 var binaryPackages = nugetPackages.Except(nugetSymbolPackages).ToList();
 
-                DirectoryInfo binaryPackagesDirectory =
-                    new DirectoryInfo(Path.Combine(packagesDirectory.FullName, "binary")).EnsureExists();
+                DirectoryEntry binaryPackagesDirectory =
+                    new DirectoryEntry(_fileSystem, UPath.Combine(packagesDirectoryPath.Path, "binary")).EnsureExists();
 
-                DirectoryInfo symbolPackagesDirectory =
-                    new DirectoryInfo(Path.Combine(packagesDirectory.FullName, "symbol")).EnsureExists();
+                DirectoryEntry symbolPackagesDirectory =
+                    new DirectoryEntry(_fileSystem, UPath.Combine(packagesDirectoryPath.Path, "symbol")).EnsureExists();
 
-                foreach (string binaryPackage in binaryPackages)
+                foreach (var binaryPackage in binaryPackages)
                 {
-                    var sourceFile = new FileInfo(binaryPackage);
+                    var sourceFile = binaryPackage;
                     var targetBinaryFile =
-                        new FileInfo(Path.Combine(binaryPackagesDirectory.FullName, sourceFile.Name));
+                        new FileEntry(_fileSystem, UPath.Combine(binaryPackagesDirectory.Path, sourceFile.Name));
 
-                    if (targetBinaryFile.Exists)
-                    {
-                        targetBinaryFile.Delete();
-                    }
+                    targetBinaryFile.DeleteIfExists();
 
                     logger.Debug("Copying NuGet binary package '{BinaryPackage}' to '{TargetBinaryFile}'",
-                        binaryPackage,
-                        targetBinaryFile);
-                    sourceFile.MoveTo(targetBinaryFile.FullName);
+                         _fileSystem.ConvertPathToInternal(binaryPackage.Path),
+                        _fileSystem.ConvertPathToInternal(targetBinaryFile.Path));
+                    sourceFile.MoveTo(targetBinaryFile.Path);
                 }
 
-                foreach (string sourcePackage in nugetSymbolPackages)
+                foreach (var sourcePackage in nugetSymbolPackages)
                 {
-                    var sourceFile = new FileInfo(sourcePackage);
+                    var sourceFile = sourcePackage;
                     var targetSymbolFile =
-                        new FileInfo(Path.Combine(symbolPackagesDirectory.FullName, sourceFile.Name));
+                        new FileEntry(_fileSystem, UPath.Combine(symbolPackagesDirectory.Path, sourceFile.Name));
 
                     if (targetSymbolFile.Exists)
                     {
@@ -444,8 +458,9 @@ namespace Arbor.Build.Core.Tools.NuGet
                     }
 
                     logger.Debug("Copying NuGet symbol package '{SourcePackage}' to '{TargetSymbolFile}'",
-                        sourcePackage,
-                        targetSymbolFile);
+                        _fileSystem.ConvertPathToInternal(sourcePackage.Path),
+                        _fileSystem.ConvertPathToInternal(targetSymbolFile.Path));
+
                     sourceFile.MoveTo(targetSymbolFile.FullName);
                 }
             }

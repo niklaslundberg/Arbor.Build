@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using Arbor.Build.Core.BuildVariables;
 
 namespace Arbor.Build.Core.Exceptions
@@ -17,23 +18,9 @@ namespace Arbor.Build.Core.Exceptions
             Data.Add("Arbor.Build.Variables", _buildVariables);
         }
 
-        public BuildException()
-        {
-        }
+        public BuildException(string message) : base(message) => _buildVariables = ImmutableArray<IVariable>.Empty;
 
-        public BuildException(string message) : base(message)
-        {
-        }
-
-        public BuildException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
-
-        private BuildException(
-            System.Runtime.Serialization.SerializationInfo info,
-            System.Runtime.Serialization.StreamingContext context) : base(info, context)
-        {
-        }
+        public BuildException(string message, Exception innerException) : base(message, innerException) => _buildVariables = ImmutableArray<IVariable>.Empty;
 
         public override string ToString() => $"{base.ToString()}{Environment.NewLine}Build variables: [{_buildVariables.Count}] {Environment.NewLine}{_buildVariables.Print()}";
     }

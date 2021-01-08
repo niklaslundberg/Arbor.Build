@@ -17,7 +17,7 @@ namespace Arbor.Build.Core.Tools.Testing
             }
 
             ImmutableArray<string> filters = buildVariables
-                .GetVariableValueOrDefault(WellKnownVariables.TestsAssemblyStartsWith, string.Empty)
+                .GetVariableValueOrDefault(WellKnownVariables.TestsAssemblyStartsWith, string.Empty)!
                 .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToImmutableArray();
 
             return filters;

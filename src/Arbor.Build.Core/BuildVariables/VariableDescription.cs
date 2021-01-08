@@ -30,17 +30,10 @@ namespace Arbor.Build.Core.BuildVariables
 
         public string Description => _description ?? string.Empty;
 
-        public static implicit operator string([NotNull] VariableDescription variableDescription)
-        {
-            if (variableDescription is null)
-            {
-                throw new ArgumentNullException(nameof(variableDescription));
-            }
-
-            return variableDescription.InvariantName;
-        }
+        public static implicit operator string([NotNull] VariableDescription variableDescription) => variableDescription.InvariantName;
 
         public static implicit operator VariableDescription(string invariantName) => Create(invariantName);
+        public static string FromString(string invariantName) => Create(invariantName);
 
         public static bool operator ==(VariableDescription left, VariableDescription right) => Equals(left, right);
 
@@ -52,7 +45,7 @@ namespace Arbor.Build.Core.BuildVariables
             string? wellKnownName = null,
             string? defaultValue = null) => new VariableDescription(invariantName, description, wellKnownName, defaultValue);
 
-        public bool Equals(VariableDescription other)
+        public bool Equals(VariableDescription? other)
         {
             if (other is null)
             {
@@ -67,7 +60,7 @@ namespace Arbor.Build.Core.BuildVariables
             return string.Equals(InvariantName, other.InvariantName, StringComparison.Ordinal);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is null)
             {
@@ -82,7 +75,7 @@ namespace Arbor.Build.Core.BuildVariables
             return obj is VariableDescription description && Equals(description);
         }
 
-        public override int GetHashCode() => InvariantName != null ? InvariantName.GetHashCode(StringComparison.InvariantCulture) : 0;
+        public override int GetHashCode() => InvariantName.GetHashCode(StringComparison.InvariantCulture);
 
         public override string ToString() => $"{InvariantName} ({WellKnownName}) [{DefaultValue}], {Description}";
     }

@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using Arbor.Defensive.Collections;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.NuGet
 {
     public class ManifestReWriteResult
     {
-        public ManifestReWriteResult(IEnumerable<string> removeTags, string usedPrefix)
+        public ManifestReWriteResult(IEnumerable<string> removeTags, string usedPrefix, FileEntry? rewrittenNuSpec)
         {
             if (string.IsNullOrWhiteSpace(usedPrefix))
             {
@@ -19,10 +20,12 @@ namespace Arbor.Build.Core.Tools.NuGet
             }
 
             UsedPrefix = usedPrefix;
+            RewrittenNuSpec = rewrittenNuSpec;
             RemoveTags = removeTags.SafeToReadOnlyCollection();
         }
 
         public string UsedPrefix { get; }
+        public FileEntry? RewrittenNuSpec { get; }
 
         public IReadOnlyCollection<string> RemoveTags { get; }
     }

@@ -8,13 +8,19 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
+    - uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1.x'
+    - uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '5.0.x'
     - name: install-tools
       env:
         NuGetPassword: ${{ secrets.GITHUB_TOKEN }}
       run: |
         dotnet tool install --global Arbor.Tooler.GlobalTool
-        dotnet tool install --global Arbor.Build.Bootstrapper
+        dotnet tool install --global Arbor.Build.Bootstrapper --version 5.0.0-build.1610097101
         dotnet tool install --global Arbor.NuGetConfig.GlobalTool
     - name: build
       env:
@@ -23,5 +29,9 @@ jobs:
         Arbor.Build.NuGet.PackageUpload.Enabled: "true"
         Arbor.Build.NuGet.PackageUpload.ForceUploadEnabled: "true"
         Arbor.Build.NuGet.WebsitePackages.PackageUpload.Enabled: "true"
+        Arbor.Build.Tools.External.SymbolServer.ApiKey: ${{ secrets.myget }}
+        Arbor.Build.Tools.External.SymbolServer.Uri: "https://www.myget.org/F/arbor/api/v2/package"
+        Arbor.Build.Tools.External.SymbolServer.ForceUploadEnabled: "false"
+        Arbor.Build.Tools.External.SymbolServer.Enabled: "false"
       run: |
         build\build.bat

@@ -2,15 +2,17 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
+using Arbor.FS;
 using JetBrains.Annotations;
 using Serilog;
+using Zio;
 
 namespace Arbor.Build.Core.BuildVariables
 {
     [UsedImplicitly]
     public class SourceRootBuildVariableValueProvider : IVariableProvider
     {
-        private readonly string? _sourceDirectory;
+        private readonly DirectoryEntry? _sourceDirectory;
 
         public SourceRootBuildVariableValueProvider(SourceRootValue? sourceDirectory = null) =>
             _sourceDirectory = sourceDirectory?.SourceRoot;
@@ -24,10 +26,10 @@ namespace Arbor.Build.Core.BuildVariables
         {
             var variables = new List<IVariable>();
 
-            if (!string.IsNullOrWhiteSpace(_sourceDirectory))
+            if (_sourceDirectory is {})
             {
-                logger.Verbose("Source directory is specified as {SourceDirectory}", _sourceDirectory);
-                variables.Add(new BuildVariable(WellKnownVariables.SourceRoot, _sourceDirectory));
+                logger.Verbose("Source directory is specified as {SourceDirectory}", _sourceDirectory.ConvertPathToInternal());
+                variables.Add(new BuildVariable(WellKnownVariables.SourceRoot, _sourceDirectory.ConvertPathToInternal()));
             }
 
             return Task.FromResult(variables.ToImmutableArray());

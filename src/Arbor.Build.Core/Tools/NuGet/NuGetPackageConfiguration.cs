@@ -1,9 +1,11 @@
 ﻿using System;
 using System.IO;
 using Arbor.Build.Core.IO;
+using Arbor.FS;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
 using NuGet.Versioning;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.NuGet
 {
@@ -12,8 +14,9 @@ namespace Arbor.Build.Core.Tools.NuGet
         public NuGetPackageConfiguration(
             [NotNull] string configuration,
             [NotNull] SemanticVersion version,
-            [NotNull] string packagesDirectory,
-            [NotNull] string nugetExePath,
+            [NotNull] DirectoryEntry packagesDirectory,
+            [NotNull] UPath nugetExePath,
+            string branchName,
             string? suffix = null,
             bool branchNameEnabled = false,
             string? packageIdOverride = null,
@@ -22,34 +25,34 @@ namespace Arbor.Build.Core.Tools.NuGet
             bool nuGetSymbolPackagesEnabled = false,
             bool keepBinaryAndSourcePackagesTogetherEnabled = false,
             bool isReleaseBuild = false,
-            string? branchName = null,
             bool buildNumberEnabled = true,
-            string tempPath = null,
-            string packageBuildMetadata = null,
+            DirectoryEntry? tempPath = null,
+            string? packageBuildMetadata = null,
             string nuGetSymbolPackagesFormat = NuGetPackager.SnupkgPackageFormat,
-            string packageNameSuffix = null)
+            string? packageNameSuffix = null,
+            string? gitHash = null)
         {
             if (string.IsNullOrWhiteSpace(configuration))
             {
                 throw new ArgumentNullException(nameof(configuration));
             }
 
-            if (string.IsNullOrWhiteSpace(packagesDirectory))
+            if (packagesDirectory is null)
             {
                 throw new ArgumentNullException(nameof(packagesDirectory));
             }
 
-            if (string.IsNullOrWhiteSpace(nugetExePath))
+            if (nugetExePath == UPath.Empty)
             {
                 throw new ArgumentNullException(nameof(nugetExePath));
             }
 
-            if (!File.Exists(nugetExePath))
+            if (!packagesDirectory.FileSystem.FileExists(nugetExePath))
             {
                 throw new FileNotFoundException($"Could not find NuGet exe path, '{nugetExePath}'");
             }
 
-            if (!Directory.Exists(packagesDirectory))
+            if (!packagesDirectory.Exists)
             {
                 throw new DirectoryNotFoundException($"Could not find package directory, '{packagesDirectory}'");
             }
@@ -60,7 +63,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             BranchName = branchName;
             BuildNumberEnabled = buildNumberEnabled;
             PackageBuildMetadata = packageBuildMetadata;
-            TempPath = tempPath ?? Path.Combine(Path.GetTempPath(), $"{DefaultPaths.TempPathPrefix}_Nuget");
+            TempPath = tempPath ?? new DirectoryEntry(packagesDirectory.FileSystem, UPath.Combine(Path.GetTempPath().ParseAsPath(), $"{DefaultPaths.TempPathPrefix}_Nuget")).EnsureExists();
             BranchNameEnabled = branchNameEnabled;
             PackageIdOverride = packageIdOverride;
             NuGetPackageVersionOverride = nuGetPackageVersionOverride;
@@ -72,9 +75,11 @@ namespace Arbor.Build.Core.Tools.NuGet
             NuGetSymbolPackagesFormat = nuGetSymbolPackagesFormat;
             Suffix = suffix;
             PackageNameSuffix = packageNameSuffix;
+            GitHash = gitHash;
         }
 
-        public string PackageNameSuffix { get; }
+        public string? PackageNameSuffix { get; }
+        public string? GitHash { get; }
 
         public bool KeepBinaryAndSourcePackagesTogetherEnabled { get; }
 
@@ -88,7 +93,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
         public bool NuGetSymbolPackagesEnabled { get; set; }
 
-        public string Configuration { get; }
+        public string? Configuration { get; }
 
         public bool IsReleaseBuild { get; }
 
@@ -98,11 +103,11 @@ namespace Arbor.Build.Core.Tools.NuGet
 
         public string? Suffix { get; }
 
-        public string TempPath { get; }
+        public DirectoryEntry TempPath { get; }
 
-        public string NuGetExePath { get; }
+        public UPath NuGetExePath { get; }
 
-        public string PackagesDirectory { get; }
+        public DirectoryEntry PackagesDirectory { get; }
 
         public bool BuildNumberEnabled { get; }
 

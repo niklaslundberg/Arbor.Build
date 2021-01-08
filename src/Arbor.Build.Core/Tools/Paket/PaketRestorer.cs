@@ -8,10 +8,11 @@ using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.ProcessUtils;
 using Arbor.Defensive.Collections;
+using Arbor.FS;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
-using Serilog.Core;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.Paket
 {
@@ -19,14 +20,16 @@ namespace Arbor.Build.Core.Tools.Paket
     [UsedImplicitly]
     public class PaketRestorer : ITool
     {
+        private readonly IFileSystem _fileSystem;
+
+        public PaketRestorer(IFileSystem fileSystem) => _fileSystem = fileSystem;
+
         public async Task<ExitCode> ExecuteAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             string[] args,
             CancellationToken cancellationToken)
         {
-            logger ??= Logger.None;
-
             if (buildVariables.GetOptionalBooleanByKey(WellKnownVariables.PaketEnabled) != true)
             {
                 logger.Information("Paket is disabled by key '{Key}'", WellKnownVariables.PaketEnabled);
@@ -34,27 +37,26 @@ namespace Arbor.Build.Core.Tools.Paket
             }
 
             var sourceRoot =
-                new DirectoryInfo(buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value);
+                new DirectoryEntry(_fileSystem, buildVariables.Require(WellKnownVariables.SourceRoot).GetValueOrThrow());
 
             logger.Information("Looking for paket.exe in source root {FullName}", sourceRoot.FullName);
 
             PathLookupSpecification pathLookupSpecification =
                 DefaultPaths.DefaultPathLookupSpecification.WithIgnoredFileNameParts(new List<string>());
 
-            FileInfo paketExe = null;
+            FileEntry? paketExe = null;
 
-            List<string> packageSpecifications =
+            var packageSpecifications =
                 sourceRoot.GetFilesRecursive(new List<string> { ".exe" }, pathLookupSpecification)
                     .Where(file => file.Name.Equals("paket.exe", StringComparison.Ordinal))
-                    .Select(f => f.FullName)
                     .ToList();
 
             if (packageSpecifications.Count == 0)
             {
-                FileInfo normalSearch = sourceRoot.GetFiles("paket.exe", SearchOption.AllDirectories)
+                var normalSearch = sourceRoot.EnumerateFiles("paket.exe", SearchOption.AllDirectories)
                     .OrderBy(file => file.FullName.Length).FirstOrDefault();
 
-                if (normalSearch != null)
+                if (normalSearch is {})
                 {
                     paketExe = normalSearch;
                 }
@@ -65,16 +67,15 @@ namespace Arbor.Build.Core.Tools.Paket
                 }
             }
 
-            if (paketExe == null)
+            if (paketExe is null)
             {
-                IReadOnlyCollection<FileInfo> filtered =
+                IReadOnlyCollection<FileEntry> filtered =
                     packageSpecifications.Where(
                             packagePath =>
                                 !pathLookupSpecification.IsFileExcluded(
                                     packagePath,
-                                    sourceRoot.FullName,
+                                    sourceRoot,
                                     logger: logger).Item1)
-                        .Select(file => new FileInfo(file))
                         .ToReadOnlyCollection();
 
                 if (filtered.Count == 0)
@@ -89,19 +90,19 @@ namespace Arbor.Build.Core.Tools.Paket
 
             logger.Information("Found paket.exe at '{FullName}'", paketExe.FullName);
 
-            string copyFromPath =
-                buildVariables.GetVariableValueOrDefault("Arbor.Build.Build.Tools.Paket.CopyExeFromPath", string.Empty);
+            UPath? copyFromPath =
+                buildVariables.GetVariableValueOrDefault("Arbor.Build.Tools.Paket.CopyExeFromPath")?.ParseAsPath();
 
-            if (!string.IsNullOrWhiteSpace(copyFromPath))
+            if (copyFromPath.HasValue)
             {
-                if (File.Exists(copyFromPath))
+                if (_fileSystem.FileExists(copyFromPath.Value))
                 {
-                    File.Copy(copyFromPath, paketExe.FullName, true);
+                    _fileSystem.CopyFile(copyFromPath.Value, paketExe.FullName, true);
                     logger.Information("Copied paket.exe to {FullName}", paketExe.FullName);
                 }
                 else
                 {
-                    logger.Information("The specified paket.exe path '{CopyFromPath}' does not exist", copyFromPath);
+                    logger.Information("The specified paket.exe path '{CopyFromPath}' does not exist", copyFromPath.Value);
                 }
             }
             else

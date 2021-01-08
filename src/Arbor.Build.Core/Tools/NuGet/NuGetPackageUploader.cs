@@ -10,24 +10,153 @@ using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.Tools.Git;
 using Arbor.Defensive.Collections;
+using Arbor.FS;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using NuGet.Packaging;
 using NuGet.Versioning;
 using Serilog;
-using Serilog.Core;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.NuGet
 {
-    [Priority(800)]
+    [Priority(850)]
     [UsedImplicitly]
     public class NuGetPackageUploader : ITool
     {
+        private readonly IFileSystem _fileSystem;
+
+        public NuGetPackageUploader(IFileSystem fileSystem) => _fileSystem = fileSystem;
+
+        public Task<ExitCode> ExecuteAsync(
+            ILogger logger,
+            IReadOnlyCollection<IVariable> buildVariables,
+            string[] args,
+            CancellationToken cancellationToken)
+        {
+            bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_NuGetServer_Enabled);
+            bool websitePackagesUploadEnabled =
+                buildVariables.GetBooleanByKey(
+                    WellKnownVariables.ExternalTools_NuGetServer_WebSitePackagesUploadEnabled);
+
+            if (!enabled)
+            {
+                logger.Information("NuGet package upload is disabled ('{ExternalTools_NuGetServer_Enabled}')",
+                    WellKnownVariables.ExternalTools_NuGetServer_Enabled);
+                return Task.FromResult(ExitCode.Success);
+            }
+
+            var artifacts = buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue().Value!.ParseAsPath();
+
+            var artifactsPath = _fileSystem.GetDirectoryEntry(artifacts);
+
+            var packagesFolder = new DirectoryEntry(_fileSystem, UPath.Combine(artifactsPath.Path, "packages"));
+            var websitesDirectory = new DirectoryEntry(_fileSystem, UPath.Combine(artifactsPath.Path, "websites"));
+
+            UPath? nugetExe = buildVariables.Require(WellKnownVariables.ExternalTools_NuGet_ExePath)
+                .ThrowIfEmptyValue().Value?.ParseAsPath();
+
+            if (!nugetExe.HasValue)
+            {
+                throw new InvalidOperationException("NuGet.exe is not valid");
+            }
+
+            string? nugetServer =
+                buildVariables.GetVariableValueOrDefault(
+                    WellKnownVariables.ExternalTools_NuGetServer_Uri,
+                    string.Empty);
+
+            string? nuGetServerApiKey =
+                buildVariables.GetVariableValueOrDefault(
+                    WellKnownVariables.ExternalTools_NuGetServer_ApiKey,
+                    string.Empty);
+
+            IVariable isRunningOnBuildAgentVariable =
+                buildVariables.Require(WellKnownVariables.IsRunningOnBuildAgent).ThrowIfEmptyValue();
+
+            bool isRunningOnBuildAgent = isRunningOnBuildAgentVariable.GetValueOrDefault();
+
+            bool forceUpload =
+                buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_NuGetServer_ForceUploadEnabled);
+
+            bool uploadOnFeatureBranches =
+                buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_NuGetServer_UploadFeatureBranchEnabled);
+
+            bool timeoutIncreaseEnabled =
+                buildVariables.GetBooleanByKey(
+                    WellKnownVariables.ExternalTools_NuGetServer_UploadTimeoutIncreaseEnabled);
+
+            int timeoutInSeconds =
+                buildVariables.GetInt32ByKey(WellKnownVariables.ExternalTools_NuGetServer_UploadTimeoutInSeconds, -1);
+
+            bool checkNuGetPackagesExists =
+                buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_NuGetServer_CheckPackageExists);
+
+            string? sourceName =
+                buildVariables.GetVariableValueOrDefault(
+                    WellKnownVariables.ExternalTools_NuGetServer_SourceName,
+                    string.Empty);
+
+            string? configFile =
+                buildVariables.GetVariableValueOrDefault(
+                    WellKnownVariables.ExternalTools_NuGetServer_ConfigFile,
+                    string.Empty);
+
+            string patterns =
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables
+                    .NuGetServerUploadPackageExcludeStartsWithPatterns, "") ?? "";
+
+            if (isRunningOnBuildAgent)
+            {
+                logger.Information("NuGet package upload is enabled");
+            }
+
+            string branchName = buildVariables.GetVariableValueOrDefault(WellKnownVariables.BranchName, "")!;
+
+            if (new BranchName(branchName).IsFeatureBranch() && !uploadOnFeatureBranches)
+            {
+                logger.Information("Package upload is not enabled for feature branches");
+            }
+
+            if (!isRunningOnBuildAgent && forceUpload)
+            {
+                logger.Information(
+                    "NuGet package upload is enabled by the flag '{ExternalTools_NuGetServer_ForceUploadEnabled}'",
+                    WellKnownVariables.ExternalTools_NuGetServer_ForceUploadEnabled);
+            }
+
+            var filters = new PackageUploadFilter(patterns, _fileSystem);
+
+            if (isRunningOnBuildAgent || forceUpload)
+            {
+                return UploadNuGetPackagesAsync(
+                    logger,
+                    packagesFolder,
+                    _fileSystem.GetFileEntry(nugetExe.Value),
+                    nugetServer,
+                    nuGetServerApiKey,
+                    websitePackagesUploadEnabled,
+                    websitesDirectory,
+                    timeoutInSeconds,
+                    checkNuGetPackagesExists,
+                    sourceName,
+                    configFile,
+                    timeoutIncreaseEnabled,
+                    filters);
+            }
+
+            logger.Information(
+                "Not running on build server. Skipped package upload. Set environment variable '{ExternalTools_NuGetServer_ForceUploadEnabled}' to value 'true' to force package upload",
+                WellKnownVariables.ExternalTools_NuGetServer_ForceUploadEnabled);
+
+            return Task.FromResult(ExitCode.Success);
+        }
+
         private static async Task<ExitCode> UploadNugetPackageAsync(
-            string nugetExePath,
+            FileEntry nugetExePath,
             string? serverUri,
             string? apiKey,
-            string nugetPackage,
+            FileEntry nugetPackage,
             ILogger logger,
             int timeoutInSeconds,
             bool checkNuGetPackagesExists,
@@ -35,16 +164,16 @@ namespace Arbor.Build.Core.Tools.NuGet
             string? sourceName,
             string? configFile)
         {
-            if (!File.Exists(nugetPackage))
+            if (!nugetPackage.Exists)
             {
                 logger.Error("The NuGet package '{NugetPackage}' does not exist, when trying to push to nuget source",
                     nugetPackage);
                 return ExitCode.Failure;
             }
 
-            logger.Debug("Pushing NuGet package '{NugetPackage}'", nugetPackage);
+            logger.Debug("Pushing NuGet package '{NugetPackage}'", nugetPackage.ConvertPathToInternal());
 
-            var args = new List<string> { "push", nugetPackage };
+            var args = new List<string> {"push", nugetPackage.ConvertPathToInternal()};
 
             if (!string.IsNullOrWhiteSpace(configFile))
             {
@@ -73,12 +202,12 @@ namespace Arbor.Build.Core.Tools.NuGet
             args.Add("-verbosity");
             args.Add("detailed");
 
-            const int MaxAttempts = 5;
+            const int maxAttempts = 5;
 
-            ExitCode exitCode = ExitCode.Failure;
+            var exitCode = ExitCode.Failure;
 
             int attemptCount = 1;
-            while (!exitCode.IsSuccess && attemptCount <= MaxAttempts)
+            while (!exitCode.IsSuccess && attemptCount <= maxAttempts)
             {
                 var errorBuilder = new StringBuilder();
 
@@ -112,7 +241,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 exitCode =
                     await
                         ProcessRunner.ExecuteProcessAsync(
-                            nugetExePath,
+                            nugetExePath.ConvertPathToInternal(),
                             runSpecificArgs,
                             logger.Information,
                             (message, prefix) =>
@@ -124,7 +253,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                             environmentVariables: environmentVariables).ConfigureAwait(false);
 
                 if (!exitCode.IsSuccess
-                    && errorBuilder.ToString().IndexOf("conflict", StringComparison.OrdinalIgnoreCase) >= 0)
+                    && errorBuilder.ToString().Contains("conflict", StringComparison.OrdinalIgnoreCase))
                 {
                     if (checkNuGetPackagesExists)
                     {
@@ -141,24 +270,24 @@ namespace Arbor.Build.Core.Tools.NuGet
                     return exitCode;
                 }
 
-                if (!exitCode.IsSuccess && attemptCount < MaxAttempts)
+                if (!exitCode.IsSuccess && attemptCount < maxAttempts)
                 {
                     logger.Warning(
                         "Failed to upload nuget package '{NugetPackage}', attempt {AttemptCount} of {MaxAttempts}, retrying...",
                         nugetPackage,
                         attemptCount,
-                        MaxAttempts);
+                        maxAttempts);
                 }
 
                 attemptCount++;
 
-                if (!exitCode.IsSuccess && attemptCount == MaxAttempts)
+                if (!exitCode.IsSuccess && attemptCount == maxAttempts)
                 {
                     logger.Error(
                         "Failed to upload nuget package '{NugetPackage}' on last attempt {AttemptCount} of {MaxAttempts}",
                         nugetPackage,
                         attemptCount,
-                        MaxAttempts);
+                        maxAttempts);
                 }
             }
 
@@ -167,34 +296,22 @@ namespace Arbor.Build.Core.Tools.NuGet
 
         private async Task<ExitCode> UploadNuGetPackagesAsync(
             ILogger logger,
-            DirectoryInfo artifactPackagesDirectory,
-            string nugetExePath,
+            DirectoryEntry artifactPackagesDirectory,
+            FileEntry nugetExePath,
             string? serverUri,
             string? apiKey,
             bool websitePackagesUploadEnabled,
-            DirectoryInfo websitesDirectory,
+            DirectoryEntry websitesDirectory,
             int timeoutInSeconds,
             bool checkNuGetPackagesExists,
             string? sourceName,
             string? configFile,
-            bool timeoutIncreaseEnabled)
+            bool timeoutIncreaseEnabled,
+            PackageUploadFilter? filter = default)
         {
-            if (artifactPackagesDirectory == null)
-            {
-                throw new ArgumentNullException(nameof(artifactPackagesDirectory));
-            }
+            filter ??= new PackageUploadFilter("", _fileSystem);
 
-            if (string.IsNullOrWhiteSpace(nugetExePath))
-            {
-                throw new ArgumentNullException(nameof(nugetExePath));
-            }
-
-            if (websitesDirectory == null)
-            {
-                throw new ArgumentNullException(nameof(websitesDirectory));
-            }
-
-            var nuGetPackageFiles = new List<FileInfo>();
+            var nuGetPackageFiles = new List<FileEntry>();
 
             if (!artifactPackagesDirectory.Exists)
             {
@@ -202,10 +319,16 @@ namespace Arbor.Build.Core.Tools.NuGet
             }
             else
             {
-                List<FileInfo> standardPackages =
-                    artifactPackagesDirectory.EnumerateFiles("*.nupkg", SearchOption.AllDirectories)
-                        .Where(file => file.Name.IndexOf("symbols", StringComparison.OrdinalIgnoreCase) < 0)
-                        .ToList();
+                var allStandardPackages = new List<FileEntry>();
+
+                allStandardPackages.AddRange(!filter.Exclusions.Any()
+                    ? artifactPackagesDirectory.EnumerateFiles("*.nupkg", SearchOption.AllDirectories)
+                    : artifactPackagesDirectory.EnumerateFiles("*.nupkg", SearchOption.AllDirectories)
+                        .Where(file => filter.UploadEnable(file.Path.GetName())));
+
+                var standardPackages = allStandardPackages
+                    .Where(file => file.Name.IndexOf("symbols", StringComparison.OrdinalIgnoreCase) < 0)
+                    .ToList();
 
                 nuGetPackageFiles.AddRange(standardPackages);
             }
@@ -220,10 +343,16 @@ namespace Arbor.Build.Core.Tools.NuGet
             }
             else
             {
-                List<FileInfo> websitePackages =
-                    websitesDirectory.EnumerateFiles("*.nupkg", SearchOption.AllDirectories)
-                        .Where(file => file.Name.IndexOf("symbols", StringComparison.OrdinalIgnoreCase) < 0)
-                        .ToList();
+                var allWebSitePackages = new List<FileEntry>();
+
+                allWebSitePackages.AddRange(!filter.Exclusions.Any()
+                    ? websitesDirectory.EnumerateFiles("*.nupkg", SearchOption.AllDirectories)
+                    : websitesDirectory.EnumerateFiles("*.nupkg", SearchOption.AllDirectories)
+                        .Where(file => filter.UploadEnable(file.Path.GetName())));
+
+                var websitePackages = allWebSitePackages
+                    .Where(file => file.Name.IndexOf("symbols", StringComparison.OrdinalIgnoreCase) < 0)
+                    .ToList();
 
                 nuGetPackageFiles.AddRange(websitePackages);
             }
@@ -231,12 +360,12 @@ namespace Arbor.Build.Core.Tools.NuGet
             if (nuGetPackageFiles.Count == 0)
             {
                 string websiteUploadMissingMessage = websitePackagesUploadEnabled
-                    ? $" or in folder websites folder '{websitesDirectory.FullName}'"
+                    ? $" or in folder websites folder '{websitesDirectory.ConvertPathToInternal()}'"
                     : string.Empty;
 
                 logger.Information(
                     "Could not find any NuGet packages to upload in folder '{ArtifactPackagesDirectory}' or any subfolder {WebsiteUploadMissingMessage}",
-                    artifactPackagesDirectory,
+                    artifactPackagesDirectory.ConvertPathToInternal(),
                     websiteUploadMissingMessage);
 
                 return ExitCode.Success;
@@ -245,13 +374,13 @@ namespace Arbor.Build.Core.Tools.NuGet
             string files =
                 string.Join(Environment.NewLine,
                     nuGetPackageFiles.Select(
-                        file => $"{file.FullName}: {file.Length / 1024.0:F1} KiB"));
+                        file => $"{_fileSystem.ConvertPathToInternal(file.Path)}: {file.Length / 1024.0:F1} KiB"));
 
             logger.Information("Found {Count} NuGet packages to upload {Files}", nuGetPackageFiles.Count, files);
 
             bool result = true;
 
-            IReadOnlyCollection<FileInfo> sortedPackages = nuGetPackageFiles
+            IReadOnlyCollection<FileEntry> sortedPackages = nuGetPackageFiles
                 .OrderByDescending(package => package.Name.Length)
                 .SafeToReadOnlyCollection();
 
@@ -259,23 +388,24 @@ namespace Arbor.Build.Core.Tools.NuGet
             {
                 logger.Information("Checking if packages already exists in NuGet source");
 
-                foreach (FileInfo fileInfo in sortedPackages)
+                foreach (var nugetPackage in sortedPackages)
                 {
                     bool? packageExists =
-                        await CheckPackageExistsAsync(fileInfo, nugetExePath, logger, sourceName).ConfigureAwait(false);
+                        await CheckPackageExistsAsync(nugetPackage, nugetExePath, logger, sourceName)
+                            .ConfigureAwait(false);
 
                     if (!packageExists.HasValue)
                     {
                         logger.Error(
                             "The NuGet package '{Name}' could not be determined if exists or not, skipping package push",
-                            fileInfo.Name);
+                            nugetPackage.Name);
                         return ExitCode.Failure;
                     }
 
                     if (packageExists.Value)
                     {
                         logger.Error("The NuGet package '{Name}' was found at the NuGet source, skipping package push",
-                            fileInfo.Name);
+                            nugetPackage.Name);
 
                         return ExitCode.Failure;
                     }
@@ -286,11 +416,9 @@ namespace Arbor.Build.Core.Tools.NuGet
                 logger.Information("Skipping checking if packages already exists in NuGet source");
             }
 
-            foreach (FileInfo fileInfo in sortedPackages)
+            foreach (var nugetPackage in sortedPackages)
             {
-                string nugetPackage = fileInfo.FullName;
-
-                ExitCode exitCode = await UploadNugetPackageAsync(
+                var exitCode = await UploadNugetPackageAsync(
                     nugetExePath,
                     serverUri,
                     apiKey,
@@ -311,13 +439,13 @@ namespace Arbor.Build.Core.Tools.NuGet
             return result ? ExitCode.Success : ExitCode.Failure;
         }
 
-        private async Task<bool?> CheckPackageExistsAsync(
-            FileInfo nugetPackage,
-            string nugetExePath,
+        private static async Task<bool?> CheckPackageExistsAsync(
+            FileEntry nugetPackage,
+            FileEntry nugetExePath,
             ILogger logger,
             string? sourceName)
         {
-            if (!File.Exists(nugetPackage.FullName))
+            if (!nugetPackage.Exists)
             {
                 logger.Error("The NuGet package '{NugetPackage}' does not exist", nugetPackage);
                 return null;
@@ -328,13 +456,13 @@ namespace Arbor.Build.Core.Tools.NuGet
             string packageVersion;
             string packageId;
 
-            using (var fs = new FileStream(nugetPackage.FullName, FileMode.Open, FileAccess.Read))
+            await using (var fs = new FileStream(nugetPackage.FullName, FileMode.Open, FileAccess.Read))
             {
                 using var archive = new ZipArchive(fs);
-                ZipArchiveEntry nuspecEntry =
+                ZipArchiveEntry? nuspecEntry =
                     archive.Entries.SingleOrDefault(entry =>
-                        Path.GetExtension(entry.Name)
-                            .Equals(".nuspec", StringComparison.OrdinalIgnoreCase));
+                        Path.GetExtension(entry.Name) is { } extension
+                            && extension.Equals(".nuspec", StringComparison.OrdinalIgnoreCase));
 
                 if (nuspecEntry == null)
                 {
@@ -351,11 +479,11 @@ namespace Arbor.Build.Core.Tools.NuGet
                 packageId = nuspecReader.GetIdentity().Id;
             }
 
-            SemanticVersion expectedVersion = SemanticVersion.Parse(packageVersion);
+            var expectedVersion = SemanticVersion.Parse(packageVersion);
 
-            var packageInfo = new { Id = packageId, Version = expectedVersion };
+            var packageInfo = new {Id = packageId, Version = expectedVersion};
 
-            var args = new List<string> { "list", $"packageid:{packageId}" };
+            var args = new List<string> {"list", $"packageid:{packageId}"};
 
             if (!string.IsNullOrWhiteSpace(sourceName))
             {
@@ -380,10 +508,10 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             logger.Information("Looking for '{ExpectedNameAndVersion}' package", expectedNameAndVersion);
 
-            ExitCode exitCode =
+            var exitCode =
                 await
                     ProcessRunner.ExecuteProcessAsync(
-                        nugetExePath,
+                        nugetExePath.ConvertPathToInternal(),
                         args,
                         (message, prefix) =>
                         {
@@ -418,116 +546,6 @@ namespace Arbor.Build.Core.Tools.NuGet
             }
 
             return foundSpecificPackage;
-        }
-
-        public Task<ExitCode> ExecuteAsync(
-            ILogger logger,
-            IReadOnlyCollection<IVariable> buildVariables,
-            string[] args,
-            CancellationToken cancellationToken)
-        {
-            logger ??= Logger.None ?? throw new ArgumentNullException(nameof(logger));
-            bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_NuGetServer_Enabled);
-            bool websitePackagesUploadEnabled =
-                buildVariables.GetBooleanByKey(
-                    WellKnownVariables.ExternalTools_NuGetServer_WebSitePackagesUploadEnabled);
-
-            if (!enabled)
-            {
-                logger.Information("NuGet package upload is disabled ('{ExternalTools_NuGetServer_Enabled}')",
-                    WellKnownVariables.ExternalTools_NuGetServer_Enabled);
-                return Task.FromResult(ExitCode.Success);
-            }
-
-            IVariable artifacts = buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue();
-
-            var packagesFolder = new DirectoryInfo(Path.Combine(artifacts.Value, "packages"));
-            var websitesDirectory = new DirectoryInfo(Path.Combine(artifacts.Value, "websites"));
-
-            IVariable nugetExe = buildVariables.Require(WellKnownVariables.ExternalTools_NuGet_ExePath)
-                .ThrowIfEmptyValue();
-
-            string? nugetServer =
-                buildVariables.GetVariableValueOrDefault(
-                    WellKnownVariables.ExternalTools_NuGetServer_Uri,
-                    string.Empty);
-
-            string? nuGetServerApiKey =
-                buildVariables.GetVariableValueOrDefault(
-                    WellKnownVariables.ExternalTools_NuGetServer_ApiKey,
-                    string.Empty);
-
-            IVariable isRunningOnBuildAgentVariable =
-                buildVariables.Require(WellKnownVariables.IsRunningOnBuildAgent).ThrowIfEmptyValue();
-
-            bool isRunningOnBuildAgent = isRunningOnBuildAgentVariable.GetValueOrDefault(false);
-            bool forceUpload =
-                buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_NuGetServer_ForceUploadEnabled);
-
-            bool uploadOnFeatureBranches =
-                buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_NuGetServer_UploadFeatureBranchEnabled);
-
-            bool timeoutIncreaseEnabled =
-                buildVariables.GetBooleanByKey(
-                    WellKnownVariables.ExternalTools_NuGetServer_UploadTimeoutIncreaseEnabled);
-
-            int timeoutInSeconds =
-                buildVariables.GetInt32ByKey(WellKnownVariables.ExternalTools_NuGetServer_UploadTimeoutInSeconds, -1);
-
-            bool checkNuGetPackagesExists =
-                buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_NuGetServer_CheckPackageExists);
-
-            string? sourceName =
-                buildVariables.GetVariableValueOrDefault(
-                    WellKnownVariables.ExternalTools_NuGetServer_SourceName,
-                    string.Empty);
-
-            string? configFile =
-                buildVariables.GetVariableValueOrDefault(
-                    WellKnownVariables.ExternalTools_NuGetServer_ConfigFile,
-                    string.Empty);
-
-            if (isRunningOnBuildAgent)
-            {
-                logger.Information("NuGet package upload is enabled");
-            }
-
-            string branchName = buildVariables.GetVariableValueOrDefault(WellKnownVariables.BranchName, "")!;
-
-            if (new BranchName(branchName).IsFeatureBranch() && !uploadOnFeatureBranches)
-            {
-                logger.Information("Package upload is not enabled for feature branches");
-            }
-
-            if (!isRunningOnBuildAgent && forceUpload)
-            {
-                logger.Information(
-                    "NuGet package upload is enabled by the flag '{ExternalTools_NuGetServer_ForceUploadEnabled}'",
-                    WellKnownVariables.ExternalTools_NuGetServer_ForceUploadEnabled);
-            }
-
-            if (isRunningOnBuildAgent || forceUpload)
-            {
-                return UploadNuGetPackagesAsync(
-                    logger,
-                    packagesFolder,
-                    nugetExe.Value,
-                    nugetServer,
-                    nuGetServerApiKey,
-                    websitePackagesUploadEnabled,
-                    websitesDirectory,
-                    timeoutInSeconds,
-                    checkNuGetPackagesExists,
-                    sourceName,
-                    configFile,
-                    timeoutIncreaseEnabled);
-            }
-
-            logger.Information(
-                "Not running on build server. Skipped package upload. Set environment variable '{ExternalTools_NuGetServer_ForceUploadEnabled}' to value 'true' to force package upload",
-                WellKnownVariables.ExternalTools_NuGetServer_ForceUploadEnabled);
-
-            return Task.FromResult(ExitCode.Success);
         }
     }
 }

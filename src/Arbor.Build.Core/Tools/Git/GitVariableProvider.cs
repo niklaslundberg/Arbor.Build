@@ -7,18 +7,31 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.GenericExtensions.Bools;
-using Arbor.Defensive;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using NuGet.Versioning;
 using Serilog;
 using Serilog.Core;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.Git
 {
     [UsedImplicitly]
     public class GitVariableProvider : IVariableProvider
     {
+        private readonly IEnvironmentVariables _environmentVariables;
+        private readonly ISpecialFolders _specialFolders;
+        private readonly IFileSystem _fileSystem;
+        private readonly GitHelper _gitHelper;
+
+        public GitVariableProvider(IEnvironmentVariables environmentVariables, ISpecialFolders specialFolders, IFileSystem fileSystem, GitHelper gitHelper)
+        {
+            _environmentVariables = environmentVariables;
+            _specialFolders = specialFolders;
+            _fileSystem = fileSystem;
+            _gitHelper = gitHelper;
+        }
+
         public int Order { get; } = -1;
 
         public async Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
@@ -29,7 +42,7 @@ namespace Arbor.Build.Core.Tools.Git
             logger ??= Logger.None;
             var variables = new List<IVariable>();
 
-            string branchName = buildVariables.Require(WellKnownVariables.BranchName).ThrowIfEmptyValue().Value;
+            string branchName = buildVariables.Require(WellKnownVariables.BranchName).GetValueOrThrow();
 
             if (branchName.StartsWith("refs/heads/", StringComparison.Ordinal))
             {
@@ -40,9 +53,9 @@ namespace Arbor.Build.Core.Tools.Git
 
             variables.Add(new BuildVariable(WellKnownVariables.BranchLogicalName, logicalName));
 
-            if (BranchHelper.BranchNameHasVersion(branchName))
+            if (BranchHelper.BranchNameHasVersion(branchName, _environmentVariables))
             {
-                string version = BranchHelper.BranchSemVerMajorMinorPatch(branchName).ToString();
+                string version = BranchHelper.BranchSemVerMajorMinorPatch(branchName, _environmentVariables).ToString();
 
                 logger.Debug("Branch has version {Version}", version);
 
@@ -61,7 +74,7 @@ namespace Arbor.Build.Core.Tools.Git
 
                     logger.Verbose("Overriding {VersionMajor} from '{V}' to '{Major}'",
                         WellKnownVariables.VersionMajor,
-                        Environment.GetEnvironmentVariable(WellKnownVariables.VersionMajor),
+                        _environmentVariables.GetEnvironmentVariable(WellKnownVariables.VersionMajor),
                         major);
 
                     variables.Add(new BuildVariable(WellKnownVariables.VersionMajor, major));
@@ -70,7 +83,7 @@ namespace Arbor.Build.Core.Tools.Git
 
                     logger.Verbose("Overriding {VersionMinor} from '{V}' to '{Minor}'",
                         WellKnownVariables.VersionMinor,
-                        Environment.GetEnvironmentVariable(WellKnownVariables.VersionMinor),
+                        _environmentVariables.GetEnvironmentVariable(WellKnownVariables.VersionMinor),
                         minor);
 
                     variables.Add(new BuildVariable(WellKnownVariables.VersionMinor, minor));
@@ -79,7 +92,7 @@ namespace Arbor.Build.Core.Tools.Git
 
                     logger.Verbose("Overriding {VersionPatch} from '{V}' to '{Patch}'",
                         WellKnownVariables.VersionPatch,
-                        Environment.GetEnvironmentVariable(WellKnownVariables.VersionPatch),
+                        _environmentVariables.GetEnvironmentVariable(WellKnownVariables.VersionPatch),
                         patch);
 
                     variables.Add(new BuildVariable(WellKnownVariables.VersionPatch, patch));
@@ -100,7 +113,7 @@ namespace Arbor.Build.Core.Tools.Git
                 {
                     string gitCommitHash = buildVariables.GetVariableValueOrDefault(
                         WellKnownVariables.TeamCityVcsNumber,
-                        string.Empty);
+                        string.Empty)!;
 
                     if (!string.IsNullOrWhiteSpace(gitCommitHash))
                     {
@@ -122,10 +135,11 @@ namespace Arbor.Build.Core.Tools.Git
                 {
                     const string arborBuildGitcommithashenabled = "Arbor.Build.GitCommitHashEnabled";
 
-                    string environmentVariable = Environment.GetEnvironmentVariable(arborBuildGitcommithashenabled);
+                    string? environmentVariable =
+                        _environmentVariables.GetEnvironmentVariable(arborBuildGitcommithashenabled);
 
                     if (!environmentVariable
-                        .ParseOrDefault(true))
+                        .ParseOrDefault(defaultValue: true))
                     {
                         logger.Information(
                             "Git commit hash is disabled by environment variable {ArborXGitcommithashenabled} set to {EnvironmentVariable}",
@@ -134,19 +148,19 @@ namespace Arbor.Build.Core.Tools.Git
                     }
                     else
                     {
-                        string gitExePath = GitHelper.GetGitExePath(logger);
+                        UPath gitExePath = _gitHelper.GetGitExePath(logger, _specialFolders, _environmentVariables);
 
                         var stringBuilder = new StringBuilder();
 
-                        if (!string.IsNullOrWhiteSpace(gitExePath))
+                        if (gitExePath != UPath.Empty)
                         {
-                            var arguments = new List<string> { "rev-parse", "HEAD" };
+                            var arguments = new List<string> {"rev-parse", "HEAD"};
 
-                            ExitCode exitCode = await ProcessRunner.ExecuteProcessAsync(gitExePath,
-                                arguments: arguments,
-                                standardOutLog: (message, category) => stringBuilder.Append(message),
+                            var exitCode = await ProcessRunner.ExecuteProcessAsync(_fileSystem.ConvertPathToInternal(gitExePath),
+                                arguments,
+                                (message, category) => stringBuilder.Append(message),
                                 toolAction: logger.Information,
-                                cancellationToken: cancellationToken).ConfigureAwait(false);
+                                cancellationToken: cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
 
                             if (!exitCode.IsSuccess)
                             {
@@ -166,6 +180,26 @@ namespace Arbor.Build.Core.Tools.Git
                         }
                     }
                 }
+            }
+
+            if (!buildVariables.HasKey(WellKnownVariables.GitHash)
+                && buildVariables.HasKey(WellKnownVariables.GitHubSha)
+                && !variables.HasKey(WellKnownVariables.GitHash)
+                && buildVariables.GetVariableValueOrDefault(WellKnownVariables.GitHubSha) is {} hash)
+            {
+                variables.Add(new BuildVariable(WellKnownVariables.GitHash, hash));
+            }
+
+            string? gitHubUrl = buildVariables.GetVariableValueOrDefault("GITHUB_SERVER_URL");
+            string? gitHubRepository = buildVariables.GetVariableValueOrDefault("GITHUB_REPOSITORY");
+
+            if (string.IsNullOrWhiteSpace(buildVariables.GetVariableValueOrDefault(WellKnownVariables.RepositoryUrl))
+                && !string.IsNullOrWhiteSpace(gitHubUrl)
+                && !string.IsNullOrWhiteSpace(gitHubRepository)
+            )
+            {
+                string repositoryUrl = $"{gitHubUrl}/{gitHubRepository}";
+                variables.Add(new BuildVariable(WellKnownVariables.RepositoryUrl, repositoryUrl));
             }
 
             return variables.ToImmutableArray();

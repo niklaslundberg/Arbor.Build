@@ -8,9 +8,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.IO;
+using Arbor.FS;
 using Arbor.Tooler;
 using JetBrains.Annotations;
 using Serilog;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.NuGet
 {
@@ -18,12 +20,17 @@ namespace Arbor.Build.Core.Tools.NuGet
     public class NugetVariableProvider : IVariableProvider
     {
         private CancellationToken _cancellationToken;
+        private readonly IFileSystem _fileSystem;
 
-        private async Task<string> EnsureNuGetExeExistsAsync(ILogger logger, string? userSpecifiedNuGetExePath)
+        public NugetVariableProvider(IFileSystem fileSystem) => _fileSystem = fileSystem;
+
+        private async Task<UPath?> EnsureNuGetExeExistsAsync(ILogger logger, UPath? userSpecifiedNuGetExePath)
         {
-            if (userSpecifiedNuGetExePath is object && File.Exists(userSpecifiedNuGetExePath))
+            if (userSpecifiedNuGetExePath is {}
+                && userSpecifiedNuGetExePath.Value != UPath.Empty
+                && _fileSystem.FileExists(userSpecifiedNuGetExePath.Value))
             {
-                return userSpecifiedNuGetExePath;
+                return userSpecifiedNuGetExePath.Value;
             }
 
             using var httClient = new HttpClient();
@@ -40,7 +47,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 throw new InvalidOperationException("Could not download nuget.exe");
             }
 
-            return nuGetDownloadResult.NuGetExePath;
+            return nuGetDownloadResult.NuGetExePath?.ParseAsPath();
         }
 
         public int Order => 3;
@@ -52,27 +59,33 @@ namespace Arbor.Build.Core.Tools.NuGet
         {
             _cancellationToken = cancellationToken;
 
-            string? userSpecifiedNuGetExePath = buildVariables.GetVariableValueOrDefault(
+            UPath? userSpecifiedNuGetExePath = buildVariables.GetVariableValueOrDefault(
                 WellKnownVariables.ExternalTools_NuGet_ExePath_Custom,
-                string.Empty);
+                string.Empty)?.ParseAsPath();
 
-            string? nuGetExePath =
+            var nuGetExePath =
                 await EnsureNuGetExeExistsAsync(logger, userSpecifiedNuGetExePath).ConfigureAwait(false);
+
+            string path = nuGetExePath.HasValue
+                ? _fileSystem.ConvertPathToInternal(nuGetExePath.Value)
+                : "";
 
             var variables = new List<IVariable>
             {
-                new BuildVariable(WellKnownVariables.ExternalTools_NuGet_ExePath, nuGetExePath)
+                new BuildVariable(WellKnownVariables.ExternalTools_NuGet_ExePath, path)
             };
 
             if (string.IsNullOrWhiteSpace(
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetRestoreEnabled, string.Empty)))
             {
-                string sourceDir = buildVariables.Require(WellKnownVariables.SourceRoot).Value;
+                var uPath = buildVariables.Require(WellKnownVariables.SourceRoot).Value!.ParseAsPath();
+
+                DirectoryEntry sourceDir = new(_fileSystem, uPath);
 
                 var pathLookupSpecification = new PathLookupSpecification();
-                var packageConfigFiles = new DirectoryInfo(sourceDir)
-                    .GetFiles("packages.config", SearchOption.AllDirectories).Where(
-                        file => !pathLookupSpecification.IsFileExcluded(file.FullName, sourceDir).Item1).ToArray();
+                var packageConfigFiles = sourceDir
+                    .EnumerateFiles("packages.config", SearchOption.AllDirectories).Where(
+                        file => !pathLookupSpecification.IsFileExcluded(file, sourceDir).Item1).ToArray();
 
                 if (packageConfigFiles.Any())
                 {

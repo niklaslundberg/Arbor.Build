@@ -1,18 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Arbor.Aesculus.Core;
 using Arbor.Build.Core.BuildVariables;
-using Arbor.Build.Core.IO;
+using Arbor.Build.Core.Tools.MSBuild;
+using Arbor.FS;
+using JetBrains.Annotations;
 using Serilog;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.Environments
 {
+    [UsedImplicitly]
     public class SourcePathVariableProvider : IVariableProvider
     {
+        private readonly IFileSystem _fileSystem;
+        private readonly BuildContext _buildContext;
+
+        public SourcePathVariableProvider(IFileSystem fileSystem, BuildContext buildContext)
+        {
+            _fileSystem = fileSystem;
+            _buildContext = buildContext;
+        }
+
         public int Order { get; } = -2;
 
         public Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
@@ -20,46 +31,47 @@ namespace Arbor.Build.Core.Tools.Environments
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            string existingSourceRoot =
-                buildVariables.GetVariableValueOrDefault(WellKnownVariables.SourceRoot, string.Empty);
+            var existingSourceRoot =
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.SourceRoot)?.ParseAsPath();
 
-            string existingToolsDirectory =
-                buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools, string.Empty);
-            string sourceRoot;
+            var existingToolsDirectory =
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools)?.ParseAsPath();
+            UPath sourceRoot = default;
 
-            if (!string.IsNullOrWhiteSpace(existingSourceRoot))
+            var variables = new List<IVariable>();
+
+            if (existingSourceRoot?.FullName is {})
             {
-                if (!Directory.Exists(existingSourceRoot))
+                if (!_fileSystem.DirectoryExists(existingSourceRoot.Value))
                 {
                     throw new InvalidOperationException(
-                        $"The defined variable {WellKnownVariables.SourceRoot} has value set to '{existingSourceRoot}' but the directory does not exist");
+                        $"The defined variable {WellKnownVariables.SourceRoot} has value set to '{_fileSystem.ConvertPathToInternal(existingSourceRoot.Value)}' but the directory does not exist");
                 }
 
-                sourceRoot = existingSourceRoot;
-            }
-            else
-            {
-                sourceRoot = VcsPathHelper.FindVcsRootPath(Directory.GetCurrentDirectory());
+                sourceRoot = existingSourceRoot.Value;
             }
 
-            DirectoryInfo tempPath = new DirectoryInfo(Path.Combine(sourceRoot, "temp")).EnsureExists();
-
-            var variables = new List<IVariable>
+            if (sourceRoot.IsNull || sourceRoot.IsEmpty)
             {
+                sourceRoot = _buildContext.SourceRoot.Path;
+            }
+
+            if (!existingSourceRoot.HasValue)
+            {
+                variables.Add(new BuildVariable(WellKnownVariables.SourceRoot, _fileSystem.ConvertPathToInternal(sourceRoot)));
+            }
+
+            var tempPath = new DirectoryEntry(_fileSystem, sourceRoot / "temp").EnsureExists();
+
+            variables.Add(
                 new BuildVariable(
                     WellKnownVariables.TempDirectory,
-                    tempPath.FullName)
-            };
+                    _fileSystem.ConvertPathToInternal(tempPath.Path)));
 
-            if (string.IsNullOrWhiteSpace(existingSourceRoot))
-            {
-                variables.Add(new BuildVariable(WellKnownVariables.SourceRoot, sourceRoot));
-            }
-
-            if (string.IsNullOrWhiteSpace(existingToolsDirectory))
+            if (existingToolsDirectory is null || existingToolsDirectory.Value.IsAbsolute)
             {
                 var externalToolsRelativeApp =
-                    new DirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
+                    new DirectoryEntry(_fileSystem, UPath.Combine(AppContext.BaseDirectory!.ParseAsPath(),
                         "tools",
                         "external"));
 
@@ -67,12 +79,12 @@ namespace Arbor.Build.Core.Tools.Environments
                 {
                     variables.Add(new BuildVariable(
                         WellKnownVariables.ExternalTools,
-                        externalToolsRelativeApp.FullName));
+                       _fileSystem.ConvertPathToInternal(externalToolsRelativeApp.Path)));
                 }
                 else
                 {
-                    DirectoryInfo externalTools =
-                        new DirectoryInfo(Path.Combine(sourceRoot,
+                    var externalTools =
+                        new DirectoryEntry( _fileSystem, UPath.Combine(sourceRoot,
                             "build",
                             ArborConstants.ArborPackageName,
                             "tools",
@@ -80,7 +92,7 @@ namespace Arbor.Build.Core.Tools.Environments
 
                     variables.Add(new BuildVariable(
                         WellKnownVariables.ExternalTools,
-                        externalTools.FullName));
+                        _fileSystem.ConvertPathToInternal(externalTools.Path)));
                 }
             }
 

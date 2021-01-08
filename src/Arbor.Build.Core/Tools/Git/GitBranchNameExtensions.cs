@@ -1,15 +1,14 @@
 using System;
-using Arbor.Defensive;
 
 namespace Arbor.Build.Core.Tools.Git
 {
     public static class GitBranchNameExtensions
     {
-        public static Maybe<string> GetBranchName(this string potentialBranchName)
+        public static string? GetBranchName(this string potentialBranchName)
         {
             if (string.IsNullOrWhiteSpace(potentialBranchName))
             {
-                return Maybe<string>.Empty();
+                return default;
             }
 
             string branchName;
@@ -20,17 +19,17 @@ namespace Arbor.Build.Core.Tools.Git
 
             if (name.Trim().StartsWith("HEAD detached", StringComparison.Ordinal))
             {
-                return Maybe<string>.Empty();
+                return default;
             }
 
             if (name.Trim().StartsWith("HEAD (no branch)", StringComparison.Ordinal))
             {
-                return Maybe<string>.Empty();
+                return default;
             }
 
             if (name.Trim().Equals("HEAD", StringComparison.Ordinal))
             {
-                return Maybe<string>.Empty();
+                return default;
             }
 
             int indexOfBranchSeparator = name.IndexOf("...", StringComparison.OrdinalIgnoreCase);
@@ -39,24 +38,24 @@ namespace Arbor.Build.Core.Tools.Git
             {
                 branchName = name.Substring(0, indexOfBranchSeparator);
 
-                return new Maybe<string>(branchName);
+                return branchName;
             }
 
             if (name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
             {
-                branchName = name.Substring(prefix.Length);
+                branchName = name[prefix.Length..];
 
                 return branchName;
             }
 
             if (string.IsNullOrWhiteSpace(name))
             {
-                return Maybe<string>.Empty();
+                return default;
             }
 
             branchName = name;
 
-            return new Maybe<string>(branchName);
+            return branchName;
         }
     }
 }

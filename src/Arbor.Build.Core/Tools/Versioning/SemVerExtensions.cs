@@ -22,9 +22,9 @@ namespace Arbor.Build.Core.Tools.Versioning
                 return string.Empty;
             }
 
-            string metadata = semanticVersion.HasMetadata ? $"+{semanticVersion.Metadata}" : null;
+            string? metadata = semanticVersion.HasMetadata ? $"+{semanticVersion.Metadata}" : null;
 
-            ReadOnlySpan<char> suffix = normalized.Slice(dashIndex + 1);
+            ReadOnlySpan<char> suffix = normalized[(dashIndex + 1)..];
 
             return suffix.ToString() + metadata;
         }

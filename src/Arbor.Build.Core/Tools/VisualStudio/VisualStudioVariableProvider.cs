@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,7 +10,7 @@ using Arbor.Build.Core.Tools.Cleanup;
 using JetBrains.Annotations;
 using Microsoft.Win32;
 using Serilog;
-using Serilog.Core;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.VisualStudio
 {
@@ -19,6 +18,9 @@ namespace Arbor.Build.Core.Tools.VisualStudio
     public class VisualStudioVariableProvider : IVariableProvider
     {
         private bool _allowPreReleaseVersions;
+        private readonly IFileSystem _fileSystem;
+
+        public VisualStudioVariableProvider(IFileSystem fileSystem) => _fileSystem = fileSystem;
 
         public int Order => VariableProviderOrder.Ignored;
 
@@ -27,7 +29,6 @@ namespace Arbor.Build.Core.Tools.VisualStudio
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            logger ??= Logger.None;
             if (!string.IsNullOrWhiteSpace(buildVariables.GetVariableValueOrDefault(
                 WellKnownVariables.ExternalTools_VisualStudio_Version,
                 string.Empty)))
@@ -51,9 +52,9 @@ namespace Arbor.Build.Core.Tools.VisualStudio
                 registryLookupBits,
                 registryKeyName);
 
-            string visualStudioVersion = GetVisualStudioVersion(logger, registryKeyName);
+            string? visualStudioVersion = GetVisualStudioVersion(logger, registryKeyName);
 
-            string? vsTestExePath = null;
+            UPath? vsTestExePath = null;
 
             if (!string.IsNullOrWhiteSpace(visualStudioVersion))
             {
@@ -71,136 +72,145 @@ namespace Arbor.Build.Core.Tools.VisualStudio
                 new BuildVariable(
                     WellKnownVariables.ExternalTools_VisualStudio_Version,
                     visualStudioVersion),
-                new BuildVariable(WellKnownVariables.ExternalTools_VSTest_ExePath, vsTestExePath)
+                new BuildVariable(WellKnownVariables.ExternalTools_VSTest_ExePath, vsTestExePath?.FullName)
             };
 
             return Task.FromResult(environmentVariables.ToImmutableArray());
         }
 
-        private static string GetVSTestExePath(ILogger logger, string registryKeyName, string visualStudioVersion)
+        private UPath? GetVSTestExePath(ILogger logger, string registryKeyName, string visualStudioVersion)
         {
-            string? path = null;
-
-            using (RegistryKey view32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
+            if (Environment.OSVersion.Platform != PlatformID.Win32NT)
             {
-                using RegistryKey vsKey = view32.OpenSubKey(registryKeyName);
-                if (vsKey != null)
-                {
-                    using RegistryKey versionKey = vsKey.OpenSubKey(visualStudioVersion);
-                    if (versionKey == null)
-                    {
-                        throw new InvalidOperationException(
-                            $"Expected key {vsKey.Name} to contain a subkey with name {visualStudioVersion}");
-                    }
-
-                    const string installdir = "InstallDir";
-                    object installDir = versionKey.GetValue(installdir, null);
-
-                    if (string.IsNullOrWhiteSpace(installDir?.ToString()))
-                    {
-                        logger.Warning(
-                            "Expected key {Name} to contain a value with name {Installdir} and a non-empty value",
-                            versionKey.Name,
-                            installdir);
-                        return null;
-                    }
-
-                    string exePath = Path.Combine(
-                        installDir.ToString(),
-                        "CommonExtensions",
-                        "Microsoft",
-                        "TestWindow",
-                        "vstest.console.exe");
-
-                    if (!File.Exists(exePath))
-                    {
-                        throw new InvalidOperationException($"The file '{exePath}' does not exist");
-                    }
-
-                    path = exePath;
-                }
+                return null;
             }
+#pragma warning disable CA1416 // Validate platform compatibility
+
+            UPath? path = null;
+
+            using var view32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
+            using var vsKey = view32.OpenSubKey(registryKeyName);
+            if (vsKey != null)
+            {
+                using RegistryKey? versionKey = vsKey.OpenSubKey(visualStudioVersion);
+                if (versionKey == null)
+                {
+                    throw new InvalidOperationException(
+                        $"Expected key {vsKey.Name} to contain a subkey with name {visualStudioVersion}");
+                }
+
+                const string installDirKey = "InstallDir";
+                string? installDir = versionKey.GetValue(installDirKey, null)?.ToString();
+
+                if (string.IsNullOrWhiteSpace(installDir))
+                {
+                    logger.Warning(
+                        "Expected key {Name} to contain a value with name {InstallDir} and a non-empty value",
+                        versionKey.Name,
+                        installDirKey);
+                    return null;
+                }
+
+                var exePath = UPath.Combine(
+                    installDir,
+                    "CommonExtensions",
+                    "Microsoft",
+                    "TestWindow",
+                    "vstest.console.exe");
+
+                if (!_fileSystem.FileExists(exePath))
+                {
+                    throw new InvalidOperationException($"The file '{exePath}' does not exist");
+                }
+
+                path = exePath;
+            }
+
+#pragma warning restore CA1416 // Validate platform compatibility
 
             return path;
         }
 
-        private string GetVisualStudioVersion(ILogger logger, string registryKeyName)
+        private string? GetVisualStudioVersion(ILogger logger, string registryKeyName)
         {
-            string visualStudioVersion = null;
+            string? visualStudioVersion = null;
 
-            using (RegistryKey view32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
+            if (Environment.OSVersion.Platform != PlatformID.Win32NT)
             {
-                using RegistryKey vsKey = view32.OpenSubKey(registryKeyName);
-                if (vsKey != null)
-                {
-                    List<Version> versions = vsKey.GetSubKeyNames()
-                        .Where(subKeyName => char.IsDigit(subKeyName.First()))
-                        .Select(
-                            keyName =>
+                return null;
+            }
+
+#pragma warning disable CA1416 // Validate platform compatibility
+            using var view32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
+
+            using RegistryKey? vsKey = view32.OpenSubKey(registryKeyName);
+            if (vsKey is {})
+            {
+                List<Version> versions = vsKey.GetSubKeyNames()
+                    .Where(subKeyName => char.IsDigit(subKeyName.First()))
+                    .Select(
+                        keyName =>
+                        {
+                            if (!Version.TryParse(keyName, out Version? version) && _allowPreReleaseVersions)
                             {
-                                if (!Version.TryParse(keyName, out Version version))
+                                const string preReleaseSeparator = "_";
+
+                                int indexOf = keyName.IndexOf(
+                                    preReleaseSeparator,
+                                    StringComparison.OrdinalIgnoreCase);
+
+                                if (indexOf >= 0)
                                 {
-                                    if (_allowPreReleaseVersions)
+                                    string versionOnly = keyName.Substring(0, indexOf);
+
+                                    if (Version.TryParse(versionOnly, out version))
                                     {
-                                        const string preReleaseSeparator = "_";
-
-                                        int indexOf = keyName.IndexOf(
-                                            preReleaseSeparator,
-                                            StringComparison.OrdinalIgnoreCase);
-
-                                        if (indexOf >= 0)
-                                        {
-                                            string versionOnly = keyName.Substring(0, indexOf);
-
-                                            if (Version.TryParse(versionOnly, out version))
-                                            {
-                                                logger.Debug("Found pre-release Visual Studio version {Version}",
-                                                    version);
-                                            }
-                                        }
+                                        logger.Debug("Found pre-release Visual Studio version {Version}",
+                                            version!);
                                     }
                                 }
+                            }
 
-                                if (version == null)
-                                {
-                                    logger.Debug(
-                                        "Could not parse Visual Studio version from registry key name '{KeyName}', skipping that version.",
-                                        keyName);
-                                }
+                            if (version is null)
+                            {
+                                logger.Debug(
+                                    "Could not parse Visual Studio version from registry key name '{KeyName}', skipping that version.",
+                                    keyName);
+                            }
 
-                                return version;
-                            })
-                        .Where(version => version != null)
-                        .OrderByDescending(name => name)
-                        .ToList();
+                            return version;
+                        })
+                    .Where(version => version is {})
+                    .OrderByDescending(name => name)
+                    .ToList()!;
 
-                    logger.Verbose("Found {Count} Visual Studio versions: {V}",
-                        versions.Count,
-                        string.Join(", ", versions.Select(version => version.ToString(2))));
+                logger.Verbose("Found {Count} Visual Studio versions: {Versions}",
+                    versions.Count,
+                    string.Join(", ", versions.Select(version => version.ToString(2))));
 
-                    if (versions.Any(version => version == new Version(15, 0)))
-                    {
-                        visualStudioVersion = "15.0";
-                    }
+                if (versions.Any(version => version == new Version(15, 0)))
+                {
+                    visualStudioVersion = "15.0";
+                }
 
-                    if (versions.Any(version => version == new Version(14, 0)))
-                    {
-                        visualStudioVersion = "14.0";
-                    }
-                    else if (versions.Any(version => version == new Version(12, 0)))
-                    {
-                        visualStudioVersion = "12.0";
-                    }
-                    else if (versions.Any(version => version == new Version(11, 0)))
-                    {
-                        visualStudioVersion = "11.0";
-                    }
-                    else if (versions.Count > 0)
-                    {
-                        visualStudioVersion = versions.First().ToString(2);
-                    }
+                if (versions.Any(version => version == new Version(14, 0)))
+                {
+                    visualStudioVersion = "14.0";
+                }
+                else if (versions.Any(version => version == new Version(12, 0)))
+                {
+                    visualStudioVersion = "12.0";
+                }
+                else if (versions.Any(version => version == new Version(11, 0)))
+                {
+                    visualStudioVersion = "11.0";
+                }
+                else if (versions.Count > 0)
+                {
+                    visualStudioVersion = versions.First().ToString(2);
                 }
             }
+#pragma warning restore CA1416 // Validate platform compatibility
 
             return visualStudioVersion;
         }

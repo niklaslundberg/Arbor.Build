@@ -20,6 +20,10 @@ src/Arbor.Build.Tests.DummyWebApplication/App_Data/jobs/
 paket-files
 **\xunit_v2.Arbor.Build.Tests.SampleXunitNetCoreApp31.xml
 src/Arbor.Build.Tests.Integration/xunit_v2.Arbor.Build.Tests.SampleXunitNetCoreApp31_junit.xml
+**\*.*_copy.nuspec
+*_copy.nuspec
+**\_*\Artifacts\**\*
+samples/_*/**/*.*
 
 
 #################
@@ -197,3 +201,4 @@ _patchedAssemblyInfos
 *.log
 **/nCrunchTemp_*/*.*
 **/nCrunchTemp_*.*
+**/ncruncherror

@@ -12,12 +12,16 @@ using Autofac.Core;
 using Autofac.Util;
 using JetBrains.Annotations;
 using Serilog;
+using Zio;
 
 namespace Arbor.Build.Core
 {
     public static class BuildBootstrapper
     {
-        public static Task<IContainer> StartAsync([NotNull] ILogger logger, string? sourceDirectory = null)
+        public static Task<IContainer> StartAsync([NotNull] ILogger logger,
+            IEnvironmentVariables environmentVariables,
+            ISpecialFolders specialFolders,
+            DirectoryEntry? sourceDirectory = null)
         {
             if (logger == null)
             {
@@ -32,14 +36,17 @@ namespace Arbor.Build.Core
 
             RegisterSourceRootConditionally(sourceDirectory, builder);
 
+            builder.RegisterInstance(environmentVariables).AsImplementedInterfaces();
+            builder.RegisterInstance(specialFolders).AsImplementedInterfaces();
+
             IContainer container = builder.Build();
 
             return container.AsCompletedTask();
         }
 
-        private static void RegisterSourceRootConditionally(string? sourceDirectory, ContainerBuilder builder)
+        private static void RegisterSourceRootConditionally(DirectoryEntry? sourceDirectory, ContainerBuilder builder)
         {
-            if (!string.IsNullOrWhiteSpace(sourceDirectory))
+            if (sourceDirectory is {})
             {
                 builder.RegisterModule(new BuildVariableModule(sourceDirectory));
             }

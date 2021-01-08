@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -10,39 +9,53 @@ using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.ProcessUtils;
 using Arbor.Build.Core.Tools.Cleanup;
+using Arbor.FS;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 using NuGet.Versioning;
 using Serilog;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.MSBuild
 {
     [UsedImplicitly]
     public class MSBuildVariableProvider : IVariableProvider
     {
+        private readonly IEnvironmentVariables _environmentVariables;
+        private readonly ISpecialFolders _specialFolders;
+        private readonly IFileSystem _fileSystem;
+
+        public MSBuildVariableProvider(IEnvironmentVariables environmentVariables, ISpecialFolders specialFolders, IFileSystem fileSystem)
+        {
+            _environmentVariables = environmentVariables;
+            _specialFolders = specialFolders;
+            _fileSystem = fileSystem;
+        }
+
         private async Task<ImmutableArray<IVariable>> TryGetWithVsWhereAsync(
-            string vsWherePath,
+            UPath vsWherePath,
             string command,
             string component,
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            if (File.Exists(vsWherePath))
+            if (_fileSystem.FileExists(vsWherePath))
             {
-                logger.Debug("vswhere.exe exists at '{VsWherePath}'", vsWherePath);
+                logger.Debug("vswhere.exe exists at '{VsWherePath}'", _fileSystem.ConvertPathToInternal(vsWherePath));
 
                 ExitCode versionExitCode = await ProcessHelper.ExecuteAsync(
-                    vsWherePath,
+                   _fileSystem.ConvertPathToInternal(vsWherePath),
                     new List<string> { "-prerelease" },
                     cancellationToken: cancellationToken).ConfigureAwait(false);
 
                 var vsWhereArgs = new List<string> { command, component, "-format", "json" };
 
                 bool allowPreRelease =
-                    buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_MSBuild_AllowPreReleaseEnabled);
+                    buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_MSBuild_AllowPreReleaseEnabled)
+                    || buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_VisualStudio_Version_Allow_PreRelease);
 
                 // NOTE only newer releases of vswhere.exe supports -prerelease flag
                 if (allowPreRelease && versionExitCode.IsSuccess)
@@ -52,12 +65,12 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                 var resultBuilder = new StringBuilder();
 
-                CategoryLog standardOutLog = (message, category) => resultBuilder.Append(message);
+                void StandardOutLog(string message, string _) => resultBuilder.Append(message);
 
                 ExitCode exitCode = await ProcessRunner.ExecuteProcessAsync(
-                    vsWherePath,
+                  _fileSystem.ConvertPathToInternal( vsWherePath),
                     vsWhereArgs,
-                    standardOutLog,
+                    StandardOutLog,
                     cancellationToken: cancellationToken,
                     toolAction: logger.Debug,
                     standardErrorAction: logger.Error).ConfigureAwait(false);
@@ -114,43 +127,43 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                     if (latest != null)
                     {
-                        string msbuild2019Path = Path.Combine(
-                            latest.candidate.installationPath,
+                        var msbuild2019Path = UPath.Combine(
+                            latest.candidate.installationPath.ParseAsPath(),
                             "MSBuild",
                             "Current",
                             "bin",
                             "MSBuild.exe");
 
-                        if (File.Exists(msbuild2019Path))
+                        if (_fileSystem.FileExists(msbuild2019Path))
                         {
-                            logger.Information("Found MSBuild with vswhere.exe at '{MsbuildPath}'", msbuild2019Path);
+                            logger.Information("Found MSBuild with vswhere.exe at '{MsbuildPath}'",  _fileSystem.ConvertPathToInternal(msbuild2019Path));
 
                             IVariable[] variables =
                             {
                                 new BuildVariable(
                                     WellKnownVariables.ExternalTools_MSBuild_ExePath,
-                                    msbuild2019Path)
+                                    _fileSystem.ConvertPathToInternal(msbuild2019Path))
                             };
 
                             return variables.ToImmutableArray();
                         }
 
-                        string msbuild2017Path = Path.Combine(
-                            latest.candidate.installationPath,
+                        var msbuild2017Path = UPath.Combine(
+                            latest.candidate.installationPath.ParseAsPath(),
                             "MSBuild",
                             "15.0",
                             "bin",
                             "MSBuild.exe");
 
-                        if (File.Exists(msbuild2017Path))
+                        if (_fileSystem.FileExists(msbuild2017Path))
                         {
-                            logger.Information("Found MSBuild with vswhere.exe at '{MsbuildPath}'", msbuild2017Path);
+                            logger.Information("Found MSBuild with vswhere.exe at '{MsbuildPath}'",  _fileSystem.ConvertPathToInternal(msbuild2017Path));
 
                             IVariable[] variables =
                             {
                                 new BuildVariable(
                                     WellKnownVariables.ExternalTools_MSBuild_ExePath,
-                                    msbuild2017Path)
+                                    _fileSystem.ConvertPathToInternal(msbuild2017Path))
                             };
 
                             return variables.ToImmutableArray();
@@ -179,7 +192,19 @@ namespace Arbor.Build.Core.Tools.MSBuild
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            string? path = buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_MSBuild_ExePath, null);
+#pragma warning disable CA1416 // Validate platform compatibility
+
+            if (Environment.OSVersion.Platform != PlatformID.Win32NT)
+            {
+                return ImmutableArray<IVariable>.Empty;
+            }
+
+            if (buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_MSBuild_DotNetEnabled))
+            {
+                return ImmutableArray<IVariable>.Empty;
+            }
+
+            string? path = buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_MSBuild_ExePath);
 
             if (!string.IsNullOrWhiteSpace(path))
             {
@@ -192,7 +217,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 Process.GetCurrentProcess().Id,
                 currentProcessBits);
 
-            List<SemanticVersion> possibleMajorVersions = new List<string>
+            var possibleMajorVersions = new List<string>
                 {
                     "16.0.0",
                     "15.0.0",
@@ -215,13 +240,13 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 possibleMajorVersions.Remove(semVersion);
             }
 
-            string vsWherePath = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+            var vsWherePath = UPath.Combine(
+                _specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86).ParseAsPath(),
                 "Microsoft Visual Studio",
                 "Installer",
                 "vswhere.exe");
 
-            if (File.Exists(vsWherePath))
+            if (_fileSystem.FileExists(vsWherePath))
             {
                 ImmutableArray<IVariable> variables = await TryGetWithVsWhereAsync(vsWherePath,
                     "-requires",
@@ -236,7 +261,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 }
 
                 ImmutableArray<IVariable> variablesForTools = await TryGetWithVsWhereAsync(vsWherePath,
-                    "-products",
+                    " ",
                     "Microsoft.VisualStudio.Product.BuildTools",
                     logger,
                     buildVariables,
@@ -248,10 +273,10 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 }
             }
 
-            string[] possiblePaths =
+            UPath[] possiblePaths =
             {
-                Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                UPath.Combine(
+                    _specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86).ParseAsPath(),
                     "Microsoft Visual Studio",
                     "2019",
                     "Enterprise",
@@ -260,8 +285,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     "bin",
                     "MSBuild.exe"),
 
-                Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                UPath.Combine(
+                    _specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86).ParseAsPath(),
                     "Microsoft Visual Studio",
                     "2019",
                     "Professional",
@@ -270,8 +295,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     "bin",
                     "MSBuild.exe"),
 
-                Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                UPath.Combine(
+                    _specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86).ParseAsPath(),
                     "Microsoft Visual Studio",
                     "2019",
                     "Community",
@@ -280,8 +305,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     "bin",
                     "MSBuild.exe"),
 
-                Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                UPath.Combine(
+                    _specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86).ParseAsPath(),
                     "Microsoft Visual Studio",
                     "2019",
                     "BuildTools",
@@ -290,8 +315,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     "bin",
                     "MSBuild.exe"),
 
-                Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                UPath.Combine(
+                    _specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86).ParseAsPath(),
                     "Microsoft Visual Studio",
                     "2017",
                     "Enterprise",
@@ -300,8 +325,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     "bin",
                     "MSBuild.exe"),
 
-                Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                UPath.Combine(
+                    _specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
                     "Microsoft Visual Studio",
                     "2017",
                     "Professional",
@@ -310,8 +335,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     "bin",
                     "MSBuild.exe"),
 
-                Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                UPath.Combine(
+                    _specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
                     "Microsoft Visual Studio",
                     "2017",
                     "Community",
@@ -320,8 +345,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     "bin",
                     "MSBuild.exe"),
 
-                Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                UPath.Combine(
+                    _specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
                     "Microsoft Visual Studio",
                     "2017",
                     "BuildTools",
@@ -331,9 +356,9 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     "MSBuild.exe")
             };
 
-            string fileBasedLookupResultPath = possiblePaths.FirstOrDefault(File.Exists);
+            var fileBasedLookupResultPath = possiblePaths.FirstOrDefault(_fileSystem.FileExists);
 
-            if (fileBasedLookupResultPath != null)
+            if (fileBasedLookupResultPath is {})
             {
                 logger.Information("Found MSBuild at '{FileBasedLookupResultPath}'", fileBasedLookupResultPath);
 
@@ -341,7 +366,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 {
                     new BuildVariable(
                         WellKnownVariables.ExternalTools_MSBuild_ExePath,
-                        fileBasedLookupResultPath)
+                        _fileSystem.ConvertPathToInternal(fileBasedLookupResultPath.FullName))
                 };
 
                 return variables.ToImmutableArray();
@@ -367,11 +392,14 @@ namespace Arbor.Build.Core.Tools.MSBuild
                         registryKeyName,
                         valueKey);
 
-                    using (RegistryKey view32 =
-                        RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
+                    using var view32 =
+                        RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
+
+                    RegistryKey? key = view32.OpenSubKey(registryKeyName);
+
+                    if (key != null)
                     {
-                        using RegistryKey key = view32.OpenSubKey(registryKeyName);
-                        if (key != null)
+                        using (key)
                         {
                             msBuildPathRegistryKeyValue = key.GetValue(valueKey, null);
                         }
@@ -398,7 +426,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             if (string.IsNullOrWhiteSpace(foundPath))
             {
                 const string msbuildPath = "MSBUILD_PATH";
-                string? fromEnvironmentVariable = Environment.GetEnvironmentVariable(msbuildPath);
+                string? fromEnvironmentVariable = _environmentVariables.GetEnvironmentVariable(msbuildPath);
 
                 if (!string.IsNullOrWhiteSpace(fromEnvironmentVariable))
                 {
@@ -421,8 +449,11 @@ namespace Arbor.Build.Core.Tools.MSBuild
             {
                 new BuildVariable(
                     WellKnownVariables.ExternalTools_MSBuild_ExePath,
-                    foundPath)
+                    _fileSystem.ConvertPathToInternal(foundPath.ParseAsPath()))
             };
+
+#pragma warning restore CA1416 // Validate platform compatibility
+
             return environmentVariables.ToImmutableArray();
         }
     }

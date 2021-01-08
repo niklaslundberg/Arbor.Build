@@ -10,9 +10,9 @@ namespace Arbor.Build.Core
 {
     public static class VariableCompatibility
     {
-        public static void AddCompatibilityVariables(this List<IVariable> buildVariables, ILogger _logger)
+        public static void AddCompatibilityVariables(this List<IVariable> buildVariables, ILogger logger)
         {
-            bool _verboseEnabled = _logger.IsEnabled(LogEventLevel.Verbose);
+            bool verboseEnabled = logger.IsEnabled(LogEventLevel.Verbose);
 
             var replacements = new Dictionary<string, string> { ["Arbor.X"] = "Arbor.Build", ["."] = "_" };
 
@@ -63,54 +63,54 @@ namespace Arbor.Build.Core
                     string alreadyDefinedMessage =
                         $"{Environment.NewLine}Compatibility build variables already defined {Environment.NewLine}{Environment.NewLine}{alreadyDefined.DisplayAsTable()}{Environment.NewLine}";
 
-                    _logger.Debug("{AlreadyDefined}", alreadyDefinedMessage);
+                    logger.Debug("{AlreadyDefined}", alreadyDefinedMessage);
                 }
 
-                if (compatibilities.Count > 0 && _verboseEnabled)
+                if (compatibilities.Count > 0 && verboseEnabled)
                 {
                     string compatibility =
                         $"{Environment.NewLine}Compatibility build variables added {Environment.NewLine}{Environment.NewLine}{compatibilities.DisplayAsTable()}{Environment.NewLine}";
 
-                    _logger.Verbose("{CompatibilityVariables}", compatibility);
+                    logger.Verbose("{CompatibilityVariables}", compatibility);
                 }
 
-                IVariable arborXBranchName =
+                IVariable? arborXBranchName =
                     buildVariables.SingleOrDefault(
                         var => var.Key.Equals(WellKnownVariables.BranchName, StringComparison.OrdinalIgnoreCase));
 
-                if (arborXBranchName != null && !string.IsNullOrWhiteSpace(arborXBranchName.Value))
+                if (!string.IsNullOrWhiteSpace(arborXBranchName?.Value))
                 {
-                    const string BranchKey = "branch";
-                    const string BranchNameKey = "branchName";
+                    const string branchKey = "branch";
+                    const string branchNameKey = "branchName";
 
-                    if (!buildVariables.Any(var => var.Key.Equals(BranchKey, StringComparison.OrdinalIgnoreCase)))
+                    if (!buildVariables.Any(var => var.Key.Equals(branchKey, StringComparison.OrdinalIgnoreCase)))
                     {
-                        if (_verboseEnabled)
+                        if (verboseEnabled)
                         {
-                            _logger.Verbose(
+                            logger.Verbose(
                                 "Build variable with key '{BranchKey}' was not defined, using value from variable key {Key} ('{Value}')",
-                                BranchKey,
+                                branchKey,
                                 arborXBranchName.Key,
                                 arborXBranchName.Value);
                         }
 
-                        buildVariables.Add(new BuildVariable(BranchKey, arborXBranchName.Value));
+                        buildVariables.Add(new BuildVariable(branchKey, arborXBranchName.Value));
                     }
 
                     if (
                         !buildVariables.Any(
-                            var => var.Key.Equals(BranchNameKey, StringComparison.OrdinalIgnoreCase)))
+                            var => var.Key.Equals(branchNameKey, StringComparison.OrdinalIgnoreCase)))
                     {
-                        if (_verboseEnabled)
+                        if (verboseEnabled)
                         {
-                            _logger.Verbose(
+                            logger.Verbose(
                                 "Build variable with key '{BranchNameKey}' was not defined, using value from variable key {Key} ('{Value}')",
-                                BranchNameKey,
+                                branchNameKey,
                                 arborXBranchName.Key,
                                 arborXBranchName.Value);
                         }
 
-                        buildVariables.Add(new BuildVariable(BranchNameKey, arborXBranchName.Value));
+                        buildVariables.Add(new BuildVariable(branchNameKey, arborXBranchName.Value));
                     }
                 }
             }

@@ -6,140 +6,36 @@ using System.Linq;
 using Arbor.Defensive.Collections;
 using Arbor.Exceptions;
 using JetBrains.Annotations;
+using Zio;
 
 namespace Arbor.Build.Core.IO
 {
     public static class DirectoryExtensions
     {
-        public static DirectoryInfo EnsureExists(this DirectoryInfo directoryInfo)
+        public static ImmutableArray<FileEntry> GetFilesRecursive(
+            this DirectoryEntry directory,
+            IEnumerable<string>? fileExtensions = null,
+            PathLookupSpecification? pathLookupSpecification = null,
+            DirectoryEntry? rootDir = null)
         {
-            if (directoryInfo == null)
+            if (directory is null)
             {
-                throw new ArgumentNullException(nameof(directoryInfo));
+                throw new ArgumentNullException(nameof(directory));
             }
 
-            try
+            if (!directory.Exists)
             {
-                directoryInfo.Refresh();
-
-                if (!directoryInfo.Exists)
-                {
-                    directoryInfo.Create();
-                }
-            }
-            catch (PathTooLongException ex)
-            {
-                throw new PathTooLongException(
-                    $"Could not create directory '{directoryInfo.FullName}', path length {directoryInfo.FullName.Length}",
-                    ex);
-            }
-
-            directoryInfo.Refresh();
-
-            return directoryInfo;
-        }
-
-        public static void DeleteIfExists(this DirectoryInfo? directoryInfo, bool recursive = true)
-        {
-            if (directoryInfo is null)
-            {
-                return;
-            }
-
-            try
-            {
-                directoryInfo.Refresh();
-
-                if (directoryInfo.Exists)
-                {
-                    FileInfo[] fileInfos;
-
-                    try
-                    {
-                        fileInfos = directoryInfo.GetFiles();
-                    }
-                    catch (Exception ex)
-                    {
-                        if (ex.IsFatal())
-                        {
-                            throw;
-                        }
-
-                        throw new IOException(
-                            $"Could not get files for directory '{directoryInfo.FullName}' for deletion",
-                            ex);
-                    }
-
-                    foreach (FileInfo file in fileInfos)
-                    {
-                        file.Attributes = FileAttributes.Normal;
-
-                        try
-                        {
-                            file.Delete();
-                        }
-                        catch (Exception ex)
-                        {
-                            if (ex.IsFatal())
-                            {
-                                throw;
-                            }
-
-                            throw new IOException($"Could not delete file '{file.FullName}'", ex);
-                        }
-                    }
-
-                    foreach (DirectoryInfo subDirectory in directoryInfo.GetDirectories())
-                    {
-                        subDirectory.DeleteIfExists(recursive);
-                    }
-                }
-
-                directoryInfo.Refresh();
-
-                if (directoryInfo.Exists)
-                {
-                    directoryInfo.Delete(recursive);
-                }
-
-                directoryInfo.Refresh();
-
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                if (directoryInfo != null)
-                {
-                    throw new InvalidOperationException($"Could not delete directory '{directoryInfo.FullName}'", ex);
-                }
-
-                throw;
-            }
-        }
-
-        public static ImmutableArray<FileInfo> GetFilesRecursive(
-            this DirectoryInfo directoryInfo,
-            IEnumerable<string> fileExtensions = null,
-            PathLookupSpecification pathLookupSpecification = null,
-            string rootDir = null)
-        {
-            if (directoryInfo == null)
-            {
-                throw new ArgumentNullException(nameof(directoryInfo));
-            }
-
-            if (!directoryInfo.Exists)
-            {
-                throw new DirectoryNotFoundException($"The directory '{directoryInfo.FullName}' does not exist");
+                throw new DirectoryNotFoundException($"The directory '{directory.FullName}' does not exist");
             }
 
             PathLookupSpecification usedPathLookupSpecification =
                 pathLookupSpecification ?? DefaultPaths.DefaultPathLookupSpecification;
 
-            ImmutableArray<string> usedFileExtensions = fileExtensions.SafeToReadOnlyCollection();
+            var usedFileExtensions = fileExtensions.SafeToReadOnlyCollection();
 
-            if (usedPathLookupSpecification.IsNotAllowed(directoryInfo.FullName, rootDir).Item1)
+            if (usedPathLookupSpecification.IsNotAllowed(directory, rootDir).Item1)
             {
-                return ImmutableArray<FileInfo>.Empty;
+                return ImmutableArray<FileEntry>.Empty;
             }
 
             IReadOnlyCollection<string> invalidFileExtensions = usedFileExtensions
@@ -151,23 +47,23 @@ namespace Arbor.Build.Core.IO
                 throw new ArgumentException(Resources.FileExtensionMustStartWithDot);
             }
 
-            var files = new List<FileInfo>();
+            var files = new List<FileEntry>();
 
-            List<FileInfo> directoryFiles = directoryInfo
-                .GetFiles()
-                .Where(file => !usedPathLookupSpecification.IsFileExcluded(file.FullName, rootDir).Item1)
+            var directoryFiles = directory
+                .EnumerateFiles()
+                .Where(file => !usedPathLookupSpecification.IsFileExcluded(file, rootDir).Item1)
                 .ToList();
 
-            List<FileInfo> filtered = (usedFileExtensions.Any()
-                    ? directoryFiles.Where(file => usedFileExtensions.Any(extension => file.Extension.Equals(
+            var filtered = (usedFileExtensions.Any()
+                    ? directoryFiles.Where(file => usedFileExtensions.Any(extension => file.Path.GetExtensionWithDot()?.Equals(
                         extension,
-                        StringComparison.OrdinalIgnoreCase)))
+                        StringComparison.OrdinalIgnoreCase) ?? false))
                     : directoryFiles)
                 .ToList();
 
             files.AddRange(filtered);
 
-            DirectoryInfo[] subDirectories = directoryInfo.GetDirectories();
+            DirectoryEntry[] subDirectories = directory.EnumerateDirectories().ToArray();
 
             files.AddRange(subDirectories
                 .SelectMany(dir => dir.GetFilesRecursive(usedFileExtensions, usedPathLookupSpecification, rootDir)));
@@ -175,24 +71,28 @@ namespace Arbor.Build.Core.IO
             return files.ToImmutableArray();
         }
 
-        public static ImmutableArray<string> GetFilesWithWithExclusions(
-            [NotNull] this DirectoryInfo siteArtifactDirectory,
+        public static ImmutableArray<FileEntry> GetFilesWithWithExclusions(
+            [NotNull] this DirectoryEntry directory,
             [NotNull] IReadOnlyCollection<string> excludedPatterns)
         {
-            if (siteArtifactDirectory == null)
+            if (directory is null)
             {
-                throw new ArgumentNullException(nameof(siteArtifactDirectory));
+                throw new ArgumentNullException(nameof(directory));
             }
 
-            if (excludedPatterns == null)
+            if (excludedPatterns is null)
             {
                 throw new ArgumentNullException(nameof(excludedPatterns));
             }
 
-            string[] allFiles = siteArtifactDirectory.GetFiles("*", SearchOption.AllDirectories).Select(s => s.FullName)
+            var fileSystem = directory.FileSystem;
+
+
+            var allFiles = fileSystem
+                .EnumerateFileEntries(directory.Path, "*", SearchOption.AllDirectories)
                 .ToArray();
 
-            string[] allIncludedFiles;
+            FileEntry[] allIncludedFiles;
 
             if (excludedPatterns.Count == 0)
             {
@@ -200,27 +100,31 @@ namespace Arbor.Build.Core.IO
             }
             else
             {
-                var excludedFileNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                var excludedFileNames = new HashSet<FileEntry>();
 
-                foreach (string excludedPattern in excludedPatterns.Where(p => p.Length > 0))
+                foreach (string excludedPattern in excludedPatterns.Where(pattern => pattern.Length > 0))
                 {
-                    string[] excludedFiles;
-                    siteArtifactDirectory.Refresh();
+                    FileEntry[] excludedFiles;
+
                     try
                     {
-                        if (excludedPattern.IndexOf(Path.DirectorySeparatorChar, StringComparison.InvariantCulture) >=
-                            0)
+                        if (excludedPattern.Contains('/', StringComparison.InvariantCulture) || excludedPattern.Contains('\\', StringComparison.InvariantCulture))
                         {
                             excludedFiles = allFiles.Where(file =>
-                                    file.Substring(siteArtifactDirectory.FullName.Length)
-                                        .IndexOf(excludedPattern, StringComparison.OrdinalIgnoreCase) >= 0)
+                                {
+                                    string pathInvariant = excludedPattern.Replace('\\', '/');
+
+                                    string filePath = file.FullName[directory.FullName.Length..];
+                                    return filePath.Contains(pathInvariant, StringComparison.OrdinalIgnoreCase);
+                                })
                                 .ToArray();
                         }
                         else
                         {
-                            excludedFiles =
-                                siteArtifactDirectory.GetFiles(excludedPattern, SearchOption.AllDirectories)
-                                    .Select(file => file.FullName).ToArray();
+                            excludedFiles = fileSystem.EnumerateFileEntries(
+                                    directory.Path, excludedPattern,
+                                    SearchOption.AllDirectories)
+                                .ToArray();
                         }
                     }
                     catch (Exception ex) when (!ex.IsFatal())
@@ -228,19 +132,19 @@ namespace Arbor.Build.Core.IO
                         throw new InvalidOperationException($"Could not get files with pattern '{excludedPattern}'");
                     }
 
-                    foreach (string excludedFile in excludedFiles)
+                    foreach (var excludedFile in excludedFiles)
                     {
                         excludedFileNames.Add(excludedFile);
                     }
                 }
 
                 allIncludedFiles = allFiles
-                    .Except(excludedFileNames, StringComparer.OrdinalIgnoreCase)
+                    .Except(excludedFileNames)
                     .ToArray();
 
-                foreach (string file in allIncludedFiles)
+                foreach (var file in allIncludedFiles)
                 {
-                    if (!File.Exists(file))
+                    if (!fileSystem.FileExists(file.Path))
                     {
                         throw new InvalidOperationException($"The file '{file}' does not exist");
                     }
@@ -250,4 +154,6 @@ namespace Arbor.Build.Core.IO
             return allIncludedFiles.ToImmutableArray();
         }
     }
+
+
 }

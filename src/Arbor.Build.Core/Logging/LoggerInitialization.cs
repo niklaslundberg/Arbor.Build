@@ -9,20 +9,25 @@ namespace Arbor.Build.Core.Logging
 {
     public static class LoggerInitialization
     {
-        public static ILogger InitializeLogging(string[] args)
+        public static ILogger InitializeLogging(string[] args, IEnvironmentVariables? environmentVariables = null)
         {
-            LoggingLevelSwitch levelSwitch = LogLevelHelper.GetLevelSwitch(args);
+            environmentVariables ??= new DefaultEnvironmentVariables();
 
-            string seqUrl = args?.FirstOrDefault(arg => arg.StartsWith("sequrl", StringComparison.OrdinalIgnoreCase))?.Split('=').LastOrDefault()
-                            ?? Environment.GetEnvironmentVariable("sequrl");
+            LoggingLevelSwitch levelSwitch = LogLevelHelper.GetLevelSwitch(args, environmentVariables);
+
+            string? seqUrl = args.FirstOrDefault(arg => arg.StartsWith("sequrl", StringComparison.OrdinalIgnoreCase))
+                                ?.Split('=').LastOrDefault()
+                            ?? environmentVariables.GetEnvironmentVariable("sequrl");
 
             string outputTemplate;
 
-            if (Environment.GetEnvironmentVariable(WellKnownVariables.ConsoleLogTimestampEnabled).TryParseBool(out bool timestampsEnabled, defaultValue: true) && !timestampsEnabled)
+            if (environmentVariables.GetEnvironmentVariable(WellKnownVariables.ConsoleLogTimestampEnabled)
+                .TryParseBool(out bool timestampsEnabled, true) && !timestampsEnabled)
             {
                 outputTemplate = "[{Level:u3}] {Message:lj}{NewLine}{Exception}";
             }
-            else if (Environment.GetEnvironmentVariable(WellKnownVariables.IsRunningOnBuildAgent).TryParseBool(out bool isRunningOnBuildAgent) && isRunningOnBuildAgent)
+            else if (environmentVariables.GetEnvironmentVariable(WellKnownVariables.IsRunningOnBuildAgent)
+                .TryParseBool(out bool isRunningOnBuildAgent) && isRunningOnBuildAgent)
             {
                 outputTemplate = "[{Level:u3}] {Message:lj}{NewLine}{Exception}";
             }
@@ -34,7 +39,7 @@ namespace Arbor.Build.Core.Logging
             LoggerConfiguration loggerConfiguration = new LoggerConfiguration()
                 .WriteTo.Console(outputTemplate: outputTemplate);
 
-            if (!string.IsNullOrWhiteSpace(seqUrl) && Uri.TryCreate(seqUrl, UriKind.Absolute, out Uri uri))
+            if (!string.IsNullOrWhiteSpace(seqUrl) && Uri.TryCreate(seqUrl, UriKind.Absolute, out Uri? _))
             {
                 loggerConfiguration = loggerConfiguration.WriteTo.Seq(seqUrl);
             }

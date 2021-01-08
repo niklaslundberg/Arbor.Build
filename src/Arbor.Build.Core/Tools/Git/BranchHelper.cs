@@ -15,11 +15,11 @@ namespace Arbor.Build.Core.Tools.Git
                 throw new ArgumentNullException(nameof(branchName));
             }
 
-            var nonFeatureBranchNames = new[]
-            {
+            string[] nonFeatureBranchNames = {
                 "dev",
-                "develop",
-                "master",
+                BranchName.Develop.LogicalName,
+                BranchName.Master.LogicalName,
+                BranchName.Main.LogicalName,
                 "release",
                 "hotfix"
             };
@@ -38,9 +38,9 @@ namespace Arbor.Build.Core.Tools.Git
                 throw new ArgumentNullException(nameof(branchName));
             }
 
-            var developBranchNames = new[]
+            string[] developBranchNames =
             {
-                "develop",
+                BranchName.Develop.LogicalName,
                 "dev"
             };
 
@@ -61,7 +61,8 @@ namespace Arbor.Build.Core.Tools.Git
 
             var productionBranches = new List<string>(10)
             {
-                "master",
+                BranchName.Master.LogicalName,
+                BranchName.Main.LogicalName,
                 "release",
                 "hotfix"
             };
@@ -86,32 +87,27 @@ namespace Arbor.Build.Core.Tools.Git
             return new BranchName(logicalName);
         }
 
-        public static bool BranchNameHasVersion(string branchName)
+        public static bool BranchNameHasVersion(string branchName, IEnvironmentVariables environmentVariables)
         {
             if (string.IsNullOrWhiteSpace(branchName))
             {
                 throw new ArgumentNullException(nameof(branchName));
             }
 
-            SemanticVersion version = BranchSemVerMajorMinorPatch(branchName);
+            SemanticVersion version = BranchSemVerMajorMinorPatch(branchName, environmentVariables);
 
             return version.Major > 0 || version.Minor > 0 || version.Patch > 0;
         }
 
-        public static SemanticVersion BranchSemVerMajorMinorPatch(string branchName)
+        public static SemanticVersion BranchSemVerMajorMinorPatch(string? branchName, IEnvironmentVariables environmentVariables)
         {
             if (string.IsNullOrWhiteSpace(branchName))
             {
                 throw new ArgumentNullException(nameof(branchName));
             }
 
-            if (string.IsNullOrWhiteSpace(branchName))
-            {
-                return new SemanticVersion(0, 0, 0);
-            }
-
-            string splitCharactersVariable =
-                Environment.GetEnvironmentVariable(WellKnownVariables.NameVersionCommonSeparatedSplitList);
+            string? splitCharactersVariable =
+                environmentVariables.GetEnvironmentVariable(WellKnownVariables.NameVersionCommonSeparatedSplitList);
 
             var splitCharacters = new List<string>
             {
@@ -134,7 +130,7 @@ namespace Arbor.Build.Core.Tools.Git
                 splitCharacters = parts;
             }
 
-            string version =
+            string? version =
                 branchName.Split(splitCharacters.ToArray(), StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
 
             if (!SemanticVersion.TryParse(version, out SemanticVersion semver))

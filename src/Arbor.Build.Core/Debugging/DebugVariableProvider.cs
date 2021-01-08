@@ -6,13 +6,17 @@ using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using JetBrains.Annotations;
 using Serilog;
-using Serilog.Core;
 
 namespace Arbor.Build.Core.Debugging
 {
     [UsedImplicitly]
     public class DebugVariableProvider : IVariableProvider
     {
+        private readonly IEnvironmentVariables _environmentVariables;
+
+        public DebugVariableProvider(IEnvironmentVariables environmentVariables) =>
+            _environmentVariables = environmentVariables;
+
         public int Order => int.MinValue + 1;
 
         public Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
@@ -20,9 +24,7 @@ namespace Arbor.Build.Core.Debugging
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
-            logger ??= Logger.None;
-
-            if (!DebugHelper.IsDebugging)
+            if (!DebugHelper.IsDebugging(_environmentVariables))
             {
                 logger.Verbose("Skipping debug variables, not running in debug mode");
                 return Task.FromResult(ImmutableArray<IVariable>.Empty);
@@ -32,12 +34,7 @@ namespace Arbor.Build.Core.Debugging
             {
                 [WellKnownVariables.BranchNameVersionOverrideEnabled] = "false",
                 [WellKnownVariables.VariableOverrideEnabled] = "true",
-
                 [WellKnownVariables.BranchName] = "develop",
-                [WellKnownVariables.VersionMajor] = "3",
-                [WellKnownVariables.VersionMinor] = "0",
-                [WellKnownVariables.VersionPatch] = "0",
-                [WellKnownVariables.VersionBuild] = "286",
                 [WellKnownVariables.GenericXmlTransformsEnabled] = "true",
                 [WellKnownVariables.NuGetPackageExcludesCommaSeparated] = "Arbor.Build.Bootstrapper.nuspec",
                 [WellKnownVariables.NuGetAllowManifestReWrite] = "false",
@@ -54,9 +51,7 @@ namespace Arbor.Build.Core.Debugging
                 [WellKnownVariables.WebJobsExcludedDirectorySegments] = "roslyn",
                 [WellKnownVariables.AppDataJobsEnabled] = "false",
                 [WellKnownVariables.WebDeployPreCompilationEnabled] = "false",
-                [WellKnownVariables.ExcludedNuGetWebPackageFiles] =
-                    @"bin\roslyn\*.*,bin\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll",
-                [WellKnownVariables.TestsAssemblyStartsWith] = "",
+                //[WellKnownVariables.TestsAssemblyStartsWith] = "",
                 [WellKnownVariables.DotNetRestoreEnabled] = "false",
                 [WellKnownVariables.XUnitNetCoreAppV2XmlXsltToJunitEnabled] = "true",
                 [WellKnownVariables.XUnitNetCoreAppEnabled] = "false",
@@ -65,6 +60,11 @@ namespace Arbor.Build.Core.Debugging
                 [WellKnownVariables.MSBuildNuGetRestoreEnabled] = "true",
                 [WellKnownVariables.DotNetPublishExeProjectsEnabled] = "true",
                 [WellKnownVariables.NuGetPackageIdBranchNameEnabled] = "false",
+                [WellKnownVariables.XUnitNetCoreAppXmlEnabled] = "true",
+                [WellKnownVariables.DeterministicBuildEnabled] = "true",
+                [WellKnownVariables.RepositoryUrl] = "http://ignore.local",
+                [WellKnownVariables.ExternalTools_VisualStudio_Version_Allow_PreRelease] = "true",
+                [WellKnownVariables.ExternalTools_MSBuild_AllowPreReleaseEnabled] = "true"
             };
 
             Task<ImmutableArray<IVariable>> result = Task.FromResult(environmentVariables.Select(

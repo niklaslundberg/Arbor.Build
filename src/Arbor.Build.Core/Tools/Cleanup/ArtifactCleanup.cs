@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
-using Arbor.Build.Core.IO;
+using Arbor.Build.Core.Tools.MSBuild;
 using Arbor.Exceptions;
+using Arbor.FS;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
-using Serilog.Core;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.Cleanup
 {
@@ -17,14 +17,21 @@ namespace Arbor.Build.Core.Tools.Cleanup
     [UsedImplicitly]
     public class ArtifactCleanup : ITool
     {
+        private readonly IFileSystem _fileSystem;
+        private readonly BuildContext _buildContext;
+
+        public ArtifactCleanup(IFileSystem fileSystem, BuildContext buildContext)
+        {
+            _fileSystem = fileSystem;
+            _buildContext = buildContext;
+        }
+
         public async Task<ExitCode> ExecuteAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             string[] args,
             CancellationToken cancellationToken)
         {
-            logger ??= Logger.None;
-
             bool cleanupBeforeBuildEnabled =
                 buildVariables.GetBooleanByKey(
                     WellKnownVariables.CleanupArtifactsBeforeBuildEnabled,
@@ -36,9 +43,9 @@ namespace Arbor.Build.Core.Tools.Cleanup
                 return ExitCode.Success;
             }
 
-            string artifactsPath = buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue().Value;
+            var artifactsPath = buildVariables.Require(WellKnownVariables.Artifacts).GetValueOrThrow().ParseAsPath();
 
-            var artifactsDirectory = new DirectoryInfo(artifactsPath);
+            var artifactsDirectory = new DirectoryEntry(_fileSystem, artifactsPath);
 
             if (!artifactsDirectory.Exists)
             {
@@ -77,7 +84,7 @@ namespace Arbor.Build.Core.Tools.Cleanup
 
         private static bool TryCleanup(
             ILogger logger,
-            DirectoryInfo artifactsDirectory,
+            DirectoryEntry artifactsDirectory,
             bool throwExceptionOnFailure = false)
         {
             try
@@ -102,13 +109,12 @@ namespace Arbor.Build.Core.Tools.Cleanup
             return true;
         }
 
-        private static void DoCleanup(ILogger logger, DirectoryInfo artifactsDirectory)
+        private static void DoCleanup(ILogger logger, DirectoryEntry artifactsDirectory)
         {
             logger.Information("Artifact cleanup is enabled, removing all files and folders in '{FullName}'",
-                artifactsDirectory.FullName);
+             artifactsDirectory.FileSystem.ConvertPathToInternal(artifactsDirectory.Path));
 
             artifactsDirectory.DeleteIfExists();
-            artifactsDirectory.Refresh();
             artifactsDirectory.EnsureExists();
         }
     }

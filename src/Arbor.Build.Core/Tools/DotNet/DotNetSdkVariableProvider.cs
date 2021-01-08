@@ -1,26 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.Tools.Cleanup;
+using Arbor.Build.Core.Tools.NuGet;
+using Arbor.FS;
 using JetBrains.Annotations;
 using NuGet.Versioning;
 using Serilog;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.DotNet
 {
     [UsedImplicitly]
     public class DotNetSdkVariableProvider : IVariableProvider
     {
+        private readonly IEnvironmentVariables _environmentVariables;
+        private readonly IFileSystem _fileSystem;
         private const string MSBuildSdksPath = "MSBuildSDKsPath";
+
+        public DotNetSdkVariableProvider(IEnvironmentVariables environmentVariables, IFileSystem fileSystem)
+        {
+            _environmentVariables = environmentVariables;
+            _fileSystem = fileSystem;
+        }
 
         public int Order => VariableProviderOrder.Ignored;
 
-        public async Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
+        public Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
@@ -29,45 +38,47 @@ namespace Arbor.Build.Core.Tools.DotNet
 
             if (!string.IsNullOrWhiteSpace(definedValue))
             {
-                return ImmutableArray<IVariable>.Empty;
+                return Task.FromResult(ImmutableArray<IVariable>.Empty);
             }
 
-            string? programFilesX64 = Environment.GetEnvironmentVariable("ProgramW6432");
+            var programFilesX64 = _environmentVariables.GetEnvironmentVariable("ProgramW6432")?.ParseAsPath();
 
-            if (!string.IsNullOrWhiteSpace(programFilesX64))
+            if (programFilesX64 is null)
             {
-                string programFilesX64FullPath = Path.Combine(
-                    programFilesX64,
-                    "dotnet",
-                    "sdk");
+                return Task.FromResult(ImmutableArray<IVariable>.Empty);
+            }
 
-                var directoryInfo = new DirectoryInfo(programFilesX64FullPath);
+            var programFilesX64FullPath = UPath.Combine(
+                programFilesX64.Value,
+                "dotnet",
+                "sdk");
 
-                if (directoryInfo.Exists)
+            var directoryEntry = new DirectoryEntry(_fileSystem, programFilesX64FullPath);
+
+            if (directoryEntry.Exists)
+            {
+                var semanticVersions = directoryEntry.GetDirectories()
+                    .Select(dir =>
+                        (Directory: dir,
+                            HasVersion: SemanticVersion.TryParse(dir.Name, out SemanticVersion version),
+                            Version: version))
+                    .Where(dir => dir.HasVersion && !dir.Version.IsPrerelease)
+                    .ToArray();
+
+                if (semanticVersions.Length > 0)
                 {
-                    var semanticVersions = directoryInfo.GetDirectories()
-                        .Select(dir =>
-                            (Directory: dir,
-                                HasVersion: SemanticVersion.TryParse(dir.Name, out SemanticVersion version),
-                                Version: version))
-                        .Where(dir => dir.HasVersion && !dir.Version.IsPrerelease)
-                        .ToArray();
+                    var (directory, _, _) = semanticVersions.OrderByDescending(tuple => tuple.Version).First();
 
-                    if (semanticVersions.Length > 0)
+                    var sdksPath = UPath.Combine(directory.Path, "sdks");
+
+                    if (_fileSystem.DirectoryExists(sdksPath))
                     {
-                        var version = semanticVersions.OrderByDescending(s => s.Version).First();
-
-                        string sdksPath = Path.Combine(version.Directory.FullName, "sdks");
-
-                        if (Directory.Exists(sdksPath))
-                        {
-                            return new IVariable[] { new BuildVariable(MSBuildSdksPath, sdksPath) }.ToImmutableArray();
-                        }
+                        return Task.FromResult(new IVariable[] { new BuildVariable(MSBuildSdksPath, _fileSystem.ConvertPathToInternal(sdksPath)) }.ToImmutableArray());
                     }
                 }
             }
 
-            return ImmutableArray<IVariable>.Empty;
+            return Task.FromResult(ImmutableArray<IVariable>.Empty);
         }
     }
 }

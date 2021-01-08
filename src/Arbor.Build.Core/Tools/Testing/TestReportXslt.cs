@@ -3,9 +3,11 @@ using System.IO;
 using System.Text;
 using System.Xml;
 using System.Xml.Xsl;
+using Arbor.FS;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.Testing
 {
@@ -14,22 +16,20 @@ namespace Arbor.Build.Core.Tools.Testing
         public const string JUnitSuffix = "_junit.xml";
 
         public static ExitCode Transform(
-            [NotNull] FileInfo xmlReport,
+            [NotNull] FileEntry xmlReport,
             [NotNull] string xsltTemplate,
             [NotNull] ILogger logger,
             bool deleteOriginal = true)
         {
-            if (xmlReport == null)
+            if (xmlReport is null)
             {
                 throw new ArgumentNullException(nameof(xmlReport));
             }
 
-            if (logger == null)
+            if (logger is null)
             {
                 throw new ArgumentNullException(nameof(logger));
             }
-
-            xmlReport.Refresh();
 
             if (!xmlReport.Exists)
             {
@@ -67,18 +67,18 @@ namespace Arbor.Build.Core.Tools.Testing
         }
 
         private static void TransformReport(
-            FileInfo xmlReport,
+            FileEntry xmlReport,
             string junitSuffix,
             Encoding encoding,
             XslCompiledTransform myXslTransform,
             ILogger logger, bool deleteOriginal)
         {
             // ReSharper disable once PossibleNullReferenceException
-            string resultFile = Path.Combine(
-                xmlReport.Directory.FullName,
+            var resultFile = UPath.Combine(
+                xmlReport.Directory.Path,
                 $"{Path.GetFileNameWithoutExtension(xmlReport.Name)}{junitSuffix}");
 
-            if (File.Exists(resultFile))
+            if (xmlReport.FileSystem.FileExists(resultFile))
             {
                 logger.Information(
                     "Skipping XML transformation for '{FullName}', the transformation result file '{ResultFile}' already exists",
@@ -86,18 +86,18 @@ namespace Arbor.Build.Core.Tools.Testing
                     resultFile);
             }
 
-            using (var fileStream = new FileStream(xmlReport.FullName, FileMode.Open, FileAccess.Read))
+            using (var fileStream = xmlReport.Open( FileMode.Open, FileAccess.Read))
             {
                 using var streamReader = new StreamReader(fileStream, encoding);
-                using XmlReader reportReader = XmlReader.Create(streamReader);
-                using var outStream = new FileStream(resultFile, FileMode.Create, FileAccess.Write);
+                using var reportReader = XmlReader.Create(streamReader);
+                using var outStream = xmlReport.FileSystem.OpenFile(resultFile, FileMode.Create, FileAccess.Write);
                 using XmlWriter reportWriter = new XmlTextWriter(outStream, encoding);
                 myXslTransform.Transform(reportReader, reportWriter);
             }
 
             if (deleteOriginal)
             {
-                File.Delete(xmlReport.FullName);
+                xmlReport.DeleteIfExists();
             }
         }
     }

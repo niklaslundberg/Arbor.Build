@@ -6,11 +6,12 @@ using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.ProcessUtils;
-using Arbor.Defensive;
+using Arbor.FS;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
 using Serilog.Core;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.NuGet
 {
@@ -18,6 +19,10 @@ namespace Arbor.Build.Core.Tools.NuGet
     [UsedImplicitly]
     public class DotNetRestorer : ITool
     {
+        private readonly IFileSystem _fileSystem;
+
+        public DotNetRestorer(IFileSystem fileSystem) => _fileSystem = fileSystem;
+
         public async Task<ExitCode> ExecuteAsync(
             ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
@@ -32,10 +37,10 @@ namespace Arbor.Build.Core.Tools.NuGet
                 return ExitCode.Success;
             }
 
-            string rootPath = buildVariables.GetVariable(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
+            DirectoryEntry rootPath = new DirectoryEntry(_fileSystem, buildVariables.GetVariable(WellKnownVariables.SourceRoot).GetValueOrThrow());
 
             string dotNetExePath =
-                buildVariables.GetVariableValueOrDefault(WellKnownVariables.DotNetExePath, string.Empty);
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.DotNetExePath, string.Empty)!;
 
             if (string.IsNullOrWhiteSpace(dotNetExePath))
             {
@@ -46,25 +51,24 @@ namespace Arbor.Build.Core.Tools.NuGet
             }
 
             var pathLookupSpecification = new PathLookupSpecification();
-            FileInfo[] solutionFiles = new DirectoryInfo(rootPath)
-                .GetFiles("*.sln", SearchOption.AllDirectories)
-                .Where(file => !pathLookupSpecification.IsFileExcluded(file.FullName, rootPath).Item1)
+            FileEntry[] solutionFiles = rootPath
+                .EnumerateFiles("*.sln", SearchOption.AllDirectories)
+                .Where(file => !pathLookupSpecification.IsFileExcluded(file, rootPath).Item1)
                 .ToArray();
 
+            string? runtimeIdentifier =
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.ProjectMSBuildPublishRuntimeIdentifier);
 
-            Maybe<IVariable> runtimeIdentifier =
-                buildVariables.GetOptionalVariable(WellKnownVariables.ProjectMSBuildPublishRuntimeIdentifier);
-
-            foreach (FileInfo solutionFile in solutionFiles)
+            foreach (var solutionFile in solutionFiles)
             {
                 var arguments = new List<string> { "restore", solutionFile.FullName };
-                if (runtimeIdentifier.HasValue)
+                if (!string.IsNullOrWhiteSpace(runtimeIdentifier))
                 {
-                    arguments.Add(runtimeIdentifier.Value.Value);
+                    arguments.Add(runtimeIdentifier);
                 }
 
                 ExitCode result = await ProcessHelper.ExecuteAsync(
-                    dotNetExePath,
+                    _fileSystem.ConvertPathToInternal(dotNetExePath.ParseAsPath()),
                     arguments,
                     logger,
                     cancellationToken: cancellationToken).ConfigureAwait(false);

@@ -10,13 +10,15 @@ namespace Arbor.Build.Core.Tools.MSBuild
         public static readonly DotNetSdk DotnetWeb = new DotNetSdk("Microsoft.NET.Sdk.Web");
         public static readonly DotNetSdk Dotnet = new DotNetSdk("Microsoft.NET.Sdk");
         public static readonly DotNetSdk None = new DotNetSdk("N/A");
+        public static readonly DotNetSdk Test = new DotNetSdk("Microsoft.NET.Test.Sdk");
 
-        private static readonly Lazy<ImmutableArray<DotNetSdk>> _LazyAll =
+        private static readonly Lazy<ImmutableArray<DotNetSdk>> LazyAll =
             new Lazy<ImmutableArray<DotNetSdk>>(() => new[]
             {
                 None,
                 Dotnet,
-                DotnetWeb
+                DotnetWeb,
+                Test
             }.ToImmutableArray());
 
         private DotNetSdk([NotNull] string sdkName)
@@ -35,9 +37,9 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
         public static bool operator !=(DotNetSdk left, DotNetSdk right) => !Equals(left, right);
 
-        public static ImmutableArray<DotNetSdk> All => _LazyAll.Value;
+        public static ImmutableArray<DotNetSdk> All => LazyAll.Value;
 
-        public static DotNetSdk ParseOrDefault(string? sdkValue)
+        public static DotNetSdk? ParseOrDefault(string? sdkValue)
         {
             if (string.IsNullOrWhiteSpace(sdkValue))
             {
@@ -47,7 +49,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             return All.SingleOrDefault(sdk => sdk.SdkName.Equals(sdkValue, StringComparison.Ordinal));
         }
 
-        public bool Equals(DotNetSdk other)
+        public bool Equals(DotNetSdk? other)
         {
             if (other is null)
             {
@@ -62,7 +64,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             return string.Equals(SdkName, other.SdkName, StringComparison.InvariantCulture);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is null)
             {

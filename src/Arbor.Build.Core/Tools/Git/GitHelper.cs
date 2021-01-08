@@ -1,41 +1,47 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
+using Arbor.Build.Core.BuildVariables;
+using Arbor.FS;
 using JetBrains.Annotations;
 using Serilog;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.Git
 {
-    public static class GitHelper
+    public class GitHelper
     {
-        public static string GetGitExePath([NotNull] ILogger logger)
+        private readonly IFileSystem _fileSystem;
+
+        public GitHelper(IFileSystem fileSystem) => _fileSystem = fileSystem;
+
+        public UPath GetGitExePath([NotNull] ILogger logger, ISpecialFolders specialFolders, IEnvironmentVariables environmentVariables)
         {
             if (logger == null)
             {
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            var gitExeLocations = new List<string>
+            var gitExeLocations = new List<UPath>
             {
-                Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                UPath.Combine(
+                    specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86).ParseAsPath(),
                     "Git",
                     "bin",
                     "git.exe"),
-                Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                UPath.Combine(
+                    specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86).ParseAsPath(),
                     "Git",
                     "bin",
                     "git.exe")
             };
 
-            string programFilesX64 = Environment.GetEnvironmentVariable("ProgramW6432");
+            var programFilesX64 = environmentVariables.GetEnvironmentVariable("ProgramW6432")?.ParseAsPath();
 
-            if (!string.IsNullOrWhiteSpace(programFilesX64))
+            if (programFilesX64.HasValue)
             {
-                string programFilesX64FullPath = Path.Combine(
-                    programFilesX64,
+                var programFilesX64FullPath = UPath.Combine(
+                    programFilesX64.Value,
                     "Git",
                     "bin",
                     "git.exe");
@@ -43,17 +49,17 @@ namespace Arbor.Build.Core.Tools.Git
                 gitExeLocations.Insert(0, programFilesX64FullPath);
             }
 
-            string exePath = gitExeLocations.FirstOrDefault(
+            var exePath = gitExeLocations.FirstOrDefault(
                                  location =>
                                  {
-                                     bool exists = File.Exists(location);
+                                     bool exists = _fileSystem.FileExists(location);
 
                                      logger.Debug("Testing Git exe path '{Location}', exists: {Exists}",
-                                         location,
+                                        _fileSystem.ConvertPathToInternal(location),
                                          exists);
 
                                      return exists;
-                                 }) ?? string.Empty;
+                                 });
 
             return exePath;
         }

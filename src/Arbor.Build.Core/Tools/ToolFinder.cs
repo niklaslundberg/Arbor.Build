@@ -27,10 +27,10 @@ namespace Arbor.Build.Core.Tools
 
             var tools = lifetimeScope.Resolve<IReadOnlyCollection<ITool>>();
 
-            ImmutableArray<ToolWithPriority> prioritizedTools = tools
+            var prioritizedTools = tools
                 .Select(tool =>
                 {
-                    PriorityAttribute priorityAttribute =
+                    PriorityAttribute? priorityAttribute =
                         tool.GetType()
                             .GetCustomAttributes()
                             .OfType<PriorityAttribute>()

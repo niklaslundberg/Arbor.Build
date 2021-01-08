@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
@@ -7,9 +8,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Exceptions;
+using Arbor.FS;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.Cleanup
 {
@@ -18,16 +21,22 @@ namespace Arbor.Build.Core.Tools.Cleanup
     public class ProcessCleanup : ITool
     {
         private readonly ILogger _logger;
-        private static readonly string[] _processNames = {"msbuild.exe", "vbcscompiler.exe", "csc.exe"};
+        private readonly IFileSystem _fileSystem;
 
-        public ProcessCleanup(ILogger logger) => _logger = logger;
+        private static ImmutableArray<string> ProcessNames { get; } = new string[] {"msbuild.exe", "vbcscompiler.exe", "csc.exe"}.ToImmutableArray();
+
+        public ProcessCleanup(ILogger logger, IFileSystem fileSystem)
+        {
+            _logger = logger;
+            _fileSystem = fileSystem;
+        }
 
         public async Task<ExitCode> ExecuteAsync(ILogger logger,
             IReadOnlyCollection<IVariable> buildVariables,
             string[] args,
             CancellationToken cancellationToken)
         {
-            string? dotNetExe = buildVariables.GetVariableValueOrDefault(WellKnownVariables.DotNetExePath, null);
+            string? dotNetExe = buildVariables.GetVariableValueOrDefault(WellKnownVariables.DotNetExePath);
 
             if (!buildVariables.GetBooleanByKey(WellKnownVariables.CleanupProcessesAfterBuildEnabled, true))
             {
@@ -43,7 +52,7 @@ namespace Arbor.Build.Core.Tools.Cleanup
                 };
 
                 var exitCode = await ProcessRunner.ExecuteProcessAsync(
-                        dotNetExe,
+                       _fileSystem.ConvertPathToInternal(dotNetExe.ParseAsPath()),
                         shutdownArguments,
                         Log,
                         cancellationToken: cancellationToken)
@@ -82,7 +91,7 @@ namespace Arbor.Build.Core.Tools.Cleanup
                 {
                     string? fileName = process.MainModule?.FileName;
 
-                    if (!string.IsNullOrWhiteSpace(fileName) && _processNames.Any(name =>
+                    if (!string.IsNullOrWhiteSpace(fileName) && ProcessNames.Any(name =>
                         fileName.Equals(name, StringComparison.OrdinalIgnoreCase)))
                     {
                         process.Kill(true);

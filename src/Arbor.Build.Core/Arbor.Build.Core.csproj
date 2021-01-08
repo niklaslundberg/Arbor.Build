@@ -1,53 +1,48 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.1;netcoreapp3.1</TargetFrameworks>
-    <LangVersion>8</LangVersion>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <CodeAnalysisRuleSet>..\Arbor.Build.Tests.Integration\ArborBuild.Test.ruleset</CodeAnalysisRuleSet>
+    <TargetFrameworks>netcoreapp3.1;net5.0</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Arbor.FileSystem" Version="0.3.0-build.1610098134" />
     <PackageReference Include="Arbor.Aesculus" Version="3.0.2" />
-    <PackageReference Include="Arbor.KVConfiguration.JsonConfiguration" Version="0.20.0" />
-    <PackageReference Include="Arbor.KVConfiguration.Schema.Json" Version="0.20.0" />
-    <PackageReference Include="Arbor.KVConfiguration.UserConfiguration" Version="0.20.0" />
+    <PackageReference Include="Arbor.KVConfiguration.JsonConfiguration" Version="1.0.1" />
+    <PackageReference Include="Arbor.KVConfiguration.Schema.Json" Version="1.0.1" />
+    <PackageReference Include="Arbor.KVConfiguration.UserConfiguration" Version="1.0.1" />
     <PackageReference Include="Arbor.Processing" Version="0.6.0" />
     <PackageReference Include="Arbor.Sorbus" Version="3.1.0" />
-    <PackageReference Include="Arbor.Tooler" Version="0.9.0" />
-    <PackageReference Include="Autofac" Version="5.1.2" />
-    <PackageReference Include="JetBrains.Annotations" Version="2020.1.0" />
+    <PackageReference Include="Arbor.Tooler" Version="0.11.0-build.1610097005" />
+    <PackageReference Include="Autofac" Version="6.1.0" />
+    <PackageReference Include="JetBrains.Annotations" Version="2020.3.0" />
     <PackageReference Include="Machine.Specifications" Version="1.0.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.0.0">
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.5.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8">
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.8.0" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
       <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Web.Xdt" Version="3.0.0" />
-    <PackageReference Include="Microsoft.Windows.Compatibility" Version="3.1.0" />
-    <PackageReference Include="MSTest.TestFramework" Version="2.1.1" />
+    <PackageReference Include="Microsoft.Web.Xdt" Version="3.1.0" />
+    <PackageReference Include="Microsoft.Windows.Compatibility" Version="5.0.0" />
+    <PackageReference Include="MSTest.TestFramework" Version="2.1.2" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="NuGet.Packaging" Version="5.5.1" />
-    <PackageReference Include="NuGet.Versioning" Version="5.5.1" />
-    <PackageReference Include="NUnit" Version="3.12.0" />
-    <PackageReference Include="Serilog" Version="2.9.0" />
+    <PackageReference Include="NuGet.Packaging" Version="5.8.0" />
+    <PackageReference Include="NuGet.Versioning" Version="5.8.0" />
+    <PackageReference Include="NUnit" Version="3.13.0" />
+    <PackageReference Include="Serilog" Version="2.10.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
     <PackageReference Include="Serilog.Sinks.Seq" Version="4.0.0" />
-    <PackageReference Include="System.ComponentModel.Annotations" Version="4.7.0" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.5.0" />
+    <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.8.0" />
     <PackageReference Include="System.Runtime" Version="4.3.1" />
     <PackageReference Include="xunit" Version="2.4.1" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Arbor.Defensive.Collections\Arbor.Defensive.Collections.csproj" />
-    <ProjectReference Include="..\Arbor.Defensive\Arbor.Defensive.csproj" />
     <ProjectReference Include="..\Arbor.Exceptions\Arbor.Exceptions.csproj" />
   </ItemGroup>
 
@@ -68,6 +63,7 @@
 
   <ItemGroup>
     <Folder Include="GenericExtensions\Boolean\" />
+    <Folder Include="Tools\Scripts\" />
   </ItemGroup>
 
 </Project>

@@ -2,7 +2,7 @@
 
 namespace Arbor.Build.Core.Tools.MSBuild
 {
-    public class ProjectType : IEquatable<ProjectType>
+    public sealed class ProjectType : IEquatable<ProjectType>
     {
         public static readonly ProjectType Mvc5 = new ProjectType(Guid.Parse("349c5851-65df-11da-9384-00065b846f21"));
 
@@ -27,7 +27,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
         public static bool operator !=(ProjectType left, ProjectType right) => !Equals(left, right);
 
-        public bool Equals(ProjectType other)
+        public bool Equals(ProjectType? other)
         {
             if (other is null)
             {
@@ -42,7 +42,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             return Id.Equals(other.Id);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is null)
             {

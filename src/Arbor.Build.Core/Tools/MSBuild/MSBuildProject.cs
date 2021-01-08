@@ -3,22 +3,26 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Xml.Linq;
+using Arbor.Build.Core.IO;
 using JetBrains.Annotations;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.MSBuild
 {
-    public class MSBuildProject
+    public class MsBuildProject
     {
-        private MSBuildProject(
+        private MsBuildProject(
             IReadOnlyList<MSBuildPropertyGroup> propertyGroups,
-            string fileName,
+            FileEntry fileName,
             string projectName,
-            string projectDirectory,
+            DirectoryEntry projectDirectory,
             ImmutableArray<ProjectType> projectTypes,
             Guid? projectId,
-            DotNetSdk sdk,
-            ImmutableArray<PackageReferenceElement> packageReferences)
+            DotNetSdk? sdk,
+            ImmutableArray<PackageReferenceElement> packageReferences,
+            ImmutableArray<TargetFramework> targetFrameworks)
         {
             PropertyGroups = propertyGroups.ToImmutableArray();
             FileName = fileName;
@@ -28,31 +32,31 @@ namespace Arbor.Build.Core.Tools.MSBuild
             ProjectId = projectId;
             Sdk = sdk;
             PackageReferences = packageReferences;
+            TargetFrameworks = targetFrameworks;
+
+            TargetFramework = targetFrameworks.Length == 1 ? targetFrameworks[0] : TargetFramework.Empty;
         }
 
         public ImmutableArray<MSBuildPropertyGroup> PropertyGroups { get; }
 
-        public string FileName { get; }
+        public FileEntry FileName { get; }
 
         public string ProjectName { get; }
 
-        public string ProjectDirectory { get; }
+        public DirectoryEntry ProjectDirectory { get; }
 
         public ImmutableArray<ProjectType> ProjectTypes { get; }
 
         public Guid? ProjectId { get; }
 
-        public DotNetSdk Sdk { get; }
+        public DotNetSdk? Sdk { get; }
 
         public ImmutableArray<PackageReferenceElement> PackageReferences { get; }
+        public TargetFramework TargetFramework { get; }
+        public ImmutableArray<TargetFramework> TargetFrameworks { get; }
 
-        public static bool IsNetSdkProject([NotNull] FileInfo projectFile)
+        public static async Task<bool> IsNetSdkProject(FileEntry projectFile)
         {
-            if (projectFile == null)
-            {
-                throw new ArgumentNullException(nameof(projectFile));
-            }
-
             if (projectFile.FullName.IndexOfAny(Path.GetInvalidPathChars()) >= 0)
             {
                 throw new InvalidOperationException(Resources.ThePathContainsInvalidCharacters);
@@ -63,22 +67,36 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 throw new InvalidOperationException(Resources.ThePathContainsInvalidCharacters);
             }
 
-            return File.ReadLines(projectFile.FullName)
-                .Any(line => line.IndexOf("Microsoft.NET.Sdk", StringComparison.OrdinalIgnoreCase) >= 0);
+            var fs = projectFile.Open(FileMode.Open, FileAccess.Read);
+
+            await foreach (string line in fs.EnumerateLinesAsync())
+            {
+                return line.Contains("Microsoft.NET.Sdk", StringComparison.OrdinalIgnoreCase);
+            }
+
+            return false;
         }
 
-        public static MSBuildProject LoadFrom(string projectFileFullName)
+
+        public static async Task<MsBuildProject> LoadFrom(FileEntry projectFileFullName)
         {
-            using var fs = new FileStream(projectFileFullName, FileMode.Open, FileAccess.Read);
+
+            using var fs = projectFileFullName.Open(FileMode.Open, FileAccess.Read);
+
+            return await LoadFrom(fs, projectFileFullName);
+        }
+
+        public static Task<MsBuildProject> LoadFrom(Stream fs, FileEntry projectFileFullName)
+        {
             var msbuildPropertyGroups = new List<MSBuildPropertyGroup>();
 
             Guid? projectId = default;
 
-            XDocument document = XDocument.Load(fs);
+            var document = XDocument.Load(fs);
 
             const string projectElementName = "Project";
 
-            XElement project = document.Elements().SingleOrDefault(element =>
+            XElement? project = document.Elements().SingleOrDefault(element =>
                 element.Name.LocalName.Equals(projectElementName, StringComparison.Ordinal));
 
             if (project is null)
@@ -87,21 +105,23 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     $"Could not find element <{projectElementName}> in file '{projectFileFullName}'");
             }
 
-            ImmutableArray<XElement> propertyGroups = project
+            var propertyGroups = project
                 .Elements()
                 .Where(e => e.Name.LocalName.Equals("PropertyGroup", StringComparison.Ordinal))
                 .ToImmutableArray();
 
-            XElement idElement = propertyGroups
+            var itemGroups = project
+                .Elements()
+                .Where(e => e.Name.LocalName.Equals("ItemGroup", StringComparison.Ordinal))
+                .ToImmutableArray();
+
+            XElement? idElement = propertyGroups
                 .Elements()
                 .FirstOrDefault(e => e.Name.LocalName.Equals("ProjectGuid", StringComparison.Ordinal));
 
-            if (idElement?.Value != null)
+            if (idElement?.Value != null && Guid.TryParse(idElement.Value, out Guid id))
             {
-                if (Guid.TryParse(idElement.Value, out Guid id))
-                {
-                    projectId = id;
-                }
+                projectId = id;
             }
 
             foreach (XElement propertyGroup in propertyGroups)
@@ -117,11 +137,9 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 msbuildPropertyGroups.Add(new MSBuildPropertyGroup(msBuildProperties));
             }
 
-            string name = Path.GetFileNameWithoutExtension(projectFileFullName);
+            string name = Path.GetFileNameWithoutExtension(projectFileFullName.Name);
 
-            var file = new FileInfo(projectFileFullName);
-
-            XElement projectTypeGuidsElement = propertyGroups
+            XElement? projectTypeGuidsElement = propertyGroups
                 .Elements()
                 .FirstOrDefault(e => e.Name.LocalName.Equals("ProjectTypeGuids", StringComparison.Ordinal));
 
@@ -137,24 +155,49 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             string? sdkValue = project.Attribute("Sdk")?.Value;
 
-            DotNetSdk sdk = DotNetSdk.ParseOrDefault(sdkValue);
+            var sdk = DotNetSdk.ParseOrDefault(sdkValue);
 
-            ImmutableArray<PackageReferenceElement> packageReferences = propertyGroups
+            var packageReferences = itemGroups
+                .Elements()
                 .Where(e => e.Name.LocalName.Equals("PackageReference", StringComparison.Ordinal))
                 .Select(packageReference => new PackageReferenceElement(
-                    packageReference?.Attribute("Include")?.Value,
-                    packageReference?.Attribute("Version")?.Value))
+                    packageReference.Attribute("Include")?.Value,
+                    packageReference.Attribute("Version")?.Value))
                 .Where(reference => reference.IsValid)
                 .ToImmutableArray();
 
-            return new MSBuildProject(msbuildPropertyGroups,
+            string? targetFrameworkValue = msbuildPropertyGroups.SelectMany(p => p.Properties)
+                .SingleOrDefault(s => s.Name.Equals("TargetFramework"))?.Value;
+
+            string? targetFrameworksValue = msbuildPropertyGroups.SelectMany(p => p.Properties)
+                .SingleOrDefault(s => s.Name.Equals("TargetFrameworks"))?.Value;
+
+            ImmutableArray<TargetFramework> targetFrameworks;
+
+            if (string.IsNullOrWhiteSpace(targetFrameworkValue) && string.IsNullOrWhiteSpace(targetFrameworksValue))
+            {
+                targetFrameworks = ImmutableArray<TargetFramework>.Empty;
+            }
+            else if (!string.IsNullOrWhiteSpace(targetFrameworksValue))
+            {
+                targetFrameworks = targetFrameworksValue
+                    .Split(';', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(t => new TargetFramework(t))
+                    .ToImmutableArray();
+            }
+            else
+            {
+                targetFrameworks = new[]{new TargetFramework(targetFrameworkValue!) }.ToImmutableArray();
+            }
+
+            return Task.FromResult(new MsBuildProject(msbuildPropertyGroups,
                 projectFileFullName,
                 name,
-                file.Directory?.FullName,
+                projectFileFullName.Directory,
                 projectTypes,
                 projectId,
                 sdk,
-                packageReferences);
+                packageReferences, targetFrameworks));
         }
 
         public override string ToString() => $"{FileName} {nameof(Properties)} [{PropertyGroups.SelectMany(g => g.Properties).Count()}]:{Environment.NewLine}{string.Join(Environment.NewLine, PropertyGroups.SelectMany(g => g.Properties).Select(p => "\t" + p.ToString()))}{Environment.NewLine}{nameof(FileName)}: {FileName}{Environment.NewLine}{nameof(ProjectName)}: {ProjectName}{Environment.NewLine}{nameof(ProjectDirectory)}: {ProjectDirectory}{nameof(ProjectTypes)}: {string.Join(", ", ProjectTypes.Select(t => t.ToString()))},{Environment.NewLine}{nameof(ProjectId)}: {ProjectId}{Environment.NewLine}{nameof(Sdk)}: {Sdk}{Environment.NewLine}{nameof(PackageReferences)} [{PackageReferences.Length}]:{Environment.NewLine} {string.Join(Environment.NewLine, PackageReferences.Select(r => r.ToString()))}";
@@ -183,7 +226,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 throw new ArgumentNullException(nameof(name));
             }
 
-            List<MSBuildProperty> msBuildProperties = PropertyGroups
+            var msBuildProperties = PropertyGroups
                 .SelectMany(propertyGroup =>
                     propertyGroup.Properties.Where(property =>
                         property.Name.Equals(name, StringComparison.Ordinal)))

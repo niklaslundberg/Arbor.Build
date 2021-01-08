@@ -20,6 +20,12 @@
         [VariableDescription("Git hash")]
         public const string GitHash = "Arbor.Build.Vcs.Git.Hash";
 
+        [VariableDescription("GitHub commit hash")]
+        public const string GitHubSha = "GITHUB_SHA";
+
+        [VariableDescription("Git repository url")]
+        public const string RepositoryUrl = "Arbor.Build.Vcs.Git.RepositoryUrl";
+
         [VariableDescription("VCS branch name version if any")]
         public const string BranchNameVersion =
             "Arbor.Build.Vcs.Branch.Name.Version";
@@ -33,5 +39,8 @@
 
         [VariableDescription("Current GitHub branch name for the version control system")]
         public const string GitHubBranchName = "GITHUB_REF";
+
+        [VariableDescription("Branching model used, used for default values")]
+        public const string GitBranchModel = "Arbor.Build.Vcs.Branch.BranchModel";
     }
 }

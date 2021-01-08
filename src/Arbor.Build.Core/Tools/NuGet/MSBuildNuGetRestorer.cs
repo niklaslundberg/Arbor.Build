@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -8,12 +7,14 @@ using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Logging;
 using Arbor.Build.Core.ProcessUtils;
-using Arbor.Defensive;
+using Arbor.Build.Core.Tools.MSBuild;
+using Arbor.FS;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.NuGet
 {
@@ -21,6 +22,15 @@ namespace Arbor.Build.Core.Tools.NuGet
     [UsedImplicitly]
     public class MsBuildNuGetRestorer : ITool
     {
+        private readonly IFileSystem _fileSystem;
+        private readonly BuildContext _buildContext;
+
+        public MsBuildNuGetRestorer(IFileSystem fileSystem, BuildContext buildContext)
+        {
+            _fileSystem = fileSystem;
+            _buildContext = buildContext;
+        }
+
         private static Logger CreateProcessLogger(
             ILogger logger,
             List<(string Message, LogEventLevel Level)> allMessages,
@@ -40,39 +50,48 @@ namespace Arbor.Build.Core.Tools.NuGet
             string[] args,
             CancellationToken cancellationToken)
         {
-            logger ??= Logger.None??throw new ArgumentNullException(nameof(logger));
+            if (buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_MSBuild_DotNetEnabled))
+            {
+                return ExitCode.Success;
+            }
 
             bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.MSBuildNuGetRestoreEnabled, true);
 
             if (!enabled)
             {
-                logger?.Debug("{Tool} is disabled", nameof(MsBuildNuGetRestorer));
+                logger.Debug("{Tool} is disabled", nameof(MsBuildNuGetRestorer));
                 return ExitCode.Success;
             }
 
-            string msbuildExePath = buildVariables.GetVariable(WellKnownVariables.ExternalTools_MSBuild_ExePath)
-                .ThrowIfEmptyValue().Value;
+            var msbuildExePath = buildVariables.GetVariable(WellKnownVariables.ExternalTools_MSBuild_ExePath)
+                .GetValueOrThrow().ParseAsPath();
 
-            string rootPath = buildVariables.GetVariable(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
+            DirectoryEntry rootPath = _buildContext.SourceRoot;
 
-            string[] solutionFiles = Directory.GetFiles(rootPath, "*.sln", SearchOption.AllDirectories);
+            FileEntry[] solutionFiles = rootPath.EnumerateFiles("*.sln", SearchOption.AllDirectories).ToArray();
 
             PathLookupSpecification pathLookupSpecification =
                 DefaultPaths.DefaultPathLookupSpecification.AddExcludedDirectorySegments(new[] { "node_modules" });
 
-            var blackListStatus = solutionFiles.Select(
-                file => new { File = file, Status = pathLookupSpecification.IsFileExcluded(file, rootPath) }).ToArray();
+            var excludeListStatus = solutionFiles
+                .Select(file => new {File = file, Status = pathLookupSpecification.IsFileExcluded(file, rootPath)})
+                .ToArray();
 
-            string[] included = blackListStatus.Where(file => !file.Status.Item1).Select(file => file.File).ToArray();
+            FileEntry[] included = excludeListStatus
+                .Where(file => !file.Status.Item1)
+                .Select(file => file.File)
+                .ToArray();
 
-            var excluded = blackListStatus.Where(file => file.Status.Item1).ToArray();
+            var excluded = excludeListStatus
+                .Where(file => file.Status.Item1)
+                .ToArray();
 
             if (included.Length > 1)
             {
                 logger.Error(
                     "Expected exactly 1 solution file, found {Length}, {SolutionFiles}",
                     included.Length,
-                    string.Join(", ", included));
+                    string.Join(", ", included.Select(fi => _fileSystem.ConvertPathToInternal(fi.Path))));
                 return ExitCode.Failure;
             }
 
@@ -88,20 +107,20 @@ namespace Arbor.Build.Core.Tools.NuGet
                     "Found ignored solution files: {IgnoredSolutionFiles}",
                     string.Join(
                         ", ",
-                        excluded.Select(excludedItem => $"{excludedItem.File} ({excludedItem.Status.Item2})")));
+                        excluded.Select(excludedItem => $"{excludedItem.File.ConvertPathToInternal()} ({excludedItem.Status.Item2})")));
             }
 
-            string solutionFile = included.Single();
+            var solutionFile = included.Single();
 
-            Maybe<IVariable> runtimeIdentifier =
-                buildVariables.GetOptionalVariable(WellKnownVariables.PublishRuntimeIdentifier);
+            string? runtimeIdentifier =
+                buildVariables.GetVariableValueOrDefault(WellKnownVariables.PublishRuntimeIdentifier);
 
-            var arguments = new List<string> { solutionFile, "/t:restore" };
+            var arguments = new List<string> { solutionFile.ConvertPathToInternal(), "/t:restore" };
 
-            if (runtimeIdentifier.HasValue)
+            if (!string.IsNullOrWhiteSpace(runtimeIdentifier))
             {
-                arguments.Add($"/p:RuntimeIdentifiers={runtimeIdentifier.Value.Value}");
-                logger.Information("Restoring using runtime identifiers {Identifiers}", runtimeIdentifier.Value.Value);
+                arguments.Add($"/p:RuntimeIdentifiers={runtimeIdentifier}");
+                logger.Information("Restoring using runtime identifiers {Identifiers}", runtimeIdentifier);
             }
 
             ExitCode exitCode;
@@ -112,7 +131,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             using (Logger processLogger = CreateProcessLogger(logger, allMessages, defaultMessages))
             {
                 exitCode = await ProcessHelper.ExecuteAsync(
-                    msbuildExePath,
+                   _fileSystem.ConvertPathToInternal(msbuildExePath),
                     arguments,
                     processLogger,
                     cancellationToken: cancellationToken).ConfigureAwait(false);

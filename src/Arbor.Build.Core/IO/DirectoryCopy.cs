@@ -1,73 +1,60 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Arbor.FS;
 using Arbor.Processing;
 using Serilog;
+using Serilog.Core;
+using Zio;
 
 namespace Arbor.Build.Core.IO
 {
     public static class DirectoryCopy
     {
         public static async Task<ExitCode> CopyAsync(
-            string sourceDir,
-            string targetDir,
-            ILogger optionalLogger = null,
-            PathLookupSpecification pathLookupSpecificationOption = null,
-            string rootDir = null)
+            DirectoryEntry sourceDirectory,
+            DirectoryEntry targetDir,
+            ILogger? optionalLogger = null,
+            PathLookupSpecification? pathLookupSpecificationOption = null,
+            DirectoryEntry? rootDir = null)
         {
             PathLookupSpecification pathLookupSpecification =
                 pathLookupSpecificationOption ?? DefaultPaths.DefaultPathLookupSpecification;
 
-            ILogger logger = optionalLogger;
+            ILogger logger = optionalLogger ?? Logger.None;
 
-            if (string.IsNullOrWhiteSpace(sourceDir))
-            {
-                throw new ArgumentNullException(nameof(sourceDir));
-            }
-
-            if (string.IsNullOrWhiteSpace(targetDir))
-            {
-                throw new ArgumentNullException(nameof(targetDir));
-            }
-
-            var sourceDirectory = new DirectoryInfo(sourceDir);
-
-            if (!sourceDirectory.Exists)
-            {
-                throw new ArgumentException($"Source directory '{sourceDir}' does not exist");
-            }
-
-            (bool, string) isNotAllowed = pathLookupSpecification.IsNotAllowed(sourceDir, rootDir);
+            (bool, string) isNotAllowed = pathLookupSpecification.IsNotAllowed(sourceDirectory, rootDir);
             if (isNotAllowed.Item1)
             {
                 logger?.Debug(
-                    "Directory '{SourceDir}' is notallowed from specification {PathLookupSpecification}, {Item2}",
-                    sourceDir,
+                    "Directory '{SourceDir}' is not allowed from specification {PathLookupSpecification}, {Item2}",
+                    sourceDirectory.ConvertPathToInternal(),
                     pathLookupSpecification,
                     isNotAllowed.Item2);
                 return ExitCode.Success;
             }
 
-            new DirectoryInfo(targetDir).EnsureExists();
+            targetDir.EnsureExists();
 
-            foreach (FileInfo file in sourceDirectory.GetFiles())
+            foreach (FileEntry file in sourceDirectory.EnumerateFiles())
             {
-                string destFileName = Path.Combine(targetDir, file.Name);
+                var destFileName = UPath.Combine(targetDir.Path, file.Name);
 
-                (bool, string) isFileBlackListed =
-                    pathLookupSpecification.IsFileExcluded(file.FullName, rootDir, logger: optionalLogger);
+                (bool, string) isFileExcludeListed =
+                    pathLookupSpecification.IsFileExcluded(file, rootDir, logger: optionalLogger);
 
-                if (isFileBlackListed.Item1)
+                if (isFileExcludeListed.Item1)
                 {
-                    logger?.Verbose("File '{FullName}' is notallowed, skipping copying file, {Item2}",
-                        file.FullName,
-                        isFileBlackListed.Item2);
+                    logger?.Verbose("File '{FullName}' is not allowed, skipping copying file, {Item2}",
+                        file.ConvertPathToInternal(),
+                        isFileExcludeListed.Item2);
                     continue;
                 }
 
+                string pathToInternal = file.FileSystem.ConvertPathToInternal(destFileName);
                 logger?.Verbose("Copying file '{FullName}' to destination '{DestFileName}'",
-                    file.FullName,
-                    destFileName);
+                    file.ConvertPathToInternal(),
+                    pathToInternal);
 
                 try
                 {
@@ -77,7 +64,7 @@ namespace Arbor.Build.Core.IO
                 {
                     logger?.Error(ex,
                         "{Message}",
-                        $"Could not copy file to '{destFileName}', path length is too long ({destFileName.Length})"
+                        $"Could not copy file to '{pathToInternal}', path length is too long ({pathToInternal.Length})"
                     );
                     return ExitCode.Failure;
                 }
@@ -85,16 +72,16 @@ namespace Arbor.Build.Core.IO
                 {
                     logger?.Error(ex,
                         "{Message}",
-                        $"Could not copy file '{file.FullName}' to destination '{destFileName}'");
+                        $"Could not copy file '{file.ConvertPathToInternal()}' to destination '{pathToInternal}'");
                     return ExitCode.Failure;
                 }
             }
 
-            foreach (DirectoryInfo directory in sourceDirectory.GetDirectories())
+            foreach (DirectoryEntry directory in sourceDirectory.EnumerateDirectories())
             {
                 ExitCode exitCode = await CopyAsync(
-                    directory.FullName,
-                    Path.Combine(targetDir, directory.Name),
+                    directory, new DirectoryEntry(sourceDirectory.FileSystem,
+                    UPath.Combine(targetDir.Path, directory.Name)),
                     pathLookupSpecificationOption: pathLookupSpecification).ConfigureAwait(false);
 
                 if (!exitCode.IsSuccess)

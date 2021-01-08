@@ -1,0 +1,23 @@
+[*]
+end_of_line = crlf
+
+[*.xml]
+indent_style = space
+
+[*.{cs,csx,cake}]
+
+
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+
+dotnet_style_require_accessibility_modifiers = never:warning
+
+dotnet_naming_rule.private_fields_must_be_lower_case.severity = warning
+dotnet_naming_rule.private_fields_must_be_lower_case.symbols = private_fields
+dotnet_naming_rule.private_fields_must_be_lower_case.style = all_lower
+
+# CA2007: Consider calling ConfigureAwait on the awaited task
+dotnet_diagnostic.CA2007.severity = none
+dotnet_diagnostic.CS8618.severity = none
+dotnet_diagnostic.S108.severity = none
+dotnet_diagnostic.S1481.severity = none

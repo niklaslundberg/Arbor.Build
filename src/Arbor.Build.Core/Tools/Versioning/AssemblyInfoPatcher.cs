@@ -1,16 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.IO;
+using Arbor.Build.Core.Tools.MSBuild;
 using Arbor.Defensive.Collections;
+using Arbor.FS;
 using Arbor.Processing;
 using Arbor.Sorbus.Core;
 using JetBrains.Annotations;
 using Serilog;
+using Zio;
 
 namespace Arbor.Build.Core.Tools.Versioning
 {
@@ -18,7 +20,15 @@ namespace Arbor.Build.Core.Tools.Versioning
     [Priority(200)]
     public class AssemblyInfoPatcher : ITool
     {
-        private string _filePattern;
+        private string _filePattern = null!;
+        private readonly IFileSystem _fileSystem;
+        private readonly BuildContext _buildContext;
+
+        public AssemblyInfoPatcher(IFileSystem fileSystem, BuildContext buildContext)
+        {
+            _fileSystem = fileSystem;
+            _buildContext = buildContext;
+        }
 
         public Task<ExitCode> ExecuteAsync(
             ILogger logger,
@@ -39,14 +49,14 @@ namespace Arbor.Build.Core.Tools.Versioning
 
             _filePattern = buildVariables.GetVariableValueOrDefault(
                 WellKnownVariables.AssemblyFilePatchingFilePattern,
-                "AssemblyInfo.cs");
+                "AssemblyInfo.cs")!;
 
             logger.Verbose("Using assembly version file pattern '{FilePattern}' to lookup files to patch",
                 _filePattern);
 
-            string sourceRoot = buildVariables.Require(WellKnownVariables.SourceRoot).ThrowIfEmptyValue().Value;
+            var sourceRoot = _buildContext.SourceRoot;
 
-            IVariable netAssemblyVersionVar =
+            IVariable? netAssemblyVersionVar =
                 buildVariables.SingleOrDefault(var => var.Key == WellKnownVariables.NetAssemblyVersion);
             string netAssemblyVersion;
 
@@ -65,7 +75,7 @@ namespace Arbor.Build.Core.Tools.Versioning
 
             var assemblyVersion = new Version(netAssemblyVersion);
 
-            IVariable netAssemblyFileVersionVar =
+            IVariable? netAssemblyFileVersionVar =
                 buildVariables.SingleOrDefault(var => var.Key == WellKnownVariables.NetAssemblyFileVersion);
             string netAssemblyFileVersion;
 
@@ -84,20 +94,20 @@ namespace Arbor.Build.Core.Tools.Versioning
 
             var assemblyFileVersion = new Version(netAssemblyFileVersion);
 
-            AssemblyMetaData assemblyMetadata = null;
+            AssemblyMetaData? assemblyMetadata = null;
 
             if (buildVariables.GetBooleanByKey(WellKnownVariables.NetAssemblyMetadataEnabled))
             {
-                string company = buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyCompany, null);
-                string description =
-                    buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyDescription, null);
-                string configuration =
-                    buildVariables.GetVariableValueOrDefault(WellKnownVariables.CurrentBuildConfiguration, null);
-                string copyright =
-                    buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyCopyright, null);
-                string product = buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyProduct, null);
-                string trademark =
-                    buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyTrademark, null);
+                string? company = buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyCompany);
+                string? description =
+                    buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyDescription);
+                string? configuration =
+                    buildVariables.GetVariableValueOrDefault(WellKnownVariables.CurrentBuildConfiguration);
+                string? copyright =
+                    buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyCopyright);
+                string? product = buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyProduct);
+                string? trademark =
+                    buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyTrademark);
 
                 assemblyMetadata = new AssemblyMetaData(
                     description,
@@ -114,29 +124,27 @@ namespace Arbor.Build.Core.Tools.Versioning
                     "Patching assembly info files with assembly version {AssemblyVersion}, assembly file version {AssemblyFileVersion} for directory source root directory '{SourceRoot}'",
                     assemblyVersion,
                     assemblyFileVersion,
-                    sourceRoot);
-
-                var sourceDirectory = new DirectoryInfo(sourceRoot);
+                    sourceRoot.ConvertPathToInternal());
 
                 PathLookupSpecification defaultPathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification;
 
-                IReadOnlyCollection<AssemblyInfoFile> assemblyFiles = sourceDirectory
+                IReadOnlyCollection<AssemblyInfoFile> assemblyFiles = sourceRoot
                     .GetFilesRecursive(new[] { ".cs" }, defaultPathLookupSpecification, sourceRoot)
                     .Where(file => file.Name.Equals(_filePattern, StringComparison.OrdinalIgnoreCase))
-                    .Select(file => new AssemblyInfoFile(file.FullName))
+                    .Select(file => new AssemblyInfoFile(_fileSystem.ConvertPathToInternal(file.FullName)))
                     .ToReadOnlyCollection();
 
                 logger.Debug(
-                    "Using file pattern '{_filePattern}' to find assembly info files. Found these files: [{Count}] {NewLine}{V}",
+                    "Using file pattern '{Pattern}' to find assembly info files. Found these files: [{Count}] {NewLine}{V}",
                     _filePattern,
                     assemblyFiles.Count,
                     Environment.NewLine,
-                    string.Join(Environment.NewLine, assemblyFiles.Select(item => " * " + item.FullPath)));
+                    string.Join(Environment.NewLine, assemblyFiles.Select(item => " * " + _fileSystem.ConvertPathToInternal(item.FullPath.ParseAsPath()))));
 
                 app.Patch(
                     new AssemblyVersion(assemblyVersion),
                     new AssemblyFileVersion(assemblyFileVersion),
-                    sourceRoot,
+                    _fileSystem.ConvertPathToInternal(sourceRoot.Path),
                     assemblyFiles,
                     assemblyMetadata);
             }

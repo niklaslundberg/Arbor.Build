@@ -17,7 +17,7 @@
     </summary>
     <language>en-US</language>
     <projectUrl>https://github.com/niklaslundberg/Arbor.Build</projectUrl>
-    <repository type="git" url="https://github.com/niklaslundberg/Arbor.Build"></repository>
+    <repository type="git" url="https://github.com/niklaslundberg/Arbor.Build" commit="$RepositoryCommit$"></repository>
     <iconUrl>https://nuget.org/Content/Images/packageDefaultIcon-50x50.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <license type="expression">MIT</license>
@@ -26,9 +26,9 @@
 
     </dependencies>
     <references></references>
-    <tags>build tools convention</tags>
+    <tags>build tools convention NoSource</tags>
   </metadata>
   <files>
-    <file src="Arbor.Build\bin\$configuration$\netcoreapp3.1\publish\**\*.*" target="" exclude="*.pdb;*.xml;cs\*.*;de\*.*;es\*.*;fr\*.*;en\*.*;it\*.*;ja\*.*;ko\*.*;pl\*.*;pt-BR\*.*;ru\*.*;tr\*.*;zh-Hans\*.*;zh-Hant\*.*;runtimes\linux\*.*;runtimes\unix\*.*;runtimes\osx\*.*" />
+    <file src="Arbor.Build\bin\$configuration$\net5.0\win-x64\publish\**\*.*" target="" exclude="*.xml;cs\*.*;de\*.*;es\*.*;fr\*.*;en\*.*;it\*.*;ja\*.*;ko\*.*;pl\*.*;pt-BR\*.*;ru\*.*;tr\*.*;zh-Hans\*.*;zh-Hant\*.*;runtimes\linux\*.*;runtimes\unix\*.*;runtimes\osx\*.*" />
   </files>
 </package>

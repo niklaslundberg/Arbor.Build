@@ -55,6 +55,9 @@
         [VariableDescription("NuGet package artifacts suffix")]
         public const string NuGetPackageArtifactsSuffix = "Arbor.Build.NuGet.Package.Artifacts.Suffix";
 
+        [VariableDescription("NuGet package artifacts suffix enabled")]
+        public const string NuGetPackageArtifactsSuffixEnabled = "Arbor.Build.NuGet.Package.Artifacts.Suffix.Enabled";
+
         [VariableDescription("NuGet package id override")]
         public const string NuGetPackageIdOverride =
             "Arbor.Build.NuGet.Package.Artifacts.PackageId.Override";
@@ -125,5 +128,8 @@
 
         [VariableDescription("Flag to indicate if NuGet self update is enabled", "true")]
         public const string NuGetSelfUpdateEnabled = "Arbor.Build.NuGet.SelfUpdate.Enabled";
+
+        [VariableDescription("Semicolon separated list of file patterns for nuget packages to upload.")]
+        public const string NuGetServerUploadPackageExcludeStartsWithPatterns = "Arbor.Build.NuGet.PackageUpload.PackageExcludeStartsWithPatterns";
     }
 }
