@@ -55,7 +55,7 @@ namespace Arbor.Build.Core.Tools.Versioning
 
             var sourceRoot = _buildContext.SourceRoot;
 
-            IVariable netAssemblyVersionVar =
+            IVariable? netAssemblyVersionVar =
                 buildVariables.SingleOrDefault(var => var.Key == WellKnownVariables.NetAssemblyVersion);
             string netAssemblyVersion;
 
@@ -74,7 +74,7 @@ namespace Arbor.Build.Core.Tools.Versioning
 
             var assemblyVersion = new Version(netAssemblyVersion);
 
-            IVariable netAssemblyFileVersionVar =
+            IVariable? netAssemblyFileVersionVar =
                 buildVariables.SingleOrDefault(var => var.Key == WellKnownVariables.NetAssemblyFileVersion);
             string netAssemblyFileVersion;
 

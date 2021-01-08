@@ -19,7 +19,7 @@ namespace Arbor.Build.Core.BuildVariables
                 throw new ArgumentNullException(nameof(variableName));
             }
 
-            List<IVariable> foundVariables = variables
+            var foundVariables = variables
                 .Where(var => var.Key.Equals(variableName, StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
@@ -29,12 +29,12 @@ namespace Arbor.Build.Core.BuildVariables
                     $"The are multiple variables with key '{variableName}'");
             }
 
-            IVariable variable = foundVariables.SingleOrDefault();
+            IVariable? variable = foundVariables.SingleOrDefault();
 
             if (variable is null)
             {
                 string message = $"The key '{variableName}' was not found in the variable collection";
-                VariableDescription property = WellKnownVariables.AllVariables.SingleOrDefault(
+                VariableDescription? property = WellKnownVariables.AllVariables.SingleOrDefault(
                     item => item.InvariantName.Equals(variableName, StringComparison.OrdinalIgnoreCase));
 
                 if (property is {})

@@ -57,17 +57,13 @@ namespace Arbor.Build.Core
 
         private static string BuildResultsAsTable(IReadOnlyCollection<ToolResult> toolResults)
         {
-            const string NotRun = "Not run";
-            const string Succeeded = "Succeeded";
-            const string Failed = "Failed";
-
             static string GetResult(ToolResult toolResult)
             {
-                string succeeded = toolResult.ResultType.IsSuccess ? Succeeded : Failed;
+                string succeeded = toolResult.ResultType.IsSuccess ? "Succeeded" : "Failed";
 
                 return toolResult.ResultType.WasRun
                     ? succeeded
-                    : NotRun;
+                    : "Not run";
             }
 
             static string GetExecutionTime(ToolResult result1)
@@ -161,7 +157,7 @@ namespace Arbor.Build.Core
                         })
                     .DisplayAsTable();
 
-                _logger.Information("{NewLine}Available wellknown variables: {NewLine1}{NewLine2}{VariableAsTable}",
+                _logger.Information("{NewLine}Available well-known variables: {NewLine1}{NewLine2}{VariableAsTable}",
                     Environment.NewLine,
                     Environment.NewLine,
                     Environment.NewLine,
@@ -206,7 +202,7 @@ namespace Arbor.Build.Core
                 const int boxLength = 50;
 
                 const char boxCharacter = '#';
-                string boxLine = new string(boxCharacter, boxLength);
+                string boxLine = new(boxCharacter, boxLength);
 
                 string message = string.Format(CultureInfo.InvariantCulture,
                     "{1}{0}{1}{2}{1}{2} Running tool {3}{1}{2}{1}{0}",
@@ -535,7 +531,7 @@ namespace Arbor.Build.Core
                 .Add(new EnvironmentVariableKeyValueConfigurationSource())
                 .Build();
 
-            string? buildDirArg = args
+            string? buildDirArg = _args
                 .FirstOrDefault(arg => arg.StartsWith("-buildDirectory=", StringComparison.OrdinalIgnoreCase))
                 ?.Split('=').LastOrDefault();
 
@@ -545,8 +541,6 @@ namespace Arbor.Build.Core
             }
 
             StaticKeyValueConfigurationManager.Initialize(multiSourceKeyValueConfiguration);
-
-            const bool debugLoggerEnabled = false;
 
             DirectoryEntry? sourceDir = null;
 
@@ -574,9 +568,7 @@ namespace Arbor.Build.Core
 
                 if (!systemToolsResult.IsSuccess)
                 {
-                    const string ToolsMessage = "All system tools did not succeed";
-
-                    _logger.Error(ToolsMessage);
+                    _logger.Error("All system tools did not succeed");
 
                     exitCode = systemToolsResult;
                 }

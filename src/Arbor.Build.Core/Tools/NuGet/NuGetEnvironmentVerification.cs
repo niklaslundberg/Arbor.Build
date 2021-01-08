@@ -30,7 +30,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             IReadOnlyCollection<IVariable> buildVariables,
             ILogger logger)
         {
-            IVariable variable =
+            IVariable? variable =
                 buildVariables.SingleOrDefault(item => item.Key == WellKnownVariables.ExternalTools_NuGet_ExePath);
 
             if (variable?.Value is null)
@@ -86,7 +86,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 }
 
                 const string nugetVersion = "NuGet Version: ";
-                string versionLine =
+                string? versionLine =
                     standardOut.FirstOrDefault(
                         line => line.StartsWith(nugetVersion, StringComparison.OrdinalIgnoreCase));
 
@@ -96,7 +96,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                     return;
                 }
 
-                char majorNuGetVersion = versionLine.Substring(nugetVersion.Length).FirstOrDefault();
+                char majorNuGetVersion = versionLine[nugetVersion.Length..].FirstOrDefault();
 
                 if (majorNuGetVersion == '2')
                 {

@@ -7,9 +7,9 @@ namespace Arbor.Defensive.Collections
 {
     public static class EnumerableOf<T> where T : class
     {
-        private static readonly Lazy<ImmutableArray<T>> _lazy = new Lazy<ImmutableArray<T>>(Initialize);
+        private static readonly Lazy<ImmutableArray<T>> LazyEnumerable = new Lazy<ImmutableArray<T>>(Initialize);
 
-        public static ImmutableArray<T> Items => _lazy.Value;
+        public static ImmutableArray<T> Items => LazyEnumerable.Value;
 
         private static ImmutableArray<T> Initialize() =>
             typeof(T).GetFields(BindingFlags.Public | BindingFlags.Static)

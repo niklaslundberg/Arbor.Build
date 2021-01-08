@@ -130,6 +130,12 @@ namespace Arbor.Build.Core.Bootstrapper
 
         private static void KillAllProcessesSpawnedBy(uint parentProcessId, ILogger logger)
         {
+            if (Environment.OSVersion.Platform != PlatformID.Win32NT)
+            {
+                return;
+            }
+
+#pragma warning disable CA1416 // Validate platform compatibility
             logger.Debug("Finding processes spawned by process with Id [{ParentProcessId}]", parentProcessId);
 
             ManagementObjectCollection collection;
@@ -178,6 +184,8 @@ namespace Arbor.Build.Core.Bootstrapper
                     }
                 }
             }
+
+#pragma warning restore CA1416 // Validate platform compatibility
         }
 
         private async Task<BootstrapStartOptions> StartWithDebuggerAsync(string[] args)
@@ -223,19 +231,19 @@ namespace Arbor.Build.Core.Bootstrapper
 
         private void SetEnvironmentVariables()
         {
-            if (!string.IsNullOrWhiteSpace(_startOptions?.BaseDir?.FullName) && _startOptions.BaseDir.Exists)
+            if (!string.IsNullOrWhiteSpace(_startOptions.BaseDir?.FullName) && _startOptions.BaseDir.Exists)
             {
-                _environmentVariables.SetEnvironmentVariable(WellKnownVariables.SourceRoot, _fileSystem.ConvertPathToInternal(_startOptions.BaseDir.Path.FullName));
+                _environmentVariables.SetEnvironmentVariable(WellKnownVariables.SourceRoot, _fileSystem.ConvertPathToInternal(_startOptions.BaseDir.Path));
             }
 
-            if (_startOptions?.PreReleaseEnabled == true)
+            if (_startOptions.PreReleaseEnabled == true)
             {
                 _environmentVariables.SetEnvironmentVariable(
                     WellKnownVariables.AllowPreRelease,
                     _startOptions!.PreReleaseEnabled!.Value.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
             }
 
-            if (!string.IsNullOrWhiteSpace(_startOptions?.BranchName))
+            if (!string.IsNullOrWhiteSpace(_startOptions.BranchName))
             {
                 _environmentVariables.SetEnvironmentVariable(WellKnownVariables.BranchName, _startOptions.BranchName);
             }
@@ -245,7 +253,7 @@ namespace Arbor.Build.Core.Bootstrapper
         {
             var assembly = Assembly.GetExecutingAssembly();
             var fileVersionInfo = FileVersionInfo.GetVersionInfo(assembly.Location);
-            string version = fileVersionInfo.FileVersion;
+            string? version = fileVersionInfo.FileVersion;
 
             _logger.Information("Starting Arbor.Build Bootstrapper version {Version}", version);
 
@@ -379,7 +387,7 @@ namespace Arbor.Build.Core.Bootstrapper
             }
 
             if (nuGetPackageInstallResult?.SemanticVersion is null ||
-                nuGetPackageInstallResult?.PackageDirectory is null)
+                nuGetPackageInstallResult.PackageDirectory is null)
             {
                 throw new InvalidOperationException(
                     $"Could not download {packageVersion}, verify it exists and that all sources are available");
@@ -513,8 +521,8 @@ namespace Arbor.Build.Core.Bootstrapper
 
                 result = await ProcessRunner.ExecuteProcessAsync(_fileSystem.ConvertPathToInternal(exePath.Value),
                         arguments,
-                        (message, prefix) => _logger.Information("{Prefix}{Message}", buildApplicationPrefix, message),
-                        (message, prefix) => _logger.Error("{Prefix}{Message}", buildApplicationPrefix, message),
+                        (message, _) => _logger.Information("{Prefix}{Message}", buildApplicationPrefix, message),
+                        (message, _) => _logger.Error("{Prefix}{Message}", buildApplicationPrefix, message),
                         _logger.Information,
                         _logger.Verbose,
                         cancellationToken: cancellationTokenSource.Token)

@@ -123,11 +123,11 @@ namespace Arbor.Build.Core.Tools.Git
 
                     if (_fileSystem.FileExists(shellFile))
                     {
-                        using var fs = _fileSystem.OpenFile(shellFile, FileMode.Open, FileAccess.Read);
+                        await using var fs = _fileSystem.OpenFile(shellFile, FileMode.Open, FileAccess.Read);
 
                         var lines = await fs.ReadAllLinesAsync();
 
-                        string pathLine = lines.SingleOrDefault(
+                        string? pathLine = lines.SingleOrDefault(
                             line => line.Contains("$env:github_git = ", StringComparison.OrdinalIgnoreCase));
 
                         if (!string.IsNullOrWhiteSpace(pathLine))

@@ -192,6 +192,13 @@ namespace Arbor.Build.Core.Tools.MSBuild
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
+#pragma warning disable CA1416 // Validate platform compatibility
+
+            if (Environment.OSVersion.Platform != PlatformID.Win32NT)
+            {
+                return ImmutableArray<IVariable>.Empty;
+            }
+
             if (buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_MSBuild_DotNetEnabled))
             {
                 return ImmutableArray<IVariable>.Empty;
@@ -444,6 +451,9 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     WellKnownVariables.ExternalTools_MSBuild_ExePath,
                     _fileSystem.ConvertPathToInternal(foundPath.ParseAsPath()))
             };
+
+#pragma warning restore CA1416 // Validate platform compatibility
+
             return environmentVariables.ToImmutableArray();
         }
     }

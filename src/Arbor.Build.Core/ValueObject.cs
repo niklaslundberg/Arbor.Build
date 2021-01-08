@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Arbor.Build.Core.Tools.MSBuild
+namespace Arbor.Build.Core
 {
     public abstract class ValueObject<T, TValue> : IEquatable<ValueObject<T, TValue>>
         where T : ValueObject<T, TValue>, IEquatable<ValueObject<T, TValue>> where TValue : IEquatable<TValue>
     {
         private readonly IEqualityComparer<TValue>? _comparer;
 
-        public ValueObject(TValue value, IEqualityComparer<TValue> comparer = default)
+        protected ValueObject(TValue value, IEqualityComparer<TValue>? comparer = default)
         {
             _comparer = comparer;
             Value = value;

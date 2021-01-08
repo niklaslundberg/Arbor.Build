@@ -36,7 +36,7 @@ namespace Arbor.Build.Core.Tools.Environments
 
             var existingToolsDirectory =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools)?.ParseAsPath();
-            UPath sourceRoot;
+            UPath sourceRoot = default;
 
             var variables = new List<IVariable>();
 
@@ -71,7 +71,7 @@ namespace Arbor.Build.Core.Tools.Environments
             if (existingToolsDirectory is null || existingToolsDirectory.Value.IsAbsolute)
             {
                 var externalToolsRelativeApp =
-                    new DirectoryEntry(_fileSystem, UPath.Combine(AppDomain.CurrentDomain.BaseDirectory!.ParseAsPath(),
+                    new DirectoryEntry(_fileSystem, UPath.Combine(AppContext.BaseDirectory!.ParseAsPath(),
                         "tools",
                         "external"));
 

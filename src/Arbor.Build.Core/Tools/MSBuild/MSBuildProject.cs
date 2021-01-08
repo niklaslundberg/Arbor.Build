@@ -20,7 +20,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             DirectoryEntry projectDirectory,
             ImmutableArray<ProjectType> projectTypes,
             Guid? projectId,
-            DotNetSdk sdk,
+            DotNetSdk? sdk,
             ImmutableArray<PackageReferenceElement> packageReferences,
             ImmutableArray<TargetFramework> targetFrameworks)
         {
@@ -49,7 +49,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
         public Guid? ProjectId { get; }
 
-        public DotNetSdk Sdk { get; }
+        public DotNetSdk? Sdk { get; }
 
         public ImmutableArray<PackageReferenceElement> PackageReferences { get; }
         public TargetFramework TargetFramework { get; }
@@ -139,7 +139,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             string name = Path.GetFileNameWithoutExtension(projectFileFullName.Name);
 
-            XElement projectTypeGuidsElement = propertyGroups
+            XElement? projectTypeGuidsElement = propertyGroups
                 .Elements()
                 .FirstOrDefault(e => e.Name.LocalName.Equals("ProjectTypeGuids", StringComparison.Ordinal));
 
@@ -161,15 +161,15 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 .Elements()
                 .Where(e => e.Name.LocalName.Equals("PackageReference", StringComparison.Ordinal))
                 .Select(packageReference => new PackageReferenceElement(
-                    packageReference?.Attribute("Include")?.Value,
-                    packageReference?.Attribute("Version")?.Value))
+                    packageReference.Attribute("Include")?.Value,
+                    packageReference.Attribute("Version")?.Value))
                 .Where(reference => reference.IsValid)
                 .ToImmutableArray();
 
-            var targetFrameworkValue = msbuildPropertyGroups.SelectMany(p => p.Properties)
+            string? targetFrameworkValue = msbuildPropertyGroups.SelectMany(p => p.Properties)
                 .SingleOrDefault(s => s.Name.Equals("TargetFramework"))?.Value;
 
-            var targetFrameworksValue = msbuildPropertyGroups.SelectMany(p => p.Properties)
+            string? targetFrameworksValue = msbuildPropertyGroups.SelectMany(p => p.Properties)
                 .SingleOrDefault(s => s.Name.Equals("TargetFrameworks"))?.Value;
 
             ImmutableArray<TargetFramework> targetFrameworks;

@@ -80,47 +80,53 @@ namespace Arbor.Build.Core.Tools.VisualStudio
 
         private UPath? GetVSTestExePath(ILogger logger, string registryKeyName, string visualStudioVersion)
         {
+            if (Environment.OSVersion.Platform != PlatformID.Win32NT)
+            {
+                return null;
+            }
+#pragma warning disable CA1416 // Validate platform compatibility
+
             UPath? path = null;
 
-            using (RegistryKey view32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
+            using var view32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
+            using var vsKey = view32.OpenSubKey(registryKeyName);
+            if (vsKey != null)
             {
-                using RegistryKey? vsKey = view32.OpenSubKey(registryKeyName);
-                if (vsKey != null)
+                using RegistryKey? versionKey = vsKey.OpenSubKey(visualStudioVersion);
+                if (versionKey == null)
                 {
-                    using RegistryKey? versionKey = vsKey.OpenSubKey(visualStudioVersion);
-                    if (versionKey == null)
-                    {
-                        throw new InvalidOperationException(
-                            $"Expected key {vsKey.Name} to contain a subkey with name {visualStudioVersion}");
-                    }
-
-                    const string installDirKey = "InstallDir";
-                    string? installDir = versionKey.GetValue(installDirKey, null)?.ToString();
-
-                    if (string.IsNullOrWhiteSpace(installDir))
-                    {
-                        logger.Warning(
-                            "Expected key {Name} to contain a value with name {InstallDir} and a non-empty value",
-                            versionKey.Name,
-                            installDirKey);
-                        return null;
-                    }
-
-                    UPath exePath = UPath.Combine(
-                        installDir,
-                        "CommonExtensions",
-                        "Microsoft",
-                        "TestWindow",
-                        "vstest.console.exe");
-
-                    if (!_fileSystem.FileExists(exePath))
-                    {
-                        throw new InvalidOperationException($"The file '{exePath}' does not exist");
-                    }
-
-                    path = exePath;
+                    throw new InvalidOperationException(
+                        $"Expected key {vsKey.Name} to contain a subkey with name {visualStudioVersion}");
                 }
+
+                const string installDirKey = "InstallDir";
+                string? installDir = versionKey.GetValue(installDirKey, null)?.ToString();
+
+                if (string.IsNullOrWhiteSpace(installDir))
+                {
+                    logger.Warning(
+                        "Expected key {Name} to contain a value with name {InstallDir} and a non-empty value",
+                        versionKey.Name,
+                        installDirKey);
+                    return null;
+                }
+
+                var exePath = UPath.Combine(
+                    installDir,
+                    "CommonExtensions",
+                    "Microsoft",
+                    "TestWindow",
+                    "vstest.console.exe");
+
+                if (!_fileSystem.FileExists(exePath))
+                {
+                    throw new InvalidOperationException($"The file '{exePath}' does not exist");
+                }
+
+                path = exePath;
             }
+
+#pragma warning restore CA1416 // Validate platform compatibility
 
             return path;
         }
@@ -129,6 +135,12 @@ namespace Arbor.Build.Core.Tools.VisualStudio
         {
             string? visualStudioVersion = null;
 
+            if (Environment.OSVersion.Platform != PlatformID.Win32NT)
+            {
+                return null;
+            }
+
+#pragma warning disable CA1416 // Validate platform compatibility
             using var view32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
 
             using RegistryKey? vsKey = view32.OpenSubKey(registryKeyName);
@@ -198,6 +210,7 @@ namespace Arbor.Build.Core.Tools.VisualStudio
                     visualStudioVersion = versions.First().ToString(2);
                 }
             }
+#pragma warning restore CA1416 // Validate platform compatibility
 
             return visualStudioVersion;
         }

@@ -42,7 +42,7 @@ namespace Arbor.Build.Core.Tools.EnvironmentVariables
                 RequiredValues.Where(
                         var =>
                         {
-                            IVariable value =
+                            IVariable? value =
                                 buildVariables.SingleOrDefault(
                                     required => required.Key.Equals(var, StringComparison.OrdinalIgnoreCase));
 

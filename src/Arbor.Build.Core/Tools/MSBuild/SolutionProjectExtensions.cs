@@ -7,6 +7,11 @@ namespace Arbor.Build.Core.Tools.MSBuild
     {
         public static bool PublishEnabled(this SolutionProject project)
         {
+            if (project.Project.Sdk is null)
+            {
+                return false;
+            }
+
             if (project.Project.Sdk == DotNetSdk.DotnetWeb)
             {
                 return true;
