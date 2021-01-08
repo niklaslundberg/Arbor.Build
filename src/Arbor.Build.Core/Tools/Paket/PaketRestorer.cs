@@ -8,6 +8,7 @@ using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.ProcessUtils;
 using Arbor.Defensive.Collections;
+using Arbor.FS;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
@@ -55,7 +56,7 @@ namespace Arbor.Build.Core.Tools.Paket
                 var normalSearch = sourceRoot.EnumerateFiles("paket.exe", SearchOption.AllDirectories)
                     .OrderBy(file => file.FullName.Length).FirstOrDefault();
 
-                if (normalSearch != null)
+                if (normalSearch is {})
                 {
                     paketExe = normalSearch;
                 }
@@ -66,7 +67,7 @@ namespace Arbor.Build.Core.Tools.Paket
                 }
             }
 
-            if (paketExe == null)
+            if (paketExe is null)
             {
                 IReadOnlyCollection<FileEntry> filtered =
                     packageSpecifications.Where(

@@ -7,9 +7,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
-using Arbor.Build.Core.IO;
 using Arbor.Build.Core.ProcessUtils;
 using Arbor.Build.Core.Tools.Cleanup;
+using Arbor.FS;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using Microsoft.Win32;
@@ -358,7 +358,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             var fileBasedLookupResultPath = possiblePaths.FirstOrDefault(_fileSystem.FileExists);
 
-            if (fileBasedLookupResultPath != null)
+            if (fileBasedLookupResultPath is {})
             {
                 logger.Information("Found MSBuild at '{FileBasedLookupResultPath}'", fileBasedLookupResultPath);
 

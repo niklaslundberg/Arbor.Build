@@ -146,29 +146,6 @@ namespace Arbor.Build.Core.IO
                 new[] { UPath.DirectorySeparator },
                 StringSplitOptions.RemoveEmptyEntries);
         }
-
-        public static UPath ParseAsPath(this string path)
-        {
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                throw new ArgumentException("Value cannot be null or whitespace.", nameof(path));
-            }
-
-            if (!UPath.TryParse(path, out var parsed))
-            {
-                throw new FormatException($"Could not parse '{path}' as a full path");
-            }
-
-            var normalized = parsed.NormalizePath();
-
-            if (!normalized.IsAbsolute)
-            {
-                throw new FormatException($"Path {parsed.FullName} is not a full path");
-            }
-
-            return normalized;
-        }
-
         private static bool HasAnyPathSegment(
             IEnumerable<string> segments,
             IEnumerable<string> patterns,

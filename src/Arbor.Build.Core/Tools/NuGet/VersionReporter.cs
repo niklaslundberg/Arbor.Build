@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
-using Arbor.Build.Core.IO;
+using Arbor.FS;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using NuGet.Packaging;

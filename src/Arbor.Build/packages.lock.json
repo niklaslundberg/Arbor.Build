@@ -70,12 +70,14 @@
         "resolved": "3.0.2",
         "contentHash": "YWFdVy4MjN/pmh3FueugcOVhgQY82+hcivmXuWQBxlEPwrZ0E+3KgGsrnq/QjCntDfrSk5XB+Dw+Zlpsv0mQ9A=="
       },
-      "Arbor.FS": {
+      "Arbor.FileSystem": {
         "type": "Transitive",
-        "resolved": "0.1.0",
-        "contentHash": "UTSQCd+3kSXo8mnZLxZxs8BTHjGru8ue8+0oSHlX0iqD1qx/rxcnJBGHBhQyJxX35eTcQinLc60IUoMFGYp8NA==",
+        "resolved": "0.3.0-build.1610098134",
+        "contentHash": "NT12e17xgHo5ADb3gmu8vVID7dSX+rvQ6XKPG00iQmM8Mol3EWaLC+J1K8MWv/Kc8Yw4tpIeXH9aSNfdsJtPEQ==",
         "dependencies": {
-          "zio": "0.8.0"
+          "FluentAssertions": "5.10.3",
+          "JetBrains.Annotations": "2020.3.0",
+          "zio": "0.11.0"
         }
       },
       "Arbor.KVConfiguration.Core": {
@@ -154,6 +156,14 @@
         "contentHash": "22aXncFDye08TsXHobcxAoZFBeaJ9nrAxGzk9YHLLaIkYO7aeAA0Sz7Mii9qsfB76S1gdhebqMv8QsnknJMT/w==",
         "dependencies": {
           "System.Diagnostics.DiagnosticSource": "4.7.1"
+        }
+      },
+      "FluentAssertions": {
+        "type": "Transitive",
+        "resolved": "5.10.3",
+        "contentHash": "gVPEVp1hLVqcv+7Q2wiDf7kqCNn7+bQcQ0jbJ2mcRT6CeRoZl1tNkqvzSIhvekyldDptk77j1b03MXTTRIqqpg==",
+        "dependencies": {
+          "System.Configuration.ConfigurationManager": "4.4.0"
         }
       },
       "Machine.Specifications": {
@@ -1630,8 +1640,8 @@
       },
       "Zio": {
         "type": "Transitive",
-        "resolved": "0.8.0",
-        "contentHash": "K1uswTWdec+j6KJAXmi1WT2G1v4mxdP8ojNl/JLp9bVFAdQSNW1oMdUIVv5go1cKmcu6GJcgCJxNMP2uTSOZXg=="
+        "resolved": "0.11.0",
+        "contentHash": "eNHy6n/UCuQKtqCVw2XIw7L9g1/5vEFuMJ8aLM6tXLxh+vAFajwW1+oFAL65t31YNWro0uLDCez5mGsamC73QA=="
       },
       "arbor.build.core": {
         "type": "Project",
@@ -1639,7 +1649,7 @@
           "Arbor.Aesculus": "3.0.2",
           "Arbor.Defensive.Collections": "1.0.0",
           "Arbor.Exceptions": "1.0.0",
-          "Arbor.FS": "0.1.0",
+          "Arbor.FileSystem": "0.3.0-build.1610098134",
           "Arbor.KVConfiguration.JsonConfiguration": "1.0.1",
           "Arbor.KVConfiguration.Schema.Json": "1.0.1",
           "Arbor.KVConfiguration.UserConfiguration": "1.0.1",

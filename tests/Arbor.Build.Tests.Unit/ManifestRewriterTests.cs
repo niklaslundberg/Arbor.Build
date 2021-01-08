@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.NuGet;
+using Arbor.FS;
 using FluentAssertions;
 using Xunit;
 using Zio;

@@ -18,7 +18,7 @@ namespace Arbor.Build.Tests.Integration
                 "Arbor.Build.Tests.Integration", "Arbor.Build.Tests.Integration.csproj"));
             var msbuildProject = await MsBuildProject.LoadFrom(projectFileFullName);
 
-            var solutionFile = fs.GetFileEntry(UPath.Combine(projectFileFullName.Parent.Parent.Parent.Path, "Arbor.Build.sln"));
+            var solutionFile = fs.GetFileEntry(UPath.Combine(projectFileFullName.Parent!.Parent!.Parent!.Path, "Arbor.Build.sln"));
 
             var project = new SolutionProject(solutionFile, "name", msbuildProject.ProjectDirectory, msbuildProject,
                 NetFrameworkGeneration.NetCoreApp);

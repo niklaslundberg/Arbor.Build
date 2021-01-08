@@ -17,6 +17,7 @@ using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.DotNet;
 using Arbor.Build.Core.Tools.NuGet;
 using Arbor.Exceptions;
+using Arbor.FS;
 using Arbor.Processing;
 using Arbor.Tooler;
 using Serilog;
@@ -441,14 +442,14 @@ namespace Arbor.Build.Core.Bootstrapper
                 return (null, new List<string>());
             }
 
-            FileEntry? buildToolExecutable = arborBuild.SingleOrDefault(file => file.ExtensionWithDot.Equals(".exe", StringComparison.OrdinalIgnoreCase));
+            FileEntry? buildToolExecutable = arborBuild.SingleOrDefault(file => file.ExtensionWithDot?.Equals(".exe", StringComparison.OrdinalIgnoreCase) ?? false);
 
             if (buildToolExecutable is {})
             {
                 return (buildToolExecutable.Path, new List<string>());
             }
 
-            FileEntry? buildToolDll = arborBuild.SingleOrDefault(file => file.ExtensionWithDot.Equals(".dll", StringComparison.OrdinalIgnoreCase));
+            FileEntry? buildToolDll = arborBuild.SingleOrDefault(file => file.ExtensionWithDot?.Equals(".dll", StringComparison.OrdinalIgnoreCase) ?? false);
 
             if (buildToolDll is null)
             {
@@ -498,7 +499,7 @@ namespace Arbor.Build.Core.Bootstrapper
 
                 var arguments = new List<string>();
 
-                UPath? exePath = arborBuildExePath;
+                UPath? exePath = arborBuildExePath is {} value ? value : (UPath?) null;
                 if (string.IsNullOrWhiteSpace(arborBuildExePath))
                 {
                     var (defaultExePath, args) = await GetExePath(buildToolDirectory, cancellationTokenSource.Token);

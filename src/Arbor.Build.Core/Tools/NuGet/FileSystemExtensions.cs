@@ -14,7 +14,7 @@ namespace Arbor.Build.Core.Tools.NuGet
         public static FileEntry[] GetFiles(this DirectoryEntry directoryEntry,
             string? searchPattern = null,
             SearchOption searchOption = SearchOption.TopDirectoryOnly) =>
-            directoryEntry.EnumerateFiles(searchPattern, searchOption).ToArray();
+            directoryEntry.EnumerateFiles(searchPattern ?? "*", searchOption).ToArray();
         public static IEnumerable<DirectoryEntry> GetDirectories(this DirectoryEntry directoryEntry,
             string searchPattern = "*",
             SearchOption searchOption = SearchOption.TopDirectoryOnly) =>

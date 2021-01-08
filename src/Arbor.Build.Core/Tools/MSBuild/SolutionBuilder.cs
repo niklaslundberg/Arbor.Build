@@ -151,7 +151,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             }
 
             _msBuildExe = _dotnetMsBuildEnabled
-                ? null
+                ? default
                 : buildVariables.Require(WellKnownVariables.ExternalTools_MSBuild_ExePath).GetValueOrThrow()
                     .ParseAsPath();
 
@@ -359,7 +359,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             return enabled;
         }
 
-        private string? FindRuleSet()
+        private UPath? FindRuleSet()
         {
             IReadOnlyCollection<FileEntry> rulesetFiles = _vcsRoot
                 .GetFilesRecursive(".ruleset".ValueToImmutableArray(), _pathLookupSpecification, _vcsRoot)
@@ -1090,7 +1090,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                     foreach (var lookupDirectory in packageLookupDirectories)
                     {
-                        if (lookupDirectory != null && lookupDirectory.Exists)
+                        if (lookupDirectory is {} && lookupDirectory.Exists)
                         {
                             var nugetPackages = lookupDirectory.GetFiles($"*{packageVersion}.nupkg",
                                 SearchOption.AllDirectories);
@@ -1303,11 +1303,11 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     .ToReadOnlyCollection();
 
                 IReadOnlyCollection<FileEntry> pdbFiles =
-                    files.Where(file => file.ExtensionWithDot.Equals(".pdb", StringComparison.OrdinalIgnoreCase))
+                    files.Where(file => file.ExtensionWithDot?.Equals(".pdb", StringComparison.OrdinalIgnoreCase) ?? false)
                         .ToReadOnlyCollection();
 
                 IReadOnlyCollection<FileEntry> dllFiles =
-                    files.Where(file => file.ExtensionWithDot.Equals(".dll", StringComparison.OrdinalIgnoreCase))
+                    files.Where(file => file.ExtensionWithDot?.Equals(".dll", StringComparison.OrdinalIgnoreCase) ?? false)
                         .ToReadOnlyCollection();
                 if (_debugLoggingEnabled)
                 {
@@ -1361,7 +1361,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                         }
                     }
 
-                    if (pair.DllFile != null)
+                    if (pair.DllFile is not null)
                     {
                         var targetDllFilePath = UPath.Combine(targetDirectory.FullName, pair.DllFile.Name);
 
@@ -2212,7 +2212,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             await using var stream = _fileSystem.OpenFile(nuspecTempFile, FileMode.OpenOrCreate, FileAccess.Write);
 
             await stream
-                .WriteAllTextAsync(nuspecContent, Encoding.UTF8, _cancellationToken)
+                .WriteAllTextAsync(nuspecContent, Encoding.UTF8, cancellationToken: _cancellationToken)
                 .ConfigureAwait(false);
         }
 

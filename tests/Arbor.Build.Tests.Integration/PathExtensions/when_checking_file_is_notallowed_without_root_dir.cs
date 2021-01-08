@@ -1,5 +1,6 @@
 using System.IO;
 using Arbor.Build.Core.IO;
+using Arbor.FS;
 using Machine.Specifications;
 using Zio;
 using Zio.FileSystems;
@@ -30,7 +31,7 @@ namespace Arbor.Build.Tests.Integration.PathExtensions
             var rootPath = @"C:\Temp\root\afolder".ParseAsPath();
             root = new DirectoryEntry(fs,rootPath).EnsureExists();
 
-            rootParent = root.Parent;
+            rootParent = root.Parent!;
 
             using (fs.OpenFile(@"C:\Temp\root\afile.txt".ParseAsPath(), FileMode.Create,FileAccess.Write))
             {

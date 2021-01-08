@@ -6,10 +6,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Arbor.Build.Core.BuildVariables;
-using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.MSBuild;
 using Arbor.Build.Core.Tools.NuGet;
 using Arbor.Defensive.Collections;
+using Arbor.FS;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
@@ -101,7 +101,7 @@ namespace Arbor.Build.Core.Tools.Testing
             var testDirectories = _buildContext.SourceRoot
                 .GetFiles("*test*.csproj", SearchOption.AllDirectories)
                 .Where(file =>
-                    file?.Directory != null && (assemblyFilePrefix.Length == 0 || assemblyFilePrefix.Any(prefix =>
+                    file?.Directory is {} && (assemblyFilePrefix.Length == 0 || assemblyFilePrefix.Any(prefix =>
                         file.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))))
                 .Select(file => file.Directory)
                 .ToHashSet();

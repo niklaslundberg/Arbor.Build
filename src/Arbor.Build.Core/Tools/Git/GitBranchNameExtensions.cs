@@ -43,7 +43,7 @@ namespace Arbor.Build.Core.Tools.Git
 
             if (name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
             {
-                branchName = name.Substring(prefix.Length);
+                branchName = name[prefix.Length..];
 
                 return branchName;
             }

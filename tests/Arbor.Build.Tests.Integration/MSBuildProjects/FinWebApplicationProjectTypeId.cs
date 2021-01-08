@@ -2,8 +2,8 @@
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.MSBuild;
+using Arbor.FS;
 using Xunit;
 using Xunit.Abstractions;
 using Zio;

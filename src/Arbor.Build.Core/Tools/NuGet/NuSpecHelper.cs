@@ -27,7 +27,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             int baseDirLength = baseDirectory.FullName.Length;
 
-            string targetFilePath = fileName.FullName.Substring(baseDirLength).Replace('/', '\\');
+            string targetFilePath = fileName.FullName[baseDirLength..].Replace('/', '\\');
 
             string fileNamePath = fileName.Path.WindowsPath();
 

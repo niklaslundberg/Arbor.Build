@@ -8,12 +8,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Aesculus.Core;
 using Arbor.Build.Core.BuildVariables;
-using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.Cleanup;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
 using Zio;
+using Arbor.FS;
 
 namespace Arbor.Build.Core.Tools.Git
 {

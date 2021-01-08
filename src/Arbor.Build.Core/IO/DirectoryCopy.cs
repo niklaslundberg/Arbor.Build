@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Arbor.FS;
 using Arbor.Processing;
 using Serilog;
 using Serilog.Core;

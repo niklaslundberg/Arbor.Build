@@ -7,9 +7,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Arbor.Build.Core;
 using Arbor.Build.Core.BuildVariables;
-using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Logging;
 using Arbor.Build.Tests.Integration.Tests.MSpec;
+using Arbor.FS;
 using Serilog;
 using Serilog.Events;
 using Xunit;
@@ -107,7 +107,7 @@ namespace Arbor.Build.Tests.Integration
                 var filePath = path / file;
                 Assert.True(_fs.FileExists(filePath), $"Exists({_fs.ConvertPathToInternal(filePath)})");
 
-                if (file.GetExtensionWithDot().Equals(".nupkg", StringComparison.OrdinalIgnoreCase))
+                if (file.GetExtensionWithDot()?.Equals(".nupkg", StringComparison.OrdinalIgnoreCase) ?? false)
                 {
                     using var packageStream = _fs.OpenFile(filePath, FileMode.Open, FileAccess.Read);
 

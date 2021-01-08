@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.IO;
+using Arbor.FS;
 using Arbor.Tooler;
 using JetBrains.Annotations;
 using Serilog;
@@ -58,14 +59,14 @@ namespace Arbor.Build.Core.Tools.NuGet
         {
             _cancellationToken = cancellationToken;
 
-            string? userSpecifiedNuGetExePath = buildVariables.GetVariableValueOrDefault(
+            UPath? userSpecifiedNuGetExePath = buildVariables.GetVariableValueOrDefault(
                 WellKnownVariables.ExternalTools_NuGet_ExePath_Custom,
-                string.Empty);
+                string.Empty)?.ParseAsPath();
 
             var nuGetExePath =
                 await EnsureNuGetExeExistsAsync(logger, userSpecifiedNuGetExePath).ConfigureAwait(false);
 
-            string? path = nuGetExePath.HasValue
+            string path = nuGetExePath.HasValue
                 ? _fileSystem.ConvertPathToInternal(nuGetExePath.Value)
                 : "";
 
@@ -79,7 +80,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             {
                 var uPath = buildVariables.Require(WellKnownVariables.SourceRoot).Value!.ParseAsPath();
 
-                DirectoryEntry sourceDir = new DirectoryEntry(_fileSystem, uPath);
+                DirectoryEntry sourceDir = new(_fileSystem, uPath);
 
                 var pathLookupSpecification = new PathLookupSpecification();
                 var packageConfigFiles = sourceDir

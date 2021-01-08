@@ -4,7 +4,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Arbor.Build.Core.IO;
+using Arbor.FS;
 using Zio;
 
 namespace Arbor.Build.Core.Tools.MSBuild

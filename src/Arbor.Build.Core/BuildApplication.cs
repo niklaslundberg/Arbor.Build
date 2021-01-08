@@ -19,6 +19,7 @@ using Arbor.Build.Core.Tools;
 using Arbor.Build.Core.Tools.MSBuild;
 using Arbor.Defensive.Collections;
 using Arbor.Exceptions;
+using Arbor.FS;
 using Arbor.KVConfiguration.Core;
 using Arbor.KVConfiguration.Schema.Json;
 using Arbor.KVConfiguration.UserConfiguration;

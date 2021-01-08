@@ -24,7 +24,7 @@ namespace Arbor.Build.Tests.Integration.TrxTransform
 
         public void Dispose()
         {
-            _logger?.Dispose();
+            _logger.Dispose();
             _fileSystem.Dispose();
         }
 

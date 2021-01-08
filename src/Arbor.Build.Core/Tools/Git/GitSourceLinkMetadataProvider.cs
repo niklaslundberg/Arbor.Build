@@ -4,7 +4,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
-using Arbor.Build.Core.IO;
+using Arbor.FS;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
@@ -55,12 +55,12 @@ namespace Arbor.Build.Core.Tools.Git
             var headFile = new FileEntry(_fileSystem, UPath.Combine(dotGitDirectory.FullName, "HEAD"));
             var configFile = new FileEntry(_fileSystem, UPath.Combine(dotGitDirectory.FullName, "config"));
 
-            await headFile.WriteAllTextAsync(gitHash, Encoding.UTF8, cancellationToken);
+            await headFile.FileSystem.WriteAllTextAsync(headFile.Path, gitHash, Encoding.UTF8, cancellationToken: cancellationToken);
 
             string origin = $@"[remote ""origin""]
 {"\t"}url = {repositoryUrl}";
 
-            await configFile.WriteAllTextAsync(origin, Encoding.UTF8, cancellationToken);
+            await configFile.FileSystem.WriteAllTextAsync(configFile.Path, origin, Encoding.UTF8, cancellationToken: cancellationToken);
 
             return ExitCode.Success;
         }

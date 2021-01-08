@@ -40,11 +40,11 @@ namespace Arbor.Build.Core.Tools.VisualStudio
                     .Where(
                         file =>
                             extensionPatterns.Any(
-                                pattern => file.ExtensionWithDot.Equals(
+                                pattern => file.ExtensionWithDot?.Equals(
                                     pattern,
-                                    StringComparison.OrdinalIgnoreCase)));
+                                    StringComparison.OrdinalIgnoreCase) ?? false));
 
-                List<FileEntry> projectFiles81 = projectFiles.Where(Contains81).ToList();
+                var projectFiles81 = projectFiles.Where(Contains81).ToList();
 
                 if (projectFiles81.Count > 0)
                 {
@@ -64,8 +64,7 @@ namespace Arbor.Build.Core.Tools.VisualStudio
 
         private bool Contains81(FileEntry file)
         {
-            var lookupPatterns = new[]
-            {
+            string[] lookupPatterns = {
                 "<ApplicationTypeRevision>8.1</ApplicationTypeRevision>",
                 "<TargetPlatformVersion>8.1</TargetPlatformVersion>"
             };

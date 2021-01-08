@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using Arbor.Build.Core.IO;
+using Arbor.FS;
 using Arbor.Processing;
 using Machine.Specifications;
 using Serilog;

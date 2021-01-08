@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.Testing;
+using Arbor.FS;
 using Arbor.Processing;
 using Machine.Specifications;
 using Serilog;

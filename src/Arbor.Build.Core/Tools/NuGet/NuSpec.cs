@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using Arbor.Build.Core.IO;
+using Arbor.FS;
 using NuGet.Versioning;
 using Zio;
 
@@ -85,6 +84,6 @@ namespace Arbor.Build.Core.Tools.NuGet
             return base.ToString()!;
         }
 
-        public async Task Save(FileEntry filePath) => await filePath.WriteAllTextAsync(_xml, Encoding.UTF8);
+        public async Task Save(FileEntry filePath) => await filePath.FileSystem.WriteAllTextAsync(filePath.Path, _xml, Encoding.UTF8);
     }
 }

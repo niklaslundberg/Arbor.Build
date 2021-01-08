@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using Arbor.Build.Core.IO;
+using Arbor.FS;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
 using NuGet.Versioning;

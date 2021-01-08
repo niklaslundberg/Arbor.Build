@@ -46,7 +46,7 @@ namespace Arbor.Build.Tests.Integration.DirectoryExtensions
             {
             }
 
-            subDirectoryA.Parent.Path.Should().Be(_tempDirectory.Path);
+            subDirectoryA.Parent!.Path.Should().Be(_tempDirectory.Path);
 
             var files = _tempDirectory.GetFilesWithWithExclusions(new[] {"*.user"})
                 .Select(file => file.Path.NormalizePath().FullName)

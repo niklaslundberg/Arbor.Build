@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.Testing;
+using Arbor.FS;
 using Machine.Specifications;
 using Serilog.Core;
 using Zio;

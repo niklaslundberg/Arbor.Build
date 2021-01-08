@@ -3,7 +3,7 @@ using System.IO;
 using System.Text;
 using System.Xml;
 using System.Xml.Xsl;
-using Arbor.Build.Core.IO;
+using Arbor.FS;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
@@ -21,12 +21,12 @@ namespace Arbor.Build.Core.Tools.Testing
             [NotNull] ILogger logger,
             bool deleteOriginal = true)
         {
-            if (xmlReport == null)
+            if (xmlReport is null)
             {
                 throw new ArgumentNullException(nameof(xmlReport));
             }
 
-            if (logger == null)
+            if (logger is null)
             {
                 throw new ArgumentNullException(nameof(logger));
             }
@@ -89,7 +89,7 @@ namespace Arbor.Build.Core.Tools.Testing
             using (var fileStream = xmlReport.Open( FileMode.Open, FileAccess.Read))
             {
                 using var streamReader = new StreamReader(fileStream, encoding);
-                using XmlReader reportReader = XmlReader.Create(streamReader);
+                using var reportReader = XmlReader.Create(streamReader);
                 using var outStream = xmlReport.FileSystem.OpenFile(resultFile, FileMode.Create, FileAccess.Write);
                 using XmlWriter reportWriter = new XmlTextWriter(outStream, encoding);
                 myXslTransform.Transform(reportReader, reportWriter);

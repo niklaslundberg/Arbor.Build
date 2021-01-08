@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Arbor.Build.Core.IO;
+using Arbor.FS;
 using NuGet.Packaging;
 using Serilog;
 using Zio;
@@ -12,10 +12,10 @@ namespace Arbor.Build.Core.Tools.NuGet
 {
     public class ManifestReWriter
     {
-        private static readonly char[] _separator = { ' ' };
+        private static readonly char[] Separator = { ' ' };
 
         private static ISet<string> ParseTags(string tags) =>
-            tags.Split(_separator, StringSplitOptions.RemoveEmptyEntries)
+            tags.Split(Separator, StringSplitOptions.RemoveEmptyEntries)
                 .Select(tag => tag.Trim())
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
