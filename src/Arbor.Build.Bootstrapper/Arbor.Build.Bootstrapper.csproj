@@ -17,7 +17,7 @@
 
   <ItemGroup>
     <PackageReference Include="Arbor.Aesculus" Version="3.0.2" />
-    <PackageReference Include="Arbor.Tooler" Version="0.11.0-build.1606860363" />
+    <PackageReference Include="Arbor.Tooler" Version="0.11.0-build.1610097005" />
     <PackageReference Include="JetBrains.Annotations" Version="2020.3.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.2">
       <PrivateAssets>all</PrivateAssets>

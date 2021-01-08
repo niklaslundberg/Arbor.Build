@@ -67,11 +67,11 @@
       },
       "Arbor.Tooler": {
         "type": "Direct",
-        "requested": "[0.11.0-build.1606860363, )",
-        "resolved": "0.11.0-build.1606860363",
-        "contentHash": "0MaYdFZAy90E1YYMqXkK+tlbv8GvhqWkxyUPOEpg9oSfS+p+xOaX9f7JUh6EENRnYghXsVg9U4xdOmYTbsup/g==",
+        "requested": "[0.11.0-build.1610097005, )",
+        "resolved": "0.11.0-build.1610097005",
+        "contentHash": "HyCcMh5favgv6cmqmTUSfYPcStS77c/GG3hFtf1R4gsr9Glm6CB+DJw8W7TVnJsBjfY1Ge2Gv/Ds9TWSh1MSHQ==",
         "dependencies": {
-          "Arbor.Processing": "0.4.0",
+          "Arbor.Processing": "0.6.0",
           "NuGet.Versioning": "[5.0.0, 6.0.0)",
           "Serilog": "[2.8.0, 3.0.0)"
         }
@@ -1741,11 +1741,11 @@
       },
       "Arbor.Tooler": {
         "type": "Direct",
-        "requested": "[0.11.0-build.1606860363, )",
-        "resolved": "0.11.0-build.1606860363",
-        "contentHash": "0MaYdFZAy90E1YYMqXkK+tlbv8GvhqWkxyUPOEpg9oSfS+p+xOaX9f7JUh6EENRnYghXsVg9U4xdOmYTbsup/g==",
+        "requested": "[0.11.0-build.1610097005, )",
+        "resolved": "0.11.0-build.1610097005",
+        "contentHash": "HyCcMh5favgv6cmqmTUSfYPcStS77c/GG3hFtf1R4gsr9Glm6CB+DJw8W7TVnJsBjfY1Ge2Gv/Ds9TWSh1MSHQ==",
         "dependencies": {
-          "Arbor.Processing": "0.4.0",
+          "Arbor.Processing": "0.6.0",
           "NuGet.Versioning": "[5.0.0, 6.0.0)",
           "Serilog": "[2.8.0, 3.0.0)"
         }
