@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.IO;
+using Arbor.Build.Core.Tools.MSBuild;
 using Arbor.FS;
 using Arbor.Tooler;
 using JetBrains.Annotations;
@@ -21,8 +22,13 @@ namespace Arbor.Build.Core.Tools.NuGet
     {
         private CancellationToken _cancellationToken;
         private readonly IFileSystem _fileSystem;
+        private readonly BuildContext _buildContext;
 
-        public NugetVariableProvider(IFileSystem fileSystem) => _fileSystem = fileSystem;
+        public NugetVariableProvider(IFileSystem fileSystem, BuildContext buildContext)
+        {
+            _fileSystem = fileSystem;
+            _buildContext = buildContext;
+        }
 
         private async Task<UPath?> EnsureNuGetExeExistsAsync(ILogger logger, UPath? userSpecifiedNuGetExePath)
         {
@@ -60,8 +66,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             _cancellationToken = cancellationToken;
 
             UPath? userSpecifiedNuGetExePath = buildVariables.GetVariableValueOrDefault(
-                WellKnownVariables.ExternalTools_NuGet_ExePath_Custom,
-                string.Empty)?.ParseAsPath();
+                WellKnownVariables.ExternalTools_NuGet_ExePath_Custom)?.ParseAsPath();
 
             var nuGetExePath =
                 await EnsureNuGetExeExistsAsync(logger, userSpecifiedNuGetExePath).ConfigureAwait(false);
@@ -78,14 +83,11 @@ namespace Arbor.Build.Core.Tools.NuGet
             if (string.IsNullOrWhiteSpace(
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetRestoreEnabled, string.Empty)))
             {
-                var uPath = buildVariables.Require(WellKnownVariables.SourceRoot).Value!.ParseAsPath();
-
-                DirectoryEntry sourceDir = new(_fileSystem, uPath);
 
                 var pathLookupSpecification = new PathLookupSpecification();
-                var packageConfigFiles = sourceDir
+                var packageConfigFiles = _buildContext.SourceRoot
                     .EnumerateFiles("packages.config", SearchOption.AllDirectories).Where(
-                        file => !pathLookupSpecification.IsFileExcluded(file, sourceDir).Item1).ToArray();
+                        file => !pathLookupSpecification.IsFileExcluded(file, _buildContext.SourceRoot).Item1).ToArray();
 
                 if (packageConfigFiles.Any())
                 {

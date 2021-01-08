@@ -169,8 +169,8 @@
       },
       "Arbor.FileSystem": {
         "type": "Transitive",
-        "resolved": "0.3.0-build.1610098134",
-        "contentHash": "NT12e17xgHo5ADb3gmu8vVID7dSX+rvQ6XKPG00iQmM8Mol3EWaLC+J1K8MWv/Kc8Yw4tpIeXH9aSNfdsJtPEQ==",
+        "resolved": "0.3.0-build.1610113208",
+        "contentHash": "7hwoPE3MinDd8yboNJJBOZubCW8wAU/kqT5Zczzy1asrJPy0v1aO8Zy+ETBH5HCwydLkbMhMCb9a17pnalcMOA==",
         "dependencies": {
           "FluentAssertions": "5.10.3",
           "JetBrains.Annotations": "2020.3.0",
@@ -1749,7 +1749,7 @@
           "Arbor.Aesculus": "3.0.2",
           "Arbor.Defensive.Collections": "1.0.0",
           "Arbor.Exceptions": "1.0.0",
-          "Arbor.FileSystem": "0.3.0-build.1610098134",
+          "Arbor.FileSystem": "0.3.0-build.1610113208",
           "Arbor.KVConfiguration.JsonConfiguration": "1.0.1",
           "Arbor.KVConfiguration.Schema.Json": "1.0.1",
           "Arbor.KVConfiguration.UserConfiguration": "1.0.1",
