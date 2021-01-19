@@ -6,9 +6,9 @@ namespace Arbor.Exceptions
 {
     public static class ExceptionExtensions
     {
-        public static bool IsFatal(this Exception ex)
+        public static bool IsFatal(this Exception? ex)
         {
-            if (ex == null)
+            if (ex is null)
             {
                 return false;
             }
