@@ -6,7 +6,7 @@ namespace Arbor.Defensive.Collections
 {
     public static class EnumerableExtensions
     {
-        public static ImmutableArray<T> ToReadOnlyCollection<T>(this IEnumerable<T>? enumerable)
+        public static ImmutableArray<T> ToReadOnlyCollection<T>(this IEnumerable<T> enumerable)
         {
             if (enumerable is null)
             {
