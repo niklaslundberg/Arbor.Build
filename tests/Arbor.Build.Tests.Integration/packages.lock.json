@@ -86,9 +86,9 @@
       },
       "NCrunch.Framework": {
         "type": "Direct",
-        "requested": "[4.5.0, )",
-        "resolved": "4.5.0",
-        "contentHash": "cO00m+ZacW/FTH82PXnXiAsEKTygQwyZO56Y3rrccleaENtnNBZDYK/hWCWQT1YghO/+MUkG6V7GfFw9S1ZZYA==",
+        "requested": "[4.7.0.4, )",
+        "resolved": "4.7.0.4",
+        "contentHash": "Mpx7XHuotlxj+qI+MCaHPQz+59IQqtzwt79CBrGo38p+yzsqoyC59AbwFTXJZwHwXoN5CZ505dd0boNgqPTlDg==",
         "dependencies": {
           "NETStandard.Library": "1.6.1",
           "System.Collections.NonGeneric": "4.3.0"
