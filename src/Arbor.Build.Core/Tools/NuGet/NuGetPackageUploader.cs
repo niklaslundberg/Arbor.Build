@@ -13,6 +13,7 @@ using Arbor.Build.Core.Tools.Git;
 using Arbor.Defensive.Collections;
 using Arbor.FS;
 using Arbor.Processing;
+using Arbor.Tooler;
 using JetBrains.Annotations;
 using NuGet.Packaging;
 using NuGet.Versioning;
@@ -392,7 +393,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 foreach (var nugetPackage in sortedPackages)
                 {
                     bool? packageExists =
-                        await CheckPackageExistsAsync(nugetPackage, nugetExePath, logger, sourceName)
+                        await CheckPackageExistsAsync(nugetPackage, logger, sourceName)
                             .ConfigureAwait(false);
 
                     if (!packageExists.HasValue)
@@ -423,6 +424,8 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             foreach (var nugetPackage in filtered)
             {
+                await VerifyPackage(nugetPackage);
+
                 var exitCode = await UploadNugetPackageAsync(
                     nugetExePath,
                     serverUri,
@@ -444,9 +447,25 @@ namespace Arbor.Build.Core.Tools.NuGet
             return result ? ExitCode.Success : ExitCode.Failure;
         }
 
+        private async Task VerifyPackage(FileEntry nugetPackage)
+        {
+            await using var fs = new FileStream(nugetPackage.FullName, FileMode.Open, FileAccess.Read);
+
+            using var archive = new ZipArchive(fs);
+
+            var tempDirectoryPath = Path.GetTempPath().ParseAsPath() / Guid.NewGuid().ToString();
+
+            var tempDirectory = new DirectoryEntry(nugetPackage.FileSystem, tempDirectoryPath);
+
+            tempDirectory.EnsureExists();
+
+            archive.ExtractToDirectory(tempDirectory.ConvertPathToInternal());
+
+            tempDirectory.DeleteIfExists();
+        }
+
         private static async Task<bool?> CheckPackageExistsAsync(
             FileEntry nugetPackage,
-            FileEntry nugetExePath,
             ILogger logger,
             string? sourceName)
         {
@@ -459,11 +478,12 @@ namespace Arbor.Build.Core.Tools.NuGet
             logger.Debug("Searching for existing NuGet package '{NugetPackage}'", nugetPackage);
 
             string packageVersion;
-            string packageId;
+            NuGetPackageId packageId;
 
             await using (var fs = new FileStream(nugetPackage.FullName, FileMode.Open, FileAccess.Read))
             {
                 using var archive = new ZipArchive(fs);
+
                 ZipArchiveEntry? nuspecEntry =
                     archive.Entries.SingleOrDefault(entry =>
                         Path.GetExtension(entry.Name) is { } extension
@@ -481,64 +501,19 @@ namespace Arbor.Build.Core.Tools.NuGet
                 NuGetVersion nuGetVersion = nuspecReader.GetVersion();
 
                 packageVersion = nuGetVersion.ToNormalizedString();
-                packageId = nuspecReader.GetIdentity().Id;
+                packageId = new NuGetPackageId(nuspecReader.GetIdentity().Id);
             }
 
             var expectedVersion = SemanticVersion.Parse(packageVersion);
 
-            var packageInfo = new {Id = packageId, Version = expectedVersion};
-
-            var args = new List<string> {"list", $"packageid:{packageId}"};
-
-            if (!string.IsNullOrWhiteSpace(sourceName))
-            {
-                logger.Verbose("Using specific source name '{SourceName}'", sourceName);
-                args.Add("-source");
-                args.Add(sourceName);
-            }
-
-            args.Add("-verbosity");
-            args.Add("normal");
-
-            if (packageInfo.Version.IsPrerelease)
-            {
-                logger.Verbose("Package '{Name}' is pre-release", nugetPackage.Name);
-                args.Add("-prerelease");
-            }
-
-            var errorBuilder = new StringBuilder();
-            var standardBuilder = new List<string>();
-
-            string expectedNameAndVersion = $"{packageInfo.Id} {expectedVersion.ToNormalizedString()}";
+            string expectedNameAndVersion = $"{packageId.PackageId} {expectedVersion.ToNormalizedString()}";
 
             logger.Information("Looking for '{ExpectedNameAndVersion}' package", expectedNameAndVersion);
 
-            var exitCode =
-                await
-                    ProcessRunner.ExecuteProcessAsync(
-                        nugetExePath.ConvertPathToInternal(),
-                        args,
-                        (message, prefix) =>
-                        {
-                            standardBuilder.Add(message);
-                            logger.Information("{Prefix} {Message}", prefix, message);
-                        },
-                        (message, prefix) =>
-                        {
-                            errorBuilder.AppendLine(message);
-                            logger.Error("{Prefix} {Message}", prefix, message);
-                        },
-                        logger.Information).ConfigureAwait(false);
+            var nuGetPackageInstaller = new NuGetPackageInstaller(logger: logger);
+            var allVersions = await nuGetPackageInstaller.GetAllVersionsAsync(packageId, nuGetSource: sourceName);
 
-            if (!exitCode.IsSuccess)
-            {
-                logger.Error("Could not execute process to check if package '{ExpectedNameAndVersion}' exists",
-                    expectedNameAndVersion);
-                return null;
-            }
-
-            bool foundSpecificPackage = standardBuilder.Any(
-                line => line.Equals(expectedNameAndVersion, StringComparison.OrdinalIgnoreCase));
+            bool foundSpecificPackage = allVersions.Contains(expectedVersion);
 
             if (foundSpecificPackage)
             {
