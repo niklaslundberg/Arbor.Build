@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -152,8 +153,12 @@ namespace Arbor.Build.Core.Tools.Symbols
             bool result = true;
 
             var allPackages = oldSymbolPackages.Concat(newSymbolPackages).ToList();
-
-            foreach (var nugetPackage in allPackages)
+            
+            var filtered = allPackages
+                .Where(package => !package.Name.Contains("dependabot", StringComparison.OrdinalIgnoreCase))
+                .ToImmutableArray();
+            
+            foreach (var nugetPackage in filtered)
             {
                 ExitCode exitCode =
                     await UploadNugetPackageAsync(nugetExePath, symbolServerUrl, apiKey, nugetPackage, logger, timeout)

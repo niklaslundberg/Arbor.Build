@@ -6,20 +6,16 @@ namespace Arbor.Exceptions
 {
     public static class ExceptionExtensions
     {
-        public static bool IsFatal(this Exception? ex)
-        {
-            if (ex is null)
+        public static bool IsFatal(this Exception? ex) =>
+            ex switch
             {
-                return false;
-            }
-
-            return
-                ex is StackOverflowException ||
-                ex is OutOfMemoryException ||
-                ex is AccessViolationException ||
-                ex is AppDomainUnloadedException ||
-                ex is ThreadAbortException ||
-                ex is SEHException;
-        }
+                StackOverflowException => true,
+                OutOfMemoryException => true,
+                AccessViolationException => true,
+                AppDomainUnloadedException => true,
+                ThreadAbortException => true,
+                SEHException => true,
+                _ => false
+            };
     }
 }

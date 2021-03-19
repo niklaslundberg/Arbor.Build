@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
@@ -416,7 +417,11 @@ namespace Arbor.Build.Core.Tools.NuGet
                 logger.Information("Skipping checking if packages already exists in NuGet source");
             }
 
-            foreach (var nugetPackage in sortedPackages)
+            var filtered = sortedPackages
+                .Where(package => !package.Name.Contains("dependabot", StringComparison.OrdinalIgnoreCase))
+                .ToImmutableArray();
+
+            foreach (var nugetPackage in filtered)
             {
                 var exitCode = await UploadNugetPackageAsync(
                     nugetExePath,
