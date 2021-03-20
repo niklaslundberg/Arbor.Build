@@ -449,7 +449,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
         private async Task VerifyPackage(FileEntry nugetPackage)
         {
-            await using var fs = new FileStream(nugetPackage.FullName, FileMode.Open, FileAccess.Read);
+            await using var fs = new FileStream(nugetPackage.ConvertPathToInternal(), FileMode.Open, FileAccess.Read);
 
             using var archive = new ZipArchive(fs);
 
@@ -480,7 +480,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             string packageVersion;
             NuGetPackageId packageId;
 
-            await using (var fs = new FileStream(nugetPackage.FullName, FileMode.Open, FileAccess.Read))
+            await using (var fs = new FileStream(nugetPackage.ConvertPathToInternal(), FileMode.Open, FileAccess.Read))
             {
                 using var archive = new ZipArchive(fs);
 
