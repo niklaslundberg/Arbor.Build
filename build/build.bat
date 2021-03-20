@@ -46,7 +46,7 @@ SET Arbor.Build.NuGet.PackageUpload.PackageExcludeStartsWithPatterns=dotnet-
 
 SET Arbor.Build.Tests.IgnoredCategories=dummyexcluded,dummyexcluded2,dummyexclude3
 
-SET Arbor.Build.NuGet.PackageUpload.CheckIfPackagesExistsEnabled=true
+SET Arbor.Build.NuGet.PackageUpload.CheckIfPackagesExistsEnabled=false
 
 
 IF "%Arbor.Build.ShowAvailableVariablesEnabled%" == "" (
