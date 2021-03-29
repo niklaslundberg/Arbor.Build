@@ -94,16 +94,26 @@ namespace Arbor.Build.Core.Tools.Git
                 throw new ArgumentNullException(nameof(branchName));
             }
 
-            SemanticVersion version = BranchSemVerMajorMinorPatch(branchName, environmentVariables);
+            SemanticVersion? version = BranchSemVerMajorMinorPatch(branchName, environmentVariables);
+
+            if (version is null)
+            {
+                return false;
+            }
 
             return version.Major > 0 || version.Minor > 0 || version.Patch > 0;
         }
 
-        public static SemanticVersion BranchSemVerMajorMinorPatch(string? branchName, IEnvironmentVariables environmentVariables)
+        public static SemanticVersion? BranchSemVerMajorMinorPatch(string? branchName, IEnvironmentVariables environmentVariables)
         {
             if (string.IsNullOrWhiteSpace(branchName))
             {
                 throw new ArgumentNullException(nameof(branchName));
+            }
+
+            if (branchName.Contains("dependabot/", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
             }
 
             string? splitCharactersVariable =
