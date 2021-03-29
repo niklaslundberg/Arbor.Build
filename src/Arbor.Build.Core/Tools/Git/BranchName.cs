@@ -5,9 +5,9 @@ namespace Arbor.Build.Core.Tools.Git
 {
     public sealed class BranchName
     {
-        public static readonly BranchName Main = new BranchName("main");
-        public static readonly BranchName Master = new BranchName("master");
-        public static readonly BranchName Develop = new BranchName("develop");
+        public static readonly BranchName Main = new("main");
+        public static readonly BranchName Master = new("master");
+        public static readonly BranchName Develop = new("develop");
 
         public BranchName(string name)
         {
