@@ -366,8 +366,8 @@
       },
       "Newtonsoft.Json": {
         "type": "Transitive",
-        "resolved": "12.0.3",
-        "contentHash": "6mgjfnRB4jKMlzHSl+VD+oUc1IebOZabkbyWj2RiTgWwYPPuaK1H97G1sHqGwPlS5npiF5Q0OrxN1wni2n5QWg=="
+        "resolved": "13.0.1",
+        "contentHash": "ppPFpBcvxdsfUonNcvITKqLl3bqxWbDCZIzDWHzjpdAHRFfZe0Dw9HmA0+za13IdyrgJwpkDTDA9fHaxOrt20A=="
       },
       "NuGet.Common": {
         "type": "Transitive",
@@ -1428,7 +1428,7 @@
           "Microsoft.Web.Xdt": "3.1.0",
           "Microsoft.Windows.Compatibility": "5.0.2",
           "NUnit": "3.13.1",
-          "Newtonsoft.Json": "12.0.3",
+          "Newtonsoft.Json": "13.0.1",
           "NuGet.Packaging": "5.9.0",
           "NuGet.Versioning": "5.9.0",
           "Serilog": "2.10.0",
@@ -1821,8 +1821,8 @@
       },
       "Newtonsoft.Json": {
         "type": "Transitive",
-        "resolved": "12.0.3",
-        "contentHash": "6mgjfnRB4jKMlzHSl+VD+oUc1IebOZabkbyWj2RiTgWwYPPuaK1H97G1sHqGwPlS5npiF5Q0OrxN1wni2n5QWg=="
+        "resolved": "13.0.1",
+        "contentHash": "ppPFpBcvxdsfUonNcvITKqLl3bqxWbDCZIzDWHzjpdAHRFfZe0Dw9HmA0+za13IdyrgJwpkDTDA9fHaxOrt20A=="
       },
       "NuGet.Common": {
         "type": "Transitive",
@@ -2878,7 +2878,7 @@
           "Microsoft.Web.Xdt": "3.1.0",
           "Microsoft.Windows.Compatibility": "5.0.2",
           "NUnit": "3.13.1",
-          "Newtonsoft.Json": "12.0.3",
+          "Newtonsoft.Json": "13.0.1",
           "NuGet.Packaging": "5.9.0",
           "NuGet.Versioning": "5.9.0",
           "Serilog": "2.10.0",
