@@ -7,12 +7,12 @@
   <ItemGroup>
     <PackageReference Include="Arbor.FileSystem" Version="0.4.0" />
     <PackageReference Include="Arbor.Aesculus" Version="3.0.2" />
-    <PackageReference Include="Arbor.KVConfiguration.JsonConfiguration" Version="1.1.6" />
-    <PackageReference Include="Arbor.KVConfiguration.Schema.Json" Version="1.1.6" />
-    <PackageReference Include="Arbor.KVConfiguration.UserConfiguration" Version="1.1.6" />
+    <PackageReference Include="Arbor.KVConfiguration.JsonConfiguration" Version="1.2.0-build.1617034280" />
+    <PackageReference Include="Arbor.KVConfiguration.Schema.Json" Version="1.2.0-build.1617034280" />
+    <PackageReference Include="Arbor.KVConfiguration.UserConfiguration" Version="1.2.0-build.1617034280" />
     <PackageReference Include="Arbor.Processing" Version="0.6.0" />
-    <PackageReference Include="Arbor.Sorbus" Version="3.1.0" />
-    <PackageReference Include="Arbor.Tooler" Version="0.12.0" />
+    <PackageReference Include="Arbor.Sorbus" Version="4.0.0-build.1617049367" />
+    <PackageReference Include="Arbor.Tooler" Version="0.13.0-build.1617034623" />
     <PackageReference Include="Autofac" Version="6.1.0" />
     <PackageReference Include="JetBrains.Annotations" Version="2020.3.0" />
     <PackageReference Include="Machine.Specifications" Version="1.1.0-beta.1" />
