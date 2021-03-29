@@ -8,12 +8,8 @@
     <OutputType>Exe</OutputType>
     <AssemblyName>dotnet-arbor-build</AssemblyName>
     <StartupObject />
-    <LangVersion>8</LangVersion>
+    <FileVersion>$(Version)</FileVersion>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Folder Include="Properties\" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Arbor.Aesculus" Version="3.0.2" />
