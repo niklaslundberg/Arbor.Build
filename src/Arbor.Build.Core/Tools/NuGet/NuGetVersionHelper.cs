@@ -168,7 +168,6 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             string normalizedBranchName = branch.Normalize();
 
-
             string trimmedName = InvalidCharacters.Aggregate(
                 normalizedBranchName,
                 (current, invalidCharacter) => current.Replace(invalidCharacter, string.Empty, StringComparison.Ordinal));

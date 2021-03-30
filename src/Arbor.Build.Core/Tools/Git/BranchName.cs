@@ -8,6 +8,7 @@ namespace Arbor.Build.Core.Tools.Git
         public static readonly BranchName Main = new("main");
         public static readonly BranchName Master = new("master");
         public static readonly BranchName Develop = new("develop");
+        private static readonly string[] InvalidCharacters = { "/", @"\", "\"" };
 
         public BranchName(string name)
         {
@@ -44,17 +45,12 @@ namespace Arbor.Build.Core.Tools.Git
 
         public string Normalize()
         {
-            var invalidCharacters = new[] {"/", @"\", "\""};
-
-            string branchNameWithValidCharacters = invalidCharacters.Aggregate(
-                Name,
+            string branchNameWithValidCharacters = InvalidCharacters.Aggregate(
+                LogicalName,
                 (current, invalidCharacter) =>
                     current.Replace(invalidCharacter, "-", StringComparison.Ordinal));
 
-            string removedFeatureInName =
-                branchNameWithValidCharacters.Replace("feature-", string.Empty, StringComparison.OrdinalIgnoreCase);
-
-            return removedFeatureInName;
+            return branchNameWithValidCharacters.Replace("feature-", string.Empty, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

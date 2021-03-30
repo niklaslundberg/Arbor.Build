@@ -38,6 +38,7 @@ namespace Arbor.Build.Tests.Integration.Versioning
         [InlineData("1.2.3", "main", "1.2.3")]
         [InlineData("1.2.3", "master", "1.2.3")]
         [InlineData("1.2.3.4", "develop", "1.2.3-build.4")]
+        [InlineData("1.2.3.4", "refs/heads/myfeature", "1.2.3-build.4.myfeature")]
         public void KnownBranchShouldNotBeUsedAsSuffix(string baseVersion, string branchName, string expected)
         {
             string version = NuGetVersionHelper.GetVersion(baseVersion,
