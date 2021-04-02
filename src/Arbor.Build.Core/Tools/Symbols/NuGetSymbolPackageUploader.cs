@@ -153,9 +153,10 @@ namespace Arbor.Build.Core.Tools.Symbols
             bool result = true;
 
             var allPackages = oldSymbolPackages.Concat(newSymbolPackages).ToList();
-            
+
             var filtered = allPackages
-                .Where(package => !package.Name.Contains("dependabot", StringComparison.OrdinalIgnoreCase))
+                .Where(package => !package.Name.Contains("dependabot", StringComparison.OrdinalIgnoreCase)
+                                  && !package.Name.Contains("-refs-tags-"))
                 .ToImmutableArray();
             
             foreach (var nugetPackage in filtered)

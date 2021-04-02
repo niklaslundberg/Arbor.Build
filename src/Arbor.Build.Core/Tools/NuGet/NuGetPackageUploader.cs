@@ -419,7 +419,8 @@ namespace Arbor.Build.Core.Tools.NuGet
             }
 
             var filtered = sortedPackages
-                .Where(package => !package.Name.Contains("dependabot", StringComparison.OrdinalIgnoreCase))
+                .Where(package => !package.Name.Contains("dependabot", StringComparison.OrdinalIgnoreCase)
+                                  && !package.Name.Contains("-refs-tags-"))
                 .ToImmutableArray();
 
             foreach (var nugetPackage in filtered)
