@@ -98,13 +98,39 @@ namespace Arbor.Build.Core.Tools.Testing
 
             logger.Debug("Using dotnet.exe in path '{DotNetExePath}'", _fileSystem.ConvertPathToInternal(dotNetExePath));
 
-            var testDirectories = _buildContext.SourceRoot
-                .GetFiles("*test*.csproj", SearchOption.AllDirectories)
+            var candidateProjects = _buildContext.SourceRoot
+                .GetFiles("*.csproj", SearchOption.AllDirectories)
                 .Where(file =>
-                    file?.Directory is {} && (assemblyFilePrefix.Length == 0 || assemblyFilePrefix.Any(prefix =>
+                    file?.Directory is { } && (assemblyFilePrefix.Length == 0 || assemblyFilePrefix.Any(prefix =>
                         file.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))))
-                .Select(file => file.Directory)
-                .ToHashSet();
+                .ToArray();
+
+            List<FileEntry> testProjects = new();
+
+            async Task IsTestProject(FileEntry fileEntry)
+            {
+                var msBuildProject = await MsBuildProject.LoadFrom(fileEntry);
+
+                if (msBuildProject.PackageReferences.Any(reference => string.Equals(reference.Package, "Microsoft.NET.Test.SDK" ,StringComparison.OrdinalIgnoreCase)))
+                {
+                    testProjects.Add(fileEntry);
+                }
+            }
+
+            foreach (var candidateProject in candidateProjects)
+            {
+                await IsTestProject(candidateProject);
+            }
+
+            if (testProjects.Count == 0)
+            {
+                logger.Information("Could not find any projects with a reference to Microsoft.NET.Test.SDK");
+                return ExitCode.Success;
+            }
+
+            logger.Information("Found {Count} projects with a reference to Microsoft.NET.Test.SDK", testProjects.Count);
+
+            var testDirectories = testProjects.Select(project => project.Directory).ToHashSet();
 
             var exitCode = ExitCode.Success;
 
