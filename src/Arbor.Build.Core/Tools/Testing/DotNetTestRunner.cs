@@ -143,7 +143,6 @@ namespace Arbor.Build.Core.Tools.Testing
 
                 if (!configuration.Equals(AnyConfiguration, StringComparison.OrdinalIgnoreCase))
                 {
-                    arguments.Add("--no-build");
                     arguments.Add("--configuration");
                     arguments.Add(configuration);
                 }
