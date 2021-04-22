@@ -130,8 +130,8 @@
       },
       "Autofac": {
         "type": "Transitive",
-        "resolved": "6.1.0",
-        "contentHash": "22aXncFDye08TsXHobcxAoZFBeaJ9nrAxGzk9YHLLaIkYO7aeAA0Sz7Mii9qsfB76S1gdhebqMv8QsnknJMT/w==",
+        "resolved": "6.2.0",
+        "contentHash": "BX8IM0GANE38uSr4QwXL4PgA8vWWYt2P5cZzipn/vDnf0fDbPSGKSHEroJ09rB7ANxdyf7MdEgVs+pvL8kwYCg==",
         "dependencies": {
           "System.Diagnostics.DiagnosticSource": "4.7.1"
         }
@@ -511,8 +511,8 @@
       },
       "Serilog.Sinks.Seq": {
         "type": "Transitive",
-        "resolved": "5.0.0",
-        "contentHash": "jBVpmd7O5YdY9mOkn+k6hmjjrejeq7FOfT64MeMr0Rdmy+AeQbYKOirlOKuX/Vl0xvHWQEtICC34J7TZZkrY6g==",
+        "resolved": "5.0.1",
+        "contentHash": "SyoNjPcnV+vuOGtBErh2pMp4uimyqHqv8UnKcN8VY7c1DuDdbxelaWn1PI5gu/tyblhKy/mFSa3Jcvth07a5+A==",
         "dependencies": {
           "Serilog": "2.10.0",
           "Serilog.Formatting.Compact": "1.1.0",
@@ -1400,7 +1400,7 @@
           "Arbor.Processing": "0.6.0",
           "Arbor.Sorbus": "4.0.0",
           "Arbor.Tooler": "0.13.0",
-          "Autofac": "6.1.0",
+          "Autofac": "6.2.0",
           "JetBrains.Annotations": "2021.1.0",
           "MSTest.TestFramework": "2.2.3",
           "Machine.Specifications": "1.0.0",
@@ -1413,7 +1413,7 @@
           "NuGet.Versioning": "5.9.1",
           "Serilog": "2.10.0",
           "Serilog.Sinks.Console": "3.1.1",
-          "Serilog.Sinks.Seq": "5.0.0",
+          "Serilog.Sinks.Seq": "5.0.1",
           "System.ComponentModel.Annotations": "5.0.0",
           "System.IdentityModel.Tokens.Jwt": "6.10.2",
           "System.Runtime": "4.3.1",
