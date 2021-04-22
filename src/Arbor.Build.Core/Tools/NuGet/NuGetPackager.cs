@@ -212,9 +212,6 @@ namespace Arbor.Build.Core.Tools.NuGet
                 ? packageConfiguration.PackageIdOverride
                 : NuGetPackageIdHelper.CreateNugetPackageId(
                     nuSpec.PackageId,
-                    packageConfiguration.IsReleaseBuild,
-                    packageConfiguration.BranchName,
-                    packageConfiguration.BranchNameEnabled,
                     packageConfiguration.PackageNameSuffix);
 
             if (string.IsNullOrWhiteSpace(packageConfiguration.PackageIdOverride))

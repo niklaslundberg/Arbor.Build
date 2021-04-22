@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using Arbor.Build.Core.GenericExtensions;
 using Arbor.Build.Core.Tools.Git;
 using Arbor.Build.Core.Tools.MSBuild;
@@ -10,6 +12,14 @@ namespace Arbor.Build.Core.Tools.NuGet
 {
     public static class NuGetVersionHelper
     {
+        private static readonly List<string> InvalidCharacters = new() { "<", "@", ">", "|", "?", ":", ",", "."
+            , "/"
+            , "\\"
+            , "+"
+            , "="
+
+        };
+
         public static string GetVersion(
             string version,
             bool isReleaseBuild,
@@ -109,16 +119,19 @@ namespace Arbor.Build.Core.Tools.NuGet
                 }
             }
 
-            string final = !string.IsNullOrWhiteSpace(packageBuildMetadata)
-                ? $"{buildVersion}+{packageBuildMetadata.TrimStart('+')}"
-                : buildVersion;
+            string branchSuffixed = CreateNugetVersionWithBranchName(buildVersion, branchName);
 
-            if (!SemanticVersion.TryParse(final, out SemanticVersion _))
+            string withMetadata = !string.IsNullOrWhiteSpace(packageBuildMetadata)
+                ? $"{branchSuffixed}+{packageBuildMetadata.TrimStart('+')}"
+                : branchSuffixed;
+
+            if (!SemanticVersion.TryParse(withMetadata, out SemanticVersion _))
             {
-                throw new InvalidOperationException($"The NuGet version '{final}' is not a valid Semver 2.0 version");
+                throw new InvalidOperationException($"The NuGet version '{withMetadata}' is not a valid Semver 2.0 version");
             }
 
-            return final;
+
+            return withMetadata;
         }
 
         public static string GetPackageVersion(VersionOptions versionOptions)
@@ -138,6 +151,29 @@ namespace Arbor.Build.Core.Tools.NuGet
                 version).ToNormalizedString();
 
             return packageVersion;
+        }
+
+
+        private static string CreateNugetVersionWithBranchName(string baseVersion, BranchName? branch)
+        {
+            if (branch is null)
+            {
+                return baseVersion;
+            }
+
+            if (!branch.IsFeatureBranch())
+            {
+                return baseVersion;
+            }
+
+            string normalizedBranchName = branch.Normalize();
+
+            string trimmedName = InvalidCharacters.Aggregate(
+                normalizedBranchName,
+                (current, invalidCharacter) => current.Replace(invalidCharacter, string.Empty, StringComparison.Ordinal));
+
+
+            return $"{baseVersion}.{trimmedName}";
         }
     }
 }

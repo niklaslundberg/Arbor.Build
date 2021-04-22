@@ -22,9 +22,11 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 return false;
             }
 
-            bool hasTestSdkReference = project.Project.PackageReferences.Any(reference => reference.Package is {} packageName &&
-                                                                              packageName.Equals(DotNetSdk.Test.SdkName,
-                                                                                  StringComparison.OrdinalIgnoreCase));
+            bool hasTestSdkReference = project.Project.PackageReferences.Any(reference =>
+                reference.Package is { } packageName &&
+                packageName.Equals(DotNetSdk.Test.SdkName,
+                    StringComparison.OrdinalIgnoreCase));
+
             if (hasTestSdkReference)
             {
                 return false;
@@ -35,10 +37,9 @@ namespace Arbor.Build.Core.Tools.MSBuild
                                                 msBuildPropertyGroup.Properties.Any(msBuildProperty =>
                                                     msBuildProperty.Name.Equals("ArborPublishEnabled",
                                                         StringComparison.Ordinal)));
-            return
-                hasArborPublishOrDefault ||
-                HasExplicitExeOutputType(project) ||
-                HasPublishPackageEnabled(project);
+            return hasArborPublishOrDefault
+                   || HasExplicitExeOutputType(project)
+                   || HasPublishPackageEnabled(project);
         }
 
         public
