@@ -37,7 +37,7 @@ namespace Arbor.Build.Core.IO
 
             var ignoredFileStartsWithPatterns = new List<string>(10) { ".", "_", "ncrunchTemp_" };
 
-            var ignoredDirectorySegmentParts = new List<string>(5);
+            var ignoredDirectorySegmentParts = new List<string>(5) {"_"};
 
             var ignoredDirectoryStartsWithPatterns = new List<string>(10) { "_" };
 
