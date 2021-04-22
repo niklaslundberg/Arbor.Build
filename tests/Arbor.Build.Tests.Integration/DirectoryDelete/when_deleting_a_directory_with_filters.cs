@@ -73,7 +73,7 @@ namespace Arbor.Build.Tests.Integration.DirectoryDelete
 
             foreach (var enumerateDirectory in enumerateDirectories)
             {
-                Console.WriteLine(enumerateDirectory.FullName);
+                Console.WriteLine(enumerateDirectory.ConvertPathToInternal());
             }
 
             string[] existing = enumerateDirectories.Select(dir => dir.Name).ToArray();
@@ -87,7 +87,7 @@ namespace Arbor.Build.Tests.Integration.DirectoryDelete
 
             foreach (var filePath in filesPaths)
             {
-                Console.WriteLine(filePath.FullName);
+                Console.WriteLine(filePath.ConvertPathToInternal());
             }
 
             string[] existingFilePaths = filesPaths.Select(file => file.Name).ToArray();

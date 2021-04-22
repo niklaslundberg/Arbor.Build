@@ -476,7 +476,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 return null;
             }
 
-            logger.Debug("Searching for existing NuGet package '{NugetPackage}'", nugetPackage);
+            logger.Debug("Searching for existing NuGet package '{NugetPackage}'", nugetPackage.ConvertPathToInternal());
 
             string packageVersion;
             NuGetPackageId packageId;
