@@ -97,7 +97,7 @@
         public const string BuildNumberInNuGetPackageArtifactsEnabled =
             "Arbor.Build.NuGet.Package.Artifacts.BuildNumber.Enabled";
 
-        [VariableDescription("Flag to indicate if the NuGet package id has branch name", "false")]
+        [VariableDescription("Flag to indicate if the NuGet package id has branch name", "true")]
         public const string NuGetPackageIdBranchNameEnabled =
             "Arbor.Build.NuGet.Package.Artifacts.PackageId.BranchNameEnabled";
 
