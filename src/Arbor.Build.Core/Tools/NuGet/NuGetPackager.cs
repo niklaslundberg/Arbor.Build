@@ -208,11 +208,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                     packageConfiguration.PackageIdOverride);
             }
 
-            string packageId = !string.IsNullOrWhiteSpace(packageConfiguration.PackageIdOverride)
-                ? packageConfiguration.PackageIdOverride
-                : NuGetPackageIdHelper.CreateNugetPackageId(
-                    nuSpec.PackageId,
-                    packageConfiguration.PackageNameSuffix);
+            string packageId =  NuGetPackageIdHelper.CreateNugetPackageId(nuSpec.PackageId, packageConfiguration);
 
             if (string.IsNullOrWhiteSpace(packageConfiguration.PackageIdOverride))
             {

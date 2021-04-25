@@ -89,17 +89,15 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             int timeoutInSeconds = buildVariables.GetInt32ByKey(WellKnownVariables.NuGetPackageTimeoutInSeconds, defaultValue: 60);
 
-            using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeoutInSeconds)))
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeoutInSeconds));
+            using (CancellationTokenSource.CreateLinkedTokenSource(cancellationToken,cts.Token))
             {
-                using (CancellationTokenSource.CreateLinkedTokenSource(cancellationToken,cts.Token))
-                {
-                    result =
-                        await ProcessPackagesAsync(packageSpecifications,
-                                packageConfiguration,
-                                logger,
-                                cancellationToken)
-                            .ConfigureAwait(false);
-                }
+                result =
+                    await ProcessPackagesAsync(packageSpecifications,
+                            packageConfiguration,
+                            logger,
+                            cancellationToken)
+                        .ConfigureAwait(false);
             }
 
             return result;
