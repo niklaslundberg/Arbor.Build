@@ -132,16 +132,16 @@ namespace Arbor.Build.Core.Tools.Testing
 
             logger.Information("Found {Count} projects with a reference to Microsoft.NET.Test.SDK", testProjects.Count);
 
-            var testDirectories = testProjects.Select(project => project.Directory).ToHashSet();
+            var testProjectFiles = testProjects.Select(project => project).ToHashSet();
 
             var exitCode = ExitCode.Success;
 
-            foreach (var testDirectory in testDirectories)
+            foreach (var testProject in testProjectFiles)
             {
-                var directoryEntry = testDirectory;
+                var directoryEntry = testProject;
                 string xmlReportName = $"dotnet.{directoryEntry.Name}.trx";
 
-                var arguments = new List<string> {"test", _fileSystem.ConvertPathToInternal(testDirectory.Path)};
+                var arguments = new List<string> {"test", _fileSystem.ConvertPathToInternal(testProject.Path)};
 
                 if (!configuration.Equals(AnyConfiguration, StringComparison.OrdinalIgnoreCase))
                 {

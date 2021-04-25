@@ -47,11 +47,6 @@ namespace Arbor.Build.Core.Tools.NuGet
                 throw new ArgumentNullException(nameof(nugetExePath));
             }
 
-            if (!packagesDirectory.FileSystem.FileExists(nugetExePath))
-            {
-                throw new FileNotFoundException($"Could not find NuGet exe path, '{nugetExePath}'");
-            }
-
             if (!packagesDirectory.Exists)
             {
                 throw new DirectoryNotFoundException($"Could not find package directory, '{packagesDirectory}'");
