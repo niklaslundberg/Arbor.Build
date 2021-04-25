@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.MSBuild;
 using Arbor.Build.Core.Tools.NuGet;
 using Arbor.Defensive.Collections;
@@ -98,12 +99,13 @@ namespace Arbor.Build.Core.Tools.Testing
 
             logger.Debug("Using dotnet.exe in path '{DotNetExePath}'", _fileSystem.ConvertPathToInternal(dotNetExePath));
 
-            var candidateProjects = _buildContext.SourceRoot
-                .GetFiles("*.csproj", SearchOption.AllDirectories)
-                .Where(file =>
-                    file?.Directory is { } && (assemblyFilePrefix.Length == 0 || assemblyFilePrefix.Any(prefix =>
-                        file.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))))
-                .ToArray();
+            var candidateProjects =
+                _buildContext.SourceRoot.GetFilesRecursive(new List<string> {".csproj"},
+                        DefaultPaths.DefaultPathLookupSpecification, _buildContext.SourceRoot)
+                    .Where(file =>
+                        assemblyFilePrefix.Length == 0 || assemblyFilePrefix.Any(prefix =>
+                            file.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
+                    .ToArray();
 
             List<FileEntry> testProjects = new();
 
@@ -143,7 +145,6 @@ namespace Arbor.Build.Core.Tools.Testing
 
                 if (!configuration.Equals(AnyConfiguration, StringComparison.OrdinalIgnoreCase))
                 {
-                    arguments.Add("--no-build");
                     arguments.Add("--configuration");
                     arguments.Add(configuration);
                 }
