@@ -1,0 +1,67 @@
+version: 2
+updates:
+- package-ecosystem: nuget
+  directory: "/"
+  schedule:
+    interval: daily
+    time: "04:00"
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: Autofac
+    versions:
+    - 6.2.0
+  - dependency-name: Serilog.Sinks.Seq
+    versions:
+    - 5.0.1
+  - dependency-name: System.IdentityModel.Tokens.Jwt
+    versions:
+    - 6.10.1
+    - 6.10.2
+    - 6.9.0
+  - dependency-name: NuGet.Versioning
+    versions:
+    - 5.9.0
+    - 5.9.1
+  - dependency-name: NuGet.Packaging
+    versions:
+    - 5.9.0
+    - 5.9.1
+  - dependency-name: JetBrains.Annotations
+    versions:
+    - 2021.1.0
+  - dependency-name: Arbor.Sorbus
+    versions:
+    - 4.0.0
+  - dependency-name: MSTest.TestFramework
+    versions:
+    - 2.2.1
+    - 2.2.2
+    - 2.2.3
+  - dependency-name: Microsoft.CodeAnalysis.CSharp
+    versions:
+    - 3.9.0
+  - dependency-name: Microsoft.NET.Test.Sdk
+    versions:
+    - 16.9.1
+  - dependency-name: Arbor.Tooler
+    versions:
+    - 0.11.0
+    - 0.12.0
+  - dependency-name: NUnit
+    versions:
+    - 3.13.1
+  - dependency-name: Arbor.FileSystem
+    versions:
+    - 0.3.0-build.1611954435
+  - dependency-name: Microsoft.Windows.Compatibility
+    versions:
+    - 5.0.1
+  - dependency-name: Arbor.KVConfiguration.JsonConfiguration
+    versions:
+    - 1.1.4
+  - dependency-name: Arbor.KVConfiguration.UserConfiguration
+    versions:
+    - 1.1.4
+  - dependency-name: Arbor.KVConfiguration.Schema.Json
+    versions:
+    - 1.1.4
