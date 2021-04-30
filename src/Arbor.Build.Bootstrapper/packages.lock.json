@@ -12,7 +12,7 @@
         "type": "Direct",
         "requested": "[0.14.2, )",
         "resolved": "0.14.2",
-        "contentHash": "PGotQ8hmRvyZvZ3yJB+Gj8JoefXiuYWr3KRqbHO2PK+z7hook7T/I+vqxZUSJW5FATIbqUF3vhT4gQSm0uk3CQ==",
+        "contentHash": "E0PqP4Nx9i8EqXszTEIwSM9Zr3fFmZMleRXoAWIQMGuZ++bJa5RJA+v+7pWSI9F2IQBMWM6iRVeJeqzfeL7MPA==",
         "dependencies": {
           "Arbor.Processing": "0.6.0",
           "NewtonSoft.Json": "12.0.1",
@@ -1493,7 +1493,7 @@
         "type": "Direct",
         "requested": "[0.14.2, )",
         "resolved": "0.14.2",
-        "contentHash": "PGotQ8hmRvyZvZ3yJB+Gj8JoefXiuYWr3KRqbHO2PK+z7hook7T/I+vqxZUSJW5FATIbqUF3vhT4gQSm0uk3CQ==",
+        "contentHash": "E0PqP4Nx9i8EqXszTEIwSM9Zr3fFmZMleRXoAWIQMGuZ++bJa5RJA+v+7pWSI9F2IQBMWM6iRVeJeqzfeL7MPA==",
         "dependencies": {
           "Arbor.Processing": "0.6.0",
           "NewtonSoft.Json": "12.0.1",
