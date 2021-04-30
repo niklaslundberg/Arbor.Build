@@ -32,6 +32,10 @@
         {
             "key":  "Arbor.Build.NuGet.Package.CreateNuGetWebPackages.Enabled",
             "value": true
+        },
+        {
+            "key":  "Arbor.Build.NetAssembly.PatchingEnabled",
+            "value": false
         }
     ]
 }
