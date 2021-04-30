@@ -360,7 +360,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             if (fileBasedLookupResultPath is {})
             {
-                logger.Information("Found MSBuild at '{FileBasedLookupResultPath}'", fileBasedLookupResultPath);
+                logger.Information("Found MSBuild at '{FileBasedLookupResultPath}'", _fileSystem.ConvertPathToInternal(fileBasedLookupResultPath));
 
                 IVariable[] variables =
                 {
@@ -372,7 +372,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 return variables.ToImmutableArray();
             }
 
-            logger.Debug("Could not find MSBuild.exe in any of paths {Paths}", possiblePaths);
+            logger.Debug("Could not find MSBuild.exe in any of paths {Paths}", possiblePaths.Select(path => _fileSystem.ConvertPathToInternal(path)).ToArray());
 
             string? foundPath = null;
 
@@ -431,7 +431,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 if (!string.IsNullOrWhiteSpace(fromEnvironmentVariable))
                 {
                     logger.Information("Using MSBuild exe path '{FoundPath}' from environment variable {MsbuildPath}",
-                        foundPath,
+                        _fileSystem.ConvertPathToInternal(foundPath.ParseAsPath()),
                         msbuildPath);
                     foundPath = fromEnvironmentVariable;
                 }
@@ -443,7 +443,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 }
             }
 
-            logger.Information("Using MSBuild exe path '{FoundPath}'", foundPath);
+            logger.Information("Using MSBuild exe path '{FoundPath}'", _fileSystem.ConvertPathToInternal(foundPath.ParseAsPath()));
 
             IVariable[] environmentVariables =
             {

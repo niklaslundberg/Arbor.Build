@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <PackageReference Include="Arbor.Aesculus" Version="3.2.0" />
-    <PackageReference Include="Arbor.Tooler" Version="0.13.0" />
+    <PackageReference Include="Arbor.Tooler" Version="0.14.2" />
     <PackageReference Include="JetBrains.Annotations" Version="2021.1.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.2">
       <PrivateAssets>all</PrivateAssets>
