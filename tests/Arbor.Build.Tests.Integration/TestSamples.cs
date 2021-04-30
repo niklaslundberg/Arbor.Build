@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Arbor.Build.Core;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.Logging;
+using Arbor.Build.Core.Tools.NuGet;
 using Arbor.Build.Tests.Integration.Tests.MSpec;
 using Arbor.FS;
 using Serilog;
@@ -33,39 +34,40 @@ namespace Arbor.Build.Tests.Integration
 
         [MemberData(nameof(Data))]
         [Theory]
-        public async Task RunBuildOnExampleProject(string fullPath)
+        public async Task RunBuildOnExampleProject(string directoryName)
         {
-            UPath path = fullPath.ParseAsPath();
-            var samplesDirectory = GetSamplesDirectory();
-
-            if (samplesDirectory.Path == path)
+            if (directoryName == "")
             {
-                _testOutputHelper.WriteLine($"Skipping test for {fullPath}, no samples found starting with _");
+                _testOutputHelper.WriteLine($"Skipping sample tests, no samples found starting with _");
                 return;
             }
 
-            _testOutputHelper.WriteLine($"Testing {fullPath}");
+            var samplesDirectory = GetSamplesDirectory();
+
+            var sampleDirectory = samplesDirectory.GetDirectories(directoryName).Single();
+
+            _testOutputHelper.WriteLine($"Testing {sampleDirectory.ConvertPathToInternal()}");
 
             var environmentVariables =
                 new FallbackEnvironment(new EnvironmentVariables(), new DefaultEnvironmentVariables());
 
             environmentVariables.SetEnvironmentVariable(WellKnownVariables.BranchName, "develop");
-            if (path.FullName.Contains("NoSourceRootDefined", StringComparison.InvariantCulture))
+            if (sampleDirectory.FullName.Contains("NoSourceRootDefined", StringComparison.InvariantCulture))
             {
-                Directory.SetCurrentDirectory(_fs.ConvertPathToInternal(path));
+                Directory.SetCurrentDirectory(sampleDirectory.ConvertPathToInternal());
             }
             else
             {
-                environmentVariables.SetEnvironmentVariable(WellKnownVariables.SourceRoot, _fs.ConvertPathToInternal(path));
+                environmentVariables.SetEnvironmentVariable(WellKnownVariables.SourceRoot, sampleDirectory.ConvertPathToInternal());
             }
 
             environmentVariables.SetEnvironmentVariable("AllowDebug", "false");
 
             using var xunitLogger = _testOutputHelper.CreateTestLogger();
 
-            var expectedFiles = await GetExpectedFiles(path);
+            var expectedFiles = await GetExpectedFiles(samplesDirectory);
 
-            var logFile = new FileEntry(_fs, path / "build.log");
+            var logFile = new FileEntry(_fs, sampleDirectory.Path / "build.log");
 
             logFile.DeleteIfExists();
 
@@ -104,7 +106,7 @@ namespace Arbor.Build.Tests.Integration
 
             Assert.All(expectedFiles, file =>
             {
-                var filePath = path / file;
+                var filePath = samplesDirectory.Path / file;
                 Assert.True(_fs.FileExists(filePath), $"Exists({_fs.ConvertPathToInternal(filePath)})");
 
                 if (file.GetExtensionWithDot()?.Equals(".nupkg", StringComparison.OrdinalIgnoreCase) ?? false)
@@ -131,9 +133,9 @@ namespace Arbor.Build.Tests.Integration
             Assert.Empty(invalidPathMessages);
         }
 
-        async Task<ImmutableArray<UPath>> GetExpectedFiles(UPath path)
+        async Task<ImmutableArray<UPath>> GetExpectedFiles(DirectoryEntry directory)
         {
-            var expectedFilesDataPath = UPath.Combine(path, "ExpectedFiles.txt");
+            var expectedFilesDataPath = UPath.Combine(directory.Path, "ExpectedFiles.txt");
 
             if (!_fs.FileExists(expectedFilesDataPath))
             {
@@ -154,12 +156,12 @@ namespace Arbor.Build.Tests.Integration
 
             foreach (var directoryEntry in samplesDirectories)
             {
-                yield return new object[] {directoryEntry.ConvertPathToInternal()};
+                yield return new object[] {directoryEntry.Name};
             }
 
             if (samplesDirectories.Length == 0)
             {
-                yield return new object[] {samplesDirectory.ConvertPathToInternal()};
+                yield return new object[] {""};
             }
         }
 
