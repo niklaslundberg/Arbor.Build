@@ -58,7 +58,7 @@ jobs:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       shell: powershell
       run: |
-          .\.sonar\scanner\dotnet-sonarscanner begin /k:"niklaslundberg_Arbor.Build" /o:"niklaslundberg" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" "/d:sonar.cs.opencover.reportsPaths=$($pwd)\Artifacts\TestReports\Coverage\*.opencover.xml"
+          .\.sonar\scanner\dotnet-sonarscanner begin /k:"niklaslundberg_Arbor.Build" /o:"niklaslundberg" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" "/d:sonar.cs.opencover.reportsPaths=Artifacts\TestReports\Coverage\*.opencover.xml"
           dotnet build Arbor.Build.sln
-          Get-ChildItem -Path tests -Recurse -Filter *.csproj | ForEach-Object { dotnet test $_ /p:CollectCoverage=true /p:CoverletOutputFormat=opencover "/p:CoverletOutput=$($pwd)\Artifacts\TestReports\Coverage\$($_.BaseName).opencover.xml" }
+          Get-ChildItem -Path tests -Recurse -Filter *.csproj | ForEach-Object { $fileName = $_.FullName; $name = $_.Name; dotnet test $fileName /p:CollectCoverage=true /p:CoverletOutputFormat=opencover "/p:CoverletOutput=Artifacts\TestReports\Coverage\$($name).opencover.xml" }
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
