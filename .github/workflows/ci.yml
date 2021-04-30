@@ -5,10 +5,15 @@ on: [push]
 jobs:
   build:
 
-    runs-on: windows-latest
+    runs-on: windows-2019
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+    - uses: joschi/setup-jdk@v2
+      with:
+        java-version: '11' # The OpenJDK version to make available on the path
     - uses: actions/setup-dotnet@v1
       with:
         dotnet-version: '3.1.x'
@@ -16,22 +21,43 @@ jobs:
       with:
         dotnet-version: '5.0.x'
     - name: install-tools
-      env:
-        NuGetPassword: ${{ secrets.GITHUB_TOKEN }}
       run: |
         dotnet tool install --global Arbor.Tooler.GlobalTool
         dotnet tool install --global Arbor.Build.Bootstrapper
-        dotnet tool install --global Arbor.NuGetConfig.GlobalTool
+    - name: Cache SonarCloud packages
+      uses: actions/cache@v1
+      with:
+        path: ~\sonar\cache
+        key: ${{ runner.os }}-sonar
+        restore-keys: ${{ runner.os }}-sonar
+    - name: Cache SonarCloud scanner
+      id: cache-sonar-scanner
+      uses: actions/cache@v1
+      with:
+        path: .\.sonar\scanner
+        key: ${{ runner.os }}-sonar-scanner
+        restore-keys: ${{ runner.os }}-sonar-scanner
+    - name: Install SonarCloud scanner
+      if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
+      shell: powershell
+      run: |
+        New-Item -Path .\.sonar\scanner -ItemType Directory
+        dotnet tool update dotnet-sonarscanner --tool-path .\.sonar\scanner
     - name: build
+      shell: cmd
       env:
         Arbor.Build.NuGet.PackageUpload.Server.ApiKey: ${{ secrets.myget }}
         Arbor.Build.NuGet.PackageUpload.Server.Uri: "https://www.myget.org/F/arbor/api/v2/package"
         Arbor.Build.NuGet.PackageUpload.Enabled: "true"
         Arbor.Build.NuGet.PackageUpload.ForceUploadEnabled: "true"
-        Arbor.Build.NuGet.WebsitePackages.PackageUpload.Enabled: "true"
-        Arbor.Build.Tools.External.SymbolServer.ApiKey: ${{ secrets.myget }}
-        Arbor.Build.Tools.External.SymbolServer.Uri: "https://www.myget.org/F/arbor/api/v2/package"
-        Arbor.Build.Tools.External.SymbolServer.ForceUploadEnabled: "false"
-        Arbor.Build.Tools.External.SymbolServer.Enabled: "false"
       run: |
         build\build.bat
+    - name: Start sonar
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      shell: powershell
+      run: |
+          .\.sonar\scanner\dotnet-sonarscanner begin /k:"niklaslundberg_Arbor.Build" /o:"niklaslundberg" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
+          dotnet build Arbor.Build.sln
+          .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
