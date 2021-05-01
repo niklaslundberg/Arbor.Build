@@ -30,6 +30,7 @@ namespace Arbor.Build.Core.IO
                 "artifacts",
                 ".vs",
                 ".user",
+                ".sonar",
                 ".userprefs",
                 "node_modules",
                 "bower_components"
