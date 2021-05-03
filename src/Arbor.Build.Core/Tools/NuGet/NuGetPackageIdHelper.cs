@@ -20,12 +20,11 @@ namespace Arbor.Build.Core.Tools.NuGet
                 return packageConfiguration.PackageIdOverride;
             }
 
-            if (packageConfiguration.BranchNameEnabled && !string.IsNullOrWhiteSpace(packageConfiguration.BranchName))
+            if (packageConfiguration.BranchNameEnabled && !string.IsNullOrWhiteSpace(packageConfiguration.BranchName) && new BranchName(packageConfiguration.BranchName).IsFeatureBranch())
             {
                 return CreateNugetPackageIdWithBranchName(basePackageId,
                     packageConfiguration) + packageConfiguration.PackageNameSuffix;
             }
-
 
             return basePackageId + packageConfiguration.PackageNameSuffix;
         }
