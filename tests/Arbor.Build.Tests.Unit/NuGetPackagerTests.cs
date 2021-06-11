@@ -33,6 +33,26 @@ namespace Arbor.Build.Tests.Unit
             Assert.Equal("MyPackage-abc", id);
         }
 
+        [Theory]
+        [InlineData("master")]
+        [InlineData("main")]
+        public void MainBranch(string branchName)
+        {
+            var packageConfiguration = new NuGetPackageConfiguration("release", SemanticVersion.Parse("1.2.3"), new DirectoryEntry(new MemoryFileSystem(), UPath.Root), UPath.Root, branchName: branchName, branchNameEnabled: true, packageNameSuffix: ".Environment.Production");
+            string id = NuGetPackageIdHelper.CreateNugetPackageId("MyPackage", packageConfiguration);
+            Assert.Equal("MyPackage.Environment.Production", id);
+        }
+
+        [Theory]
+        [InlineData("develop")]
+        [InlineData("dev")]
+        public void DevBranch(string branchName)
+        {
+            var packageConfiguration = new NuGetPackageConfiguration("debug", SemanticVersion.Parse("1.2.3"), new DirectoryEntry(new MemoryFileSystem(), UPath.Root), UPath.Root, branchName: branchName, branchNameEnabled: true, packageNameSuffix: ".Environment.Production");
+            string id = NuGetPackageIdHelper.CreateNugetPackageId("MyPackage", packageConfiguration);
+            Assert.Equal("MyPackage.Environment.Production", id);
+        }
+
         [Fact]
         public void FeatureBranchAndEnvironmentPackage()
         {
