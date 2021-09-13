@@ -32,7 +32,7 @@ namespace Arbor.Build.Tests.Integration.Collections
         public void DefaultImmutableArrayToReadOnlyCollectionShouldReturnEmptyCollection()
         {
             // ReSharper disable once CollectionNeverUpdated.Local
-            ImmutableArray<string> immutableArray;
+            ImmutableArray<string> immutableArray = default;
 
             immutableArray.ToReadOnlyCollection().Should().BeEmpty();
         }

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.ProcessUtils;
 using Arbor.Build.Core.Tools.Cleanup;
+using Arbor.Defensive.Collections;
 using Arbor.FS;
 using Arbor.Processing;
 using JetBrains.Annotations;
@@ -106,14 +107,14 @@ namespace Arbor.Build.Core.Tools.MSBuild
                         json,
                         instanceTypePattern);
 
-                    var candidates = typedInstallations.ToArray();
+                    var candidates = typedInstallations.SafeToReadOnlyCollection();
 
                     if (!allowPreRelease)
                     {
                         candidates = candidates
                             .Where(candidate =>
                                 candidate.channelId.IndexOf("preview", StringComparison.OrdinalIgnoreCase) < 0)
-                            .ToArray();
+                            .ToImmutableArray();
                     }
 
                     var array = candidates

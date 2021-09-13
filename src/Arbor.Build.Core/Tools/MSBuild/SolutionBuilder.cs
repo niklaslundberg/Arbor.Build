@@ -1101,7 +1101,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                     foreach (var lookupDirectory in packageLookupDirectories)
                     {
-                        if (lookupDirectory is { } && lookupDirectory.Exists)
+                        if (lookupDirectory is { Exists: true })
                         {
                             var nugetPackages = lookupDirectory.GetFiles($"*{packageVersion}.nupkg",
                                 SearchOption.AllDirectories);
@@ -1334,7 +1334,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                             .SingleOrDefault(dll => dll.FullName
                                 .Equals(
                                     UPath.Combine(
-                                        pdb.Directory!.FullName,
+                                        pdb.Directory.FullName,
                                         $"{Path.GetFileNameWithoutExtension(pdb.Name)}.dll").FullName,
                                     StringComparison.OrdinalIgnoreCase))
                     })
@@ -1761,7 +1761,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 target = "restore;rebuild;publish";
             }
 
-            if (_processorCount.HasValue && _processorCount.Value >= 1)
+            if (_processorCount is >= 1)
             {
                 buildSiteArguments.Add(_argHelper.FormatArg("maxcpucount",
                     _processorCount.Value.ToString(CultureInfo.InvariantCulture)));
@@ -2155,8 +2155,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
             string nativePath = contentFilesInfo.ContentFilesFile.Path.WindowsPath();
             string nativeChecksumPath = contentFilesInfo.ChecksumFile.Path.WindowsPath();
 
-            string? nativeFullPath = _fileSystem.ConvertPathToInternal(contentFilesInfo.ContentFilesFile.Path);
-            string? nativeChecksumFileFullPath = _fileSystem.ConvertPathToInternal(contentFilesInfo.ChecksumFile.Path);
+            string nativeFullPath = _fileSystem.ConvertPathToInternal(contentFilesInfo.ContentFilesFile.Path);
+            string nativeChecksumFileFullPath = _fileSystem.ConvertPathToInternal(contentFilesInfo.ChecksumFile.Path);
 
             string contentFileListFile =
                 $@"<file src=""{nativeFullPath}"" target=""{nativePath[nativeMetadataDirectory.Length..].TrimStart(Path.DirectorySeparatorChar)}"" />";
@@ -2323,11 +2323,10 @@ namespace Arbor.Build.Core.Tools.MSBuild
             }
         }
 
-        [NotNull]
         private async Task<ExitCode> CopyKuduWebJobsAsync(
-            [NotNull] ILogger logger,
-            [NotNull] WebSolutionProject solutionProject,
-            [NotNull] DirectoryEntry siteArtifactDirectory)
+            ILogger logger,
+            WebSolutionProject solutionProject,
+            DirectoryEntry siteArtifactDirectory)
         {
             if (solutionProject.NetFrameworkGeneration != NetFrameworkGeneration.NetFramework)
             {
@@ -2620,7 +2619,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             foreach (FileEntry dllFile in dllFiles)
             {
                 var xmlFile = new FileEntry(_fileSystem, UPath.Combine(
-                    dllFile.Directory?.FullName!,
+                    dllFile.Directory.FullName!,
                     $"{Path.GetFileNameWithoutExtension(dllFile.Name)}.xml"));
 
                 if (xmlFile.Exists)

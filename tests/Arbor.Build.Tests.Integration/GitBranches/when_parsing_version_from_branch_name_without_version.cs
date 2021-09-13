@@ -11,7 +11,7 @@ namespace Arbor.Build.Tests.Integration.GitBranches
         static string version;
         Establish context = () => branchName = "refs/heads/develop";
 
-        Because of = () => version = BranchHelper.BranchSemVerMajorMinorPatch(branchName, EnvironmentVariables.Empty).ToString();
+        Because of = () => version = BranchHelper.BranchSemVerMajorMinorPatch(branchName, EnvironmentVariables.Empty)!.ToString();
 
         It should_not_extract_the_version = () => version.ShouldEqual("0.0.0");
     }

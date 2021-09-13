@@ -33,8 +33,7 @@ namespace Arbor.Build.Tests.Integration.Tests.MSpec
                 ? null
                 : fs.ConvertPathToInternal(baseDir);
 
-            string vcsRootPath = VcsPathHelper.FindVcsRootPath(startDirectory);
-
+            string? vcsRootPath = VcsPathHelper.FindVcsRootPath(startDirectory);
 
             if (string.IsNullOrWhiteSpace(vcsRootPath))
             {

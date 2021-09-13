@@ -55,7 +55,7 @@ namespace Arbor.Build.Core.Tools.Git
 
             if (BranchHelper.BranchNameHasVersion(branchName, _environmentVariables))
             {
-                string version = BranchHelper.BranchSemVerMajorMinorPatch(branchName, _environmentVariables).ToString();
+                string version = BranchHelper.BranchSemVerMajorMinorPatch(branchName, _environmentVariables)!.ToString();
 
                 logger.Debug("Branch has version {Version}", version);
 
@@ -68,7 +68,7 @@ namespace Arbor.Build.Core.Tools.Git
                         WellKnownVariables.BranchNameVersionOverrideEnabled,
                         version);
 
-                    SemanticVersion semVer = SemanticVersion.Parse(version);
+                    var semVer = SemanticVersion.Parse(version);
 
                     string major = semVer.Major.ToString(CultureInfo.InvariantCulture);
 
