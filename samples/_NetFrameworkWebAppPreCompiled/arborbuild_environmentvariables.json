@@ -44,6 +44,10 @@
         {
             "key":  "Arbor.Build.MSBuild.Configurations",
             "value": "debug"
+        },
+        {
+            "key":  "Arbor.Build.Tools.External.VisualStudio.Version.PreRelease.Enabled",
+            "value": true
         }
     ]
 }

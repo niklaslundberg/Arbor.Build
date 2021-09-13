@@ -91,7 +91,7 @@ namespace Arbor.Build.Core
 
         private async Task<DirectoryEntry?> StartWithDebuggerAsync()
         {
-            var baseDir = new DirectoryEntry(_fileSystem, VcsPathHelper.FindVcsRootPath(AppContext.BaseDirectory).ParseAsPath());
+            var baseDir = new DirectoryEntry(_fileSystem, (VcsPathHelper.FindVcsRootPath(AppContext.BaseDirectory) ?? throw new InvalidOperationException("Could not get base path") ).ParseAsPath());
 
             if (Environment.UserInteractive)
             {
@@ -320,7 +320,7 @@ namespace Arbor.Build.Core
 
             if (sourceRoot is null && sourceRootPath is null)
             {
-               string vcsRootPath = VcsPathHelper.FindVcsRootPath(Directory.GetCurrentDirectory());
+               string? vcsRootPath = VcsPathHelper.FindVcsRootPath(Directory.GetCurrentDirectory());
 
                if (!string.IsNullOrWhiteSpace(vcsRootPath))
                {

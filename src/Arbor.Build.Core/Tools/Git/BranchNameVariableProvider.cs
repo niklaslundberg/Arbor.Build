@@ -151,9 +151,9 @@ namespace Arbor.Build.Core.Tools.Git
                 }
             }
 
-            string currentDirectory = VcsPathHelper.FindVcsRootPath(Directory.GetCurrentDirectory());
+            string? currentDirectory = VcsPathHelper.FindVcsRootPath(Directory.GetCurrentDirectory());
 
-            if (currentDirectory == null)
+            if (currentDirectory is null)
             {
                 _logger.Error("Could not find source root");
                 return Tuple.Create(-1, string.Empty);

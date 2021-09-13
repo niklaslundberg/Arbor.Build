@@ -36,6 +36,10 @@
         {
             "key":  "Arbor.Build.NetAssembly.PatchingEnabled",
             "value": false
+        },
+        {
+            "key":  "Arbor.Build.Tools.External.VisualStudio.Version.PreRelease.Enabled",
+            "value": true
         }
     ]
 }

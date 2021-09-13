@@ -128,22 +128,22 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                     if (latest != null)
                     {
-                        var msbuild2019Path = UPath.Combine(
+                        var msbuildCurrentPath = UPath.Combine(
                             latest.candidate.installationPath.ParseAsPath(),
                             "MSBuild",
                             "Current",
                             "bin",
                             "MSBuild.exe");
 
-                        if (_fileSystem.FileExists(msbuild2019Path))
+                        if (_fileSystem.FileExists(msbuildCurrentPath))
                         {
-                            logger.Information("Found MSBuild with vswhere.exe at '{MsbuildPath}'",  _fileSystem.ConvertPathToInternal(msbuild2019Path));
+                            logger.Information("Found MSBuild with vswhere.exe at '{MsbuildPath}'",  _fileSystem.ConvertPathToInternal(msbuildCurrentPath));
 
                             IVariable[] variables =
                             {
                                 new BuildVariable(
                                     WellKnownVariables.ExternalTools_MSBuild_ExePath,
-                                    _fileSystem.ConvertPathToInternal(msbuild2019Path))
+                                    _fileSystem.ConvertPathToInternal(msbuildCurrentPath))
                             };
 
                             return variables.ToImmutableArray();
@@ -170,7 +170,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                             return variables.ToImmutableArray();
                         }
 
-                        logger.Debug("Could not find VS 2017 or 2019 MSBuild path for candidate {Candidate}", latest.candidate.installationPath);
+                        logger.Debug("Could not find VS 2017, 2019 or 2022 MSBuild path for candidate {Candidate}", latest.candidate.installationPath);
                     }
 
                     logger.Information("Could not find any version of MSBuild.exe with vswhere.exe");
@@ -276,6 +276,46 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
             UPath[] possiblePaths =
             {
+                UPath.Combine(
+                    _specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFiles).ParseAsPath(),
+                    "Microsoft Visual Studio",
+                    "2022",
+                    "Enterprise",
+                    "MSBuild",
+                    "Current",
+                    "bin",
+                    "MSBuild.exe"),
+
+                UPath.Combine(
+                    _specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFiles).ParseAsPath(),
+                    "Microsoft Visual Studio",
+                    "2022",
+                    "Professional",
+                    "MSBuild",
+                    "Current",
+                    "bin",
+                    "MSBuild.exe"),
+
+                UPath.Combine(
+                    _specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFiles).ParseAsPath(),
+                    "Microsoft Visual Studio",
+                    "2022",
+                    "Community",
+                    "MSBuild",
+                    "Current",
+                    "bin",
+                    "MSBuild.exe"),
+
+                UPath.Combine(
+                    _specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFiles).ParseAsPath(),
+                    "Microsoft Visual Studio",
+                    "2022",
+                    "BuildTools",
+                    "MSBuild",
+                    "Current",
+                    "bin",
+                    "MSBuild.exe"),
+
                 UPath.Combine(
                     _specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86).ParseAsPath(),
                     "Microsoft Visual Studio",
