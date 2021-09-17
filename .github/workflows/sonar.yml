@@ -9,7 +9,7 @@ on:
 jobs:
   build:
 
-    runs-on: windows-2019
+    runs-on: windows-2022
 
     steps:
     - uses: actions/checkout@v1
@@ -24,6 +24,10 @@ jobs:
     - uses: actions/setup-dotnet@v1
       with:
         dotnet-version: '5.0.x'
+    - uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '6.0.x'
+        include-prerelease: true
     - name: Cache SonarCloud packages
       uses: actions/cache@v1
       with:
