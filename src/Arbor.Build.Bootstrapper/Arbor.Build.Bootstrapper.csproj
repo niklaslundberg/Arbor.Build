@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>net5.0;net6.0</TargetFrameworks>
     <ApplicationIcon />
     <PackAsTool>true</PackAsTool>
     <PackageId>Arbor.Build.Bootstrapper</PackageId>
@@ -12,19 +12,19 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Arbor.Aesculus" Version="3.3.0-build.1631554399" />
-    <PackageReference Include="Arbor.Tooler" Version="0.15.0-build.1624015671" />
-    <PackageReference Include="JetBrains.Annotations" Version="*" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.2">
+    <PackageReference Include="Arbor.Aesculus" Version="3.4.0" />
+    <PackageReference Include="Arbor.Tooler" Version="0.16.0" />
+    <PackageReference Include="JetBrains.Annotations" Version="2021.3.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.11.0" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.0.1" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="NuGet.Protocol" Version="5.11.0" />
+    <PackageReference Include="NuGet.Protocol" Version="6.0.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="4.0.0" />
     <PackageReference Include="System.Runtime" Version="4.3.1" />
   </ItemGroup>
