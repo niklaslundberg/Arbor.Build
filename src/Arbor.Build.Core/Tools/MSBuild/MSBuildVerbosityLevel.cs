@@ -10,13 +10,13 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
         public string Level { get; }
 
-        public static readonly MSBuildVerbosityLevel Normal = new MSBuildVerbosityLevel("normal");
+        public static readonly MSBuildVerbosityLevel Normal = new("normal");
 
-        public static readonly MSBuildVerbosityLevel Detailed = new MSBuildVerbosityLevel("detailed");
+        public static readonly MSBuildVerbosityLevel Detailed = new("detailed");
 
-        public static readonly MSBuildVerbosityLevel Minimal = new MSBuildVerbosityLevel("minimal");
+        public static readonly MSBuildVerbosityLevel Minimal = new("minimal");
 
-        public static readonly MSBuildVerbosityLevel Quiet = new MSBuildVerbosityLevel("quiet");
+        public static readonly MSBuildVerbosityLevel Quiet = new("quiet");
 
         public static readonly MSBuildVerbosityLevel Default = Quiet;
 

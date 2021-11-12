@@ -8,8 +8,8 @@ namespace Arbor.Build.Core.Tools.NuGet
 {
     public static class NuSpecHelper
     {
-        public static string IncludedFile([NotNull] FileEntry fileName,
-            [NotNull] DirectoryEntry baseDirectory,
+        public static string IncludedFile(FileEntry fileName,
+            DirectoryEntry baseDirectory,
             ILogger logger)
         {
             if (baseDirectory is null)

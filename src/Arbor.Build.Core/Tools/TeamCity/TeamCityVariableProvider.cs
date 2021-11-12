@@ -17,7 +17,7 @@ namespace Arbor.Build.Core.Tools.TeamCity
         public int Order => VariableProviderOrder.Ignored;
 
         public Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
-            ILogger logger,
+            ILogger? logger,
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {

@@ -33,8 +33,8 @@ namespace Arbor.Build.Core.Tools.Testing
         }
 
         public async Task<ExitCode> ExecuteAsync(
-            [NotNull] ILogger logger,
-            [NotNull] IReadOnlyCollection<IVariable> buildVariables,
+            ILogger logger,
+            IReadOnlyCollection<IVariable> buildVariables,
             string[] args,
             CancellationToken cancellationToken)
         {
@@ -111,7 +111,7 @@ namespace Arbor.Build.Core.Tools.Testing
 
             async Task IsTestProject(FileEntry fileEntry)
             {
-                var msBuildProject = await MsBuildProject.LoadFrom(fileEntry);
+                var msBuildProject = await MsBuildProject.LoadFrom(fileEntry).ConfigureAwait(false);
 
                 if (msBuildProject.PackageReferences.Any(reference => string.Equals(reference.Package, "Microsoft.NET.Test.SDK" ,StringComparison.OrdinalIgnoreCase)))
                 {
@@ -121,7 +121,7 @@ namespace Arbor.Build.Core.Tools.Testing
 
             foreach (var candidateProject in candidateProjects)
             {
-                await IsTestProject(candidateProject);
+                await IsTestProject(candidateProject).ConfigureAwait(false);
             }
 
             if (testProjects.Count == 0)
@@ -155,7 +155,7 @@ namespace Arbor.Build.Core.Tools.Testing
                 var reportFile = UPath.Combine(reportPath.Value!.ParseAsPath(), "dotnet", xmlReportName);
 
                 var reportFileEntry = new FileEntry(_fileSystem, reportFile);
-                reportFileEntry.Directory!.EnsureExists();
+                reportFileEntry.Directory.EnsureExists();
 
                 if (xmlEnabled)
                 {
@@ -294,7 +294,7 @@ namespace Arbor.Build.Core.Tools.Testing
             return exitCode;
         }
 
-        private static ExitCode AnalyzeXml(FileEntry reportFileEntry, Action<string> logger)
+        private static ExitCode AnalyzeXml(FileEntry reportFileEntry, Action<string>? logger)
         {
             if (!reportFileEntry.Exists)
             {
@@ -304,9 +304,9 @@ namespace Arbor.Build.Core.Tools.Testing
             string fullName = reportFileEntry.ConvertPathToInternal();
 
             using var fs = reportFileEntry.FileSystem.OpenFile(reportFileEntry.Path, FileMode.Open, FileAccess.Read);
-            var xdoc = XDocument.Load(fs);
+            var document = XDocument.Load(fs);
 
-            XElement[] collections = xdoc.Descendants("assemblies").Descendants("assembly")
+            XElement[] collections = document.Descendants("assemblies").Descendants("assembly")
                 .Descendants("collection").ToArray();
 
             int testCount = collections.Count(collection =>

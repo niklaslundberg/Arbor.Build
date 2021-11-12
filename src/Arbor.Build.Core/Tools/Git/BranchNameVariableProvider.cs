@@ -176,14 +176,13 @@ namespace Arbor.Build.Core.Tools.Git
         {
             var argumentsLists = new List<List<string>>
             {
-                new List<string>
+                new()
                 {
                     "rev-parse",
                     "--abbrev-ref",
                     "HEAD"
                 },
-                new List<string>
-                    { "status --porcelain --branch" }
+                new() { "status --porcelain --branch" }
             };
 
             string branchName = string.Empty;

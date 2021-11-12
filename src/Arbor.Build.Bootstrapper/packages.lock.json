@@ -5,8 +5,8 @@
       "Arbor.Aesculus": {
         "type": "Direct",
         "requested": "[3.3.0-build.1631554399, )",
-        "resolved": "3.3.0-build.1631554399",
-        "contentHash": "7GyVi1JE8qv5A2LXPVaAIRw5FBScBZUFltPJJk+wEK687yn9zZI22zUod/SNyNLF5w3e0Ti7vEtCW2EKJDmZNQ=="
+        "resolved": "3.3.0",
+        "contentHash": "TE7S3GMUoA+jxIU4TaAa5K2OLyXvVr27Ry3b9U/lkEFFJ1vl9xr0UG8AzrYKsUARLOnsb6xx4nsqd5bbeDczKw=="
       },
       "Arbor.Tooler": {
         "type": "Direct",
@@ -25,8 +25,8 @@
       "JetBrains.Annotations": {
         "type": "Direct",
         "requested": "[*, )",
-        "resolved": "2021.2.0",
-        "contentHash": "kKSyoVfndMriKHLfYGmr0uzQuI4jcc3TKGyww7buJFCYeHb/X0kodYBPL7n9454q7v6ASiRmDgpPGaDGerg/Hg=="
+        "resolved": "2021.3.0",
+        "contentHash": "Ddxjs5RRjf+c8m9m++WvhW1lz1bqNhsTjWvCLbQN9bvKbkJeR9MhtfNwKgBRRdG2yLHcXFr5Lf7fsvvkiPaDRg=="
       },
       "Microsoft.CodeAnalysis.Analyzers": {
         "type": "Direct",
@@ -539,8 +539,12 @@
       },
       "System.Collections.Immutable": {
         "type": "Transitive",
-        "resolved": "5.0.0",
-        "contentHash": "FXkLXiK0sVVewcso0imKQoOxjoPAj42R8HtjjbSjVPAzwDfzoyoznWxgA3c38LDbN9SJux1xXoXYAhz98j7r2g=="
+        "resolved": "6.0.0",
+        "contentHash": "l4zZJ1WU2hqpQQHXz1rvC3etVZN+2DLmQMO79FhOTZHMn8tDRr+WU287sbomD0BETlmKDn0ygUgVy9k5xkkJdA==",
+        "dependencies": {
+          "System.Memory": "4.5.4",
+          "System.Runtime.CompilerServices.Unsafe": "6.0.0"
+        }
       },
       "System.ComponentModel.Annotations": {
         "type": "Transitive",
@@ -964,8 +968,8 @@
       },
       "System.Runtime.CompilerServices.Unsafe": {
         "type": "Transitive",
-        "resolved": "5.0.0",
-        "contentHash": "ZD9TMpsmYJLrxbbmdvhwt9YEgG5WntEnZ/d1eH8JBX9LBp+Ju8BSBhUGbZMNVHHomWo2KVImJhTDl2hIgw/6MA=="
+        "resolved": "6.0.0",
+        "contentHash": "/iUeP3tq1S0XdNNoMz5C9twLSrM/TH+qElHkXWaPvuNOt+99G75NrV0OS2EqHx5wMN7popYjpc8oTjC1y16DLg=="
       },
       "System.Runtime.Extensions": {
         "type": "Transitive",
@@ -1384,16 +1388,16 @@
       "arbor.defensive.collections": {
         "type": "Project",
         "dependencies": {
-          "JetBrains.Annotations": "2021.2.0",
-          "Microsoft.CodeAnalysis.CSharp": "3.11.0",
-          "System.Collections.Immutable": "5.0.0"
+          "JetBrains.Annotations": "2021.3.0",
+          "Microsoft.CodeAnalysis.CSharp": "4.0.1",
+          "System.Collections.Immutable": "6.0.0"
         }
       },
       "arbor.exceptions": {
         "type": "Project",
         "dependencies": {
-          "JetBrains.Annotations": "2021.2.0",
-          "Microsoft.CodeAnalysis.CSharp": "3.11.0"
+          "JetBrains.Annotations": "2021.3.0",
+          "Microsoft.CodeAnalysis.CSharp": "4.0.1"
         }
       }
     },
@@ -1401,8 +1405,8 @@
       "Arbor.Aesculus": {
         "type": "Direct",
         "requested": "[3.3.0-build.1631554399, )",
-        "resolved": "3.3.0-build.1631554399",
-        "contentHash": "7GyVi1JE8qv5A2LXPVaAIRw5FBScBZUFltPJJk+wEK687yn9zZI22zUod/SNyNLF5w3e0Ti7vEtCW2EKJDmZNQ=="
+        "resolved": "3.3.0",
+        "contentHash": "TE7S3GMUoA+jxIU4TaAa5K2OLyXvVr27Ry3b9U/lkEFFJ1vl9xr0UG8AzrYKsUARLOnsb6xx4nsqd5bbeDczKw=="
       },
       "Arbor.Tooler": {
         "type": "Direct",
@@ -1421,8 +1425,8 @@
       "JetBrains.Annotations": {
         "type": "Direct",
         "requested": "[*, )",
-        "resolved": "2021.2.0",
-        "contentHash": "kKSyoVfndMriKHLfYGmr0uzQuI4jcc3TKGyww7buJFCYeHb/X0kodYBPL7n9454q7v6ASiRmDgpPGaDGerg/Hg=="
+        "resolved": "2021.3.0",
+        "contentHash": "Ddxjs5RRjf+c8m9m++WvhW1lz1bqNhsTjWvCLbQN9bvKbkJeR9MhtfNwKgBRRdG2yLHcXFr5Lf7fsvvkiPaDRg=="
       },
       "Microsoft.CodeAnalysis.Analyzers": {
         "type": "Direct",
@@ -1935,8 +1939,12 @@
       },
       "System.Collections.Immutable": {
         "type": "Transitive",
-        "resolved": "5.0.0",
-        "contentHash": "FXkLXiK0sVVewcso0imKQoOxjoPAj42R8HtjjbSjVPAzwDfzoyoznWxgA3c38LDbN9SJux1xXoXYAhz98j7r2g=="
+        "resolved": "6.0.0",
+        "contentHash": "l4zZJ1WU2hqpQQHXz1rvC3etVZN+2DLmQMO79FhOTZHMn8tDRr+WU287sbomD0BETlmKDn0ygUgVy9k5xkkJdA==",
+        "dependencies": {
+          "System.Memory": "4.5.4",
+          "System.Runtime.CompilerServices.Unsafe": "6.0.0"
+        }
       },
       "System.ComponentModel.Annotations": {
         "type": "Transitive",
@@ -2356,8 +2364,8 @@
       },
       "System.Runtime.CompilerServices.Unsafe": {
         "type": "Transitive",
-        "resolved": "5.0.0",
-        "contentHash": "ZD9TMpsmYJLrxbbmdvhwt9YEgG5WntEnZ/d1eH8JBX9LBp+Ju8BSBhUGbZMNVHHomWo2KVImJhTDl2hIgw/6MA=="
+        "resolved": "6.0.0",
+        "contentHash": "/iUeP3tq1S0XdNNoMz5C9twLSrM/TH+qElHkXWaPvuNOt+99G75NrV0OS2EqHx5wMN7popYjpc8oTjC1y16DLg=="
       },
       "System.Runtime.Extensions": {
         "type": "Transitive",
@@ -2775,16 +2783,16 @@
       "arbor.defensive.collections": {
         "type": "Project",
         "dependencies": {
-          "JetBrains.Annotations": "2021.2.0",
-          "Microsoft.CodeAnalysis.CSharp": "3.11.0",
-          "System.Collections.Immutable": "5.0.0"
+          "JetBrains.Annotations": "2021.3.0",
+          "Microsoft.CodeAnalysis.CSharp": "4.0.1",
+          "System.Collections.Immutable": "6.0.0"
         }
       },
       "arbor.exceptions": {
         "type": "Project",
         "dependencies": {
-          "JetBrains.Annotations": "2021.2.0",
-          "Microsoft.CodeAnalysis.CSharp": "3.11.0"
+          "JetBrains.Annotations": "2021.3.0",
+          "Microsoft.CodeAnalysis.CSharp": "4.0.1"
         }
       }
     },
@@ -2792,8 +2800,8 @@
       "Arbor.Aesculus": {
         "type": "Direct",
         "requested": "[3.3.0-build.1631554399, )",
-        "resolved": "3.3.0-build.1631554399",
-        "contentHash": "7GyVi1JE8qv5A2LXPVaAIRw5FBScBZUFltPJJk+wEK687yn9zZI22zUod/SNyNLF5w3e0Ti7vEtCW2EKJDmZNQ=="
+        "resolved": "3.3.0",
+        "contentHash": "TE7S3GMUoA+jxIU4TaAa5K2OLyXvVr27Ry3b9U/lkEFFJ1vl9xr0UG8AzrYKsUARLOnsb6xx4nsqd5bbeDczKw=="
       },
       "Arbor.Tooler": {
         "type": "Direct",
@@ -2812,8 +2820,8 @@
       "JetBrains.Annotations": {
         "type": "Direct",
         "requested": "[*, )",
-        "resolved": "2021.2.0",
-        "contentHash": "kKSyoVfndMriKHLfYGmr0uzQuI4jcc3TKGyww7buJFCYeHb/X0kodYBPL7n9454q7v6ASiRmDgpPGaDGerg/Hg=="
+        "resolved": "2021.3.0",
+        "contentHash": "Ddxjs5RRjf+c8m9m++WvhW1lz1bqNhsTjWvCLbQN9bvKbkJeR9MhtfNwKgBRRdG2yLHcXFr5Lf7fsvvkiPaDRg=="
       },
       "Microsoft.CodeAnalysis.Analyzers": {
         "type": "Direct",
@@ -3326,8 +3334,11 @@
       },
       "System.Collections.Immutable": {
         "type": "Transitive",
-        "resolved": "5.0.0",
-        "contentHash": "FXkLXiK0sVVewcso0imKQoOxjoPAj42R8HtjjbSjVPAzwDfzoyoznWxgA3c38LDbN9SJux1xXoXYAhz98j7r2g=="
+        "resolved": "6.0.0",
+        "contentHash": "l4zZJ1WU2hqpQQHXz1rvC3etVZN+2DLmQMO79FhOTZHMn8tDRr+WU287sbomD0BETlmKDn0ygUgVy9k5xkkJdA==",
+        "dependencies": {
+          "System.Runtime.CompilerServices.Unsafe": "6.0.0"
+        }
       },
       "System.ComponentModel.Annotations": {
         "type": "Transitive",
@@ -3747,8 +3758,8 @@
       },
       "System.Runtime.CompilerServices.Unsafe": {
         "type": "Transitive",
-        "resolved": "5.0.0",
-        "contentHash": "ZD9TMpsmYJLrxbbmdvhwt9YEgG5WntEnZ/d1eH8JBX9LBp+Ju8BSBhUGbZMNVHHomWo2KVImJhTDl2hIgw/6MA=="
+        "resolved": "6.0.0",
+        "contentHash": "/iUeP3tq1S0XdNNoMz5C9twLSrM/TH+qElHkXWaPvuNOt+99G75NrV0OS2EqHx5wMN7popYjpc8oTjC1y16DLg=="
       },
       "System.Runtime.Extensions": {
         "type": "Transitive",
@@ -4166,16 +4177,16 @@
       "arbor.defensive.collections": {
         "type": "Project",
         "dependencies": {
-          "JetBrains.Annotations": "2021.2.0",
-          "Microsoft.CodeAnalysis.CSharp": "3.11.0",
-          "System.Collections.Immutable": "5.0.0"
+          "JetBrains.Annotations": "2021.3.0",
+          "Microsoft.CodeAnalysis.CSharp": "4.0.1",
+          "System.Collections.Immutable": "6.0.0"
         }
       },
       "arbor.exceptions": {
         "type": "Project",
         "dependencies": {
-          "JetBrains.Annotations": "2021.2.0",
-          "Microsoft.CodeAnalysis.CSharp": "3.11.0"
+          "JetBrains.Annotations": "2021.3.0",
+          "Microsoft.CodeAnalysis.CSharp": "4.0.1"
         }
       }
     }

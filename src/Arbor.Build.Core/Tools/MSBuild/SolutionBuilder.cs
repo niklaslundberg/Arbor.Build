@@ -35,7 +35,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
     {
         private readonly BuildContext _buildContext;
 
-        private readonly List<FileAttributes> _excludeListedByAttributes = new List<FileAttributes>
+        private readonly List<FileAttributes> _excludeListedByAttributes = new()
         {
             FileAttributes.Hidden, FileAttributes.System, FileAttributes.Offline, FileAttributes.Archive
         };

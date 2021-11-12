@@ -35,7 +35,7 @@ namespace Arbor.Build.Core.Tools.Git
         public int Order { get; } = -1;
 
         public async Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
-            ILogger logger,
+            ILogger? logger,
             IReadOnlyCollection<IVariable> buildVariables,
             CancellationToken cancellationToken)
         {
@@ -133,17 +133,17 @@ namespace Arbor.Build.Core.Tools.Git
 
                 if (!variables.HasKey(WellKnownVariables.GitHash))
                 {
-                    const string arborBuildGitcommithashenabled = "Arbor.Build.GitCommitHashEnabled";
+                    const string arborBuildGitCommitHashEnabled = "Arbor.Build.GitCommitHashEnabled";
 
                     string? environmentVariable =
-                        _environmentVariables.GetEnvironmentVariable(arborBuildGitcommithashenabled);
+                        _environmentVariables.GetEnvironmentVariable(arborBuildGitCommitHashEnabled);
 
                     if (!environmentVariable
                         .ParseOrDefault(defaultValue: true))
                     {
                         logger.Information(
                             "Git commit hash is disabled by environment variable {ArborXGitcommithashenabled} set to {EnvironmentVariable}",
-                            arborBuildGitcommithashenabled,
+                            arborBuildGitCommitHashEnabled,
                             environmentVariable);
                     }
                     else
@@ -158,7 +158,7 @@ namespace Arbor.Build.Core.Tools.Git
 
                             var exitCode = await ProcessRunner.ExecuteProcessAsync(_fileSystem.ConvertPathToInternal(gitExePath),
                                 arguments,
-                                (message, category) => stringBuilder.Append(message),
+                                (message, _) => stringBuilder.Append(message),
                                 toolAction: logger.Information,
                                 cancellationToken: cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
 

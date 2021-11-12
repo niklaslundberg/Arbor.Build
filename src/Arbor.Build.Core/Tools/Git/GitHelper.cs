@@ -15,7 +15,7 @@ namespace Arbor.Build.Core.Tools.Git
 
         public GitHelper(IFileSystem fileSystem) => _fileSystem = fileSystem;
 
-        public UPath GetGitExePath([NotNull] ILogger logger, ISpecialFolders specialFolders, IEnvironmentVariables environmentVariables)
+        public UPath GetGitExePath(ILogger logger, ISpecialFolders specialFolders, IEnvironmentVariables environmentVariables)
         {
             if (logger == null)
             {

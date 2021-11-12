@@ -244,7 +244,6 @@ namespace Arbor.Build.Core.BuildVariables
         public const string XUnitNetCoreAppXmlAnalysisEnabled =
             "Arbor.Build.Tools.External.Xunit.NetCoreApp.Xml.Analysis.Enabled";
 
-
         [VariableDescription("XUnit .NET Core App XML output enabled")]
         public const string XUnitNetCoreAppXmlEnabled =
             "Arbor.Build.Tools.External.Xunit.NetCoreApp.Xml.Enabled";

@@ -31,15 +31,7 @@ namespace Arbor.Build.Core.Tools.Git
 
         public string FullName => Name;
 
-        public static BranchName? TryParse(string? branchName)
-        {
-            if (string.IsNullOrWhiteSpace(branchName))
-            {
-                return default;
-            }
-
-            return new BranchName(branchName);
-        }
+        public static BranchName? TryParse(string? branchName) => string.IsNullOrWhiteSpace(branchName) ? default : new BranchName(branchName);
 
         public override string ToString() => Name;
 
