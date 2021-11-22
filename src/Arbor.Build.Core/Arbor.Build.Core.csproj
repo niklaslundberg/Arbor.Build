@@ -7,7 +7,7 @@
   <ItemGroup>
     <PackageReference Include="Arbor.FileSystem" Version="0.5.0" />
     <PackageReference Include="Arbor.Aesculus" Version="3.4.0" />
-    <PackageReference Include="Arbor.KVConfiguration.JsonConfiguration" Version="2.1.0" />
+    <PackageReference Include="Arbor.KVConfiguration.JsonConfiguration" Version="2.2.0" />
     <PackageReference Include="Arbor.KVConfiguration.Schema.Json" Version="2.1.0" />
     <PackageReference Include="Arbor.KVConfiguration.UserConfiguration" Version="2.1.0" />
     <PackageReference Include="Arbor.Processing" Version="0.6.0" />
