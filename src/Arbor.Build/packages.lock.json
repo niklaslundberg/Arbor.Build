@@ -44,9 +44,9 @@
       },
       "Serilog.Sinks.Console": {
         "type": "Direct",
-        "requested": "[4.0.0, )",
-        "resolved": "4.0.0",
-        "contentHash": "yJQit9sTJ4xGLKgCujqDJsaGqBNJwGB/H898z+xYlMG06twy4//6LLnSrsmpduZxcHIG4im7cv+JmXLzXz2EkQ==",
+        "requested": "[4.0.1, )",
+        "resolved": "4.0.1",
+        "contentHash": "apLOvSJQLlIbKlbx+Y2UDHSP05kJsV7mou+fvJoRGs/iR+jC22r8cuFVMjjfVxz/AD4B2UCltFhE1naRLXwKNw==",
         "dependencies": {
           "Serilog": "2.10.0"
         }
@@ -140,8 +140,8 @@
       },
       "Arbor.KVConfiguration.JsonConfiguration": {
         "type": "Transitive",
-        "resolved": "2.1.0",
-        "contentHash": "ZLqxRrU8QBi1EXweEA6w7qstsxWtxf0zy+qjVafGcC8+A/I5EQf5PpiizZB6Wkyvow+x1m/iZuikPS0M8L02cQ==",
+        "resolved": "2.2.0",
+        "contentHash": "1vGWvHwRdieeIh5pjAvXKbRsgYisLzkcbF37qddiQEzmBBJ6YTHOyjzNqH8OSp4c7GHmIPPuj5FdQbexFgZPcg==",
         "dependencies": {
           "Arbor.KVConfiguration.Core": "[2.0.0, 3.0.0)",
           "Arbor.KVConfiguration.Schema": "[2.0.0, 3.0.0)",
@@ -159,8 +159,8 @@
       },
       "Arbor.KVConfiguration.Schema.Json": {
         "type": "Transitive",
-        "resolved": "2.1.0",
-        "contentHash": "MalnFVbT1TNt6JS0RVZPErcrxEGPrA0/imlXTEi4tZ2SLW2YYbIovG1ssFsTDnZ/QTAu9pydKXqLmgCAe6KaFA==",
+        "resolved": "2.2.0",
+        "contentHash": "n/ZJIxu3d+u6Os0uU/W8ghL1dkVTD2cUdGd1B2LyDJDQwqn/HFlczc+sXA1g3y0ErW6Ptc4mlwRFfd+XxpbrlQ==",
         "dependencies": {
           "Arbor.KVConfiguration.Core": "[2.0.0, 3.0.0)",
           "Newtonsoft.Json": "12.0.1"
@@ -168,8 +168,8 @@
       },
       "Arbor.KVConfiguration.UserConfiguration": {
         "type": "Transitive",
-        "resolved": "2.1.0",
-        "contentHash": "Bww1h5TXibowixvCLxokACN+LHILP7hzXZmrMjkm74IT1yFRs6wW+41plRg7e+s5r43JxmilNNO8YrDLJE4PNA==",
+        "resolved": "2.2.0",
+        "contentHash": "PG/SIOB7f5ZEALy6CdBmaVhS209Rpd75DgARaHhOycb3IxXcFvDeoqnFhUtua6gIhpqudKk94S8SA9z+6WssuA==",
         "dependencies": {
           "Arbor.KVConfiguration.Core": "[2.0.0, 3.0.0)",
           "Arbor.KVConfiguration.JsonConfiguration": "[2.0.0, 3.0.0)",
@@ -266,24 +266,24 @@
       },
       "Microsoft.IdentityModel.JsonWebTokens": {
         "type": "Transitive",
-        "resolved": "6.14.1",
-        "contentHash": "9/KU/JWhTJ8Cs7YwfQD1ihoTiVUI7HI0ZoqdOGhKiRoV855wE5O1O9stIZzAZ/ES1b4X+j21ULkQGO3a3mK22w==",
+        "resolved": "6.15.0",
+        "contentHash": "IRFqTyIKV7dxIdFS7B6OYEIq6UweeZgpgHjZSjh8m9zZkBTwR9CIJ3wPalpAmJnkFsVdrUs/wprfCM7yyyd/Zg==",
         "dependencies": {
-          "Microsoft.IdentityModel.Tokens": "6.14.1"
+          "Microsoft.IdentityModel.Tokens": "6.15.0"
         }
       },
       "Microsoft.IdentityModel.Logging": {
         "type": "Transitive",
-        "resolved": "6.14.1",
-        "contentHash": "yjB8cYrRwQp/sX0JhpXHggUwF4YhyMoVE0Mzdyc9Z0gFikOej4dUNlnG7H9J5SCmI2xjLAYxinyDIzmGBFqCbg=="
+        "resolved": "6.15.0",
+        "contentHash": "C6ipogdUEjMew1pVAqilUARrwIfVafDHD7fSxNacB9CypLDiAa7Sl+sWsJOHYp2mhwo3G5ADhaMueR9uByCeXw=="
       },
       "Microsoft.IdentityModel.Tokens": {
         "type": "Transitive",
-        "resolved": "6.14.1",
-        "contentHash": "14Z15Rwd0V6+m7mxbRWH2CrT2PK/B3H3R8qGNDeI6lSPFIQTq/1AJaYkCGcVX1xlKSowdNYaAROMaPbiWv8KIQ==",
+        "resolved": "6.15.0",
+        "contentHash": "KC7d+0ma56r7XTP6J7WAGaFRiYMLED9qH/Q3TWwpJzvGzAx8afvk/sTWhaquxipTZB/KBIVO6uxpiepcVBd6RA==",
         "dependencies": {
           "Microsoft.CSharp": "4.5.0",
-          "Microsoft.IdentityModel.Logging": "6.14.1",
+          "Microsoft.IdentityModel.Logging": "6.15.0",
           "System.Security.Cryptography.Cng": "4.5.0"
         }
       },
@@ -374,8 +374,8 @@
       },
       "MSTest.TestFramework": {
         "type": "Transitive",
-        "resolved": "2.2.7",
-        "contentHash": "qroVMzabIcbqwxtlDZriZflqs3nKpmqSVoM/Nfw9fg+F6885rrgo9R4gwmK7xxPPd8gpDrmNqqwpnyh6GMoN9g==",
+        "resolved": "2.2.8",
+        "contentHash": "phUoHuGTuw9T5yekxPHLLLq8jE56yufmh2yPlJq1IfkT4a3tYZ2htkeTlnQmzmJP3hI5xYhlqwiHcy3JqVt/OA==",
         "dependencies": {
           "NETStandard.Library": "1.6.1",
           "System.Diagnostics.TextWriterTraceListener": "4.3.0"
@@ -767,11 +767,11 @@
       },
       "System.IdentityModel.Tokens.Jwt": {
         "type": "Transitive",
-        "resolved": "6.14.1",
-        "contentHash": "aZGtxO8rx1h3KSzHYWXoPg47YGo5kON0Ot+L72A4bv44LMZZNqXfXyhSNLhVhaD24mlwYIXoyIaed4sXmrpA7Q==",
+        "resolved": "6.15.0",
+        "contentHash": "lzJaeRZE4dvPmH9U65J8z9wsrWghlosNYEqwCTjOh5o/gCHHcTV6P6EcYj7xC22AHPYavYh8IUtIqH5MszW1rA==",
         "dependencies": {
-          "Microsoft.IdentityModel.JsonWebTokens": "6.14.1",
-          "Microsoft.IdentityModel.Tokens": "6.14.1"
+          "Microsoft.IdentityModel.JsonWebTokens": "6.15.0",
+          "Microsoft.IdentityModel.Tokens": "6.15.0"
         }
       },
       "System.IO": {
@@ -1295,15 +1295,15 @@
           "Arbor.Defensive.Collections": "1.0.0",
           "Arbor.Exceptions": "1.0.0",
           "Arbor.FileSystem": "0.5.0",
-          "Arbor.KVConfiguration.JsonConfiguration": "2.1.0",
-          "Arbor.KVConfiguration.Schema.Json": "2.1.0",
-          "Arbor.KVConfiguration.UserConfiguration": "2.1.0",
+          "Arbor.KVConfiguration.JsonConfiguration": "2.2.0",
+          "Arbor.KVConfiguration.Schema.Json": "2.2.0",
+          "Arbor.KVConfiguration.UserConfiguration": "2.2.0",
           "Arbor.Processing": "0.6.0",
           "Arbor.Sorbus": "4.0.0",
           "Arbor.Tooler": "0.16.0",
           "Autofac": "6.3.0",
           "JetBrains.Annotations": "2021.3.0",
-          "MSTest.TestFramework": "2.2.7",
+          "MSTest.TestFramework": "2.2.8",
           "Machine.Specifications": "1.0.0",
           "Microsoft.CodeAnalysis.CSharp": "4.0.1",
           "Microsoft.Web.Xdt": "3.1.0",
@@ -1314,10 +1314,10 @@
           "NuGet.Protocol": "6.0.0",
           "NuGet.Versioning": "6.0.0",
           "Serilog": "2.10.0",
-          "Serilog.Sinks.Console": "4.0.0",
+          "Serilog.Sinks.Console": "4.0.1",
           "Serilog.Sinks.Seq": "5.1.0",
           "System.ComponentModel.Annotations": "5.0.0",
-          "System.IdentityModel.Tokens.Jwt": "6.14.1",
+          "System.IdentityModel.Tokens.Jwt": "6.15.0",
           "System.Runtime": "4.3.1",
           "xunit": "2.4.1"
         }
