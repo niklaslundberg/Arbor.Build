@@ -59,6 +59,10 @@ IF "%Arbor.Build.ShowDefinedVariablesEnabled%" == "" (
 
 CALL dotnet arbor-build
 
+IF "%ERRORLEVEL%" NEQ "0 (
+   EXIT /B %ERRORLEVEL%
+)
+
 SET Arbor.Build.Bootstrapper.AllowPrerelease=
 SET Arbor.Build.Tools.External.MSpec.Enabled=
 SET Arbor.Build.NuGet.Package.Artifacts.Suffix=
