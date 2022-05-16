@@ -7,9 +7,9 @@
   <ItemGroup>
     <PackageReference Include="Arbor.FileSystem" Version="0.5.0" />
     <PackageReference Include="Arbor.Aesculus" Version="3.4.0" />
-    <PackageReference Include="Arbor.KVConfiguration.JsonConfiguration" Version="2.2.0" />
-    <PackageReference Include="Arbor.KVConfiguration.Schema.Json" Version="2.2.0" />
-    <PackageReference Include="Arbor.KVConfiguration.UserConfiguration" Version="2.2.0" />
+    <PackageReference Include="Arbor.KVConfiguration.JsonConfiguration" Version="2.3.0" />
+    <PackageReference Include="Arbor.KVConfiguration.Schema.Json" Version="2.3.0" />
+    <PackageReference Include="Arbor.KVConfiguration.UserConfiguration" Version="2.3.0" />
     <PackageReference Include="Arbor.Processing" Version="0.6.0" />
     <PackageReference Include="Arbor.Sorbus" Version="4.0.0" />
     <PackageReference Include="Arbor.Tooler" Version="0.16.0" />
@@ -20,7 +20,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.1.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.2.0" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -29,9 +29,9 @@
     <PackageReference Include="Microsoft.Windows.Compatibility" Version="6.0.0" />
     <PackageReference Include="MSTest.TestFramework" Version="2.2.10" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="NuGet.Packaging" Version="6.1.0" />
-    <PackageReference Include="NuGet.Protocol" Version="6.1.0" />
-    <PackageReference Include="NuGet.Versioning" Version="6.1.0" />
+    <PackageReference Include="NuGet.Packaging" Version="6.2.0" />
+    <PackageReference Include="NuGet.Protocol" Version="6.2.0" />
+    <PackageReference Include="NuGet.Versioning" Version="6.2.0" />
     <PackageReference Include="NUnit" Version="3.13.3" />
     <PackageReference Include="Serilog" Version="2.11.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1" />

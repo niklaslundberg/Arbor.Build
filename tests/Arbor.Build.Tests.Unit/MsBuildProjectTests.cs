@@ -43,7 +43,7 @@ namespace Arbor.Build.Tests.Unit
             {
                 await stream.WriteAllTextAsync(@"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netcoreapp3.1</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
   </PropertyGroup>
 </Project>");
             }
@@ -92,7 +92,7 @@ namespace Arbor.Build.Tests.Unit
                 await stream.WriteAllTextAsync(@"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <TargetFrameworks>netstandard2.0;netcoreapp3.1</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
   </PropertyGroup>
 </Project>");
             }
