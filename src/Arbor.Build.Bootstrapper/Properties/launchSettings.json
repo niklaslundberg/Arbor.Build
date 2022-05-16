@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Arbor.Build.Bootstrapper": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "Arbor.Build.Bootstrapper.AllowPrerelease": "true"
+      }
+    }
+  }
+}
