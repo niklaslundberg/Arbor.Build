@@ -55,7 +55,7 @@ namespace Arbor.Build.Tests.Unit
 
             msBuildProject.TargetFramework.Should().Be(TargetFramework.Empty);
             msBuildProject.TargetFrameworks.Should().Contain(TargetFramework.NetStandard2_0);
-            msBuildProject.TargetFrameworks.Should().Contain(TargetFramework.NetCoreApp3_1);
+            msBuildProject.TargetFrameworks.Should().Contain(TargetFramework.Net6_0);
         }
 
         [Fact]

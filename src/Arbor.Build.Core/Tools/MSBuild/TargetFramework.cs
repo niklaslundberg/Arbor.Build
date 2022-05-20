@@ -15,6 +15,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
         public static readonly TargetFramework NetCoreApp3_0 = new("netcoreapp3.0");
         public static readonly TargetFramework Net5_0 = new("net5.0");
         public static readonly TargetFramework Net6_0 = new("net6.0");
+        public static readonly TargetFramework Net7_0 = new("net7.0");
         public static readonly TargetFramework Empty = new("N/A");
 
         public override string ToString() => Value;

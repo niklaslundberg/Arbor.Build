@@ -58,7 +58,7 @@ namespace Arbor.Build.Core.Debugging
                 [WellKnownVariables.XUnitNetCoreAppXmlAnalysisEnabled] = "true",
                 [WellKnownVariables.AssemblyUseReflectionOnlyMode] = "true",
                 [WellKnownVariables.MSBuildNuGetRestoreEnabled] = "true",
-                [WellKnownVariables.DotNetPublishExeProjectsEnabled] = "true",
+                [WellKnownVariables.DotNetPublishExeProjectsEnabled] = "false",
                 [WellKnownVariables.NuGetPackageIdBranchNameEnabled] = "false",
                 [WellKnownVariables.XUnitNetCoreAppXmlEnabled] = "true",
                 [WellKnownVariables.DeterministicBuildEnabled] = "true",
