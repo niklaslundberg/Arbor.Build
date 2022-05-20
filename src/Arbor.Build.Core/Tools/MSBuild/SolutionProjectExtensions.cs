@@ -32,14 +32,27 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 return false;
             }
 
-            bool hasArborPublishOrDefault = project.Project.HasPropertyWithValue("ArborPublishEnabled", "true") ||
-                                            !project.Project.PropertyGroups.Any(msBuildPropertyGroup =>
-                                                msBuildPropertyGroup.Properties.Any(msBuildProperty =>
-                                                    msBuildProperty.Name.Equals("ArborPublishEnabled",
-                                                        StringComparison.Ordinal)));
-            return hasArborPublishOrDefault
-                   || HasExplicitExeOutputType(project)
-                   || HasPublishPackageEnabled(project);
+            if (project.Project.HasPropertyWithValue("PackAsTool", "true", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            bool publishExplicitlyEnabled = project.Project.HasPropertyWithValue("ArborPublishEnabled", "true");
+
+            if (publishExplicitlyEnabled)
+            {
+                return true;
+            }
+
+            if (project.Project.PropertyGroups.Any(msBuildPropertyGroup =>
+                    msBuildPropertyGroup.Properties.Any(msBuildProperty =>
+                        msBuildProperty.Name.Equals("ArborPublishEnabled",
+                            StringComparison.Ordinal) && msBuildProperty.Value == "false")))
+            {
+                return false;
+            }
+
+            return HasExplicitExeOutputType(project) || HasPublishPackageEnabled(project);
         }
 
         public

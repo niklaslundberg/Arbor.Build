@@ -2,10 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <SelfContained>true</SelfContained>
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained Condition="'${Configuration}' == 'release'">true</SelfContained>
+    <RuntimeIdentifier Condition="'${Configuration}' == 'release'">win-x64</RuntimeIdentifier>
     <OutputType>Exe</OutputType>
-    <PublishSingleFile>true</PublishSingleFile>
+    <PublishSingleFile Condition="'${Configuration}' == 'release'">true</PublishSingleFile>
   </PropertyGroup>
 
   <ItemGroup>
