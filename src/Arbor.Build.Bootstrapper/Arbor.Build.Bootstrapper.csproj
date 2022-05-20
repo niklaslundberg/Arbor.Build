@@ -9,6 +9,7 @@
     <AssemblyName>dotnet-arbor-build</AssemblyName>
     <StartupObject />
     <FileVersion>$(Version)</FileVersion>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,6 +28,12 @@
     <PackageReference Include="NuGet.Protocol" Version="6.2.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1" />
     <PackageReference Include="System.Runtime" Version="4.3.1" />
+    <PackageReference Include="System.Threading" Version="4.3.0" />
+    <PackageReference Include="System.Runtime.Handles" Version="4.3.0" />
+    <PackageReference Include="System.Runtime.InteropServices" Version="4.3.0" />
+    <PackageReference Include="System.IO" Version="4.3.0" />
+    <PackageReference Include="System.IO.FileSystem.Primitives" Version="4.3.0" />
+    <PackageReference Include="System.Text.Encoding.Extensions" Version="4.3.0" />
   </ItemGroup>
 
   <ItemGroup>
