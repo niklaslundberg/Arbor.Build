@@ -18,6 +18,10 @@
             "value": 4
         },
         {
+            "key":  "Arbor.Build.PublishDotNetExecutableProjects",
+            "value": true
+        },
+        {
             "key":  "Arbor.Build.Configuration",
             "value": ""
         },
