@@ -224,7 +224,7 @@ namespace Arbor.Build.Core.Tools.Versioning
                         build,
                         WellKnownVariables.TeamCityVersionBuild);
                 }
-                else if (buildVariables.GetBooleanByKey(WellKnownVariables.BuildNumberAsUnixEpochSecondsEnabled))
+                else if (buildVariables.GetBooleanByKey(WellKnownVariables.BuildNumberAsUnixEpochSecondsEnabled, defaultValue: true))
                 {
                     build = (int) _timeService.UtcNow().ToUnixTimeSeconds();
                 }

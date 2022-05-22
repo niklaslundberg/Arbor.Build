@@ -43,7 +43,8 @@ namespace Arbor.Build.Core.Tools.NuGet
             IReadOnlyCollection<IVariable> buildVariables,
             DirectoryEntry packagesDirectory,
             DirectoryEntry vcsRootDir,
-            string packageNameSuffix)
+            string packageNameSuffix,
+            string? runtimeIdentifier = null)
         {
             string version = buildVariables.Require(WellKnownVariables.Version).GetValueOrThrow()!;
 
@@ -186,7 +187,8 @@ namespace Arbor.Build.Core.Tools.NuGet
                 nuGetPackageVersionOverride,
                 allowManifestReWrite, nuGetSymbolPackagesEnabled, keepBinaryAndSourcePackagesTogetherEnabled,
                 isReleaseBuild, buildNumberEnabled, tempDirectory, nuGetSymbolPackagesFormat: packageFormat,
-                packageNameSuffix: packageNameSuffix, gitHash: gitHash);
+                packageNameSuffix: packageNameSuffix, gitHash: gitHash,
+                runtimeIdentifier: runtimeIdentifier);
             return packageConfiguration;
         }
 
@@ -235,7 +237,6 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             var nuSpecCopy = new NuSpec(packageId, packageConfiguration.Version, packageSpecificationPath);
 
-
             var nuSpecTempDirectory = UPath.Combine(packageConfiguration.TempPath.Path, "nuspecs");
 
             new DirectoryEntry(_fileSystem, nuSpecTempDirectory).EnsureExists();
@@ -277,6 +278,12 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             nuspec ??= fileEntry;
 
+            if (!nuspec.Exists)
+            {
+                _logger.Error("The nuspec file {NuSpecFile} does not exist", nuspec.ConvertPathToInternal());
+                return ExitCode.Failure;
+            }
+
             if (_logger.IsEnabled(LogEventLevel.Verbose))
             {
                 string nuSpecContent = await GetNuSpecContent(nuspec);
@@ -313,9 +320,9 @@ namespace Arbor.Build.Core.Tools.NuGet
             return result;
         }
 
-        private static async Task<string> GetNuSpecContent(FileEntry nuSpecFileCopyPath)
+        private static async Task<string> GetNuSpecContent(FileEntry nuSpecFile)
         {
-            await using var stream = nuSpecFileCopyPath.Open(FileMode.Open, FileAccess.Read);
+            await using var stream = nuSpecFile.Open(FileMode.Open, FileAccess.Read);
 
             return await stream.ReadAllTextAsync();
         }
@@ -324,7 +331,9 @@ namespace Arbor.Build.Core.Tools.NuGet
         {
             var propertyValues = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase)
             {
-                ["configuration"] = configuration.Configuration, ["RepositoryCommit"] = configuration.GitHash
+                ["configuration"] = configuration.Configuration,
+                ["RuntimeIdentifier"] = configuration.RuntimeIdentifier,
+                ["RepositoryCommit"] = configuration.GitHash
             };
 
             return propertyValues;

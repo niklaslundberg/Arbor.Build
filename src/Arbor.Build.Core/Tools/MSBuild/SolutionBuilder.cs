@@ -1895,7 +1895,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 packageId,
                 allIncludedFiles,
                 "",
-                artifactDirectory).ConfigureAwait(false);
+                artifactDirectory,
+                runtimeIdentifier: _publishRuntimeIdentifier).ConfigureAwait(false);
 
             if (!exitCode.IsSuccess)
             {
@@ -1966,7 +1967,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     environmentPackageId,
                     elements,
                     $".Environment.{environmentName}",
-                    rootDirectory).ConfigureAwait(false);
+                    rootDirectory,
+                    runtimeIdentifier: _publishRuntimeIdentifier).ConfigureAwait(false);
 
                 if (!environmentPackageExitCode.IsSuccess)
                 {
@@ -2107,7 +2109,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
             string packageId,
             IReadOnlyCollection<FileEntry> filesList,
             string packageNameSuffix,
-            DirectoryEntry baseDirectory)
+            DirectoryEntry baseDirectory,
+            string? runtimeIdentifier = null)
         {
             var packageDirectoryPath = UPath.Combine(platformDirectoryPath, "NuGet");
 
@@ -2118,7 +2121,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 _buildVariables,
                 packageDirectory,
                 _vcsRoot,
-                packageNameSuffix);
+                packageNameSuffix,
+                runtimeIdentifier);
 
             if (packageConfiguration is null)
             {

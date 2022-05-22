@@ -5,7 +5,7 @@
     <SelfContained Condition="'${Configuration}' == 'release'">true</SelfContained>
     <RuntimeIdentifier Condition="'${Configuration}' == 'release'">win-x64</RuntimeIdentifier>
     <OutputType>Exe</OutputType>
-    <PublishSingleFile Condition="'${Configuration}' == 'release'">true</PublishSingleFile>
+    <PublishSingleFile Condition="'${Configuration}' == 'release'">false</PublishSingleFile>
   </PropertyGroup>
 
   <ItemGroup>

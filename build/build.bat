@@ -8,11 +8,13 @@ IF "%Arbor.Build.Build.Bootstrapper.AllowPrerelease%" == "" (
     SET Arbor.Build.Build.Bootstrapper.AllowPrerelease=true
 )
 
+SET Arbor.Build.Configuration=release
 SET Arbor.Build.PublishDotNetExecutableProjects=false
 SET Arbor.Build.NuGet.PackageUpload.PackageExcludeStartsWithPatterns=Arbor.Build.Sample
 SET Arbor.Build.Vcs.Branch.BranchModel=GitFlowBuildOnMain
 SET Arbor.Build.Tools.External.MSpec.Enabled=true
-SET Arbor.Build.NuGet.Package.Artifacts.Suffix=
+SET Arbor.Build.NuGet.Package.Artifacts.Suffix=build
+SET Arbor.Build.NuGet.Package.Artifacts.Suffix.Enabled=true
 SET Arbor.Build.NuGet.Package.Artifacts.BuildNumber.Enabled=
 SET Arbor.Build.Log.Level=Debug
 SET Arbor.Build.Vcs.Branch.Name=%GITHUB_REF%
@@ -22,6 +24,7 @@ SET Arbor.Build.Artifacts.CleanupBeforeBuildEnabled=true
 SET Arbor.Build.Tools.External.LibZ.Enabled=true
 REM SET Arbor.Build.Tools.External.MSBuild.DeterministicBuild.Enabled=true
 
+SET Arbor.Build.PublishRuntimeIdentifier=win-x64
 SET Arbor.Build.NuGet.ReinstallArborPackageEnabled=true
 SET Arbor.Build.NuGet.VersionUpdateEnabled=false
 SET Arbor.Build.Artifacts.PdbArtifacts.Enabled=true
