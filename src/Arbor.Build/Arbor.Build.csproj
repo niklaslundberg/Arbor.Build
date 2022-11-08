@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <SelfContained Condition="'${Configuration}' == 'release'">true</SelfContained>
     <RuntimeIdentifier Condition="'${Configuration}' == 'release'">win-x64</RuntimeIdentifier>
     <OutputType>Exe</OutputType>
@@ -23,7 +23,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="NuGet.Protocol" Version="6.2.0" />
+    <PackageReference Include="NuGet.Protocol" Version="6.3.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1" />
     <PackageReference Include="Serilog.Sinks.Seq" Version="5.1.1" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
