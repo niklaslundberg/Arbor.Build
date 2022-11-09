@@ -112,7 +112,5 @@ namespace Arbor.Build.Core.Tools.NuGet
         public string? PackageBuildMetadata { get; }
 
         public string NuGetSymbolPackagesFormat { get; }
-
-        public override string ToString() => $"{nameof(PackageNameSuffix)}: {PackageNameSuffix}, {nameof(GitHash)}: {GitHash}, {nameof(KeepBinaryAndSourcePackagesTogetherEnabled)}: {KeepBinaryAndSourcePackagesTogetherEnabled}, {nameof(BranchNameEnabled)}: {BranchNameEnabled}, {nameof(PackageIdOverride)}: {PackageIdOverride}, {nameof(NuGetPackageVersionOverride)}: {NuGetPackageVersionOverride}, {nameof(AllowManifestReWrite)}: {AllowManifestReWrite}, {nameof(NuGetSymbolPackagesEnabled)}: {NuGetSymbolPackagesEnabled}, {nameof(Configuration)}: {Configuration}, {nameof(IsReleaseBuild)}: {IsReleaseBuild}, {nameof(BranchName)}: {BranchName}, {nameof(Version)}: {Version}, {nameof(Suffix)}: {Suffix}, {nameof(TempPath.FullName)}: {TempPath}, {nameof(NuGetExePath)}: {NuGetExePath.FullName}, {nameof(PackagesDirectory.FullName)}: {PackagesDirectory.FullName}, {nameof(BuildNumberEnabled)}: {BuildNumberEnabled}, {nameof(PackageBuildMetadata)}: {PackageBuildMetadata}, {nameof(NuGetSymbolPackagesFormat)}: {NuGetSymbolPackagesFormat}";
     }
 }

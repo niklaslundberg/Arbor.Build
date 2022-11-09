@@ -89,7 +89,7 @@ namespace Arbor.Build.Tests.Integration
                 .MinimumLevel.Verbose()
                 .CreateLogger();
 
-            using var logger = new LoggerConfiguration()
+            await using var logger = new LoggerConfiguration()
                 .WriteTo.Logger(xunitLogger)
                 .WriteTo.File(_fs.ConvertPathToInternal(logFile.Path))
                 .MinimumLevel.Verbose()
