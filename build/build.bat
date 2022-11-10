@@ -63,7 +63,7 @@ IF "%Arbor.Build.ShowDefinedVariablesEnabled%" == "" (
 
 CALL dotnet arbor-build
 
-IF "%ERRORLEVEL%" NEQ "0 (
+IF "%ERRORLEVEL%" NEQ "0" (
    EXIT /B %ERRORLEVEL%
 )
 
