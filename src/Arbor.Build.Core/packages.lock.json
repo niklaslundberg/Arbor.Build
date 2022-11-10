@@ -1287,16 +1287,16 @@
       "arbor.defensive.collections": {
         "type": "Project",
         "dependencies": {
-          "JetBrains.Annotations": "2022.3.1",
-          "Microsoft.CodeAnalysis.CSharp": "4.3.1",
-          "System.Collections.Immutable": "7.0.0"
+          "JetBrains.Annotations": "[2022.3.1, )",
+          "Microsoft.CodeAnalysis.CSharp": "[4.3.1, )",
+          "System.Collections.Immutable": "[7.0.0, )"
         }
       },
       "arbor.exceptions": {
         "type": "Project",
         "dependencies": {
-          "JetBrains.Annotations": "2022.3.1",
-          "Microsoft.CodeAnalysis.CSharp": "4.3.1"
+          "JetBrains.Annotations": "[2022.3.1, )",
+          "Microsoft.CodeAnalysis.CSharp": "[4.3.1, )"
         }
       }
     },
@@ -2581,16 +2581,16 @@
       "arbor.defensive.collections": {
         "type": "Project",
         "dependencies": {
-          "JetBrains.Annotations": "2022.3.1",
-          "Microsoft.CodeAnalysis.CSharp": "4.3.1",
-          "System.Collections.Immutable": "7.0.0"
+          "JetBrains.Annotations": "[2022.3.1, )",
+          "Microsoft.CodeAnalysis.CSharp": "[4.3.1, )",
+          "System.Collections.Immutable": "[7.0.0, )"
         }
       },
       "arbor.exceptions": {
         "type": "Project",
         "dependencies": {
-          "JetBrains.Annotations": "2022.3.1",
-          "Microsoft.CodeAnalysis.CSharp": "4.3.1"
+          "JetBrains.Annotations": "[2022.3.1, )",
+          "Microsoft.CodeAnalysis.CSharp": "[4.3.1, )"
         }
       }
     }

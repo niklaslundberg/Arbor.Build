@@ -203,3 +203,4 @@ _patchedAssemblyInfos
 **/nCrunchTemp_*.*
 **/ncruncherror
 .cr/**/*
+**/*_copy.rewrite.nuspec

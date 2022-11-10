@@ -308,7 +308,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             if (!result.IsSuccess)
             {
-                string content = await GetNuSpecContent(fileEntry);
+                string content = fileEntry.Exists ? await GetNuSpecContent(fileEntry) : "";
                 _logger.Error("Could not create NuGet package from nuspec {NewLine}{NuSpec}",
                     Environment.NewLine,
                     content);
@@ -368,14 +368,18 @@ namespace Arbor.Build.Core.Tools.NuGet
             {
                 "pack",
                 _fileSystem.ConvertPathToInternal(nuSpecFileCopyPath.Path),
-                "-Properties",
-                string.Join(";", properties.Select(pair => $"{pair.Key}={pair.Value}")),
                 "-OutputDirectory",
                 _fileSystem.ConvertPathToInternal(packagesDirectoryPath.Path),
                 "-NoPackageAnalysis",
                 "-Version",
                 nuSpecCopy.Version.ToNormalizedString()
             };
+
+            foreach (var keyValuePair in properties)
+            {
+                arguments.Add("-Properties");
+                arguments.Add($"{keyValuePair.Key}={keyValuePair.Value}");
+            }
 
             if (!hasRemovedNoSourceTag && nugetSymbolPackageEnabled)
             {

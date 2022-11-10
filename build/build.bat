@@ -9,7 +9,7 @@ IF "%Arbor.Build.Build.Bootstrapper.AllowPrerelease%" == "" (
 )
 
 SET Arbor.Build.Configuration=release
-SET Arbor.Build.PublishDotNetExecutableProjects=false
+SET Arbor.Build.PublishDotNetExecutableProjects=true
 SET Arbor.Build.NuGet.PackageUpload.PackageExcludeStartsWithPatterns=Arbor.Build.Sample
 SET Arbor.Build.Vcs.Branch.BranchModel=GitFlowBuildOnMain
 SET Arbor.Build.Tools.External.MSpec.Enabled=true
