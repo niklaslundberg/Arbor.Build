@@ -32,6 +32,10 @@
         {
             "key":  "Arbor.Build.NuGet.PackageUpload.ForceUploadEnabled",
             "value": "false"
+        },
+        {
+            "key":  "Arbor.Build.Tools.External.MSBuild.BuildPlatform",
+            "value": ""
         }
     ]
 }
