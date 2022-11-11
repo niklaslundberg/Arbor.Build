@@ -7,13 +7,13 @@ namespace Arbor.Build.Core.Tools.MSBuild
 {
     public sealed class DotNetSdk : IEquatable<DotNetSdk>
     {
-        public static readonly DotNetSdk DotnetWeb = new DotNetSdk("Microsoft.NET.Sdk.Web");
-        public static readonly DotNetSdk Dotnet = new DotNetSdk("Microsoft.NET.Sdk");
-        public static readonly DotNetSdk None = new DotNetSdk("N/A");
-        public static readonly DotNetSdk Test = new DotNetSdk("Microsoft.NET.Test.Sdk");
+        public static readonly DotNetSdk DotnetWeb = new("Microsoft.NET.Sdk.Web");
+        public static readonly DotNetSdk Dotnet = new("Microsoft.NET.Sdk");
+        public static readonly DotNetSdk None = new("N/A");
+        public static readonly DotNetSdk Test = new("Microsoft.NET.Test.Sdk");
 
         private static readonly Lazy<ImmutableArray<DotNetSdk>> LazyAll =
-            new Lazy<ImmutableArray<DotNetSdk>>(() => new[]
+            new(() => new[]
             {
                 None,
                 Dotnet,

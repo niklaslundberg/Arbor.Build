@@ -193,7 +193,7 @@ namespace Arbor.Build.Core.Bootstrapper
         {
             var startOptions = BootstrapStartOptions.Parse(args);
 
-            var baseDir = new DirectoryEntry(_fileSystem, VcsPathHelper.FindVcsRootPath(AppContext.BaseDirectory).ParseAsPath());
+            var baseDir = new DirectoryEntry(_fileSystem, (VcsPathHelper.FindVcsRootPath(AppContext.BaseDirectory) ?? throw new InvalidOperationException("Could not get base directory")).ParseAsPath());
 
             var tempDirectory = new DirectoryEntry(_fileSystem, UPath.Combine(
                 Path.GetTempPath().ParseAsPath(),
@@ -409,7 +409,7 @@ namespace Arbor.Build.Core.Bootstrapper
             }
             else
             {
-                string foundPath = VcsPathHelper.FindVcsRootPath(Directory.GetCurrentDirectory());
+                string? foundPath = VcsPathHelper.FindVcsRootPath(Directory.GetCurrentDirectory());
 
                 if (string.IsNullOrWhiteSpace(foundPath))
                 {

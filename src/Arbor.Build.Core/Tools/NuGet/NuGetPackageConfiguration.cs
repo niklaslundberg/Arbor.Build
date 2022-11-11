@@ -30,7 +30,8 @@ namespace Arbor.Build.Core.Tools.NuGet
             string? packageBuildMetadata = null,
             string nuGetSymbolPackagesFormat = NuGetPackager.SnupkgPackageFormat,
             string? packageNameSuffix = null,
-            string? gitHash = null)
+            string? gitHash = null,
+            string? runtimeIdentifier = null)
         {
             if (string.IsNullOrWhiteSpace(configuration))
             {
@@ -71,10 +72,12 @@ namespace Arbor.Build.Core.Tools.NuGet
             Suffix = suffix;
             PackageNameSuffix = packageNameSuffix;
             GitHash = gitHash;
+            RuntimeIdentifier = runtimeIdentifier;
         }
 
         public string? PackageNameSuffix { get; }
         public string? GitHash { get; }
+        public string? RuntimeIdentifier { get; }
 
         public bool KeepBinaryAndSourcePackagesTogetherEnabled { get; }
 
@@ -109,7 +112,5 @@ namespace Arbor.Build.Core.Tools.NuGet
         public string? PackageBuildMetadata { get; }
 
         public string NuGetSymbolPackagesFormat { get; }
-
-        public override string ToString() => JsonConvert.SerializeObject(this, Formatting.Indented);
     }
 }

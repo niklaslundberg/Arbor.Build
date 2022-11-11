@@ -96,9 +96,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                     nuspecFullPath);
             }
 
-            var result = new ManifestReWriteResult(removeTags, tagPrefix, tempFile is {} && tempFile.Exists ? tempFile : null);
-
-            return result;
+            return new ManifestReWriteResult(removeTags, tagPrefix, tempFile is { Exists: true } ? tempFile : null);
         }
     }
 }

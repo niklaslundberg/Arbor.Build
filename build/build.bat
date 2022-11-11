@@ -8,10 +8,13 @@ IF "%Arbor.Build.Build.Bootstrapper.AllowPrerelease%" == "" (
     SET Arbor.Build.Build.Bootstrapper.AllowPrerelease=true
 )
 
+SET Arbor.Build.Configuration=release
+SET Arbor.Build.PublishDotNetExecutableProjects=true
 SET Arbor.Build.NuGet.PackageUpload.PackageExcludeStartsWithPatterns=Arbor.Build.Sample
 SET Arbor.Build.Vcs.Branch.BranchModel=GitFlowBuildOnMain
 SET Arbor.Build.Tools.External.MSpec.Enabled=true
-SET Arbor.Build.NuGet.Package.Artifacts.Suffix=
+SET Arbor.Build.NuGet.Package.Artifacts.Suffix=build
+SET Arbor.Build.NuGet.Package.Artifacts.Suffix.Enabled=true
 SET Arbor.Build.NuGet.Package.Artifacts.BuildNumber.Enabled=
 SET Arbor.Build.Log.Level=Debug
 SET Arbor.Build.Vcs.Branch.Name=%GITHUB_REF%
@@ -21,6 +24,7 @@ SET Arbor.Build.Artifacts.CleanupBeforeBuildEnabled=true
 SET Arbor.Build.Tools.External.LibZ.Enabled=true
 REM SET Arbor.Build.Tools.External.MSBuild.DeterministicBuild.Enabled=true
 
+SET Arbor.Build.PublishRuntimeIdentifier=win-x64
 SET Arbor.Build.NuGet.ReinstallArborPackageEnabled=true
 SET Arbor.Build.NuGet.VersionUpdateEnabled=false
 SET Arbor.Build.Artifacts.PdbArtifacts.Enabled=true
@@ -30,7 +34,7 @@ SET Arbor.Build.NuGet.Package.Symbols.Enabled=true
 SET Arbor.Build.NetAssembly.MetadataEnabled=true
 SET Arbor.Build.NetAssembly.Description=A convention-based build tool
 SET Arbor.Build.NetAssembly.Company=Niklas Lundberg
-SET Arbor.Build.NetAssembly.Copyright=© Niklas Lundberg 2014-2021
+SET Arbor.Build.NetAssembly.Copyright=© Niklas Lundberg 2014-2022
 SET Arbor.Build.NetAssembly.Trademark=Arbor.Build TM
 SET Arbor.Build.NetAssembly.Product=Arbor.Build
 SET Arbor.Build.Tools.External.MSBuild.Verbosity=minimal
@@ -58,6 +62,10 @@ IF "%Arbor.Build.ShowDefinedVariablesEnabled%" == "" (
 )
 
 CALL dotnet arbor-build
+
+IF "%ERRORLEVEL%" NEQ "0" (
+   EXIT /B %ERRORLEVEL%
+)
 
 SET Arbor.Build.Bootstrapper.AllowPrerelease=
 SET Arbor.Build.Tools.External.MSpec.Enabled=

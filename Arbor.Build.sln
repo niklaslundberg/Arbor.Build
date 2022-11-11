@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29318.209
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arbor.Build.Bootstrapper", "src\Arbor.Build.Bootstrapper\Arbor.Build.Bootstrapper.csproj", "{9AA52382-A7B1-407B-AE0E-9B04EFDFAC43}"
 EndProject
@@ -20,6 +20,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_Solution Items", "_Solutio
 		global.json = global.json
 		LICENSE.txt = LICENSE.txt
 		README.md = README.md
+		.github\workflows\sonar.yml = .github\workflows\sonar.yml
 		version.json = version.json
 	EndProjectSection
 	ProjectSection(FolderGlobals) = preProject
@@ -41,7 +42,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arbor.Build.Tests.Unit", "t
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arbor.Build.Sample.PackageProject", "samples\Arbor.Build.Sample.PackageProject\Arbor.Build.Sample.PackageProject.csproj", "{1A80D22B-7089-4478-A2DB-26C0F0F99806}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arbor.Build.Sample.Tests.XunitNetCoreApp31", "samples\Arbor.Build.Tests.SampleXunitNetCoreApp31\Arbor.Build.Sample.Tests.XunitNetCoreApp31.csproj", "{44A4050F-49B4-46ED-AF06-27301C409658}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arbor.Build.Sample.Tests.XunitNet6", "samples\Arbor.Build.Tests.SampleXunitNetCoreApp31\Arbor.Build.Sample.Tests.XunitNet6.csproj", "{44A4050F-49B4-46ED-AF06-27301C409658}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{C011DD52-1DFD-479E-B36C-368AD3CDBD9E}"
 EndProject

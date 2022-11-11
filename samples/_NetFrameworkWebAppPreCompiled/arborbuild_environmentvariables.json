@@ -1,0 +1,53 @@
+{
+    "version": "1.0",
+    "keys": [
+        {
+            "key": "Version.Major",
+            "value": 1
+        },
+        {
+            "key": "Version.Minor",
+            "value": 0
+        },
+        {
+            "key":  "Version.Patch",
+            "value": 0
+        },
+        {
+            "key":  "Version.Build",
+            "value": 0
+        },
+        {
+            "key":  "Arbor.Build.Tools.External.MSBuild.DotNet.Enabled",
+            "value": false
+        },
+        {
+            "key":  "Arbor.Build.NuGet.PackageUpload.Enabled",
+            "value": false
+        },
+        {
+            "key":  "Arbor.Build.NuGet.PackageUpload.ForceUploadEnabled",
+            "value": false
+        },
+        {
+            "key":  "Arbor.Build.NuGet.Package.CreateNuGetWebPackages.Enabled",
+            "value": true
+        },
+        {
+            "key":  "Arbor.Build.NetAssembly.PatchingEnabled",
+            "value": false
+        },
+        {
+            "key":  "Arbor.Build.WebDeploy.PreCompilation.Enabled",
+            "value": true
+        },
+        {
+            "key":  "Arbor.Build.MSBuild.Configurations",
+            "value": "debug"
+        },
+        {
+            "key":  "Arbor.Build.Tools.External.VisualStudio.Version.PreRelease.Enabled",
+            "value": true
+        }
+    ]
+}

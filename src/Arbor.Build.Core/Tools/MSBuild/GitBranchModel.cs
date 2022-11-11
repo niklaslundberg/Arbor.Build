@@ -5,7 +5,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
     public sealed class GitBranchModel : IEquatable<GitBranchModel>
     {
         public static readonly GitBranchModel GitFlowBuildOnMain =
-            new GitBranchModel(nameof(GitFlowBuildOnMain), "GitFlowBuildOnMaster");
+            new(nameof(GitFlowBuildOnMain), "GitFlowBuildOnMaster");
 
         public GitBranchModel(string name, string? alias = null)
         {

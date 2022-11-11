@@ -5,7 +5,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 {
     public class BuildConfiguration
     {
-        public BuildConfiguration([NotNull] string configuration)
+        public BuildConfiguration(string configuration)
         {
             if (string.IsNullOrWhiteSpace(configuration))
             {

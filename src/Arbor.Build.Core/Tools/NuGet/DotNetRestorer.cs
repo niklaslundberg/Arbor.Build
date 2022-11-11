@@ -24,7 +24,7 @@ namespace Arbor.Build.Core.Tools.NuGet
         public DotNetRestorer(IFileSystem fileSystem) => _fileSystem = fileSystem;
 
         public async Task<ExitCode> ExecuteAsync(
-            ILogger logger,
+            ILogger? logger,
             IReadOnlyCollection<IVariable> buildVariables,
             string[] args,
             CancellationToken cancellationToken)
@@ -37,7 +37,7 @@ namespace Arbor.Build.Core.Tools.NuGet
                 return ExitCode.Success;
             }
 
-            DirectoryEntry rootPath = new DirectoryEntry(_fileSystem, buildVariables.GetVariable(WellKnownVariables.SourceRoot).GetValueOrThrow());
+            DirectoryEntry rootPath = new(_fileSystem, buildVariables.GetVariable(WellKnownVariables.SourceRoot).GetValueOrThrow());
 
             string dotNetExePath =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.DotNetExePath, string.Empty)!;

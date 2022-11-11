@@ -35,7 +35,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
     {
         private readonly BuildContext _buildContext;
 
-        private readonly List<FileAttributes> _excludeListedByAttributes = new List<FileAttributes>
+        private readonly List<FileAttributes> _excludeListedByAttributes = new()
         {
             FileAttributes.Hidden, FileAttributes.System, FileAttributes.Offline, FileAttributes.Archive
         };
@@ -1101,7 +1101,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 
                     foreach (var lookupDirectory in packageLookupDirectories)
                     {
-                        if (lookupDirectory is { } && lookupDirectory.Exists)
+                        if (lookupDirectory is { Exists: true })
                         {
                             var nugetPackages = lookupDirectory.GetFiles($"*{packageVersion}.nupkg",
                                 SearchOption.AllDirectories);
@@ -1197,7 +1197,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 {
                     "pack", _fileSystem.ConvertPathToInternal(solutionProject.FullPath.Path), "--configuration",
                     configuration, _argHelper.FormatPropertyArg("VersionPrefix", packageVersion), "--output",
-                    _fileSystem.ConvertPathToInternal(_packagesDirectory.Path), "--no-build", "--include-symbols"
+                    _fileSystem.ConvertPathToInternal(_packagesDirectory.Path), "--include-symbols"
                 };
 
                 void Log(string message, string category)
@@ -1334,7 +1334,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                             .SingleOrDefault(dll => dll.FullName
                                 .Equals(
                                     UPath.Combine(
-                                        pdb.Directory!.FullName,
+                                        pdb.Directory.FullName,
                                         $"{Path.GetFileNameWithoutExtension(pdb.Name)}.dll").FullName,
                                     StringComparison.OrdinalIgnoreCase))
                     })
@@ -1761,7 +1761,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 target = "restore;rebuild;publish";
             }
 
-            if (_processorCount.HasValue && _processorCount.Value >= 1)
+            if (_processorCount is >= 1)
             {
                 buildSiteArguments.Add(_argHelper.FormatArg("maxcpucount",
                     _processorCount.Value.ToString(CultureInfo.InvariantCulture)));
@@ -1895,7 +1895,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 packageId,
                 allIncludedFiles,
                 "",
-                artifactDirectory).ConfigureAwait(false);
+                artifactDirectory,
+                runtimeIdentifier: _publishRuntimeIdentifier).ConfigureAwait(false);
 
             if (!exitCode.IsSuccess)
             {
@@ -1966,7 +1967,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
                     environmentPackageId,
                     elements,
                     $".Environment.{environmentName}",
-                    rootDirectory).ConfigureAwait(false);
+                    rootDirectory,
+                    runtimeIdentifier: _publishRuntimeIdentifier).ConfigureAwait(false);
 
                 if (!environmentPackageExitCode.IsSuccess)
                 {
@@ -2107,7 +2109,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
             string packageId,
             IReadOnlyCollection<FileEntry> filesList,
             string packageNameSuffix,
-            DirectoryEntry baseDirectory)
+            DirectoryEntry baseDirectory,
+            string? runtimeIdentifier = null)
         {
             var packageDirectoryPath = UPath.Combine(platformDirectoryPath, "NuGet");
 
@@ -2118,7 +2121,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 _buildVariables,
                 packageDirectory,
                 _vcsRoot,
-                packageNameSuffix);
+                packageNameSuffix,
+                runtimeIdentifier);
 
             if (packageConfiguration is null)
             {
@@ -2155,8 +2159,8 @@ namespace Arbor.Build.Core.Tools.MSBuild
             string nativePath = contentFilesInfo.ContentFilesFile.Path.WindowsPath();
             string nativeChecksumPath = contentFilesInfo.ChecksumFile.Path.WindowsPath();
 
-            string? nativeFullPath = _fileSystem.ConvertPathToInternal(contentFilesInfo.ContentFilesFile.Path);
-            string? nativeChecksumFileFullPath = _fileSystem.ConvertPathToInternal(contentFilesInfo.ChecksumFile.Path);
+            string nativeFullPath = _fileSystem.ConvertPathToInternal(contentFilesInfo.ContentFilesFile.Path);
+            string nativeChecksumFileFullPath = _fileSystem.ConvertPathToInternal(contentFilesInfo.ChecksumFile.Path);
 
             string contentFileListFile =
                 $@"<file src=""{nativeFullPath}"" target=""{nativePath[nativeMetadataDirectory.Length..].TrimStart(Path.DirectorySeparatorChar)}"" />";
@@ -2323,11 +2327,10 @@ namespace Arbor.Build.Core.Tools.MSBuild
             }
         }
 
-        [NotNull]
         private async Task<ExitCode> CopyKuduWebJobsAsync(
-            [NotNull] ILogger logger,
-            [NotNull] WebSolutionProject solutionProject,
-            [NotNull] DirectoryEntry siteArtifactDirectory)
+            ILogger logger,
+            WebSolutionProject solutionProject,
+            DirectoryEntry siteArtifactDirectory)
         {
             if (solutionProject.NetFrameworkGeneration != NetFrameworkGeneration.NetFramework)
             {
@@ -2620,7 +2623,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
             foreach (FileEntry dllFile in dllFiles)
             {
                 var xmlFile = new FileEntry(_fileSystem, UPath.Combine(
-                    dllFile.Directory?.FullName!,
+                    dllFile.Directory.FullName!,
                     $"{Path.GetFileNameWithoutExtension(dllFile.Name)}.xml"));
 
                 if (xmlFile.Exists)

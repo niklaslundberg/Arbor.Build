@@ -109,7 +109,7 @@ namespace Arbor.Build.Core.Tools.Versioning
 
                     const string patchKey = "patch";
 
-                    var required = new Dictionary<string, string>
+                    var required = new Dictionary<string, string?>
                     {
                         {
                             majorKey,
@@ -224,7 +224,7 @@ namespace Arbor.Build.Core.Tools.Versioning
                         build,
                         WellKnownVariables.TeamCityVersionBuild);
                 }
-                else if (buildVariables.GetBooleanByKey(WellKnownVariables.BuildNumberAsUnixEpochSecondsEnabled))
+                else if (buildVariables.GetBooleanByKey(WellKnownVariables.BuildNumberAsUnixEpochSecondsEnabled, defaultValue: true))
                 {
                     build = (int) _timeService.UtcNow().ToUnixTimeSeconds();
                 }

@@ -18,6 +18,14 @@
             "value": 4
         },
         {
+            "key":  "Arbor.Build.PublishDotNetExecutableProjects",
+            "value": true
+        },
+        {
+            "key":  "Arbor.Build.Configuration",
+            "value": ""
+        },
+        {
             "key":  "Arbor.Build.Tools.External.MSBuild.DeterministicBuild.Enabled",
             "value": false
         },

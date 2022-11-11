@@ -5,7 +5,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 {
     public static class Platforms
     {
-        public static string Normalize([NotNull] string platform)
+        public static string Normalize(string platform)
         {
             if (string.IsNullOrWhiteSpace(platform))
             {

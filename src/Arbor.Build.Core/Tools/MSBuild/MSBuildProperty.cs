@@ -5,7 +5,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
 {
     public class MSBuildProperty
     {
-        public MSBuildProperty([NotNull] string name, string value)
+        public MSBuildProperty(string name, string value)
         {
             if (string.IsNullOrWhiteSpace(name))
             {

@@ -71,7 +71,7 @@ namespace Arbor.Build.Tests.Integration.PathExtensions
                 fs.CreateDirectory(path);
                 try
                 {
-                    fs.GetDirectoryEntry(path).EnsureExists().EnsureExists();
+                    fs.GetDirectoryEntry(path).EnsureExists();
                 }
                 catch (Exception ex)
                 {
@@ -91,6 +91,7 @@ namespace Arbor.Build.Tests.Integration.PathExtensions
         [MemberData(nameof(GetFileSystems))]
         public void DeleteFileIfExistsShouldNotThrowIfNotExists(IFileSystem fileSystem)
         {
+            fileSystem.CreateDirectory("/mnt/c/temp");
             var file = new FileEntry(fileSystem, "/mnt/c/temp/exampleFile.txt");
 
             file.DeleteIfExists().Should().BeTrue();

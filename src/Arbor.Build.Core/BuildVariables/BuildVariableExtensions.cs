@@ -49,9 +49,14 @@ namespace Arbor.Build.Core.BuildVariables
 
         public static string? GetVariableValueOrDefault(
             this IReadOnlyCollection<IVariable> buildVariables,
-            string key,
+            string? key,
             [NotNullIfNotNull("defaultValue")] string? defaultValue = null)
         {
+            if (key is null)
+            {
+                return null;
+            }
+
             if (!buildVariables.HasKey(key))
             {
                 return defaultValue;
@@ -146,10 +151,10 @@ namespace Arbor.Build.Core.BuildVariables
         }
 
         public static bool GetValueOrDefault(
-            this IVariable variable,
+            this IVariable? variable,
             bool defaultValue = false)
         {
-            if (variable == null)
+            if (variable is null)
             {
                 return defaultValue;
             }

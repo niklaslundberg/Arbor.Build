@@ -61,10 +61,15 @@ namespace Arbor.Build.Core.Debugging
                 [WellKnownVariables.DotNetPublishExeProjectsEnabled] = "true",
                 [WellKnownVariables.NuGetPackageIdBranchNameEnabled] = "false",
                 [WellKnownVariables.XUnitNetCoreAppXmlEnabled] = "true",
+                [WellKnownVariables.DebugBuildEnabled] = "false",
                 [WellKnownVariables.DeterministicBuildEnabled] = "true",
                 [WellKnownVariables.RepositoryUrl] = "http://ignore.local",
                 [WellKnownVariables.ExternalTools_VisualStudio_Version_Allow_PreRelease] = "true",
-                [WellKnownVariables.ExternalTools_MSBuild_AllowPreReleaseEnabled] = "true"
+                [WellKnownVariables.ExternalTools_MSBuild_AllowPreReleaseEnabled] = "true",
+                [WellKnownVariables.PublishRuntimeIdentifier] = "win-x64",
+                [WellKnownVariables.GitBranchModel] = "GitFlowBuildOnMaster",
+                [WellKnownVariables.NuGetPackageArtifactsSuffix] = "build",
+                [WellKnownVariables.NuGetPackageArtifactsSuffixEnabled] = "true"
             };
 
             Task<ImmutableArray<IVariable>> result = Task.FromResult(environmentVariables.Select(

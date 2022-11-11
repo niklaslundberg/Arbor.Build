@@ -43,7 +43,7 @@ namespace Arbor.Build.Tests.Unit
             {
                 await stream.WriteAllTextAsync(@"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netcoreapp3.1</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
   </PropertyGroup>
 </Project>");
             }
@@ -55,7 +55,7 @@ namespace Arbor.Build.Tests.Unit
 
             msBuildProject.TargetFramework.Should().Be(TargetFramework.Empty);
             msBuildProject.TargetFrameworks.Should().Contain(TargetFramework.NetStandard2_0);
-            msBuildProject.TargetFrameworks.Should().Contain(TargetFramework.NetCoreApp3_1);
+            msBuildProject.TargetFrameworks.Should().Contain(TargetFramework.Net6_0);
         }
 
         [Fact]
@@ -92,7 +92,7 @@ namespace Arbor.Build.Tests.Unit
                 await stream.WriteAllTextAsync(@"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <TargetFrameworks>netstandard2.0;netcoreapp3.1</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
   </PropertyGroup>
 </Project>");
             }

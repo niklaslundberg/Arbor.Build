@@ -5,22 +5,22 @@ on: [push]
 jobs:
   build:
 
-    runs-on: windows-2019
+    runs-on: windows-2022
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
       with:
         fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-    - uses: actions/setup-dotnet@v1
+    - uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: '3.1.x'
-    - uses: actions/setup-dotnet@v1
+        dotnet-version: '6.0.x'
+    - uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: '5.0.x'
+        dotnet-version: '7.0.x'
     - name: install-tools
       run: |
-        dotnet tool install --global Arbor.Tooler.GlobalTool
-        dotnet tool install --global Arbor.Build.Bootstrapper
+        dotnet tool install --global Arbor.Tooler.GlobalTool --version "*-*"
+        dotnet tool install --global Arbor.Build.Bootstrapper --version "*-*"
     - name: build
       shell: cmd
       env:

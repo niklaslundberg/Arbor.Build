@@ -63,8 +63,10 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             DirectoryEntry vcsRootDir = _buildContext.SourceRoot;
 
+            var runtimeIdentifier = buildVariables.GetVariableValueOrDefault(WellKnownVariables.PublishRuntimeIdentifier, string.Empty);
+
             NuGetPackageConfiguration? packageConfiguration =
-                _nugetPackager.GetNuGetPackageConfiguration(logger, buildVariables, packagesDirectory, vcsRootDir, "");
+                _nugetPackager.GetNuGetPackageConfiguration(logger, buildVariables, packagesDirectory, vcsRootDir, "", runtimeIdentifier);
 
             if (packageConfiguration is null)
             {

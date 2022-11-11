@@ -47,19 +47,6 @@ namespace Arbor.Build.Core.Tools.Versioning
                 .Select(value => value.Trim())
                 .Where(value => !string.IsNullOrWhiteSpace(value)));
 
-            string? config = buildVariables.GetVariableValueOrDefault(WellKnownVariables.Configuration);
-            string? msBuildConfig = buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_MSBuild_BuildConfiguration);
-
-            if (!string.IsNullOrWhiteSpace(config))
-            {
-                _buildContext.Configurations.Add(config);
-            }
-
-            if (!string.IsNullOrWhiteSpace(msBuildConfig))
-            {
-                _buildContext.Configurations.Add(msBuildConfig);
-            }
-
             if (_buildContext.Configurations.Count == 0)
             {
                 if (releaseEnabled == true)

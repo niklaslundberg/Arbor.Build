@@ -65,7 +65,7 @@ namespace Arbor.Build.Tests.Integration
 
             using var xunitLogger = _testOutputHelper.CreateTestLogger();
 
-            var expectedFiles = await GetExpectedFiles(samplesDirectory);
+            var expectedFiles = await GetExpectedFiles(sampleDirectory);
 
             var logFile = new FileEntry(_fs, sampleDirectory.Path / "build.log");
 
@@ -89,7 +89,7 @@ namespace Arbor.Build.Tests.Integration
                 .MinimumLevel.Verbose()
                 .CreateLogger();
 
-            using var logger = new LoggerConfiguration()
+            await using var logger = new LoggerConfiguration()
                 .WriteTo.Logger(xunitLogger)
                 .WriteTo.File(_fs.ConvertPathToInternal(logFile.Path))
                 .MinimumLevel.Verbose()
@@ -106,7 +106,7 @@ namespace Arbor.Build.Tests.Integration
 
             Assert.All(expectedFiles, file =>
             {
-                var filePath = samplesDirectory.Path / file;
+                var filePath = sampleDirectory.Path / file;
                 Assert.True(_fs.FileExists(filePath), $"Exists({_fs.ConvertPathToInternal(filePath)})");
 
                 if (file.GetExtensionWithDot()?.Equals(".nupkg", StringComparison.OrdinalIgnoreCase) ?? false)

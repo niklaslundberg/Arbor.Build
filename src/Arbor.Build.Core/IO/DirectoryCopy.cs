@@ -82,7 +82,8 @@ namespace Arbor.Build.Core.IO
                 ExitCode exitCode = await CopyAsync(
                     directory, new DirectoryEntry(sourceDirectory.FileSystem,
                     UPath.Combine(targetDir.Path, directory.Name)),
-                    pathLookupSpecificationOption: pathLookupSpecification).ConfigureAwait(false);
+                    pathLookupSpecificationOption: pathLookupSpecification,
+                    rootDir: rootDir).ConfigureAwait(false);
 
                 if (!exitCode.IsSuccess)
                 {

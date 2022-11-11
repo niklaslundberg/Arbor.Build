@@ -1,7 +1,20 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Artifacts\**" />
+    <Compile Remove="build\**" />
+    <EmbeddedResource Remove="Artifacts\**" />
+    <EmbeddedResource Remove="build\**" />
+    <None Remove="Artifacts\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="*.log" />
+    <None Remove="build\**" />
+  </ItemGroup>
 
 </Project>

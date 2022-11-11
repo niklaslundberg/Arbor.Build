@@ -11,8 +11,6 @@ namespace Arbor.Build.Core.Tools.Git
                 return default;
             }
 
-            string branchName;
-
             string name = potentialBranchName.Trim('#').Trim();
 
             const string prefix = "On branch ";
@@ -36,16 +34,12 @@ namespace Arbor.Build.Core.Tools.Git
 
             if (indexOfBranchSeparator >= 0)
             {
-                branchName = name.Substring(0, indexOfBranchSeparator);
-
-                return branchName;
+                return name[..indexOfBranchSeparator];
             }
 
             if (name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
             {
-                branchName = name[prefix.Length..];
-
-                return branchName;
+                return name[prefix.Length..];
             }
 
             if (string.IsNullOrWhiteSpace(name))
@@ -53,9 +47,7 @@ namespace Arbor.Build.Core.Tools.Git
                 return default;
             }
 
-            branchName = name;
-
-            return branchName;
+            return name;
         }
     }
 }
