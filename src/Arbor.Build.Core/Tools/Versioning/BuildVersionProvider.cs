@@ -109,7 +109,7 @@ namespace Arbor.Build.Core.Tools.Versioning
 
                     const string patchKey = "patch";
 
-                    var required = new Dictionary<string, string>
+                    var required = new Dictionary<string, string?>
                     {
                         {
                             majorKey,

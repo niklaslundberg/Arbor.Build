@@ -193,22 +193,22 @@
       },
       "Arbor.KVConfiguration.Core": {
         "type": "Transitive",
-        "resolved": "2.0.0",
-        "contentHash": "SnZ2hvHVAk2PeqkjGD4sZB2IvXuzvEF6TcFlrFLpqRKGZQBiphY6h6/CmIb6sdx/2tcIYvGSXIZIs1X7Jdpxag==",
+        "resolved": "2.4.0-build.1668196076",
+        "contentHash": "r/xDmbiS2Fxm0LIqXcIZL9hEziwefZQIXMEPgsXZE0Vv1JqmH2ehEXKO3NZJ4fYr2P+yqo0tkTn6B05MAhhEEA==",
         "dependencies": {
-          "Microsoft.Extensions.Primitives": "[3.0.0, 7.0.0)",
-          "System.Collections.Immutable": "[1.5.0, 7.0.0)"
+          "Microsoft.Extensions.Primitives": "[3.0.0, 8.0.0)",
+          "System.Collections.Immutable": "[1.5.0, 8.0.0)"
         }
       },
       "Arbor.KVConfiguration.JsonConfiguration": {
         "type": "Transitive",
-        "resolved": "2.3.0",
-        "contentHash": "pPOUKPTRGQTSlcJltbvdG/a53iPG7H/w12bGKEo5ymgdem+ZG2hOU71tHVdcAdKkh5jAuoz+NrqzyJ60EX0rDA==",
+        "resolved": "2.4.0-build.1668196076",
+        "contentHash": "7tdwyNz9xs9qS36jRIXF3mtza/g32XGix0V5HQ8udqHS0yJQTLVPDEyEj4z8OV3BIEasPkXcBtlCJKiACXzXZQ==",
         "dependencies": {
           "Arbor.KVConfiguration.Core": "[2.0.0, 3.0.0)",
           "Arbor.KVConfiguration.Schema": "[2.0.0, 3.0.0)",
           "Arbor.KVConfiguration.Schema.Json": "[2.0.0, 3.0.0)",
-          "Newtonsoft.Json": "[12.0.1, 14.0.0)"
+          "Newtonsoft.Json": "[13.0.1, 14.0.0)"
         }
       },
       "Arbor.KVConfiguration.Schema": {
@@ -221,17 +221,17 @@
       },
       "Arbor.KVConfiguration.Schema.Json": {
         "type": "Transitive",
-        "resolved": "2.3.0",
-        "contentHash": "RY7Xj00fpEQV5N729ANgVXkbI5GZ8TGLN4fSBUtXJBhyto60hrT+p8I494J2iIRvbF4bSwrafBTieKQrwW5FDw==",
+        "resolved": "2.4.0-build.1668196076",
+        "contentHash": "S+svlpaAOvlXTtfsLB2FpBswZNjSQyfxzMK9/Y7mR1Q1XdPvCofDb3hgG+vPbEN8p22KcsIKbYWRDBdo8o89hA==",
         "dependencies": {
           "Arbor.KVConfiguration.Core": "[2.0.0, 3.0.0)",
-          "Newtonsoft.Json": "12.0.1"
+          "Newtonsoft.Json": "13.0.1"
         }
       },
       "Arbor.KVConfiguration.UserConfiguration": {
         "type": "Transitive",
-        "resolved": "2.3.0",
-        "contentHash": "pMpbiKDJfYavkh8wfsrbtEkt05wllZ3E8fCTo8zVex2j3XEZQZNTCs3DYe8sbZWqZS5HoRY+RqLxybDOdKU7bQ==",
+        "resolved": "2.4.0-build.1668196076",
+        "contentHash": "oeeLuLsD7D9qNLO3GXjXYs/HGJI9kiVhM1M5wRRHAbjhRifIGRIH2NkI5yBlHW5l5k4ESp2X6IwF1MOL4SygYQ==",
         "dependencies": {
           "Arbor.KVConfiguration.Core": "[2.0.0, 3.0.0)",
           "Arbor.KVConfiguration.JsonConfiguration": "[2.0.0, 3.0.0)",
@@ -1264,9 +1264,10 @@
           "Arbor.Defensive.Collections": "[1.0.0, )",
           "Arbor.Exceptions": "[1.0.0, )",
           "Arbor.FileSystem": "[0.5.0, )",
-          "Arbor.KVConfiguration.JsonConfiguration": "[2.3.0, )",
-          "Arbor.KVConfiguration.Schema.Json": "[2.3.0, )",
-          "Arbor.KVConfiguration.UserConfiguration": "[2.3.0, )",
+          "Arbor.KVConfiguration.Core": "[2.4.0-build.1668196076, )",
+          "Arbor.KVConfiguration.JsonConfiguration": "[2.4.0-build.1668196076, )",
+          "Arbor.KVConfiguration.Schema.Json": "[2.4.0-build.1668196076, )",
+          "Arbor.KVConfiguration.UserConfiguration": "[2.4.0-build.1668196076, )",
           "Arbor.Processing": "[0.6.0, )",
           "Arbor.Sorbus": "[4.0.0, )",
           "Arbor.Tooler": "[0.17.0, )",
