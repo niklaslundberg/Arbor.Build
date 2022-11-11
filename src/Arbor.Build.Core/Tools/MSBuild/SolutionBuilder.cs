@@ -1197,7 +1197,7 @@ namespace Arbor.Build.Core.Tools.MSBuild
                 {
                     "pack", _fileSystem.ConvertPathToInternal(solutionProject.FullPath.Path), "--configuration",
                     configuration, _argHelper.FormatPropertyArg("VersionPrefix", packageVersion), "--output",
-                    _fileSystem.ConvertPathToInternal(_packagesDirectory.Path), "--no-build", "--include-symbols"
+                    _fileSystem.ConvertPathToInternal(_packagesDirectory.Path), "--include-symbols"
                 };
 
                 void Log(string message, string category)
