@@ -55,11 +55,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             string? currentConfiguration =
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.CurrentBuildConfiguration);
 
-            string? staticConfiguration =
-                buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_MSBuild_BuildConfiguration)
-                ?? buildVariables.GetVariableValueOrDefault(WellKnownVariables.Configuration);
-
-            string buildConfiguration = currentConfiguration ?? staticConfiguration ?? WellKnownConfigurations.Release;
+            string buildConfiguration = currentConfiguration ?? WellKnownConfigurations.Release;
 
             var tempDirectory = _fileSystem.GetDirectoryEntry(
                 buildVariables.Require(WellKnownVariables.TempDirectory).ThrowIfEmptyValue().Value!.ParseAsPath());

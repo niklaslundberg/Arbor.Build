@@ -103,7 +103,7 @@ namespace Arbor.Build.Core.Tools.NuGet
 
             if (excluded.Length > 0)
             {
-                logger.Warning(
+                logger.Debug(
                     "Found ignored solution files: {IgnoredSolutionFiles}",
                     string.Join(
                         ", ",
@@ -120,7 +120,7 @@ namespace Arbor.Build.Core.Tools.NuGet
             if (!string.IsNullOrWhiteSpace(runtimeIdentifier))
             {
                 arguments.Add($"/p:RuntimeIdentifiers={runtimeIdentifier}");
-                logger.Information("Restoring using runtime identifiers {Identifiers}", runtimeIdentifier);
+                logger.Debug("Restoring using runtime identifiers {Identifiers}", runtimeIdentifier);
             }
 
             ExitCode exitCode;

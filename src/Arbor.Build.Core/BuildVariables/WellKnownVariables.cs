@@ -72,11 +72,6 @@ namespace Arbor.Build.Core.BuildVariables
         [VariableDescription("Enable assembly version patching")]
         public const string AssemblyFilePatchingEnabled = "Arbor.Build.NetAssembly.PatchingEnabled";
 
-        [Obsolete("Kept for backward compatibility")]
-        [VariableDescription("MSBuild configuration (eg. Debug/Release)")]
-        public const string Configuration =
-            "Arbor.Build.Configuration";
-
         [VariableDescription("Semicolon separated MSBuild configurations (eg. Debug/Release)")]
         public const string Configurations =
             "Arbor.Build.MSBuild.Configurations";
@@ -149,12 +144,6 @@ namespace Arbor.Build.Core.BuildVariables
         [VariableDescription("Flag to indicate if MSBuild should display a build summary", "false")]
         public const string ExternalTools_MSBuild_SummaryEnabled =
             "Arbor.Build.Tools.External.MSBuild.SummaryEnabled";
-
-        [Obsolete("Kept for backward compatibility")]
-        [VariableDescription(
-            "MSBuild build configuration, if not specified, all well-known configurations will be built")]
-        public const string ExternalTools_MSBuild_BuildConfiguration =
-            "Arbor.Build.Tools.External.MSBuild.BuildConfiguration";
 
         [VariableDescription("MSBuild build platform, if not specified, all well-known platforms will be built")]
         public const string ExternalTools_MSBuild_BuildPlatform =

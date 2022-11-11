@@ -62,7 +62,6 @@ namespace Arbor.Build.Core.Debugging
                 [WellKnownVariables.NuGetPackageIdBranchNameEnabled] = "false",
                 [WellKnownVariables.XUnitNetCoreAppXmlEnabled] = "true",
                 [WellKnownVariables.DebugBuildEnabled] = "false",
-                [WellKnownVariables.Configuration] = "release",
                 [WellKnownVariables.DeterministicBuildEnabled] = "true",
                 [WellKnownVariables.RepositoryUrl] = "http://ignore.local",
                 [WellKnownVariables.ExternalTools_VisualStudio_Version_Allow_PreRelease] = "true",
