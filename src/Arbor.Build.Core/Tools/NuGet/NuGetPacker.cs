@@ -56,7 +56,11 @@ namespace Arbor.Build.Core.Tools.NuGet
                     .Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries)
                     .SafeToReadOnlyCollection();
 
-            _pathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification;
+            _pathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification.WithIgnoredFileNameParts(new []
+            {
+                "packages.lock.json",
+                "config.user"
+            });
 
             string? artifacts = buildVariables.Require(WellKnownVariables.Artifacts).GetValueOrThrow();
             var packagesDirectory = new DirectoryEntry(_fileSystem, UPath.Combine(artifacts.ParseAsPath(), "packages"));
