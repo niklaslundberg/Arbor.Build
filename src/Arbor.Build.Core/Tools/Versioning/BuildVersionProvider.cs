@@ -49,14 +49,14 @@ namespace Arbor.Build.Core.Tools.Versioning
             return Task.FromResult(environmentVariables.ToImmutableArray());
         }
 
-        private static bool ValidateVersionNumber(KeyValuePair<string, string> s)
+        private static bool ValidateVersionNumber(KeyValuePair<string, string?> pair)
         {
-            if (string.IsNullOrWhiteSpace(s.Value))
+            if (string.IsNullOrWhiteSpace(pair.Value))
             {
                 return false;
             }
 
-            if (!int.TryParse(s.Value, out int parsed) || parsed < 0)
+            if (!int.TryParse(pair.Value, out int parsed) || parsed < 0)
             {
                 return false;
             }

@@ -23,7 +23,6 @@
         "contentHash": "kz0PEW2lhqygehI/d6XsPCQzD7ff7gUJaVGPVETX611eadGsA3A877GdSlU0LRVMCTH/+P3o2iDTak+S08V2+A=="
       }
     },
-    ".NETStandard,Version=v2.0/win-x64": {},
     "net6.0": {
       "JetBrains.Annotations": {
         "type": "Direct",
@@ -31,7 +30,6 @@
         "resolved": "2020.1.0",
         "contentHash": "kD9D2ey3DGeLbfIzS8PkwLFkcF5vCOLk2rdjgfSxTfpoyovl7gAyoS6yq6T77zo9QgJGaVJ7PO/cSgLopnKlzg=="
       }
-    },
-    "net6.0/win-x64": {}
+    }
   }
 }
