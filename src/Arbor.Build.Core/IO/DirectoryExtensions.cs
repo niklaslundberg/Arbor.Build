@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using Arbor.Defensive.Collections;
 using Arbor.Exceptions;
-using JetBrains.Annotations;
 using Zio;
 
 namespace Arbor.Build.Core.IO;
@@ -72,8 +71,8 @@ public static class DirectoryExtensions
     }
 
     public static ImmutableArray<FileEntry> GetFilesWithWithExclusions(
-        [NotNull] this DirectoryEntry directory,
-        [NotNull] IReadOnlyCollection<string> excludedPatterns)
+        this DirectoryEntry directory,
+        IReadOnlyCollection<string> excludedPatterns)
     {
         if (directory is null)
         {

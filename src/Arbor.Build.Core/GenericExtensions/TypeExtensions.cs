@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Reflection;
-using JetBrains.Annotations;
 
 namespace Arbor.Build.Core.GenericExtensions;
 
 public static class TypeExtensions
 {
-    public static bool HasSingleDefaultConstructor([NotNull] this Type type)
+    public static bool HasSingleDefaultConstructor(this Type type)
     {
         if (type == null)
         {
@@ -29,7 +28,7 @@ public static class TypeExtensions
         return isConcretePublicClassImplementing;
     }
 
-    public static bool IsPublicConstant([NotNull] this FieldInfo fieldInfo)
+    public static bool IsPublicConstant(this FieldInfo fieldInfo)
     {
         if (fieldInfo == null)
         {
@@ -41,7 +40,7 @@ public static class TypeExtensions
         return isPublicConstant;
     }
 
-    public static bool IsPublicStatic([NotNull] this FieldInfo fieldInfo)
+    public static bool IsPublicStatic(this FieldInfo fieldInfo)
     {
         if (fieldInfo == null)
         {
@@ -53,7 +52,7 @@ public static class TypeExtensions
         return isPublicConstant;
     }
 
-    public static bool IsPublicConstantOrStatic([NotNull] this FieldInfo fieldInfo)
+    public static bool IsPublicConstantOrStatic(this FieldInfo fieldInfo)
     {
         if (fieldInfo == null)
         {

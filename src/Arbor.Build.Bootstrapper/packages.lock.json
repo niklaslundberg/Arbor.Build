@@ -10,9 +10,9 @@
       },
       "Arbor.Tooler": {
         "type": "Direct",
-        "requested": "[0.20.1, )",
-        "resolved": "0.20.1",
-        "contentHash": "ntJ1co0XLiB3OYLeCu0yfzP+TdvTO26dyeQAR4mwagZlb9o86a5eXMLSegePfjcsfqKaVNtQdR5BCSvYCNFd7w==",
+        "requested": "[0.22.0, )",
+        "resolved": "0.22.0",
+        "contentHash": "DeIPAR6JV+2nuRLR/VG+q6QgQZyGbm9Le4Tfn62ydUgrcymzssUNoFP8AAjHOzjQ2H46wNdqICe23HzAGe6AHw==",
         "dependencies": {
           "Arbor.Processing": "0.6.0",
           "NewtonSoft.Json": "13.0.0",
@@ -1278,7 +1278,7 @@
           "Arbor.KVConfiguration.UserConfiguration": "[2.4.0, )",
           "Arbor.Processing": "[0.6.0, )",
           "Arbor.Sorbus": "[4.0.0, )",
-          "Arbor.Tooler": "[0.20.1, )",
+          "Arbor.Tooler": "[0.22.0, )",
           "Autofac": "[7.0.1, )",
           "JetBrains.Annotations": "[2022.3.1, )",
           "MSTest.TestFramework": "[3.0.2, )",

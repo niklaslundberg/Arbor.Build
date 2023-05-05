@@ -50,7 +50,7 @@ public static class BuildVariableExtensions
     public static string? GetVariableValueOrDefault(
         this IReadOnlyCollection<IVariable> buildVariables,
         string? key,
-        [NotNullIfNotNull("defaultValue")] string? defaultValue = null)
+        [NotNullIfNotNull(nameof(defaultValue))] string? defaultValue = null)
     {
         if (key is null)
         {

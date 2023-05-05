@@ -3,7 +3,6 @@ using System.IO;
 using Arbor.Build.Core.IO;
 using Arbor.FS;
 using JetBrains.Annotations;
-using Newtonsoft.Json;
 using NuGet.Versioning;
 using Zio;
 
@@ -12,9 +11,9 @@ namespace Arbor.Build.Core.Tools.NuGet;
 public class NuGetPackageConfiguration
 {
     public NuGetPackageConfiguration(
-        [NotNull] string configuration,
-        [NotNull] SemanticVersion version,
-        [NotNull] DirectoryEntry packagesDirectory,
+        string configuration,
+        SemanticVersion version,
+        DirectoryEntry packagesDirectory,
         [NotNull] UPath nugetExePath,
         string branchName,
         string? suffix = null,

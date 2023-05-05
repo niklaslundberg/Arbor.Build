@@ -1,5 +1,4 @@
 using System;
-using JetBrains.Annotations;
 
 namespace Arbor.Build.Core.BuildVariables;
 
@@ -30,7 +29,7 @@ public sealed class VariableDescription : IEquatable<VariableDescription>
 
     public string Description => _description ?? string.Empty;
 
-    public static implicit operator string([NotNull] VariableDescription variableDescription) => variableDescription.InvariantName;
+    public static implicit operator string(VariableDescription variableDescription) => variableDescription.InvariantName;
 
     public static implicit operator VariableDescription(string invariantName) => Create(invariantName);
     public static string FromString(string invariantName) => Create(invariantName);

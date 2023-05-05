@@ -10,7 +10,6 @@ using Arbor.Build.Core.Logging;
 using Autofac;
 using Autofac.Core;
 using Autofac.Util;
-using JetBrains.Annotations;
 using Serilog;
 using Zio;
 
@@ -18,7 +17,7 @@ namespace Arbor.Build.Core;
 
 public static class BuildBootstrapper
 {
-    public static Task<IContainer> StartAsync([NotNull] ILogger logger,
+    public static Task<IContainer> StartAsync(ILogger logger,
         IEnvironmentVariables environmentVariables,
         ISpecialFolders specialFolders,
         DirectoryEntry? sourceDirectory = null)

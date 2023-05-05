@@ -1,11 +1,10 @@
 ﻿using System;
-using JetBrains.Annotations;
 
 namespace Arbor.Build.Core.BuildVariables;
 
 public class BuildVariable : IVariable
 {
-    public BuildVariable([NotNull] string key, string? value)
+    public BuildVariable(string key, string? value)
     {
         if (string.IsNullOrWhiteSpace(key))
         {

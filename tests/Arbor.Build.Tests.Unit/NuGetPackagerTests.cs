@@ -1,5 +1,4 @@
 ﻿using Arbor.Build.Core.Tools.NuGet;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NuGet.Versioning;
 using Xunit;
 using Zio;

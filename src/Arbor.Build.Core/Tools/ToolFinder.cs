@@ -4,7 +4,6 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 using Autofac;
-using JetBrains.Annotations;
 using Serilog;
 
 namespace Arbor.Build.Core.Tools;
@@ -12,8 +11,8 @@ namespace Arbor.Build.Core.Tools;
 public static class ToolFinder
 {
     public static ImmutableArray<ToolWithPriority> GetTools(
-        [NotNull] ILifetimeScope lifetimeScope,
-        [NotNull] ILogger logger)
+        ILifetimeScope lifetimeScope,
+        ILogger logger)
     {
         if (lifetimeScope == null)
         {

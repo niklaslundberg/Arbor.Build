@@ -493,13 +493,10 @@ public sealed class BuildApplication : IDisposable
 
         buildVariables.AddCompatibilityVariables(_logger);
 
-        var sorted = buildVariables
+        return buildVariables
             .OrderBy(variable => variable.Key)
             .ToList();
-
-        return sorted;
     }
-
 
     private void CheckEnvironmentLinesInVariables(List<IVariable> buildVariables)
     {

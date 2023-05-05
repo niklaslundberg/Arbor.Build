@@ -1,13 +1,12 @@
 using System;
-using JetBrains.Annotations;
 
 namespace Arbor.Build.Core.Tools;
 
 public class ToolResult
 {
     public ToolResult(
-        [NotNull] ToolWithPriority toolWithPriority,
-        [NotNull] ToolResultType resultType,
+        ToolWithPriority toolWithPriority,
+        ToolResultType resultType,
         string? message = null,
         TimeSpan executionTime = default)
     {

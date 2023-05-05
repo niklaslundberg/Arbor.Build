@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Arbor.Build.Core.IO;
-using JetBrains.Annotations;
 using Zio;
 
 namespace Arbor.Build.Core.Tools.MSBuild;
@@ -202,7 +201,7 @@ public class MsBuildProject
 
     public override string ToString() => $"{FileName} {nameof(Properties)} [{PropertyGroups.SelectMany(g => g.Properties).Count()}]:{Environment.NewLine}{string.Join(Environment.NewLine, PropertyGroups.SelectMany(g => g.Properties).Select(p => "\t" + p.ToString()))}{Environment.NewLine}{nameof(FileName)}: {FileName}{Environment.NewLine}{nameof(ProjectName)}: {ProjectName}{Environment.NewLine}{nameof(ProjectDirectory)}: {ProjectDirectory}{nameof(ProjectTypes)}: {string.Join(", ", ProjectTypes.Select(t => t.ToString()))},{Environment.NewLine}{nameof(ProjectId)}: {ProjectId}{Environment.NewLine}{nameof(Sdk)}: {Sdk}{Environment.NewLine}{nameof(PackageReferences)} [{PackageReferences.Length}]:{Environment.NewLine} {string.Join(Environment.NewLine, PackageReferences.Select(r => r.ToString()))}";
 
-    public bool HasPropertyWithValue([NotNull] string name, [NotNull] string value, StringComparison stringComparison = StringComparison.Ordinal)
+    public bool HasPropertyWithValue(string name, string value, StringComparison stringComparison = StringComparison.Ordinal)
     {
         if (name == null)
         {
@@ -219,7 +218,7 @@ public class MsBuildProject
             value.Equals(property.Value, stringComparison)));
     }
 
-    public string GetPropertyValue([NotNull] string name)
+    public string GetPropertyValue(string name)
     {
         if (name == null)
         {

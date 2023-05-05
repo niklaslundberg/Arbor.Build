@@ -7,7 +7,6 @@ using Arbor.Exceptions;
 using Arbor.FS;
 using Arbor.KVConfiguration.JsonConfiguration;
 using Arbor.KVConfiguration.Schema.Json;
-using JetBrains.Annotations;
 using Serilog;
 using Serilog.Core;
 using Zio;
@@ -59,7 +58,7 @@ public static class EnvironmentVariableHelper
         return buildVariables;
     }
 
-    public static ImmutableArray<KeyValue> GetBuildVariablesFromFile([NotNull] ILogger logger,
+    public static ImmutableArray<KeyValue> GetBuildVariablesFromFile(ILogger logger,
         string fileName,
         DirectoryEntry sourceRoot)
     {

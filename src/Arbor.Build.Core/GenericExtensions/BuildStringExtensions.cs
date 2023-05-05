@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using JetBrains.Annotations;
 
 namespace Arbor.Build.Core.GenericExtensions;
 
 public static class BuildStringExtensions
 {
     public static bool StartsWithAny(
-        [NotNull] this string value,
-        [ItemNotNull] [NotNull] IReadOnlyCollection<string> whatToFind,
+        this string value,
+        IReadOnlyCollection<string> whatToFind,
         StringComparison stringComparison)
     {
         if (value == null)

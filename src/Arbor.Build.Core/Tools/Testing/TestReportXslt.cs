@@ -5,7 +5,6 @@ using System.Xml;
 using System.Xml.Xsl;
 using Arbor.FS;
 using Arbor.Processing;
-using JetBrains.Annotations;
 using Serilog;
 using Zio;
 
@@ -16,9 +15,9 @@ public static class TestReportXslt
     public const string JUnitSuffix = "_junit.xml";
 
     public static ExitCode Transform(
-        [NotNull] FileEntry xmlReport,
-        [NotNull] string xsltTemplate,
-        [NotNull] ILogger logger,
+        FileEntry xmlReport,
+        string xsltTemplate,
+        ILogger logger,
         bool deleteOriginal = true)
     {
         if (xmlReport is null)

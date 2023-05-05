@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Immutable;
 using System.Linq;
-using JetBrains.Annotations;
 using Zio;
 
 namespace Arbor.Build.Core.Bootstrapper;
@@ -38,7 +37,7 @@ public class BootstrapStartOptions
 
     public string? ArborBuildExePath { get; }
 
-    public static BootstrapStartOptions Parse([NotNull] string[] args)
+    public static BootstrapStartOptions Parse(string[] args)
     {
         if (args == null)
         {

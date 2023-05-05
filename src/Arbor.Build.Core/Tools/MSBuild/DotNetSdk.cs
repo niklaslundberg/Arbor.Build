@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Immutable;
 using System.Linq;
-using JetBrains.Annotations;
 
 namespace Arbor.Build.Core.Tools.MSBuild;
 
@@ -21,7 +20,7 @@ public sealed class DotNetSdk : IEquatable<DotNetSdk>
             Test
         }.ToImmutableArray());
 
-    private DotNetSdk([NotNull] string sdkName)
+    private DotNetSdk(string sdkName)
     {
         if (string.IsNullOrWhiteSpace(sdkName))
         {

@@ -1,12 +1,11 @@
 ﻿using System;
-using JetBrains.Annotations;
 using NuGet.Versioning;
 
 namespace Arbor.Build.Core.Tools.Versioning;
 
 public static class SemVerExtensions
 {
-    public static string Suffix([NotNull] this SemanticVersion semanticVersion)
+    public static string Suffix(this SemanticVersion semanticVersion)
     {
         if (semanticVersion == null)
         {

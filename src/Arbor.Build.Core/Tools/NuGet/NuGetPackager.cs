@@ -189,8 +189,8 @@ public class NuGetPackager
     }
 
     public async Task<ExitCode> CreatePackageAsync(
-        [NotNull] FileEntry packageSpecificationPath,
-        [NotNull] NuGetPackageConfiguration packageConfiguration,
+        FileEntry packageSpecificationPath,
+        NuGetPackageConfiguration packageConfiguration,
         bool ignoreWarnings = false,
         CancellationToken cancellationToken = default)
     {

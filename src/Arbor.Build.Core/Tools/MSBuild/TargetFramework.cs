@@ -1,5 +1,4 @@
 ﻿using System;
-using JetBrains.Annotations;
 
 namespace Arbor.Build.Core.Tools.MSBuild;
 
@@ -20,7 +19,7 @@ public sealed class TargetFramework : ValueObject<TargetFramework, string>
 
     public override string ToString() => Value;
 
-    public TargetFramework([NotNull] string value) : base(value)
+    public TargetFramework(string value) : base(value)
     {
         if (string.IsNullOrWhiteSpace(value))
         {

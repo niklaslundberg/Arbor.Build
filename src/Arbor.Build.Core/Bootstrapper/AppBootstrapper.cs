@@ -48,7 +48,7 @@ public class AppBootstrapper
     public async Task<ExitCode> StartAsync(string[] args)
     {
         _logger.Information("Running Arbor.Build Bootstrapper process id {ProcessId}, executable {Executable}",
-            Process.GetCurrentProcess().Id,
+            Environment.ProcessId,
             typeof(AppBootstrapper).Assembly.Location);
 
         BootstrapStartOptions startOptions;
@@ -157,7 +157,7 @@ public class AppBootstrapper
             {
                 uint childProcessId = (uint)item["ProcessId"];
 
-                if ((int)childProcessId != Process.GetCurrentProcess().Id)
+                if ((int)childProcessId != Environment.ProcessId)
                 {
                     KillAllProcessesSpawnedBy(childProcessId, logger);
 
@@ -280,13 +280,8 @@ public class AppBootstrapper
 
         _logger.Debug("Downloading nuget package {Package}", BuildToolPackageName);
 
-        UPath? buildToolsDirectory =
-            (await DownloadNuGetPackageAsync().ConfigureAwait(false))?.ParseAsPath();
-
-        if (!buildToolsDirectory.HasValue)
-        {
-            return ExitCode.Failure;
-        }
+        UPath buildToolsDirectory =
+            (await DownloadNuGetPackageAsync().ConfigureAwait(false)).ParseAsPath();
 
         ExitCode exitCode;
 
@@ -299,7 +294,7 @@ public class AppBootstrapper
             else
             {
                 ExitCode buildToolsResult =
-                    await RunBuildToolsAsync(buildDir.Path, buildToolsDirectory.Value, startOptions.ArborBuildExePath).ConfigureAwait(false);
+                    await RunBuildToolsAsync(buildDir.Path, buildToolsDirectory, startOptions.ArborBuildExePath).ConfigureAwait(false);
 
                 if (buildToolsResult.IsSuccess)
                 {
@@ -322,7 +317,7 @@ public class AppBootstrapper
 
                 if (parsed && enabled)
                 {
-                    KillAllProcessesSpawnedBy((uint)Process.GetCurrentProcess().Id, _logger);
+                    KillAllProcessesSpawnedBy((uint)Environment.ProcessId, _logger);
                 }
             }
             catch (Exception ex) when (!ex.IsFatal())
@@ -369,13 +364,13 @@ public class AppBootstrapper
                 nugetPackageSettings)
             .ConfigureAwait(false);
 
-        if (nuGetPackageInstallResult?.SemanticVersion is null)
+        if (nuGetPackageInstallResult.SemanticVersion is null)
         {
             _logger.Warning("Could not download {PackageVersion}", packageVersion);
         }
 
         if (!parsedPackageVersion
-            && nuGetPackageInstallResult?.SemanticVersion is null
+            && nuGetPackageInstallResult.SemanticVersion is null
             && nuGetPackage.NuGetPackageVersion != NuGetPackageVersion.LatestDownloaded)
         {
             _logger.Information("Retrying package download of {PackageVersion} with latest downloaded",
@@ -387,7 +382,7 @@ public class AppBootstrapper
                 .ConfigureAwait(false);
         }
 
-        if (nuGetPackageInstallResult?.SemanticVersion is null ||
+        if (nuGetPackageInstallResult.SemanticVersion is null ||
             nuGetPackageInstallResult.PackageDirectory is null)
         {
             throw new InvalidOperationException(
@@ -490,47 +485,40 @@ public class AppBootstrapper
 
         _logger.Information("Using build timeout {UsedTimeoutInSeconds} seconds", usedTimeoutInSeconds);
 
-        ExitCode result;
+        using var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(usedTimeoutInSeconds));
+        const string buildApplicationPrefix = "[Arbor.Build] ";
 
-        using (var cancellationTokenSource =
-               new CancellationTokenSource(TimeSpan.FromSeconds(usedTimeoutInSeconds)))
+        var arguments = new List<string>();
+
+        UPath? exePath = arborBuildExePath is {} value ? value : (UPath?) null;
+        if (string.IsNullOrWhiteSpace(arborBuildExePath))
         {
-            const string buildApplicationPrefix = "[Arbor.Build] ";
+            var (defaultExePath, args) = await GetExePath(buildToolDirectory, cancellationTokenSource.Token);
 
-            var arguments = new List<string>();
-
-            UPath? exePath = arborBuildExePath is {} value ? value : (UPath?) null;
-            if (string.IsNullOrWhiteSpace(arborBuildExePath))
-            {
-                var (defaultExePath, args) = await GetExePath(buildToolDirectory, cancellationTokenSource.Token);
-
-                arguments.AddRange(args);
-                exePath = defaultExePath;
-            }
-
-            if (exePath is null)
-            {
-                return ExitCode.Failure;
-            }
-
-            arguments.Add($"-buildDirectory={_fileSystem.ConvertPathToInternal(buildDir)}");
-
-            if (_startOptions.Args.Any())
-            {
-                arguments.AddRange(_startOptions.Args);
-            }
-
-            result = await ProcessRunner.ExecuteProcessAsync(_fileSystem.ConvertPathToInternal(exePath.Value),
-                    arguments,
-                    (message, _) => _logger.Information("{Prefix}{Message}", buildApplicationPrefix, message),
-                    (message, _) => _logger.Error("{Prefix}{Message}", buildApplicationPrefix, message),
-                    _logger.Information,
-                    _logger.Verbose,
-                    cancellationToken: cancellationTokenSource.Token)
-                .ConfigureAwait(false);
+            arguments.AddRange(args);
+            exePath = defaultExePath;
         }
 
-        return result;
+        if (exePath is null)
+        {
+            return ExitCode.Failure;
+        }
+
+        arguments.Add($"-buildDirectory={_fileSystem.ConvertPathToInternal(buildDir)}");
+
+        if (_startOptions.Args.Any())
+        {
+            arguments.AddRange(_startOptions.Args);
+        }
+
+        return await ProcessRunner.ExecuteProcessAsync(_fileSystem.ConvertPathToInternal(exePath.Value),
+                arguments,
+                (message, _) => _logger.Information("{Prefix}{Message}", buildApplicationPrefix, message),
+                (message, _) => _logger.Error("{Prefix}{Message}", buildApplicationPrefix, message),
+                _logger.Information,
+                _logger.Verbose,
+                cancellationToken: cancellationTokenSource.Token)
+            .ConfigureAwait(false);
     }
 
     private void PrintInvalidExeFileCount(List<FileEntry> exeFiles, string buildToolDirectoryPath)

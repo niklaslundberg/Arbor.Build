@@ -1,5 +1,4 @@
 ﻿using System;
-using JetBrains.Annotations;
 using Serilog.Core;
 using Serilog.Events;
 
@@ -17,7 +16,7 @@ public class InMemorySink : ILogEventSink
         _level = level;
     }
 
-    public void Emit([NotNull] LogEvent logEvent)
+    public void Emit(LogEvent logEvent)
     {
         if (logEvent == null)
         {
