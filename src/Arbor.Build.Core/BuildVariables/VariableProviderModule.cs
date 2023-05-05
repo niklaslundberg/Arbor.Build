@@ -6,19 +6,18 @@ using Autofac;
 using JetBrains.Annotations;
 using Module = Autofac.Module;
 
-namespace Arbor.Build.Core.BuildVariables
-{
-    [UsedImplicitly]
-    public class VariableProviderModule : Module
-    {
-        protected override void Load(ContainerBuilder builder)
-        {
-            Assembly[] assemblies = AssemblyFetcher.GetFilteredAssemblies().ToArray();
+namespace Arbor.Build.Core.BuildVariables;
 
-            builder.RegisterAssemblyTypes(assemblies)
-                .Where(type => type.IsConcretePublicClassImplementing<IVariableProvider>())
-                .AsImplementedInterfaces()
-                .SingleInstance();
-        }
+[UsedImplicitly]
+public class VariableProviderModule : Module
+{
+    protected override void Load(ContainerBuilder builder)
+    {
+        Assembly[] assemblies = AssemblyFetcher.GetFilteredAssemblies().ToArray();
+
+        builder.RegisterAssemblyTypes(assemblies)
+            .Where(type => type.IsConcretePublicClassImplementing<IVariableProvider>())
+            .AsImplementedInterfaces()
+            .SingleInstance();
     }
 }

@@ -1,13 +1,12 @@
 ﻿using System;
 using Arbor.Build.Core.BuildVariables;
 
-namespace Arbor.Build.Core
-{
-    public sealed class SpecialFolders : ISpecialFolders
-    {
-        public static readonly SpecialFolders Default = new SpecialFolders();
+namespace Arbor.Build.Core;
 
-        public string GetFolderPath(Environment.SpecialFolder specialFolder) =>
-            Environment.GetFolderPath(specialFolder);
-    }
+public sealed class SpecialFolders : ISpecialFolders
+{
+    public static readonly SpecialFolders Default = new SpecialFolders();
+
+    public string GetFolderPath(Environment.SpecialFolder specialFolder) =>
+        Environment.GetFolderPath(specialFolder);
 }

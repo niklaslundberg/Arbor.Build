@@ -7,30 +7,29 @@ using Arbor.Build.Core.Tools.Cleanup;
 using JetBrains.Annotations;
 using Serilog;
 
-namespace Arbor.Build.Core.Tools.Symbols
+namespace Arbor.Build.Core.Tools.Symbols;
+
+[UsedImplicitly]
+public class SymbolsVariableProvider : IVariableProvider
 {
-    [UsedImplicitly]
-    public class SymbolsVariableProvider : IVariableProvider
+    public int Order => VariableProviderOrder.Ignored;
+
+    public Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
+        ILogger logger,
+        IReadOnlyCollection<IVariable> buildVariables,
+        CancellationToken cancellationToken)
     {
-        public int Order => VariableProviderOrder.Ignored;
-
-        public Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
-            ILogger logger,
-            IReadOnlyCollection<IVariable> buildVariables,
-            CancellationToken cancellationToken)
+        // TODO add symbol api and key
+        var variables = new List<IVariable>
         {
-            // TODO add symbol api and key
-            var variables = new List<IVariable>
-            {
-                new BuildVariable(
-                    WellKnownVariables.ExternalTools_SymbolServer_ApiKey,
-                    "TODO"),
-                new BuildVariable(
-                    WellKnownVariables.ExternalTools_SymbolServer_Uri,
-                    "TODO")
-            };
+            new BuildVariable(
+                WellKnownVariables.ExternalTools_SymbolServer_ApiKey,
+                "TODO"),
+            new BuildVariable(
+                WellKnownVariables.ExternalTools_SymbolServer_Uri,
+                "TODO")
+        };
 
-            return Task.FromResult(variables.ToImmutableArray());
-        }
+        return Task.FromResult(variables.ToImmutableArray());
     }
 }

@@ -1,9 +1,9 @@
-﻿namespace Arbor.Build.Core.Tools.Testing
+﻿namespace Arbor.Build.Core.Tools.Testing;
+
+public static class Trx2UnitXsl
 {
-    public static class Trx2UnitXsl
-    {
-        public static readonly
-            string Xml = @"<?xml version=""1.0"" encoding=""UTF-8"" ?>
+    public static readonly
+        string Xml = @"<?xml version=""1.0"" encoding=""UTF-8"" ?>
 <xsl:stylesheet version=""1.0"" xmlns:xsl=""http://www.w3.org/1999/XSL/Transform"">
   <xsl:output method=""xml"" indent=""yes"" omit-xml-declaration=""yes"" cdata-section-elements=""message stack-trace""/>
   <xsl:template match=""/"">
@@ -69,8 +69,8 @@
 
 </xsl:stylesheet>";
 
-        // Taken from https://gist.github.com/cdroulers/e23eeb31d6c1c2cade6f680e321aed8d 2018-11-27
-        public static readonly string TrxTemplate = @"<?xml version=""1.0"" encoding=""utf-8""?>
+    // Taken from https://gist.github.com/cdroulers/e23eeb31d6c1c2cade6f680e321aed8d 2018-11-27
+    public static readonly string TrxTemplate = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <xsl:stylesheet version=""1.0"" xmlns:xsl=""http://www.w3.org/1999/XSL/Transform"" xmlns:a =""http://microsoft.com/schemas/VisualStudio/TeamTest/2006"" xmlns:b =""http://microsoft.com/schemas/VisualStudio/TeamTest/2010"" >
   <xsl:output method=""xml"" indent=""yes"" />
   <xsl:template match=""/"">
@@ -218,5 +218,4 @@
   </xsl:template>
 </xsl:stylesheet>
 ";
-    }
 }

@@ -16,145 +16,144 @@ using Serilog.Core;
 using Serilog.Events;
 using Zio;
 
-namespace Arbor.Build.Core.Tools.NuGet
+namespace Arbor.Build.Core.Tools.NuGet;
+
+[Priority(101)]
+[UsedImplicitly]
+public class MsBuildNuGetRestorer : ITool
 {
-    [Priority(101)]
-    [UsedImplicitly]
-    public class MsBuildNuGetRestorer : ITool
+    private readonly IFileSystem _fileSystem;
+    private readonly BuildContext _buildContext;
+
+    public MsBuildNuGetRestorer(IFileSystem fileSystem, BuildContext buildContext)
     {
-        private readonly IFileSystem _fileSystem;
-        private readonly BuildContext _buildContext;
+        _fileSystem = fileSystem;
+        _buildContext = buildContext;
+    }
 
-        public MsBuildNuGetRestorer(IFileSystem fileSystem, BuildContext buildContext)
+    private static Logger CreateProcessLogger(
+        ILogger logger,
+        List<(string Message, LogEventLevel Level)> allMessages,
+        List<(string Message, LogEventLevel Level)> defaultMessages) => new LoggerConfiguration()
+        .WriteTo.Sink(new InMemorySink((message, level) => allMessages.Add((message, level)),
+            LogEventLevel.Verbose))
+        .WriteTo.Sink(
+            new InMemorySink(
+                (message, level) => defaultMessages.Add((message, level)),
+                logger.MostVerboseLoggingCurrentLogLevel()))
+        .MinimumLevel.Verbose()
+        .CreateLogger();
+
+    public async Task<ExitCode> ExecuteAsync(
+        ILogger logger,
+        IReadOnlyCollection<IVariable> buildVariables,
+        string[] args,
+        CancellationToken cancellationToken)
+    {
+        if (buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_MSBuild_DotNetEnabled))
         {
-            _fileSystem = fileSystem;
-            _buildContext = buildContext;
+            return ExitCode.Success;
         }
 
-        private static Logger CreateProcessLogger(
-            ILogger logger,
-            List<(string Message, LogEventLevel Level)> allMessages,
-            List<(string Message, LogEventLevel Level)> defaultMessages) => new LoggerConfiguration()
-                .WriteTo.Sink(new InMemorySink((message, level) => allMessages.Add((message, level)),
-                    LogEventLevel.Verbose))
-                .WriteTo.Sink(
-                    new InMemorySink(
-                        (message, level) => defaultMessages.Add((message, level)),
-                        logger.MostVerboseLoggingCurrentLogLevel()))
-                .MinimumLevel.Verbose()
-                .CreateLogger();
+        bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.MSBuildNuGetRestoreEnabled, true);
 
-        public async Task<ExitCode> ExecuteAsync(
-            ILogger logger,
-            IReadOnlyCollection<IVariable> buildVariables,
-            string[] args,
-            CancellationToken cancellationToken)
+        if (!enabled)
         {
-            if (buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_MSBuild_DotNetEnabled))
-            {
-                return ExitCode.Success;
-            }
-
-            bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.MSBuildNuGetRestoreEnabled, true);
-
-            if (!enabled)
-            {
-                logger.Debug("{Tool} is disabled", nameof(MsBuildNuGetRestorer));
-                return ExitCode.Success;
-            }
-
-            var msbuildExePath = buildVariables.GetVariable(WellKnownVariables.ExternalTools_MSBuild_ExePath)
-                .GetValueOrThrow().ParseAsPath();
-
-            DirectoryEntry rootPath = _buildContext.SourceRoot;
-
-            FileEntry[] solutionFiles = rootPath.EnumerateFiles("*.sln", SearchOption.AllDirectories).ToArray();
-
-            PathLookupSpecification pathLookupSpecification =
-                DefaultPaths.DefaultPathLookupSpecification.AddExcludedDirectorySegments(new[] { "node_modules" });
-
-            var excludeListStatus = solutionFiles
-                .Select(file => new {File = file, Status = pathLookupSpecification.IsFileExcluded(file, rootPath)})
-                .ToArray();
-
-            FileEntry[] included = excludeListStatus
-                .Where(file => !file.Status.Item1)
-                .Select(file => file.File)
-                .ToArray();
-
-            var excluded = excludeListStatus
-                .Where(file => file.Status.Item1)
-                .ToArray();
-
-            if (included.Length > 1)
-            {
-                logger.Error(
-                    "Expected exactly 1 solution file, found {Length}, {SolutionFiles}",
-                    included.Length,
-                    string.Join(", ", included.Select(fi => _fileSystem.ConvertPathToInternal(fi.Path))));
-                return ExitCode.Failure;
-            }
-
-            if (included.Length == 0)
-            {
-                logger.Error("Expected exactly 1 solution file, found 0");
-                return ExitCode.Failure;
-            }
-
-            if (excluded.Length > 0)
-            {
-                logger.Debug(
-                    "Found ignored solution files: {IgnoredSolutionFiles}",
-                    string.Join(
-                        ", ",
-                        excluded.Select(excludedItem => $"{excludedItem.File.ConvertPathToInternal()} ({excludedItem.Status.Item2})")));
-            }
-
-            var solutionFile = included.Single();
-
-            string? runtimeIdentifier =
-                buildVariables.GetVariableValueOrDefault(WellKnownVariables.PublishRuntimeIdentifier);
-
-            var arguments = new List<string> { solutionFile.ConvertPathToInternal(), "/t:restore" };
-
-            if (!string.IsNullOrWhiteSpace(runtimeIdentifier))
-            {
-                arguments.Add($"/p:RuntimeIdentifiers={runtimeIdentifier}");
-                logger.Debug("Restoring using runtime identifiers {Identifiers}", runtimeIdentifier);
-            }
-
-            ExitCode exitCode;
-
-            List<(string Message, LogEventLevel Level)> allMessages = new List<(string, LogEventLevel)>();
-            List<(string Message, LogEventLevel Level)> defaultMessages = new List<(string, LogEventLevel)>();
-
-            using (Logger processLogger = CreateProcessLogger(logger, allMessages, defaultMessages))
-            {
-                exitCode = await ProcessHelper.ExecuteAsync(
-                   _fileSystem.ConvertPathToInternal(msbuildExePath),
-                    arguments,
-                    processLogger,
-                    cancellationToken: cancellationToken).ConfigureAwait(false);
-
-                if (!exitCode.IsSuccess)
-                {
-                    foreach ((string message, LogEventLevel level) in allMessages)
-                    {
-                        logger.Log(message, level);
-                    }
-
-                    logger.Error("Failed to restore NuGet packages via MSBuild");
-                }
-                else
-                {
-                    foreach ((string message, LogEventLevel level) in defaultMessages)
-                    {
-                        logger.Log(message, level);
-                    }
-                }
-            }
-
-            return exitCode;
+            logger.Debug("{Tool} is disabled", nameof(MsBuildNuGetRestorer));
+            return ExitCode.Success;
         }
+
+        var msbuildExePath = buildVariables.GetVariable(WellKnownVariables.ExternalTools_MSBuild_ExePath)
+            .GetValueOrThrow().ParseAsPath();
+
+        DirectoryEntry rootPath = _buildContext.SourceRoot;
+
+        FileEntry[] solutionFiles = rootPath.EnumerateFiles("*.sln", SearchOption.AllDirectories).ToArray();
+
+        PathLookupSpecification pathLookupSpecification =
+            DefaultPaths.DefaultPathLookupSpecification.AddExcludedDirectorySegments(new[] { "node_modules" });
+
+        var excludeListStatus = solutionFiles
+            .Select(file => new {File = file, Status = pathLookupSpecification.IsFileExcluded(file, rootPath)})
+            .ToArray();
+
+        FileEntry[] included = excludeListStatus
+            .Where(file => !file.Status.Item1)
+            .Select(file => file.File)
+            .ToArray();
+
+        var excluded = excludeListStatus
+            .Where(file => file.Status.Item1)
+            .ToArray();
+
+        if (included.Length > 1)
+        {
+            logger.Error(
+                "Expected exactly 1 solution file, found {Length}, {SolutionFiles}",
+                included.Length,
+                string.Join(", ", included.Select(fi => _fileSystem.ConvertPathToInternal(fi.Path))));
+            return ExitCode.Failure;
+        }
+
+        if (included.Length == 0)
+        {
+            logger.Error("Expected exactly 1 solution file, found 0");
+            return ExitCode.Failure;
+        }
+
+        if (excluded.Length > 0)
+        {
+            logger.Debug(
+                "Found ignored solution files: {IgnoredSolutionFiles}",
+                string.Join(
+                    ", ",
+                    excluded.Select(excludedItem => $"{excludedItem.File.ConvertPathToInternal()} ({excludedItem.Status.Item2})")));
+        }
+
+        var solutionFile = included.Single();
+
+        string? runtimeIdentifier =
+            buildVariables.GetVariableValueOrDefault(WellKnownVariables.PublishRuntimeIdentifier);
+
+        var arguments = new List<string> { solutionFile.ConvertPathToInternal(), "/t:restore" };
+
+        if (!string.IsNullOrWhiteSpace(runtimeIdentifier))
+        {
+            arguments.Add($"/p:RuntimeIdentifiers={runtimeIdentifier}");
+            logger.Debug("Restoring using runtime identifiers {Identifiers}", runtimeIdentifier);
+        }
+
+        ExitCode exitCode;
+
+        List<(string Message, LogEventLevel Level)> allMessages = new List<(string, LogEventLevel)>();
+        List<(string Message, LogEventLevel Level)> defaultMessages = new List<(string, LogEventLevel)>();
+
+        using (Logger processLogger = CreateProcessLogger(logger, allMessages, defaultMessages))
+        {
+            exitCode = await ProcessHelper.ExecuteAsync(
+                _fileSystem.ConvertPathToInternal(msbuildExePath),
+                arguments,
+                processLogger,
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+
+            if (!exitCode.IsSuccess)
+            {
+                foreach ((string message, LogEventLevel level) in allMessages)
+                {
+                    logger.Log(message, level);
+                }
+
+                logger.Error("Failed to restore NuGet packages via MSBuild");
+            }
+            else
+            {
+                foreach ((string message, LogEventLevel level) in defaultMessages)
+                {
+                    logger.Log(message, level);
+                }
+            }
+        }
+
+        return exitCode;
     }
 }

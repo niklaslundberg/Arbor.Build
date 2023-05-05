@@ -7,20 +7,19 @@ using Autofac;
 using JetBrains.Annotations;
 using Module = Autofac.Module;
 
-namespace Arbor.Build.Core.Tools
+namespace Arbor.Build.Core.Tools;
+
+[UsedImplicitly]
+public class ToolsModule : Module
 {
-    [UsedImplicitly]
-    public class ToolsModule : Module
+    protected override void Load(ContainerBuilder builder)
     {
-        protected override void Load(ContainerBuilder builder)
-        {
-            Assembly[] assemblies = AssemblyFetcher.GetFilteredAssemblies().ToArray();
+        Assembly[] assemblies = AssemblyFetcher.GetFilteredAssemblies().ToArray();
 
-            builder.RegisterAssemblyTypes(assemblies)
-                .Where(type => type.IsConcretePublicClassImplementing<ITool>())
-                .AsImplementedInterfaces();
+        builder.RegisterAssemblyTypes(assemblies)
+            .Where(type => type.IsConcretePublicClassImplementing<ITool>())
+            .AsImplementedInterfaces();
 
-            builder.RegisterType<GitHelper>();
-        }
+        builder.RegisterType<GitHelper>();
     }
 }

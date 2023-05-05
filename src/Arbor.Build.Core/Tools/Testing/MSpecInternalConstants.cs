@@ -1,7 +1,6 @@
-namespace Arbor.Build.Core.Tools.Testing
+namespace Arbor.Build.Core.Tools.Testing;
+
+public static class MSpecInternalConstants
 {
-    public static class MSpecInternalConstants
-    {
-        public const string RecursiveArborXTest = "Arbor_X_Recursive";
-    }
+    public const string RecursiveArborXTest = "Arbor_X_Recursive";
 }

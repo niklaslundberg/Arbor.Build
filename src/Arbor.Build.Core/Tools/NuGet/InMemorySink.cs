@@ -3,31 +3,30 @@ using JetBrains.Annotations;
 using Serilog.Core;
 using Serilog.Events;
 
-namespace Arbor.Build.Core.Tools.NuGet
+namespace Arbor.Build.Core.Tools.NuGet;
+
+public class InMemorySink : ILogEventSink
 {
-    public class InMemorySink : ILogEventSink
+    private readonly Action<string, LogEventLevel> _action;
+
+    private readonly LogEventLevel _level;
+
+    public InMemorySink(Action<string, LogEventLevel> action, LogEventLevel level = LogEventLevel.Information)
     {
-        private readonly Action<string, LogEventLevel> _action;
+        _action = action;
+        _level = level;
+    }
 
-        private readonly LogEventLevel _level;
-
-        public InMemorySink(Action<string, LogEventLevel> action, LogEventLevel level = LogEventLevel.Information)
+    public void Emit([NotNull] LogEvent logEvent)
+    {
+        if (logEvent == null)
         {
-            _action = action;
-            _level = level;
+            throw new ArgumentNullException(nameof(logEvent));
         }
 
-        public void Emit([NotNull] LogEvent logEvent)
+        if (logEvent.Level >= _level)
         {
-            if (logEvent == null)
-            {
-                throw new ArgumentNullException(nameof(logEvent));
-            }
-
-            if (logEvent.Level >= _level)
-            {
-                _action.Invoke(logEvent.RenderMessage(), logEvent.Level);
-            }
+            _action.Invoke(logEvent.RenderMessage(), logEvent.Level);
         }
     }
 }

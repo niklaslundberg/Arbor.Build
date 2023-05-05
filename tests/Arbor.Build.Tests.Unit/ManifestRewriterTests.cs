@@ -9,11 +9,11 @@ using Xunit;
 using Zio;
 using Zio.FileSystems;
 
-namespace Arbor.Build.Tests.Unit
+namespace Arbor.Build.Tests.Unit;
+
+public class ManifestRewriterTests
 {
-    public class ManifestRewriterTests
-    {
-        private static string NuSpecNoTags => @"<?xml version=""1.0""?>
+    private static string NuSpecNoTags => @"<?xml version=""1.0""?>
 
 <package>
   <metadata>
@@ -48,7 +48,7 @@ namespace Arbor.Build.Tests.Unit
   </files>
 </package>
 ";
-        private static string NuSpecNoSourceTags => $@"<?xml version=""1.0""?>
+    private static string NuSpecNoSourceTags => $@"<?xml version=""1.0""?>
 
 <package>
   <metadata>
@@ -84,60 +84,59 @@ namespace Arbor.Build.Tests.Unit
 </package>
 ";
 
-        public static IEnumerable<object[]> GetFileSystemsData()
-        {
-            yield return new object[] {new MemoryFileSystem()};
-            yield return new object[] {new PhysicalFileSystem()};
-        }
+    public static IEnumerable<object[]> GetFileSystemsData()
+    {
+        yield return new object[] {new MemoryFileSystem()};
+        yield return new object[] {new PhysicalFileSystem()};
+    }
 
-        [MemberData(nameof(GetFileSystemsData))]
-        [Theory]
-        public async Task Rewrite(IFileSystem fileSystem)
+    [MemberData(nameof(GetFileSystemsData))]
+    [Theory]
+    public async Task Rewrite(IFileSystem fileSystem)
+    {
+        using (fileSystem)
         {
-            using (fileSystem)
+            FileEntry? tempFile = null;
+
+            try
             {
-                FileEntry? tempFile = null;
+                tempFile = new FileEntry(fileSystem, UPath.Combine(Path.GetTempPath().ParseAsPath(), Guid.NewGuid().ToString(), "my.nuspec"));
 
-                try
-                {
-                    tempFile = new FileEntry(fileSystem, UPath.Combine(Path.GetTempPath().ParseAsPath(), Guid.NewGuid().ToString(), "my.nuspec"));
+                tempFile.Directory.EnsureExists();
 
-                    tempFile.Directory.EnsureExists();
+                await using var stream = tempFile.Open(FileMode.Create, FileAccess.Write);
+                await stream.WriteAllTextAsync(NuSpecNoTags);
 
-                    await using var stream = tempFile.Open(FileMode.Create, FileAccess.Write);
-                    await stream.WriteAllTextAsync(NuSpecNoTags);
+                var manifestReWriter = new ManifestReWriter(fileSystem);
 
-                    var manifestReWriter = new ManifestReWriter(fileSystem);
+                var result = await manifestReWriter.Rewrite(tempFile);
 
-                    var result = await manifestReWriter.Rewrite(tempFile);
-
-                    result.RemoveTags.Should().BeEmpty();
-                }
-                finally
-                {
-                    tempFile?.DeleteIfExists();
-                    tempFile?.Directory.DeleteIfExists();
-                }
+                result.RemoveTags.Should().BeEmpty();
+            }
+            finally
+            {
+                tempFile?.DeleteIfExists();
+                tempFile?.Directory.DeleteIfExists();
             }
         }
+    }
 
-        [Fact]
-        public async Task RewriteNoSource()
+    [Fact]
+    public async Task RewriteNoSource()
+    {
+        using IFileSystem fileSystem = new MemoryFileSystem();
+
+        var fileEntry = new FileEntry(fileSystem, new UPath("/my.nuspec"));
+
+        await using (var stream = fileEntry.Open(FileMode.Create, FileAccess.Write))
         {
-            using IFileSystem fileSystem = new MemoryFileSystem();
-
-            var fileEntry = new FileEntry(fileSystem, new UPath("/my.nuspec"));
-
-            await using (var stream = fileEntry.Open(FileMode.Create, FileAccess.Write))
-            {
-                await stream.WriteAllTextAsync(NuSpecNoSourceTags);
-            }
-
-            var manifestReWriter = new ManifestReWriter(fileSystem);
-
-            var result = await manifestReWriter.Rewrite(fileEntry);
-
-            result.RemoveTags.Should().NotBeEmpty();
+            await stream.WriteAllTextAsync(NuSpecNoSourceTags);
         }
+
+        var manifestReWriter = new ManifestReWriter(fileSystem);
+
+        var result = await manifestReWriter.Rewrite(fileEntry);
+
+        result.RemoveTags.Should().NotBeEmpty();
     }
 }

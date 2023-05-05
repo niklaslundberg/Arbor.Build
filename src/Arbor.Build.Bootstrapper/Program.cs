@@ -9,38 +9,37 @@ using Serilog.Core;
 using Zio;
 using Zio.FileSystems;
 
-namespace Arbor.Build.Bootstrapper
+namespace Arbor.Build.Bootstrapper;
+
+internal static class Program
 {
-    internal static class Program
+    private static PhysicalFileSystem _physicalFileSystem = null!;
+    private static WindowsFs _fileSystem = null!;
+
+    private static Task<int> Main(string[] args) => RunAsync(args);
+
+    public static async Task<int> RunAsync(string[] args, IEnvironmentVariables? environmentVariables = default, IFileSystem? fileSystem = default)
     {
-        private static PhysicalFileSystem _physicalFileSystem = null!;
-        private static WindowsFs _fileSystem = null!;
+        environmentVariables ??= new DefaultEnvironmentVariables();
 
-        private static Task<int> Main(string[] args) => RunAsync(args);
+        Logger logger = new LoggerConfiguration()
+            .WriteTo.Console(outputTemplate: "{Message:lj}{NewLine}{Exception}")
+            .CreateLogger();
 
-        public static async Task<int> RunAsync(string[] args, IEnvironmentVariables? environmentVariables = default, IFileSystem? fileSystem = default)
+        _physicalFileSystem = new PhysicalFileSystem();
+        _fileSystem = new WindowsFs(_physicalFileSystem);
+        var bootstrapper = new Core.Bootstrapper.AppBootstrapper(logger, environmentVariables, fileSystem ?? _fileSystem);
+
+        ExitCode exitCode = await bootstrapper.StartAsync(args).ConfigureAwait(false);
+
+        if (logger is IDisposable disposable)
         {
-            environmentVariables ??= new DefaultEnvironmentVariables();
-
-            Logger logger = new LoggerConfiguration()
-                .WriteTo.Console(outputTemplate: "{Message:lj}{NewLine}{Exception}")
-                .CreateLogger();
-
-            _physicalFileSystem = new PhysicalFileSystem();
-            _fileSystem = new WindowsFs(_physicalFileSystem);
-            var bootstrapper = new Core.Bootstrapper.AppBootstrapper(logger, environmentVariables, fileSystem ?? _fileSystem);
-
-            ExitCode exitCode = await bootstrapper.StartAsync(args).ConfigureAwait(false);
-
-            if (logger is IDisposable disposable)
-            {
-                disposable.Dispose();
-            }
-
-            _physicalFileSystem.Dispose();
-            _fileSystem.Dispose();
-
-            return exitCode.Code;
+            disposable.Dispose();
         }
+
+        _physicalFileSystem.Dispose();
+        _fileSystem.Dispose();
+
+        return exitCode.Code;
     }
 }

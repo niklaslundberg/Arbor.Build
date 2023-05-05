@@ -9,87 +9,86 @@ using Machine.Specifications.Model;
 using Zio;
 using Zio.FileSystems;
 
-namespace Arbor.Build.Tests.Integration.DirectoryExtensions
+namespace Arbor.Build.Tests.Integration.DirectoryExtensions;
+
+[Subject(typeof(Subject))]
+public class
+    when_getting_config_files_recursive_with_possible_files_both_in_notallowed_and_not_notallowed_directories
 {
-    [Subject(typeof(Subject))]
-    public class
-        when_getting_config_files_recursive_with_possible_files_both_in_notallowed_and_not_notallowed_directories
+    static DirectoryEntry baseDir;
+    static IReadOnlyCollection<string> files;
+
+    Cleanup after = () =>
     {
-        static DirectoryEntry baseDir;
-        static IReadOnlyCollection<string> files;
+        baseDir.DeleteIfExists();
+        fs.Dispose();
+    };
 
-        Cleanup after = () =>
+    Establish context = () =>
+    {
+        fs = new PhysicalFileSystem();
+        baseDir =
+            new DirectoryEntry(fs, UPath.Combine(Path.GetTempPath().ParseAsPath(),
+                $"{DefaultPaths.TempPathPrefix}_DirectoryExtensions_{Guid.NewGuid()}"));
+        baseDir.EnsureExists();
+
+        DirectoryEntry a = baseDir.CreateSubdirectory("A");
+        DirectoryEntry bower = baseDir.CreateSubdirectory("bower_components");
+        DirectoryEntry c = baseDir.CreateSubdirectory("C");
+
+        DirectoryEntry e = c.CreateSubdirectory("e");
+
+        DirectoryEntry nodeModules = bower.CreateSubdirectory("node_modules");
+
+        using (fs.CreateFile(UPath.Combine(nodeModules.FullName, "node.config")))
         {
-            baseDir.DeleteIfExists();
-            fs.Dispose();
-        };
+        }
 
-        Establish context = () =>
+        using (fs.CreateFile(UPath.Combine(nodeModules.FullName, "node.debug.config")))
         {
-            fs = new PhysicalFileSystem();
-            baseDir =
-                new DirectoryEntry(fs, UPath.Combine(Path.GetTempPath().ParseAsPath(),
-                    $"{DefaultPaths.TempPathPrefix}_DirectoryExtensions_{Guid.NewGuid()}"));
-            baseDir.EnsureExists();
+        }
 
-            DirectoryEntry a = baseDir.CreateSubdirectory("A");
-            DirectoryEntry bower = baseDir.CreateSubdirectory("bower_components");
-            DirectoryEntry c = baseDir.CreateSubdirectory("C");
-
-            DirectoryEntry e = c.CreateSubdirectory("e");
-
-            DirectoryEntry nodeModules = bower.CreateSubdirectory("node_modules");
-
-            using (fs.CreateFile(UPath.Combine(nodeModules.FullName, "node.config")))
-            {
-            }
-
-            using (fs.CreateFile(UPath.Combine(nodeModules.FullName, "node.debug.config")))
-            {
-            }
-
-            using (fs.CreateFile(UPath.Combine(bower.FullName, "bower.config")))
-            {
-            }
-
-            using (fs.CreateFile(UPath.Combine(bower.FullName, "bower.debug.config")))
-            {
-            }
-
-            using (fs.CreateFile(UPath.Combine(a.FullName, "atest.config")))
-            {
-            }
-
-            using (fs.CreateFile(UPath.Combine(a.FullName, "atest.debug.config")))
-            {
-            }
-
-            using (fs.CreateFile(UPath.Combine(e.FullName, "etest.config")))
-            {
-            }
-
-            using (fs.CreateFile(UPath.Combine(e.FullName, "etest.debug.config")))
-            {
-            }
-        };
-
-        Because of = () =>
+        using (fs.CreateFile(UPath.Combine(bower.FullName, "bower.config")))
         {
-            files = baseDir.GetFilesRecursive(new List<string> { ".config" },
-                    DefaultPaths.DefaultPathLookupSpecification,
-                    baseDir)
-                .Select(s => s.Name)
-                .ToList();
-        };
+        }
 
-        It should_contain_not_notallowed_files =
-            () => files.ShouldContain("atest.config", "atest.debug.config", "etest.debug.config", "etest.config");
+        using (fs.CreateFile(UPath.Combine(bower.FullName, "bower.debug.config")))
+        {
+        }
 
-        It should_containt_correct_file_count = () => files.Count.ShouldEqual(4);
+        using (fs.CreateFile(UPath.Combine(a.FullName, "atest.config")))
+        {
+        }
 
-        It should_not_contain_notallowed_files =
-            () => files.ShouldNotContain("bower.config", "bower.debug.config", "node.debug.config", "node.config");
+        using (fs.CreateFile(UPath.Combine(a.FullName, "atest.debug.config")))
+        {
+        }
 
-        static IFileSystem fs;
-    }
+        using (fs.CreateFile(UPath.Combine(e.FullName, "etest.config")))
+        {
+        }
+
+        using (fs.CreateFile(UPath.Combine(e.FullName, "etest.debug.config")))
+        {
+        }
+    };
+
+    Because of = () =>
+    {
+        files = baseDir.GetFilesRecursive(new List<string> { ".config" },
+                DefaultPaths.DefaultPathLookupSpecification,
+                baseDir)
+            .Select(s => s.Name)
+            .ToList();
+    };
+
+    It should_contain_not_notallowed_files =
+        () => files.ShouldContain("atest.config", "atest.debug.config", "etest.debug.config", "etest.config");
+
+    It should_containt_correct_file_count = () => files.Count.ShouldEqual(4);
+
+    It should_not_contain_notallowed_files =
+        () => files.ShouldNotContain("bower.config", "bower.debug.config", "node.debug.config", "node.config");
+
+    static IFileSystem fs;
 }

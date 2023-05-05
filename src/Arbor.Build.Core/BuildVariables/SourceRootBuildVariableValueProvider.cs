@@ -7,32 +7,31 @@ using JetBrains.Annotations;
 using Serilog;
 using Zio;
 
-namespace Arbor.Build.Core.BuildVariables
+namespace Arbor.Build.Core.BuildVariables;
+
+[UsedImplicitly]
+public class SourceRootBuildVariableValueProvider : IVariableProvider
 {
-    [UsedImplicitly]
-    public class SourceRootBuildVariableValueProvider : IVariableProvider
+    private readonly DirectoryEntry? _sourceDirectory;
+
+    public SourceRootBuildVariableValueProvider(SourceRootValue? sourceDirectory = null) =>
+        _sourceDirectory = sourceDirectory?.SourceRoot;
+
+    public int Order => int.MinValue;
+
+    public Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
+        ILogger logger,
+        IReadOnlyCollection<IVariable> buildVariables,
+        CancellationToken cancellationToken)
     {
-        private readonly DirectoryEntry? _sourceDirectory;
+        var variables = new List<IVariable>();
 
-        public SourceRootBuildVariableValueProvider(SourceRootValue? sourceDirectory = null) =>
-            _sourceDirectory = sourceDirectory?.SourceRoot;
-
-        public int Order => int.MinValue;
-
-        public Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
-            ILogger logger,
-            IReadOnlyCollection<IVariable> buildVariables,
-            CancellationToken cancellationToken)
+        if (_sourceDirectory is {})
         {
-            var variables = new List<IVariable>();
-
-            if (_sourceDirectory is {})
-            {
-                logger.Verbose("Source directory is specified as {SourceDirectory}", _sourceDirectory.ConvertPathToInternal());
-                variables.Add(new BuildVariable(WellKnownVariables.SourceRoot, _sourceDirectory.ConvertPathToInternal()));
-            }
-
-            return Task.FromResult(variables.ToImmutableArray());
+            logger.Verbose("Source directory is specified as {SourceDirectory}", _sourceDirectory.ConvertPathToInternal());
+            variables.Add(new BuildVariable(WellKnownVariables.SourceRoot, _sourceDirectory.ConvertPathToInternal()));
         }
+
+        return Task.FromResult(variables.ToImmutableArray());
     }
 }

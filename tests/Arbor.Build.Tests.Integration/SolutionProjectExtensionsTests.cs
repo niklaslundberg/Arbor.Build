@@ -6,24 +6,23 @@ using Xunit;
 using Zio;
 using Zio.FileSystems;
 
-namespace Arbor.Build.Tests.Integration
+namespace Arbor.Build.Tests.Integration;
+
+public class SolutionProjectExtensionsTests
 {
-    public class SolutionProjectExtensionsTests
+    [Fact]
+    public async Task TestProjectShouldHavePublishedDisabled()
     {
-        [Fact]
-        public async Task TestProjectShouldHavePublishedDisabled()
-        {
-            using var fs = new PhysicalFileSystem();
-            var projectFileFullName = fs.GetFileEntry(UPath.Combine(VcsTestPathHelper.FindVcsRootPath().Path, "tests",
-                "Arbor.Build.Tests.Integration", "Arbor.Build.Tests.Integration.csproj"));
-            var msbuildProject = await MsBuildProject.LoadFrom(projectFileFullName);
+        using var fs = new PhysicalFileSystem();
+        var projectFileFullName = fs.GetFileEntry(UPath.Combine(VcsTestPathHelper.FindVcsRootPath().Path, "tests",
+            "Arbor.Build.Tests.Integration", "Arbor.Build.Tests.Integration.csproj"));
+        var msbuildProject = await MsBuildProject.LoadFrom(projectFileFullName);
 
-            var solutionFile = fs.GetFileEntry(UPath.Combine(projectFileFullName.Parent!.Parent!.Parent!.Path, "Arbor.Build.sln"));
+        var solutionFile = fs.GetFileEntry(UPath.Combine(projectFileFullName.Parent!.Parent!.Parent!.Path, "Arbor.Build.sln"));
 
-            var project = new SolutionProject(solutionFile, "name", msbuildProject.ProjectDirectory, msbuildProject,
-                NetFrameworkGeneration.NetCoreApp);
+        var project = new SolutionProject(solutionFile, "name", msbuildProject.ProjectDirectory, msbuildProject,
+            NetFrameworkGeneration.NetCoreApp);
 
-            project.PublishEnabled().Should().BeFalse();
-        }
+        project.PublishEnabled().Should().BeFalse();
     }
 }

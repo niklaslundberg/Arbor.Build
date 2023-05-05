@@ -1,10 +1,9 @@
 ﻿using Xunit;
 
-namespace Arbor.Build.Tests.Integration.Tests
+namespace Arbor.Build.Tests.Integration.Tests;
+
+public class XunitDummy
 {
-    public class XunitDummy
-    {
-        [Fact]
-        public void DoNothing() => Assert.True(true);
-    }
+    [Fact]
+    public void DoNothing() => Assert.True(true);
 }

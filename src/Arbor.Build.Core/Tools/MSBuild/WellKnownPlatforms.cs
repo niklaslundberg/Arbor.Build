@@ -1,8 +1,7 @@
-﻿namespace Arbor.Build.Core.Tools.MSBuild
+﻿namespace Arbor.Build.Core.Tools.MSBuild;
+
+public static class WellKnownPlatforms
 {
-    public static class WellKnownPlatforms
-    {
-        // ReSharper disable once InconsistentNaming
-        public const string AnyCPU = "Any CPU";
-    }
+    // ReSharper disable once InconsistentNaming
+    public const string AnyCPU = "Any CPU";
 }

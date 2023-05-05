@@ -1,9 +1,8 @@
 ﻿using JetBrains.Annotations;
 
-namespace Arbor.Build.Sample.PackageProject
+namespace Arbor.Build.Sample.PackageProject;
+
+[PublicAPI]
+public class Dummy
 {
-    [PublicAPI]
-    public class Dummy
-    {
-    }
 }

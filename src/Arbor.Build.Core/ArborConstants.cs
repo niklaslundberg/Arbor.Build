@@ -1,11 +1,10 @@
-﻿namespace Arbor.Build.Core
+﻿namespace Arbor.Build.Core;
+
+public static class ArborConstants
 {
-    public static class ArborConstants
-    {
-        public const string ArborX = "Arbor.X";
+    public const string ArborX = "Arbor.X";
 
-        public const string ArborBuild = "Arbor.Build";
+    public const string ArborBuild = "Arbor.Build";
 
-        public const string ArborPackageName = ArborBuild;
-    }
+    public const string ArborPackageName = ArborBuild;
 }

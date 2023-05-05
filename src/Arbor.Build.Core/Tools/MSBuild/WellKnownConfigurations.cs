@@ -1,9 +1,8 @@
-﻿namespace Arbor.Build.Core.Tools.MSBuild
-{
-    public static class WellKnownConfigurations
-    {
-        public const string Debug = "debug";
+﻿namespace Arbor.Build.Core.Tools.MSBuild;
 
-        public const string Release = "release";
-    }
+public static class WellKnownConfigurations
+{
+    public const string Debug = "debug";
+
+    public const string Release = "release";
 }

@@ -1,9 +1,8 @@
-﻿namespace Arbor.Build.Core.BuildVariables
-{
-    public interface IVariable
-    {
-        string Key { get; }
+﻿namespace Arbor.Build.Core.BuildVariables;
 
-        string? Value { get; }
-    }
+public interface IVariable
+{
+    string Key { get; }
+
+    string? Value { get; }
 }

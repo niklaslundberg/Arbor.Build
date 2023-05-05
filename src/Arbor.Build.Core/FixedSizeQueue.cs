@@ -4,57 +4,56 @@ using System.Collections.Immutable;
 using System.Threading;
 using JetBrains.Annotations;
 
-namespace Arbor.Build.Core
+namespace Arbor.Build.Core;
+
+public sealed class FixedSizedQueue<T>
 {
-    public sealed class FixedSizedQueue<T>
+    private readonly object _lockObject = new object();
+    private readonly ConcurrentQueue<T> _queue = new ConcurrentQueue<T>();
+
+    public int Limit { get; set; }
+
+    public void Enqueue([NotNull] T obj)
     {
-        private readonly object _lockObject = new object();
-        private readonly ConcurrentQueue<T> _queue = new ConcurrentQueue<T>();
-
-        public int Limit { get; set; }
-
-        public void Enqueue([NotNull] T obj)
+        if (obj == null)
         {
-            if (obj == null)
-            {
-                throw new ArgumentNullException(nameof(obj));
-            }
-
-            lock (_lockObject)
-            {
-                _queue.Enqueue(obj);
-
-                while (_queue.Count > Limit && _queue.TryDequeue(out _))
-                {
-                    Thread.SpinWait(10);
-                }
-            }
+            throw new ArgumentNullException(nameof(obj));
         }
 
-        public void Clear()
+        lock (_lockObject)
+        {
+            _queue.Enqueue(obj);
+
+            while (_queue.Count > Limit && _queue.TryDequeue(out _))
+            {
+                Thread.SpinWait(10);
+            }
+        }
+    }
+
+    public void Clear()
+    {
+        lock (_lockObject)
+        {
+            while (!_queue.IsEmpty && _queue.TryDequeue(out _))
+            {
+                Thread.SpinWait(10);
+            }
+        }
+    }
+
+    public ImmutableArray<T> AllCurrentItems
+    {
+        get
         {
             lock (_lockObject)
             {
-                while (!_queue.IsEmpty && _queue.TryDequeue(out _))
+                if (_queue.IsEmpty)
                 {
-                    Thread.SpinWait(10);
+                    return ImmutableArray<T>.Empty;
                 }
-            }
-        }
 
-        public ImmutableArray<T> AllCurrentItems
-        {
-            get
-            {
-                lock (_lockObject)
-                {
-                    if (_queue.IsEmpty)
-                    {
-                        return ImmutableArray<T>.Empty;
-                    }
-
-                    return _queue.ToArray().ToImmutableArray();
-                }
+                return _queue.ToArray().ToImmutableArray();
             }
         }
     }

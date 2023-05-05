@@ -1,33 +1,32 @@
-﻿namespace Arbor.Build.Core.GenericExtensions.Bools
+﻿namespace Arbor.Build.Core.GenericExtensions.Bools;
+
+public static class BoolParseExtensions
 {
-    public static class BoolParseExtensions
+    public static bool ParseOrDefault(this string? value, bool defaultValue = false)
     {
-        public static bool ParseOrDefault(this string? value, bool defaultValue = false)
+        if (!bool.TryParse(value, out bool result))
         {
-            if (!bool.TryParse(value, out bool result))
-            {
-                return defaultValue;
-            }
-
-            return result;
+            return defaultValue;
         }
 
-        public static bool TryParseBool(this string? value, out bool result, bool defaultValue = false)
+        return result;
+    }
+
+    public static bool TryParseBool(this string? value, out bool result, bool defaultValue = false)
+    {
+        if (string.IsNullOrWhiteSpace(value))
         {
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                result = defaultValue;
-                return false;
-            }
-
-            if (!bool.TryParse(value, out bool parsedValue))
-            {
-                result = defaultValue;
-                return false;
-            }
-
-            result = parsedValue;
-            return true;
+            result = defaultValue;
+            return false;
         }
+
+        if (!bool.TryParse(value, out bool parsedValue))
+        {
+            result = defaultValue;
+            return false;
+        }
+
+        result = parsedValue;
+        return true;
     }
 }

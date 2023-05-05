@@ -1,17 +1,16 @@
 ﻿using Arbor.Build.Core.Tools.Git;
 using Machine.Specifications;
 
-namespace Arbor.Build.Tests.Integration.GitBranches
+namespace Arbor.Build.Tests.Integration.GitBranches;
+
+[Subject(typeof(BranchHelper))]
+public class when_checking_is_develop_branch_from_develop
 {
-    [Subject(typeof(BranchHelper))]
-    public class when_checking_is_develop_branch_from_develop
-    {
-        static BranchName branchName;
-        static bool is_develop;
-        Establish context = () => branchName = new BranchName("refs/heads/develop");
+    static BranchName branchName;
+    static bool is_develop;
+    Establish context = () => branchName = new BranchName("refs/heads/develop");
 
-        Because of = () => is_develop = branchName.IsDevelopBranch();
+    Because of = () => is_develop = branchName.IsDevelopBranch();
 
-        It should_be_develop_branch = () => is_develop.ShouldBeTrue();
-    }
+    It should_be_develop_branch = () => is_develop.ShouldBeTrue();
 }

@@ -3,59 +3,58 @@ using System.Collections.Generic;
 using System.Linq;
 using Arbor.Build.Core.GenericExtensions;
 
-namespace Arbor.Build.Core.BuildVariables
+namespace Arbor.Build.Core.BuildVariables;
+
+public static class VariablePrintExtensions
 {
-    public static class VariablePrintExtensions
+    public static string Print(this IEnumerable<IVariable> variables)
     {
-        public static string Print(this IEnumerable<IVariable> variables)
+        if (variables == null)
         {
-            if (variables == null)
-            {
-                throw new ArgumentNullException(nameof(variables));
-            }
-
-            IEnumerable<Dictionary<string, string?>> dictionaries =
-                variables.Select(
-                    variable => new Dictionary<string, string?>
-                    {
-                        { "Name", variable.Key },
-                        { "Value", variable.Key.GetDisplayValue(variable.Value) }
-                    });
-
-            return dictionaries.DisplayAsTable();
+            throw new ArgumentNullException(nameof(variables));
         }
 
-        private static readonly string[] SensitiveValues = { "password", "apikey", "username", "pw", "token", "jwt", "connectionstring" };
+        IEnumerable<Dictionary<string, string?>> dictionaries =
+            variables.Select(
+                variable => new Dictionary<string, string?>
+                {
+                    { "Name", variable.Key },
+                    { "Value", variable.Key.GetDisplayValue(variable.Value) }
+                });
 
-        public static string DisplayPair(this IVariable variable)
+        return dictionaries.DisplayAsTable();
+    }
+
+    private static readonly string[] SensitiveValues = { "password", "apikey", "username", "pw", "token", "jwt", "connectionstring" };
+
+    public static string DisplayPair(this IVariable variable)
+    {
+        if (variable == null)
         {
-            if (variable == null)
-            {
-                throw new ArgumentNullException(nameof(variable));
-            }
-
-            string? value = GetDisplayValue(variable.Key, variable.Value);
-
-            return $"\t{variable.Key}: {value}";
+            throw new ArgumentNullException(nameof(variable));
         }
 
-        public static string? GetDisplayValue(this string key, string? value)
-        {
-            if (SensitiveValues.Any(sensitive =>
+        string? value = GetDisplayValue(variable.Key, variable.Value);
+
+        return $"\t{variable.Key}: {value}";
+    }
+
+    public static string? GetDisplayValue(this string key, string? value)
+    {
+        if (SensitiveValues.Any(sensitive =>
             {
                 var comparisonType = StringComparison.OrdinalIgnoreCase;
 
                 return key
-                           .Replace("-", "", comparisonType)
-                           .Replace("_", "", comparisonType)
-                           .Replace(".", "", comparisonType)
-                           .Contains(sensitive, comparisonType);
+                    .Replace("-", "", comparisonType)
+                    .Replace("_", "", comparisonType)
+                    .Replace(".", "", comparisonType)
+                    .Contains(sensitive, comparisonType);
             }))
-            {
-                value = "*****";
-            }
-
-            return value;
+        {
+            value = "*****";
         }
+
+        return value;
     }
 }

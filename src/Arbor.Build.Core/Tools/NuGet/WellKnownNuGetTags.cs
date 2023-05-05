@@ -1,7 +1,6 @@
-namespace Arbor.Build.Core.Tools.NuGet
+namespace Arbor.Build.Core.Tools.NuGet;
+
+public static class WellKnownNuGetTags
 {
-    public static class WellKnownNuGetTags
-    {
-        public const string NoSource = "NoSource";
-    }
+    public const string NoSource = "NoSource";
 }
