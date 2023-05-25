@@ -11,79 +11,78 @@ using JetBrains.Annotations;
 using Serilog;
 using Zio;
 
-namespace Arbor.Build.Core.Tools.VisualStudio
+namespace Arbor.Build.Core.Tools.VisualStudio;
+
+[Priority(53)]
+[UsedImplicitly]
+public class VisualStudioEnvironmentVerification : ITool
 {
-    [Priority(53)]
-    [UsedImplicitly]
-    public class VisualStudioEnvironmentVerification : ITool
+    private readonly BuildContext _buildContext;
+
+    public VisualStudioEnvironmentVerification(BuildContext buildContext) => _buildContext = buildContext;
+
+    public Task<ExitCode> ExecuteAsync(
+        ILogger logger,
+        IReadOnlyCollection<IVariable> buildVariables,
+        string[] args,
+        CancellationToken cancellationToken)
     {
-        private readonly BuildContext _buildContext;
+        var rootDir = _buildContext.SourceRoot;
 
-        public VisualStudioEnvironmentVerification(BuildContext buildContext) => _buildContext = buildContext;
+        string visualStudioVersion =
+            buildVariables.Require(WellKnownVariables.ExternalTools_VisualStudio_Version).GetValueOrThrow();
 
-        public Task<ExitCode> ExecuteAsync(
-            ILogger logger,
-            IReadOnlyCollection<IVariable> buildVariables,
-            string[] args,
-            CancellationToken cancellationToken)
+        if (!visualStudioVersion.Equals("12.0", StringComparison.Ordinal))
         {
-            var rootDir = _buildContext.SourceRoot;
+            string[] extensionPatterns = { ".csproj", ".vcxproj" };
 
-            string visualStudioVersion =
-                buildVariables.Require(WellKnownVariables.ExternalTools_VisualStudio_Version).GetValueOrThrow();
+            IEnumerable<FileEntry> projectFiles = rootDir.EnumerateFiles()
+                .Where(
+                    file =>
+                        extensionPatterns.Any(
+                            pattern => file.ExtensionWithDot?.Equals(
+                                pattern,
+                                StringComparison.OrdinalIgnoreCase) ?? false));
 
-            if (!visualStudioVersion.Equals("12.0", StringComparison.Ordinal))
+            var projectFiles81 = projectFiles.Where(Contains81).ToList();
+
+            if (projectFiles81.Count > 0)
             {
-                string[] extensionPatterns = { ".csproj", ".vcxproj" };
+                IEnumerable<string> projectFileNames = projectFiles81.Select(file => file.FullName);
 
-                IEnumerable<FileEntry> projectFiles = rootDir.EnumerateFiles()
-                    .Where(
-                        file =>
-                            extensionPatterns.Any(
-                                pattern => file.ExtensionWithDot?.Equals(
-                                    pattern,
-                                    StringComparison.OrdinalIgnoreCase) ?? false));
-
-                var projectFiles81 = projectFiles.Where(Contains81).ToList();
-
-                if (projectFiles81.Count > 0)
-                {
-                    IEnumerable<string> projectFileNames = projectFiles81.Select(file => file.FullName);
-
-                    logger.Error(
-                        "Visual Studio version {VisualStudioVersion} is found on this machine. Visual Studio 12.0 (2013) must be installed in order to build these projects: {NewLine}{V}",
-                        visualStudioVersion,
-                        Environment.NewLine,
-                        string.Join(Environment.NewLine, projectFileNames));
-                    return Task.FromResult(ExitCode.Failure);
-                }
+                logger.Error(
+                    "Visual Studio version {VisualStudioVersion} is found on this machine. Visual Studio 12.0 (2013) must be installed in order to build these projects: {NewLine}{V}",
+                    visualStudioVersion,
+                    Environment.NewLine,
+                    string.Join(Environment.NewLine, projectFileNames));
+                return Task.FromResult(ExitCode.Failure);
             }
-
-            return Task.FromResult(ExitCode.Success);
         }
 
-        private bool Contains81(FileEntry file)
+        return Task.FromResult(ExitCode.Success);
+    }
+
+    private bool Contains81(FileEntry file)
+    {
+        string[] lookupPatterns = {
+            "<ApplicationTypeRevision>8.1</ApplicationTypeRevision>",
+            "<TargetPlatformVersion>8.1</TargetPlatformVersion>"
+        };
+
+        using var fs = file.Open(FileMode.Open, FileAccess.Read);
+
+        using var sr = new StreamReader(fs);
+        while (sr.Peek() >= 0)
         {
-            string[] lookupPatterns = {
-                "<ApplicationTypeRevision>8.1</ApplicationTypeRevision>",
-                "<TargetPlatformVersion>8.1</TargetPlatformVersion>"
-            };
+            string? line = sr.ReadLine();
 
-            using var fs = file.Open(FileMode.Open, FileAccess.Read);
-
-            using var sr = new StreamReader(fs);
-            while (sr.Peek() >= 0)
-            {
-                string? line = sr.ReadLine();
-
-                if (!string.IsNullOrWhiteSpace(line) && lookupPatterns.Any(
+            if (!string.IsNullOrWhiteSpace(line) && lookupPatterns.Any(
                     pattern => line.Contains(pattern, StringComparison.InvariantCulture)))
-                {
-                    return true;
-                }
+            {
+                return true;
             }
-
-            return false;
         }
+
+        return false;
     }
 }

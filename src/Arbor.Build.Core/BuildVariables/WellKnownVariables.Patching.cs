@@ -1,9 +1,8 @@
-﻿namespace Arbor.Build.Core.BuildVariables
+﻿namespace Arbor.Build.Core.BuildVariables;
+
+public static partial class WellKnownVariables
 {
-    public static partial class WellKnownVariables
-    {
-        [VariableDescription("Assembly version patching file pattern")]
-        public const string AssemblyFilePatchingFilePattern =
-            "Arbor.Build.NetAssembly.Patching.FilePattern";
-    }
+    [VariableDescription("Assembly version patching file pattern")]
+    public const string AssemblyFilePatchingFilePattern =
+        "Arbor.Build.NetAssembly.Patching.FilePattern";
 }

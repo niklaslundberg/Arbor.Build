@@ -3,19 +3,18 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 
-namespace Arbor.Defensive.Collections
+namespace Arbor.Defensive.Collections;
+
+public static class EnumerableOf<T> where T : class
 {
-    public static class EnumerableOf<T> where T : class
-    {
-        private static readonly Lazy<ImmutableArray<T>> LazyEnumerable = new(Initialize);
+    private static readonly Lazy<ImmutableArray<T>> LazyEnumerable = new(Initialize);
 
-        public static ImmutableArray<T> Items => LazyEnumerable.Value;
+    public static ImmutableArray<T> Items => LazyEnumerable.Value;
 
-        private static ImmutableArray<T> Initialize() =>
-            typeof(T).GetFields(BindingFlags.Public | BindingFlags.Static)
-                .Where(field => field.IsInitOnly && field.FieldType == typeof(T))
-                .Select(field => field.GetValue(null) as T)
-                .NotNull()
-                .ToImmutableArray();
-    }
+    private static ImmutableArray<T> Initialize() =>
+        typeof(T).GetFields(BindingFlags.Public | BindingFlags.Static)
+            .Where(field => field.IsInitOnly && field.FieldType == typeof(T))
+            .Select(field => field.GetValue(null) as T)
+            .NotNull()
+            .ToImmutableArray();
 }

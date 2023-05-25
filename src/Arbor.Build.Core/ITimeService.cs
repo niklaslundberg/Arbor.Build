@@ -1,9 +1,8 @@
 ﻿using System;
 
-namespace Arbor.Build.Core
+namespace Arbor.Build.Core;
+
+public interface ITimeService
 {
-    public interface ITimeService
-    {
-        DateTimeOffset UtcNow();
-    }
+    DateTimeOffset UtcNow();
 }

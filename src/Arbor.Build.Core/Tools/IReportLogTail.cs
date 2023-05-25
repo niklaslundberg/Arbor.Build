@@ -1,7 +1,6 @@
-﻿namespace Arbor.Build.Core.Tools
+﻿namespace Arbor.Build.Core.Tools;
+
+public interface IReportLogTail
 {
-    public interface IReportLogTail
-    {
-        FixedSizedQueue<string> LogTail { get; }
-    }
+    FixedSizedQueue<string> LogTail { get; }
 }

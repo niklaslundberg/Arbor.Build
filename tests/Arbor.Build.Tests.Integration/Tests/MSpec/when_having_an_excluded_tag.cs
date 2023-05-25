@@ -1,15 +1,14 @@
 ﻿using Machine.Specifications;
 
-namespace Arbor.Build.Tests.Integration.Tests.MSpec
+namespace Arbor.Build.Tests.Integration.Tests.MSpec;
+
+[Tags("dummyexcluded")]
+[Subject(typeof(object))]
+public class when_having_an_excluded_tag
 {
-    [Tags("dummyexcluded")]
-    [Subject(typeof(object))]
-    public class when_having_an_excluded_tag
-    {
-        Establish context = () => { };
+    Establish context = () => { };
 
-        Because of = () => { };
+    Because of = () => { };
 
-        It should_not_be_run = () => { };
-    }
+    It should_not_be_run = () => { };
 }

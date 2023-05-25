@@ -1,25 +1,23 @@
 ﻿using System;
-using JetBrains.Annotations;
 
-namespace Arbor.Build.Core.BuildVariables
+namespace Arbor.Build.Core.BuildVariables;
+
+public class BuildVariable : IVariable
 {
-    public class BuildVariable : IVariable
+    public BuildVariable(string key, string? value)
     {
-        public BuildVariable([NotNull] string key, string? value)
+        if (string.IsNullOrWhiteSpace(key))
         {
-            if (string.IsNullOrWhiteSpace(key))
-            {
-                throw new ArgumentException(Resources.ValueCannotBeNullOrWhitespace, nameof(key));
-            }
-
-            Key = key;
-            Value = value;
+            throw new ArgumentException(Resources.ValueCannotBeNullOrWhitespace, nameof(key));
         }
 
-        public string Key { get; }
-
-        public string? Value { get; }
-
-        public override string ToString() => this.DisplayPair();
+        Key = key;
+        Value = value;
     }
+
+    public string Key { get; }
+
+    public string? Value { get; }
+
+    public override string ToString() => this.DisplayPair();
 }

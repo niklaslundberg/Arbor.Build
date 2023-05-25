@@ -9,37 +9,36 @@ using JetBrains.Annotations;
 using Serilog;
 using Zio;
 
-namespace Arbor.Build.Core.Tools.Cleanup
+namespace Arbor.Build.Core.Tools.Cleanup;
+
+[UsedImplicitly]
+public class ArtifactsVariableProvider : IVariableProvider
 {
-    [UsedImplicitly]
-    public class ArtifactsVariableProvider : IVariableProvider
+    private readonly BuildContext _buildContext;
+
+    public ArtifactsVariableProvider(BuildContext buildContext) => _buildContext = buildContext;
+
+    public int Order => 2;
+
+    public Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
+        ILogger logger,
+        IReadOnlyCollection<IVariable> buildVariables,
+        CancellationToken cancellationToken)
     {
-        private readonly BuildContext _buildContext;
+        var sourceRoot = _buildContext.SourceRoot;
 
-        public ArtifactsVariableProvider(BuildContext buildContext) => _buildContext = buildContext;
+        DirectoryEntry artifactsDirectory = new DirectoryEntry(sourceRoot.FileSystem, UPath.Combine(sourceRoot.Path, "Artifacts")).EnsureExists();
+        DirectoryEntry testReportsDirectory =
+            new DirectoryEntry(sourceRoot.FileSystem, UPath.Combine(artifactsDirectory.Path, "TestReports")).EnsureExists();
 
-        public int Order => 2;
-
-        public Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
-            ILogger logger,
-            IReadOnlyCollection<IVariable> buildVariables,
-            CancellationToken cancellationToken)
+        var variables = new List<IVariable>
         {
-            var sourceRoot = _buildContext.SourceRoot;
+            new BuildVariable(
+                WellKnownVariables.Artifacts,
+                sourceRoot.FileSystem.ConvertPathToInternal(artifactsDirectory.FullName)),
+            new BuildVariable(WellKnownVariables.ReportPath, sourceRoot.FileSystem.ConvertPathToInternal(testReportsDirectory.Path))
+        };
 
-            DirectoryEntry artifactsDirectory = new DirectoryEntry(sourceRoot.FileSystem, UPath.Combine(sourceRoot.Path, "Artifacts")).EnsureExists();
-            DirectoryEntry testReportsDirectory =
-                new DirectoryEntry(sourceRoot.FileSystem, UPath.Combine(artifactsDirectory.Path, "TestReports")).EnsureExists();
-
-            var variables = new List<IVariable>
-            {
-                new BuildVariable(
-                    WellKnownVariables.Artifacts,
-                    sourceRoot.FileSystem.ConvertPathToInternal(artifactsDirectory.FullName)),
-                new BuildVariable(WellKnownVariables.ReportPath, sourceRoot.FileSystem.ConvertPathToInternal(testReportsDirectory.Path))
-            };
-
-            return Task.FromResult(variables.ToImmutableArray());
-        }
+        return Task.FromResult(variables.ToImmutableArray());
     }
 }

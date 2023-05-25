@@ -9,109 +9,108 @@ using Xunit;
 using Xunit.Abstractions;
 using Zio.FileSystems;
 
-namespace Arbor.Build.Tests.Integration.MSBuild
+namespace Arbor.Build.Tests.Integration.MSBuild;
+
+public class BuildConfigurationProviderTests
 {
-    public class BuildConfigurationProviderTests
+    public BuildConfigurationProviderTests(ITestOutputHelper testOutputHelper) =>
+        _testOutputHelper = testOutputHelper;
+
+    readonly ITestOutputHelper _testOutputHelper;
+
+    [Fact]
+    public async Task DefaultConfigurationShouldBeDebug()
     {
-        public BuildConfigurationProviderTests(ITestOutputHelper testOutputHelper) =>
-            _testOutputHelper = testOutputHelper;
+        using var memoryFileSystem = new MemoryFileSystem();
+        var buildContext = new BuildContext(memoryFileSystem);
 
-        readonly ITestOutputHelper _testOutputHelper;
+        var buildConfigurationProvider = new BuildConfigurationProvider(buildContext);
 
-        [Fact]
-        public async Task DefaultConfigurationShouldBeDebug()
+        var variables = await buildConfigurationProvider.GetBuildVariablesAsync(Logger.None, new List<IVariable>(),
+            CancellationToken.None);
+
+        foreach (var variable in variables)
         {
-            using var memoryFileSystem = new MemoryFileSystem();
-            var buildContext = new BuildContext(memoryFileSystem);
+            _testOutputHelper.WriteLine($"{variable.Key}: {variable.Value}");
+        }
+        Assert.Contains(WellKnownConfigurations.Debug, buildContext.Configurations);
+    }
 
-            var buildConfigurationProvider = new BuildConfigurationProvider(buildContext);
+    [InlineData("feature-abc123")]
+    [InlineData("debug")]
+    [InlineData("unknown")]
+    [InlineData("any")]
+    [Theory]
+    public async Task BranchConfigurationShouldBeDebug(string branchName)
+    {
+        using var memoryFileSystem = new MemoryFileSystem();
+        var buildContext = new BuildContext(memoryFileSystem);
 
-            var variables = await buildConfigurationProvider.GetBuildVariablesAsync(Logger.None, new List<IVariable>(),
-                CancellationToken.None);
+        var buildConfigurationProvider = new BuildConfigurationProvider(buildContext);
 
-            foreach (var variable in variables)
+        var variables = await buildConfigurationProvider.GetBuildVariablesAsync(Logger.None, new List<IVariable>()
             {
-                _testOutputHelper.WriteLine($"{variable.Key}: {variable.Value}");
-            }
-            Assert.Contains(WellKnownConfigurations.Debug, buildContext.Configurations);
+                new BuildVariable(WellKnownVariables.BranchName, branchName)
+            },
+            CancellationToken.None);
+
+        foreach (var variable in variables)
+        {
+            _testOutputHelper.WriteLine($"{variable.Key}: {variable.Value}");
         }
 
-        [InlineData("feature-abc123")]
-        [InlineData("debug")]
-        [InlineData("unknown")]
-        [InlineData("any")]
-        [Theory]
-        public async Task BranchConfigurationShouldBeDebug(string branchName)
-        {
-            using var memoryFileSystem = new MemoryFileSystem();
-            var buildContext = new BuildContext(memoryFileSystem);
+        Assert.Contains(WellKnownConfigurations.Debug, buildContext.Configurations);
+    }
 
-            var buildConfigurationProvider = new BuildConfigurationProvider(buildContext);
+    [InlineData("feature-abc123")]
+    [InlineData("unknown")]
+    [InlineData("any")]
+    [Theory]
+    public async Task BranchConfigurationShouldBeDefaultForFeatureBranch(string branchName)
+    {
+        using var memoryFileSystem = new MemoryFileSystem();
+        var buildContext = new BuildContext(memoryFileSystem);
 
-            var variables = await buildConfigurationProvider.GetBuildVariablesAsync(Logger.None, new List<IVariable>()
-                {
-                    new BuildVariable(WellKnownVariables.BranchName, branchName)
-                },
-                CancellationToken.None);
+        var buildConfigurationProvider = new BuildConfigurationProvider(buildContext);
 
-            foreach (var variable in variables)
+        var variables = await buildConfigurationProvider.GetBuildVariablesAsync(Logger.None, new List<IVariable>()
             {
-                _testOutputHelper.WriteLine($"{variable.Key}: {variable.Value}");
-            }
+                new BuildVariable(WellKnownVariables.BranchName, branchName),
+                new BuildVariable(WellKnownVariables.FeatureBranchDefaultConfiguration, "customDefault")
+            },
+            CancellationToken.None);
 
-            Assert.Contains(WellKnownConfigurations.Debug, buildContext.Configurations);
+        foreach (var variable in variables)
+        {
+            _testOutputHelper.WriteLine($"{variable.Key}: {variable.Value}");
         }
 
-        [InlineData("feature-abc123")]
-        [InlineData("unknown")]
-        [InlineData("any")]
-        [Theory]
-        public async Task BranchConfigurationShouldBeDefaultForFeatureBranch(string branchName)
-        {
-            using var memoryFileSystem = new MemoryFileSystem();
-            var buildContext = new BuildContext(memoryFileSystem);
+        Assert.Contains("customDefault", buildContext.Configurations);
+    }
 
-            var buildConfigurationProvider = new BuildConfigurationProvider(buildContext);
+    [InlineData("master")]
+    [InlineData("release-v123")]
+    [InlineData("release")]
+    [InlineData("release/123")]
+    [Theory]
+    public async Task BranchConfigurationShouldBeRelease(string branchName)
+    {
+        using var memoryFileSystem = new MemoryFileSystem();
+        var buildContext = new BuildContext(memoryFileSystem);
 
-            var variables = await buildConfigurationProvider.GetBuildVariablesAsync(Logger.None, new List<IVariable>()
-                {
-                    new BuildVariable(WellKnownVariables.BranchName, branchName),
-                    new BuildVariable(WellKnownVariables.FeatureBranchDefaultConfiguration, "customDefault")
-                },
-                CancellationToken.None);
+        var buildConfigurationProvider = new BuildConfigurationProvider(buildContext);
 
-            foreach (var variable in variables)
+        var variables = await buildConfigurationProvider.GetBuildVariablesAsync(Logger.None, new List<IVariable>()
             {
-                _testOutputHelper.WriteLine($"{variable.Key}: {variable.Value}");
-            }
+                new BuildVariable(WellKnownVariables.BranchName, branchName)
+            },
+            CancellationToken.None);
 
-            Assert.Contains("customDefault", buildContext.Configurations);
+        foreach (var variable in variables)
+        {
+            _testOutputHelper.WriteLine($"{variable.Key}: {variable.Value}");
         }
 
-        [InlineData("master")]
-        [InlineData("release-v123")]
-        [InlineData("release")]
-        [InlineData("release/123")]
-        [Theory]
-        public async Task BranchConfigurationShouldBeRelease(string branchName)
-        {
-            using var memoryFileSystem = new MemoryFileSystem();
-            var buildContext = new BuildContext(memoryFileSystem);
-
-            var buildConfigurationProvider = new BuildConfigurationProvider(buildContext);
-
-            var variables = await buildConfigurationProvider.GetBuildVariablesAsync(Logger.None, new List<IVariable>()
-                {
-                    new BuildVariable(WellKnownVariables.BranchName, branchName)
-                },
-                CancellationToken.None);
-
-            foreach (var variable in variables)
-            {
-                _testOutputHelper.WriteLine($"{variable.Key}: {variable.Value}");
-            }
-
-            Assert.Contains(WellKnownConfigurations.Release, buildContext.Configurations);
-        }
+        Assert.Contains(WellKnownConfigurations.Release, buildContext.Configurations);
     }
 }

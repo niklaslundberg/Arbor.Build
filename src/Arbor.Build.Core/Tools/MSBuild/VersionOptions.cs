@@ -2,28 +2,27 @@
 using Arbor.Build.Core.Tools.NuGet;
 using Serilog;
 
-namespace Arbor.Build.Core.Tools.MSBuild
+namespace Arbor.Build.Core.Tools.MSBuild;
+
+public class VersionOptions
 {
-    public class VersionOptions
-    {
-        public VersionOptions(string version) => Version = version;
+    public VersionOptions(string version) => Version = version;
 
-        public GitBranchModel? GitModel { get; set; }
+    public GitBranchModel? GitModel { get; set; }
 
-        public string Version { get; }
+    public string Version { get; }
 
-        public bool IsReleaseBuild { get; set; }
+    public bool IsReleaseBuild { get; set; }
 
-        public string? BuildSuffix { get; set; }
+    public string? BuildSuffix { get; set; }
 
-        public bool BuildNumberEnabled { get; set; } = true;
+    public bool BuildNumberEnabled { get; set; } = true;
 
-        public string? Metadata { get; set; }
+    public string? Metadata { get; set; }
 
-        public ILogger? Logger { get; set; }
+    public ILogger? Logger { get; set; }
 
-        public NuGetVersioningSettings NuGetVersioningSettings { get; set; } = NuGetVersioningSettings.Default;
+    public NuGetVersioningSettings NuGetVersioningSettings { get; set; } = NuGetVersioningSettings.Default;
 
-        public BranchName? BranchName { get; set; }
-    }
+    public BranchName? BranchName { get; set; }
 }

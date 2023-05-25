@@ -5,43 +5,42 @@ using Machine.Specifications;
 using Zio;
 using Zio.FileSystems;
 
-namespace Arbor.Build.Tests.Integration.PathExtensions
+namespace Arbor.Build.Tests.Integration.PathExtensions;
+
+[Subject(typeof(Core.IO.PathExtensions))]
+public class when_checking_file_is_notallowed_without_root_dir
 {
-    [Subject(typeof(Core.IO.PathExtensions))]
-    public class when_checking_file_is_notallowed_without_root_dir
+    static bool isNotAllowed;
+    static PathLookupSpecification specification;
+    static DirectoryEntry root;
+
+    static DirectoryEntry rootParent;
+
+    Cleanup after = () =>
     {
-        static bool isNotAllowed;
-        static PathLookupSpecification specification;
-        static DirectoryEntry root;
+        root.DeleteIfExists();
+        rootParent.DeleteIfExists();
+        fs.Dispose();
+    };
 
-        static DirectoryEntry rootParent;
+    static IFileSystem fs;
 
-        Cleanup after = () =>
+    Establish context = () =>
+    {
+        fs = new PhysicalFileSystem();
+        var rootPath = @"C:\Temp\root\afolder".ParseAsPath();
+        root = new DirectoryEntry(fs,rootPath).EnsureExists();
+
+        rootParent = root.Parent!;
+
+        using (fs.OpenFile(@"C:\Temp\root\afile.txt".ParseAsPath(), FileMode.Create,FileAccess.Write))
         {
-            root.DeleteIfExists();
-            rootParent.DeleteIfExists();
-            fs.Dispose();
-        };
+        }
 
-        static IFileSystem fs;
+        specification = DefaultPaths.DefaultPathLookupSpecification;
+    };
 
-        Establish context = () =>
-        {
-            fs = new PhysicalFileSystem();
-            var rootPath = @"C:\Temp\root\afolder".ParseAsPath();
-            root = new DirectoryEntry(fs,rootPath).EnsureExists();
+    Because of = () => isNotAllowed = specification.IsFileExcluded(fs.GetFileEntry( @"C:\Temp\root\afile.txt".ParseAsPath())).Item1;
 
-            rootParent = root.Parent!;
-
-            using (fs.OpenFile(@"C:\Temp\root\afile.txt".ParseAsPath(), FileMode.Create,FileAccess.Write))
-            {
-            }
-
-            specification = DefaultPaths.DefaultPathLookupSpecification;
-        };
-
-        Because of = () => isNotAllowed = specification.IsFileExcluded(fs.GetFileEntry( @"C:\Temp\root\afile.txt".ParseAsPath())).Item1;
-
-        It should_return_true = () => isNotAllowed.ShouldBeTrue();
-    }
+    It should_return_true = () => isNotAllowed.ShouldBeTrue();
 }

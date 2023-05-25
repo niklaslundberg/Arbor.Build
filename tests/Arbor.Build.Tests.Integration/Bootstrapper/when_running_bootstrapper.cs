@@ -10,53 +10,52 @@ using Serilog.Core;
 using Zio;
 using Zio.FileSystems;
 
-namespace Arbor.Build.Tests.Integration.Bootstrapper
+namespace Arbor.Build.Tests.Integration.Bootstrapper;
+
+[Ignore("Not complete")]
+[Subject(typeof(AppBootstrapper))]
+public class when_running_bootstrapper
 {
-    [Ignore("Not complete")]
-    [Subject(typeof(AppBootstrapper))]
-    public class when_running_bootstrapper
+    static AppBootstrapper _appBootstrapper;
+
+    static BootstrapStartOptions startOptions;
+    static ExitCode exitCode;
+    static DirectoryEntry baseDirectory;
+    static IFileSystem fs;
+
+    Cleanup after = () =>
     {
-        static AppBootstrapper _appBootstrapper;
-
-        static BootstrapStartOptions startOptions;
-        static ExitCode exitCode;
-        static DirectoryEntry baseDirectory;
-        static IFileSystem fs;
-
-        Cleanup after = () =>
+        try
         {
-            try
-            {
-                baseDirectory.DeleteIfExists();
-            }
-            catch (IOException ex)
-            {
-                Console.Error.WriteLine(ex);
-            }
-
-            fs.Dispose();
-        };
-
-        Establish context = () =>
+            baseDirectory.DeleteIfExists();
+        }
+        catch (IOException ex)
         {
-            fs = new PhysicalFileSystem();
-            var tempDirectoryPath = UPath.Combine(Path.GetTempPath().ParseAsPath(),
-                $"{DefaultPaths.TempPathPrefix}_Bootstrapper_Test_{Guid.NewGuid()}");
+            Console.Error.WriteLine(ex);
+        }
 
-            baseDirectory = new DirectoryEntry(fs, tempDirectoryPath).EnsureExists();
-            Console.WriteLine("Temp directory is {0}", baseDirectory.FullName);
+        fs.Dispose();
+    };
+
+    Establish context = () =>
+    {
+        fs = new PhysicalFileSystem();
+        var tempDirectoryPath = UPath.Combine(Path.GetTempPath().ParseAsPath(),
+            $"{DefaultPaths.TempPathPrefix}_Bootstrapper_Test_{Guid.NewGuid()}");
+
+        baseDirectory = new DirectoryEntry(fs, tempDirectoryPath).EnsureExists();
+        Console.WriteLine("Temp directory is {0}", baseDirectory.FullName);
 
 
-            startOptions = new BootstrapStartOptions(
-                Array.Empty<string>(),
-                baseDirectory,
-                true,
-                "develop");
-            _appBootstrapper = new AppBootstrapper(Logger.None, EnvironmentVariables.Empty, fs);
-        };
+        startOptions = new BootstrapStartOptions(
+            Array.Empty<string>(),
+            baseDirectory,
+            true,
+            "develop");
+        _appBootstrapper = new AppBootstrapper(Logger.None, EnvironmentVariables.Empty, fs);
+    };
 
-        Because of = () => exitCode = _appBootstrapper.StartAsync(startOptions).Result;
+    Because of = () => exitCode = _appBootstrapper.StartAsync(startOptions).Result;
 
-        It should_return_success_exit_code = () => exitCode.IsSuccess.ShouldBeTrue();
-    }
+    It should_return_success_exit_code = () => exitCode.IsSuccess.ShouldBeTrue();
 }

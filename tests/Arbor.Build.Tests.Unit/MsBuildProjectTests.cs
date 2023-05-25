@@ -6,130 +6,129 @@ using Xunit;
 using Zio;
 using Zio.FileSystems;
 
-namespace Arbor.Build.Tests.Unit
+namespace Arbor.Build.Tests.Unit;
+
+public class MsBuildProjectTests
 {
-    public class MsBuildProjectTests
+    [Fact]
+    public async Task WhenProjectHasSingleTargetFrameworkTheValueShouldNotBeNull()
     {
-        [Fact]
-        public async Task WhenProjectHasSingleTargetFrameworkTheValueShouldNotBeNull()
-        {
-            using IFileSystem fileSystem = new MemoryFileSystem();
+        using IFileSystem fileSystem = new MemoryFileSystem();
 
-            UPath path = "/test.csproj";
-            await using (var stream = fileSystem.CreateFile(path))
-            {
-                await stream.WriteAllTextAsync(@"<Project Sdk=""Microsoft.NET.Sdk"">
+        UPath path = "/test.csproj";
+        await using (var stream = fileSystem.CreateFile(path))
+        {
+            await stream.WriteAllTextAsync(@"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 </Project>");
-            }
-
-            var file = new FileEntry(fileSystem, path);
-
-            var msBuildProject = await MsBuildProject.LoadFrom(file);
-
-            msBuildProject.TargetFramework.Should().Be(TargetFramework.NetStandard2_0);
-            msBuildProject.TargetFrameworks.Length.Should().Be(1);
         }
 
-        [Fact]
-        public async Task WhenProjectHasMultipleTargetFrameworksTheTargetShouldNotBeEmpty()
-        {
-            using IFileSystem fileSystem = new MemoryFileSystem();
+        var file = new FileEntry(fileSystem, path);
 
-            UPath path = "/test.csproj";
-            await using (var stream = fileSystem.CreateFile(path))
-            {
-                await stream.WriteAllTextAsync(@"<Project Sdk=""Microsoft.NET.Sdk"">
+        var msBuildProject = await MsBuildProject.LoadFrom(file);
+
+        msBuildProject.TargetFramework.Should().Be(TargetFramework.NetStandard2_0);
+        msBuildProject.TargetFrameworks.Length.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task WhenProjectHasMultipleTargetFrameworksTheTargetShouldNotBeEmpty()
+    {
+        using IFileSystem fileSystem = new MemoryFileSystem();
+
+        UPath path = "/test.csproj";
+        await using (var stream = fileSystem.CreateFile(path))
+        {
+            await stream.WriteAllTextAsync(@"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
   </PropertyGroup>
 </Project>");
-            }
-
-
-            var file = new FileEntry(fileSystem, path);
-
-            var msBuildProject = await MsBuildProject.LoadFrom(file);
-
-            msBuildProject.TargetFramework.Should().Be(TargetFramework.Empty);
-            msBuildProject.TargetFrameworks.Should().Contain(TargetFramework.NetStandard2_0);
-            msBuildProject.TargetFrameworks.Should().Contain(TargetFramework.Net6_0);
         }
 
-        [Fact]
-        public async Task WhenProjectHasNoTargetFrameworkTheValueShouldBeEmpty()
-        {
-            using IFileSystem fileSystem = new MemoryFileSystem();
 
-            UPath path = "/test.csproj";
-            await using (var stream = fileSystem.CreateFile(path))
-            {
-                await stream.WriteAllTextAsync(@"<Project Sdk=""Microsoft.NET.Sdk"">
+        var file = new FileEntry(fileSystem, path);
+
+        var msBuildProject = await MsBuildProject.LoadFrom(file);
+
+        msBuildProject.TargetFramework.Should().Be(TargetFramework.Empty);
+        msBuildProject.TargetFrameworks.Should().Contain(TargetFramework.NetStandard2_0);
+        msBuildProject.TargetFrameworks.Should().Contain(TargetFramework.Net6_0);
+    }
+
+    [Fact]
+    public async Task WhenProjectHasNoTargetFrameworkTheValueShouldBeEmpty()
+    {
+        using IFileSystem fileSystem = new MemoryFileSystem();
+
+        UPath path = "/test.csproj";
+        await using (var stream = fileSystem.CreateFile(path))
+        {
+            await stream.WriteAllTextAsync(@"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
 
   </PropertyGroup>
 </Project>");
-            }
-
-            var file = new FileEntry(fileSystem, path);
-
-            var msBuildProject = await MsBuildProject.LoadFrom(file);
-
-            msBuildProject.TargetFramework.Should().Be(TargetFramework.Empty);
-            msBuildProject.TargetFrameworks.Should().BeEmpty();
         }
 
-        [Fact]
-        public async Task WhenProjectHasBothTargetFrameworkAnFrameworkTheValueShouldBeUsedFromFrameworks()
-        {
-            using IFileSystem fileSystem = new MemoryFileSystem();
+        var file = new FileEntry(fileSystem, path);
 
-            UPath path = "/test.csproj";
-            await using (var stream = fileSystem.CreateFile(path))
-            {
-                await stream.WriteAllTextAsync(@"<Project Sdk=""Microsoft.NET.Sdk"">
+        var msBuildProject = await MsBuildProject.LoadFrom(file);
+
+        msBuildProject.TargetFramework.Should().Be(TargetFramework.Empty);
+        msBuildProject.TargetFrameworks.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task WhenProjectHasBothTargetFrameworkAnFrameworkTheValueShouldBeUsedFromFrameworks()
+    {
+        using IFileSystem fileSystem = new MemoryFileSystem();
+
+        UPath path = "/test.csproj";
+        await using (var stream = fileSystem.CreateFile(path))
+        {
+            await stream.WriteAllTextAsync(@"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
   </PropertyGroup>
 </Project>");
-            }
-
-            var file = new FileEntry(fileSystem, path);
-
-            var msBuildProject = await MsBuildProject.LoadFrom(file);
-
-            msBuildProject.TargetFramework.Should().Be(TargetFramework.Empty);
-            msBuildProject.TargetFrameworks.Should().NotBeEmpty();
-            msBuildProject.TargetFrameworks.Length.Should().Be(2);
         }
 
-        [Fact]
-        public void EqualsShouldReturnTrueForSameString()
-        {
-           var a= new TargetFramework("netstandard2.0");
-           var b= new TargetFramework("netstandard2.0");
+        var file = new FileEntry(fileSystem, path);
 
-           a.Equals(b).Should().BeTrue();
-        }[Fact]
+        var msBuildProject = await MsBuildProject.LoadFrom(file);
 
-        public void EqualsOperatorShouldReturnTrueForSameString()
-        {
-           var a= new TargetFramework("netstandard2.0");
-           var b= new TargetFramework("netstandard2.0");
+        msBuildProject.TargetFramework.Should().Be(TargetFramework.Empty);
+        msBuildProject.TargetFrameworks.Should().NotBeEmpty();
+        msBuildProject.TargetFrameworks.Length.Should().Be(2);
+    }
 
-           (a == b).Should().BeTrue();
-        }
+    [Fact]
+    public void EqualsShouldReturnTrueForSameString()
+    {
+        var a= new TargetFramework("netstandard2.0");
+        var b= new TargetFramework("netstandard2.0");
 
-        [Fact]
-        public void EqualsShouldNotReturnTrueForDifferentString()
-        {
-           var a= new TargetFramework("netstandard2.0");
-           var b= new TargetFramework("netstandard2.1");
+        a.Equals(b).Should().BeTrue();
+    }[Fact]
 
-           a.Equals(b).Should().BeFalse();
-        }
+    public void EqualsOperatorShouldReturnTrueForSameString()
+    {
+        var a= new TargetFramework("netstandard2.0");
+        var b= new TargetFramework("netstandard2.0");
+
+        (a == b).Should().BeTrue();
+    }
+
+    [Fact]
+    public void EqualsShouldNotReturnTrueForDifferentString()
+    {
+        var a= new TargetFramework("netstandard2.0");
+        var b= new TargetFramework("netstandard2.1");
+
+        a.Equals(b).Should().BeFalse();
     }
 }

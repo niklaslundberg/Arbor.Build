@@ -9,18 +9,18 @@ using Xunit.Abstractions;
 using Zio;
 using Zio.FileSystems;
 
-namespace Arbor.Build.Tests.Integration.MSBuildProjects
+namespace Arbor.Build.Tests.Integration.MSBuildProjects;
+
+public class FinWebApplicationProjectTypeId
 {
-    public class FinWebApplicationProjectTypeId
+    public FinWebApplicationProjectTypeId(ITestOutputHelper output) => this.output = output;
+
+    readonly ITestOutputHelper output;
+
+    [Fact]
+    public async Task ParseWebApplicationCsProjFile()
     {
-        public FinWebApplicationProjectTypeId(ITestOutputHelper output) => this.output = output;
-
-        readonly ITestOutputHelper output;
-
-        [Fact]
-        public async Task ParseWebApplicationCsProjFile()
-        {
-            string xml = @"<?xml version=""1.0"" encoding=""utf-8""?>
+        string xml = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <Project ToolsVersion=""12.0"" DefaultTargets=""Build"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
   <Import Project=""$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props"" Condition=""Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')"" />
   <PropertyGroup>
@@ -50,29 +50,28 @@ namespace Arbor.Build.Tests.Integration.MSBuildProjects
 </Project>
 ";
 
-            FileEntry? tempFile = null;
-            using var fs = new PhysicalFileSystem();
-            try
-            {
+        FileEntry? tempFile = null;
+        using var fs = new PhysicalFileSystem();
+        try
+        {
 
-                tempFile = fs.GetFileEntry(Path.GetTempFileName().ParseAsPath());
-                var stream = tempFile.Open(FileMode.Open, FileAccess.Write);
-                await stream.WriteAllTextAsync(xml, Encoding.UTF8).ConfigureAwait(false);
+            tempFile = fs.GetFileEntry(Path.GetTempFileName().ParseAsPath());
+            var stream = tempFile.Open(FileMode.Open, FileAccess.Write);
+            await stream.WriteAllTextAsync(xml, Encoding.UTF8).ConfigureAwait(false);
 
-                var msBuildProject = await MsBuildProject.LoadFrom(tempFile);
+            var msBuildProject = await MsBuildProject.LoadFrom(tempFile);
 
-                output.WriteLine(msBuildProject.ToString());
+            output.WriteLine(msBuildProject.ToString());
 
-                Assert.Equal(2, msBuildProject.ProjectTypes.Length);
-                Assert.Contains(ProjectType.Mvc5, msBuildProject.ProjectTypes);
-                Assert.Contains(ProjectType.CSharp, msBuildProject.ProjectTypes);
+            Assert.Equal(2, msBuildProject.ProjectTypes.Length);
+            Assert.Contains(ProjectType.Mvc5, msBuildProject.ProjectTypes);
+            Assert.Contains(ProjectType.CSharp, msBuildProject.ProjectTypes);
 
-                Assert.Equal(Guid.Parse("04854B5C-247C-4F59-834D-9ACF5048F29D"), msBuildProject.ProjectId);
-            }
-            finally
-            {
-                tempFile?.Delete();
-            }
+            Assert.Equal(Guid.Parse("04854B5C-247C-4F59-834D-9ACF5048F29D"), msBuildProject.ProjectId);
+        }
+        finally
+        {
+            tempFile?.Delete();
         }
     }
 }

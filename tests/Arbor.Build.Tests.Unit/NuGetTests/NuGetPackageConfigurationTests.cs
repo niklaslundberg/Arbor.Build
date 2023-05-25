@@ -3,119 +3,118 @@ using Arbor.Build.Core.Tools.MSBuild;
 using Arbor.Build.Core.Tools.NuGet;
 using Xunit;
 
-namespace Arbor.Build.Tests.Unit.NuGetTests
+namespace Arbor.Build.Tests.Unit.NuGetTests;
+
+public class NuGetPackageConfigurationTests
 {
-    public class NuGetPackageConfigurationTests
+    [Fact]
+    public void BuildVersionShouldBeIncludedInVersionWhenUsingDefault()
     {
-        [Fact]
-        public void BuildVersionShouldBeIncludedInVersionWhenUsingDefault()
-        {
-            string packageVersion = NuGetVersionHelper.GetPackageVersion(new VersionOptions("1.2.3.4"));
+        string packageVersion = NuGetVersionHelper.GetPackageVersion(new VersionOptions("1.2.3.4"));
 
-            Assert.Equal("1.2.3-build.4", packageVersion);
-        }
+        Assert.Equal("1.2.3-build.4", packageVersion);
+    }
 
-        [Fact]
-        public void SubVersionShouldNotBeUsedForSemVer1()
+    [Fact]
+    public void SubVersionShouldNotBeUsedForSemVer1()
+    {
+        string packageVersion = NuGetVersionHelper.GetPackageVersion(new VersionOptions("1.2.3.4")
         {
-            string packageVersion = NuGetVersionHelper.GetPackageVersion(new VersionOptions("1.2.3.4")
+            NuGetVersioningSettings = new NuGetVersioningSettings
             {
-                NuGetVersioningSettings = new NuGetVersioningSettings
-                {
-                    SemVerVersion = 1
-                }
-            });
+                SemVerVersion = 1
+            }
+        });
 
-            Assert.Equal("1.2.3-build4", packageVersion);
-        }
+        Assert.Equal("1.2.3-build4", packageVersion);
+    }
 
-        [Fact]
-        public void LeadingZerosShouldBeUsedWhenDefined()
+    [Fact]
+    public void LeadingZerosShouldBeUsedWhenDefined()
+    {
+        string packageVersion = NuGetVersionHelper.GetPackageVersion(new VersionOptions("1.2.3.4")
         {
-            string packageVersion = NuGetVersionHelper.GetPackageVersion(new VersionOptions("1.2.3.4")
+            NuGetVersioningSettings = new NuGetVersioningSettings
             {
-                NuGetVersioningSettings = new NuGetVersioningSettings
-                {
-                    SemVerVersion = 1,
-                    MaxZeroPaddingLength = 4
-                }
-            });
+                SemVerVersion = 1,
+                MaxZeroPaddingLength = 4
+            }
+        });
 
-            Assert.Equal("1.2.3-build0004", packageVersion);
-        }
+        Assert.Equal("1.2.3-build0004", packageVersion);
+    }
 
-        [Fact]
-        public void SuffixShouldNotBeIncludedInVersionWhenSuffixIsEmptyString()
+    [Fact]
+    public void SuffixShouldNotBeIncludedInVersionWhenSuffixIsEmptyString()
+    {
+        string packageVersion = NuGetVersionHelper.GetPackageVersion(new VersionOptions("1.2.3.4")
         {
-            string packageVersion = NuGetVersionHelper.GetPackageVersion(new VersionOptions("1.2.3.4")
-            {
-                BuildSuffix = ""
-            });
+            BuildSuffix = ""
+        });
 
-            Assert.Equal("1.2.3-4", packageVersion);
-        }
+        Assert.Equal("1.2.3-4", packageVersion);
+    }
 
-        [Fact]
-        public void SuffixShouldBeUsedIncludedInVersionWhenDefined()
+    [Fact]
+    public void SuffixShouldBeUsedIncludedInVersionWhenDefined()
+    {
+        string packageVersion = NuGetVersionHelper.GetPackageVersion(new VersionOptions("1.2.3.4")
         {
-            string packageVersion = NuGetVersionHelper.GetPackageVersion(new VersionOptions("1.2.3.4")
-            {
-                BuildSuffix = "custom",
-                BuildNumberEnabled = true,
-                IsReleaseBuild = false
-            });
+            BuildSuffix = "custom",
+            BuildNumberEnabled = true,
+            IsReleaseBuild = false
+        });
 
-            Assert.Equal("1.2.3-custom.4", packageVersion);
-        }
+        Assert.Equal("1.2.3-custom.4", packageVersion);
+    }
 
-        [Fact]
-        public void ReleaseBuildByDefaultShouldStripBuildNumber()
+    [Fact]
+    public void ReleaseBuildByDefaultShouldStripBuildNumber()
+    {
+        string packageVersion = NuGetVersionHelper.GetPackageVersion(new VersionOptions("1.2.3.4")
         {
-            string packageVersion = NuGetVersionHelper.GetPackageVersion(new VersionOptions("1.2.3.4")
-            {
-                IsReleaseBuild = true
-            });
+            IsReleaseBuild = true
+        });
 
-            Assert.Equal("1.2.3", packageVersion);
-        }
+        Assert.Equal("1.2.3", packageVersion);
+    }
 
-        [Fact]
-        public void BuildSuffixShouldBeIncludedInVersionWhenUsingGitFlowMasterForNonRelease()
+    [Fact]
+    public void BuildSuffixShouldBeIncludedInVersionWhenUsingGitFlowMasterForNonRelease()
+    {
+        string packageVersion = NuGetVersionHelper.GetPackageVersion(new VersionOptions("1.2.3.4")
         {
-            string packageVersion = NuGetVersionHelper.GetPackageVersion(new VersionOptions("1.2.3.4")
-            {
-                IsReleaseBuild = false,
-                GitModel = GitBranchModel.GitFlowBuildOnMain
-            });
+            IsReleaseBuild = false,
+            GitModel = GitBranchModel.GitFlowBuildOnMain
+        });
 
-            Assert.Equal("1.2.3-build.4", packageVersion);
-        }
+        Assert.Equal("1.2.3-build.4", packageVersion);
+    }
 
-        [Fact]
-        public void RcSuffixShouldBeIncludedInVersionWhenUsingGitFlowMasterForRelease()
+    [Fact]
+    public void RcSuffixShouldBeIncludedInVersionWhenUsingGitFlowMasterForRelease()
+    {
+        string packageVersion = NuGetVersionHelper.GetPackageVersion(new VersionOptions("1.2.3.4")
         {
-            string packageVersion = NuGetVersionHelper.GetPackageVersion(new VersionOptions("1.2.3.4")
-            {
-                IsReleaseBuild = true,
-                GitModel = GitBranchModel.GitFlowBuildOnMain
-            });
+            IsReleaseBuild = true,
+            GitModel = GitBranchModel.GitFlowBuildOnMain
+        });
 
-            Assert.Equal("1.2.3-rc.4", packageVersion);
-        }
+        Assert.Equal("1.2.3-rc.4", packageVersion);
+    }
 
-        [Theory]
-        [InlineData("main")]
-        [InlineData("master")]
-        public void NoSuffixShouldBeIncludedInVersionWhenUsingGitFlowMasterForMaster(string branchName)
+    [Theory]
+    [InlineData("main")]
+    [InlineData("master")]
+    public void NoSuffixShouldBeIncludedInVersionWhenUsingGitFlowMasterForMaster(string branchName)
+    {
+        string packageVersion = NuGetVersionHelper.GetPackageVersion(new VersionOptions("1.2.3.4")
         {
-            string packageVersion = NuGetVersionHelper.GetPackageVersion(new VersionOptions("1.2.3.4")
-            {
-                IsReleaseBuild = true,
-                GitModel = GitBranchModel.GitFlowBuildOnMain,
-                BranchName = new BranchName(branchName)
-            });
+            IsReleaseBuild = true,
+            GitModel = GitBranchModel.GitFlowBuildOnMain,
+            BranchName = new BranchName(branchName)
+        });
 
-            Assert.Equal("1.2.3", packageVersion);
-        }
+        Assert.Equal("1.2.3", packageVersion);
     }
 }

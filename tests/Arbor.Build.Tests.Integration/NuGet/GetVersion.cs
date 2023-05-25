@@ -3,38 +3,37 @@ using NuGet.Versioning;
 using Serilog.Core;
 using Xunit;
 
-namespace Arbor.Build.Tests.Integration.NuGet
+namespace Arbor.Build.Tests.Integration.NuGet;
+
+public class GetVersion
 {
-    public class GetVersion
+    [Fact]
+    public void Spec()
     {
-        [Fact]
-        public void Spec()
-        {
-            string version = NuGetVersionHelper.GetVersion("1.2.3.4",
-                false,
-                "build",
-                true,
-                null,
-                Logger.None,
-                NuGetVersioningSettings.Default);
+        string version = NuGetVersionHelper.GetVersion("1.2.3.4",
+            false,
+            "build",
+            true,
+            null,
+            Logger.None,
+            NuGetVersioningSettings.Default);
 
-            Assert.Equal("1.2.3-build.4", version);
-        }
+        Assert.Equal("1.2.3-build.4", version);
+    }
 
-        [Fact]
-        public void SpecParsed()
-        {
-            string version = NuGetVersionHelper.GetVersion("1.2.3.4",
-                false,
-                "build",
-                true,
-                null,
-                Logger.None,
-                NuGetVersioningSettings.Default);
+    [Fact]
+    public void SpecParsed()
+    {
+        string version = NuGetVersionHelper.GetVersion("1.2.3.4",
+            false,
+            "build",
+            true,
+            null,
+            Logger.None,
+            NuGetVersioningSettings.Default);
 
-            var semver = SemanticVersion.Parse(version);
+        var semver = SemanticVersion.Parse(version);
 
-            Assert.Equal("1.2.3-build.4", semver.ToNormalizedString());
-        }
+        Assert.Equal("1.2.3-build.4", semver.ToNormalizedString());
     }
 }

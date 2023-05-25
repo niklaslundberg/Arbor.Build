@@ -9,39 +9,38 @@ using Serilog;
 using Zio;
 using Zio.FileSystems;
 
-namespace Arbor.Build
+namespace Arbor.Build;
+
+internal static class Program
 {
-    internal static class Program
+    private static BuildApplication? _app;
+    private static WindowsFs? _fileSystem;
+
+    private static Task<int> Main(string[] args) => RunAsync(args);
+
+    public static async Task<int> RunAsync(string[]? args, IEnvironmentVariables? environmentVariables = default, ISpecialFolders? specialFolders = default, IFileSystem? fileSystem = default)
     {
-        private static BuildApplication? _app;
-        private static WindowsFs? _fileSystem;
+        args ??= Array.Empty<string>();
+        environmentVariables ??= new DefaultEnvironmentVariables();
+        specialFolders ??= SpecialFolders.Default;
 
-        private static Task<int> Main(string[] args) => RunAsync(args);
+        ILogger logger = LoggerInitialization.InitializeLogging(args, environmentVariables);
 
-        public static async Task<int> RunAsync(string[]? args, IEnvironmentVariables? environmentVariables = default, ISpecialFolders? specialFolders = default, IFileSystem? fileSystem = default)
+        Log.Logger = logger;
+
+        using var physicalFileSystem = new PhysicalFileSystem();
+        using (_fileSystem = new WindowsFs(physicalFileSystem))
         {
-            args ??= Array.Empty<string>();
-            environmentVariables ??= new DefaultEnvironmentVariables();
-            specialFolders ??= SpecialFolders.Default;
+            _app = new BuildApplication(logger, environmentVariables, specialFolders, fileSystem ?? _fileSystem);
 
-            ILogger logger = LoggerInitialization.InitializeLogging(args, environmentVariables);
-
-            Log.Logger = logger;
-
-            using var physicalFileSystem = new PhysicalFileSystem();
-            using (_fileSystem = new WindowsFs(physicalFileSystem))
+            using (_app)
             {
-                _app = new BuildApplication(logger, environmentVariables, specialFolders, fileSystem ?? _fileSystem);
+                ExitCode exitCode = await _app.RunAsync(args).ConfigureAwait(false);
 
-                using (_app)
-                {
-                    ExitCode exitCode = await _app.RunAsync(args).ConfigureAwait(false);
+                Log.CloseAndFlush();
 
-                    Log.CloseAndFlush();
+                return exitCode.Code;
 
-                    return exitCode.Code;
-
-                }
             }
         }
     }

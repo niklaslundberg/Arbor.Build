@@ -1,10 +1,9 @@
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 
-namespace Arbor.Build.Core.GenericExtensions
+namespace Arbor.Build.Core.GenericExtensions;
+
+public static class TaskExtensions
 {
-    public static class TaskExtensions
-    {
-        public static Task<T> AsCompletedTask<T>([CanBeNull] this T instance) => Task.FromResult(instance);
-    }
+    public static Task<T> AsCompletedTask<T>([CanBeNull] this T instance) => Task.FromResult(instance);
 }

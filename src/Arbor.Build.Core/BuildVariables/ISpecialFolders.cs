@@ -1,9 +1,8 @@
 ﻿using System;
 
-namespace Arbor.Build.Core.BuildVariables
+namespace Arbor.Build.Core.BuildVariables;
+
+public interface ISpecialFolders
 {
-    public interface ISpecialFolders
-    {
-        string GetFolderPath(Environment.SpecialFolder specialFolder);
-    }
+    string GetFolderPath(Environment.SpecialFolder specialFolder);
 }

@@ -1,32 +1,30 @@
 ﻿using System;
-using JetBrains.Annotations;
 using NuGet.Versioning;
 
-namespace Arbor.Build.Core.Tools.Versioning
+namespace Arbor.Build.Core.Tools.Versioning;
+
+public static class SemVerExtensions
 {
-    public static class SemVerExtensions
+    public static string Suffix(this SemanticVersion semanticVersion)
     {
-        public static string Suffix([NotNull] this SemanticVersion semanticVersion)
+        if (semanticVersion == null)
         {
-            if (semanticVersion == null)
-            {
-                throw new ArgumentNullException(nameof(semanticVersion));
-            }
-
-            ReadOnlySpan<char> normalized = semanticVersion.ToNormalizedString().AsSpan();
-
-            int dashIndex = normalized.IndexOf('-');
-
-            if (dashIndex < 0)
-            {
-                return string.Empty;
-            }
-
-            string? metadata = semanticVersion.HasMetadata ? $"+{semanticVersion.Metadata}" : null;
-
-            ReadOnlySpan<char> suffix = normalized[(dashIndex + 1)..];
-
-            return suffix.ToString() + metadata;
+            throw new ArgumentNullException(nameof(semanticVersion));
         }
+
+        ReadOnlySpan<char> normalized = semanticVersion.ToNormalizedString().AsSpan();
+
+        int dashIndex = normalized.IndexOf('-');
+
+        if (dashIndex < 0)
+        {
+            return string.Empty;
+        }
+
+        string? metadata = semanticVersion.HasMetadata ? $"+{semanticVersion.Metadata}" : null;
+
+        ReadOnlySpan<char> suffix = normalized[(dashIndex + 1)..];
+
+        return suffix.ToString() + metadata;
     }
 }

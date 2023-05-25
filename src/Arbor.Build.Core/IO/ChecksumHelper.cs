@@ -7,55 +7,54 @@ using Arbor.FS;
 using Newtonsoft.Json;
 using Zio;
 
-namespace Arbor.Build.Core.IO
+namespace Arbor.Build.Core.IO;
+
+public static class ChecksumHelper
 {
-    public static class ChecksumHelper
+    public static async Task<FileListWithChecksumFile> CreateFileListForDirectory(DirectoryEntry baseDirectory)
     {
-        public static async Task<FileListWithChecksumFile> CreateFileListForDirectory(DirectoryEntry baseDirectory)
-        {
-            var files = baseDirectory
-                .EnumerateFiles("*", SearchOption.AllDirectories)
-                .OrderBy(file => file.FullName)
-                .Select(file => new
-                {
-                    file = baseDirectory.FileSystem.ConvertPathToInternal(file.FullName)[baseDirectory.FileSystem.ConvertPathToInternal(baseDirectory.Path).Length..],
-                    sha512Base64Encoded = GetFileHashSha512Base64Encoded(file)
-                })
-                .ToArray();
+        var files = baseDirectory
+            .EnumerateFiles("*", SearchOption.AllDirectories)
+            .OrderBy(file => file.FullName)
+            .Select(file => new
+            {
+                file = baseDirectory.FileSystem.ConvertPathToInternal(file.FullName)[baseDirectory.FileSystem.ConvertPathToInternal(baseDirectory.Path).Length..],
+                sha512Base64Encoded = GetFileHashSha512Base64Encoded(file)
+            })
+            .ToArray();
 
-            string json = JsonConvert.SerializeObject(new {files}, Formatting.Indented);
+        string json = JsonConvert.SerializeObject(new {files}, Formatting.Indented);
 
-            DirectoryEntry tempDirectory = new DirectoryEntry(baseDirectory.FileSystem, UPath.Combine(Path.GetTempPath().ParseAsPath(), Guid.NewGuid().ToString()))
-                .EnsureExists();
+        DirectoryEntry tempDirectory = new DirectoryEntry(baseDirectory.FileSystem, UPath.Combine(Path.GetTempPath().ParseAsPath(), Guid.NewGuid().ToString()))
+            .EnsureExists();
 
-            var contentFilesFile = UPath.Combine(tempDirectory.Path, "contentFiles.json");
+        var contentFilesFile = UPath.Combine(tempDirectory.Path, "contentFiles.json");
 
-            await using var contentStream = tempDirectory.FileSystem.OpenFile(contentFilesFile, FileMode.Create, FileAccess.Write);
+        await using var contentStream = tempDirectory.FileSystem.OpenFile(contentFilesFile, FileMode.Create, FileAccess.Write);
 
-            await contentStream.WriteAllTextAsync(json);
+        await contentStream.WriteAllTextAsync(json);
 
-            var contentFileEntry = new FileEntry(tempDirectory.FileSystem, contentFilesFile);
-            string contentFilesFileChecksum = GetFileHashSha512Base64Encoded(contentFileEntry);
+        var contentFileEntry = new FileEntry(tempDirectory.FileSystem, contentFilesFile);
+        string contentFilesFileChecksum = GetFileHashSha512Base64Encoded(contentFileEntry);
 
-            var hashFilePath = UPath.Combine(tempDirectory.Path, "contentFiles.json.sha512");
+        var hashFilePath = UPath.Combine(tempDirectory.Path, "contentFiles.json.sha512");
 
-            var hashFile = new FileEntry(tempDirectory.FileSystem, hashFilePath);
+        var hashFile = new FileEntry(tempDirectory.FileSystem, hashFilePath);
 
-            var hashFs = hashFile.Open(FileMode.Create, FileAccess.Write);
+        var hashFs = hashFile.Open(FileMode.Create, FileAccess.Write);
 
-            await hashFs.WriteAllTextAsync(contentFilesFileChecksum);
+        await hashFs.WriteAllTextAsync(contentFilesFileChecksum);
 
-            return new FileListWithChecksumFile(contentFileEntry, hashFile);
-        }
+        return new FileListWithChecksumFile(contentFileEntry, hashFile);
+    }
 
-        private static string GetFileHashSha512Base64Encoded(FileEntry fileName)
-        {
-            using var hashAlgorithm = SHA512.Create();
+    private static string GetFileHashSha512Base64Encoded(FileEntry fileName)
+    {
+        using var hashAlgorithm = SHA512.Create();
 
-            using var fs = fileName.Open(FileMode.Open, FileAccess.Read);
-            byte[] fileHash = hashAlgorithm.ComputeHash(fs);
+        using var fs = fileName.Open(FileMode.Open, FileAccess.Read);
+        byte[] fileHash = hashAlgorithm.ComputeHash(fs);
 
-            return Convert.ToBase64String(fileHash);
-        }
+        return Convert.ToBase64String(fileHash);
     }
 }

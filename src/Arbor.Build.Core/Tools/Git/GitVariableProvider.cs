@@ -14,195 +14,194 @@ using Serilog;
 using Serilog.Core;
 using Zio;
 
-namespace Arbor.Build.Core.Tools.Git
-{
-    [UsedImplicitly]
-    public class GitVariableProvider : IVariableProvider
-    {
-        private readonly IEnvironmentVariables _environmentVariables;
-        private readonly ISpecialFolders _specialFolders;
-        private readonly IFileSystem _fileSystem;
-        private readonly GitHelper _gitHelper;
+namespace Arbor.Build.Core.Tools.Git;
 
-        public GitVariableProvider(IEnvironmentVariables environmentVariables, ISpecialFolders specialFolders, IFileSystem fileSystem, GitHelper gitHelper)
+[UsedImplicitly]
+public class GitVariableProvider : IVariableProvider
+{
+    private readonly IEnvironmentVariables _environmentVariables;
+    private readonly ISpecialFolders _specialFolders;
+    private readonly IFileSystem _fileSystem;
+    private readonly GitHelper _gitHelper;
+
+    public GitVariableProvider(IEnvironmentVariables environmentVariables, ISpecialFolders specialFolders, IFileSystem fileSystem, GitHelper gitHelper)
+    {
+        _environmentVariables = environmentVariables;
+        _specialFolders = specialFolders;
+        _fileSystem = fileSystem;
+        _gitHelper = gitHelper;
+    }
+
+    public int Order { get; } = -1;
+
+    public async Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
+        ILogger? logger,
+        IReadOnlyCollection<IVariable> buildVariables,
+        CancellationToken cancellationToken)
+    {
+        logger ??= Logger.None;
+        var variables = new List<IVariable>();
+
+        string branchName = buildVariables.Require(WellKnownVariables.BranchName).GetValueOrThrow();
+
+        if (branchName.StartsWith("refs/heads/", StringComparison.Ordinal))
         {
-            _environmentVariables = environmentVariables;
-            _specialFolders = specialFolders;
-            _fileSystem = fileSystem;
-            _gitHelper = gitHelper;
+            variables.Add(new BuildVariable(WellKnownVariables.BranchFullName, branchName));
         }
 
-        public int Order { get; } = -1;
+        string logicalName = BranchHelper.GetLogicalName(branchName).Name;
 
-        public async Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
-            ILogger? logger,
-            IReadOnlyCollection<IVariable> buildVariables,
-            CancellationToken cancellationToken)
+        variables.Add(new BuildVariable(WellKnownVariables.BranchLogicalName, logicalName));
+
+        if (BranchHelper.BranchNameHasVersion(branchName, _environmentVariables))
         {
-            logger ??= Logger.None;
-            var variables = new List<IVariable>();
+            string version = BranchHelper.BranchSemVerMajorMinorPatch(branchName, _environmentVariables)!.ToString();
 
-            string branchName = buildVariables.Require(WellKnownVariables.BranchName).GetValueOrThrow();
+            logger.Debug("Branch has version {Version}", version);
 
-            if (branchName.StartsWith("refs/heads/", StringComparison.Ordinal))
+            variables.Add(new BuildVariable(WellKnownVariables.BranchNameVersion, version));
+
+            if (buildVariables.GetBooleanByKey(WellKnownVariables.BranchNameVersionOverrideEnabled))
             {
-                variables.Add(new BuildVariable(WellKnownVariables.BranchFullName, branchName));
-            }
+                logger.Verbose(
+                    "Variable '{BranchNameVersionOverrideEnabled}' is set to true, using version number '{Version}' from branch",
+                    WellKnownVariables.BranchNameVersionOverrideEnabled,
+                    version);
 
-            string logicalName = BranchHelper.GetLogicalName(branchName).Name;
+                var semVer = SemanticVersion.Parse(version);
 
-            variables.Add(new BuildVariable(WellKnownVariables.BranchLogicalName, logicalName));
+                string major = semVer.Major.ToString(CultureInfo.InvariantCulture);
 
-            if (BranchHelper.BranchNameHasVersion(branchName, _environmentVariables))
-            {
-                string version = BranchHelper.BranchSemVerMajorMinorPatch(branchName, _environmentVariables)!.ToString();
+                logger.Verbose("Overriding {VersionMajor} from '{V}' to '{Major}'",
+                    WellKnownVariables.VersionMajor,
+                    _environmentVariables.GetEnvironmentVariable(WellKnownVariables.VersionMajor),
+                    major);
 
-                logger.Debug("Branch has version {Version}", version);
+                variables.Add(new BuildVariable(WellKnownVariables.VersionMajor, major));
 
-                variables.Add(new BuildVariable(WellKnownVariables.BranchNameVersion, version));
+                string minor = semVer.Minor.ToString(CultureInfo.InvariantCulture);
 
-                if (buildVariables.GetBooleanByKey(WellKnownVariables.BranchNameVersionOverrideEnabled))
-                {
-                    logger.Verbose(
-                        "Variable '{BranchNameVersionOverrideEnabled}' is set to true, using version number '{Version}' from branch",
-                        WellKnownVariables.BranchNameVersionOverrideEnabled,
-                        version);
+                logger.Verbose("Overriding {VersionMinor} from '{V}' to '{Minor}'",
+                    WellKnownVariables.VersionMinor,
+                    _environmentVariables.GetEnvironmentVariable(WellKnownVariables.VersionMinor),
+                    minor);
 
-                    var semVer = SemanticVersion.Parse(version);
+                variables.Add(new BuildVariable(WellKnownVariables.VersionMinor, minor));
 
-                    string major = semVer.Major.ToString(CultureInfo.InvariantCulture);
+                string patch = semVer.Patch.ToString(CultureInfo.InvariantCulture);
 
-                    logger.Verbose("Overriding {VersionMajor} from '{V}' to '{Major}'",
-                        WellKnownVariables.VersionMajor,
-                        _environmentVariables.GetEnvironmentVariable(WellKnownVariables.VersionMajor),
-                        major);
+                logger.Verbose("Overriding {VersionPatch} from '{V}' to '{Patch}'",
+                    WellKnownVariables.VersionPatch,
+                    _environmentVariables.GetEnvironmentVariable(WellKnownVariables.VersionPatch),
+                    patch);
 
-                    variables.Add(new BuildVariable(WellKnownVariables.VersionMajor, major));
-
-                    string minor = semVer.Minor.ToString(CultureInfo.InvariantCulture);
-
-                    logger.Verbose("Overriding {VersionMinor} from '{V}' to '{Minor}'",
-                        WellKnownVariables.VersionMinor,
-                        _environmentVariables.GetEnvironmentVariable(WellKnownVariables.VersionMinor),
-                        minor);
-
-                    variables.Add(new BuildVariable(WellKnownVariables.VersionMinor, minor));
-
-                    string patch = semVer.Patch.ToString(CultureInfo.InvariantCulture);
-
-                    logger.Verbose("Overriding {VersionPatch} from '{V}' to '{Patch}'",
-                        WellKnownVariables.VersionPatch,
-                        _environmentVariables.GetEnvironmentVariable(WellKnownVariables.VersionPatch),
-                        patch);
-
-                    variables.Add(new BuildVariable(WellKnownVariables.VersionPatch, patch));
-                }
-                else
-                {
-                    logger.Debug("Branch name version override is not enabled");
-                }
+                variables.Add(new BuildVariable(WellKnownVariables.VersionPatch, patch));
             }
             else
             {
-                logger.Debug("Branch has no version in name");
+                logger.Debug("Branch name version override is not enabled");
+            }
+        }
+        else
+        {
+            logger.Debug("Branch has no version in name");
+        }
+
+        if (!buildVariables.HasKey(WellKnownVariables.GitHash))
+        {
+            if (buildVariables.HasKey(WellKnownVariables.TeamCityVcsNumber))
+            {
+                string gitCommitHash = buildVariables.GetVariableValueOrDefault(
+                    WellKnownVariables.TeamCityVcsNumber,
+                    string.Empty)!;
+
+                if (!string.IsNullOrWhiteSpace(gitCommitHash))
+                {
+                    var environmentVariable = new BuildVariable(
+                        WellKnownVariables.GitHash,
+                        gitCommitHash);
+
+                    logger.Debug(
+                        "Setting commit hash variable '{GitHash}' from TeamCity variable '{TeamCityVcsNumber}', value '{GitCommitHash}'",
+                        WellKnownVariables.GitHash,
+                        WellKnownVariables.TeamCityVcsNumber,
+                        gitCommitHash);
+
+                    variables.Add(environmentVariable);
+                }
             }
 
-            if (!buildVariables.HasKey(WellKnownVariables.GitHash))
+            if (!variables.HasKey(WellKnownVariables.GitHash))
             {
-                if (buildVariables.HasKey(WellKnownVariables.TeamCityVcsNumber))
-                {
-                    string gitCommitHash = buildVariables.GetVariableValueOrDefault(
-                        WellKnownVariables.TeamCityVcsNumber,
-                        string.Empty)!;
+                const string arborBuildGitCommitHashEnabled = "Arbor.Build.GitCommitHashEnabled";
 
-                    if (!string.IsNullOrWhiteSpace(gitCommitHash))
-                    {
-                        var environmentVariable = new BuildVariable(
-                            WellKnownVariables.GitHash,
-                            gitCommitHash);
+                string? environmentVariable =
+                    _environmentVariables.GetEnvironmentVariable(arborBuildGitCommitHashEnabled);
 
-                        logger.Debug(
-                            "Setting commit hash variable '{GitHash}' from TeamCity variable '{TeamCityVcsNumber}', value '{GitCommitHash}'",
-                            WellKnownVariables.GitHash,
-                            WellKnownVariables.TeamCityVcsNumber,
-                            gitCommitHash);
-
-                        variables.Add(environmentVariable);
-                    }
-                }
-
-                if (!variables.HasKey(WellKnownVariables.GitHash))
-                {
-                    const string arborBuildGitCommitHashEnabled = "Arbor.Build.GitCommitHashEnabled";
-
-                    string? environmentVariable =
-                        _environmentVariables.GetEnvironmentVariable(arborBuildGitCommitHashEnabled);
-
-                    if (!environmentVariable
+                if (!environmentVariable
                         .ParseOrDefault(defaultValue: true))
-                    {
-                        logger.Information(
-                            "Git commit hash is disabled by environment variable {ArborXGitcommithashenabled} set to {EnvironmentVariable}",
-                            arborBuildGitCommitHashEnabled,
-                            environmentVariable);
-                    }
-                    else
-                    {
-                        UPath gitExePath = _gitHelper.GetGitExePath(logger, _specialFolders, _environmentVariables);
+                {
+                    logger.Information(
+                        "Git commit hash is disabled by environment variable {ArborXGitcommithashenabled} set to {EnvironmentVariable}",
+                        arborBuildGitCommitHashEnabled,
+                        environmentVariable);
+                }
+                else
+                {
+                    UPath gitExePath = _gitHelper.GetGitExePath(logger, _specialFolders, _environmentVariables);
 
-                        var stringBuilder = new StringBuilder();
+                    var stringBuilder = new StringBuilder();
 
-                        if (gitExePath != UPath.Empty)
+                    if (gitExePath != UPath.Empty)
+                    {
+                        var arguments = new List<string> {"rev-parse", "HEAD"};
+
+                        var exitCode = await ProcessRunner.ExecuteProcessAsync(_fileSystem.ConvertPathToInternal(gitExePath),
+                            arguments,
+                            (message, _) => stringBuilder.Append(message),
+                            toolAction: logger.Information,
+                            cancellationToken: cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
+
+                        if (!exitCode.IsSuccess)
                         {
-                            var arguments = new List<string> {"rev-parse", "HEAD"};
+                            logger.Warning("Could not get Git commit hash");
+                        }
+                        else
+                        {
+                            string result = stringBuilder.ToString().Trim();
 
-                            var exitCode = await ProcessRunner.ExecuteProcessAsync(_fileSystem.ConvertPathToInternal(gitExePath),
-                                arguments,
-                                (message, _) => stringBuilder.Append(message),
-                                toolAction: logger.Information,
-                                cancellationToken: cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
-
-                            if (!exitCode.IsSuccess)
+                            if (!string.IsNullOrWhiteSpace(result))
                             {
-                                logger.Warning("Could not get Git commit hash");
-                            }
-                            else
-                            {
-                                string result = stringBuilder.ToString().Trim();
+                                logger.Information("Found Git commit hash '{Result}' by asking git", result);
 
-                                if (!string.IsNullOrWhiteSpace(result))
-                                {
-                                    logger.Information("Found Git commit hash '{Result}' by asking git", result);
-
-                                    variables.Add(new BuildVariable(WellKnownVariables.GitHash, result));
-                                }
+                                variables.Add(new BuildVariable(WellKnownVariables.GitHash, result));
                             }
                         }
                     }
                 }
             }
-
-            if (!buildVariables.HasKey(WellKnownVariables.GitHash)
-                && buildVariables.HasKey(WellKnownVariables.GitHubSha)
-                && !variables.HasKey(WellKnownVariables.GitHash)
-                && buildVariables.GetVariableValueOrDefault(WellKnownVariables.GitHubSha) is {} hash)
-            {
-                variables.Add(new BuildVariable(WellKnownVariables.GitHash, hash));
-            }
-
-            string? gitHubUrl = buildVariables.GetVariableValueOrDefault("GITHUB_SERVER_URL");
-            string? gitHubRepository = buildVariables.GetVariableValueOrDefault("GITHUB_REPOSITORY");
-
-            if (string.IsNullOrWhiteSpace(buildVariables.GetVariableValueOrDefault(WellKnownVariables.RepositoryUrl))
-                && !string.IsNullOrWhiteSpace(gitHubUrl)
-                && !string.IsNullOrWhiteSpace(gitHubRepository)
-            )
-            {
-                string repositoryUrl = $"{gitHubUrl}/{gitHubRepository}";
-                variables.Add(new BuildVariable(WellKnownVariables.RepositoryUrl, repositoryUrl));
-            }
-
-            return variables.ToImmutableArray();
         }
+
+        if (!buildVariables.HasKey(WellKnownVariables.GitHash)
+            && buildVariables.HasKey(WellKnownVariables.GitHubSha)
+            && !variables.HasKey(WellKnownVariables.GitHash)
+            && buildVariables.GetVariableValueOrDefault(WellKnownVariables.GitHubSha) is {} hash)
+        {
+            variables.Add(new BuildVariable(WellKnownVariables.GitHash, hash));
+        }
+
+        string? gitHubUrl = buildVariables.GetVariableValueOrDefault("GITHUB_SERVER_URL");
+        string? gitHubRepository = buildVariables.GetVariableValueOrDefault("GITHUB_REPOSITORY");
+
+        if (string.IsNullOrWhiteSpace(buildVariables.GetVariableValueOrDefault(WellKnownVariables.RepositoryUrl))
+            && !string.IsNullOrWhiteSpace(gitHubUrl)
+            && !string.IsNullOrWhiteSpace(gitHubRepository)
+           )
+        {
+            string repositoryUrl = $"{gitHubUrl}/{gitHubRepository}";
+            variables.Add(new BuildVariable(WellKnownVariables.RepositoryUrl, repositoryUrl));
+        }
+
+        return variables.ToImmutableArray();
     }
 }

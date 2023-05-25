@@ -1,22 +1,20 @@
 using System;
-using JetBrains.Annotations;
 
-namespace Arbor.Build.Core.Tools.MSBuild
+namespace Arbor.Build.Core.Tools.MSBuild;
+
+public class BuildConfiguration
 {
-    public class BuildConfiguration
+    public BuildConfiguration(string configuration)
     {
-        public BuildConfiguration(string configuration)
+        if (string.IsNullOrWhiteSpace(configuration))
         {
-            if (string.IsNullOrWhiteSpace(configuration))
-            {
-                throw new ArgumentException(Resources.ValueCannotBeNullOrWhitespace, nameof(configuration));
-            }
-
-            Configuration = configuration;
+            throw new ArgumentException(Resources.ValueCannotBeNullOrWhitespace, nameof(configuration));
         }
 
-        public string Configuration { get; }
-
-        public bool IsReleaseBuild { get; set; }
+        Configuration = configuration;
     }
+
+    public string Configuration { get; }
+
+    public bool IsReleaseBuild { get; set; }
 }

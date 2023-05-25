@@ -1,25 +1,24 @@
 ﻿using System;
 
-namespace Arbor.Build.Core.BuildVariables
+namespace Arbor.Build.Core.BuildVariables;
+
+public class FunctionVariable : IVariable
 {
-    public class FunctionVariable : IVariable
+    private readonly Func<string?> _getValue;
+
+    public FunctionVariable(string key, Func<string?> getValue)
     {
-        private readonly Func<string?> _getValue;
-
-        public FunctionVariable(string key, Func<string?> getValue)
+        if (string.IsNullOrWhiteSpace(key))
         {
-            if (string.IsNullOrWhiteSpace(key))
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-
-            _getValue = getValue;
-
-            Key = key;
+            throw new ArgumentNullException(nameof(key));
         }
 
-        public string Key { get; }
+        _getValue = getValue;
 
-        public string? Value => _getValue.Invoke();
+        Key = key;
     }
+
+    public string Key { get; }
+
+    public string? Value => _getValue.Invoke();
 }

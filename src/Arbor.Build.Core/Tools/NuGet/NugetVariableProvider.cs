@@ -15,87 +15,86 @@ using JetBrains.Annotations;
 using Serilog;
 using Zio;
 
-namespace Arbor.Build.Core.Tools.NuGet
+namespace Arbor.Build.Core.Tools.NuGet;
+
+[UsedImplicitly]
+public class NugetVariableProvider : IVariableProvider
 {
-    [UsedImplicitly]
-    public class NugetVariableProvider : IVariableProvider
+    private CancellationToken _cancellationToken;
+    private readonly IFileSystem _fileSystem;
+    private readonly BuildContext _buildContext;
+
+    public NugetVariableProvider(IFileSystem fileSystem, BuildContext buildContext)
     {
-        private CancellationToken _cancellationToken;
-        private readonly IFileSystem _fileSystem;
-        private readonly BuildContext _buildContext;
+        _fileSystem = fileSystem;
+        _buildContext = buildContext;
+    }
 
-        public NugetVariableProvider(IFileSystem fileSystem, BuildContext buildContext)
+    private async Task<UPath?> EnsureNuGetExeExistsAsync(ILogger logger, UPath? userSpecifiedNuGetExePath)
+    {
+        if (userSpecifiedNuGetExePath is {}
+            && userSpecifiedNuGetExePath.Value != UPath.Empty
+            && _fileSystem.FileExists(userSpecifiedNuGetExePath.Value))
         {
-            _fileSystem = fileSystem;
-            _buildContext = buildContext;
+            return userSpecifiedNuGetExePath.Value;
         }
 
-        private async Task<UPath?> EnsureNuGetExeExistsAsync(ILogger logger, UPath? userSpecifiedNuGetExePath)
+        using var httClient = new HttpClient();
+        var nuGetDownloadClient = new NuGetDownloadClient();
+
+        var nuGetDownloadResult = await nuGetDownloadClient.DownloadNuGetAsync(
+            NuGetDownloadSettings.Default,
+            logger,
+            httClient,
+            _cancellationToken).ConfigureAwait(false);
+
+        if (!nuGetDownloadResult.Succeeded)
         {
-            if (userSpecifiedNuGetExePath is {}
-                && userSpecifiedNuGetExePath.Value != UPath.Empty
-                && _fileSystem.FileExists(userSpecifiedNuGetExePath.Value))
-            {
-                return userSpecifiedNuGetExePath.Value;
-            }
-
-            using var httClient = new HttpClient();
-            var nuGetDownloadClient = new NuGetDownloadClient();
-
-            var nuGetDownloadResult = await nuGetDownloadClient.DownloadNuGetAsync(
-                NuGetDownloadSettings.Default,
-                logger,
-                httClient,
-                _cancellationToken).ConfigureAwait(false);
-
-            if (!nuGetDownloadResult.Succeeded)
-            {
-                throw new InvalidOperationException("Could not download nuget.exe");
-            }
-
-            return nuGetDownloadResult.NuGetExePath?.ParseAsPath();
+            throw new InvalidOperationException("Could not download nuget.exe");
         }
 
-        public int Order => 3;
+        return nuGetDownloadResult.NuGetExePath?.ParseAsPath();
+    }
 
-        public async Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
-            ILogger logger,
-            IReadOnlyCollection<IVariable> buildVariables,
-            CancellationToken cancellationToken)
+    public int Order => 3;
+
+    public async Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
+        ILogger logger,
+        IReadOnlyCollection<IVariable> buildVariables,
+        CancellationToken cancellationToken)
+    {
+        _cancellationToken = cancellationToken;
+
+        UPath? userSpecifiedNuGetExePath = buildVariables.GetVariableValueOrDefault(
+            WellKnownVariables.ExternalTools_NuGet_ExePath_Custom)?.ParseAsPath();
+
+        var nuGetExePath =
+            await EnsureNuGetExeExistsAsync(logger, userSpecifiedNuGetExePath).ConfigureAwait(false);
+
+        string path = nuGetExePath.HasValue
+            ? _fileSystem.ConvertPathToInternal(nuGetExePath.Value)
+            : "";
+
+        var variables = new List<IVariable>
         {
-            _cancellationToken = cancellationToken;
+            new BuildVariable(WellKnownVariables.ExternalTools_NuGet_ExePath, path)
+        };
 
-            UPath? userSpecifiedNuGetExePath = buildVariables.GetVariableValueOrDefault(
-                WellKnownVariables.ExternalTools_NuGet_ExePath_Custom)?.ParseAsPath();
-
-            var nuGetExePath =
-                await EnsureNuGetExeExistsAsync(logger, userSpecifiedNuGetExePath).ConfigureAwait(false);
-
-            string path = nuGetExePath.HasValue
-                ? _fileSystem.ConvertPathToInternal(nuGetExePath.Value)
-                : "";
-
-            var variables = new List<IVariable>
-            {
-                new BuildVariable(WellKnownVariables.ExternalTools_NuGet_ExePath, path)
-            };
-
-            if (string.IsNullOrWhiteSpace(
+        if (string.IsNullOrWhiteSpace(
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetRestoreEnabled, string.Empty)))
+        {
+
+            var pathLookupSpecification = new PathLookupSpecification();
+            var packageConfigFiles = _buildContext.SourceRoot
+                .EnumerateFiles("packages.config", SearchOption.AllDirectories).Where(
+                    file => !pathLookupSpecification.IsFileExcluded(file, _buildContext.SourceRoot).Item1).ToArray();
+
+            if (packageConfigFiles.Any())
             {
-
-                var pathLookupSpecification = new PathLookupSpecification();
-                var packageConfigFiles = _buildContext.SourceRoot
-                    .EnumerateFiles("packages.config", SearchOption.AllDirectories).Where(
-                        file => !pathLookupSpecification.IsFileExcluded(file, _buildContext.SourceRoot).Item1).ToArray();
-
-                if (packageConfigFiles.Any())
-                {
-                    variables.Add(new BuildVariable(WellKnownVariables.NuGetRestoreEnabled, "true"));
-                }
+                variables.Add(new BuildVariable(WellKnownVariables.NuGetRestoreEnabled, "true"));
             }
-
-            return variables.ToImmutableArray();
         }
+
+        return variables.ToImmutableArray();
     }
 }

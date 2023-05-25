@@ -3,28 +3,27 @@ using Arbor.Build.Core.Tools.Git;
 using Machine.Specifications;
 using Xunit;
 
-namespace Arbor.Build.Tests.Integration.GitBranches
+namespace Arbor.Build.Tests.Integration.GitBranches;
+
+public class BranchHelperTests
 {
-    public class BranchHelperTests
+    [Fact]
+    public void ParseVersionFromDependabotBranch()
     {
-        [Fact]
-        public void ParseVersionFromDependabotBranch()
-        {
-            var semanticVersion = BranchHelper.BranchSemVerMajorMinorPatch("refs/heads/dependabot/nuget/", EnvironmentVariables.Empty);
+        var semanticVersion = BranchHelper.BranchSemVerMajorMinorPatch("refs/heads/dependabot/nuget/", EnvironmentVariables.Empty);
 
-            semanticVersion.ShouldBeNull();
-        }
+        semanticVersion.ShouldBeNull();
+    }
 
-        [Fact]
-        public void ParseVersionBranchShouldReturnVersion()
-        {
-            var semanticVersion = BranchHelper.BranchSemVerMajorMinorPatch("refs/heads/somebranch-1.2.3", EnvironmentVariables.Empty);
+    [Fact]
+    public void ParseVersionBranchShouldReturnVersion()
+    {
+        var semanticVersion = BranchHelper.BranchSemVerMajorMinorPatch("refs/heads/somebranch-1.2.3", EnvironmentVariables.Empty);
 
-            semanticVersion.ShouldNotBeNull();
+        semanticVersion.ShouldNotBeNull();
 
-            semanticVersion!.Major.ShouldEqual(1);
-            semanticVersion!.Minor.ShouldEqual(2);
-            semanticVersion!.Patch.ShouldEqual(3);
-        }
+        semanticVersion!.Major.ShouldEqual(1);
+        semanticVersion!.Minor.ShouldEqual(2);
+        semanticVersion!.Patch.ShouldEqual(3);
     }
 }

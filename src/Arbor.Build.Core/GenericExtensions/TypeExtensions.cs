@@ -1,68 +1,66 @@
 ﻿using System;
 using System.Reflection;
-using JetBrains.Annotations;
 
-namespace Arbor.Build.Core.GenericExtensions
+namespace Arbor.Build.Core.GenericExtensions;
+
+public static class TypeExtensions
 {
-    public static class TypeExtensions
+    public static bool HasSingleDefaultConstructor(this Type type)
     {
-        public static bool HasSingleDefaultConstructor([NotNull] this Type type)
+        if (type == null)
         {
-            if (type == null)
-            {
-                throw new ArgumentNullException(nameof(type));
-            }
-
-            return type.GetConstructors().Length == 1 &&
-                   type.GetConstructor(Array.Empty<Type>())?.GetParameters().Length == 0;
+            throw new ArgumentNullException(nameof(type));
         }
 
-        public static bool IsConcretePublicClassImplementing<T>(this Type type)
+        return type.GetConstructors().Length == 1 &&
+               type.GetConstructor(Array.Empty<Type>())?.GetParameters().Length == 0;
+    }
+
+    public static bool IsConcretePublicClassImplementing<T>(this Type type)
+    {
+        if (type == null)
         {
-            if (type == null)
-            {
-                throw new ArgumentNullException(nameof(type));
-            }
-
-            bool isConcretePublicClassImplementing = type.IsClass && type.IsPublic && typeof(T).IsAssignableFrom(type);
-
-            return isConcretePublicClassImplementing;
+            throw new ArgumentNullException(nameof(type));
         }
 
-        public static bool IsPublicConstant([NotNull] this FieldInfo fieldInfo)
+        bool isConcretePublicClassImplementing = type.IsClass && type.IsPublic && typeof(T).IsAssignableFrom(type);
+
+        return isConcretePublicClassImplementing;
+    }
+
+    public static bool IsPublicConstant(this FieldInfo fieldInfo)
+    {
+        if (fieldInfo == null)
         {
-            if (fieldInfo == null)
-            {
-                throw new ArgumentNullException(nameof(fieldInfo));
-            }
-
-            bool isPublicConstant = fieldInfo.IsLiteral && fieldInfo.IsPublic;
-
-            return isPublicConstant;
+            throw new ArgumentNullException(nameof(fieldInfo));
         }
 
-        public static bool IsPublicStatic([NotNull] this FieldInfo fieldInfo)
+        bool isPublicConstant = fieldInfo.IsLiteral && fieldInfo.IsPublic;
+
+        return isPublicConstant;
+    }
+
+    public static bool IsPublicStatic(this FieldInfo fieldInfo)
+    {
+        if (fieldInfo == null)
         {
-            if (fieldInfo == null)
-            {
-                throw new ArgumentNullException(nameof(fieldInfo));
-            }
-
-            bool isPublicConstant = fieldInfo.IsStatic && fieldInfo.IsPublic;
-
-            return isPublicConstant;
+            throw new ArgumentNullException(nameof(fieldInfo));
         }
 
-        public static bool IsPublicConstantOrStatic([NotNull] this FieldInfo fieldInfo)
+        bool isPublicConstant = fieldInfo.IsStatic && fieldInfo.IsPublic;
+
+        return isPublicConstant;
+    }
+
+    public static bool IsPublicConstantOrStatic(this FieldInfo fieldInfo)
+    {
+        if (fieldInfo == null)
         {
-            if (fieldInfo == null)
-            {
-                throw new ArgumentNullException(nameof(fieldInfo));
-            }
-
-            bool isPublicConstant = fieldInfo.IsPublicStatic() || fieldInfo.IsPublicConstant();
-
-            return isPublicConstant;
+            throw new ArgumentNullException(nameof(fieldInfo));
         }
+
+        bool isPublicConstant = fieldInfo.IsPublicStatic() || fieldInfo.IsPublicConstant();
+
+        return isPublicConstant;
     }
 }

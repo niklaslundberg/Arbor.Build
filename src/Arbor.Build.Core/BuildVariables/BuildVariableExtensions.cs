@@ -5,182 +5,181 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 
-namespace Arbor.Build.Core.BuildVariables
+namespace Arbor.Build.Core.BuildVariables;
+
+public static class BuildVariableExtensions
 {
-    public static class BuildVariableExtensions
+    public static ImmutableArray<string> GetValues(this IReadOnlyCollection<IVariable> variables, string key)
     {
-        public static ImmutableArray<string> GetValues(this IReadOnlyCollection<IVariable> variables, string key)
-        {
-            string value = variables.GetVariableValueOrDefault(key, "")!;
+        string value = variables.GetVariableValueOrDefault(key, "")!;
 
-            return value.Split(';', StringSplitOptions.RemoveEmptyEntries).Select(item => item.Trim())
-                .ToImmutableArray();
+        return value.Split(';', StringSplitOptions.RemoveEmptyEntries).Select(item => item.Trim())
+            .ToImmutableArray();
+    }
+
+    public static bool HasKey(
+        this IReadOnlyCollection<IVariable> buildVariables,
+        string key) => buildVariables.Any(
+        bv => bv.Key.Equals(
+            key,
+            StringComparison.OrdinalIgnoreCase));
+
+    public static IVariable GetVariable(
+        this IReadOnlyCollection<IVariable> buildVariables,
+        string key)
+    {
+        var foundVariables = buildVariables.Where(
+                bv => bv.Key.Equals(
+                    key,
+                    StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+
+        if (foundVariables.Length > 1)
+        {
+            throw new InvalidOperationException($"Found multiple build variables with key '{key}'");
         }
 
-        public static bool HasKey(
-            this IReadOnlyCollection<IVariable> buildVariables,
-            string key) => buildVariables.Any(
-            bv => bv.Key.Equals(
-                key,
-                StringComparison.OrdinalIgnoreCase));
-
-        public static IVariable GetVariable(
-            this IReadOnlyCollection<IVariable> buildVariables,
-            string key)
+        if (foundVariables.Length == 0)
         {
-            var foundVariables = buildVariables.Where(
-                    bv => bv.Key.Equals(
-                        key,
-                        StringComparison.OrdinalIgnoreCase))
-                .ToArray();
-
-            if (foundVariables.Length > 1)
-            {
-                throw new InvalidOperationException($"Found multiple build variables with key '{key}'");
-            }
-
-            if (foundVariables.Length == 0)
-            {
-                throw new InvalidOperationException($"Found no build variable with key '{key}'");
-            }
-
-            return foundVariables[0];
+            throw new InvalidOperationException($"Found no build variable with key '{key}'");
         }
 
-        public static string? GetVariableValueOrDefault(
-            this IReadOnlyCollection<IVariable> buildVariables,
-            string? key,
-            [NotNullIfNotNull("defaultValue")] string? defaultValue = null)
+        return foundVariables[0];
+    }
+
+    public static string? GetVariableValueOrDefault(
+        this IReadOnlyCollection<IVariable> buildVariables,
+        string? key,
+        [NotNullIfNotNull(nameof(defaultValue))] string? defaultValue = null)
+    {
+        if (key is null)
         {
-            if (key is null)
-            {
-                return null;
-            }
-
-            if (!buildVariables.HasKey(key))
-            {
-                return defaultValue;
-            }
-
-            return buildVariables.GetVariable(key).Value ?? defaultValue;
+            return null;
         }
 
-        public static bool GetBooleanByKey(
-            this IReadOnlyCollection<IVariable> buildVariables,
-            string key,
-            bool defaultValue = false)
+        if (!buildVariables.HasKey(key))
         {
-            if (!buildVariables.HasKey(key))
-            {
-                return defaultValue;
-            }
+            return defaultValue;
+        }
 
+        return buildVariables.GetVariable(key).Value ?? defaultValue;
+    }
+
+    public static bool GetBooleanByKey(
+        this IReadOnlyCollection<IVariable> buildVariables,
+        string key,
+        bool defaultValue = false)
+    {
+        if (!buildVariables.HasKey(key))
+        {
+            return defaultValue;
+        }
+
+        string? value = buildVariables.GetVariableValueOrDefault(
+            key,
+            string.Empty);
+
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return defaultValue;
+        }
+
+        if (!bool.TryParse(
+                value,
+                out bool parsed))
+        {
+            return defaultValue;
+        }
+
+        return parsed;
+    }
+
+    public static bool? GetOptionalBooleanByKey(
+        this IReadOnlyCollection<IVariable> buildVariables,
+        string key)
+    {
+        if (!buildVariables.HasKey(key))
+        {
+            return null;
+        }
+
+        string? value = buildVariables.GetVariableValueOrDefault(key);
+
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        if (!bool.TryParse(
+                value,
+                out bool parsed))
+        {
+            return null;
+        }
+
+        return parsed;
+    }
+
+    public static int GetInt32ByKey(
+        this IReadOnlyCollection<IVariable> buildVariables,
+        string key,
+        int defaultValue = default,
+        int? minValue = null)
+    {
+        int? returnValue = null;
+
+        if (buildVariables.HasKey(key))
+        {
             string? value = buildVariables.GetVariableValueOrDefault(
                 key,
-                string.Empty);
+                defaultValue.ToString(CultureInfo.InvariantCulture));
 
-            if (string.IsNullOrWhiteSpace(value))
+            if (!string.IsNullOrWhiteSpace(value) && int.TryParse(value, out int parsed))
             {
-                return defaultValue;
+                returnValue = parsed;
             }
-
-            if (!bool.TryParse(
-                value,
-                out bool parsed))
-            {
-                return defaultValue;
-            }
-
-            return parsed;
         }
 
-        public static bool? GetOptionalBooleanByKey(
-            this IReadOnlyCollection<IVariable> buildVariables,
-            string key)
+        returnValue ??= defaultValue;
+
+        if (returnValue < minValue)
         {
-            if (!buildVariables.HasKey(key))
-            {
-                return null;
-            }
-
-            string? value = buildVariables.GetVariableValueOrDefault(key);
-
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                return null;
-            }
-
-            if (!bool.TryParse(
-                value,
-                out bool parsed))
-            {
-                return null;
-            }
-
-            return parsed;
+            returnValue = minValue;
         }
 
-        public static int GetInt32ByKey(
-            this IReadOnlyCollection<IVariable> buildVariables,
-            string key,
-            int defaultValue = default,
-            int? minValue = null)
+        return returnValue.Value;
+    }
+
+    public static bool GetValueOrDefault(
+        this IVariable? variable,
+        bool defaultValue = false)
+    {
+        if (variable is null)
         {
-            int? returnValue = null;
-
-            if (buildVariables.HasKey(key))
-            {
-                string? value = buildVariables.GetVariableValueOrDefault(
-                    key,
-                    defaultValue.ToString(CultureInfo.InvariantCulture));
-
-                if (!string.IsNullOrWhiteSpace(value) && int.TryParse(value, out int parsed))
-                {
-                    returnValue = parsed;
-                }
-            }
-
-            returnValue ??= defaultValue;
-
-            if (returnValue < minValue)
-            {
-                returnValue = minValue;
-            }
-
-            return returnValue.Value;
+            return defaultValue;
         }
 
-        public static bool GetValueOrDefault(
-            this IVariable? variable,
-            bool defaultValue = false)
+        if (string.IsNullOrWhiteSpace(variable.Value))
         {
-            if (variable is null)
-            {
-                return defaultValue;
-            }
+            return defaultValue;
+        }
 
-            if (string.IsNullOrWhiteSpace(variable.Value))
-            {
-                return defaultValue;
-            }
-
-            if (!bool.TryParse(
+        if (!bool.TryParse(
                 variable.Value,
                 out bool parsed))
-            {
-                return defaultValue;
-            }
-
-            return parsed;
+        {
+            return defaultValue;
         }
 
-        public static int IntValueOrDefault(this IEnumerable<KeyValuePair<string, string?>> pairs,
-            string key,
-            int defaultValue = default) => int.TryParse(
-            pairs.SingleOrDefault(
-                pair => pair.Key.Equals(key, StringComparison.Ordinal)).Value,
-            out int value)
-            ? value
-            : defaultValue;
+        return parsed;
     }
+
+    public static int IntValueOrDefault(this IEnumerable<KeyValuePair<string, string?>> pairs,
+        string key,
+        int defaultValue = default) => int.TryParse(
+        pairs.SingleOrDefault(
+            pair => pair.Key.Equals(key, StringComparison.Ordinal)).Value,
+        out int value)
+        ? value
+        : defaultValue;
 }

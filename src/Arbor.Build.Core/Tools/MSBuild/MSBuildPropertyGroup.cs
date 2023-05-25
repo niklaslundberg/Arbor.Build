@@ -1,20 +1,19 @@
 ﻿using System;
 using System.Collections.Immutable;
 
-namespace Arbor.Build.Core.Tools.MSBuild
-{
-    public class MSBuildPropertyGroup
-    {
-        public MSBuildPropertyGroup(ImmutableArray<MSBuildProperty> properties)
-        {
-            if (properties.IsDefault)
-            {
-                throw new ArgumentException(Resources.ImmutableArrayCannotBeDefault, nameof(properties));
-            }
+namespace Arbor.Build.Core.Tools.MSBuild;
 
-            Properties = properties;
+public class MSBuildPropertyGroup
+{
+    public MSBuildPropertyGroup(ImmutableArray<MSBuildProperty> properties)
+    {
+        if (properties.IsDefault)
+        {
+            throw new ArgumentException(Resources.ImmutableArrayCannotBeDefault, nameof(properties));
         }
 
-        public ImmutableArray<MSBuildProperty> Properties { get; }
+        Properties = properties;
     }
+
+    public ImmutableArray<MSBuildProperty> Properties { get; }
 }
