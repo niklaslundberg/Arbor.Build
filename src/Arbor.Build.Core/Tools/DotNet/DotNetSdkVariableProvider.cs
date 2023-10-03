@@ -60,14 +60,14 @@ public class DotNetSdkVariableProvider : IVariableProvider
             var semanticVersions = directoryEntry.GetDirectories()
                 .Select(dir =>
                     (Directory: dir,
-                        HasVersion: SemanticVersion.TryParse(dir.Name, out SemanticVersion version),
+                        HasVersion: SemanticVersion.TryParse(dir.Name, out SemanticVersion? version),
                         Version: version))
-                .Where(dir => dir.HasVersion && !dir.Version.IsPrerelease)
+                .Where(dir => dir.HasVersion && !dir.Version!.IsPrerelease)
                 .ToArray();
 
             if (semanticVersions.Length > 0)
             {
-                var (directory, _, _) = semanticVersions.OrderByDescending(tuple => tuple.Version).First();
+                var (directory, _, _) = semanticVersions.MaxBy(tuple => tuple.Version);
 
                 var sdksPath = UPath.Combine(directory.Path, "sdks");
 

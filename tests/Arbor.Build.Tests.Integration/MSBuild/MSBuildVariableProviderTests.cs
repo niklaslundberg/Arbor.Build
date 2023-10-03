@@ -25,7 +25,7 @@ public class MSBuildVariableProviderTests
         using var physicalFileSystem = new PhysicalFileSystem();
         var msBuildVariableProvider = new MSBuildVariableProvider(EnvironmentVariables.Empty, SpecialFolders.Default, physicalFileSystem);
         var variables = await msBuildVariableProvider.GetBuildVariablesAsync(Logger.None,
-            ImmutableArray<IVariable>.Empty, CancellationToken.None).ConfigureAwait(false);
+            ImmutableArray<IVariable>.Empty, CancellationToken.None);
 
         _output.WriteLine(string.Join(Environment.NewLine, variables.Select(s => s.Key + " " + s.Value)));
 

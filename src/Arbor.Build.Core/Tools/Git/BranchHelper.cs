@@ -112,7 +112,7 @@ public static class BranchHelper
         string? version = branchName.Split(splitCharacters.ToArray(), StringSplitOptions.RemoveEmptyEntries)
             .LastOrDefault();
 
-        if (!SemanticVersion.TryParse(version, out SemanticVersion semver))
+        if (!SemanticVersion.TryParse(version!, out SemanticVersion? semver))
         {
             return new SemanticVersion(0, 0, 0);
         }
