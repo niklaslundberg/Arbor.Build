@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFrameworks>net7.0;net8.0</TargetFrameworks>
     <RuntimeIdentifier Condition="'${Configuration}' == 'release'">win-x64</RuntimeIdentifier>
   </PropertyGroup>
 
@@ -69,14 +69,6 @@
   <ItemGroup>
     <Folder Include="GenericExtensions\Boolean\" />
     <Folder Include="Tools\Scripts\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="Resources.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
   </ItemGroup>
 
 </Project>
