@@ -229,9 +229,9 @@ public class MSBuildVariableProvider : IVariableProvider
             .Select(SemanticVersion.Parse)
             .ToList();
 
-        string? max = buildVariables.GetVariableValueOrDefault(
+        string max = buildVariables.GetVariableValueOrDefault(
             WellKnownVariables.ExternalTools_MSBuild_MaxVersion,
-            "16.99.0");
+            "16.99.0")!;
 
         SemanticVersion[] toRemove = possibleMajorVersions.Where(version => version > SemanticVersion.Parse(max))
             .ToArray();
@@ -399,7 +399,7 @@ public class MSBuildVariableProvider : IVariableProvider
 
         var fileBasedLookupResultPath = possiblePaths.FirstOrDefault(_fileSystem.FileExists);
 
-        if (fileBasedLookupResultPath is {})
+        if (!fileBasedLookupResultPath.IsEmpty)
         {
             logger.Information("Found MSBuild at '{FileBasedLookupResultPath}'", _fileSystem.ConvertPathToInternal(fileBasedLookupResultPath));
 
@@ -472,7 +472,7 @@ public class MSBuildVariableProvider : IVariableProvider
             if (!string.IsNullOrWhiteSpace(fromEnvironmentVariable))
             {
                 logger.Information("Using MSBuild exe path '{FoundPath}' from environment variable {MsbuildPath}",
-                    _fileSystem.ConvertPathToInternal(foundPath.ParseAsPath()),
+                    _fileSystem.ConvertPathToInternal(fromEnvironmentVariable.ParseAsPath()),
                     msbuildPath);
                 foundPath = fromEnvironmentVariable;
             }
