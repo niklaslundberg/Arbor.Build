@@ -34,7 +34,7 @@ public class DebugVariableProvider : IVariableProvider
         {
             [WellKnownVariables.BranchNameVersionOverrideEnabled] = "false",
             [WellKnownVariables.VariableOverrideEnabled] = "true",
-            [WellKnownVariables.BranchName] = "develop",
+            [WellKnownVariables.BranchName] = "main",
             [WellKnownVariables.GenericXmlTransformsEnabled] = "true",
             [WellKnownVariables.NuGetPackageExcludesCommaSeparated] = "Arbor.Build.Bootstrapper.nuspec",
             [WellKnownVariables.NuGetAllowManifestReWrite] = "false",

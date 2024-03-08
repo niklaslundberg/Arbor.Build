@@ -19,7 +19,6 @@ jobs:
     - uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 8.0.x
-        dotnet-quality: 'preview'
         cache: true
         cache-dependency-path: tests/Arbor.Build.Tests.Integration
     - name: install-tools

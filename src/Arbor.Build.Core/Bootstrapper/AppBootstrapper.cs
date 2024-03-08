@@ -357,7 +357,10 @@ public class AppBootstrapper
             new NuGetPackageId(BuildToolPackageName),
             packageVersion);
 
-        var nugetPackageSettings = new NugetPackageSettings(preReleaseIsAllowed, nuGetSource);
+        var nugetPackageSettings = new NugetPackageSettings()
+        {
+            AllowPreRelease = preReleaseIsAllowed, NugetSource = nuGetSource
+        };
 
         var nuGetPackageInstallResult = await nuGetPackageInstaller.InstallPackageAsync(
                 nuGetPackage,

@@ -27,6 +27,7 @@ public class BuildAgentVariableProvider : IVariableProvider
         {
             WellKnownVariables.ExternalTools_Hudson_HudsonHome,
             WellKnownVariables.ExternalTools_Jenkins_JenkinsHome,
+            WellKnownVariables.ExternalTools_GitHubActions,
             WellKnownVariables.ExternalTools_TeamCity_TeamCityVersion
         };
 

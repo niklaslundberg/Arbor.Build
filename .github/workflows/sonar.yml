@@ -17,7 +17,7 @@ jobs:
         fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
     - uses: joschi/setup-jdk@v2
       with:
-        java-version: '11' # The OpenJDK version to make available on the path
+        java-version: '21' # The OpenJDK version to make available on the path
     - uses: actions/setup-dotnet@v3
       with:
         dotnet-version: |
