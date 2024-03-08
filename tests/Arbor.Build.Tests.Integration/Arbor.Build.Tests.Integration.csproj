@@ -45,6 +45,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Win32.Primitives" Version="4.3.0" Condition="'${Configuration}' == 'release'" />
   </ItemGroup>
 
   <ItemGroup>
