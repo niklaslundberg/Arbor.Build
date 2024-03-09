@@ -78,9 +78,9 @@
       },
       "Arbor.Tooler": {
         "type": "Direct",
-        "requested": "[0.28.0-build.1710012870, )",
-        "resolved": "0.28.0-build.1710012870",
-        "contentHash": "iIVnfl8iTm9Qmc2BMavigr5FM1nxqqpsLU6QA8Fs0sXTMSjZgZzRPf8vl3S1G6b/KunwzxBJkUMmVjHSA6eIwQ==",
+        "requested": "[0.28.0-build.1710017456, )",
+        "resolved": "0.28.0-build.1710017456",
+        "contentHash": "PQ7Eo2dWXu+Ialu9/ibohBrHmUkZNsbnQDoWNzG/dMefSYwg4IaGp/WlYgxO9WEW3pyuYL3x4b62J5HNlkPJZg==",
         "dependencies": {
           "Arbor.Processing": "0.6.0",
           "JetBrains.Annotations": "2023.3.0",
@@ -1834,9 +1834,9 @@
       },
       "Arbor.Tooler": {
         "type": "Direct",
-        "requested": "[0.28.0-build.1710012870, )",
-        "resolved": "0.28.0-build.1710012870",
-        "contentHash": "iIVnfl8iTm9Qmc2BMavigr5FM1nxqqpsLU6QA8Fs0sXTMSjZgZzRPf8vl3S1G6b/KunwzxBJkUMmVjHSA6eIwQ==",
+        "requested": "[0.28.0-build.1710017456, )",
+        "resolved": "0.28.0-build.1710017456",
+        "contentHash": "PQ7Eo2dWXu+Ialu9/ibohBrHmUkZNsbnQDoWNzG/dMefSYwg4IaGp/WlYgxO9WEW3pyuYL3x4b62J5HNlkPJZg==",
         "dependencies": {
           "Arbor.Processing": "0.6.0",
           "JetBrains.Annotations": "2023.3.0",
