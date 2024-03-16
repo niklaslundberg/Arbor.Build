@@ -11,12 +11,8 @@ using Zio.FileSystems;
 
 namespace Arbor.Build.Tests.Integration.MSBuildProjects;
 
-public class FinWebApplicationProjectTypeId
+public class FinWebApplicationProjectTypeId(ITestOutputHelper output)
 {
-    public FinWebApplicationProjectTypeId(ITestOutputHelper output) => this.output = output;
-
-    readonly ITestOutputHelper output;
-
     [Fact]
     public async Task ParseWebApplicationCsProjFile()
     {

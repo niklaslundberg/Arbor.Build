@@ -1,12 +1,7 @@
 ﻿namespace Arbor.Build.Core.Tools.MSBuild;
 
-public class MsBuildArgHelper
+public class MsBuildArgHelper(string msbuildParameterArgumentDelimiter)
 {
-    private readonly string _msbuildParameterArgumentDelimiter;
-
-    public MsBuildArgHelper(string msbuildParameterArgumentDelimiter) =>
-        _msbuildParameterArgumentDelimiter = msbuildParameterArgumentDelimiter;
-
     public string FormatPropertyArg(string propertyName, string propertyValue) =>
         FormatArg("property", propertyName, propertyValue);
 
@@ -14,14 +9,14 @@ public class MsBuildArgHelper
     {
         if (string.IsNullOrWhiteSpace(argValue) && string.IsNullOrWhiteSpace(argSubName))
         {
-            return _msbuildParameterArgumentDelimiter + arg;
+            return msbuildParameterArgumentDelimiter + arg;
         }
 
         if (string.IsNullOrWhiteSpace(argValue))
         {
-            return $"{_msbuildParameterArgumentDelimiter}{arg}:{argSubName}";
+            return $"{msbuildParameterArgumentDelimiter}{arg}:{argSubName}";
         }
 
-        return $"{_msbuildParameterArgumentDelimiter}{arg}:{argSubName}={argValue}";
+        return $"{msbuildParameterArgumentDelimiter}{arg}:{argSubName}={argValue}";
     }
 }

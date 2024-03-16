@@ -4,17 +4,15 @@ using Zio;
 
 namespace Arbor.Build.Core.Tools.MSBuild;
 
-public class BuildContext
+public class BuildContext(IFileSystem fileSystem)
 {
     private DirectoryEntry? _sourceRoot;
 
-    public BuildContext(IFileSystem fileSystem) => FileSystem = fileSystem;
-
-    public IFileSystem FileSystem { get; }
+    public IFileSystem FileSystem { get; } = fileSystem;
 
     public BuildConfiguration? CurrentBuildConfiguration { get; set; }
 
-    public HashSet<string> Configurations { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+    public HashSet<string> Configurations { get; } = new(StringComparer.OrdinalIgnoreCase);
 
     public bool HasSourceRootSet => _sourceRoot is { };
 

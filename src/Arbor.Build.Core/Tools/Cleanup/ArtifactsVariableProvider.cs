@@ -12,12 +12,8 @@ using Zio;
 namespace Arbor.Build.Core.Tools.Cleanup;
 
 [UsedImplicitly]
-public class ArtifactsVariableProvider : IVariableProvider
+public class ArtifactsVariableProvider(BuildContext buildContext) : IVariableProvider
 {
-    private readonly BuildContext _buildContext;
-
-    public ArtifactsVariableProvider(BuildContext buildContext) => _buildContext = buildContext;
-
     public int Order => 2;
 
     public Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
@@ -25,7 +21,7 @@ public class ArtifactsVariableProvider : IVariableProvider
         IReadOnlyCollection<IVariable> buildVariables,
         CancellationToken cancellationToken)
     {
-        var sourceRoot = _buildContext.SourceRoot;
+        var sourceRoot = buildContext.SourceRoot;
 
         DirectoryEntry artifactsDirectory = new DirectoryEntry(sourceRoot.FileSystem, UPath.Combine(sourceRoot.Path, "Artifacts")).EnsureExists();
         DirectoryEntry testReportsDirectory =

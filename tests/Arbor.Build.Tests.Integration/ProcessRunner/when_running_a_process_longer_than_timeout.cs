@@ -20,7 +20,7 @@ namespace Arbor.Build.Tests.Integration.ProcessRunner;
 public class when_running_a_process_longer_than_timeout
 {
     static UPath testPath;
-    static ExitCode exitCode = new ExitCode(99);
+    static ExitCode exitCode = new(99);
     static TaskCanceledException exception;
     static ILogger logger = Logger.None;
     static FileEntry logFile;

@@ -203,15 +203,9 @@ public class MsBuildProject
 
     public bool HasPropertyWithValue(string name, string value, StringComparison stringComparison = StringComparison.Ordinal)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
-        if (value == null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
+        ArgumentNullException.ThrowIfNull(value);
 
         return PropertyGroups.Any(propertyGroup => propertyGroup.Properties.Any(property =>
             property.Name.Equals(name, stringComparison) &&
@@ -220,10 +214,7 @@ public class MsBuildProject
 
     public string GetPropertyValue(string name)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
         var msBuildProperties = PropertyGroups
             .SelectMany(propertyGroup =>

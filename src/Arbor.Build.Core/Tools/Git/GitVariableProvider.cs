@@ -17,21 +17,13 @@ using Zio;
 namespace Arbor.Build.Core.Tools.Git;
 
 [UsedImplicitly]
-public class GitVariableProvider : IVariableProvider
+public class GitVariableProvider(
+    IEnvironmentVariables environmentVariables,
+    ISpecialFolders specialFolders,
+    IFileSystem fileSystem,
+    GitHelper gitHelper)
+    : IVariableProvider
 {
-    private readonly IEnvironmentVariables _environmentVariables;
-    private readonly ISpecialFolders _specialFolders;
-    private readonly IFileSystem _fileSystem;
-    private readonly GitHelper _gitHelper;
-
-    public GitVariableProvider(IEnvironmentVariables environmentVariables, ISpecialFolders specialFolders, IFileSystem fileSystem, GitHelper gitHelper)
-    {
-        _environmentVariables = environmentVariables;
-        _specialFolders = specialFolders;
-        _fileSystem = fileSystem;
-        _gitHelper = gitHelper;
-    }
-
     public int Order { get; } = -1;
 
     public async Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
@@ -53,9 +45,9 @@ public class GitVariableProvider : IVariableProvider
 
         variables.Add(new BuildVariable(WellKnownVariables.BranchLogicalName, logicalName));
 
-        if (BranchHelper.BranchNameHasVersion(branchName, _environmentVariables))
+        if (BranchHelper.BranchNameHasVersion(branchName, environmentVariables))
         {
-            string version = BranchHelper.BranchSemVerMajorMinorPatch(branchName, _environmentVariables)!.ToString();
+            string version = BranchHelper.BranchSemVerMajorMinorPatch(branchName, environmentVariables)!.ToString();
 
             logger.Debug("Branch has version {Version}", version);
 
@@ -74,7 +66,7 @@ public class GitVariableProvider : IVariableProvider
 
                 logger.Verbose("Overriding {VersionMajor} from '{V}' to '{Major}'",
                     WellKnownVariables.VersionMajor,
-                    _environmentVariables.GetEnvironmentVariable(WellKnownVariables.VersionMajor),
+                    environmentVariables.GetEnvironmentVariable(WellKnownVariables.VersionMajor),
                     major);
 
                 variables.Add(new BuildVariable(WellKnownVariables.VersionMajor, major));
@@ -83,7 +75,7 @@ public class GitVariableProvider : IVariableProvider
 
                 logger.Verbose("Overriding {VersionMinor} from '{V}' to '{Minor}'",
                     WellKnownVariables.VersionMinor,
-                    _environmentVariables.GetEnvironmentVariable(WellKnownVariables.VersionMinor),
+                    environmentVariables.GetEnvironmentVariable(WellKnownVariables.VersionMinor),
                     minor);
 
                 variables.Add(new BuildVariable(WellKnownVariables.VersionMinor, minor));
@@ -92,7 +84,7 @@ public class GitVariableProvider : IVariableProvider
 
                 logger.Verbose("Overriding {VersionPatch} from '{V}' to '{Patch}'",
                     WellKnownVariables.VersionPatch,
-                    _environmentVariables.GetEnvironmentVariable(WellKnownVariables.VersionPatch),
+                    environmentVariables.GetEnvironmentVariable(WellKnownVariables.VersionPatch),
                     patch);
 
                 variables.Add(new BuildVariable(WellKnownVariables.VersionPatch, patch));
@@ -136,7 +128,7 @@ public class GitVariableProvider : IVariableProvider
                 const string arborBuildGitCommitHashEnabled = "Arbor.Build.GitCommitHashEnabled";
 
                 string? environmentVariable =
-                    _environmentVariables.GetEnvironmentVariable(arborBuildGitCommitHashEnabled);
+                    environmentVariables.GetEnvironmentVariable(arborBuildGitCommitHashEnabled);
 
                 if (!environmentVariable
                         .ParseOrDefault(defaultValue: true))
@@ -148,7 +140,7 @@ public class GitVariableProvider : IVariableProvider
                 }
                 else
                 {
-                    UPath gitExePath = _gitHelper.GetGitExePath(logger, _specialFolders, _environmentVariables);
+                    UPath gitExePath = gitHelper.GetGitExePath(logger, specialFolders, environmentVariables);
 
                     var stringBuilder = new StringBuilder();
 
@@ -156,7 +148,7 @@ public class GitVariableProvider : IVariableProvider
                     {
                         var arguments = new List<string> {"rev-parse", "HEAD"};
 
-                        var exitCode = await ProcessRunner.ExecuteProcessAsync(_fileSystem.ConvertPathToInternal(gitExePath),
+                        var exitCode = await ProcessRunner.ExecuteProcessAsync(fileSystem.ConvertPathToInternal(gitExePath),
                             arguments,
                             (message, _) => stringBuilder.Append(message),
                             toolAction: logger.Information,

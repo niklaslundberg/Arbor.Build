@@ -10,13 +10,8 @@ using Serilog;
 namespace Arbor.Build.Core.Debugging;
 
 [UsedImplicitly]
-public class DebugVariableProvider : IVariableProvider
+public class DebugVariableProvider(IEnvironmentVariables variables) : IVariableProvider
 {
-    private readonly IEnvironmentVariables _environmentVariables;
-
-    public DebugVariableProvider(IEnvironmentVariables environmentVariables) =>
-        _environmentVariables = environmentVariables;
-
     public int Order => int.MinValue + 1;
 
     public Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
@@ -24,7 +19,7 @@ public class DebugVariableProvider : IVariableProvider
         IReadOnlyCollection<IVariable> buildVariables,
         CancellationToken cancellationToken)
     {
-        if (!DebugHelper.IsDebugging(_environmentVariables))
+        if (!DebugHelper.IsDebugging(variables))
         {
             logger.Verbose("Skipping debug variables, not running in debug mode");
             return Task.FromResult(ImmutableArray<IVariable>.Empty);

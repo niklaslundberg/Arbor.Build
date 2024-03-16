@@ -14,15 +14,9 @@ public static class ToolFinder
         ILifetimeScope lifetimeScope,
         ILogger logger)
     {
-        if (lifetimeScope == null)
-        {
-            throw new ArgumentNullException(nameof(lifetimeScope));
-        }
+        ArgumentNullException.ThrowIfNull(lifetimeScope);
 
-        if (logger == null)
-        {
-            throw new ArgumentNullException(nameof(logger));
-        }
+        ArgumentNullException.ThrowIfNull(logger);
 
         var tools = lifetimeScope.Resolve<IReadOnlyCollection<ITool>>();
 

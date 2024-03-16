@@ -1,8 +1,8 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Arbor.Build.Core;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.Logging;
+using Arbor.Build.Core.Tools.EnvironmentVariables;
 using Arbor.FS;
 using Arbor.Processing;
 using Serilog;
@@ -18,9 +18,13 @@ internal static class Program
 
     private static Task<int> Main(string[] args) => RunAsync(args);
 
-    public static async Task<int> RunAsync(string[]? args, IEnvironmentVariables? environmentVariables = default, ISpecialFolders? specialFolders = default, IFileSystem? fileSystem = default)
+    public static async Task<int> RunAsync(
+        string[]? args,
+        IEnvironmentVariables? environmentVariables = default,
+        ISpecialFolders? specialFolders = default,
+        IFileSystem? fileSystem = default)
     {
-        args ??= Array.Empty<string>();
+        args ??= [];
         environmentVariables ??= new DefaultEnvironmentVariables();
         specialFolders ??= SpecialFolders.Default;
 
@@ -37,10 +41,9 @@ internal static class Program
             {
                 ExitCode exitCode = await _app.RunAsync(args).ConfigureAwait(false);
 
-                Log.CloseAndFlush();
+                await Log.CloseAndFlushAsync();
 
                 return exitCode.Code;
-
             }
         }
     }

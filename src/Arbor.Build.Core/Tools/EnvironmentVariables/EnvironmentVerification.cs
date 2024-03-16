@@ -13,7 +13,7 @@ namespace Arbor.Build.Core.Tools.EnvironmentVariables;
 
 public abstract class EnvironmentVerification : ITool
 {
-    protected List<string> RequiredValues { get; }= new List<string>();
+    protected List<string> RequiredValues { get; }= [];
 
     protected virtual bool Enabled(IReadOnlyCollection<IVariable> buildVariables) => true;
 

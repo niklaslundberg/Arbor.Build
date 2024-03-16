@@ -7,10 +7,9 @@ namespace Arbor.Build.Core;
 
 public class EnvironmentVariables : IEnvironmentVariables
 {
-    public static readonly EnvironmentVariables Empty = new EnvironmentVariables();
+    public static readonly EnvironmentVariables Empty = new();
 
-    private readonly ConcurrentDictionary<string, string?> _pairs =
-        new ConcurrentDictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, string?> _pairs = new(StringComparer.OrdinalIgnoreCase);
 
     public string? GetEnvironmentVariable(string key) =>
         _pairs.TryGetValue(key, out string? value)

@@ -5,7 +5,7 @@ namespace Arbor.Build.Core.Logging;
 
 public static class LoggerExtensions
 {
-    public static void Log(this ILogger logger, string message, LogEventLevel level)
+    public static void Log(this ILogger? logger, string message, LogEventLevel level)
     {
         if (logger is null)
         {

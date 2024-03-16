@@ -18,17 +18,9 @@ namespace Arbor.Build.Core.Tools.Versioning;
 
 [UsedImplicitly]
 [Priority(200)]
-public class AssemblyInfoPatcher : ITool
+public class AssemblyInfoPatcher(IFileSystem fileSystem, BuildContext buildContext) : ITool
 {
     private string _filePattern = null!;
-    private readonly IFileSystem _fileSystem;
-    private readonly BuildContext _buildContext;
-
-    public AssemblyInfoPatcher(IFileSystem fileSystem, BuildContext buildContext)
-    {
-        _fileSystem = fileSystem;
-        _buildContext = buildContext;
-    }
 
     public Task<ExitCode> ExecuteAsync(
         ILogger logger,
@@ -54,7 +46,7 @@ public class AssemblyInfoPatcher : ITool
         logger.Verbose("Using assembly version file pattern '{FilePattern}' to lookup files to patch",
             _filePattern);
 
-        var sourceRoot = _buildContext.SourceRoot;
+        var sourceRoot = buildContext.SourceRoot;
 
         IVariable? netAssemblyVersionVar =
             buildVariables.SingleOrDefault(var => var.Key == WellKnownVariables.NetAssemblyVersion);
@@ -131,7 +123,7 @@ public class AssemblyInfoPatcher : ITool
             IReadOnlyCollection<AssemblyInfoFile> assemblyFiles = sourceRoot
                 .GetFilesRecursive(new[] { ".cs" }, defaultPathLookupSpecification, sourceRoot)
                 .Where(file => file.Name.Equals(_filePattern, StringComparison.OrdinalIgnoreCase))
-                .Select(file => new AssemblyInfoFile(_fileSystem.ConvertPathToInternal(file.FullName)))
+                .Select(file => new AssemblyInfoFile(fileSystem.ConvertPathToInternal(file.FullName)))
                 .ToReadOnlyCollection();
 
             logger.Debug(
@@ -139,12 +131,12 @@ public class AssemblyInfoPatcher : ITool
                 _filePattern,
                 assemblyFiles.Count,
                 Environment.NewLine,
-                string.Join(Environment.NewLine, assemblyFiles.Select(item => " * " + _fileSystem.ConvertPathToInternal(item.FullPath.ParseAsPath()))));
+                string.Join(Environment.NewLine, assemblyFiles.Select(item => " * " + fileSystem.ConvertPathToInternal(item.FullPath.ParseAsPath()))));
 
             app.Patch(
                 new AssemblyVersion(assemblyVersion),
                 new AssemblyFileVersion(assemblyFileVersion),
-                _fileSystem.ConvertPathToInternal(sourceRoot.Path),
+                fileSystem.ConvertPathToInternal(sourceRoot.Path),
                 assemblyFiles,
                 assemblyMetadata);
         }

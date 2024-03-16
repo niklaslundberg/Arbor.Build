@@ -11,15 +11,9 @@ public static class BuildStringExtensions
         IReadOnlyCollection<string> whatToFind,
         StringComparison stringComparison)
     {
-        if (value == null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
+        ArgumentNullException.ThrowIfNull(value);
 
-        if (whatToFind == null)
-        {
-            throw new ArgumentNullException(nameof(whatToFind));
-        }
+        ArgumentNullException.ThrowIfNull(whatToFind);
 
         return whatToFind.Any(current => value.StartsWith(current, stringComparison));
     }

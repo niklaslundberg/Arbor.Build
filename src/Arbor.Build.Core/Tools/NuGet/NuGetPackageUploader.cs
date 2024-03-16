@@ -24,12 +24,8 @@ namespace Arbor.Build.Core.Tools.NuGet;
 
 [Priority(850)]
 [UsedImplicitly]
-public class NuGetPackageUploader : ITool
+public class NuGetPackageUploader(IFileSystem fileSystem) : ITool
 {
-    private readonly IFileSystem _fileSystem;
-
-    public NuGetPackageUploader(IFileSystem fileSystem) => _fileSystem = fileSystem;
-
     public Task<ExitCode> ExecuteAsync(
         ILogger logger,
         IReadOnlyCollection<IVariable> buildVariables,
@@ -50,10 +46,10 @@ public class NuGetPackageUploader : ITool
 
         var artifacts = buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue().Value!.ParseAsPath();
 
-        var artifactsPath = _fileSystem.GetDirectoryEntry(artifacts);
+        var artifactsPath = fileSystem.GetDirectoryEntry(artifacts);
 
-        var packagesFolder = new DirectoryEntry(_fileSystem, UPath.Combine(artifactsPath.Path, "packages"));
-        var websitesDirectory = new DirectoryEntry(_fileSystem, UPath.Combine(artifactsPath.Path, "websites"));
+        var packagesFolder = new DirectoryEntry(fileSystem, UPath.Combine(artifactsPath.Path, "packages"));
+        var websitesDirectory = new DirectoryEntry(fileSystem, UPath.Combine(artifactsPath.Path, "websites"));
 
         UPath? nugetExe = buildVariables.Require(WellKnownVariables.ExternalTools_NuGet_ExePath)
             .ThrowIfEmptyValue().Value?.ParseAsPath();
@@ -127,14 +123,14 @@ public class NuGetPackageUploader : ITool
                 WellKnownVariables.ExternalTools_NuGetServer_ForceUploadEnabled);
         }
 
-        var filters = new PackageUploadFilter(patterns, _fileSystem);
+        var filters = new PackageUploadFilter(patterns, fileSystem);
 
         if (isRunningOnBuildAgent || forceUpload)
         {
             return UploadNuGetPackagesAsync(
                 logger,
                 packagesFolder,
-                _fileSystem.GetFileEntry(nugetExe.Value),
+                fileSystem.GetFileEntry(nugetExe.Value),
                 nugetServer,
                 nuGetServerApiKey,
                 websitePackagesUploadEnabled,
@@ -311,7 +307,7 @@ public class NuGetPackageUploader : ITool
         bool timeoutIncreaseEnabled,
         PackageUploadFilter? filter = default)
     {
-        filter ??= new PackageUploadFilter("", _fileSystem);
+        filter ??= new PackageUploadFilter("", fileSystem);
 
         var nuGetPackageFiles = new List<FileEntry>();
 
@@ -376,7 +372,7 @@ public class NuGetPackageUploader : ITool
         string files =
             string.Join(Environment.NewLine,
                 nuGetPackageFiles.Select(
-                    file => $"{_fileSystem.ConvertPathToInternal(file.Path)}: {file.Length / 1024.0:F1} KiB"));
+                    file => $"{fileSystem.ConvertPathToInternal(file.Path)}: {file.Length / 1024.0:F1} KiB"));
 
         logger.Information("Found {Count} NuGet packages to upload {Files}", nuGetPackageFiles.Count, files);
 

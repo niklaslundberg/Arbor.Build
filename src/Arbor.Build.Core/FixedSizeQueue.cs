@@ -1,24 +1,21 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
-using JetBrains.Annotations;
 
 namespace Arbor.Build.Core;
 
 public sealed class FixedSizedQueue<T>
 {
-    private readonly object _lockObject = new object();
-    private readonly ConcurrentQueue<T> _queue = new ConcurrentQueue<T>();
+    private readonly object _lockObject = new();
+    private readonly ConcurrentQueue<T> _queue = new();
 
     public int Limit { get; set; }
 
-    public void Enqueue([NotNull] T obj)
+    public void Enqueue([DisallowNull] T obj)
     {
-        if (obj == null)
-        {
-            throw new ArgumentNullException(nameof(obj));
-        }
+        ArgumentNullException.ThrowIfNull(obj);
 
         lock (_lockObject)
         {

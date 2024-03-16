@@ -16,19 +16,16 @@ public static class AssemblyFetcher
             Assembly.GetExecutingAssembly()
         };
 
-        Assembly[] appDomainAssemblies = AppDomain.CurrentDomain.GetAssemblies();
-
-        foreach (Assembly appDomainAssembly in appDomainAssemblies)
+        foreach (Assembly appDomainAssembly in AppDomain.CurrentDomain.GetAssemblies())
         {
             assemblies.Add(appDomainAssembly);
         }
 
-        string[] allowed = { ArborConstants.ArborX, ArborConstants.ArborBuild };
+        string[] allowed = [ArborConstants.ArborX, ArborConstants.ArborBuild];
 
         IEnumerable<Assembly> filtered = assemblies
             .Where(assembly =>
-                !assembly.IsDynamic
-                && assembly.FullName is object
+                assembly is { IsDynamic: false, FullName: { } }
                 && assembly.FullName.StartsWithAny(allowed, StringComparison.Ordinal));
 
         return filtered.ToImmutableHashSet();

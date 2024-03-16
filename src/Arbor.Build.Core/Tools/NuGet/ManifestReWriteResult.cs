@@ -14,10 +14,7 @@ public class ManifestReWriteResult
             throw new ArgumentNullException(nameof(usedPrefix));
         }
 
-        if (removeTags == null)
-        {
-            throw new ArgumentNullException(nameof(removeTags));
-        }
+        ArgumentNullException.ThrowIfNull(removeTags);
 
         UsedPrefix = usedPrefix;
         RewrittenNuSpec = rewrittenNuSpec;

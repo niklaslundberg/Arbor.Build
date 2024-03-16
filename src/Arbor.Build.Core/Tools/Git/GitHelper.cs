@@ -8,18 +8,11 @@ using Zio;
 
 namespace Arbor.Build.Core.Tools.Git;
 
-public class GitHelper
+public class GitHelper(IFileSystem fileSystem)
 {
-    private readonly IFileSystem _fileSystem;
-
-    public GitHelper(IFileSystem fileSystem) => _fileSystem = fileSystem;
-
     public UPath GetGitExePath(ILogger logger, ISpecialFolders specialFolders, IEnvironmentVariables environmentVariables)
     {
-        if (logger == null)
-        {
-            throw new ArgumentNullException(nameof(logger));
-        }
+        ArgumentNullException.ThrowIfNull(logger);
 
         var gitExeLocations = new List<UPath>
         {
@@ -51,10 +44,10 @@ public class GitHelper
         var exePath = gitExeLocations.FirstOrDefault(
             location =>
             {
-                bool exists = _fileSystem.FileExists(location);
+                bool exists = fileSystem.FileExists(location);
 
                 logger.Debug("Testing Git exe path '{Location}', exists: {Exists}",
-                    _fileSystem.ConvertPathToInternal(location),
+                    fileSystem.ConvertPathToInternal(location),
                     exists);
 
                 return exists;

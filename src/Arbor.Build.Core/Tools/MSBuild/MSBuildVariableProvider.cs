@@ -22,19 +22,12 @@ using Zio;
 namespace Arbor.Build.Core.Tools.MSBuild;
 
 [UsedImplicitly]
-public class MSBuildVariableProvider : IVariableProvider
+public class MSBuildVariableProvider(
+    IEnvironmentVariables environmentVariables,
+    ISpecialFolders specialFolders,
+    IFileSystem fileSystem)
+    : IVariableProvider
 {
-    private readonly IEnvironmentVariables _environmentVariables;
-    private readonly ISpecialFolders _specialFolders;
-    private readonly IFileSystem _fileSystem;
-
-    public MSBuildVariableProvider(IEnvironmentVariables environmentVariables, ISpecialFolders specialFolders, IFileSystem fileSystem)
-    {
-        _environmentVariables = environmentVariables;
-        _specialFolders = specialFolders;
-        _fileSystem = fileSystem;
-    }
-
     private async Task<ImmutableArray<IVariable>> TryGetWithVsWhereAsync(
         UPath vsWherePath,
         string command,
@@ -43,12 +36,12 @@ public class MSBuildVariableProvider : IVariableProvider
         IReadOnlyCollection<IVariable> buildVariables,
         CancellationToken cancellationToken)
     {
-        if (_fileSystem.FileExists(vsWherePath))
+        if (fileSystem.FileExists(vsWherePath))
         {
-            logger.Debug("vswhere.exe exists at '{VsWherePath}'", _fileSystem.ConvertPathToInternal(vsWherePath));
+            logger.Debug("vswhere.exe exists at '{VsWherePath}'", fileSystem.ConvertPathToInternal(vsWherePath));
 
             ExitCode versionExitCode = await ProcessHelper.ExecuteAsync(
-                _fileSystem.ConvertPathToInternal(vsWherePath),
+                fileSystem.ConvertPathToInternal(vsWherePath),
                 new List<string> { "-prerelease" },
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -69,7 +62,7 @@ public class MSBuildVariableProvider : IVariableProvider
             void StandardOutLog(string message, string _) => resultBuilder.Append(message);
 
             ExitCode exitCode = await ProcessRunner.ExecuteProcessAsync(
-                _fileSystem.ConvertPathToInternal( vsWherePath),
+                fileSystem.ConvertPathToInternal( vsWherePath),
                 vsWhereArgs,
                 StandardOutLog,
                 cancellationToken: cancellationToken,
@@ -135,16 +128,16 @@ public class MSBuildVariableProvider : IVariableProvider
                         "bin",
                         "MSBuild.exe");
 
-                    if (_fileSystem.FileExists(msbuildCurrentPath))
+                    if (fileSystem.FileExists(msbuildCurrentPath))
                     {
-                        logger.Information("Found MSBuild with vswhere.exe at '{MsbuildPath}'",  _fileSystem.ConvertPathToInternal(msbuildCurrentPath));
+                        logger.Information("Found MSBuild with vswhere.exe at '{MsbuildPath}'",  fileSystem.ConvertPathToInternal(msbuildCurrentPath));
 
                         IVariable[] variables =
-                        {
+                        [
                             new BuildVariable(
                                 WellKnownVariables.ExternalTools_MSBuild_ExePath,
-                                _fileSystem.ConvertPathToInternal(msbuildCurrentPath))
-                        };
+                                fileSystem.ConvertPathToInternal(msbuildCurrentPath))
+                        ];
 
                         return variables.ToImmutableArray();
                     }
@@ -156,16 +149,16 @@ public class MSBuildVariableProvider : IVariableProvider
                         "bin",
                         "MSBuild.exe");
 
-                    if (_fileSystem.FileExists(msbuild2017Path))
+                    if (fileSystem.FileExists(msbuild2017Path))
                     {
-                        logger.Information("Found MSBuild with vswhere.exe at '{MsbuildPath}'",  _fileSystem.ConvertPathToInternal(msbuild2017Path));
+                        logger.Information("Found MSBuild with vswhere.exe at '{MsbuildPath}'",  fileSystem.ConvertPathToInternal(msbuild2017Path));
 
                         IVariable[] variables =
-                        {
+                        [
                             new BuildVariable(
                                 WellKnownVariables.ExternalTools_MSBuild_ExePath,
-                                _fileSystem.ConvertPathToInternal(msbuild2017Path))
-                        };
+                                fileSystem.ConvertPathToInternal(msbuild2017Path))
+                        ];
 
                         return variables.ToImmutableArray();
                     }
@@ -242,23 +235,23 @@ public class MSBuildVariableProvider : IVariableProvider
         }
 
         var vsWherePath = UPath.Combine(
-            _specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86).ParseAsPath(),
+            specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86).ParseAsPath(),
             "Microsoft Visual Studio",
             "Installer",
             "vswhere.exe");
 
-        if (_fileSystem.FileExists(vsWherePath))
+        if (fileSystem.FileExists(vsWherePath))
         {
-            ImmutableArray<IVariable> variables = await TryGetWithVsWhereAsync(vsWherePath,
+            ImmutableArray<IVariable> variables1 = await TryGetWithVsWhereAsync(vsWherePath,
                 "-requires",
                 "Microsoft.Component.MSBuild",
                 logger,
                 buildVariables,
                 cancellationToken).ConfigureAwait(false);
 
-            if (variables.Any())
+            if (variables1.Any())
             {
-                return variables;
+                return variables1;
             }
 
             ImmutableArray<IVariable> variablesForTools = await TryGetWithVsWhereAsync(vsWherePath,
@@ -275,9 +268,9 @@ public class MSBuildVariableProvider : IVariableProvider
         }
 
         UPath[] possiblePaths =
-        {
+        [
             UPath.Combine(
-                _specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFiles).ParseAsPath(),
+                specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFiles).ParseAsPath(),
                 "Microsoft Visual Studio",
                 "2022",
                 "Enterprise",
@@ -287,7 +280,7 @@ public class MSBuildVariableProvider : IVariableProvider
                 "MSBuild.exe"),
 
             UPath.Combine(
-                _specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFiles).ParseAsPath(),
+                specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFiles).ParseAsPath(),
                 "Microsoft Visual Studio",
                 "2022",
                 "Professional",
@@ -297,7 +290,7 @@ public class MSBuildVariableProvider : IVariableProvider
                 "MSBuild.exe"),
 
             UPath.Combine(
-                _specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFiles).ParseAsPath(),
+                specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFiles).ParseAsPath(),
                 "Microsoft Visual Studio",
                 "2022",
                 "Community",
@@ -307,7 +300,7 @@ public class MSBuildVariableProvider : IVariableProvider
                 "MSBuild.exe"),
 
             UPath.Combine(
-                _specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFiles).ParseAsPath(),
+                specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFiles).ParseAsPath(),
                 "Microsoft Visual Studio",
                 "2022",
                 "BuildTools",
@@ -317,7 +310,7 @@ public class MSBuildVariableProvider : IVariableProvider
                 "MSBuild.exe"),
 
             UPath.Combine(
-                _specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86).ParseAsPath(),
+                specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86).ParseAsPath(),
                 "Microsoft Visual Studio",
                 "2019",
                 "Enterprise",
@@ -327,7 +320,7 @@ public class MSBuildVariableProvider : IVariableProvider
                 "MSBuild.exe"),
 
             UPath.Combine(
-                _specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86).ParseAsPath(),
+                specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86).ParseAsPath(),
                 "Microsoft Visual Studio",
                 "2019",
                 "Professional",
@@ -337,7 +330,7 @@ public class MSBuildVariableProvider : IVariableProvider
                 "MSBuild.exe"),
 
             UPath.Combine(
-                _specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86).ParseAsPath(),
+                specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86).ParseAsPath(),
                 "Microsoft Visual Studio",
                 "2019",
                 "Community",
@@ -347,7 +340,7 @@ public class MSBuildVariableProvider : IVariableProvider
                 "MSBuild.exe"),
 
             UPath.Combine(
-                _specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86).ParseAsPath(),
+                specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86).ParseAsPath(),
                 "Microsoft Visual Studio",
                 "2019",
                 "BuildTools",
@@ -357,7 +350,7 @@ public class MSBuildVariableProvider : IVariableProvider
                 "MSBuild.exe"),
 
             UPath.Combine(
-                _specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86).ParseAsPath(),
+                specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86).ParseAsPath(),
                 "Microsoft Visual Studio",
                 "2017",
                 "Enterprise",
@@ -367,7 +360,7 @@ public class MSBuildVariableProvider : IVariableProvider
                 "MSBuild.exe"),
 
             UPath.Combine(
-                _specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
                 "Microsoft Visual Studio",
                 "2017",
                 "Professional",
@@ -377,7 +370,7 @@ public class MSBuildVariableProvider : IVariableProvider
                 "MSBuild.exe"),
 
             UPath.Combine(
-                _specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
                 "Microsoft Visual Studio",
                 "2017",
                 "Community",
@@ -387,7 +380,7 @@ public class MSBuildVariableProvider : IVariableProvider
                 "MSBuild.exe"),
 
             UPath.Combine(
-                _specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
                 "Microsoft Visual Studio",
                 "2017",
                 "BuildTools",
@@ -395,25 +388,25 @@ public class MSBuildVariableProvider : IVariableProvider
                 "15.0",
                 "bin",
                 "MSBuild.exe")
-        };
+        ];
 
-        var fileBasedLookupResultPath = possiblePaths.FirstOrDefault(_fileSystem.FileExists);
+        var fileBasedLookupResultPath = possiblePaths.FirstOrDefault(fileSystem.FileExists);
 
         if (!fileBasedLookupResultPath.IsEmpty)
         {
-            logger.Information("Found MSBuild at '{FileBasedLookupResultPath}'", _fileSystem.ConvertPathToInternal(fileBasedLookupResultPath));
+            logger.Information("Found MSBuild at '{FileBasedLookupResultPath}'", fileSystem.ConvertPathToInternal(fileBasedLookupResultPath));
 
-            IVariable[] variables =
-            {
+            IVariable[] variables2 =
+            [
                 new BuildVariable(
                     WellKnownVariables.ExternalTools_MSBuild_ExePath,
-                    _fileSystem.ConvertPathToInternal(fileBasedLookupResultPath.FullName))
-            };
+                    fileSystem.ConvertPathToInternal(fileBasedLookupResultPath.FullName))
+            ];
 
-            return variables.ToImmutableArray();
+            return variables2.ToImmutableArray();
         }
 
-        logger.Debug("Could not find MSBuild.exe in any of paths {Paths}", possiblePaths.Select(path => _fileSystem.ConvertPathToInternal(path)).ToArray());
+        logger.Debug("Could not find MSBuild.exe in any of paths {Paths}", possiblePaths.Select(path => fileSystem.ConvertPathToInternal(path)).ToArray());
 
         string? foundPath = null;
 
@@ -467,12 +460,12 @@ public class MSBuildVariableProvider : IVariableProvider
         if (string.IsNullOrWhiteSpace(foundPath))
         {
             const string msbuildPath = "MSBUILD_PATH";
-            string? fromEnvironmentVariable = _environmentVariables.GetEnvironmentVariable(msbuildPath);
+            string? fromEnvironmentVariable = environmentVariables.GetEnvironmentVariable(msbuildPath);
 
             if (!string.IsNullOrWhiteSpace(fromEnvironmentVariable))
             {
                 logger.Information("Using MSBuild exe path '{FoundPath}' from environment variable {MsbuildPath}",
-                    _fileSystem.ConvertPathToInternal(fromEnvironmentVariable.ParseAsPath()),
+                    fileSystem.ConvertPathToInternal(fromEnvironmentVariable.ParseAsPath()),
                     msbuildPath);
                 foundPath = fromEnvironmentVariable;
             }
@@ -484,17 +477,17 @@ public class MSBuildVariableProvider : IVariableProvider
             }
         }
 
-        logger.Information("Using MSBuild exe path '{FoundPath}'", _fileSystem.ConvertPathToInternal(foundPath.ParseAsPath()));
+        logger.Information("Using MSBuild exe path '{FoundPath}'", fileSystem.ConvertPathToInternal(foundPath.ParseAsPath()));
 
-        IVariable[] environmentVariables =
-        {
+        IVariable[] variables =
+        [
             new BuildVariable(
                 WellKnownVariables.ExternalTools_MSBuild_ExePath,
-                _fileSystem.ConvertPathToInternal(foundPath.ParseAsPath()))
-        };
+                fileSystem.ConvertPathToInternal(foundPath.ParseAsPath()))
+        ];
 
 #pragma warning restore CA1416 // Validate platform compatibility
 
-        return environmentVariables.ToImmutableArray();
+        return variables.ToImmutableArray();
     }
 }

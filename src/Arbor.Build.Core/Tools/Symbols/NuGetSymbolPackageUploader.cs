@@ -17,12 +17,8 @@ namespace Arbor.Build.Core.Tools.Symbols;
 
 [Priority(800)]
 [UsedImplicitly]
-public class NuGetSymbolPackageUploader : ITool
+public class NuGetSymbolPackageUploader(IFileSystem fileSystem) : ITool
 {
-    private readonly IFileSystem _fileSystem;
-
-    public NuGetSymbolPackageUploader(IFileSystem fileSystem) => _fileSystem = fileSystem;
-
     public Task<ExitCode> ExecuteAsync(
         ILogger logger,
         IReadOnlyCollection<IVariable> buildVariables,
@@ -40,7 +36,7 @@ public class NuGetSymbolPackageUploader : ITool
 
         var artifacts = buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue().Value!.ParseAsPath();
 
-        var packagesFolder = new DirectoryEntry(_fileSystem, UPath.Combine(artifacts, "packages"));
+        var packagesFolder = new DirectoryEntry(fileSystem, UPath.Combine(artifacts, "packages"));
 
         if (!packagesFolder.Exists)
         {

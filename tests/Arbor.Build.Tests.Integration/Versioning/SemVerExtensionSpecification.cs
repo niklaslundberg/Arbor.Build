@@ -9,11 +9,11 @@ public class SemVerExtensionSpecification
 {
     public static IEnumerable<object[]> Data()
     {
-        yield return new object[] { "1.2.3-abc", "abc" };
-        yield return new object[] { "1.2.3-build00001", "build00001" };
-        yield return new object[] { "1.2.3-abc+123", "abc+123" };
-        yield return new object[] { "1.2.3-abc.1.2.3+def", "abc.1.2.3+def" };
-        yield return new object[] { "1.2.3-build.4", "build.4" };
+        yield return ["1.2.3-abc", "abc"];
+        yield return ["1.2.3-build00001", "build00001"];
+        yield return ["1.2.3-abc+123", "abc+123"];
+        yield return ["1.2.3-abc.1.2.3+def", "abc.1.2.3+def"];
+        yield return ["1.2.3-build.4", "build.4"];
     }
 
     [Theory]

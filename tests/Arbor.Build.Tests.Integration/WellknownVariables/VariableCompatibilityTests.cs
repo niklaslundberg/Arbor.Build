@@ -8,12 +8,8 @@ using Xunit.Abstractions;
 
 namespace Arbor.Build.Tests.Integration.WellknownVariables;
 
-public class VariableCompatibilityTests
+public class VariableCompatibilityTests(ITestOutputHelper testOutputHelper)
 {
-    public VariableCompatibilityTests(ITestOutputHelper testOutputHelper) => output = testOutputHelper;
-
-    readonly ITestOutputHelper output;
-
     [Fact]
     public void ArborXShouldBeTranslatedToArborBuild()
     {
@@ -23,7 +19,7 @@ public class VariableCompatibilityTests
 
         foreach (var variable in variables)
         {
-            output.WriteLine(variable.Key + ": " + variable.Value);
+            testOutputHelper.WriteLine(variable.Key + ": " + variable.Value);
         }
 
         Assert.Equal(4, variables.Count);

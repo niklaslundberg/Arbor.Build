@@ -15,12 +15,9 @@ using Zio;
 namespace Arbor.Build.Core.Tools.VisualStudio;
 
 [UsedImplicitly]
-public class VisualStudioVariableProvider : IVariableProvider
+public class VisualStudioVariableProvider(IFileSystem fileSystem) : IVariableProvider
 {
     private bool _allowPreReleaseVersions;
-    private readonly IFileSystem _fileSystem;
-
-    public VisualStudioVariableProvider(IFileSystem fileSystem) => _fileSystem = fileSystem;
 
     public int Order => VariableProviderOrder.Ignored;
 
@@ -118,7 +115,7 @@ public class VisualStudioVariableProvider : IVariableProvider
                 "TestWindow",
                 "vstest.console.exe");
 
-            if (!_fileSystem.FileExists(exePath))
+            if (!fileSystem.FileExists(exePath))
             {
                 throw new InvalidOperationException($"The file '{exePath}' does not exist");
             }

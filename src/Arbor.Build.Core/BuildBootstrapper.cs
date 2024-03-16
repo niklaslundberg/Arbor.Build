@@ -7,6 +7,7 @@ using Arbor.Build.Core.Assemblies;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.GenericExtensions;
 using Arbor.Build.Core.Logging;
+using Arbor.Defensive.Collections;
 using Autofac;
 using Autofac.Core;
 using Autofac.Util;
@@ -22,10 +23,7 @@ public static class BuildBootstrapper
         ISpecialFolders specialFolders,
         DirectoryEntry? sourceDirectory = null)
     {
-        if (logger == null)
-        {
-            throw new ArgumentNullException(nameof(logger));
-        }
+        ArgumentNullException.ThrowIfNull(logger);
 
         var builder = new ContainerBuilder();
 
@@ -73,8 +71,8 @@ public static class BuildBootstrapper
                         type.IsConcretePublicClassImplementing<IModule>()
                         && type.HasSingleDefaultConstructor()))
             .Select(type => Activator.CreateInstance(type) as IModule)
-            .Where(module => module != null)
-            .ToArray()!;
+            .NotNull()
+            .ToArray();
 
         return modules;
     }

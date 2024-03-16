@@ -14,12 +14,9 @@ using Serilog;
 namespace Arbor.Build.Core.Tools.Versioning;
 
 [UsedImplicitly]
-public class BuildConfigurationProvider : IVariableProvider
+public class BuildConfigurationProvider(BuildContext buildContext) : IVariableProvider
 {
     public const int ProviderOrder = 10;
-    private readonly BuildContext _buildContext;
-
-    public BuildConfigurationProvider(BuildContext buildContext) => _buildContext = buildContext;
 
     public int Order => ProviderOrder;
 
@@ -34,7 +31,7 @@ public class BuildConfigurationProvider : IVariableProvider
         {
             variables.Add(new FunctionVariable(
                 WellKnownVariables.CurrentBuildConfiguration,
-                () => _buildContext.CurrentBuildConfiguration?.Configuration));
+                () => buildContext.CurrentBuildConfiguration?.Configuration));
         }
 
         bool? releaseEnabled = buildVariables.GetOptionalBooleanByKey(WellKnownVariables.ReleaseBuildEnabled);
@@ -42,28 +39,28 @@ public class BuildConfigurationProvider : IVariableProvider
         bool? debugEnabled =
             buildVariables.GetOptionalBooleanByKey(WellKnownVariables.DebugBuildEnabled);
 
-        _buildContext.Configurations.AddRange(buildVariables.GetVariableValueOrDefault(WellKnownVariables.Configurations, "")!
+        buildContext.Configurations.AddRange(buildVariables.GetVariableValueOrDefault(WellKnownVariables.Configurations, "")!
             .Split(';', StringSplitOptions.RemoveEmptyEntries)
             .Select(value => value.Trim())
             .Where(value => !string.IsNullOrWhiteSpace(value)));
 
-        if (_buildContext.Configurations.Count == 0)
+        if (buildContext.Configurations.Count == 0)
         {
             if (releaseEnabled == true)
             {
-                _buildContext.Configurations.Add(WellKnownConfigurations.Release);
+                buildContext.Configurations.Add(WellKnownConfigurations.Release);
             }
 
             if (debugEnabled == true)
             {
-                _buildContext.Configurations.Add(WellKnownConfigurations.Debug);
+                buildContext.Configurations.Add(WellKnownConfigurations.Debug);
             }
         }
 
-        if (_buildContext.Configurations.Count == 0)
+        if (buildContext.Configurations.Count == 0)
         {
             string configuration = GetConfiguration(buildVariables);
-            _buildContext.Configurations.Add(configuration);
+            buildContext.Configurations.Add(configuration);
         }
 
         return Task.FromResult(variables.ToImmutableArray());

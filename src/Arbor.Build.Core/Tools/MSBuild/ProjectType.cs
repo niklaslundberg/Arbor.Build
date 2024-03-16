@@ -34,12 +34,7 @@ public sealed class ProjectType : IEquatable<ProjectType>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
-        {
-            return true;
-        }
-
-        return Id.Equals(other.Id);
+        return ReferenceEquals(this, other) || Id.Equals(other.Id);
     }
 
     public override bool Equals(object? obj)
@@ -54,12 +49,7 @@ public sealed class ProjectType : IEquatable<ProjectType>
             return true;
         }
 
-        if (obj.GetType() != GetType())
-        {
-            return false;
-        }
-
-        return Equals((ProjectType)obj);
+        return obj.GetType() == GetType() && Equals((ProjectType)obj);
     }
 
     public override int GetHashCode() => Id.GetHashCode();

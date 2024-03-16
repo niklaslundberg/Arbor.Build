@@ -21,7 +21,7 @@ public static class EnvironmentVariableHelper
         List<IVariable>? existingItems = null)
     {
         logger ??= Logger.None ?? throw new ArgumentNullException(nameof(logger));
-        List<IVariable> existing = existingItems ?? new List<IVariable>();
+        List<IVariable> existing = existingItems ?? [];
         var buildVariables = new List<IVariable>();
 
         var variables = environmentVariables.GetVariables()
@@ -62,10 +62,7 @@ public static class EnvironmentVariableHelper
         string fileName,
         DirectoryEntry sourceRoot)
     {
-        if (logger == null)
-        {
-            throw new ArgumentNullException(nameof(logger));
-        }
+        ArgumentNullException.ThrowIfNull(logger);
 
         var file = new FileEntry(sourceRoot.FileSystem, sourceRoot.Path / fileName);
 

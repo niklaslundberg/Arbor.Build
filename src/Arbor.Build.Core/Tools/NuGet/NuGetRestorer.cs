@@ -17,17 +17,8 @@ namespace Arbor.Build.Core.Tools.NuGet;
 
 [Priority(101)]
 [UsedImplicitly]
-public class NuGetRestorer : ITool
+public class NuGetRestorer(IFileSystem fileSystem, BuildContext buildContext) : ITool
 {
-    private readonly IFileSystem _fileSystem;
-    private readonly BuildContext _buildContext;
-
-    public NuGetRestorer(IFileSystem fileSystem, BuildContext buildContext)
-    {
-        _fileSystem = fileSystem;
-        _buildContext = buildContext;
-    }
-
     public async Task<ExitCode> ExecuteAsync(
         ILogger logger,
         IReadOnlyCollection<IVariable> buildVariables,
@@ -46,13 +37,13 @@ public class NuGetRestorer : ITool
         var nugetExePath =
             buildVariables.GetVariable(WellKnownVariables.ExternalTools_NuGet_ExePath).GetValueOrThrow().ParseAsPath();
 
-        FileEntry[] solutionFiles = _buildContext.SourceRoot.GetFiles( "*.sln", SearchOption.AllDirectories).ToArray();
+        FileEntry[] solutionFiles = buildContext.SourceRoot.GetFiles( "*.sln", SearchOption.AllDirectories).ToArray();
 
         PathLookupSpecification pathLookupSpecification =
             DefaultPaths.DefaultPathLookupSpecification.AddExcludedDirectorySegments(new[] { "node_modules" });
 
         var excludeListStatus = solutionFiles
-            .Select(file => new { File = file, Status = pathLookupSpecification.IsFileExcluded(file, _buildContext.SourceRoot) })
+            .Select(file => new { File = file, Status = pathLookupSpecification.IsFileExcluded(file, buildContext.SourceRoot) })
             .ToArray();
 
         FileEntry[] included = excludeListStatus
@@ -82,15 +73,15 @@ public class NuGetRestorer : ITool
         {
             logger.Warning("Found not allowed solution files: {Files}",
                 string.Join(", ",
-                    excluded.Select(excludedItem => $"{_fileSystem.ConvertPathToInternal(excludedItem.File.Path)} ({excludedItem.Status.Item2})")));
+                    excluded.Select(excludedItem => $"{fileSystem.ConvertPathToInternal(excludedItem.File.Path)} ({excludedItem.Status.Item2})")));
         }
 
         var solutionFile = included.Single();
 
-        var arguments = new List<string> { "restore", _fileSystem.ConvertPathToInternal(solutionFile.Path) };
+        var arguments = new List<string> { "restore", fileSystem.ConvertPathToInternal(solutionFile.Path) };
 
         ExitCode result = await ProcessHelper.ExecuteAsync(
-            _fileSystem.ConvertPathToInternal(nugetExePath),
+            fileSystem.ConvertPathToInternal(nugetExePath),
             arguments,
             logger,
             cancellationToken: cancellationToken).ConfigureAwait(false);

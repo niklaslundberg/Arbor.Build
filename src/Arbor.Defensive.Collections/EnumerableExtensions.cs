@@ -8,10 +8,7 @@ public static class EnumerableExtensions
 {
     public static ImmutableArray<T> ToReadOnlyCollection<T>(this IEnumerable<T> enumerable)
     {
-        if (enumerable is null)
-        {
-            throw new ArgumentNullException(nameof(enumerable));
-        }
+        ArgumentNullException.ThrowIfNull(enumerable);
 
         if (enumerable is ImmutableArray<T> array)
         {

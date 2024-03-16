@@ -20,17 +20,8 @@ namespace Arbor.Build.Core.Tools.NuGet;
 
 [Priority(101)]
 [UsedImplicitly]
-public class MsBuildNuGetRestorer : ITool
+public class MsBuildNuGetRestorer(IFileSystem fileSystem, BuildContext buildContext) : ITool
 {
-    private readonly IFileSystem _fileSystem;
-    private readonly BuildContext _buildContext;
-
-    public MsBuildNuGetRestorer(IFileSystem fileSystem, BuildContext buildContext)
-    {
-        _fileSystem = fileSystem;
-        _buildContext = buildContext;
-    }
-
     private static Logger CreateProcessLogger(
         ILogger logger,
         List<(string Message, LogEventLevel Level)> allMessages,
@@ -66,7 +57,7 @@ public class MsBuildNuGetRestorer : ITool
         var msbuildExePath = buildVariables.GetVariable(WellKnownVariables.ExternalTools_MSBuild_ExePath)
             .GetValueOrThrow().ParseAsPath();
 
-        DirectoryEntry rootPath = _buildContext.SourceRoot;
+        DirectoryEntry rootPath = buildContext.SourceRoot;
 
         FileEntry[] solutionFiles = rootPath.EnumerateFiles("*.sln", SearchOption.AllDirectories).ToArray();
 
@@ -91,7 +82,7 @@ public class MsBuildNuGetRestorer : ITool
             logger.Error(
                 "Expected exactly 1 solution file, found {Length}, {SolutionFiles}",
                 included.Length,
-                string.Join(", ", included.Select(fi => _fileSystem.ConvertPathToInternal(fi.Path))));
+                string.Join(", ", included.Select(fi => fileSystem.ConvertPathToInternal(fi.Path))));
             return ExitCode.Failure;
         }
 
@@ -125,13 +116,13 @@ public class MsBuildNuGetRestorer : ITool
 
         ExitCode exitCode;
 
-        List<(string Message, LogEventLevel Level)> allMessages = new List<(string, LogEventLevel)>();
-        List<(string Message, LogEventLevel Level)> defaultMessages = new List<(string, LogEventLevel)>();
+        List<(string Message, LogEventLevel Level)> allMessages = [];
+        List<(string Message, LogEventLevel Level)> defaultMessages = [];
 
         using (Logger processLogger = CreateProcessLogger(logger, allMessages, defaultMessages))
         {
             exitCode = await ProcessHelper.ExecuteAsync(
-                _fileSystem.ConvertPathToInternal(msbuildExePath),
+                fileSystem.ConvertPathToInternal(msbuildExePath),
                 arguments,
                 processLogger,
                 cancellationToken: cancellationToken).ConfigureAwait(false);

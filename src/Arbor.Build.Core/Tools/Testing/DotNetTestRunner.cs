@@ -20,17 +20,9 @@ namespace Arbor.Build.Core.Tools.Testing;
 
 [Priority(400)]
 [UsedImplicitly]
-public class DotNetTestRunner : ITestRunnerTool
+public class DotNetTestRunner(BuildContext buildContext, IFileSystem fileSystem) : ITestRunnerTool
 {
     private const string AnyConfiguration = "[Any]";
-    private readonly BuildContext _buildContext;
-    private readonly IFileSystem _fileSystem;
-
-    public DotNetTestRunner(BuildContext buildContext, IFileSystem fileSystem)
-    {
-        _buildContext = buildContext;
-        _fileSystem = fileSystem;
-    }
 
     public async Task<ExitCode> ExecuteAsync(
         ILogger logger,
@@ -72,9 +64,9 @@ public class DotNetTestRunner : ITestRunnerTool
         {
             configuration = WellKnownConfigurations.Release;
         }
-        else if (_buildContext.Configurations.Count == 1)
+        else if (buildContext.Configurations.Count == 1)
         {
-            configuration = _buildContext.Configurations.Single();
+            configuration = buildContext.Configurations.Single();
         }
         else
         {
@@ -97,17 +89,17 @@ public class DotNetTestRunner : ITestRunnerTool
 
         var dotNetExePath = dotNetExePathValue.ParseAsPath();
 
-        logger.Debug("Using dotnet.exe in path '{DotNetExePath}'", _fileSystem.ConvertPathToInternal(dotNetExePath));
+        logger.Debug("Using dotnet.exe in path '{DotNetExePath}'", fileSystem.ConvertPathToInternal(dotNetExePath));
 
         var candidateProjects =
-            _buildContext.SourceRoot.GetFilesRecursive(new List<string> {".csproj"},
-                    DefaultPaths.DefaultPathLookupSpecification, _buildContext.SourceRoot)
+            buildContext.SourceRoot.GetFilesRecursive(new List<string> {".csproj"},
+                    DefaultPaths.DefaultPathLookupSpecification, buildContext.SourceRoot)
                 .Where(file =>
                     assemblyFilePrefix.Length == 0 || assemblyFilePrefix.Any(prefix =>
                         file.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
                 .ToArray();
 
-        List<FileEntry> testProjects = new();
+        List<FileEntry> testProjects = [];
 
         async Task IsTestProject(FileEntry fileEntry)
         {
@@ -141,7 +133,7 @@ public class DotNetTestRunner : ITestRunnerTool
             var directoryEntry = testProject;
             string xmlReportName = $"dotnet.{directoryEntry.Name}.trx";
 
-            var arguments = new List<string> {"test", _fileSystem.ConvertPathToInternal(testProject.Path)};
+            var arguments = new List<string> {"test", fileSystem.ConvertPathToInternal(testProject.Path)};
 
             if (!configuration.Equals(AnyConfiguration, StringComparison.OrdinalIgnoreCase))
             {
@@ -154,17 +146,17 @@ public class DotNetTestRunner : ITestRunnerTool
 
             var reportFile = UPath.Combine(reportPath.Value!.ParseAsPath(), "dotnet", xmlReportName);
 
-            var reportFileEntry = new FileEntry(_fileSystem, reportFile);
+            var reportFileEntry = new FileEntry(fileSystem, reportFile);
             reportFileEntry.Directory.EnsureExists();
 
             if (xmlEnabled)
             {
                 arguments.Add(
-                    $"--logger:trx;LogFileName={_fileSystem.ConvertPathToInternal(reportFileEntry.FullName)}");
+                    $"--logger:trx;LogFileName={fileSystem.ConvertPathToInternal(reportFileEntry.FullName)}");
             }
 
             var result = await ProcessRunner.ExecuteProcessAsync(
-                _fileSystem.ConvertPathToInternal(dotNetExePath),
+                fileSystem.ConvertPathToInternal(dotNetExePath),
                 arguments,
                 logger.Information,
                 logger.Error,

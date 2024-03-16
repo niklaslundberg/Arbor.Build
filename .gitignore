@@ -204,3 +204,5 @@ _patchedAssemblyInfos
 **/ncruncherror
 .cr/**/*
 **/*_copy.rewrite.nuspec
+**/*ncrunchsolution
+**/*ncrunchproject

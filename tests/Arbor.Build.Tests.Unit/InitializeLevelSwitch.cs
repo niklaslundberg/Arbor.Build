@@ -36,7 +36,7 @@ public class InitializeLevelSwitch
     [Fact]
     public void WhenUsingInvvalidLogLevelArgumentItShouldInitializeWithSuppliedLevel()
     {
-        string[] args = { $"{WellKnownVariables.LogLevel}=" };
+        string[] args = [$"{WellKnownVariables.LogLevel}="];
         LoggingLevelSwitch loggingLevelSwitch = LogLevelHelper.GetLevelSwitch(args, EnvironmentVariables.Empty);
 
         Assert.NotNull(loggingLevelSwitch);
@@ -46,7 +46,7 @@ public class InitializeLevelSwitch
     [Fact]
     public void WhenUsingLogLevelArgumentItShouldInitializeWithSuppliedLevel()
     {
-        string[] args = { $"{WellKnownVariables.LogLevel}=Debug" };
+        string[] args = [$"{WellKnownVariables.LogLevel}=Debug"];
         LoggingLevelSwitch loggingLevelSwitch = LogLevelHelper.GetLevelSwitch(args, EnvironmentVariables.Empty);
 
         Assert.NotNull(loggingLevelSwitch);

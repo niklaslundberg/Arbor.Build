@@ -10,12 +10,9 @@ using Zio;
 namespace Arbor.Build.Core.BuildVariables;
 
 [UsedImplicitly]
-public class SourceRootBuildVariableValueProvider : IVariableProvider
+public class SourceRootBuildVariableValueProvider(SourceRootValue? sourceDirectory = null) : IVariableProvider
 {
-    private readonly DirectoryEntry? _sourceDirectory;
-
-    public SourceRootBuildVariableValueProvider(SourceRootValue? sourceDirectory = null) =>
-        _sourceDirectory = sourceDirectory?.SourceRoot;
+    private readonly DirectoryEntry? _sourceDirectory = sourceDirectory?.SourceRoot;
 
     public int Order => int.MinValue;
 

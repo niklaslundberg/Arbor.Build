@@ -86,8 +86,8 @@ public class ManifestRewriterTests
 
     public static IEnumerable<object[]> GetFileSystemsData()
     {
-        yield return new object[] {new MemoryFileSystem()};
-        yield return new object[] {new PhysicalFileSystem()};
+        yield return [new MemoryFileSystem()];
+        yield return [new PhysicalFileSystem()];
     }
 
     [MemberData(nameof(GetFileSystemsData))]

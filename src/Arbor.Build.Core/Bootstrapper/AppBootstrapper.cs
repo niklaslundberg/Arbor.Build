@@ -25,29 +25,19 @@ using Zio;
 
 namespace Arbor.Build.Core.Bootstrapper;
 
-public class AppBootstrapper
+public class AppBootstrapper(ILogger logger, IEnvironmentVariables environmentVariables, IFileSystem fileSystem)
 {
     private const string BuildToolPackageName = ArborConstants.ArborBuild;
     private const int MaxBuildTimeInSeconds = 900;
     private static readonly string Prefix = $"[{ArborConstants.ArborBuild}.{nameof(AppBootstrapper)}] ";
-    private readonly ILogger _logger;
     private bool _directoryCloneEnabled;
 
     private bool _failed;
     private BootstrapStartOptions _startOptions = null!;
-    private readonly IEnvironmentVariables _environmentVariables;
-    private readonly IFileSystem _fileSystem;
-
-    public AppBootstrapper(ILogger logger, IEnvironmentVariables environmentVariables, IFileSystem fileSystem)
-    {
-        _logger = logger;
-        _environmentVariables = environmentVariables;
-        _fileSystem = fileSystem;
-    }
 
     public async Task<ExitCode> StartAsync(string[] args)
     {
-        _logger.Information("Running Arbor.Build Bootstrapper process id {ProcessId}, executable {Executable}",
+        logger.Information("Running Arbor.Build Bootstrapper process id {ProcessId}, executable {Executable}",
             Environment.ProcessId,
             typeof(AppBootstrapper).Assembly.Location);
 
@@ -64,7 +54,7 @@ public class AppBootstrapper
 
         ExitCode exitCode = await StartAsync(startOptions).ConfigureAwait(false);
 
-        _logger.Debug("Bootstrapper exit code: {ExitCode}", exitCode);
+        logger.Debug("Bootstrapper exit code: {ExitCode}", exitCode);
 
         if (_failed)
         {
@@ -95,26 +85,26 @@ public class AppBootstrapper
         {
             stopwatch.Stop();
             exitCode = ExitCode.Failure;
-            _logger.Error(ex, "{Prefix}", Prefix);
+            logger.Error(ex, "{Prefix}", Prefix);
 
             foreach (Exception innerEx in ex.InnerExceptions)
             {
-                _logger.Error(innerEx, "{Prefix}", Prefix);
+                logger.Error(innerEx, "{Prefix}", Prefix);
             }
         }
         catch (Exception ex)
         {
             stopwatch.Stop();
             exitCode = ExitCode.Failure;
-            _logger.Error(ex, "{Prefix} Could not start process", Prefix);
+            logger.Error(ex, "{Prefix} Could not start process", Prefix);
         }
 
-        bool parsed = _environmentVariables.GetEnvironmentVariable(WellKnownVariables.BootstrapperExitDelayInMilliseconds)
+        bool parsed = environmentVariables.GetEnvironmentVariable(WellKnownVariables.BootstrapperExitDelayInMilliseconds)
             .TryParseInt32(out int exitDelayInMilliseconds);
 
         if (parsed && exitDelayInMilliseconds > 0)
         {
-            _logger.Information(
+            logger.Information(
                 "Delaying bootstrapper exit with {ExitDelayInMilliseconds} milliseconds as specified in '{BootstrapperExitDelayInMilliseconds}'",
                 exitDelayInMilliseconds,
                 WellKnownVariables.BootstrapperExitDelayInMilliseconds);
@@ -122,7 +112,7 @@ public class AppBootstrapper
             await Task.Delay(TimeSpan.FromMilliseconds(exitDelayInMilliseconds)).ConfigureAwait(false);
         }
 
-        _logger.Information(
+        logger.Information(
             "Arbor.Build.Bootstrapper total inclusive Arbor.Build elapsed time in seconds: {ElapsedSeconds}",
             stopwatch.Elapsed.TotalSeconds.ToString("F", CultureInfo.InvariantCulture));
 
@@ -193,9 +183,9 @@ public class AppBootstrapper
     {
         var startOptions = BootstrapStartOptions.Parse(args);
 
-        var baseDir = new DirectoryEntry(_fileSystem, (VcsPathHelper.FindVcsRootPath(AppContext.BaseDirectory) ?? throw new InvalidOperationException("Could not get base directory")).ParseAsPath());
+        var baseDir = new DirectoryEntry(fileSystem, (VcsPathHelper.FindVcsRootPath(AppContext.BaseDirectory) ?? throw new InvalidOperationException("Could not get base directory")).ParseAsPath());
 
-        var tempDirectory = new DirectoryEntry(_fileSystem, UPath.Combine(
+        var tempDirectory = new DirectoryEntry(fileSystem, UPath.Combine(
             Path.GetTempPath().ParseAsPath(),
             $"{DefaultPaths.TempPathPrefix}_Boot_Debug",
             DateTime.Now.ToString("yyyyMMddHHmmssfff", CultureInfo.InvariantCulture)));
@@ -208,8 +198,8 @@ public class AppBootstrapper
 
         await DirectoryCopy.CopyAsync(baseDir, tempDirectory, pathLookupSpecificationOption: paths).ConfigureAwait(false);
 
-        _environmentVariables.SetEnvironmentVariable(WellKnownVariables.BranchNameVersionOverrideEnabled, "true");
-        _environmentVariables.SetEnvironmentVariable(WellKnownVariables.VariableOverrideEnabled, "true");
+        environmentVariables.SetEnvironmentVariable(WellKnownVariables.BranchNameVersionOverrideEnabled, "true");
+        environmentVariables.SetEnvironmentVariable(WellKnownVariables.VariableOverrideEnabled, "true");
 
         var bootstrapStartOptions = new BootstrapStartOptions(
             args,
@@ -227,26 +217,26 @@ public class AppBootstrapper
     private void WriteDebug(string message)
     {
         Debug.WriteLine(Prefix + message);
-        _logger.Debug("{Prefix}{Message}", Prefix, message);
+        logger.Debug("{Prefix}{Message}", Prefix, message);
     }
 
     private void SetEnvironmentVariables()
     {
         if (!string.IsNullOrWhiteSpace(_startOptions.BaseDir?.FullName) && _startOptions.BaseDir.Exists)
         {
-            _environmentVariables.SetEnvironmentVariable(WellKnownVariables.SourceRoot, _fileSystem.ConvertPathToInternal(_startOptions.BaseDir.Path));
+            environmentVariables.SetEnvironmentVariable(WellKnownVariables.SourceRoot, fileSystem.ConvertPathToInternal(_startOptions.BaseDir.Path));
         }
 
         if (_startOptions.PreReleaseEnabled == true)
         {
-            _environmentVariables.SetEnvironmentVariable(
+            environmentVariables.SetEnvironmentVariable(
                 WellKnownVariables.AllowPreRelease,
                 _startOptions!.PreReleaseEnabled!.Value.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
         }
 
         if (!string.IsNullOrWhiteSpace(_startOptions.BranchName))
         {
-            _environmentVariables.SetEnvironmentVariable(WellKnownVariables.BranchName, _startOptions.BranchName);
+            environmentVariables.SetEnvironmentVariable(WellKnownVariables.BranchName, _startOptions.BranchName);
         }
     }
 
@@ -256,9 +246,9 @@ public class AppBootstrapper
         var fileVersionInfo = FileVersionInfo.GetVersionInfo(assembly.Location);
         string? version = fileVersionInfo.FileVersion;
 
-        _logger.Information("Starting Arbor.Build Bootstrapper version {Version}", version);
+        logger.Information("Starting Arbor.Build Bootstrapper version {Version}", version);
 
-        string? directoryCloneValue = _environmentVariables.GetEnvironmentVariable(WellKnownVariables.DirectoryCloneEnabled);
+        string? directoryCloneValue = environmentVariables.GetEnvironmentVariable(WellKnownVariables.DirectoryCloneEnabled);
 
         _ = directoryCloneValue
             .TryParseBool(out bool directoryCloneEnabled, true);
@@ -267,18 +257,18 @@ public class AppBootstrapper
 
         if (!_directoryCloneEnabled)
         {
-            _logger.Verbose("Environment variable '{DirectoryCloneEnabled}' has value '{DirectoryCloneValue}'",
+            logger.Verbose("Environment variable '{DirectoryCloneEnabled}' has value '{DirectoryCloneValue}'",
                 WellKnownVariables.DirectoryCloneEnabled,
                 directoryCloneValue);
         }
 
         var baseDir = await GetBaseDirectoryAsync(_startOptions).ConfigureAwait(false);
 
-        DirectoryEntry buildDir = new DirectoryEntry(_fileSystem, UPath.Combine(baseDir.Path, "build")).EnsureExists();
+        DirectoryEntry buildDir = new DirectoryEntry(fileSystem, UPath.Combine(baseDir.Path, "build")).EnsureExists();
 
-        _logger.Verbose("Using base directory '{BaseDir}'", baseDir);
+        logger.Verbose("Using base directory '{BaseDir}'", baseDir);
 
-        _logger.Debug("Downloading nuget package {Package}", BuildToolPackageName);
+        logger.Debug("Downloading nuget package {Package}", BuildToolPackageName);
 
         UPath buildToolsDirectory =
             (await DownloadNuGetPackageAsync().ConfigureAwait(false)).ParseAsPath();
@@ -298,11 +288,11 @@ public class AppBootstrapper
 
                 if (buildToolsResult.IsSuccess)
                 {
-                    _logger.Information("The build tools succeeded");
+                    logger.Information("The build tools succeeded");
                 }
                 else
                 {
-                    _logger.Error("The build tools process was not successful, exit code {BuildToolsResult}",
+                    logger.Error("The build tools process was not successful, exit code {BuildToolsResult}",
                         buildToolsResult);
                 }
 
@@ -313,19 +303,19 @@ public class AppBootstrapper
         {
             try
             {
-                bool parsed = _environmentVariables.GetEnvironmentVariable("KillSpawnedProcess").TryParseBool(out bool enabled, true);
+                bool parsed = environmentVariables.GetEnvironmentVariable("KillSpawnedProcess").TryParseBool(out bool enabled, true);
 
                 if (parsed && enabled)
                 {
-                    KillAllProcessesSpawnedBy((uint)Environment.ProcessId, _logger);
+                    KillAllProcessesSpawnedBy((uint)Environment.ProcessId, logger);
                 }
             }
             catch (Exception ex) when (!ex.IsFatal())
             {
-                _logger.Error(ex, "Could not kill process");
+                logger.Error(ex, "Could not kill process");
             }
 
-            _logger.Error("The build timed out");
+            logger.Error("The build timed out");
             exitCode = ExitCode.Failure;
             _failed = true;
         }
@@ -335,11 +325,11 @@ public class AppBootstrapper
 
     private async Task<string> DownloadNuGetPackageAsync()
     {
-        string? version = _environmentVariables.GetEnvironmentVariable(WellKnownVariables.ArborBuildNuGetPackageVersion);
+        string? version = environmentVariables.GetEnvironmentVariable(WellKnownVariables.ArborBuildNuGetPackageVersion);
 
-        string? nuGetSource = _environmentVariables.GetEnvironmentVariable(WellKnownVariables.ArborBuildNuGetPackageSource);
+        string? nuGetSource = environmentVariables.GetEnvironmentVariable(WellKnownVariables.ArborBuildNuGetPackageSource);
 
-        bool parsed = _environmentVariables.GetEnvironmentVariable(WellKnownVariables.AllowPreRelease)
+        bool parsed = environmentVariables.GetEnvironmentVariable(WellKnownVariables.AllowPreRelease)
             .TryParseBool(out bool parsedValue);
 
         bool preReleaseIsAllowed = _startOptions.PreReleaseEnabled ?? (parsed && parsedValue);
@@ -351,7 +341,7 @@ public class AppBootstrapper
             packageVersion = NuGetPackageVersion.LatestAvailable;
         }
 
-        var nuGetPackageInstaller = new NuGetPackageInstaller(logger: _logger);
+        var nuGetPackageInstaller = new NuGetPackageInstaller(logger: logger);
 
         var nuGetPackage = new NuGetPackage(
             new NuGetPackageId(BuildToolPackageName),
@@ -369,14 +359,14 @@ public class AppBootstrapper
 
         if (nuGetPackageInstallResult.SemanticVersion is null)
         {
-            _logger.Warning("Could not download {PackageVersion}", packageVersion);
+            logger.Warning("Could not download {PackageVersion}", packageVersion);
         }
 
         if (!parsedPackageVersion
             && nuGetPackageInstallResult.SemanticVersion is null
             && nuGetPackage.NuGetPackageVersion != NuGetPackageVersion.LatestDownloaded)
         {
-            _logger.Information("Retrying package download of {PackageVersion} with latest downloaded",
+            logger.Information("Retrying package download of {PackageVersion} with latest downloaded",
                 packageVersion);
 
             nuGetPackageInstallResult = await nuGetPackageInstaller.InstallPackageAsync(
@@ -401,7 +391,7 @@ public class AppBootstrapper
 
         if (!string.IsNullOrWhiteSpace(startOptions.BaseDir?.FullName) && startOptions.BaseDir.Exists)
         {
-            _logger.Information("Using base directory '{BaseDir}' from start options", startOptions.BaseDir);
+            logger.Information("Using base directory '{BaseDir}' from start options", startOptions.BaseDir);
 
             baseDir = startOptions.BaseDir;
         }
@@ -414,7 +404,7 @@ public class AppBootstrapper
                 throw new InvalidOperationException("Could not get source root path");
             }
 
-            baseDir = new DirectoryEntry(_fileSystem, foundPath.ParseAsPath());
+            baseDir = new DirectoryEntry(fileSystem, foundPath.ParseAsPath());
         }
 
         return Task.FromResult(baseDir);
@@ -426,7 +416,7 @@ public class AppBootstrapper
 
         if (buildExeFile.Length == 1)
         {
-            return (buildExeFile.Single().Path, new List<string>());
+            return (buildExeFile.Single().Path, []);
         }
 
         var arborBuild =
@@ -437,26 +427,26 @@ public class AppBootstrapper
         if (arborBuild.Count != 1)
         {
             PrintInvalidExeFileCount(arborBuild, buildToolDirectory.FullName);
-            return (null, new List<string>());
+            return (null, []);
         }
 
         FileEntry? buildToolExecutable = arborBuild.SingleOrDefault(file => file.ExtensionWithDot?.Equals(".exe", StringComparison.OrdinalIgnoreCase) ?? false);
 
         if (buildToolExecutable is {})
         {
-            return (buildToolExecutable.Path, new List<string>());
+            return (buildToolExecutable.Path, []);
         }
 
         FileEntry? buildToolDll = arborBuild.SingleOrDefault(file => file.ExtensionWithDot?.Equals(".dll", StringComparison.OrdinalIgnoreCase) ?? false);
 
         if (buildToolDll is null)
         {
-            return (null, new List<string>());
+            return (null, []);
         }
 
-        ImmutableArray<IVariable> variables = await new DotNetEnvironmentVariableProvider(_environmentVariables, _fileSystem)
+        ImmutableArray<IVariable> variables = await new DotNetEnvironmentVariableProvider(environmentVariables, fileSystem)
             .GetBuildVariablesAsync(
-                _logger,
+                logger,
                 ImmutableArray<IVariable>.Empty,
                 cancellationToken).ConfigureAwait(false);
 
@@ -465,28 +455,28 @@ public class AppBootstrapper
 
         if (string.IsNullOrWhiteSpace(dotnetExePath))
         {
-            _logger.Error("Could not find dotnet.exe");
-            return (null, new List<string>());
+            logger.Error("Could not find dotnet.exe");
+            return (null, []);
         }
 
-        return (dotnetExePath, new List<string> {"--", buildToolDll.ConvertPathToInternal()});
+        return (dotnetExePath, ["--", buildToolDll.ConvertPathToInternal()]);
     }
 
     private async Task<ExitCode> RunBuildToolsAsync(UPath buildDir, UPath buildToolDirectoryName, string? arborBuildExePath)
     {
-        var buildToolDirectory = new DirectoryEntry(_fileSystem, buildToolDirectoryName);
+        var buildToolDirectory = new DirectoryEntry(fileSystem, buildToolDirectoryName);
 
         const string timeoutKey = WellKnownVariables.BuildToolTimeoutInSeconds;
-        string? timeoutInSecondsFromEnvironment = _environmentVariables.GetEnvironmentVariable(timeoutKey);
+        string? timeoutInSecondsFromEnvironment = environmentVariables.GetEnvironmentVariable(timeoutKey);
 
         if (timeoutInSecondsFromEnvironment.TryParseInt32(out int parseResult, MaxBuildTimeInSeconds))
         {
-            _logger.Verbose("Using timeout from environment variable {TimeoutKey}", timeoutKey);
+            logger.Verbose("Using timeout from environment variable {TimeoutKey}", timeoutKey);
         }
 
         int usedTimeoutInSeconds = parseResult;
 
-        _logger.Information("Using build timeout {UsedTimeoutInSeconds} seconds", usedTimeoutInSeconds);
+        logger.Information("Using build timeout {UsedTimeoutInSeconds} seconds", usedTimeoutInSeconds);
 
         using var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(usedTimeoutInSeconds));
         const string buildApplicationPrefix = "[Arbor.Build] ";
@@ -507,19 +497,19 @@ public class AppBootstrapper
             return ExitCode.Failure;
         }
 
-        arguments.Add($"-buildDirectory={_fileSystem.ConvertPathToInternal(buildDir)}");
+        arguments.Add($"-buildDirectory={fileSystem.ConvertPathToInternal(buildDir)}");
 
         if (_startOptions.Args.Any())
         {
             arguments.AddRange(_startOptions.Args);
         }
 
-        return await ProcessRunner.ExecuteProcessAsync(_fileSystem.ConvertPathToInternal(exePath.Value),
+        return await ProcessRunner.ExecuteProcessAsync(fileSystem.ConvertPathToInternal(exePath.Value),
                 arguments,
-                (message, _) => _logger.Information("{Prefix}{Message}", buildApplicationPrefix, message),
-                (message, _) => _logger.Error("{Prefix}{Message}", buildApplicationPrefix, message),
-                _logger.Information,
-                _logger.Verbose,
+                (message, _) => logger.Information("{Prefix}{Message}", buildApplicationPrefix, message),
+                (message, _) => logger.Error("{Prefix}{Message}", buildApplicationPrefix, message),
+                logger.Information,
+                logger.Verbose,
                 cancellationToken: cancellationTokenSource.Token)
             .ConfigureAwait(false);
     }
@@ -535,7 +525,7 @@ public class AppBootstrapper
             ? single
             : multiple;
 
-        _logger.Error(
+        logger.Error(
             "Expected directory {BuildToolDirectoryPath} to contain exactly one executable file with extensions .exe. {Found}",
             buildToolDirectoryPath,
             found);

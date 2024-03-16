@@ -9,10 +9,7 @@ public static class VariablePrintExtensions
 {
     public static string Print(this IEnumerable<IVariable> variables)
     {
-        if (variables == null)
-        {
-            throw new ArgumentNullException(nameof(variables));
-        }
+        ArgumentNullException.ThrowIfNull(variables);
 
         IEnumerable<Dictionary<string, string?>> dictionaries =
             variables.Select(
@@ -25,14 +22,12 @@ public static class VariablePrintExtensions
         return dictionaries.DisplayAsTable();
     }
 
-    private static readonly string[] SensitiveValues = { "password", "apikey", "username", "pw", "token", "jwt", "connectionstring" };
+    private static readonly string[] SensitiveValues = ["password", "apikey", "username", "pw", "token", "jwt", "connectionstring"
+    ];
 
     public static string DisplayPair(this IVariable variable)
     {
-        if (variable == null)
-        {
-            throw new ArgumentNullException(nameof(variable));
-        }
+        ArgumentNullException.ThrowIfNull(variable);
 
         string? value = GetDisplayValue(variable.Key, variable.Value);
 

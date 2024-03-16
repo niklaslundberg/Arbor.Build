@@ -16,10 +16,7 @@ public class NuSpec
 
     public NuSpec(string packageId, SemanticVersion nuGetPackageVersion, FileEntry filePath)
     {
-        if (filePath is null)
-        {
-            throw new ArgumentNullException(nameof(filePath));
-        }
+        ArgumentNullException.ThrowIfNull(filePath);
 
         if (!filePath.Exists)
         {

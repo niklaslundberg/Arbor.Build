@@ -17,10 +17,7 @@ public static class DirectoryExtensions
         PathLookupSpecification? pathLookupSpecification = null,
         DirectoryEntry? rootDir = null)
     {
-        if (directory is null)
-        {
-            throw new ArgumentNullException(nameof(directory));
-        }
+        ArgumentNullException.ThrowIfNull(directory);
 
         if (!directory.Exists)
         {
@@ -74,15 +71,9 @@ public static class DirectoryExtensions
         this DirectoryEntry directory,
         IReadOnlyCollection<string> excludedPatterns)
     {
-        if (directory is null)
-        {
-            throw new ArgumentNullException(nameof(directory));
-        }
+        ArgumentNullException.ThrowIfNull(directory);
 
-        if (excludedPatterns is null)
-        {
-            throw new ArgumentNullException(nameof(excludedPatterns));
-        }
+        ArgumentNullException.ThrowIfNull(excludedPatterns);
 
         var fileSystem = directory.FileSystem;
 

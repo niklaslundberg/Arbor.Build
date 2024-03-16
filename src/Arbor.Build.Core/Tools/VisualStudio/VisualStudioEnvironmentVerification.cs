@@ -15,26 +15,22 @@ namespace Arbor.Build.Core.Tools.VisualStudio;
 
 [Priority(53)]
 [UsedImplicitly]
-public class VisualStudioEnvironmentVerification : ITool
+public class VisualStudioEnvironmentVerification(BuildContext buildContext) : ITool
 {
-    private readonly BuildContext _buildContext;
-
-    public VisualStudioEnvironmentVerification(BuildContext buildContext) => _buildContext = buildContext;
-
     public Task<ExitCode> ExecuteAsync(
         ILogger logger,
         IReadOnlyCollection<IVariable> buildVariables,
         string[] args,
         CancellationToken cancellationToken)
     {
-        var rootDir = _buildContext.SourceRoot;
+        var rootDir = buildContext.SourceRoot;
 
         string visualStudioVersion =
             buildVariables.Require(WellKnownVariables.ExternalTools_VisualStudio_Version).GetValueOrThrow();
 
         if (!visualStudioVersion.Equals("12.0", StringComparison.Ordinal))
         {
-            string[] extensionPatterns = { ".csproj", ".vcxproj" };
+            string[] extensionPatterns = [".csproj", ".vcxproj"];
 
             IEnumerable<FileEntry> projectFiles = rootDir.EnumerateFiles()
                 .Where(
@@ -64,10 +60,11 @@ public class VisualStudioEnvironmentVerification : ITool
 
     private bool Contains81(FileEntry file)
     {
-        string[] lookupPatterns = {
+        string[] lookupPatterns =
+        [
             "<ApplicationTypeRevision>8.1</ApplicationTypeRevision>",
             "<TargetPlatformVersion>8.1</TargetPlatformVersion>"
-        };
+        ];
 
         using var fs = file.Open(FileMode.Open, FileAccess.Read);
 

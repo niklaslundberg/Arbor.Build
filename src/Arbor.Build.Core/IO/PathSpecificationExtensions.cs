@@ -8,7 +8,7 @@ public static class PathSpecificationExtensions
 {
     public static PathLookupSpecification WithIgnoredFileNameParts(
         this PathLookupSpecification pathLookupSpecification,
-        IEnumerable<string> ignoredFileNameParts) => new PathLookupSpecification(
+        IEnumerable<string> ignoredFileNameParts) => new(
         pathLookupSpecification.IgnoredDirectorySegments,
         pathLookupSpecification.IgnoredFileStartsWithPatterns,
         pathLookupSpecification.IgnoredDirectorySegmentParts,
@@ -17,7 +17,7 @@ public static class PathSpecificationExtensions
 
     public static PathLookupSpecification AddExcludedDirectorySegments(
         this PathLookupSpecification pathLookupSpecification,
-        IEnumerable<string> ignoredExcludedDirectorySegments) => new PathLookupSpecification(
+        IEnumerable<string> ignoredExcludedDirectorySegments) => new(
         pathLookupSpecification.IgnoredDirectorySegments.Concat(ignoredExcludedDirectorySegments),
         pathLookupSpecification.IgnoredFileStartsWithPatterns,
         pathLookupSpecification.IgnoredDirectorySegmentParts,

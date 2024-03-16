@@ -4,29 +4,20 @@ using Arbor.Defensive.Collections;
 
 namespace Arbor.Build.Core.IO;
 
-public class PathLookupSpecification
+public class PathLookupSpecification(
+    IEnumerable<string>? ignoredDirectorySegments = null,
+    IEnumerable<string>? ignoredFileStartsWithPatterns = null,
+    IEnumerable<string>? ignoredDirectorySegmentParts = null,
+    IEnumerable<string>? ignoredDirectoryStartsWithPatterns = null,
+    IEnumerable<string>? ignoredFileNameParts = null)
 {
-    public PathLookupSpecification(
-        IEnumerable<string>? ignoredDirectorySegments = null,
-        IEnumerable<string>? ignoredFileStartsWithPatterns = null,
-        IEnumerable<string>? ignoredDirectorySegmentParts = null,
-        IEnumerable<string>? ignoredDirectoryStartsWithPatterns = null,
-        IEnumerable<string>? ignoredFileNameParts = null)
-    {
-        IgnoredFileStartsWithPatterns = ignoredFileStartsWithPatterns.SafeToReadOnlyCollection();
-        IgnoredDirectorySegments = ignoredDirectorySegments.SafeToReadOnlyCollection();
-        IgnoredDirectorySegmentParts = ignoredDirectorySegmentParts.SafeToReadOnlyCollection();
-        IgnoredDirectoryStartsWithPatterns = ignoredDirectoryStartsWithPatterns.SafeToReadOnlyCollection();
-        IgnoredFileNameParts = ignoredFileNameParts.SafeToReadOnlyCollection();
-    }
+    public ImmutableArray<string> IgnoredFileStartsWithPatterns { get; } = ignoredFileStartsWithPatterns.SafeToReadOnlyCollection();
 
-    public ImmutableArray<string> IgnoredFileStartsWithPatterns { get; }
+    public ImmutableArray<string> IgnoredDirectoryStartsWithPatterns { get; } = ignoredDirectoryStartsWithPatterns.SafeToReadOnlyCollection();
 
-    public ImmutableArray<string> IgnoredDirectoryStartsWithPatterns { get; }
+    public ImmutableArray<string> IgnoredDirectorySegments { get; } = ignoredDirectorySegments.SafeToReadOnlyCollection();
 
-    public ImmutableArray<string> IgnoredDirectorySegments { get; }
+    public ImmutableArray<string> IgnoredDirectorySegmentParts { get; } = ignoredDirectorySegmentParts.SafeToReadOnlyCollection();
 
-    public ImmutableArray<string> IgnoredDirectorySegmentParts { get; }
-
-    public ImmutableArray<string> IgnoredFileNameParts { get; }
+    public ImmutableArray<string> IgnoredFileNameParts { get; } = ignoredFileNameParts.SafeToReadOnlyCollection();
 }

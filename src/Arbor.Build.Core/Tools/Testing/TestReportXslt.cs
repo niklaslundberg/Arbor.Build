@@ -20,15 +20,9 @@ public static class TestReportXslt
         ILogger logger,
         bool deleteOriginal = true)
     {
-        if (xmlReport is null)
-        {
-            throw new ArgumentNullException(nameof(xmlReport));
-        }
+        ArgumentNullException.ThrowIfNull(xmlReport);
 
-        if (logger is null)
-        {
-            throw new ArgumentNullException(nameof(logger));
-        }
+        ArgumentNullException.ThrowIfNull(logger);
 
         if (!xmlReport.Exists)
         {

@@ -15,16 +15,9 @@ namespace Arbor.Build.Core.Tools.Cleanup;
 
 [Priority(41)]
 [UsedImplicitly]
-public class ArtifactCleanup : ITool
+public class ArtifactCleanup(IFileSystem fileSystem, BuildContext buildContext) : ITool
 {
-    private readonly IFileSystem _fileSystem;
-    private readonly BuildContext _buildContext;
-
-    public ArtifactCleanup(IFileSystem fileSystem, BuildContext buildContext)
-    {
-        _fileSystem = fileSystem;
-        _buildContext = buildContext;
-    }
+    private readonly BuildContext _buildContext = buildContext;
 
     public async Task<ExitCode> ExecuteAsync(
         ILogger logger,
@@ -45,7 +38,7 @@ public class ArtifactCleanup : ITool
 
         var artifactsPath = buildVariables.Require(WellKnownVariables.Artifacts).GetValueOrThrow().ParseAsPath();
 
-        var artifactsDirectory = new DirectoryEntry(_fileSystem, artifactsPath);
+        var artifactsDirectory = new DirectoryEntry(fileSystem, artifactsPath);
 
         if (!artifactsDirectory.Exists)
         {

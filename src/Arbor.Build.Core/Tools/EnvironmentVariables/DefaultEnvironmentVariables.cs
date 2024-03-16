@@ -5,7 +5,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using Arbor.Build.Core.BuildVariables;
 
-namespace Arbor.Build.Core.Logging;
+namespace Arbor.Build.Core.Tools.EnvironmentVariables;
 
 public class DefaultEnvironmentVariables : IEnvironmentVariables
 {

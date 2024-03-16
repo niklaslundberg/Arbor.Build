@@ -18,25 +18,13 @@ using Zio;
 namespace Arbor.Build.Core.Tools.NuGet;
 
 [UsedImplicitly]
-public class NuGetPackager
+public class NuGetPackager(
+    ILogger logger,
+    BuildContext buildContext,
+    ManifestReWriter manifestReWriter,
+    IFileSystem fileSystem)
 {
     public const string SnupkgPackageFormat = "snupkg";
-    private readonly BuildContext _buildContext;
-    private readonly IFileSystem _fileSystem;
-
-    private readonly ILogger _logger;
-    private readonly ManifestReWriter _manifestReWriter;
-
-    public NuGetPackager(ILogger logger,
-        BuildContext buildContext,
-        ManifestReWriter manifestReWriter,
-        IFileSystem fileSystem)
-    {
-        _logger = logger;
-        _buildContext = buildContext;
-        _manifestReWriter = manifestReWriter;
-        _fileSystem = fileSystem;
-    }
 
     public NuGetPackageConfiguration? GetNuGetPackageConfiguration(
         ILogger logger,
@@ -57,7 +45,7 @@ public class NuGetPackager
 
         string buildConfiguration = currentConfiguration ?? WellKnownConfigurations.Release;
 
-        var tempDirectory = _fileSystem.GetDirectoryEntry(
+        var tempDirectory = fileSystem.GetDirectoryEntry(
             buildVariables.Require(WellKnownVariables.TempDirectory).ThrowIfEmptyValue().Value!.ParseAsPath());
 
         var nuGetExePath = buildVariables.Require(WellKnownVariables.ExternalTools_NuGet_ExePath)
@@ -163,7 +151,7 @@ public class NuGetPackager
 
         packagesDirectory.EnsureExists();
 
-        if (!_fileSystem.FileExists(nuGetExePath))
+        if (!fileSystem.FileExists(nuGetExePath))
         {
             logger.Error("The NuGet.exe path {NuGetExePath} was not found or NuGet could not be downloaded",
                 nuGetExePath);
@@ -194,7 +182,7 @@ public class NuGetPackager
         bool ignoreWarnings = false,
         CancellationToken cancellationToken = default)
     {
-        _logger.Debug("Using NuGet package configuration {PackageConfiguration}", packageConfiguration);
+        logger.Debug("Using NuGet package configuration {PackageConfiguration}", packageConfiguration);
 
         var nuSpec = NuSpec.Parse(packageSpecificationPath);
 
@@ -202,7 +190,7 @@ public class NuGetPackager
 
         if (!string.IsNullOrWhiteSpace(packageConfiguration.PackageIdOverride))
         {
-            _logger.Information("Using NuGet package id override '{PackageIdOverride}'",
+            logger.Information("Using NuGet package id override '{PackageIdOverride}'",
                 packageConfiguration.PackageIdOverride);
         }
 
@@ -210,17 +198,17 @@ public class NuGetPackager
 
         if (string.IsNullOrWhiteSpace(packageConfiguration.PackageIdOverride))
         {
-            _logger.Information("Using NuGet package ID {PackageId}", packageId);
+            logger.Information("Using NuGet package ID {PackageId}", packageId);
         }
         else
         {
-            _logger.Information("Using NuGet package version override '{PackageIdOverride}'",
+            logger.Information("Using NuGet package version override '{PackageIdOverride}'",
                 packageConfiguration.PackageIdOverride);
         }
 
         string nuGetPackageVersion = packageConfiguration.Version.ToNormalizedString();
 
-        _logger.Information("{NuGetUsage}",
+        logger.Information("{NuGetUsage}",
             string.IsNullOrWhiteSpace(packageConfiguration.NuGetPackageVersionOverride)
                 ? $"Using NuGet package version {nuGetPackageVersion}"
                 : $"Using NuGet package version override '{packageConfiguration.NuGetPackageVersionOverride}'");
@@ -235,11 +223,11 @@ public class NuGetPackager
 
         var nuSpecTempDirectory = UPath.Combine(packageConfiguration.TempPath.Path, "nuspecs");
 
-        new DirectoryEntry(_fileSystem, nuSpecTempDirectory).EnsureExists();
+        new DirectoryEntry(fileSystem, nuSpecTempDirectory).EnsureExists();
 
-        _logger.Verbose("Saving new nuspec '{NuSpecFileCopyPath}'", _fileSystem.ConvertPathToInternal(nuSpecFileCopyPath));
+        logger.Verbose("Saving new nuspec '{NuSpecFileCopyPath}'", fileSystem.ConvertPathToInternal(nuSpecFileCopyPath));
 
-        var fileEntry = new FileEntry(_fileSystem, nuSpecFileCopyPath);
+        var fileEntry = new FileEntry(fileSystem, nuSpecFileCopyPath);
         await nuSpecCopy.Save(fileEntry);
 
         var removedTags = new List<string>();
@@ -248,17 +236,17 @@ public class NuGetPackager
 
         if (packageConfiguration.AllowManifestReWrite)
         {
-            _logger.Verbose("Rewriting manifest in NuSpec '{NuSpecFileCopyPath}'", _fileSystem.ConvertPathToInternal(nuSpecFileCopyPath));
+            logger.Verbose("Rewriting manifest in NuSpec '{NuSpecFileCopyPath}'", fileSystem.ConvertPathToInternal(nuSpecFileCopyPath));
 
             ManifestReWriteResult manifestReWriteResult = await
-                _manifestReWriter.Rewrite(fileEntry, key =>
+                manifestReWriter.Rewrite(fileEntry, key =>
                 {
                     if (!properties.TryGetValue(key, out string? value))
                     {
                         value = null;
                     }
 
-                    _logger.Debug("Fetching nuspec property with key '{Key}', value '{Value}'", key, value ?? "N/A");
+                    logger.Debug("Fetching nuspec property with key '{Key}', value '{Value}'", key, value ?? "N/A");
 
                     return value;
                 });
@@ -269,22 +257,22 @@ public class NuGetPackager
         }
         else
         {
-            _logger.Verbose("Rewriting nuspec manifest is disabled");
+            logger.Verbose("Rewriting nuspec manifest is disabled");
         }
 
         nuspec ??= fileEntry;
 
         if (!nuspec.Exists)
         {
-            _logger.Error("The nuspec file {NuSpecFile} does not exist", nuspec.ConvertPathToInternal());
+            logger.Error("The nuspec file {NuSpecFile} does not exist", nuspec.ConvertPathToInternal());
             return ExitCode.Failure;
         }
 
-        if (_logger.IsEnabled(LogEventLevel.Verbose))
+        if (logger.IsEnabled(LogEventLevel.Verbose))
         {
             string nuSpecContent = await GetNuSpecContent(nuspec);
 
-            _logger.Verbose("Created nuspec content: {NewLine}{PackageContent}",
+            logger.Verbose("Created nuspec content: {NewLine}{PackageContent}",
                 Environment.NewLine,
                 nuSpecContent);
         }
@@ -292,7 +280,7 @@ public class NuGetPackager
         var result = await ExecuteNuGetPackAsync(
             packageConfiguration.NuGetExePath,
             packageConfiguration.PackagesDirectory,
-            _logger,
+            logger,
             nuspec,
             properties,
             nuSpecCopy,
@@ -305,7 +293,7 @@ public class NuGetPackager
         if (!result.IsSuccess)
         {
             string content = fileEntry.Exists ? await GetNuSpecContent(fileEntry) : "";
-            _logger.Error("Could not create NuGet package from nuspec {NewLine}{NuSpec}",
+            logger.Error("Could not create NuGet package from nuspec {NewLine}{NuSpec}",
                 Environment.NewLine,
                 content);
         }
@@ -336,8 +324,8 @@ public class NuGetPackager
     }
 
     private bool IsStablePackage(BranchName branchName) =>
-        (_buildContext.Configurations.Count == 1 &&
-         _buildContext.Configurations.Single()
+        (buildContext.Configurations.Count == 1 &&
+         buildContext.Configurations.Single()
              .Equals(WellKnownConfigurations.Release, StringComparison.OrdinalIgnoreCase))
         || branchName.IsProductionBranch();
 
@@ -363,9 +351,9 @@ public class NuGetPackager
         var arguments = new List<string>
         {
             "pack",
-            _fileSystem.ConvertPathToInternal(nuSpecFileCopyPath.Path),
+            fileSystem.ConvertPathToInternal(nuSpecFileCopyPath.Path),
             "-OutputDirectory",
-            _fileSystem.ConvertPathToInternal(packagesDirectoryPath.Path),
+            fileSystem.ConvertPathToInternal(packagesDirectoryPath.Path),
             "-NoPackageAnalysis",
             "-Version",
             nuSpecCopy.Version.ToNormalizedString()
@@ -403,7 +391,7 @@ public class NuGetPackager
         var processResult =
             await
                 ProcessRunner.ExecuteProcessAsync(
-                    _fileSystem.ConvertPathToInternal(nuGetExePath),
+                    fileSystem.ConvertPathToInternal(nuGetExePath),
                     arguments,
                     logger.Information,
                     logger.Error,
@@ -429,22 +417,22 @@ public class NuGetPackager
             var binaryPackages = nugetPackages.Except(nugetSymbolPackages).ToList();
 
             DirectoryEntry binaryPackagesDirectory =
-                new DirectoryEntry(_fileSystem, UPath.Combine(packagesDirectoryPath.Path, "binary")).EnsureExists();
+                new DirectoryEntry(fileSystem, UPath.Combine(packagesDirectoryPath.Path, "binary")).EnsureExists();
 
             DirectoryEntry symbolPackagesDirectory =
-                new DirectoryEntry(_fileSystem, UPath.Combine(packagesDirectoryPath.Path, "symbol")).EnsureExists();
+                new DirectoryEntry(fileSystem, UPath.Combine(packagesDirectoryPath.Path, "symbol")).EnsureExists();
 
             foreach (var binaryPackage in binaryPackages)
             {
                 var sourceFile = binaryPackage;
                 var targetBinaryFile =
-                    new FileEntry(_fileSystem, UPath.Combine(binaryPackagesDirectory.Path, sourceFile.Name));
+                    new FileEntry(fileSystem, UPath.Combine(binaryPackagesDirectory.Path, sourceFile.Name));
 
                 targetBinaryFile.DeleteIfExists();
 
                 logger.Debug("Copying NuGet binary package '{BinaryPackage}' to '{TargetBinaryFile}'",
-                    _fileSystem.ConvertPathToInternal(binaryPackage.Path),
-                    _fileSystem.ConvertPathToInternal(targetBinaryFile.Path));
+                    fileSystem.ConvertPathToInternal(binaryPackage.Path),
+                    fileSystem.ConvertPathToInternal(targetBinaryFile.Path));
                 sourceFile.MoveTo(targetBinaryFile.Path);
             }
 
@@ -452,7 +440,7 @@ public class NuGetPackager
             {
                 var sourceFile = sourcePackage;
                 var targetSymbolFile =
-                    new FileEntry(_fileSystem, UPath.Combine(symbolPackagesDirectory.Path, sourceFile.Name));
+                    new FileEntry(fileSystem, UPath.Combine(symbolPackagesDirectory.Path, sourceFile.Name));
 
                 if (targetSymbolFile.Exists)
                 {
@@ -460,8 +448,8 @@ public class NuGetPackager
                 }
 
                 logger.Debug("Copying NuGet symbol package '{SourcePackage}' to '{TargetSymbolFile}'",
-                    _fileSystem.ConvertPathToInternal(sourcePackage.Path),
-                    _fileSystem.ConvertPathToInternal(targetSymbolFile.Path));
+                    fileSystem.ConvertPathToInternal(sourcePackage.Path),
+                    fileSystem.ConvertPathToInternal(targetSymbolFile.Path));
 
                 sourceFile.MoveTo(targetSymbolFile.FullName);
             }

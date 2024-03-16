@@ -127,7 +127,7 @@ public sealed class BuildApplication : IDisposable
             baseDir,
             tempDirectory,
             pathLookupSpecificationOption: DefaultPaths.DefaultPathLookupSpecification.AddExcludedDirectorySegments(
-                new[] { "paket-files" }),
+                ["paket-files"]),
             rootDir: baseDir).ConfigureAwait(false);
 
         WriteDebug("Starting with debugger attached");
@@ -413,9 +413,9 @@ public sealed class BuildApplication : IDisposable
                 if (newVariables.Length > 0)
                 {
                     Dictionary<string, string?>[] providerTable =
-                    {
+                    [
                         newVariables.ToDictionary(s => s.Key, s => s.Value)
-                    };
+                    ];
                     values = providerTable.DisplayAsTable();
                 }
                 else

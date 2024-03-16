@@ -18,21 +18,12 @@ namespace Arbor.Build.Core.Tools.NuGet;
 
 [Priority(650)]
 [UsedImplicitly]
-public class NuGetPacker : ITool
+public class NuGetPacker(NuGetPackager nuGetPackager, IFileSystem fileSystem, BuildContext buildContext)
+    : ITool
 {
     private IReadOnlyCollection<string> _excludedNuSpecFiles = ImmutableArray<string>.Empty;
 
     private PathLookupSpecification _pathLookupSpecification = null!;
-    private readonly NuGetPackager _nugetPackager;
-    private readonly IFileSystem _fileSystem;
-    private readonly BuildContext _buildContext;
-
-    public NuGetPacker(NuGetPackager nuGetPackager, IFileSystem fileSystem, BuildContext buildContext)
-    {
-        _nugetPackager = nuGetPackager;
-        _fileSystem = fileSystem;
-        _buildContext = buildContext;
-    }
 
     public async Task<ExitCode> ExecuteAsync(
         ILogger logger,
@@ -53,7 +44,7 @@ public class NuGetPacker : ITool
             buildVariables.GetVariableValueOrDefault(
                     WellKnownVariables.NuGetPackageExcludesCommaSeparated,
                     string.Empty)!
-                .Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries)
+                .Split([","], StringSplitOptions.RemoveEmptyEntries)
                 .SafeToReadOnlyCollection();
 
         _pathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification.WithIgnoredFileNameParts(new []
@@ -63,14 +54,14 @@ public class NuGetPacker : ITool
         });
 
         string? artifacts = buildVariables.Require(WellKnownVariables.Artifacts).GetValueOrThrow();
-        var packagesDirectory = new DirectoryEntry(_fileSystem, UPath.Combine(artifacts.ParseAsPath(), "packages"));
+        var packagesDirectory = new DirectoryEntry(fileSystem, UPath.Combine(artifacts.ParseAsPath(), "packages"));
 
-        DirectoryEntry vcsRootDir = _buildContext.SourceRoot;
+        DirectoryEntry vcsRootDir = buildContext.SourceRoot;
 
         var runtimeIdentifier = buildVariables.GetVariableValueOrDefault(WellKnownVariables.PublishRuntimeIdentifier, string.Empty);
 
         NuGetPackageConfiguration? packageConfiguration =
-            _nugetPackager.GetNuGetPackageConfiguration(logger, buildVariables, packagesDirectory, vcsRootDir, "", runtimeIdentifier);
+            nuGetPackager.GetNuGetPackageConfiguration(logger, buildVariables, packagesDirectory, vcsRootDir, "", runtimeIdentifier);
 
         if (packageConfiguration is null)
         {
@@ -156,7 +147,7 @@ public class NuGetPacker : ITool
         foreach (var packageSpecification in packageSpecifications)
         {
             ExitCode packageResult =
-                await _nugetPackager.CreatePackageAsync(
+                await nuGetPackager.CreatePackageAsync(
                     packageSpecification,
                     packageConfiguration,
                     cancellationToken: cancellationToken).ConfigureAwait(false);

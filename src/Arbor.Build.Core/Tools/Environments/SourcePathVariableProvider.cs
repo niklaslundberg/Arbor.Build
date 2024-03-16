@@ -13,17 +13,8 @@ using Zio;
 namespace Arbor.Build.Core.Tools.Environments;
 
 [UsedImplicitly]
-public class SourcePathVariableProvider : IVariableProvider
+public class SourcePathVariableProvider(IFileSystem fileSystem, BuildContext buildContext) : IVariableProvider
 {
-    private readonly IFileSystem _fileSystem;
-    private readonly BuildContext _buildContext;
-
-    public SourcePathVariableProvider(IFileSystem fileSystem, BuildContext buildContext)
-    {
-        _fileSystem = fileSystem;
-        _buildContext = buildContext;
-    }
-
     public int Order { get; } = -2;
 
     public Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
@@ -42,10 +33,10 @@ public class SourcePathVariableProvider : IVariableProvider
 
         if (existingSourceRoot?.FullName is {})
         {
-            if (!_fileSystem.DirectoryExists(existingSourceRoot.Value))
+            if (!fileSystem.DirectoryExists(existingSourceRoot.Value))
             {
                 throw new InvalidOperationException(
-                    $"The defined variable {WellKnownVariables.SourceRoot} has value set to '{_fileSystem.ConvertPathToInternal(existingSourceRoot.Value)}' but the directory does not exist");
+                    $"The defined variable {WellKnownVariables.SourceRoot} has value set to '{fileSystem.ConvertPathToInternal(existingSourceRoot.Value)}' but the directory does not exist");
             }
 
             sourceRoot = existingSourceRoot.Value;
@@ -53,25 +44,25 @@ public class SourcePathVariableProvider : IVariableProvider
 
         if (sourceRoot.IsNull || sourceRoot.IsEmpty)
         {
-            sourceRoot = _buildContext.SourceRoot.Path;
+            sourceRoot = buildContext.SourceRoot.Path;
         }
 
         if (!existingSourceRoot.HasValue)
         {
-            variables.Add(new BuildVariable(WellKnownVariables.SourceRoot, _fileSystem.ConvertPathToInternal(sourceRoot)));
+            variables.Add(new BuildVariable(WellKnownVariables.SourceRoot, fileSystem.ConvertPathToInternal(sourceRoot)));
         }
 
-        var tempPath = new DirectoryEntry(_fileSystem, sourceRoot / "temp").EnsureExists();
+        var tempPath = new DirectoryEntry(fileSystem, sourceRoot / "temp").EnsureExists();
 
         variables.Add(
             new BuildVariable(
                 WellKnownVariables.TempDirectory,
-                _fileSystem.ConvertPathToInternal(tempPath.Path)));
+                fileSystem.ConvertPathToInternal(tempPath.Path)));
 
         if (existingToolsDirectory is null || existingToolsDirectory.Value.IsAbsolute)
         {
             var externalToolsRelativeApp =
-                new DirectoryEntry(_fileSystem, UPath.Combine(AppContext.BaseDirectory!.ParseAsPath(),
+                new DirectoryEntry(fileSystem, UPath.Combine(AppContext.BaseDirectory!.ParseAsPath(),
                     "tools",
                     "external"));
 
@@ -79,12 +70,12 @@ public class SourcePathVariableProvider : IVariableProvider
             {
                 variables.Add(new BuildVariable(
                     WellKnownVariables.ExternalTools,
-                    _fileSystem.ConvertPathToInternal(externalToolsRelativeApp.Path)));
+                    fileSystem.ConvertPathToInternal(externalToolsRelativeApp.Path)));
             }
             else
             {
                 var externalTools =
-                    new DirectoryEntry( _fileSystem, UPath.Combine(sourceRoot,
+                    new DirectoryEntry( fileSystem, UPath.Combine(sourceRoot,
                         "build",
                         ArborConstants.ArborPackageName,
                         "tools",
@@ -92,7 +83,7 @@ public class SourcePathVariableProvider : IVariableProvider
 
                 variables.Add(new BuildVariable(
                     WellKnownVariables.ExternalTools,
-                    _fileSystem.ConvertPathToInternal(externalTools.Path)));
+                    fileSystem.ConvertPathToInternal(externalTools.Path)));
             }
         }
 

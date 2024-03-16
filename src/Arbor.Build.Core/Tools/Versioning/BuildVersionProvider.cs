@@ -21,17 +21,8 @@ using Zio;
 namespace Arbor.Build.Core.Tools.Versioning;
 
 [UsedImplicitly]
-public class BuildVersionProvider : IVariableProvider
+public class BuildVersionProvider(ITimeService timeService, BuildContext buildContext) : IVariableProvider
 {
-    private readonly ITimeService _timeService;
-    private readonly BuildContext _buildContext;
-
-    public BuildVersionProvider(ITimeService timeService, BuildContext buildContext)
-    {
-        _timeService = timeService;
-        _buildContext = buildContext;
-    }
-
     public int Order => VariableProviderOrder.Ignored;
 
     public Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
@@ -78,7 +69,7 @@ public class BuildVersionProvider : IVariableProvider
 
         const string fileName = "version.json";
 
-        var sourceRoot = _buildContext.SourceRoot;
+        var sourceRoot = buildContext.SourceRoot;
 
         var versionFileName = UPath.Combine(sourceRoot.Path, fileName);
 
@@ -91,7 +82,7 @@ public class BuildVersionProvider : IVariableProvider
             try
             {
                 keyValueConfigurationItems =
-                    new JsonFileReader(_buildContext.SourceRoot.FileSystem.ConvertPathToInternal(versionFileName)).ReadConfiguration();
+                    new JsonFileReader(buildContext.SourceRoot.FileSystem.ConvertPathToInternal(versionFileName)).ReadConfiguration();
             }
             catch (Exception ex) when (!ex.IsFatal())
             {
@@ -226,7 +217,7 @@ public class BuildVersionProvider : IVariableProvider
             }
             else if (buildVariables.GetBooleanByKey(WellKnownVariables.BuildNumberAsUnixEpochSecondsEnabled, defaultValue: true))
             {
-                build = (int) _timeService.UtcNow().ToUnixTimeSeconds();
+                build = (int) timeService.UtcNow().ToUnixTimeSeconds();
             }
             else
             {

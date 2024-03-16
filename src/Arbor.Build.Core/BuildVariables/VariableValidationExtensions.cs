@@ -9,10 +9,7 @@ public static class VariableValidationExtensions
     public static IVariable ThrowIfEmptyValue(
         [NotNullIfNotNull("variable")] this IVariable variable)
     {
-        if (variable == null)
-        {
-            throw new ArgumentNullException(nameof(variable));
-        }
+        ArgumentNullException.ThrowIfNull(variable);
 
         if (string.IsNullOrWhiteSpace(variable.Value))
         {
@@ -25,10 +22,7 @@ public static class VariableValidationExtensions
     public static string GetValueOrThrow(
         [NotNullIfNotNull("variable")] this IVariable variable)
     {
-        if (variable == null)
-        {
-            throw new ArgumentNullException(nameof(variable));
-        }
+        ArgumentNullException.ThrowIfNull(variable);
 
         if (string.IsNullOrWhiteSpace(variable.Value))
         {

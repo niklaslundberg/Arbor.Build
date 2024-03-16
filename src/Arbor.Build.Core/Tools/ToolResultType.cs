@@ -18,11 +18,11 @@ public sealed class ToolResultType : IEquatable<ToolResultType>
 
     public bool WasRun => _succeeded.HasValue;
 
-    public static ToolResultType Succeeded => new ToolResultType("Succeeded", true);
+    public static ToolResultType Succeeded => new("Succeeded", true);
 
-    public static ToolResultType Failed => new ToolResultType("Failed", false);
+    public static ToolResultType Failed => new("Failed", false);
 
-    public static ToolResultType NotRun => new ToolResultType("Not run", null);
+    public static ToolResultType NotRun => new("Not run", null);
 
     public override bool Equals(object? obj) => Equals(obj as ToolResultType);
 

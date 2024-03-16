@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Arbor.Build.Core;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.Logging;
+using Arbor.Build.Core.Tools.EnvironmentVariables;
 using Arbor.Build.Core.Tools.NuGet;
 using Arbor.Build.Tests.Integration.Tests.MSpec;
 using Arbor.FS;
@@ -21,16 +22,9 @@ using Assert = Xunit.Assert;
 
 namespace Arbor.Build.Tests.Integration;
 
-public sealed class TestSamples : IDisposable
+public sealed class TestSamples(ITestOutputHelper testOutputHelper) : IDisposable
 {
-    readonly ITestOutputHelper _testOutputHelper;
-    readonly IFileSystem _fs;
-
-    public TestSamples(ITestOutputHelper testOutputHelper)
-    {
-        _testOutputHelper = testOutputHelper;
-        _fs = new PhysicalFileSystem();
-    }
+    readonly IFileSystem _fs = new PhysicalFileSystem();
 
     [MemberData(nameof(Data))]
     [Theory]
@@ -38,7 +32,7 @@ public sealed class TestSamples : IDisposable
     {
         if (directoryName == "")
         {
-            _testOutputHelper.WriteLine($"Skipping sample tests, no samples found starting with _");
+            testOutputHelper.WriteLine($"Skipping sample tests, no samples found starting with _");
             return;
         }
 
@@ -46,7 +40,7 @@ public sealed class TestSamples : IDisposable
 
         var sampleDirectory = samplesDirectory.GetDirectories(directoryName).Single();
 
-        _testOutputHelper.WriteLine($"Testing {sampleDirectory.ConvertPathToInternal()}");
+        testOutputHelper.WriteLine($"Testing {sampleDirectory.ConvertPathToInternal()}");
 
         var environmentVariables =
             new FallbackEnvironment(new EnvironmentVariables(), new DefaultEnvironmentVariables());
@@ -63,7 +57,7 @@ public sealed class TestSamples : IDisposable
 
         environmentVariables.SetEnvironmentVariable("AllowDebug", "false");
 
-        using var xunitLogger = _testOutputHelper.CreateTestLogger();
+        using var xunitLogger = testOutputHelper.CreateTestLogger();
 
         var expectedFiles = await GetExpectedFiles(sampleDirectory);
 
@@ -156,12 +150,12 @@ public sealed class TestSamples : IDisposable
 
         foreach (var directoryEntry in samplesDirectories)
         {
-            yield return new object[] {directoryEntry.Name};
+            yield return [directoryEntry.Name];
         }
 
         if (samplesDirectories.Length == 0)
         {
-            yield return new object[] {""};
+            yield return [""];
         }
     }
 

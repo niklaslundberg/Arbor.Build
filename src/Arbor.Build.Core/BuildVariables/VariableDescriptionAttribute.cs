@@ -3,18 +3,15 @@
 namespace Arbor.Build.Core.BuildVariables;
 
 [AttributeUsage(AttributeTargets.Field)]
-internal sealed class VariableDescriptionAttribute : Attribute
+internal sealed class VariableDescriptionAttribute(
+    string description,
+    string? defaultValue = null,
+    string? preferUse = null)
+    : Attribute
 {
-    public string? PreferUse { get; }
+    public string? PreferUse { get; } = preferUse;
 
-    public VariableDescriptionAttribute(string description, string? defaultValue = null, string? preferUse = null)
-    {
-        Description = description;
-        DefaultValue = defaultValue;
-        PreferUse = preferUse;
-    }
+    public string Description { get; } = description;
 
-    public string Description { get; }
-
-    public string? DefaultValue { get; }
+    public string? DefaultValue { get; } = defaultValue;
 }

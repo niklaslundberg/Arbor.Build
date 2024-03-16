@@ -38,11 +38,9 @@ public sealed class VariableDescription : IEquatable<VariableDescription>
 
     public static bool operator !=(VariableDescription left, VariableDescription right) => !Equals(left, right);
 
-    public static VariableDescription Create(
-        string invariantName,
-        string? description = null,
-        string? wellKnownName = null,
-        string? defaultValue = null) => new VariableDescription(invariantName, description, wellKnownName, defaultValue);
+    public static VariableDescription Create(string invariantName, string? description = null,
+        string? wellKnownName = null, string? defaultValue = null) =>
+        new(invariantName, description, wellKnownName, defaultValue);
 
     public bool Equals(VariableDescription? other)
     {

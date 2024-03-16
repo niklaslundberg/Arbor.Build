@@ -15,17 +15,10 @@ using Zio;
 namespace Arbor.Build.Core.Tools.DotNet;
 
 [UsedImplicitly]
-public class DotNetSdkVariableProvider : IVariableProvider
+public class DotNetSdkVariableProvider(IEnvironmentVariables environmentVariables, IFileSystem fileSystem)
+    : IVariableProvider
 {
-    private readonly IEnvironmentVariables _environmentVariables;
-    private readonly IFileSystem _fileSystem;
     private const string MSBuildSdksPath = "MSBuildSDKsPath";
-
-    public DotNetSdkVariableProvider(IEnvironmentVariables environmentVariables, IFileSystem fileSystem)
-    {
-        _environmentVariables = environmentVariables;
-        _fileSystem = fileSystem;
-    }
 
     public int Order => VariableProviderOrder.Ignored;
 
@@ -41,7 +34,7 @@ public class DotNetSdkVariableProvider : IVariableProvider
             return Task.FromResult(ImmutableArray<IVariable>.Empty);
         }
 
-        var programFilesX64 = _environmentVariables.GetEnvironmentVariable("ProgramW6432")?.ParseAsPath();
+        var programFilesX64 = environmentVariables.GetEnvironmentVariable("ProgramW6432")?.ParseAsPath();
 
         if (programFilesX64 is null)
         {
@@ -53,7 +46,7 @@ public class DotNetSdkVariableProvider : IVariableProvider
             "dotnet",
             "sdk");
 
-        var directoryEntry = new DirectoryEntry(_fileSystem, programFilesX64FullPath);
+        var directoryEntry = new DirectoryEntry(fileSystem, programFilesX64FullPath);
 
         if (directoryEntry.Exists)
         {
@@ -71,9 +64,9 @@ public class DotNetSdkVariableProvider : IVariableProvider
 
                 var sdksPath = UPath.Combine(directory.Path, "sdks");
 
-                if (_fileSystem.DirectoryExists(sdksPath))
+                if (fileSystem.DirectoryExists(sdksPath))
                 {
-                    return Task.FromResult(new IVariable[] { new BuildVariable(MSBuildSdksPath, _fileSystem.ConvertPathToInternal(sdksPath)) }.ToImmutableArray());
+                    return Task.FromResult(new IVariable[] { new BuildVariable(MSBuildSdksPath, fileSystem.ConvertPathToInternal(sdksPath)) }.ToImmutableArray());
                 }
             }
         }
