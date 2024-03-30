@@ -195,8 +195,8 @@
       },
       "Arbor.Tooler": {
         "type": "Transitive",
-        "resolved": "0.28.0-build.1710017456",
-        "contentHash": "PQ7Eo2dWXu+Ialu9/ibohBrHmUkZNsbnQDoWNzG/dMefSYwg4IaGp/WlYgxO9WEW3pyuYL3x4b62J5HNlkPJZg==",
+        "resolved": "0.29.0-build.1711790051",
+        "contentHash": "zk/U3uKNkHvdQpLXSbGzE+VMesOJUE50+P1WjkXKDJfnYjYAHTghmIo70bbGQdgCKKIQW2FAn2DlQ3rKmeeT1g==",
         "dependencies": {
           "Arbor.Processing": "0.6.0",
           "JetBrains.Annotations": "2023.3.0",
@@ -1760,7 +1760,7 @@
           "Arbor.KVConfiguration.UserConfiguration": "[2.6.0, )",
           "Arbor.Processing": "[0.6.0, )",
           "Arbor.Sorbus": "[4.0.0, )",
-          "Arbor.Tooler": "[0.28.0-build.1710017456, )",
+          "Arbor.Tooler": "[0.29.0-build.1711790051, )",
           "Autofac": "[8.0.0, )",
           "JetBrains.Annotations": "[2023.3.0, )",
           "MSTest.TestFramework": "[3.2.2, )",

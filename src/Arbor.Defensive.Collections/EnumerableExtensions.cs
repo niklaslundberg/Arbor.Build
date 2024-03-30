@@ -12,7 +12,7 @@ public static class EnumerableExtensions
 
         if (enumerable is ImmutableArray<T> array)
         {
-            return array.IsDefault ? ImmutableArray<T>.Empty : array;
+            return array.IsDefault ? [] : array;
         }
 
         var immutableArray = enumerable.ToImmutableArray();
@@ -59,12 +59,12 @@ public static class EnumerableExtensions
     {
         if (enumerable is null)
         {
-            return ImmutableArray<T>.Empty;
+            return [];
         }
 
         if (enumerable is ImmutableArray<T> array)
         {
-            return array.IsDefault ? ImmutableArray<T>.Empty : array;
+            return array.IsDefault ? [] : array;
         }
 
         var immutableArray = enumerable.ToImmutableArray();

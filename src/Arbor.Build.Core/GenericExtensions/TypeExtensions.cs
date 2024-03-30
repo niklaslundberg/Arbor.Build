@@ -10,7 +10,7 @@ public static class TypeExtensions
         ArgumentNullException.ThrowIfNull(type);
 
         return type.GetConstructors().Length == 1 &&
-               type.GetConstructor(Array.Empty<Type>())?.GetParameters().Length == 0;
+               type.GetConstructor([])?.GetParameters().Length == 0;
     }
 
     public static bool IsConcretePublicClassImplementing<T>(this Type type)

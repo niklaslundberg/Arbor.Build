@@ -73,7 +73,7 @@ public static class EnvironmentVariableHelper
                 file.ConvertPathToInternal(),
                 fileName);
 
-            return ImmutableArray<KeyValue>.Empty;
+            return [];
         }
 
         ConfigurationItems configurationItems;
@@ -87,13 +87,13 @@ public static class EnvironmentVariableHelper
         {
             logger.Error(ex, "Could not parse key value pairs in file '{FullName}'", file.FullName);
 
-            return ImmutableArray<KeyValue>.Empty;
+            return [];
         }
 
         if (configurationItems == null)
         {
             logger.Error("Could not parse key value pairs in file '{FullName}'", file.FullName);
-            return ImmutableArray<KeyValue>.Empty;
+            return [];
         }
 
         logger.Information("Used configuration values from file '{FileName}'", fileName);

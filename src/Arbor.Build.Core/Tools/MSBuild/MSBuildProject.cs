@@ -131,7 +131,7 @@ public class MsBuildProject
                                                                         new MSBuildProperty(p.Name.LocalName,
                                                                             p.Value))
                                                                     .ToImmutableArray()
-                                                                ?? ImmutableArray<MSBuildProperty>.Empty;
+                                                                ?? [];
 
             msbuildPropertyGroups.Add(new MSBuildPropertyGroup(msBuildProperties));
         }
@@ -142,7 +142,7 @@ public class MsBuildProject
             .Elements()
             .FirstOrDefault(e => e.Name.LocalName.Equals("ProjectTypeGuids", StringComparison.Ordinal));
 
-        ImmutableArray<ProjectType> projectTypes = ImmutableArray<ProjectType>.Empty;
+        ImmutableArray<ProjectType> projectTypes = [];
 
         if (projectTypeGuidsElement != null)
         {
@@ -175,7 +175,7 @@ public class MsBuildProject
 
         if (string.IsNullOrWhiteSpace(targetFrameworkValue) && string.IsNullOrWhiteSpace(targetFrameworksValue))
         {
-            targetFrameworks = ImmutableArray<TargetFramework>.Empty;
+            targetFrameworks = [];
         }
         else if (!string.IsNullOrWhiteSpace(targetFrameworksValue))
         {

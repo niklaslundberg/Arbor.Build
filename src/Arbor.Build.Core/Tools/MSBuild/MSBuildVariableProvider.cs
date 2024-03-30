@@ -72,7 +72,7 @@ public class MSBuildVariableProvider(
             if (!exitCode.IsSuccess)
             {
                 logger.Error("Could not get VS version by using vswhere, exit code {ExitCode}", exitCode.Code);
-                return ImmutableArray<IVariable>.Empty;
+                return [];
             }
 
             string json = resultBuilder.ToString();
@@ -80,7 +80,7 @@ public class MSBuildVariableProvider(
             if (string.IsNullOrWhiteSpace(json))
             {
                 logger.Error("Could not get VS version by using vswhere, empty json response");
-                return ImmutableArray<IVariable>.Empty;
+                return [];
             }
 
             try
@@ -176,7 +176,7 @@ public class MSBuildVariableProvider(
             }
         }
 
-        return ImmutableArray<IVariable>.Empty;
+        return [];
     }
 
     public int Order => VariableProviderOrder.Ignored;
@@ -190,19 +190,19 @@ public class MSBuildVariableProvider(
 
         if (Environment.OSVersion.Platform != PlatformID.Win32NT)
         {
-            return ImmutableArray<IVariable>.Empty;
+            return [];
         }
 
         if (buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_MSBuild_DotNetEnabled))
         {
-            return ImmutableArray<IVariable>.Empty;
+            return [];
         }
 
         string? path = buildVariables.GetVariableValueOrDefault(WellKnownVariables.ExternalTools_MSBuild_ExePath);
 
         if (!string.IsNullOrWhiteSpace(path))
         {
-            return ImmutableArray<IVariable>.Empty;
+            return [];
         }
 
         int currentProcessBits = Environment.Is64BitProcess ? 64 : 32;
@@ -473,7 +473,7 @@ public class MSBuildVariableProvider(
             {
                 logger.Error("The MSBuild path could not be found in the {RegistryLookupBits}-bit registry keys.",
                     registryLookupBits);
-                return ImmutableArray<IVariable>.Empty;
+                return [];
             }
         }
 

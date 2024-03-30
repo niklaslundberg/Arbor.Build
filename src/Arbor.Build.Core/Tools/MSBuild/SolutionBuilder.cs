@@ -83,7 +83,7 @@ public class SolutionBuilder(
     private bool _dotnetPublishEnabled = true;
 
     private IReadOnlyCollection<string> _excludedNuGetWebPackageFiles = ImmutableArray<string>.Empty;
-    private ImmutableArray<string> _excludedPlatforms = ImmutableArray<string>.Empty;
+    private ImmutableArray<string> _excludedPlatforms = [];
     private IReadOnlyCollection<string> _excludedWebJobsDirectorySegments = ImmutableArray<string>.Empty;
 
     private IReadOnlyCollection<string> _excludedWebJobsFiles = ImmutableArray<string>.Empty;
@@ -2558,7 +2558,7 @@ public class SolutionBuilder(
                     isExcludeListed.Item2);
             }
 
-            return Enumerable.Empty<FileEntry>();
+            return [];
         }
 
         var solutionFiles = directoryEntry.EnumerateFiles("*.sln").ToList();

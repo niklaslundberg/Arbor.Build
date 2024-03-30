@@ -31,7 +31,7 @@ public static class DirectoryExtensions
 
         if (usedPathLookupSpecification.IsNotAllowed(directory, rootDir).Item1)
         {
-            return ImmutableArray<FileEntry>.Empty;
+            return [];
         }
 
         IReadOnlyCollection<string> invalidFileExtensions = usedFileExtensions

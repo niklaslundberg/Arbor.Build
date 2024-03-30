@@ -47,7 +47,7 @@ public sealed class BuildApplication : IDisposable
 
     public BuildApplication(ILogger? logger, IEnvironmentVariables environmentVariables, ISpecialFolders specialFolders, IFileSystem fileSystem)
     {
-        _args = Array.Empty<string>();
+        _args = [];
         _environmentVariables = environmentVariables;
         _specialFolders = specialFolders;
         _fileSystem = fileSystem;
@@ -523,7 +523,7 @@ public sealed class BuildApplication : IDisposable
 
     public async Task<ExitCode> RunAsync(string[]? args)
     {
-        _args = args ?? Array.Empty<string>();
+        _args = args ?? [];
         MultiSourceKeyValueConfiguration multiSourceKeyValueConfiguration = KeyValueConfigurationManager
             .Add(new UserJsonConfiguration())
             .Add(new EnvironmentVariableKeyValueConfigurationSource())

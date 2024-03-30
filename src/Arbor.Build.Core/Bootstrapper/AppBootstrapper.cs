@@ -66,7 +66,7 @@ public class AppBootstrapper(ILogger logger, IEnvironmentVariables environmentVa
 
     public async Task<ExitCode> StartAsync(BootstrapStartOptions? startOptions)
     {
-        _startOptions = startOptions ?? new BootstrapStartOptions(Array.Empty<string>());
+        _startOptions = startOptions ?? new BootstrapStartOptions([]);
 
         SetEnvironmentVariables();
 
@@ -270,8 +270,14 @@ public class AppBootstrapper(ILogger logger, IEnvironmentVariables environmentVa
 
         logger.Debug("Downloading nuget package {Package}", BuildToolPackageName);
 
-        UPath buildToolsDirectory =
-            (await DownloadNuGetPackageAsync().ConfigureAwait(false)).ParseAsPath();
+        var buildToolsDirectory =
+            (await DownloadNuGetPackageAsync().ConfigureAwait(false));
+
+        if (!buildToolsDirectory.Exists)
+        {
+            logger.Error("Arbor.Build package download directory {Path} does not exist", fileSystem.ConvertPathToInternal(buildToolsDirectory.Path));
+            return ExitCode.Failure;
+        }
 
         ExitCode exitCode;
 
@@ -323,7 +329,7 @@ public class AppBootstrapper(ILogger logger, IEnvironmentVariables environmentVa
         return exitCode;
     }
 
-    private async Task<string> DownloadNuGetPackageAsync()
+    private async Task<DirectoryEntry> DownloadNuGetPackageAsync()
     {
         string? version = environmentVariables.GetEnvironmentVariable(WellKnownVariables.ArborBuildNuGetPackageVersion);
 
@@ -347,9 +353,11 @@ public class AppBootstrapper(ILogger logger, IEnvironmentVariables environmentVa
             new NuGetPackageId(BuildToolPackageName),
             packageVersion);
 
-        var nugetPackageSettings = new NugetPackageSettings()
+        var nugetPackageSettings = new NugetPackageSettings
         {
-            AllowPreRelease = preReleaseIsAllowed, NugetSource = nuGetSource
+            AllowPreRelease = preReleaseIsAllowed,
+            NugetSource = nuGetSource,
+            UseCli = false
         };
 
         var nuGetPackageInstallResult = await nuGetPackageInstaller.InstallPackageAsync(
@@ -382,7 +390,8 @@ public class AppBootstrapper(ILogger logger, IEnvironmentVariables environmentVa
                 $"Could not download {packageVersion}, verify it exists and that all sources are available");
         }
 
-        return nuGetPackageInstallResult.PackageDirectory.FullName;
+        return new DirectoryEntry(fileSystem,
+            fileSystem.ConvertPathFromInternal(nuGetPackageInstallResult.PackageDirectory.FullName));
     }
 
     private Task<DirectoryEntry> GetBaseDirectoryAsync(BootstrapStartOptions startOptions)
@@ -462,10 +471,8 @@ public class AppBootstrapper(ILogger logger, IEnvironmentVariables environmentVa
         return (dotnetExePath, ["--", buildToolDll.ConvertPathToInternal()]);
     }
 
-    private async Task<ExitCode> RunBuildToolsAsync(UPath buildDir, UPath buildToolDirectoryName, string? arborBuildExePath)
+    private async Task<ExitCode> RunBuildToolsAsync(UPath buildDir, DirectoryEntry buildToolDirectory, string? arborBuildExePath)
     {
-        var buildToolDirectory = new DirectoryEntry(fileSystem, buildToolDirectoryName);
-
         const string timeoutKey = WellKnownVariables.BuildToolTimeoutInSeconds;
         string? timeoutInSecondsFromEnvironment = environmentVariables.GetEnvironmentVariable(timeoutKey);
 

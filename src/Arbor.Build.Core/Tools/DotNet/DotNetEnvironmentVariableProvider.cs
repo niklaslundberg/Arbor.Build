@@ -30,7 +30,7 @@ public class DotNetEnvironmentVariableProvider(IEnvironmentVariables environment
 
         if (dotNetExePath.HasValue && dotNetExePath.Value != UPath.Empty)
         {
-            return ImmutableArray<IVariable>.Empty;
+            return [];
         }
 
         if (string.IsNullOrWhiteSpace(dotNetExePath?.FullName))
@@ -42,7 +42,7 @@ public class DotNetEnvironmentVariableProvider(IEnvironmentVariables environment
             if (winDir is null)
             {
                 logger.Warning("Error finding Windows directory");
-                return ImmutableArray<IVariable>.Empty;
+                return [];
             }
 
             var whereExePath = UPath.Combine(winDir.Value, "System32", "where.exe");
@@ -67,7 +67,7 @@ public class DotNetEnvironmentVariableProvider(IEnvironmentVariables environment
                 "The specified path to dotnet.exe is from variable '{DotNetExePath}' is set to '{DotNetExePath1}' but the file does not exist",
                 WellKnownVariables.DotNetExePath,
                 fileSystem.ConvertPathToInternal(dotNetExePath.Value));
-            return ImmutableArray<IVariable>.Empty;
+            return [];
         }
 
         return new IVariable[] { new BuildVariable(WellKnownVariables.DotNetExePath, string.IsNullOrWhiteSpace(dotNetExePath?.FullName) ? "" : fileSystem.ConvertPathToInternal(dotNetExePath.Value)) }

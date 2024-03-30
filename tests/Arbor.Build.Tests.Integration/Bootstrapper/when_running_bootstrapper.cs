@@ -48,7 +48,7 @@ public class when_running_bootstrapper
 
 
         startOptions = new BootstrapStartOptions(
-            Array.Empty<string>(),
+            [],
             baseDirectory,
             true,
             "develop");

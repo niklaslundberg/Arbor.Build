@@ -92,7 +92,7 @@ public sealed class TestSamples(ITestOutputHelper testOutputHelper) : IDisposabl
 
         using var buildApplication = new BuildApplication(logger, environmentVariables, SpecialFolders.Default, _fs);
 
-        string[] args = Array.Empty<string>();
+        string[] args = [];
 
         var exitCode = await buildApplication.RunAsync(args);
 
@@ -133,7 +133,7 @@ public sealed class TestSamples(ITestOutputHelper testOutputHelper) : IDisposabl
 
         if (!_fs.FileExists(expectedFilesDataPath))
         {
-            return ImmutableArray<UPath>.Empty;
+            return [];
         }
 
         await using var openFile = _fs.OpenFile(expectedFilesDataPath,FileMode.Open,FileAccess.Read);

@@ -16,7 +16,7 @@ public class InitializeLevelSwitch
         var environmentVariables = new EnvironmentVariables();
         environmentVariables.SetEnvironmentVariable(WellKnownVariables.LogLevel, "");
 
-        LoggingLevelSwitch loggingLevelSwitch = LogLevelHelper.GetLevelSwitch(Array.Empty<string>(), environmentVariables);
+        LoggingLevelSwitch loggingLevelSwitch = LogLevelHelper.GetLevelSwitch([], environmentVariables);
 
         Assert.NotNull(loggingLevelSwitch);
         Assert.Equal(LogEventLevel.Information, loggingLevelSwitch.MinimumLevel);

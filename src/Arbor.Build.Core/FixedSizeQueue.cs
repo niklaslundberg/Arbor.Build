@@ -47,7 +47,7 @@ public sealed class FixedSizedQueue<T>
             {
                 if (_queue.IsEmpty)
                 {
-                    return ImmutableArray<T>.Empty;
+                    return [];
                 }
 
                 return _queue.ToArray().ToImmutableArray();
