@@ -271,7 +271,7 @@ public class AppBootstrapper(ILogger logger, IEnvironmentVariables environmentVa
         logger.Debug("Downloading nuget package {Package}", BuildToolPackageName);
 
         var buildToolsDirectory =
-            (await DownloadNuGetPackageAsync().ConfigureAwait(false));
+            await DownloadNuGetPackageAsync(startOptions).ConfigureAwait(false);
 
         if (!buildToolsDirectory.Exists)
         {
@@ -329,7 +329,7 @@ public class AppBootstrapper(ILogger logger, IEnvironmentVariables environmentVa
         return exitCode;
     }
 
-    private async Task<DirectoryEntry> DownloadNuGetPackageAsync()
+    private async Task<DirectoryEntry> DownloadNuGetPackageAsync(BootstrapStartOptions startOptions)
     {
         string? version = environmentVariables.GetEnvironmentVariable(WellKnownVariables.ArborBuildNuGetPackageVersion);
 
@@ -357,6 +357,7 @@ public class AppBootstrapper(ILogger logger, IEnvironmentVariables environmentVa
         {
             AllowPreRelease = preReleaseIsAllowed,
             NugetSource = nuGetSource,
+            NugetConfigFile = startOptions.NuGetConfig,
             UseCli = false,
             Extract = true
         };

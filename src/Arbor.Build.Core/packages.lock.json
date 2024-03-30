@@ -77,9 +77,9 @@
       },
       "Arbor.Tooler": {
         "type": "Direct",
-        "requested": "[0.29.0-build.1711796903, )",
-        "resolved": "0.29.0-build.1711796903",
-        "contentHash": "uKuMTvlvoVYx9dR8vPGO41Kis/1nQyTlNAGFGFk/xHbsyrYuaTDpvL94u6BNHMnyUu7LTxL70yTJ2hvJkldZmw==",
+        "requested": "[0.29.0-build.1711808871, )",
+        "resolved": "0.29.0-build.1711808871",
+        "contentHash": "4HVbBkIOMO3C5DV1B/v7oWXN4T/Ptdp7ODDYD2BjJmcYZMLDSik3N34wteeClQvLgctqY7hg0LRycAwvDUcoNw==",
         "dependencies": {
           "Arbor.Processing": "0.6.0",
           "JetBrains.Annotations": "2023.3.0",

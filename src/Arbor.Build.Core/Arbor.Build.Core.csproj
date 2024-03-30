@@ -17,7 +17,7 @@
     <PackageReference Include="Arbor.KVConfiguration.Core" Version="2.6.0" />
     <PackageReference Include="Arbor.Processing" Version="0.6.0" />
     <PackageReference Include="Arbor.Sorbus" Version="4.0.0" />
-    <PackageReference Include="Arbor.Tooler" Version="0.29.0-build.1711796903" />
+    <PackageReference Include="Arbor.Tooler" Version="0.29.0-build.1711808871" />
     <PackageReference Include="Autofac" Version="8.0.0" />
     <PackageReference Include="System.Collections.Immutable" Version="8.0.0" />
     <PackageReference Include="System.Collections" Version="4.3.0" />
