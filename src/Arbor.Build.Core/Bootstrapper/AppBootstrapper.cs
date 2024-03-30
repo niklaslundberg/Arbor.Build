@@ -357,7 +357,8 @@ public class AppBootstrapper(ILogger logger, IEnvironmentVariables environmentVa
         {
             AllowPreRelease = preReleaseIsAllowed,
             NugetSource = nuGetSource,
-            UseCli = false
+            UseCli = false,
+            Extract = true
         };
 
         var nuGetPackageInstallResult = await nuGetPackageInstaller.InstallPackageAsync(
