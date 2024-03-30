@@ -412,7 +412,7 @@ public class NuGetPackager(
 
             var nugetSymbolPackages = packagesDirectoryPath
                 .GetFiles("*.symbols.nupkg")
-                .ToList();
+                .Concat(packagesDirectoryPath.GetFiles("*.snupkg")).ToList();
 
             var binaryPackages = nugetPackages.Except(nugetSymbolPackages).ToList();
 

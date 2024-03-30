@@ -1183,7 +1183,7 @@ public class SolutionBuilder(
             [
                 "pack", fileSystem.ConvertPathToInternal(solutionProject.FullPath.Path), "--configuration",
                 configuration, _argHelper.FormatPropertyArg("VersionPrefix", packageVersion), "--output",
-                fileSystem.ConvertPathToInternal(_packagesDirectory.Path), "--include-symbols"
+                fileSystem.ConvertPathToInternal(_packagesDirectory.Path)
             ];
 
             void Log(string message, string category)
