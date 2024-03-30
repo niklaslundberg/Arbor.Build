@@ -1041,6 +1041,8 @@ public class SolutionBuilder(
                         args.Add("--output");
 
                         args.Add(tempDirectory.ConvertPathToInternal());
+
+                        args.Add("--include-symbols");
                     }
 
                     string? runtimeIdentifier = solutionProject.Project.GetPropertyValue("RuntimeIdentifier").WithDefault(_publishRuntimeIdentifier);
