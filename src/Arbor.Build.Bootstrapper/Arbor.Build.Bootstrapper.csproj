@@ -14,7 +14,7 @@
 
   <ItemGroup>
     <PackageReference Include="Arbor.Aesculus" Version="3.7.0" />
-    <PackageReference Include="Arbor.Tooler" Version="0.29.0-build.1711808871" />
+    <PackageReference Include="Arbor.Tooler" Version="0.29.0-build.1711815559" />
     <PackageReference Include="JetBrains.Annotations" Version="2023.3.0" />
     <PackageReference Include="Microsoft.Win32.Primitives" Version="4.3.0" Condition="'${RuntimeIdentifier}' == 'win-x64'" />
     <PackageReference Include="System.Net.Primitives" Version="4.3.1" />
