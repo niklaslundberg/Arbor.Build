@@ -57,9 +57,9 @@ public static class SolutionProjectExtensions
 
     public
         static bool HasPublishPackageEnabled(this SolutionProject project) =>
-        project.Project.HasPropertyWithValue("GeneratePackageOnBuild", "true");
+        project.Project.HasPropertyWithValue("GeneratePackageOnBuild", "true", StringComparison.OrdinalIgnoreCase);
 
     public
         static bool HasExplicitExeOutputType(this SolutionProject project) =>
-        project.Project.HasPropertyWithValue("OutputType", "Exe");
+        project.Project.HasPropertyWithValue("OutputType", "Exe", StringComparison.OrdinalIgnoreCase);
 }
