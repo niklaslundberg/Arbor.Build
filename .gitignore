@@ -208,3 +208,4 @@ _patchedAssemblyInfos
 **/*ncrunchproject
 **/Backup.*.csproj
 **/*$_.opencover.json
+**/StoredText/**

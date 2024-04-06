@@ -57,7 +57,7 @@ public sealed class TestSamples(ITestOutputHelper testOutputHelper) : IDisposabl
 
         environmentVariables.SetEnvironmentVariable("AllowDebug", "false");
 
-        using var xunitLogger = testOutputHelper.CreateTestLogger();
+        await using var xunitLogger = testOutputHelper.CreateTestLogger();
 
         var expectedFiles = await GetExpectedFiles(sampleDirectory);
 

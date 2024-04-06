@@ -3,6 +3,7 @@ using System.IO;
 using Arbor.Build.Core;
 using Arbor.Build.Core.Bootstrapper;
 using Arbor.Build.Core.IO;
+using Arbor.Build.Tests.Integration.Tests.MSpec;
 using Arbor.FS;
 using Arbor.Processing;
 using Machine.Specifications;
@@ -25,37 +26,21 @@ public class when_running_bootstrapper
 
     Cleanup after = () =>
     {
-        try
-        {
-            baseDirectory.DeleteIfExists();
-        }
-        catch (IOException ex)
-        {
-            Console.Error.WriteLine(ex);
-        }
-
         fs.Dispose();
     };
 
     Establish context = () =>
     {
         fs = new PhysicalFileSystem();
-        //var tempDirectoryPath = UPath.Combine(Path.GetTempPath().ParseAsPath(),
-        //    $"{DefaultPaths.TempPathPrefix}_Bootstrapper_Test_{Guid.NewGuid()}");
 
-        var tempDirectoryPath = fs.ConvertPathFromInternal(@"D:\N\Arbor.Tooler");
-
-        baseDirectory = new DirectoryEntry(fs, tempDirectoryPath).EnsureExists();
-        Console.WriteLine("Temp directory is {0}", baseDirectory.FullName);
-
-        string nuGetConfig = @"D:\N\Offline\nuget.config";
+        baseDirectory = new DirectoryEntry(fs,
+            UPath.Combine(VcsTestPathHelper.FindVcsRootPath().Path, "samples", "_NetStandardPackage"));
 
         startOptions = new BootstrapStartOptions(
             [],
             baseDirectory,
             true,
-            "develop",
-            nuGetConfig: nuGetConfig);
+            "develop");
         _appBootstrapper = new AppBootstrapper(Logger.None, EnvironmentVariables.Empty, fs);
     };
 

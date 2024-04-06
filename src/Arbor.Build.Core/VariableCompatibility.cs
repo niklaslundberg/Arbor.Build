@@ -14,7 +14,7 @@ public static class VariableCompatibility
     {
         bool verboseEnabled = logger.IsEnabled(LogEventLevel.Verbose);
 
-        var replacements = new Dictionary<string, string> { ["Arbor.X"] = "Arbor.Build", ["."] = "_" };
+        var replacements = new Dictionary<string, string> { ["."] = "_" };
 
 
         var alreadyDefined = new List<Dictionary<string, string?>>();

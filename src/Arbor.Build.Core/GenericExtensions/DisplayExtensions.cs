@@ -12,7 +12,7 @@ public static class DisplayExtensions
         char padChar = '.')
     {
         ArgumentNullException.ThrowIfNull(dictionaries);
-        IReadOnlyCollection<IDictionary<string, string>> materialized = dictionaries.SafeToReadOnlyCollection();
+        IReadOnlyCollection<IDictionary<string, string?>> materialized = dictionaries.SafeToReadOnlyCollection();
 
         if (materialized.Count == 0)
         {
@@ -37,7 +37,7 @@ public static class DisplayExtensions
                             Math.Max(
                                 materialized.Where(dictionary => dictionary.ContainsKey(key))
                                     .Select(dictionary => dictionary[key])
-                                    .Select(value => value.Length)
+                                    .Select(value => value?.Length ?? 0)
                                     .Max(),
                                 noValue.Length))
                     })
