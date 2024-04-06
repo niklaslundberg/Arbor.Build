@@ -26,7 +26,7 @@ public static class VariableCompatibility
 
             foreach (IVariable buildVariable in buildVariableArray)
             {
-                if (!buildVariable.Key.StartsWithAny(new[] { ArborConstants.ArborBuild, ArborConstants.ArborX },
+                if (!buildVariable.Key.StartsWith(ArborConstants.ArborBuild,
                         StringComparison.OrdinalIgnoreCase))
                 {
                     continue;

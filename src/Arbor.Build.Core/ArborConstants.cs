@@ -2,7 +2,6 @@
 
 public static class ArborConstants
 {
-    public const string ArborX = "Arbor.X";
 
     public const string ArborBuild = "Arbor.Build";
 

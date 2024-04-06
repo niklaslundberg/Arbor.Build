@@ -46,7 +46,7 @@ public static class BuildBootstrapper
         }
     }
 
-    private static void RegisterAssemblyModules(ContainerBuilder builder)
+    public static void RegisterAssemblyModules(ContainerBuilder builder)
     {
         foreach (IModule module in GetModulesFromAssemblies())
         {
