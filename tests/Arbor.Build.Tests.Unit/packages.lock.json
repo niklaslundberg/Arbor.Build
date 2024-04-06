@@ -195,8 +195,8 @@
       },
       "Arbor.Tooler": {
         "type": "Transitive",
-        "resolved": "0.29.0-build.1711815559",
-        "contentHash": "M7vrACYAwKrbV4t4+rjmcrGX7wqu+CgiPJmAJ+KKwIlB0rjMKA7qUzMa+Ebaqo8V9Og6ccXK1bjhrQwH96qEuA==",
+        "resolved": "0.29.0",
+        "contentHash": "oGmOcp7ofdHdRYHae9UcgHmIM/Ey/meIL9E8/ukFN9tTgme8QLYimomzI7QY+9H5Pa3X6SCddSDxfR48Y9Qsdw==",
         "dependencies": {
           "Arbor.Processing": "0.6.0",
           "JetBrains.Annotations": "2023.3.0",
@@ -279,31 +279,31 @@
       },
       "Microsoft.IdentityModel.Abstractions": {
         "type": "Transitive",
-        "resolved": "7.5.0",
-        "contentHash": "seOFPaBQh2K683eFujAuDsrO2XbOA+SvxRli+wu7kl+ZymuGQzjmmUKfyFHmDazpPOBnmOX1ZnjX7zFDZHyNIA=="
+        "resolved": "7.5.1",
+        "contentHash": "PT16ZFbPIiMsYv07oy3zOjqUOJ7xutGBkJTOX0+IbNyU6+O6X7aIxjq9EaSSRLWbekRgamgtmfg8Xjw6A6Ua9g=="
       },
       "Microsoft.IdentityModel.JsonWebTokens": {
         "type": "Transitive",
-        "resolved": "7.5.0",
-        "contentHash": "mfyiGptbcH+oYrzAtWWwuV+7MoM0G0si+9owaj6DGWInhq/N/KDj/pWHhq1ShdmBu332gjP+cppjgwBpsOj7Fg==",
+        "resolved": "7.5.1",
+        "contentHash": "93CGSa8RPdZU8zfvA3nf9NGKUqEnQrE12VzYlMqKh72ddhzusosqLNEUgH/YhFWBLRFOnY1RCgHMV7pR+sAx2w==",
         "dependencies": {
-          "Microsoft.IdentityModel.Tokens": "7.5.0"
+          "Microsoft.IdentityModel.Tokens": "7.5.1"
         }
       },
       "Microsoft.IdentityModel.Logging": {
         "type": "Transitive",
-        "resolved": "7.5.0",
-        "contentHash": "3BInZEajJvnTDP/YRrmJ3Fyw8XAWWR9jG+3FkhhzRJJYItVL+BEH9qlgxSmtrxp7S7N6TOv+Y+X8BG61viiehQ==",
+        "resolved": "7.5.1",
+        "contentHash": "PnpAQX20BAiDIPYmWUyQSlEaWD8BLXzHpiDGTCT568Cs0ReOeyzNe401LzCeiv6ilug/KefVeV1CeqtCHTo8dw==",
         "dependencies": {
-          "Microsoft.IdentityModel.Abstractions": "7.5.0"
+          "Microsoft.IdentityModel.Abstractions": "7.5.1"
         }
       },
       "Microsoft.IdentityModel.Tokens": {
         "type": "Transitive",
-        "resolved": "7.5.0",
-        "contentHash": "owe33wqe0ZbwBxM3D90I0XotxNyTdl85jud03d+OrUOJNnTiqnYePwBk3WU9yW0Rk5CYX+sfSim7frmu6jeEzQ==",
+        "resolved": "7.5.1",
+        "contentHash": "Q3DKpyFViP84IUlTFKH/zIkswIrmSh2Vd/eFDo4wlOHy4DYxoweZEEw4kDEiKt9VCX6o7SddK3HK2xDYyFpexA==",
         "dependencies": {
-          "Microsoft.IdentityModel.Logging": "7.5.0"
+          "Microsoft.IdentityModel.Logging": "7.5.1"
         }
       },
       "Microsoft.NETCore.Platforms": {
@@ -411,8 +411,8 @@
       },
       "MSTest.TestFramework": {
         "type": "Transitive",
-        "resolved": "3.2.2",
-        "contentHash": "t3o8wfuMvjq1ETxsX6qBIOJMpnNpRoBjf2+0ZEKURSH+xHnpLM7yojNkLgJbir7vQGzQh7JaAUBO1MkszBvVrw=="
+        "resolved": "3.3.1",
+        "contentHash": "020SuA2p8N7o+/AHC0SLgzGpyS1hNjR8m5tWxnuGqJ3HeJhArUbuPAU8RZr8Ll38ij8oiutGCkQ/G+ymyO51Ow=="
       },
       "NETStandard.Library": {
         "type": "Transitive",
@@ -899,11 +899,11 @@
       },
       "System.IdentityModel.Tokens.Jwt": {
         "type": "Transitive",
-        "resolved": "7.5.0",
-        "contentHash": "D0TtrWOfoPdyYSlvOGaU9F1QR+qrbgJ/4eiEsQkIz7YQKIKkGXQldXukn6cYG9OahSq5UVMvyAIObECpH6Wglg==",
+        "resolved": "7.5.1",
+        "contentHash": "UUw+E0R73lZLlXgneYIJQxNs1kfbcxjVzw64JQyiwjqCd4HMpAbjn+xRo86QZT84uHq8/MkqvfH82tgjgPzpuw==",
         "dependencies": {
-          "Microsoft.IdentityModel.JsonWebTokens": "7.5.0",
-          "Microsoft.IdentityModel.Tokens": "7.5.0"
+          "Microsoft.IdentityModel.JsonWebTokens": "7.5.1",
+          "Microsoft.IdentityModel.Tokens": "7.5.1"
         }
       },
       "System.IO": {
@@ -1760,10 +1760,10 @@
           "Arbor.KVConfiguration.UserConfiguration": "[2.6.0, )",
           "Arbor.Processing": "[0.6.0, )",
           "Arbor.Sorbus": "[4.0.0, )",
-          "Arbor.Tooler": "[0.29.0-build.1711815559, )",
+          "Arbor.Tooler": "[0.29.0, )",
           "Autofac": "[8.0.0, )",
           "JetBrains.Annotations": "[2023.3.0, )",
-          "MSTest.TestFramework": "[3.2.2, )",
+          "MSTest.TestFramework": "[3.3.1, )",
           "Machine.Specifications": "[1.1.1, )",
           "Microsoft.CodeAnalysis.CSharp": "[4.9.2, )",
           "Microsoft.Web.Xdt": "[3.1.0, )",
@@ -1782,7 +1782,7 @@
           "System.IO": "[4.3.0, )",
           "System.IO.FileSystem": "[4.3.0, )",
           "System.IO.FileSystem.Primitives": "[4.3.0, )",
-          "System.IdentityModel.Tokens.Jwt": "[7.5.0, )",
+          "System.IdentityModel.Tokens.Jwt": "[7.5.1, )",
           "System.Net.Primitives": "[4.3.1, )",
           "System.Resources.ResourceManager": "[4.3.0, )",
           "System.Runtime": "[4.3.1, )",

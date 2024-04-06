@@ -12,7 +12,7 @@ using Zio.FileSystems;
 
 namespace Arbor.Build.Tests.Integration.Bootstrapper;
 
-[Ignore("Not complete")]
+//[Ignore("Not complete")]
 [Subject(typeof(AppBootstrapper))]
 public class when_running_bootstrapper
 {
@@ -40,18 +40,22 @@ public class when_running_bootstrapper
     Establish context = () =>
     {
         fs = new PhysicalFileSystem();
-        var tempDirectoryPath = UPath.Combine(Path.GetTempPath().ParseAsPath(),
-            $"{DefaultPaths.TempPathPrefix}_Bootstrapper_Test_{Guid.NewGuid()}");
+        //var tempDirectoryPath = UPath.Combine(Path.GetTempPath().ParseAsPath(),
+        //    $"{DefaultPaths.TempPathPrefix}_Bootstrapper_Test_{Guid.NewGuid()}");
+
+        var tempDirectoryPath = fs.ConvertPathFromInternal(@"D:\N\Arbor.Tooler");
 
         baseDirectory = new DirectoryEntry(fs, tempDirectoryPath).EnsureExists();
         Console.WriteLine("Temp directory is {0}", baseDirectory.FullName);
 
+        string nuGetConfig = @"D:\N\Offline\nuget.config";
 
         startOptions = new BootstrapStartOptions(
             [],
             baseDirectory,
             true,
-            "develop");
+            "develop",
+            nuGetConfig: nuGetConfig);
         _appBootstrapper = new AppBootstrapper(Logger.None, EnvironmentVariables.Empty, fs);
     };
 
