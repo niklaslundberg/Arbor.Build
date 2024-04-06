@@ -120,7 +120,7 @@ public static class NuGetVersionHelper
             ? $"{branchSuffixed}+{packageBuildMetadata.TrimStart('+')}"
             : branchSuffixed;
 
-        if (!SemanticVersion.TryParse(withMetadata, out SemanticVersion _))
+        if (!SemanticVersion.TryParse(withMetadata, out _))
         {
             throw new InvalidOperationException($"The NuGet version '{withMetadata}' is not a valid Semver 2.0 version");
         }

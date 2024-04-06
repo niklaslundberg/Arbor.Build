@@ -7,7 +7,7 @@ using NuGet.Versioning;
 
 namespace Arbor.Build.Core.Tools.Git;
 
-public static class BranchHelper
+public static class Branch
 {
     private static readonly FrozenSet<string> _nonFeatureBranchNames = new[] {
         "dev", BranchName.Develop.LogicalName, BranchName.Master.LogicalName, BranchName.Main.LogicalName,

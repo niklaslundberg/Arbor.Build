@@ -16,17 +16,18 @@ namespace Arbor.Build.Core.BuildVariables;
 public static class EnvironmentVariableHelper
 {
     public static IReadOnlyCollection<IVariable> GetBuildVariablesFromEnvironmentVariables(
-        ILogger logger,
+        ILogger? logger,
         IEnvironmentVariables environmentVariables,
         List<IVariable>? existingItems = null)
     {
-        logger ??= Logger.None ?? throw new ArgumentNullException(nameof(logger));
+        logger ??= Logger.None;
         List<IVariable> existing = existingItems ?? [];
         var buildVariables = new List<IVariable>();
 
         var variables = environmentVariables.GetVariables()
             .Where(pair => pair.Value is {})
-            .Select(pair => new BuildVariable(pair.Key, pair.Value));
+            .Select(pair => new BuildVariable(pair.Key, pair.Value))
+            .ToList();
 
         var nonExisting = variables
             .Where(bv => !existing.Any(ebv => ebv.Key.Equals(bv.Key, StringComparison.OrdinalIgnoreCase)))

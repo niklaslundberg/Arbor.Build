@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 
-namespace Arbor.Defensive.Collections;
+namespace Arbor.Build.Core;
 
 public static class EnumerableExtensions
 {
-    public static ImmutableArray<T> ToReadOnlyCollection<T>(this IEnumerable<T> enumerable)
+    public static IReadOnlyCollection<T> ToReadOnlyCollection<T>(this IEnumerable<T> enumerable)
     {
         ArgumentNullException.ThrowIfNull(enumerable);
 
@@ -15,11 +15,13 @@ public static class EnumerableExtensions
             return array.IsDefault ? [] : array;
         }
 
-        var immutableArray = enumerable.ToImmutableArray();
+        if (enumerable is List<T> list)
+        {
+            return list;
+        }
 
-        return immutableArray;
+        return enumerable.ToImmutableArray();
     }
-
     public static IEnumerable<T> NotNull<T>(this IEnumerable<T?> items) where T : class
     {
         foreach (var item in items)

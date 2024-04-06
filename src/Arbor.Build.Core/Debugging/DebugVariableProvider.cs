@@ -14,7 +14,7 @@ public class DebugVariableProvider(IEnvironmentVariables variables) : IVariableP
 {
     public int Order => int.MinValue + 1;
 
-    public Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
+    public Task<IReadOnlyCollection<IVariable>> GetBuildVariablesAsync(
         ILogger logger,
         IReadOnlyCollection<IVariable> buildVariables,
         CancellationToken cancellationToken)
@@ -22,7 +22,7 @@ public class DebugVariableProvider(IEnvironmentVariables variables) : IVariableP
         if (!DebugHelper.IsDebugging(variables))
         {
             logger.Verbose("Skipping debug variables, not running in debug mode");
-            return Task.FromResult(ImmutableArray<IVariable>.Empty);
+            return Task.FromResult<IReadOnlyCollection<IVariable>>([]);
         }
 
         var environmentVariables = new Dictionary<string, string>
@@ -67,10 +67,9 @@ public class DebugVariableProvider(IEnvironmentVariables variables) : IVariableP
             [WellKnownVariables.NuGetPackageArtifactsSuffixEnabled] = "true"
         };
 
-        Task<ImmutableArray<IVariable>> result = Task.FromResult(environmentVariables.Select(
-            pair => (IVariable)
-                new BuildVariable(pair.Key, pair.Value)).ToImmutableArray());
-
-        return result;
+        return Task.FromResult<IReadOnlyCollection<IVariable>>(
+            environmentVariables
+                .Select(pair => (IVariable)new BuildVariable(pair.Key, pair.Value))
+                .ToList());
     }
 }

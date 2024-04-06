@@ -22,7 +22,7 @@ public class DotNetSdkVariableProvider(IEnvironmentVariables environmentVariable
 
     public int Order => VariableProviderOrder.Ignored;
 
-    public Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
+    public Task<IReadOnlyCollection<IVariable>> GetBuildVariablesAsync(
         ILogger logger,
         IReadOnlyCollection<IVariable> buildVariables,
         CancellationToken cancellationToken)
@@ -31,14 +31,14 @@ public class DotNetSdkVariableProvider(IEnvironmentVariables environmentVariable
 
         if (!string.IsNullOrWhiteSpace(definedValue))
         {
-            return Task.FromResult(ImmutableArray<IVariable>.Empty);
+            return Task.FromResult(EnumerableOf<IVariable>.Empty);
         }
 
         var programFilesX64 = environmentVariables.GetEnvironmentVariable("ProgramW6432")?.ParseAsPath();
 
         if (programFilesX64 is null)
         {
-            return Task.FromResult(ImmutableArray<IVariable>.Empty);
+            return Task.FromResult(EnumerableOf<IVariable>.Empty);
         }
 
         var programFilesX64FullPath = UPath.Combine(
@@ -66,11 +66,11 @@ public class DotNetSdkVariableProvider(IEnvironmentVariables environmentVariable
 
                 if (fileSystem.DirectoryExists(sdksPath))
                 {
-                    return Task.FromResult(new IVariable[] { new BuildVariable(MSBuildSdksPath, fileSystem.ConvertPathToInternal(sdksPath)) }.ToImmutableArray());
+                    return Task.FromResult(new IVariable[] { new BuildVariable(MSBuildSdksPath, fileSystem.ConvertPathToInternal(sdksPath)) }.ToReadOnlyCollection());
                 }
             }
         }
 
-        return Task.FromResult(ImmutableArray<IVariable>.Empty);
+        return Task.FromResult(EnumerableOf<IVariable>.Empty);
     }
 }

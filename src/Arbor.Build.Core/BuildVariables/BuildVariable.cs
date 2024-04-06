@@ -1,4 +1,5 @@
 ﻿using System;
+using static System.String;
 
 namespace Arbor.Build.Core.BuildVariables;
 
@@ -6,11 +7,7 @@ public class BuildVariable : IVariable
 {
     public BuildVariable(string key, string? value)
     {
-        if (string.IsNullOrWhiteSpace(key))
-        {
-            throw new ArgumentException(Resources.ValueCannotBeNullOrWhitespace, nameof(key));
-        }
-
+        ArgumentException.ThrowIfNullOrWhiteSpace(key);
         Key = key;
         Value = value;
     }

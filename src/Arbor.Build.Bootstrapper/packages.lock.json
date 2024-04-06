@@ -1724,8 +1724,6 @@
         "type": "Project",
         "dependencies": {
           "Arbor.Aesculus": "[3.7.0, )",
-          "Arbor.Defensive.Collections": "[1.0.0, )",
-          "Arbor.Exceptions": "[1.0.0, )",
           "Arbor.FileSystem": "[0.5.0, )",
           "Arbor.KVConfiguration.Core": "[2.6.0, )",
           "Arbor.KVConfiguration.JsonConfiguration": "[2.6.0, )",
@@ -1765,21 +1763,6 @@
           "System.Text.Encoding.Extensions": "[4.3.0, )",
           "System.Threading": "[4.3.0, )",
           "xunit": "[2.7.0, )"
-        }
-      },
-      "arbor.defensive.collections": {
-        "type": "Project",
-        "dependencies": {
-          "JetBrains.Annotations": "[2023.3.0, )",
-          "Microsoft.CodeAnalysis.CSharp": "[4.9.2, )",
-          "System.Collections.Immutable": "[8.0.0, )"
-        }
-      },
-      "arbor.exceptions": {
-        "type": "Project",
-        "dependencies": {
-          "JetBrains.Annotations": "[2023.3.0, )",
-          "Microsoft.CodeAnalysis.CSharp": "[4.9.2, )"
         }
       }
     }

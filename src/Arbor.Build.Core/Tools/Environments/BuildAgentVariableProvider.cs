@@ -16,7 +16,7 @@ public class BuildAgentVariableProvider : IVariableProvider
 {
     public int Order => VariableProviderOrder.Default;
 
-    public Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
+    public Task<IReadOnlyCollection<IVariable>> GetBuildVariablesAsync(
         ILogger logger,
         IReadOnlyCollection<IVariable> buildVariables,
         CancellationToken cancellationToken)
@@ -51,6 +51,6 @@ public class BuildAgentVariableProvider : IVariableProvider
                 isBuildAgentValue.ToString(CultureInfo.InvariantCulture).ToLowerInvariant())
         };
 
-        return Task.FromResult(variables.ToImmutableArray());
+        return Task.FromResult(variables.ToReadOnlyCollection());
     }
 }

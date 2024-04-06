@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.ProcessUtils;
 using Arbor.Build.Core.Tools.Cleanup;
-using Arbor.Defensive.Collections;
 using Arbor.FS;
 using Arbor.Processing;
 using JetBrains.Annotations;
@@ -181,7 +180,7 @@ public class MSBuildVariableProvider(
 
     public int Order => VariableProviderOrder.Ignored;
 
-    public async Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
+    public async Task<IReadOnlyCollection<IVariable>> GetBuildVariablesAsync(
         ILogger logger,
         IReadOnlyCollection<IVariable> buildVariables,
         CancellationToken cancellationToken)

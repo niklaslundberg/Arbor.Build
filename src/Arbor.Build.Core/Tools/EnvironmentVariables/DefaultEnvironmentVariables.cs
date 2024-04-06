@@ -11,7 +11,7 @@ public class DefaultEnvironmentVariables : IEnvironmentVariables
 {
     public string? GetEnvironmentVariable(string key) => Environment.GetEnvironmentVariable(key);
 
-    public ImmutableDictionary<string, string?> GetVariables() =>
+    public IReadOnlyDictionary<string, string?> GetVariables() =>
         Environment.GetEnvironmentVariables()
             .OfType<DictionaryEntry>()
             .Select(pair =>

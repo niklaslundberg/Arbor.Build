@@ -13,7 +13,7 @@ public class TestConfigurationProvider : IVariableProvider
 {
     public int Order => BuildConfigurationProvider.ProviderOrder + 1;
 
-    public Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
+    public Task<IReadOnlyCollection<IVariable>> GetBuildVariablesAsync(
         ILogger logger,
         IReadOnlyCollection<IVariable> buildVariables,
         CancellationToken cancellationToken)
@@ -29,7 +29,7 @@ public class TestConfigurationProvider : IVariableProvider
         if (buildVariables.GetOptionalBooleanByKey(WellKnownVariables.RunTestsInReleaseConfigurationEnabled)
             .HasValue)
         {
-            return Task.FromResult(ImmutableArray<IVariable>.Empty);
+            return Task.FromResult(EnumerableOf<IVariable>.Empty);
         }
 
         if (releaseConfigurationEnabled && !debugConfigurationEnabled)
@@ -54,6 +54,6 @@ public class TestConfigurationProvider : IVariableProvider
                 WellKnownVariables.RunTestsInReleaseConfigurationEnabled);
         }
 
-        return Task.FromResult(newVariables.ToImmutableArray());
+        return Task.FromResult(newVariables.ToReadOnlyCollection());
     }
 }

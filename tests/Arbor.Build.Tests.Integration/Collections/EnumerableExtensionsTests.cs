@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using Arbor.Defensive.Collections;
+using Arbor.Build.Core;
 using FluentAssertions;
 using Xunit;
 

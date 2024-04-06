@@ -26,7 +26,7 @@ public class GitVariableProvider(
 {
     public int Order { get; } = -1;
 
-    public async Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
+    public async Task<IReadOnlyCollection<IVariable>> GetBuildVariablesAsync(
         ILogger? logger,
         IReadOnlyCollection<IVariable> buildVariables,
         CancellationToken cancellationToken)
@@ -41,13 +41,13 @@ public class GitVariableProvider(
             variables.Add(new BuildVariable(WellKnownVariables.BranchFullName, branchName));
         }
 
-        string logicalName = BranchHelper.GetLogicalName(branchName).Name;
+        string logicalName = Branch.GetLogicalName(branchName).Name;
 
         variables.Add(new BuildVariable(WellKnownVariables.BranchLogicalName, logicalName));
 
-        if (BranchHelper.BranchNameHasVersion(branchName, environmentVariables))
+        if (Branch.BranchNameHasVersion(branchName, environmentVariables))
         {
-            string version = BranchHelper.BranchSemVerMajorMinorPatch(branchName, environmentVariables)!.ToString();
+            string version = Branch.BranchSemVerMajorMinorPatch(branchName, environmentVariables)!.ToString();
 
             logger.Debug("Branch has version {Version}", version);
 

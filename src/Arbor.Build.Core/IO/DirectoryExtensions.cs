@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
-using Arbor.Defensive.Collections;
 using Arbor.Exceptions;
 using Zio;
 

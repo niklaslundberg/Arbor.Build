@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
@@ -16,7 +15,7 @@ public class ArtifactsVariableProvider(BuildContext buildContext) : IVariablePro
 {
     public int Order => 2;
 
-    public Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
+    public Task<IReadOnlyCollection<IVariable>> GetBuildVariablesAsync(
         ILogger logger,
         IReadOnlyCollection<IVariable> buildVariables,
         CancellationToken cancellationToken)
@@ -35,6 +34,6 @@ public class ArtifactsVariableProvider(BuildContext buildContext) : IVariablePro
             new BuildVariable(WellKnownVariables.ReportPath, sourceRoot.FileSystem.ConvertPathToInternal(testReportsDirectory.Path))
         };
 
-        return Task.FromResult(variables.ToImmutableArray());
+        return Task.FromResult(variables.ToReadOnlyCollection());
     }
 }

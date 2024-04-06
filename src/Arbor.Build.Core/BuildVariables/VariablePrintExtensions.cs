@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Linq;
 using Arbor.Build.Core.GenericExtensions;
@@ -22,8 +23,8 @@ public static class VariablePrintExtensions
         return dictionaries.DisplayAsTable();
     }
 
-    private static readonly string[] SensitiveValues = ["password", "apikey", "username", "pw", "token", "jwt", "connectionstring"
-    ];
+    private static readonly FrozenSet<string> SensitiveValues = new[] { "password", "apikey", "username", "pw", "token", "jwt", "connectionString", "client_secret" }.ToFrozenSet();
+    private static StringComparison _comparisonType;
 
     public static string DisplayPair(this IVariable variable)
     {
@@ -38,13 +39,13 @@ public static class VariablePrintExtensions
     {
         if (SensitiveValues.Any(sensitive =>
             {
-                var comparisonType = StringComparison.OrdinalIgnoreCase;
+                _comparisonType = StringComparison.OrdinalIgnoreCase;
 
                 return key
-                    .Replace("-", "", comparisonType)
-                    .Replace("_", "", comparisonType)
-                    .Replace(".", "", comparisonType)
-                    .Contains(sensitive, comparisonType);
+                    .Replace("-", "", _comparisonType)
+                    .Replace("_", "", _comparisonType)
+                    .Replace(".", "", _comparisonType)
+                    .Contains(sensitive, _comparisonType);
             }))
         {
             value = "*****";

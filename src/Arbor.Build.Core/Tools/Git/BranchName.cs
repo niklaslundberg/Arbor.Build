@@ -27,7 +27,7 @@ public sealed class BranchName
 
     public string Name { get; }
 
-    public string LogicalName => BranchHelper.GetLogicalName(Name).Name;
+    public string LogicalName => Branch.GetLogicalName(Name).Name;
 
     public string FullName => Name;
 

@@ -20,7 +20,7 @@ public class BuildConfigurationProvider(BuildContext buildContext) : IVariablePr
 
     public int Order => ProviderOrder;
 
-    public Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
+    public Task<IReadOnlyCollection<IVariable>> GetBuildVariablesAsync(
         ILogger logger,
         IReadOnlyCollection<IVariable> buildVariables,
         CancellationToken cancellationToken)
@@ -63,7 +63,7 @@ public class BuildConfigurationProvider(BuildContext buildContext) : IVariablePr
             buildContext.Configurations.Add(configuration);
         }
 
-        return Task.FromResult(variables.ToImmutableArray());
+        return Task.FromResult(variables.ToReadOnlyCollection());
     }
 
     private static string GetConfiguration(IReadOnlyCollection<IVariable> buildVariables)

@@ -13,7 +13,6 @@ using Arbor.Build.Core.GenericExtensions.Bools;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.Git;
 using Arbor.Build.Core.Tools.NuGet;
-using Arbor.Defensive.Collections;
 using Arbor.Exceptions;
 using Arbor.FS;
 using Arbor.KVConfiguration.Core.Metadata;
@@ -2272,7 +2271,7 @@ public class SolutionBuilder(
             .ToReadOnlyCollection();
         if (_debugLoggingEnabled)
         {
-            logger.Debug("Found {Length} files with transforms", transformationPairs.Length);
+            logger.Debug("Found {Length} files with transforms", transformationPairs.Count);
         }
 
         foreach (var configurationFile in transformationPairs)

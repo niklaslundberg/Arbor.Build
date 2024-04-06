@@ -25,7 +25,7 @@ public class BuildVersionProvider(ITimeService timeService, BuildContext buildCo
 {
     public int Order => VariableProviderOrder.Ignored;
 
-    public Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
+    public Task<IReadOnlyCollection<IVariable>> GetBuildVariablesAsync(
         ILogger logger,
         IReadOnlyCollection<IVariable> buildVariables,
         CancellationToken cancellationToken)
@@ -37,7 +37,7 @@ public class BuildVersionProvider(ITimeService timeService, BuildContext buildCo
             .Select(item => (IVariable)new BuildVariable(item.Key, item.Value))
             .ToList();
 
-        return Task.FromResult(environmentVariables.ToImmutableArray());
+        return Task.FromResult(environmentVariables.ToReadOnlyCollection());
     }
 
     private static bool ValidateVersionNumber(KeyValuePair<string, string?> pair)

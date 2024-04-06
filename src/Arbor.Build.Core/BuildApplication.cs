@@ -17,7 +17,6 @@ using Arbor.Build.Core.GenericExtensions.Int;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools;
 using Arbor.Build.Core.Tools.MSBuild;
-using Arbor.Defensive.Collections;
 using Arbor.Exceptions;
 using Arbor.FS;
 using Arbor.KVConfiguration.Core;
@@ -403,14 +402,14 @@ public sealed class BuildApplication : IDisposable
                 _logger.Verbose("### Running variable provider {Provider}", provider.GetType().Name);
             }
 
-            ImmutableArray<IVariable> newVariables =
+            var newVariables =
                 await provider.GetBuildVariablesAsync(_logger, buildVariables, _cancellationToken)
                     .ConfigureAwait(false);
 
             if (_verboseEnabled)
             {
                 string values;
-                if (newVariables.Length > 0)
+                if (newVariables.Count > 0)
                 {
                     Dictionary<string, string?>[] providerTable =
                     [

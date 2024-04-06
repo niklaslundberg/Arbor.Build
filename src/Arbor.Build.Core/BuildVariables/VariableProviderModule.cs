@@ -13,7 +13,7 @@ public class VariableProviderModule : Module
 {
     protected override void Load(ContainerBuilder builder)
     {
-        Assembly[] assemblies = AssemblyFetcher.GetFilteredAssemblies().ToArray();
+        Assembly[] assemblies = AssemblyFetcher.GetFilteredAssemblies();
 
         builder.RegisterAssemblyTypes(assemblies)
             .Where(type => type.IsConcretePublicClassImplementing<IVariableProvider>())

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -21,7 +20,7 @@ public class VisualStudioVariableProvider(IFileSystem fileSystem) : IVariablePro
 
     public int Order => VariableProviderOrder.Ignored;
 
-    public Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
+    public Task<IReadOnlyCollection<IVariable>> GetBuildVariablesAsync(
         ILogger logger,
         IReadOnlyCollection<IVariable> buildVariables,
         CancellationToken cancellationToken)
@@ -30,7 +29,7 @@ public class VisualStudioVariableProvider(IFileSystem fileSystem) : IVariablePro
                 WellKnownVariables.ExternalTools_VisualStudio_Version,
                 string.Empty)))
         {
-            return Task.FromResult(ImmutableArray<IVariable>.Empty);
+            return Task.FromResult(EnumerableOf<IVariable>.Empty);
         }
 
         _allowPreReleaseVersions =
@@ -72,7 +71,7 @@ public class VisualStudioVariableProvider(IFileSystem fileSystem) : IVariablePro
             new BuildVariable(WellKnownVariables.ExternalTools_VSTest_ExePath, vsTestExePath?.FullName)
         };
 
-        return Task.FromResult(environmentVariables.ToImmutableArray());
+        return Task.FromResult(environmentVariables.ToReadOnlyCollection());
     }
 
     private UPath? GetVSTestExePath(ILogger logger, string registryKeyName, string visualStudioVersion)

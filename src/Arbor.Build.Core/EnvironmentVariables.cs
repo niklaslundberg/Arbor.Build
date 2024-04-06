@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using Arbor.Build.Core.BuildVariables;
 
@@ -16,7 +17,7 @@ public class EnvironmentVariables : IEnvironmentVariables
             ? value
             : default;
 
-    public ImmutableDictionary<string, string?> GetVariables() => _pairs.ToImmutableDictionary();
+    public IReadOnlyDictionary<string, string?> GetVariables() => _pairs;
 
     public void SetEnvironmentVariable(string key, string? value)
     {

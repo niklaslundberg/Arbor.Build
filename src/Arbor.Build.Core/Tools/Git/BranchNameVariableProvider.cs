@@ -28,7 +28,7 @@ public class BranchNameVariableProvider(
 {
     public int Order => VariableProviderOrder.Priority - 2;
 
-    public async Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
+    public async Task<IReadOnlyCollection<IVariable>> GetBuildVariablesAsync(
         ILogger logger1,
         IReadOnlyCollection<IVariable> buildVariables,
         CancellationToken cancellationToken)

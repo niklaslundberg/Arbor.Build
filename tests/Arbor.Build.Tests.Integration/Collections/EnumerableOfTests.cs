@@ -1,4 +1,4 @@
-﻿using Arbor.Defensive.Collections;
+﻿using Arbor.Build.Core;
 using FluentAssertions;
 using Xunit;
 

@@ -23,7 +23,7 @@ public class ScriptTool(BuildContext buildContext) : ITool
 
         var fullPaths = paths.Select(path => UPath.Combine(buildContext.SourceRoot.Path, path)).ToArray();
 
-        logger.Debug("Found PostScripts [{PostScriptCount}] {Scripts}", paths.Length, paths);
+        logger.Debug("Found PostScripts [{PostScriptCount}] {Scripts}", paths.Count, paths);
 
         foreach (var fullPath in fullPaths)
         {

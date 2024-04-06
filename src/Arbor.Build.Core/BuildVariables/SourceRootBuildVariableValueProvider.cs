@@ -16,7 +16,7 @@ public class SourceRootBuildVariableValueProvider(SourceRootValue? sourceDirecto
 
     public int Order => int.MinValue;
 
-    public Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
+    public Task<IReadOnlyCollection<IVariable>> GetBuildVariablesAsync(
         ILogger logger,
         IReadOnlyCollection<IVariable> buildVariables,
         CancellationToken cancellationToken)
@@ -29,6 +29,6 @@ public class SourceRootBuildVariableValueProvider(SourceRootValue? sourceDirecto
             variables.Add(new BuildVariable(WellKnownVariables.SourceRoot, _sourceDirectory.ConvertPathToInternal()));
         }
 
-        return Task.FromResult(variables.ToImmutableArray());
+        return Task.FromResult(variables.ToReadOnlyCollection());
     }
 }

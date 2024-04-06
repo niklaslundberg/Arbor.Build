@@ -20,7 +20,7 @@ public class DotNetEnvironmentVariableProvider(IEnvironmentVariables environment
 {
     public int Order => VariableProviderOrder.Ignored;
 
-    public async Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
+    public async Task<IReadOnlyCollection<IVariable>> GetBuildVariablesAsync(
         ILogger logger,
         IReadOnlyCollection<IVariable> buildVariables,
         CancellationToken cancellationToken)

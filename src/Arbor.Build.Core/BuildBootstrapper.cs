@@ -1,13 +1,10 @@
 using System;
-using System.Collections.Immutable;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using Arbor.Build.Core.Assemblies;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.GenericExtensions;
 using Arbor.Build.Core.Logging;
-using Arbor.Defensive.Collections;
 using Autofac;
 using Autofac.Core;
 using Autofac.Util;
@@ -38,7 +35,7 @@ public static class BuildBootstrapper
 
         IContainer container = builder.Build();
 
-        return container.AsCompletedTask();
+        return container.AsCompletedTask()!;
     }
 
     private static void RegisterSourceRootConditionally(DirectoryEntry? sourceDirectory, ContainerBuilder builder)
@@ -51,9 +48,7 @@ public static class BuildBootstrapper
 
     private static void RegisterAssemblyModules(ContainerBuilder builder)
     {
-        IModule[] modules = GetModulesFromAssemblies();
-
-        foreach (IModule module in modules)
+        foreach (IModule module in GetModulesFromAssemblies())
         {
             builder.RegisterModule(module);
         }
@@ -63,9 +58,9 @@ public static class BuildBootstrapper
 
     private static IModule[] GetModulesFromAssemblies()
     {
-        ImmutableHashSet<Assembly> assemblies = AssemblyFetcher.GetFilteredAssemblies();
+        var assemblies = AssemblyFetcher.GetFilteredAssemblies();
 
-        IModule[] modules = assemblies.SelectMany(assembly =>
+        return assemblies.SelectMany(assembly =>
                 assembly.GetLoadableTypes()
                     .Where(type =>
                         type.IsConcretePublicClassImplementing<IModule>()
@@ -73,7 +68,5 @@ public static class BuildBootstrapper
             .Select(type => Activator.CreateInstance(type) as IModule)
             .NotNull()
             .ToArray();
-
-        return modules;
     }
 }

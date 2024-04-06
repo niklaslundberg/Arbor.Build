@@ -455,7 +455,7 @@ public class AppBootstrapper(ILogger logger, IEnvironmentVariables environmentVa
             return (null, []);
         }
 
-        ImmutableArray<IVariable> variables = await new DotNetEnvironmentVariableProvider(environmentVariables, fileSystem)
+        var variables = await new DotNetEnvironmentVariableProvider(environmentVariables, fileSystem)
             .GetBuildVariablesAsync(
                 logger,
                 ImmutableArray<IVariable>.Empty,
