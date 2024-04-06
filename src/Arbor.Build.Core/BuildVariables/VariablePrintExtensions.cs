@@ -23,7 +23,9 @@ public static class VariablePrintExtensions
         return dictionaries.DisplayAsTable();
     }
 
-    private static readonly FrozenSet<string> SensitiveValues = new[] { "password", "apikey", "username", "pw", "token", "jwt", "connectionString", "client_secret" }.ToFrozenSet();
+    private static readonly FrozenSet<string> SensitiveValues = new[] { "password", "apikey", "username", "pw", "token", "jwt", "connectionString", "clientSecret" }
+        .ToFrozenSet();
+
     private static StringComparison _comparisonType;
 
     public static string DisplayPair(this IVariable variable)
@@ -32,10 +34,10 @@ public static class VariablePrintExtensions
 
         string? value = GetDisplayValue(variable.Key, variable.Value);
 
-        return $"\t{variable.Key}: {value}";
+        return $"{variable.Key}: {value}";
     }
 
-    public static string? GetDisplayValue(this string key, string? value)
+    public static string GetDisplayValue(this string key, string? value)
     {
         if (SensitiveValues.Any(sensitive =>
             {
@@ -48,9 +50,14 @@ public static class VariablePrintExtensions
                     .Contains(sensitive, _comparisonType);
             }))
         {
-            value = "*****";
+            return "*****";
         }
 
-        return value;
+        if (string.IsNullOrEmpty(value))
+        {
+            return "<empty>";
+        }
+
+        return $"'{value}'";
     }
 }

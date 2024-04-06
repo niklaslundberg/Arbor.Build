@@ -207,3 +207,4 @@ _patchedAssemblyInfos
 **/*ncrunchsolution
 **/*ncrunchproject
 **/Backup.*.csproj
+**/*$_.opencover.json

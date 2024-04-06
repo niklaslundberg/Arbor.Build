@@ -5,6 +5,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="%24pwd\**" />
+    <EmbeddedResource Remove="%24pwd\**" />
+    <None Remove="%24pwd\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="coverage.json" />
+    <None Remove="coverage.opencover.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

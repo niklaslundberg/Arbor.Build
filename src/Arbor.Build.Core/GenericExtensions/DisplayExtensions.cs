@@ -11,15 +11,16 @@ public static class DisplayExtensions
         this IEnumerable<IDictionary<string, string?>> dictionaries,
         char padChar = '.')
     {
+        ArgumentNullException.ThrowIfNull(dictionaries);
         IReadOnlyCollection<IDictionary<string, string>> materialized = dictionaries.SafeToReadOnlyCollection();
 
-        if (dictionaries == null || materialized.Count == 0)
+        if (materialized.Count == 0)
         {
             return string.Empty;
         }
 
-        const char Separator = ' ';
-        const string NoValue = "-";
+        const char separator = ' ';
+        const string noValue = "-";
 
         string[] allKeys =
             materialized.SelectMany(dictionary => dictionary.Keys)
@@ -36,9 +37,9 @@ public static class DisplayExtensions
                             Math.Max(
                                 materialized.Where(dictionary => dictionary.ContainsKey(key))
                                     .Select(dictionary => dictionary[key])
-                                    .Select(value => (value ?? string.Empty).Length)
+                                    .Select(value => value.Length)
                                     .Max(),
-                                NoValue.Length))
+                                noValue.Length))
                     })
                 .ToArray();
 
@@ -50,7 +51,7 @@ public static class DisplayExtensions
 
             if (padding > 0)
             {
-                builder.Append(title).Append(new string(Separator, padding));
+                builder.Append(title).Append(new string(separator, padding));
             }
         }
 
@@ -62,11 +63,11 @@ public static class DisplayExtensions
 
             foreach (var indexedKey in indexedKeys)
             {
-                string value = dictionary.ContainsKey(indexedKey.Key) ? dictionary[indexedKey.Key] : NoValue;
+                string value = dictionary.TryGetValue(indexedKey.Key, out string? foundValue) ? foundValue : noValue;
 
                 if (string.IsNullOrWhiteSpace(value))
                 {
-                    value = NoValue;
+                    value = noValue;
                 }
 
                 int maxLength = maxLengths.Single(max => max.Key == indexedKey.Key).MaxLength;
@@ -75,7 +76,7 @@ public static class DisplayExtensions
 
                 if (indexedKey.Index >= 1)
                 {
-                    builder.Append(Separator);
+                    builder.Append(separator);
                 }
 
                 builder.Append(value);
