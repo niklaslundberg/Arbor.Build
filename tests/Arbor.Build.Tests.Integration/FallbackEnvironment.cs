@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Arbor.Build.Core.BuildVariables;
@@ -13,7 +14,7 @@ public class FallbackEnvironment(
     public string? GetEnvironmentVariable(string key) => environmentVariables.GetEnvironmentVariable(key) ??
                                                          defaultEnvironmentVariables.GetEnvironmentVariable(key);
 
-    public ImmutableDictionary<string, string?> GetVariables()
+    public IReadOnlyDictionary<string, string?> GetVariables()
     {
         var keyValuePairs = environmentVariables.GetVariables();
 
