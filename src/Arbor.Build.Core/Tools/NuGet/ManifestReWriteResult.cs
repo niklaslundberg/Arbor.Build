@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Arbor.Build.Core.GenericExtensions;
 using Zio;
 
 namespace Arbor.Build.Core.Tools.NuGet;

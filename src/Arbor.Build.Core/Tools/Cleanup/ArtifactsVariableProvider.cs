@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.GenericExtensions;
 using Arbor.Build.Core.Tools.MSBuild;
 using Arbor.FS;
 using JetBrains.Annotations;

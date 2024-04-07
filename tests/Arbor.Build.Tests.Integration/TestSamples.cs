@@ -6,8 +6,9 @@ using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
 using Arbor.Build.Core;
+using Arbor.Build.Core.BuildApp;
 using Arbor.Build.Core.BuildVariables;
-using Arbor.Build.Core.Logging;
+using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.EnvironmentVariables;
 using Arbor.Build.Core.Tools.NuGet;
 using Arbor.Build.Tests.Integration.Tests.MSpec;
@@ -69,7 +70,7 @@ public sealed class TestSamples(ITestOutputHelper testOutputHelper) : IDisposabl
 
         void FindFilePath(LogEvent obj)
         {
-            string? message = obj.RenderMessage();
+            string message = obj.RenderMessage();
 
             if (message.Contains("/mnt/", StringComparison.OrdinalIgnoreCase)
                 || message.Contains("C:/", StringComparison.OrdinalIgnoreCase))

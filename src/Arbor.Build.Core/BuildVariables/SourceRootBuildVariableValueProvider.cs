@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
+using Arbor.Build.Core.GenericExtensions;
 using Arbor.FS;
 using JetBrains.Annotations;
 using Serilog;

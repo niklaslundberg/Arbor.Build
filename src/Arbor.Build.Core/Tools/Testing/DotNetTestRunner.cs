@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.GenericExtensions;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.MSBuild;
 using Arbor.Build.Core.Tools.NuGet;

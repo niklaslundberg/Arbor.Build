@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 
-namespace Arbor.Build.Core;
+namespace Arbor.Build.Core.GenericExtensions;
 
 public static class EnumerableExtensions
 {
@@ -26,7 +26,7 @@ public static class EnumerableExtensions
     {
         foreach (var item in items)
         {
-            if (item is {})
+            if (item is { })
             {
                 yield return item;
             }
@@ -38,7 +38,7 @@ public static class EnumerableExtensions
     {
         foreach (var item in items)
         {
-            if (item.Item1 is {} && item.Item2 is {} && item.Item3 is {})
+            if (item.Item1 is { } && item.Item2 is { } && item.Item3 is { })
             {
                 yield return (item.Item1, item.Item2, item.Item3);
             }
@@ -50,7 +50,7 @@ public static class EnumerableExtensions
     {
         foreach (var item in items)
         {
-            if (item.Item1 is {} && item.Item2 is {})
+            if (item.Item1 is { } && item.Item2 is { })
             {
                 yield return (item.Item1, item.Item2);
             }
@@ -69,16 +69,7 @@ public static class EnumerableExtensions
             return array.IsDefault ? [] : array;
         }
 
-        var immutableArray = enumerable.ToImmutableArray();
-
-        return immutableArray;
-    }
-
-    public static ImmutableArray<T> ValueToImmutableArray<T>(this T item)
-    {
-        var immutableArray = new[] {item}.ToImmutableArray();
-
-        return immutableArray;
+        return enumerable.ToImmutableArray();
     }
 
 }

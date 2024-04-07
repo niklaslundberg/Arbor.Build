@@ -1,7 +1,7 @@
 ﻿using System;
 using Arbor.Build.Core.BuildVariables;
 
-namespace Arbor.Build.Core;
+namespace Arbor.Build.Core.IO;
 
 public sealed class SpecialFolders : ISpecialFolders
 {

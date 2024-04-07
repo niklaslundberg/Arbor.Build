@@ -11,12 +11,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Aesculus.Core;
 using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.Exceptions;
 using Arbor.Build.Core.GenericExtensions.Bools;
 using Arbor.Build.Core.GenericExtensions.Int;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.DotNet;
 using Arbor.Build.Core.Tools.NuGet;
-using Arbor.Exceptions;
 using Arbor.FS;
 using Arbor.Processing;
 using Arbor.Tooler;
@@ -367,12 +367,15 @@ public class AppBootstrapper(ILogger logger, IEnvironmentVariables environmentVa
             NugetConfigFile = startOptions.NuGetConfig,
             UseCli = false,
             Extract = true,
-            TempDirectory = startOptions.TempDirectory is {} ? new DirectoryInfo(startOptions.TempDirectory.ConvertPathToInternal()) : null
         };
+
+        var tempInstallDirectory = startOptions.TempDirectory is { }
+            ? new DirectoryInfo(startOptions.TempDirectory.ConvertPathToInternal())
+            : null;
 
         var nuGetPackageInstallResult = await nuGetPackageInstaller.InstallPackageAsync(
                 nuGetPackage,
-                nugetPackageSettings)
+                nugetPackageSettings, installBaseDirectory: tempInstallDirectory)
             ;
 
         if (nuGetPackageInstallResult.SemanticVersion is null)

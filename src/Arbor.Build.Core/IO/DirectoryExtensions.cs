@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
-using Arbor.Exceptions;
+using Arbor.Build.Core.Exceptions;
+using Arbor.Build.Core.GenericExtensions;
 using Zio;
 
 namespace Arbor.Build.Core.IO;

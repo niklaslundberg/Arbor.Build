@@ -1,5 +1,5 @@
 ﻿using System;
-using Arbor.Build.Core;
+using Arbor.Build.Core.Time;
 
 namespace Arbor.Build.Tests.Unit;
 

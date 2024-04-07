@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Arbor.Build.Core.BuildVariables;
 
-namespace Arbor.Build.Core;
+namespace Arbor.Build.Core.BuildVariables;
 
 public class EnvironmentVariables : IEnvironmentVariables
 {

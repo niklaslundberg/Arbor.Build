@@ -11,7 +11,7 @@ using Autofac.Util;
 using Serilog;
 using Zio;
 
-namespace Arbor.Build.Core;
+namespace Arbor.Build.Core.BuildApp;
 
 public static class BuildBootstrapper
 {
@@ -40,7 +40,7 @@ public static class BuildBootstrapper
 
     private static void RegisterSourceRootConditionally(DirectoryEntry? sourceDirectory, ContainerBuilder builder)
     {
-        if (sourceDirectory is {})
+        if (sourceDirectory is { })
         {
             builder.RegisterModule(new BuildVariableModule(sourceDirectory));
         }

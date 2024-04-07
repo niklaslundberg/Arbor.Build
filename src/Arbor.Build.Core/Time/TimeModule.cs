@@ -1,7 +1,7 @@
 ﻿using Autofac;
 using JetBrains.Annotations;
 
-namespace Arbor.Build.Core;
+namespace Arbor.Build.Core.Time;
 
 [UsedImplicitly]
 public class TimeModule : Module

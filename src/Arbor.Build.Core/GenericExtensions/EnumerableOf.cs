@@ -4,7 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 
-namespace Arbor.Build.Core;
+namespace Arbor.Build.Core.GenericExtensions;
 
 public static class EnumerableOf<T> where T : class
 {

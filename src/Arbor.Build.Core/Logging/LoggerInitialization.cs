@@ -16,9 +16,9 @@ public static class LoggerInitialization
 
         LoggingLevelSwitch levelSwitch = LogLevelHelper.GetLevelSwitch(args, environmentVariables);
 
-        string? seqUrl = args.FirstOrDefault(arg => arg.StartsWith("sequrl", StringComparison.OrdinalIgnoreCase))
+        string? seqUrl = args.FirstOrDefault(arg => arg.StartsWith("SeqUrl", StringComparison.OrdinalIgnoreCase))
                              ?.Split('=').LastOrDefault()
-                         ?? environmentVariables.GetEnvironmentVariable("sequrl");
+                         ?? environmentVariables.GetEnvironmentVariable("SeqUrl");
 
         string outputTemplate;
 

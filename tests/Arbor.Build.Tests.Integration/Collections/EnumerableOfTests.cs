@@ -1,4 +1,4 @@
-﻿using Arbor.Build.Core;
+﻿using Arbor.Build.Core.GenericExtensions;
 using FluentAssertions;
 using Xunit;
 

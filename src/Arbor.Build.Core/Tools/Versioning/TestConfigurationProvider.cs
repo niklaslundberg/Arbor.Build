@@ -3,6 +3,7 @@ using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.GenericExtensions;
 using JetBrains.Annotations;
 using Serilog;
 

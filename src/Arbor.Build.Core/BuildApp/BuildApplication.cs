@@ -11,13 +11,13 @@ using System.Threading.Tasks;
 using Arbor.Aesculus.Core;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.Debugging;
+using Arbor.Build.Core.Exceptions;
 using Arbor.Build.Core.GenericExtensions;
 using Arbor.Build.Core.GenericExtensions.Bools;
 using Arbor.Build.Core.GenericExtensions.Int;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools;
 using Arbor.Build.Core.Tools.MSBuild;
-using Arbor.Exceptions;
 using Arbor.FS;
 using Arbor.KVConfiguration.Core;
 using Arbor.KVConfiguration.Schema.Json;
@@ -29,7 +29,7 @@ using Serilog.Core;
 using Serilog.Events;
 using Zio;
 
-namespace Arbor.Build.Core;
+namespace Arbor.Build.Core.BuildApp;
 
 public sealed class BuildApplication : IDisposable
 {
@@ -90,7 +90,7 @@ public sealed class BuildApplication : IDisposable
 
     private async Task<DirectoryEntry?> StartWithDebuggerAsync()
     {
-        var baseDir = new DirectoryEntry(_fileSystem, (VcsPathHelper.FindVcsRootPath(AppContext.BaseDirectory) ?? throw new InvalidOperationException("Could not get base path") ).ParseAsPath());
+        var baseDir = new DirectoryEntry(_fileSystem, (VcsPathHelper.FindVcsRootPath(AppContext.BaseDirectory) ?? throw new InvalidOperationException("Could not get base path")).ParseAsPath());
 
         if (Environment.UserInteractive)
         {
@@ -113,7 +113,7 @@ public sealed class BuildApplication : IDisposable
 
         const string tempPath = @"C:\Work\Arbor.Build";
 
-        var tempDirectory = new DirectoryEntry( _fileSystem, UPath.Combine(
+        var tempDirectory = new DirectoryEntry(_fileSystem, UPath.Combine(
             tempPath.ParseAsPath(),
             "D",
             DateTime.UtcNow.ToFileTimeUtc().ToString(CultureInfo.InvariantCulture)));
@@ -275,8 +275,8 @@ public sealed class BuildApplication : IDisposable
         {
             foreach (var (toolResultValue, reportLogTail) in toolResults
                          .Where(tool => tool.ResultType == ToolResultType.Failed)
-                         .Select(toolResult => (Result:toolResult, LogTail:toolResult.ToolWithPriority.Tool as IReportLogTail))
-                         .Where(item => item.LogTail is {}))
+                         .Select(toolResult => (Result: toolResult, LogTail: toolResult.ToolWithPriority.Tool as IReportLogTail))
+                         .Where(item => item.LogTail is { }))
             {
                 string logTail = string.Join(Environment.NewLine, reportLogTail!.LogTail.AllCurrentItems);
                 _logger.Error("Tool {Tool} failed with log tail {NewLine}{LogTail}", toolResultValue.ToolWithPriority.Tool.Name(), Environment.NewLine, logTail);
@@ -454,7 +454,7 @@ public sealed class BuildApplication : IDisposable
                     }
                     else
                     {
-                        if (existing.Value is {} existingValue && existingValue.Equals(variable.Value, StringComparison.OrdinalIgnoreCase))
+                        if (existing.Value is { } existingValue && existingValue.Equals(variable.Value, StringComparison.OrdinalIgnoreCase))
                         {
                             continue;
                         }
@@ -500,7 +500,7 @@ public sealed class BuildApplication : IDisposable
     private void CheckEnvironmentLinesInVariables(List<IVariable> buildVariables)
     {
         var newLines =
-            buildVariables.Where(item => item.Value is {} && item.Value.Contains(Environment.NewLine, StringComparison.Ordinal)).ToList();
+            buildVariables.Where(item => item.Value is { } && item.Value.Contains(Environment.NewLine, StringComparison.Ordinal)).ToList();
 
         if (newLines.Count > 0)
         {

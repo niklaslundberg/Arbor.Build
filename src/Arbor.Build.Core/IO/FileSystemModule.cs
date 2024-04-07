@@ -4,7 +4,7 @@ using JetBrains.Annotations;
 using Zio;
 using Zio.FileSystems;
 
-namespace Arbor.Build.Core;
+namespace Arbor.Build.Core.IO;
 
 [UsedImplicitly]
 public class FileSystemModule : Module

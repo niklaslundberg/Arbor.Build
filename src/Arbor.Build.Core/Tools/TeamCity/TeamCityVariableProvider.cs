@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.GenericExtensions;
 using Arbor.Build.Core.Tools.Cleanup;
 using JetBrains.Annotations;
 using Serilog;

@@ -8,12 +8,12 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.Exceptions;
 using Arbor.Build.Core.GenericExtensions;
 using Arbor.Build.Core.GenericExtensions.Bools;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.Git;
 using Arbor.Build.Core.Tools.NuGet;
-using Arbor.Exceptions;
 using Arbor.FS;
 using Arbor.KVConfiguration.Core.Metadata;
 using Arbor.KVConfiguration.Schema.Json;
@@ -350,7 +350,7 @@ public class SolutionBuilder(
     private UPath? FindRuleSet()
     {
         IReadOnlyCollection<FileEntry> rulesetFiles = _vcsRoot
-            .GetFilesRecursive(".ruleset".ValueToImmutableArray(), _pathLookupSpecification, _vcsRoot)
+            .GetFilesRecursive([".ruleset"], _pathLookupSpecification, _vcsRoot)
             .ToReadOnlyCollection();
 
         if (rulesetFiles.Count != 1)
@@ -489,7 +489,7 @@ public class SolutionBuilder(
 
             while (streamReader.Peek() >= 0)
             {
-                string? line = await streamReader.ReadLineAsync();
+                string? line = await streamReader.ReadLineAsync(_cancellationToken);
 
                 if (string.IsNullOrWhiteSpace(line))
                 {
@@ -2586,7 +2586,7 @@ public class SolutionBuilder(
         bool isNotAllowedByAttributes = excludedByAttributes.Length > 0;
 
         return (isNotAllowedByAttributes, isNotAllowedByAttributes
-            ? $"Directory has exclude-listed attributes {string.Join(", ", excludedByAttributes.Select(_ => Enum.GetName(typeof(FileAttributes), _)))}"
+            ? $"Directory has exclude-listed attributes {string.Join(", ", excludedByAttributes.Select(attributes => Enum.GetName(typeof(FileAttributes), attributes)))}"
             : string.Empty);
     }
 

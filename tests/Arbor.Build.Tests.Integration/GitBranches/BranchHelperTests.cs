@@ -1,4 +1,4 @@
-using Arbor.Build.Core;
+using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.Tools.Git;
 using Machine.Specifications;
 using Xunit;

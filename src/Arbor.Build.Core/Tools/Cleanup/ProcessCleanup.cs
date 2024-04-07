@@ -7,7 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
-using Arbor.Exceptions;
+using Arbor.Build.Core.Exceptions;
 using Arbor.FS;
 using Arbor.Processing;
 using JetBrains.Annotations;

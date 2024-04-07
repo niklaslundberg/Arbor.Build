@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.GenericExtensions;
 using Serilog;
 using Serilog.Events;
 
-namespace Arbor.Build.Core;
+namespace Arbor.Build.Core.BuildVariables;
 
 public static class VariableCompatibility
 {
