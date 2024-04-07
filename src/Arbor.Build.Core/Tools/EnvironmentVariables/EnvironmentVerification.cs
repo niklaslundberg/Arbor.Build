@@ -73,7 +73,7 @@ public abstract class EnvironmentVerification : ITool
 
         bool succeeded = missingKeys.Count == 0 && missingValues.Count == 0;
 
-        succeeded &= await PostVariableVerificationAsync(sb, buildVariables, logger).ConfigureAwait(false);
+        succeeded &= await PostVariableVerificationAsync(sb, buildVariables, logger);
 
         if (!succeeded)
         {

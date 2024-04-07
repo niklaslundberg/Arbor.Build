@@ -125,7 +125,7 @@ public class MsBuildNuGetRestorer(IFileSystem fileSystem, BuildContext buildCont
                 fileSystem.ConvertPathToInternal(msbuildExePath),
                 arguments,
                 processLogger,
-                cancellationToken: cancellationToken).ConfigureAwait(false);
+                cancellationToken: cancellationToken);
 
             if (!exitCode.IsSuccess)
             {

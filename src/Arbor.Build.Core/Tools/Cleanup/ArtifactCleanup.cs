@@ -66,7 +66,7 @@ public class ArtifactCleanup(IFileSystem fileSystem, BuildContext buildContext) 
                     "Attempt {AttemptCount} of {MaxAttempts} failed, could not cleanup the artifacts folder, retrying",
                     attemptCount,
                     maxAttempts);
-                await Task.Delay(TimeSpan.FromMilliseconds(50), cancellationToken).ConfigureAwait(false);
+                await Task.Delay(TimeSpan.FromMilliseconds(50), cancellationToken);
             }
 
             attemptCount++;

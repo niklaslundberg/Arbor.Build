@@ -31,7 +31,7 @@ internal static class Program
         _fileSystem = new WindowsFs(_physicalFileSystem);
         var bootstrapper = new Core.Bootstrapper.AppBootstrapper(logger, environmentVariables, fileSystem ?? _fileSystem);
 
-        ExitCode exitCode = await bootstrapper.StartAsync(args).ConfigureAwait(false);
+        ExitCode exitCode = await bootstrapper.StartAsync(args);
 
         if (logger is IDisposable disposable)
         {

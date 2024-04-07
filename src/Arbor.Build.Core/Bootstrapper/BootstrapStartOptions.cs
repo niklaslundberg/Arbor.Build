@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 using Zio;
 
@@ -12,7 +13,8 @@ public class BootstrapStartOptions(
     string? branchName = null,
     bool downloadOnly = false,
     string? arborBuildExePath = default,
-    string? nuGetConfig = default)
+    string? nuGetConfig = default,
+    DirectoryEntry? tempDirectory = default )
 {
     public const string DownloadOnlyCliParameter = "--download-only";
     public const string ArborBuildExeCliParameter = "-arborBuildExe=";
@@ -29,6 +31,7 @@ public class BootstrapStartOptions(
 
     public string? ArborBuildExePath { get; } = arborBuildExePath;
     public string? NuGetConfig { get; } = nuGetConfig;
+    public DirectoryEntry? TempDirectory { get; } = tempDirectory;
 
     public static BootstrapStartOptions Parse(string[] args)
     {

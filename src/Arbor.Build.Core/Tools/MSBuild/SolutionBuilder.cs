@@ -330,7 +330,7 @@ public class SolutionBuilder(
 
         try
         {
-            return await BuildAsync(_logger, buildVariables).ConfigureAwait(false);
+            return await BuildAsync(_logger, buildVariables);
         }
         catch (Exception ex) when (!ex.IsFatal())
         {
@@ -426,7 +426,7 @@ public class SolutionBuilder(
         }
 
         IDictionary<FileEntry, IList<string>> solutionPlatforms =
-            await GetSolutionPlatformsAsync(solutionFiles).ConfigureAwait(false);
+            await GetSolutionPlatformsAsync(solutionFiles);
 
         if (_verboseLoggingEnabled)
         {
@@ -467,7 +467,7 @@ public class SolutionBuilder(
             var result = await BuildSolutionForPlatformAsync(
                 solutionPlatform.Key,
                 solutionPlatform.Value,
-                logger).ConfigureAwait(false);
+                logger);
 
             if (!result.IsSuccess)
             {
@@ -489,7 +489,7 @@ public class SolutionBuilder(
 
             while (streamReader.Peek() >= 0)
             {
-                string? line = await streamReader.ReadLineAsync().ConfigureAwait(false);
+                string? line = await streamReader.ReadLineAsync();
 
                 if (string.IsNullOrWhiteSpace(line))
                 {
@@ -528,7 +528,7 @@ public class SolutionBuilder(
 
         foreach (FileEntry solutionFile in solutionFiles)
         {
-            List<string> platforms = await GetSolutionPlatformsAsync(solutionFile).ConfigureAwait(false);
+            List<string> platforms = await GetSolutionPlatformsAsync(solutionFile);
 
             solutionPlatforms.Add(solutionFile, platforms);
         }
@@ -641,7 +641,7 @@ public class SolutionBuilder(
 
             var result =
                 await BuildSolutionWithConfigurationAsync(solutionFile, configuration, logger, actualPlatforms)
-                    .ConfigureAwait(false);
+                    ;
 
             if (!result.IsSuccess)
             {
@@ -674,7 +674,7 @@ public class SolutionBuilder(
                     solutionFile,
                     configuration,
                     knownPlatform,
-                    logger).ConfigureAwait(false);
+                    logger);
 
             buildStopwatch.Stop();
             if (_debugLoggingEnabled)
@@ -835,12 +835,12 @@ public class SolutionBuilder(
                         debugAction: debugAction,
                         cancellationToken: _cancellationToken,
                         verboseAction: verboseAction)
-                    .ConfigureAwait(false);
+                    ;
 
         if (exitCode.IsSuccess)
         {
             exitCode = await PublishProjectsAsync(solutionFile, configuration, logger)
-                .ConfigureAwait(false);
+                ;
         }
         else
         {
@@ -857,7 +857,7 @@ public class SolutionBuilder(
 
                 var webAppsExitCode =
                     await BuildWebApplicationsAsync(solutionFile, configuration, platform, logger)
-                        .ConfigureAwait(false);
+                        ;
 
                 exitCode = webAppsExitCode;
             }
@@ -881,7 +881,7 @@ public class SolutionBuilder(
 
                 var webAppsExitCode =
                     await PackDotNetProjectsAsync(solutionFile, configuration, logger)
-                        .ConfigureAwait(false);
+                        ;
 
                 exitCode = webAppsExitCode;
             }
@@ -900,7 +900,7 @@ public class SolutionBuilder(
 
         if (exitCode.IsSuccess)
         {
-            exitCode = await PublishPdbFilesAsync(configuration, platform).ConfigureAwait(false);
+            exitCode = await PublishPdbFilesAsync(configuration, platform);
         }
         else
         {
@@ -939,7 +939,7 @@ public class SolutionBuilder(
 
             var webAppsExitCode =
                 await PublishDotNetProjectsAsync(solutionFile, configuration, logger)
-                    .ConfigureAwait(false);
+                    ;
 
             exitCode = webAppsExitCode;
         }
@@ -1072,7 +1072,7 @@ public class SolutionBuilder(
                         fileSystem.ConvertPathToInternal(_dotNetExePath.Value),
                         args,
                         Log,
-                        cancellationToken: _cancellationToken).ConfigureAwait(false);
+                        cancellationToken: _cancellationToken);
 
                     if (!projectExitCode.IsSuccess)
                     {
@@ -1204,7 +1204,7 @@ public class SolutionBuilder(
                 fileSystem.ConvertPathToInternal(_dotNetExePath.Value),
                 args,
                 Log,
-                cancellationToken: _cancellationToken).ConfigureAwait(false);
+                cancellationToken: _cancellationToken);
 
             if (!projectExitCode.IsSuccess)
             {
@@ -1489,7 +1489,7 @@ public class SolutionBuilder(
                 logger,
                 solutionProject,
                 platformName,
-                siteArtifactDirectory).ConfigureAwait(false);
+                siteArtifactDirectory);
 
             if (!buildSiteExitCode.IsSuccess)
             {
@@ -1512,7 +1512,7 @@ public class SolutionBuilder(
             {
                 _logger.Information("Application metadata is enabled");
                 await CreateApplicationMetadataAsync(siteArtifactDirectory, platformName, configuration)
-                    .ConfigureAwait(false);
+                    ;
             }
             else
             {
@@ -1524,7 +1524,7 @@ public class SolutionBuilder(
                 logger.Information("AppData Web Jobs are enabled");
 
                 var exitCode = await CopyKuduWebJobsAsync(logger, solutionProject, siteArtifactDirectory)
-                    .ConfigureAwait(false);
+                    ;
 
                 if (!exitCode.IsSuccess)
                 {
@@ -1549,7 +1549,7 @@ public class SolutionBuilder(
                             logger,
                             platformDirectoryPath,
                             solutionProject,
-                            platformName).ConfigureAwait(false);
+                            platformName);
 
                 if (!packageSiteExitCode.IsSuccess)
                 {
@@ -1572,7 +1572,7 @@ public class SolutionBuilder(
                     platformDirectoryPath,
                     solutionProject,
                     platformName,
-                    siteArtifactDirectory.FullName).ConfigureAwait(false);
+                    siteArtifactDirectory.FullName);
 
                 if (!packageSiteExitCode.IsSuccess)
                 {
@@ -1774,7 +1774,7 @@ public class SolutionBuilder(
                     logger.Information,
                     logger.Error,
                     logger.Information,
-                    cancellationToken: _cancellationToken).ConfigureAwait(false);
+                    cancellationToken: _cancellationToken);
 
         if (buildSiteExitCode.IsSuccess)
         {
@@ -1881,7 +1881,7 @@ public class SolutionBuilder(
             allIncludedFiles,
             "",
             artifactDirectory,
-            runtimeIdentifier: _publishRuntimeIdentifier).ConfigureAwait(false);
+            runtimeIdentifier: _publishRuntimeIdentifier);
 
         if (!exitCode.IsSuccess)
         {
@@ -1953,7 +1953,7 @@ public class SolutionBuilder(
                 elements,
                 $".Environment.{environmentName}",
                 rootDirectory,
-                runtimeIdentifier: _publishRuntimeIdentifier).ConfigureAwait(false);
+                runtimeIdentifier: _publishRuntimeIdentifier);
 
             if (!environmentPackageExitCode.IsSuccess)
             {
@@ -2202,7 +2202,7 @@ public class SolutionBuilder(
             packageSpecificationPath,
             packageConfiguration,
             true,
-            _cancellationToken).ConfigureAwait(false);
+            _cancellationToken);
 
         packageSpecificationPath.DeleteIfExists();
         contentFilesInfo.ContentFilesFile.Directory.DeleteIfExists();
@@ -2217,7 +2217,7 @@ public class SolutionBuilder(
 
         await stream
             .WriteAllTextAsync(nuspecContent, Encoding.UTF8, cancellationToken: _cancellationToken)
-            .ConfigureAwait(false);
+            ;
     }
 
     private void TransformFiles(
@@ -2386,7 +2386,7 @@ public class SolutionBuilder(
                                     .WithIgnoredFileNameParts(ignoredFileNameParts)
                                     .AddExcludedDirectorySegments(_excludedWebJobsDirectorySegments),
                                 _vcsRoot)
-                            .ConfigureAwait(false);
+                            ;
 
                 if (exitCode.IsSuccess)
                 {
@@ -2531,7 +2531,7 @@ public class SolutionBuilder(
                     logger.Information,
                     logger.Error,
                     toolAction,
-                    cancellationToken: _cancellationToken).ConfigureAwait(false);
+                    cancellationToken: _cancellationToken);
 
         webDeployStopwatch.Stop();
 

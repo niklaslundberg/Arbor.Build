@@ -45,14 +45,14 @@ public class AppBootstrapper(ILogger logger, IEnvironmentVariables environmentVa
 
         if (Debugger.IsAttached)
         {
-            startOptions = await StartWithDebuggerAsync(args).ConfigureAwait(false);
+            startOptions = await StartWithDebuggerAsync(args);
         }
         else
         {
             startOptions = BootstrapStartOptions.Parse(args);
         }
 
-        ExitCode exitCode = await StartAsync(startOptions).ConfigureAwait(false);
+        ExitCode exitCode = await StartAsync(startOptions);
 
         logger.Debug("Bootstrapper exit code: {ExitCode}", exitCode);
 
@@ -77,7 +77,7 @@ public class AppBootstrapper(ILogger logger, IEnvironmentVariables environmentVa
 
         try
         {
-            exitCode = await TryStartAsync(_startOptions).ConfigureAwait(false);
+            exitCode = await TryStartAsync(_startOptions);
 
             stopwatch.Stop();
         }
@@ -109,7 +109,7 @@ public class AppBootstrapper(ILogger logger, IEnvironmentVariables environmentVa
                 exitDelayInMilliseconds,
                 WellKnownVariables.BootstrapperExitDelayInMilliseconds);
 
-            await Task.Delay(TimeSpan.FromMilliseconds(exitDelayInMilliseconds)).ConfigureAwait(false);
+            await Task.Delay(TimeSpan.FromMilliseconds(exitDelayInMilliseconds));
         }
 
         logger.Information(
@@ -167,7 +167,7 @@ public class AppBootstrapper(ILogger logger, IEnvironmentVariables environmentVa
                         }
                     }
                     catch (Exception ex) when (!ex.IsFatal() &&
-                                               (ex is ArgumentException || ex is InvalidOperationException))
+                                               ex is ArgumentException or InvalidOperationException)
                     {
                         logger.Warning("Child process with id {ChildProcessId} could not be killed",
                             childProcessId);
@@ -196,7 +196,7 @@ public class AppBootstrapper(ILogger logger, IEnvironmentVariables environmentVa
 
         var paths = new PathLookupSpecification();
 
-        await DirectoryCopy.CopyAsync(baseDir, tempDirectory, pathLookupSpecificationOption: paths).ConfigureAwait(false);
+        await DirectoryCopy.CopyAsync(baseDir, tempDirectory, pathLookupSpecificationOption: paths);
 
         environmentVariables.SetEnvironmentVariable(WellKnownVariables.BranchNameVersionOverrideEnabled, "true");
         environmentVariables.SetEnvironmentVariable(WellKnownVariables.VariableOverrideEnabled, "true");
@@ -262,16 +262,23 @@ public class AppBootstrapper(ILogger logger, IEnvironmentVariables environmentVa
                 directoryCloneValue);
         }
 
-        var baseDir = await GetBaseDirectoryAsync(_startOptions).ConfigureAwait(false);
+        var baseDir = await GetBaseDirectoryAsync(_startOptions);
 
         DirectoryEntry buildDir = new DirectoryEntry(fileSystem, UPath.Combine(baseDir.Path, "build")).EnsureExists();
 
         logger.Verbose("Using base directory '{BaseDir}'", baseDir);
 
         logger.Debug("Downloading nuget package {Package}", BuildToolPackageName);
-
-        var buildToolsDirectory =
-            await DownloadNuGetPackageAsync(startOptions).ConfigureAwait(false);
+        DirectoryEntry buildToolsDirectory;
+        try
+        {
+            buildToolsDirectory =
+                await DownloadNuGetPackageAsync(startOptions);
+        }
+        catch (Exception ex) when (!ex.IsFatal())
+        {
+            throw new InvalidOperationException("Could not download build tools", ex);
+        }
 
         if (!buildToolsDirectory.Exists)
         {
@@ -290,7 +297,7 @@ public class AppBootstrapper(ILogger logger, IEnvironmentVariables environmentVa
             else
             {
                 ExitCode buildToolsResult =
-                    await RunBuildToolsAsync(buildDir.Path, buildToolsDirectory, startOptions.ArborBuildExePath).ConfigureAwait(false);
+                    await RunBuildToolsAsync(buildDir.Path, buildToolsDirectory, startOptions.ArborBuildExePath);
 
                 if (buildToolsResult.IsSuccess)
                 {
@@ -359,13 +366,14 @@ public class AppBootstrapper(ILogger logger, IEnvironmentVariables environmentVa
             NugetSource = nuGetSource,
             NugetConfigFile = startOptions.NuGetConfig,
             UseCli = false,
-            Extract = true
+            Extract = true,
+            TempDirectory = startOptions.TempDirectory is {} ? new DirectoryInfo(startOptions.TempDirectory.ConvertPathToInternal()) : null
         };
 
         var nuGetPackageInstallResult = await nuGetPackageInstaller.InstallPackageAsync(
                 nuGetPackage,
                 nugetPackageSettings)
-            .ConfigureAwait(false);
+            ;
 
         if (nuGetPackageInstallResult.SemanticVersion is null)
         {
@@ -382,7 +390,7 @@ public class AppBootstrapper(ILogger logger, IEnvironmentVariables environmentVa
             nuGetPackageInstallResult = await nuGetPackageInstaller.InstallPackageAsync(
                     new NuGetPackage(nuGetPackage.NuGetPackageId, NuGetPackageVersion.LatestDownloaded),
                     nugetPackageSettings)
-                .ConfigureAwait(false);
+                ;
         }
 
         if (nuGetPackageInstallResult.SemanticVersion is null ||
@@ -459,7 +467,7 @@ public class AppBootstrapper(ILogger logger, IEnvironmentVariables environmentVa
             .GetBuildVariablesAsync(
                 logger,
                 ImmutableArray<IVariable>.Empty,
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken);
 
         string? dotnetExePath = variables.SingleOrDefault(variable =>
             variable.Key.Equals(WellKnownVariables.DotNetExePath, StringComparison.OrdinalIgnoreCase))?.Value;
@@ -520,7 +528,7 @@ public class AppBootstrapper(ILogger logger, IEnvironmentVariables environmentVa
                 logger.Information,
                 logger.Verbose,
                 cancellationToken: cancellationTokenSource.Token)
-            .ConfigureAwait(false);
+            ;
     }
 
     private void PrintInvalidExeFileCount(List<FileEntry> exeFiles, string buildToolDirectoryPath)

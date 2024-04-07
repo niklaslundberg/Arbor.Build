@@ -127,7 +127,7 @@ public sealed class BuildApplication : IDisposable
             tempDirectory,
             pathLookupSpecificationOption: DefaultPaths.DefaultPathLookupSpecification.AddExcludedDirectorySegments(
                 ["paket-files"]),
-            rootDir: baseDir).ConfigureAwait(false);
+            rootDir: baseDir);
 
         WriteDebug("Starting with debugger attached");
 
@@ -142,7 +142,7 @@ public sealed class BuildApplication : IDisposable
 
     private async Task<ExitCode> RunSystemToolsAsync(DirectoryEntry? sourceRoot)
     {
-        IReadOnlyCollection<IVariable> buildVariables = await GetBuildVariablesAsync(sourceRoot).ConfigureAwait(false);
+        IReadOnlyCollection<IVariable> buildVariables = await GetBuildVariablesAsync(sourceRoot);
 
         if (buildVariables.GetBooleanByKey(WellKnownVariables.ShowAvailableVariablesEnabled, true))
         {
@@ -219,7 +219,7 @@ public sealed class BuildApplication : IDisposable
             {
                 ExitCode toolResult =
                     await toolWithPriority.Tool.ExecuteAsync(_logger, buildVariables, _args, _cancellationToken)
-                        .ConfigureAwait(false);
+                        ;
 
                 stopwatch.Stop();
 
@@ -404,7 +404,7 @@ public sealed class BuildApplication : IDisposable
 
             var newVariables =
                 await provider.GetBuildVariablesAsync(_logger, buildVariables, _cancellationToken)
-                    .ConfigureAwait(false);
+                    ;
 
             if (_verboseEnabled)
             {
@@ -543,10 +543,10 @@ public sealed class BuildApplication : IDisposable
 
         if (DebugHelper.IsDebugging(_environmentVariables))
         {
-            sourceDir = await StartWithDebuggerAsync().ConfigureAwait(false);
+            sourceDir = await StartWithDebuggerAsync();
         }
 
-        _container = await BuildBootstrapper.StartAsync(_logger, _environmentVariables, _specialFolders, sourceDir).ConfigureAwait(false);
+        _container = await BuildBootstrapper.StartAsync(_logger, _environmentVariables, _specialFolders, sourceDir);
 
         _buildContext = _container.Resolve<BuildContext>();
 
@@ -561,7 +561,7 @@ public sealed class BuildApplication : IDisposable
 
         try
         {
-            ExitCode systemToolsResult = await RunSystemToolsAsync(sourceDir).ConfigureAwait(false);
+            ExitCode systemToolsResult = await RunSystemToolsAsync(sourceDir);
 
             if (!systemToolsResult.IsSuccess)
             {
@@ -600,7 +600,7 @@ public sealed class BuildApplication : IDisposable
             }
 
             await Task.Delay(TimeSpan.FromMilliseconds(exitDelayInMilliseconds), _cancellationToken)
-                .ConfigureAwait(false);
+                ;
         }
 
         return exitCode;

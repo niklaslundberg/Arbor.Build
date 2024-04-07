@@ -124,7 +124,7 @@ public class NuGetSymbolPackageUploader(IFileSystem fileSystem) : ITool
                     arguments: args,
                     standardOutLog: logger.Information,
                     standardErrorAction: logger.Error,
-                    toolAction: logger.Information).ConfigureAwait(false);
+                    toolAction: logger.Information);
 
         return exitCode;
     }
@@ -159,7 +159,7 @@ public class NuGetSymbolPackageUploader(IFileSystem fileSystem) : ITool
         {
             ExitCode exitCode =
                 await UploadNugetPackageAsync(nugetExePath, symbolServerUrl, apiKey, nugetPackage, logger, timeout)
-                    .ConfigureAwait(false);
+                    ;
 
             if (!exitCode.IsSuccess)
             {

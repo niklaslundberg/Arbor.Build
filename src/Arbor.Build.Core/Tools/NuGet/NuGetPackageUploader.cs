@@ -247,7 +247,7 @@ public class NuGetPackageUploader(IFileSystem fileSystem) : ITool
                             logger.Error("{Prefix} {Message}", prefix, message);
                         },
                         logger.Information,
-                        environmentVariables: environmentVariables).ConfigureAwait(false);
+                        environmentVariables: environmentVariables);
 
             if (!exitCode.IsSuccess
                 && errorBuilder.ToString().Contains("conflict", StringComparison.OrdinalIgnoreCase))
@@ -389,7 +389,7 @@ public class NuGetPackageUploader(IFileSystem fileSystem) : ITool
             {
                 bool? packageExists =
                     await CheckPackageExistsAsync(nugetPackage, logger, sourceName)
-                        .ConfigureAwait(false);
+                        ;
 
                 if (!packageExists.HasValue)
                 {
@@ -432,7 +432,7 @@ public class NuGetPackageUploader(IFileSystem fileSystem) : ITool
                 checkNuGetPackagesExists,
                 timeoutIncreaseEnabled,
                 sourceName,
-                configFile).ConfigureAwait(false);
+                configFile);
 
             if (!exitCode.IsSuccess)
             {

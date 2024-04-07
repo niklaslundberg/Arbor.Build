@@ -67,7 +67,7 @@ public class DotNetRestorer(IFileSystem fileSystem) : ITool
                 fileSystem.ConvertPathToInternal(dotNetExePath.ParseAsPath()),
                 arguments,
                 logger,
-                cancellationToken: cancellationToken).ConfigureAwait(false);
+                cancellationToken: cancellationToken);
 
             if (!result.IsSuccess)
             {

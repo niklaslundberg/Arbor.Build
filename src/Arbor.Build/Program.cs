@@ -39,7 +39,7 @@ internal static class Program
 
             using (_app)
             {
-                ExitCode exitCode = await _app.RunAsync(args).ConfigureAwait(false);
+                ExitCode exitCode = await _app.RunAsync(args);
 
                 await Log.CloseAndFlushAsync();
 

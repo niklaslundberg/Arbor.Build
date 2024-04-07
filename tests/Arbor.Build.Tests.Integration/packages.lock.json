@@ -46,6 +46,15 @@
           "System.Xml.XPath.XDocument": "4.0.1"
         }
       },
+      "Machine.Specifications.Runner.VisualStudio": {
+        "type": "Direct",
+        "requested": "[2.10.2, )",
+        "resolved": "2.10.2",
+        "contentHash": "LU8yUTBiYqMvVCAaE3aJ1lVm1BjDpibcdTRFsUhZqyhw+9qkaZCTr5YpH6xAMyTvWbV431ftBHTZnNK6BxzVmw==",
+        "dependencies": {
+          "Mono.Cecil": "[0.10.0, 0.11.0)"
+        }
+      },
       "Machine.Specifications.Should": {
         "type": "Direct",
         "requested": "[1.0.0, )",
@@ -356,6 +365,21 @@
           "System.Text.Encoding.CodePages": "8.0.0",
           "System.Threading.AccessControl": "8.0.0",
           "System.Web.Services.Description": "4.10.0"
+        }
+      },
+      "Mono.Cecil": {
+        "type": "Transitive",
+        "resolved": "0.10.0",
+        "contentHash": "nHSF7wvyZRPAGXl49zgULPFubXHpsXlOH9RXFRUKb0TX0/tKkKljci6yBszVNI09PIDNQ8IP9WJTYvmBkMbbHw==",
+        "dependencies": {
+          "System.Collections": "4.0.11",
+          "System.IO.FileSystem": "4.0.1",
+          "System.IO.FileSystem.Primitives": "4.0.1",
+          "System.Reflection": "4.1.0",
+          "System.Runtime.Extensions": "4.1.0",
+          "System.Security.Cryptography.Algorithms": "4.2.0",
+          "System.Security.Cryptography.Csp": "4.0.0",
+          "System.Threading": "4.0.11"
         }
       },
       "MSTest.TestFramework": {

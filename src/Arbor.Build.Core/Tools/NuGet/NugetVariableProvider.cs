@@ -38,7 +38,7 @@ public class NugetVariableProvider(IFileSystem fileSystem, BuildContext buildCon
             NuGetDownloadSettings.Default,
             logger,
             httClient,
-            _cancellationToken).ConfigureAwait(false);
+            _cancellationToken);
 
         if (!nuGetDownloadResult.Succeeded)
         {
@@ -61,7 +61,7 @@ public class NugetVariableProvider(IFileSystem fileSystem, BuildContext buildCon
             WellKnownVariables.ExternalTools_NuGet_ExePath_Custom)?.ParseAsPath();
 
         var nuGetExePath =
-            await EnsureNuGetExeExistsAsync(logger, userSpecifiedNuGetExePath).ConfigureAwait(false);
+            await EnsureNuGetExeExistsAsync(logger, userSpecifiedNuGetExePath);
 
         string path = nuGetExePath.HasValue
             ? fileSystem.ConvertPathToInternal(nuGetExePath.Value)

@@ -84,7 +84,7 @@ public class NuGetRestorer(IFileSystem fileSystem, BuildContext buildContext) : 
             fileSystem.ConvertPathToInternal(nugetExePath),
             arguments,
             logger,
-            cancellationToken: cancellationToken).ConfigureAwait(false);
+            cancellationToken: cancellationToken);
 
         return result;
     }

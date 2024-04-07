@@ -42,7 +42,7 @@ public class MSBuildVariableProvider(
             ExitCode versionExitCode = await ProcessHelper.ExecuteAsync(
                 fileSystem.ConvertPathToInternal(vsWherePath),
                 new List<string> { "-prerelease" },
-                cancellationToken: cancellationToken).ConfigureAwait(false);
+                cancellationToken: cancellationToken);
 
             var vsWhereArgs = new List<string> { command, component, "-format", "json" };
 
@@ -66,7 +66,7 @@ public class MSBuildVariableProvider(
                 StandardOutLog,
                 cancellationToken: cancellationToken,
                 toolAction: logger.Debug,
-                standardErrorAction: logger.Error).ConfigureAwait(false);
+                standardErrorAction: logger.Error);
 
             if (!exitCode.IsSuccess)
             {
@@ -246,7 +246,7 @@ public class MSBuildVariableProvider(
                 "Microsoft.Component.MSBuild",
                 logger,
                 buildVariables,
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken);
 
             if (variables1.Any())
             {
@@ -258,7 +258,7 @@ public class MSBuildVariableProvider(
                 "Microsoft.VisualStudio.Product.BuildTools",
                 logger,
                 buildVariables,
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken);
 
             if (variablesForTools.Any())
             {

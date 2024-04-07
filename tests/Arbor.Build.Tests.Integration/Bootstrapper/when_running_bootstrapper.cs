@@ -1,50 +1,46 @@
-﻿using System;
-using System.IO;
+﻿using System.Threading.Tasks;
 using Arbor.Build.Core;
 using Arbor.Build.Core.Bootstrapper;
-using Arbor.Build.Core.IO;
+using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Tests.Integration.Tests.MSpec;
-using Arbor.FS;
-using Arbor.Processing;
 using Machine.Specifications;
-using Serilog.Core;
+using Serilog;
+using Xunit;
 using Zio;
 using Zio.FileSystems;
 
 namespace Arbor.Build.Tests.Integration.Bootstrapper;
 
-//[Ignore("Not complete")]
-[Subject(typeof(AppBootstrapper))]
-public class when_running_bootstrapper
+public class BootstrapperTests
 {
-    static AppBootstrapper _appBootstrapper;
-
-    static BootstrapStartOptions startOptions;
-    static ExitCode exitCode;
-    static DirectoryEntry baseDirectory;
-    static IFileSystem fs;
-
-    Cleanup after = () =>
+    [Fact]
+    public async Task RunningBootstrapper()
     {
-        fs.Dispose();
-    };
+        using var fs = new PhysicalFileSystem();
 
-    Establish context = () =>
-    {
-        fs = new PhysicalFileSystem();
+        using var tempDirectory = TempDirectory.Create(fs);
 
-        baseDirectory = new DirectoryEntry(fs,
+        await using var logger = new LoggerConfiguration()
+            .WriteTo.Console()
+            .WriteTo.Debug()
+            .MinimumLevel.Debug()
+            .CreateLogger();
+
+        var baseDirectory = new DirectoryEntry(fs,
             UPath.Combine(VcsTestPathHelper.FindVcsRootPath().Path, "samples", "_NetStandardPackage"));
 
-        startOptions = new BootstrapStartOptions(
+        var startOptions = new BootstrapStartOptions(
             [],
             baseDirectory,
             true,
-            "develop");
-        _appBootstrapper = new AppBootstrapper(Logger.None, EnvironmentVariables.Empty, fs);
-    };
+            "develop",
+            tempDirectory: tempDirectory.Directory);
+        var variables = new EnvironmentVariables();
+        variables.SetEnvironmentVariable(WellKnownVariables.DirectoryCloneEnabled, "true");
+        var appBootstrapper = new AppBootstrapper(logger, variables, fs);
 
-    Because of = () => exitCode = _appBootstrapper.StartAsync(startOptions).Result;
+        var exitCode = await appBootstrapper.StartAsync(startOptions);
 
-    It should_return_success_exit_code = () => exitCode.IsSuccess.ShouldBeTrue();
+        exitCode.Code.ShouldEqual(0);
+    }
 }

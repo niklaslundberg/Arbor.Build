@@ -83,7 +83,7 @@ public static class DirectoryCopy
                 directory, new DirectoryEntry(sourceDirectory.FileSystem,
                     UPath.Combine(targetDir.Path, directory.Name)),
                 pathLookupSpecificationOption: pathLookupSpecification,
-                rootDir: rootDir).ConfigureAwait(false);
+                rootDir: rootDir);
 
             if (!exitCode.IsSuccess)
             {

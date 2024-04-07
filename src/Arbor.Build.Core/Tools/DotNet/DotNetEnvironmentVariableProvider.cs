@@ -51,7 +51,7 @@ public class DotNetEnvironmentVariableProvider(IEnvironmentVariables environment
                 fileSystem.ConvertPathToInternal(whereExePath),
                 arguments: new[] { "dotnet.exe" },
                 standardOutLog: (message, _) => sb.Add(message),
-                cancellationToken: cancellationToken).ConfigureAwait(false);
+                cancellationToken: cancellationToken);
 
             if (!exitCode.IsSuccess)
             {

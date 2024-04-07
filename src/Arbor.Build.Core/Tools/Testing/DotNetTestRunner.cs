@@ -102,7 +102,7 @@ public class DotNetTestRunner(BuildContext buildContext, IFileSystem fileSystem)
 
         async Task IsTestProject(FileEntry fileEntry)
         {
-            var msBuildProject = await MsBuildProject.LoadFrom(fileEntry).ConfigureAwait(false);
+            var msBuildProject = await MsBuildProject.LoadFrom(fileEntry);
 
             if (msBuildProject.PackageReferences.Any(reference => string.Equals(reference.Package, "Microsoft.NET.Test.SDK" ,StringComparison.OrdinalIgnoreCase)))
             {
@@ -112,7 +112,7 @@ public class DotNetTestRunner(BuildContext buildContext, IFileSystem fileSystem)
 
         foreach (var candidateProject in candidateProjects)
         {
-            await IsTestProject(candidateProject).ConfigureAwait(false);
+            await IsTestProject(candidateProject);
         }
 
         if (testProjects.Count == 0)
@@ -160,7 +160,7 @@ public class DotNetTestRunner(BuildContext buildContext, IFileSystem fileSystem)
                 logger.Information,
                 logger.Error,
                 logger.Information,
-                cancellationToken: cancellationToken).ConfigureAwait(false);
+                cancellationToken: cancellationToken);
 
             if (!result.IsSuccess)
             {

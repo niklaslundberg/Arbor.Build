@@ -47,7 +47,7 @@ public class ProcessCleanup(ILogger logger, IFileSystem fileSystem) : ITool
                     shutdownArguments,
                     Log,
                     cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
+                ;
 
             logger.Debug("Dotnet build server shutdown exit code {ExitCode}", exitCode.Code);
         }

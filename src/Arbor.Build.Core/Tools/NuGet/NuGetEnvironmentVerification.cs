@@ -56,7 +56,7 @@ public class NuGetEnvironmentVerification : EnvironmentVerification
                 logger.Verbose("NuGet self update is enabled by variable '{NuGetSelfUpdateEnabled}'",
                     WellKnownVariables.NuGetSelfUpdateEnabled);
 
-                await EnsureMinNuGetVersionAsync(nuGetExePath, logger).ConfigureAwait(false);
+                await EnsureMinNuGetVersionAsync(nuGetExePath, logger);
             }
             else
             {
@@ -77,7 +77,7 @@ public class NuGetEnvironmentVerification : EnvironmentVerification
         {
             IEnumerable<string> args = new List<string>();
             ExitCode versionExitCode = await ProcessHelper.ExecuteAsync(_fileSystem.ConvertPathToInternal(nuGetExePath), args, versionLogger)
-                .ConfigureAwait(false);
+                ;
 
             if (!versionExitCode.IsSuccess)
             {
@@ -102,7 +102,7 @@ public class NuGetEnvironmentVerification : EnvironmentVerification
             {
                 IEnumerable<string> updateSelfArgs = new List<string> { "update", "-self" };
                 ExitCode exitCode = await ProcessHelper.ExecuteAsync(_fileSystem.ConvertPathToInternal(nuGetExePath), updateSelfArgs, logger)
-                    .ConfigureAwait(false);
+                    ;
 
                 if (!exitCode.IsSuccess)
                 {

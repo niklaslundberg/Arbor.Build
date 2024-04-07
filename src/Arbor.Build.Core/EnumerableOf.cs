@@ -10,7 +10,7 @@ public static class EnumerableOf<T> where T : class
 {
     private static readonly Lazy<ImmutableArray<T>> LazyEnumerable = new(Initialize);
 
-    public static ImmutableArray<T> Items => LazyEnumerable.Value;
+    public static IReadOnlyCollection<T> Items => LazyEnumerable.Value;
 
     public static IReadOnlyCollection<T> Empty => ImmutableArray<T>.Empty;
 

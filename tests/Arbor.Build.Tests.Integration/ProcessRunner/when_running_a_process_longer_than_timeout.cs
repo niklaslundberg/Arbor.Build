@@ -74,7 +74,7 @@ EXIT /b 2
                             logger.Information("[{Level}] {Message}", "TOOL", message),
                         verboseAction: (message, prefix) =>
                             logger.Information("[{Level}] {Message}", "VERBOSE", message),
-                        cancellationToken: cancellationTokenSource.Token).ConfigureAwait(false);
+                        cancellationToken: cancellationTokenSource.Token);
         }
         catch (TaskCanceledException ex)
         {

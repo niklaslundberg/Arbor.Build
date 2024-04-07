@@ -288,7 +288,7 @@ public class NuGetPackager(
             cancellationToken: cancellationToken,
             nugetSymbolPackageEnabled: packageConfiguration.NuGetSymbolPackagesEnabled,
             symbolsFormat: packageConfiguration.NuGetSymbolPackagesFormat,
-            ignoreWarnings: ignoreWarnings).ConfigureAwait(false);
+            ignoreWarnings: ignoreWarnings);
 
         if (!result.IsSuccess)
         {
@@ -398,7 +398,7 @@ public class NuGetPackager(
                     logger.Information,
                     cancellationToken: cancellationToken,
                     verboseAction: logger.Verbose,
-                    debugAction: logger.Debug).ConfigureAwait(false);
+                    debugAction: logger.Debug);
 
 
         if (!keepBinaryAndSourcePackagesTogetherEnabled)

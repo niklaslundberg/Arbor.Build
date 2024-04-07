@@ -64,7 +64,7 @@ public class BranchNameVariableProvider(
         if (string.IsNullOrWhiteSpace(branchName))
         {
             logger.Verbose("There is no branch name defined in the environment variables, asking Git");
-            Tuple<int, string> branchNameResult = await GetBranchNameByAskingGitExeAsync().ConfigureAwait(false);
+            Tuple<int, string> branchNameResult = await GetBranchNameByAskingGitExeAsync();
 
             if (branchNameResult.Item1 != 0)
             {
@@ -150,7 +150,7 @@ public class BranchNameVariableProvider(
             return Tuple.Create(-1, string.Empty);
         }
 
-        string branchName = await GetGitBranchNameAsync(currentDirectory, gitExePath).ConfigureAwait(false);
+        string branchName = await GetGitBranchNameAsync(currentDirectory, gitExePath);
 
         if (string.IsNullOrWhiteSpace(branchName))
         {
@@ -203,7 +203,7 @@ public class BranchNameVariableProvider(
                                     gitBranchBuilder.AppendLine(message);
                                 },
                                 toolAction: logger.Information,
-                                cancellationToken: cancellationTokenSource.Token).ConfigureAwait(false);
+                                cancellationToken: cancellationTokenSource.Token);
                 }
 
                 if (!exitCode.IsSuccess)

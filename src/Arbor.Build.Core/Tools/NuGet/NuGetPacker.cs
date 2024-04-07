@@ -93,7 +93,7 @@ public class NuGetPacker(NuGetPackager nuGetPackager, IFileSystem fileSystem, Bu
                         packageConfiguration,
                         logger,
                         cancellationToken)
-                    .ConfigureAwait(false);
+                    ;
         }
 
         return result;
@@ -149,7 +149,7 @@ public class NuGetPacker(NuGetPackager nuGetPackager, IFileSystem fileSystem, Bu
                 await nuGetPackager.CreatePackageAsync(
                     packageSpecification,
                     packageConfiguration,
-                    cancellationToken: cancellationToken).ConfigureAwait(false);
+                    cancellationToken: cancellationToken);
 
             if (!packageResult.IsSuccess)
             {
