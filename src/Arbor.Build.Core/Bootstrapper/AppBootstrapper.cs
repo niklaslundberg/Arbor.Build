@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -469,7 +468,7 @@ public class AppBootstrapper(ILogger logger, IEnvironmentVariables environmentVa
         var variables = await new DotNetEnvironmentVariableProvider(environmentVariables, fileSystem)
             .GetBuildVariablesAsync(
                 logger,
-                ImmutableArray<IVariable>.Empty,
+                [],
                 cancellationToken);
 
         string? dotnetExePath = variables.SingleOrDefault(variable =>

@@ -1,5 +1,4 @@
 ﻿using System;
-using static System.String;
 
 namespace Arbor.Build.Core.BuildVariables;
 

@@ -1,5 +1,4 @@
-﻿using System;
-using Arbor.Build.Core.BuildVariables;
+﻿using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.Logging;
 using Serilog.Core;
 using Serilog.Events;

@@ -5,7 +5,6 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
-using Arbor.Build.Core;
 using Arbor.Build.Core.BuildApp;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.IO;
@@ -31,9 +30,9 @@ public sealed class TestSamples(ITestOutputHelper testOutputHelper) : IDisposabl
     [Theory]
     public async Task RunBuildOnExampleProject(string directoryName)
     {
-        if (directoryName == "")
+        if (string.IsNullOrWhiteSpace(directoryName))
         {
-            testOutputHelper.WriteLine($"Skipping sample tests, no samples found starting with _");
+            testOutputHelper.WriteLine("Skipping sample tests, no samples found starting with _");
             return;
         }
 
@@ -140,7 +139,7 @@ public sealed class TestSamples(ITestOutputHelper testOutputHelper) : IDisposabl
         await using var openFile = _fs.OpenFile(expectedFilesDataPath,FileMode.Open,FileAccess.Read);
         var expectedFiles = await openFile.ReadAllLinesAsync();
 
-        return expectedFiles.Select(expectedPath => new UPath(expectedPath)).ToImmutableArray();
+        return [..expectedFiles.Select(expectedPath => new UPath(expectedPath))];
     }
 
     public static IEnumerable<object[]> Data()

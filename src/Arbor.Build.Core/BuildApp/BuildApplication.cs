@@ -328,7 +328,7 @@ public sealed class BuildApplication : IDisposable
             else
             {
                 _logger.Error("Source root is not set");
-                return ImmutableArray<IVariable>.Empty;
+                return [];
             }
         }
 

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,7 +20,7 @@ public class MSBuildVariableProviderTests(ITestOutputHelper output)
         using var physicalFileSystem = new PhysicalFileSystem();
         var msBuildVariableProvider = new MSBuildVariableProvider(EnvironmentVariables.Empty, SpecialFolders.Default, physicalFileSystem);
         var variables = await msBuildVariableProvider.GetBuildVariablesAsync(Logger.None,
-            ImmutableArray<IVariable>.Empty, CancellationToken.None);
+            [], CancellationToken.None);
 
         output.WriteLine(string.Join(Environment.NewLine, variables.Select(s => s.Key + " " + s.Value)));
 

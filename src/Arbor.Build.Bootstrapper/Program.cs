@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
-using Arbor.Build.Core.Logging;
 using Arbor.Build.Core.Tools.EnvironmentVariables;
 using Arbor.FS;
 using Arbor.Processing;

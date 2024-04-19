@@ -19,7 +19,7 @@ namespace Arbor.Build.Core.Tools.Git;
 
 [UsedImplicitly]
 public class BranchNameVariableProvider(
-    ILogger logger,
+    ILogger classLogger,
     IEnvironmentVariables environmentVariables,
     ISpecialFolders specialFolders,
     IFileSystem fileSystem,
@@ -29,7 +29,7 @@ public class BranchNameVariableProvider(
     public int Order => VariableProviderOrder.Priority - 2;
 
     public async Task<IReadOnlyCollection<IVariable>> GetBuildVariablesAsync(
-        ILogger logger1,
+        ILogger logger,
         IReadOnlyCollection<IVariable> buildVariables,
         CancellationToken cancellationToken)
     {
@@ -46,7 +46,7 @@ public class BranchNameVariableProvider(
 
             if (!string.IsNullOrWhiteSpace(branchName))
             {
-                logger1.Information("Found branch name '{BranchName}' from environment variable '{VariableName}'", branchName, possibleVariable);
+                logger.Information("Found branch name '{BranchName}' from environment variable '{VariableName}'", branchName, possibleVariable);
                 break;
             }
 
@@ -54,7 +54,7 @@ public class BranchNameVariableProvider(
 
             if (!string.IsNullOrWhiteSpace(branchName))
             {
-                logger1.Information("Found branch name '{BranchName}' from build variable '{VariableName}'", branchName, possibleVariable);
+                logger.Information("Found branch name '{BranchName}' from build variable '{VariableName}'", branchName, possibleVariable);
                 break;
             }
         }
@@ -96,14 +96,14 @@ public class BranchNameVariableProvider(
 
     private async Task<Tuple<int, string>> GetBranchNameByAskingGitExeAsync()
     {
-        logger.Information("Environment variable '{BranchName}' is not defined or has empty value",
+        classLogger.Information("Environment variable '{BranchName}' is not defined or has empty value",
             WellKnownVariables.BranchName);
 
-        UPath gitExePath = gitHelper.GetGitExePath(logger, specialFolders, environmentVariables);
+        UPath gitExePath = gitHelper.GetGitExePath(classLogger, specialFolders, environmentVariables);
 
         if (!fileSystem.FileExists(gitExePath))
         {
-            logger.Debug("The git path '{GitExePath}' does not exist", gitExePath);
+            classLogger.Debug("The git path '{GitExePath}' does not exist", gitExePath);
 
             var githubForWindowsPath =
                 UPath.Combine(specialFolders.GetFolderPath(Environment.SpecialFolder.LocalApplicationData).ParseAsPath(), "GitHub");
@@ -137,7 +137,7 @@ public class BranchNameVariableProvider(
 
             if (!fileSystem.FileExists(gitExePath))
             {
-                logger.Error("Could not find Git. '{GitExePath}' does not exist", gitExePath);
+                classLogger.Error("Could not find Git. '{GitExePath}' does not exist", gitExePath);
                 return Tuple.Create(-1, string.Empty);
             }
         }
@@ -146,7 +146,7 @@ public class BranchNameVariableProvider(
 
         if (currentDirectory is null)
         {
-            logger.Error("Could not find source root");
+            classLogger.Error("Could not find source root");
             return Tuple.Create(-1, string.Empty);
         }
 
@@ -154,7 +154,7 @@ public class BranchNameVariableProvider(
 
         if (string.IsNullOrWhiteSpace(branchName))
         {
-            logger.Error("Git branch name was null or empty");
+            classLogger.Error("Git branch name was null or empty");
             return Tuple.Create(-1, string.Empty);
         }
 
@@ -196,19 +196,19 @@ public class BranchNameVariableProvider(
                             ProcessRunner.ExecuteProcessAsync(
                                 fileSystem.ConvertPathToInternal(gitExePath),
                                 arguments: argumentsList,
-                                standardErrorAction: logger.Error,
                                 standardOutLog: (message, _) =>
                                 {
-                                    logger.Debug("{Message}", message);
+                                    classLogger.Debug("{Message}", message);
                                     gitBranchBuilder.AppendLine(message);
                                 },
-                                toolAction: logger.Information,
+                                standardErrorAction: classLogger.Error,
+                                toolAction: classLogger.Information,
                                 cancellationToken: cancellationTokenSource.Token);
                 }
 
                 if (!exitCode.IsSuccess)
                 {
-                    logger.Warning("Could not get Git branch name. Git process exit code: {Result}", exitCode);
+                    classLogger.Warning("Could not get Git branch name. Git process exit code: {Result}", exitCode);
                 }
                 else
                 {
@@ -235,7 +235,7 @@ public class BranchNameVariableProvider(
 
         if (string.IsNullOrWhiteSpace(branchName))
         {
-            logger.Error("Could not get Git branch name.");
+            classLogger.Error("Could not get Git branch name.");
         }
 
         return branchName;

@@ -37,8 +37,7 @@ public static class DisplayExtensions
                             Math.Max(
                                 materialized.Where(dictionary => dictionary.ContainsKey(key))
                                     .Select(dictionary => dictionary[key])
-                                    .Select(value => value?.Length ?? 0)
-                                    .Max(),
+                                    .Max(value => value?.Length ?? 0),
                                 noValue.Length))
                     })
                 .ToArray();
@@ -57,13 +56,13 @@ public static class DisplayExtensions
 
         builder.AppendLine();
 
-        foreach (IDictionary<string, string> dictionary in materialized)
+        foreach (IDictionary<string, string?> dictionary in materialized)
         {
             var indexedKeys = allKeys.Select((item, index) => new { Key = item, Index = index }).ToArray();
 
             foreach (var indexedKey in indexedKeys)
             {
-                string value = dictionary.TryGetValue(indexedKey.Key, out string? foundValue) ? foundValue : noValue;
+                string value = dictionary.TryGetValue(indexedKey.Key, out string? foundValue) ? foundValue ?? "" : noValue;
 
                 if (string.IsNullOrWhiteSpace(value))
                 {

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,7 +20,7 @@ namespace Arbor.Build.Core.Tools.NuGet;
 public class NuGetPacker(NuGetPackager nuGetPackager, IFileSystem fileSystem, BuildContext buildContext)
     : ITool
 {
-    private IReadOnlyCollection<string> _excludedNuSpecFiles = ImmutableArray<string>.Empty;
+    private IReadOnlyCollection<string> _excludedNuSpecFiles = [];
 
     private PathLookupSpecification _pathLookupSpecification = null!;
 

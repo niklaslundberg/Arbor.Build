@@ -12,7 +12,7 @@ public static class EnumerableOf<T> where T : class
 
     public static IReadOnlyCollection<T> Items => LazyEnumerable.Value;
 
-    public static IReadOnlyCollection<T> Empty => ImmutableArray<T>.Empty;
+    public static IReadOnlyCollection<T> Empty => [];
 
     private static ImmutableArray<T> Initialize() =>
         typeof(T).GetFields(BindingFlags.Public | BindingFlags.Static)

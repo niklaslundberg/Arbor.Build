@@ -61,7 +61,7 @@ public class SolutionBuilder(
     private BranchName? _branchName;
     private string? _buildSuffix;
 
-    private IReadOnlyCollection<IVariable> _buildVariables = ImmutableArray<IVariable>.Empty;
+    private IReadOnlyCollection<IVariable> _buildVariables = [];
     private CancellationToken _cancellationToken;
 
     private bool _cleanBinXmlFilesForAssembliesEnabled;
@@ -81,13 +81,13 @@ public class SolutionBuilder(
     private bool _dotnetPackToolsEnabled;
     private bool _dotnetPublishEnabled = true;
 
-    private IReadOnlyCollection<string> _excludedNuGetWebPackageFiles = ImmutableArray<string>.Empty;
+    private IReadOnlyCollection<string> _excludedNuGetWebPackageFiles = [];
     private ImmutableArray<string> _excludedPlatforms = [];
-    private IReadOnlyCollection<string> _excludedWebJobsDirectorySegments = ImmutableArray<string>.Empty;
+    private IReadOnlyCollection<string> _excludedWebJobsDirectorySegments = [];
 
-    private IReadOnlyCollection<string> _excludedWebJobsFiles = ImmutableArray<string>.Empty;
+    private IReadOnlyCollection<string> _excludedWebJobsFiles = [];
 
-    private IReadOnlyCollection<string> _filteredNuGetWebPackageProjects = ImmutableArray<string>.Empty;
+    private IReadOnlyCollection<string> _filteredNuGetWebPackageProjects = [];
 
     private string? _gitHash;
     private GitBranchModel? _gitModel;
