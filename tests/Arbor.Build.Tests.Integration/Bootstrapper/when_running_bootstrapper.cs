@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
-using Arbor.Build.Core;
 using Arbor.Build.Core.Bootstrapper;
 using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.IO;
 using Arbor.Build.Tests.Integration.Tests.MSpec;
 using Machine.Specifications;
 using Serilog;
@@ -26,12 +26,16 @@ public class BootstrapperTests
             .MinimumLevel.Debug()
             .CreateLogger();
 
-        var baseDirectory = new DirectoryEntry(fs,
+        var sourcePath = new DirectoryEntry(fs,
             UPath.Combine(VcsTestPathHelper.FindVcsRootPath().Path, "samples", "_NetStandardPackage"));
+
+        using var baseDirectory = TempDirectory.Create(fs);
+
+        await DirectoryCopy.CopyAsync(sourcePath, baseDirectory.Directory, pathLookupSpecificationOption: new PathLookupSpecification());
 
         var startOptions = new BootstrapStartOptions(
             [],
-            baseDirectory,
+            baseDirectory.Directory,
             true,
             "develop",
             tempDirectory: tempDirectory.Directory);
