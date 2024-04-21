@@ -4,13 +4,11 @@ using Serilog;
 
 namespace Arbor.Build.Core.Tools.MSBuild;
 
-public class VersionOptions
+public class VersionOptions(string version)
 {
-    public VersionOptions(string version) => Version = version;
-
     public GitBranchModel? GitModel { get; set; }
 
-    public string Version { get; }
+    public string Version { get; } = version;
 
     public bool IsReleaseBuild { get; set; }
 

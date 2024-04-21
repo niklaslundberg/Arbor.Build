@@ -3,14 +3,10 @@ using Zio;
 
 namespace Arbor.Build.Core.BuildVariables;
 
-public class BuildVariableModule : Module
+public class BuildVariableModule(DirectoryEntry sourceDirectory) : Module
 {
-    private readonly DirectoryEntry _sourceDirectory;
-
-    public BuildVariableModule(DirectoryEntry sourceDirectory) => _sourceDirectory = sourceDirectory;
-
     protected override void Load(ContainerBuilder builder) =>
-        builder.RegisterInstance(new SourceRootValue(_sourceDirectory))
+        builder.RegisterInstance(new SourceRootValue(sourceDirectory))
             .AsSelf()
             .SingleInstance();
 }

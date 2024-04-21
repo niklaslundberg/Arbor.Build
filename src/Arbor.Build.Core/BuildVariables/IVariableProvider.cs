@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
 using Serilog;
@@ -10,7 +9,7 @@ public interface IVariableProvider
 {
     int Order { get; }
 
-    Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
+    Task<IReadOnlyCollection<IVariable>> GetBuildVariablesAsync(
         ILogger logger,
         IReadOnlyCollection<IVariable> buildVariables,
         CancellationToken cancellationToken);

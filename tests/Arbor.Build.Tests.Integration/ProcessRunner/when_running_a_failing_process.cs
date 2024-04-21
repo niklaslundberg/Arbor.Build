@@ -56,7 +56,7 @@ EXIT /b 3
                             standardErrorAction: (message, prefix) => logger.Error("{Message}", message),
                             toolAction: (message, prefix) => logger.Information("{Message}", message),
                             verboseAction: (message, prefix) => logger.Information("{Message}", message))
-                        .ConfigureAwait(false);
+                        ;
         }
         catch (Exception ex)
         {

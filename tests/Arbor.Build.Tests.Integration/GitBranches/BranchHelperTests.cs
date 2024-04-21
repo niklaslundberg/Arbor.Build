@@ -1,4 +1,4 @@
-using Arbor.Build.Core;
+using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.Tools.Git;
 using Machine.Specifications;
 using Xunit;
@@ -10,7 +10,7 @@ public class BranchHelperTests
     [Fact]
     public void ParseVersionFromDependabotBranch()
     {
-        var semanticVersion = BranchHelper.BranchSemVerMajorMinorPatch("refs/heads/dependabot/nuget/", EnvironmentVariables.Empty);
+        var semanticVersion = Branch.BranchSemVerMajorMinorPatch("refs/heads/dependabot/nuget/", EnvironmentVariables.Empty);
 
         semanticVersion.ShouldBeNull();
     }
@@ -18,7 +18,7 @@ public class BranchHelperTests
     [Fact]
     public void ParseVersionBranchShouldReturnVersion()
     {
-        var semanticVersion = BranchHelper.BranchSemVerMajorMinorPatch("refs/heads/somebranch-1.2.3", EnvironmentVariables.Empty);
+        var semanticVersion = Branch.BranchSemVerMajorMinorPatch("refs/heads/somebranch-1.2.3", EnvironmentVariables.Empty);
 
         semanticVersion.ShouldNotBeNull();
 

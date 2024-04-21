@@ -15,17 +15,8 @@ namespace Arbor.Build.Core.Tools.Versioning;
 
 [UsedImplicitly]
 [Priority(1000, true)]
-public class AssemblyInfoUnpatcher : ITool
+public class AssemblyInfoUnpatcher(IFileSystem fileSystem, BuildContext buildContext) : ITool
 {
-    private readonly IFileSystem _fileSystem;
-    private readonly BuildContext _buildContext;
-
-    public AssemblyInfoUnpatcher(IFileSystem fileSystem, BuildContext buildContext)
-    {
-        _fileSystem = fileSystem;
-        _buildContext = buildContext;
-    }
-
     public Task<ExitCode> ExecuteAsync(
         ILogger logger,
         IReadOnlyCollection<IVariable> buildVariables,
@@ -41,7 +32,7 @@ public class AssemblyInfoUnpatcher : ITool
             return Task.FromResult(ExitCode.Success);
         }
 
-        var sourceRoot = _buildContext.SourceRoot;
+        var sourceRoot = buildContext.SourceRoot;
 
         var app = new AssemblyPatcherApp();
 
@@ -50,7 +41,7 @@ public class AssemblyInfoUnpatcher : ITool
             logger.Verbose("Un-patching assembly info files for directory source root directory '{SourceRoot}'",
                 sourceRoot.ConvertPathToInternal());
 
-            app.Unpatch(_fileSystem.ConvertPathToInternal(sourceRoot.Path));
+            app.Unpatch(fileSystem.ConvertPathToInternal(sourceRoot.Path));
         }
         catch (Exception ex)
         {

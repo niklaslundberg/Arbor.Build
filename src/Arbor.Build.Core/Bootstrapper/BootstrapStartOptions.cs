@@ -5,44 +5,36 @@ using Zio;
 
 namespace Arbor.Build.Core.Bootstrapper;
 
-public class BootstrapStartOptions
+public class BootstrapStartOptions(
+    string[] args,
+    DirectoryEntry? baseDir = null,
+    bool? preReleaseEnabled = null,
+    string? branchName = null,
+    bool downloadOnly = false,
+    string? arborBuildExePath = default,
+    string? nuGetConfig = default,
+    DirectoryEntry? tempDirectory = default )
 {
     public const string DownloadOnlyCliParameter = "--download-only";
     public const string ArborBuildExeCliParameter = "-arborBuildExe=";
 
-    public BootstrapStartOptions(string[] args,
-        DirectoryEntry? baseDir = null,
-        bool? preReleaseEnabled = null,
-        string? branchName = null,
-        bool downloadOnly = false,
-        string? arborBuildExePath = default)
-    {
-        Args = args.ToImmutableArray();
-        BaseDir = baseDir;
-        PreReleaseEnabled = preReleaseEnabled;
-        BranchName = branchName;
-        DownloadOnly = downloadOnly;
-        ArborBuildExePath = arborBuildExePath;
-    }
+    public bool? PreReleaseEnabled { get; } = preReleaseEnabled;
 
-    public bool? PreReleaseEnabled { get; }
+    public ImmutableArray<string> Args { get; } = args.ToImmutableArray();
 
-    public ImmutableArray<string> Args { get; }
+    public DirectoryEntry? BaseDir { get; } = baseDir;
 
-    public DirectoryEntry? BaseDir { get; }
+    public string? BranchName { get; } = branchName;
 
-    public string? BranchName { get; }
+    public bool DownloadOnly { get; } = downloadOnly;
 
-    public bool DownloadOnly { get; }
-
-    public string? ArborBuildExePath { get; }
+    public string? ArborBuildExePath { get; } = arborBuildExePath;
+    public string? NuGetConfig { get; } = nuGetConfig;
+    public DirectoryEntry? TempDirectory { get; } = tempDirectory;
 
     public static BootstrapStartOptions Parse(string[] args)
     {
-        if (args == null)
-        {
-            throw new ArgumentNullException(nameof(args));
-        }
+        ArgumentNullException.ThrowIfNull(args);
 
         bool downloadOnly = args.Any(arg => arg.Equals(DownloadOnlyCliParameter, StringComparison.OrdinalIgnoreCase));
 

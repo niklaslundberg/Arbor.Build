@@ -1,4 +1,3 @@
-using System.Linq;
 using System.Reflection;
 using Arbor.Build.Core.Assemblies;
 using Arbor.Build.Core.GenericExtensions;
@@ -13,7 +12,7 @@ public class VariableProviderModule : Module
 {
     protected override void Load(ContainerBuilder builder)
     {
-        Assembly[] assemblies = AssemblyFetcher.GetFilteredAssemblies().ToArray();
+        Assembly[] assemblies = AssemblyFetcher.GetFilteredAssemblies();
 
         builder.RegisterAssemblyTypes(assemblies)
             .Where(type => type.IsConcretePublicClassImplementing<IVariableProvider>())

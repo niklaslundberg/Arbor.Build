@@ -1,10 +1,10 @@
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.GenericExtensions;
 using Arbor.Build.Core.Tools.Cleanup;
 using JetBrains.Annotations;
 using Serilog;
@@ -16,7 +16,7 @@ public class BuildAgentVariableProvider : IVariableProvider
 {
     public int Order => VariableProviderOrder.Default;
 
-    public Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
+    public Task<IReadOnlyCollection<IVariable>> GetBuildVariablesAsync(
         ILogger logger,
         IReadOnlyCollection<IVariable> buildVariables,
         CancellationToken cancellationToken)
@@ -27,6 +27,7 @@ public class BuildAgentVariableProvider : IVariableProvider
         {
             WellKnownVariables.ExternalTools_Hudson_HudsonHome,
             WellKnownVariables.ExternalTools_Jenkins_JenkinsHome,
+            WellKnownVariables.ExternalTools_GitHubActions,
             WellKnownVariables.ExternalTools_TeamCity_TeamCityVersion
         };
 
@@ -50,6 +51,6 @@ public class BuildAgentVariableProvider : IVariableProvider
                 isBuildAgentValue.ToString(CultureInfo.InvariantCulture).ToLowerInvariant())
         };
 
-        return Task.FromResult(variables.ToImmutableArray());
+        return Task.FromResult(variables.ToReadOnlyCollection());
     }
 }

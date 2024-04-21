@@ -9,10 +9,7 @@ public static class RequireVariableExtensions
 {
     public static IVariable Require(this IReadOnlyCollection<IVariable> variables, string variableName)
     {
-        if (variables == null)
-        {
-            throw new ArgumentNullException(nameof(variables));
-        }
+        ArgumentNullException.ThrowIfNull(variables);
 
         if (string.IsNullOrWhiteSpace(variableName))
         {

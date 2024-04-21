@@ -4,28 +4,16 @@ using Serilog.Events;
 
 namespace Arbor.Build.Core.Tools.NuGet;
 
-public class InMemorySink : ILogEventSink
+public class InMemorySink(Action<string, LogEventLevel> action, LogEventLevel level = LogEventLevel.Information)
+    : ILogEventSink
 {
-    private readonly Action<string, LogEventLevel> _action;
-
-    private readonly LogEventLevel _level;
-
-    public InMemorySink(Action<string, LogEventLevel> action, LogEventLevel level = LogEventLevel.Information)
-    {
-        _action = action;
-        _level = level;
-    }
-
     public void Emit(LogEvent logEvent)
     {
-        if (logEvent == null)
-        {
-            throw new ArgumentNullException(nameof(logEvent));
-        }
+        ArgumentNullException.ThrowIfNull(logEvent);
 
-        if (logEvent.Level >= _level)
+        if (logEvent.Level >= level)
         {
-            _action.Invoke(logEvent.RenderMessage(), logEvent.Level);
+            action.Invoke(logEvent.RenderMessage(), logEvent.Level);
         }
     }
 }

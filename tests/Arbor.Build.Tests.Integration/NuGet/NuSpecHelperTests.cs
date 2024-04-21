@@ -10,12 +10,8 @@ using Zio.FileSystems;
 
 namespace Arbor.Build.Tests.Integration.NuGet;
 
-public class NuSpecHelperTests
+public class NuSpecHelperTests(ITestOutputHelper output)
 {
-    public NuSpecHelperTests(ITestOutputHelper output) => _output = output;
-
-    readonly ITestOutputHelper _output;
-
     [Fact]
     public void WhenGettingIncludedFiles()
     {
@@ -40,6 +36,6 @@ public class NuSpecHelperTests
 
         Assert.NotNull(includedFile);
 
-        _output.WriteLine(includedFile);
+        output.WriteLine(includedFile);
     }
 }

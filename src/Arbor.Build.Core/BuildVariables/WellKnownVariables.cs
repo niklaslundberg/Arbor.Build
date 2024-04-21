@@ -286,10 +286,6 @@ public static partial class WellKnownVariables
     public const string PublishTargetFramework =
         "Arbor.Build.PublishTargetFramework";
 
-    [VariableDescription("Paket Enabled")]
-    public const string PaketEnabled =
-        "Arbor.Build.Paket.Enabled";
-
     [VariableDescription(".NET Core MSBuild web publish runtime identifiers")]
     public const string ProjectMSBuildPublishRuntimeIdentifier =
         "ArborBuild_PublishRuntimeIdentifier";

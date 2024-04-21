@@ -8,7 +8,7 @@ public class GetBooleanByKeyTests
     [Fact]
     public void InvalidValueWithNoExplicitDefaultShouldBeFalse()
     {
-        IVariable[] variables = { new BuildVariable("abc", "123") };
+        IVariable[] variables = [new BuildVariable("abc", "123")];
 
         bool value = variables.GetBooleanByKey("abc");
 
@@ -18,7 +18,7 @@ public class GetBooleanByKeyTests
     [Fact]
     public void InvalidWithDefaultTrueShouldBeTrue()
     {
-        IVariable[] variables = { new BuildVariable("abc", "123") };
+        IVariable[] variables = [new BuildVariable("abc", "123")];
 
         bool value = variables.GetBooleanByKey("abc", true);
 
@@ -28,7 +28,7 @@ public class GetBooleanByKeyTests
     [Fact]
     public void ValueTrueShouldBeTrue()
     {
-        IVariable[] variables = { new BuildVariable("abc", "true") };
+        IVariable[] variables = [new BuildVariable("abc", "true")];
 
         bool value = variables.GetBooleanByKey("abc");
 

@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
-using Arbor.Defensive.Collections;
-using Arbor.Exceptions;
+using Arbor.Build.Core.Exceptions;
+using Arbor.Build.Core.GenericExtensions;
 using Zio;
 
 namespace Arbor.Build.Core.IO;
@@ -17,10 +17,7 @@ public static class DirectoryExtensions
         PathLookupSpecification? pathLookupSpecification = null,
         DirectoryEntry? rootDir = null)
     {
-        if (directory is null)
-        {
-            throw new ArgumentNullException(nameof(directory));
-        }
+        ArgumentNullException.ThrowIfNull(directory);
 
         if (!directory.Exists)
         {
@@ -34,7 +31,7 @@ public static class DirectoryExtensions
 
         if (usedPathLookupSpecification.IsNotAllowed(directory, rootDir).Item1)
         {
-            return ImmutableArray<FileEntry>.Empty;
+            return [];
         }
 
         IReadOnlyCollection<string> invalidFileExtensions = usedFileExtensions
@@ -74,15 +71,9 @@ public static class DirectoryExtensions
         this DirectoryEntry directory,
         IReadOnlyCollection<string> excludedPatterns)
     {
-        if (directory is null)
-        {
-            throw new ArgumentNullException(nameof(directory));
-        }
+        ArgumentNullException.ThrowIfNull(directory);
 
-        if (excludedPatterns is null)
-        {
-            throw new ArgumentNullException(nameof(excludedPatterns));
-        }
+        ArgumentNullException.ThrowIfNull(excludedPatterns);
 
         var fileSystem = directory.FileSystem;
 

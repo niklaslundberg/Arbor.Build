@@ -17,12 +17,8 @@ namespace Arbor.Build.Core.Tools.NuGet;
 
 [Priority(101)]
 [UsedImplicitly]
-public class DotNetRestorer : ITool
+public class DotNetRestorer(IFileSystem fileSystem) : ITool
 {
-    private readonly IFileSystem _fileSystem;
-
-    public DotNetRestorer(IFileSystem fileSystem) => _fileSystem = fileSystem;
-
     public async Task<ExitCode> ExecuteAsync(
         ILogger? logger,
         IReadOnlyCollection<IVariable> buildVariables,
@@ -37,7 +33,7 @@ public class DotNetRestorer : ITool
             return ExitCode.Success;
         }
 
-        DirectoryEntry rootPath = new(_fileSystem, buildVariables.GetVariable(WellKnownVariables.SourceRoot).GetValueOrThrow());
+        DirectoryEntry rootPath = new(fileSystem, buildVariables.GetVariable(WellKnownVariables.SourceRoot).GetValueOrThrow());
 
         string dotNetExePath =
             buildVariables.GetVariableValueOrDefault(WellKnownVariables.DotNetExePath, string.Empty)!;
@@ -68,10 +64,10 @@ public class DotNetRestorer : ITool
             }
 
             ExitCode result = await ProcessHelper.ExecuteAsync(
-                _fileSystem.ConvertPathToInternal(dotNetExePath.ParseAsPath()),
+                fileSystem.ConvertPathToInternal(dotNetExePath.ParseAsPath()),
                 arguments,
                 logger,
-                cancellationToken: cancellationToken).ConfigureAwait(false);
+                cancellationToken: cancellationToken);
 
             if (!result.IsSuccess)
             {

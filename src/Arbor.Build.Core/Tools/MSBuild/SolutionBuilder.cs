@@ -8,13 +8,12 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.Exceptions;
 using Arbor.Build.Core.GenericExtensions;
 using Arbor.Build.Core.GenericExtensions.Bools;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.Git;
 using Arbor.Build.Core.Tools.NuGet;
-using Arbor.Defensive.Collections;
-using Arbor.Exceptions;
 using Arbor.FS;
 using Arbor.KVConfiguration.Core.Metadata;
 using Arbor.KVConfiguration.Schema.Json;
@@ -31,24 +30,21 @@ namespace Arbor.Build.Core.Tools.MSBuild;
 
 [Priority(300)]
 [UsedImplicitly]
-public class SolutionBuilder : ITool, IReportLogTail
+public class SolutionBuilder(
+    BuildContext buildContext,
+    NuGetPackager nugetPackager,
+    IFileSystem fileSystem)
+    : ITool, IReportLogTail
 {
-    private readonly BuildContext _buildContext;
+    private readonly List<FileAttributes> _excludeListedByAttributes =
+        [FileAttributes.Hidden, FileAttributes.System, FileAttributes.Offline, FileAttributes.Archive];
 
-    private readonly List<FileAttributes> _excludeListedByAttributes = new()
-    {
-        FileAttributes.Hidden, FileAttributes.System, FileAttributes.Offline, FileAttributes.Archive
-    };
-
-    private readonly IFileSystem _fileSystem;
-
-    private readonly List<string> _knownPlatforms = new List<string> { "x86", "x64", "Any CPU" };
-    private readonly NuGetPackager _nugetPackager;
+    private readonly List<string> _knownPlatforms = ["x86", "x64", "Any CPU"];
 
     private readonly PathLookupSpecification _pathLookupSpecification =
         DefaultPaths.DefaultPathLookupSpecification.AddExcludedDirectorySegments(new[] { "node_modules" });
 
-    private readonly List<string> _platforms = new List<string>();
+    private readonly List<string> _platforms = [];
 
     private bool _appDataJobsEnabled;
     private bool _applicationMetadataDotNetConfigurationEnabled;
@@ -65,7 +61,7 @@ public class SolutionBuilder : ITool, IReportLogTail
     private BranchName? _branchName;
     private string? _buildSuffix;
 
-    private IReadOnlyCollection<IVariable> _buildVariables = ImmutableArray<IVariable>.Empty;
+    private IReadOnlyCollection<IVariable> _buildVariables = [];
     private CancellationToken _cancellationToken;
 
     private bool _cleanBinXmlFilesForAssembliesEnabled;
@@ -85,13 +81,13 @@ public class SolutionBuilder : ITool, IReportLogTail
     private bool _dotnetPackToolsEnabled;
     private bool _dotnetPublishEnabled = true;
 
-    private IReadOnlyCollection<string> _excludedNuGetWebPackageFiles = ImmutableArray<string>.Empty;
-    private ImmutableArray<string> _excludedPlatforms = ImmutableArray<string>.Empty;
-    private IReadOnlyCollection<string> _excludedWebJobsDirectorySegments = ImmutableArray<string>.Empty;
+    private IReadOnlyCollection<string> _excludedNuGetWebPackageFiles = [];
+    private ImmutableArray<string> _excludedPlatforms = [];
+    private IReadOnlyCollection<string> _excludedWebJobsDirectorySegments = [];
 
-    private IReadOnlyCollection<string> _excludedWebJobsFiles = ImmutableArray<string>.Empty;
+    private IReadOnlyCollection<string> _excludedWebJobsFiles = [];
 
-    private IReadOnlyCollection<string> _filteredNuGetWebPackageProjects = ImmutableArray<string>.Empty;
+    private IReadOnlyCollection<string> _filteredNuGetWebPackageProjects = [];
 
     private string? _gitHash;
     private GitBranchModel? _gitModel;
@@ -114,18 +110,7 @@ public class SolutionBuilder : ITool, IReportLogTail
     private bool _webProjectsBuildEnabled;
     private bool _assemblyVersionPatchingEnabled;
 
-    public SolutionBuilder(
-        BuildContext buildContext,
-        NuGetPackager nugetPackager,
-        IFileSystem fileSystem)
-    {
-        _buildContext = buildContext;
-        _nugetPackager = nugetPackager;
-        _fileSystem = fileSystem;
-        LogTail = new FixedSizedQueue<string> { Limit = 5 };
-    }
-
-    public FixedSizedQueue<string> LogTail { get; }
+    public FixedSizedQueue<string> LogTail { get; } = new() { Limit = 5 };
 
     public async Task<ExitCode> ExecuteAsync(
         ILogger logger,
@@ -165,7 +150,7 @@ public class SolutionBuilder : ITool, IReportLogTail
         _argHelper = new MsBuildArgHelper(msbuildParameterArgumentDelimiter);
 
         _artifactsPath =
-            new DirectoryEntry(_fileSystem,
+            new DirectoryEntry(fileSystem,
                 buildVariables.Require(WellKnownVariables.Artifacts).GetValueOrThrow().ParseAsPath());
 
         _appDataJobsEnabled = buildVariables.GetBooleanByKey(
@@ -183,7 +168,7 @@ public class SolutionBuilder : ITool, IReportLogTail
 
         IVariable artifacts = buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue();
         _packagesDirectory =
-            new DirectoryEntry(_fileSystem, UPath.Combine(artifacts.Value!.ParseAsPath(), "packages"));
+            new DirectoryEntry(fileSystem, UPath.Combine(artifacts.Value!.ParseAsPath(), "packages"));
 
         _dotnetPackToolsEnabled =
             buildVariables.GetBooleanByKey(WellKnownVariables.DotNetPackToolProjectsEnabled, true);
@@ -244,7 +229,7 @@ public class SolutionBuilder : ITool, IReportLogTail
             _logger.Verbose("Using MSBuild verbosity {Verbosity}", _verbosity);
         }
 
-        _vcsRoot = new DirectoryEntry(_fileSystem,
+        _vcsRoot = new DirectoryEntry(fileSystem,
             buildVariables.Require(WellKnownVariables.SourceRoot).GetValueOrThrow().ParseAsPath());
 
         if (_codeAnalysisEnabled)
@@ -345,7 +330,7 @@ public class SolutionBuilder : ITool, IReportLogTail
 
         try
         {
-            return await BuildAsync(_logger, buildVariables).ConfigureAwait(false);
+            return await BuildAsync(_logger, buildVariables);
         }
         catch (Exception ex) when (!ex.IsFatal())
         {
@@ -365,7 +350,7 @@ public class SolutionBuilder : ITool, IReportLogTail
     private UPath? FindRuleSet()
     {
         IReadOnlyCollection<FileEntry> rulesetFiles = _vcsRoot
-            .GetFilesRecursive(".ruleset".ValueToImmutableArray(), _pathLookupSpecification, _vcsRoot)
+            .GetFilesRecursive([".ruleset"], _pathLookupSpecification, _vcsRoot)
             .ToReadOnlyCollection();
 
         if (rulesetFiles.Count != 1)
@@ -402,7 +387,7 @@ public class SolutionBuilder : ITool, IReportLogTail
 
     private async Task<ExitCode> BuildAsync(ILogger logger, IReadOnlyCollection<IVariable> variables)
     {
-        if (_buildContext.Configurations.Count == 0)
+        if (buildContext.Configurations.Count == 0)
         {
             logger.Error("No build configurations are defined");
             return ExitCode.Failure;
@@ -441,7 +426,7 @@ public class SolutionBuilder : ITool, IReportLogTail
         }
 
         IDictionary<FileEntry, IList<string>> solutionPlatforms =
-            await GetSolutionPlatformsAsync(solutionFiles).ConfigureAwait(false);
+            await GetSolutionPlatformsAsync(solutionFiles);
 
         if (_verboseLoggingEnabled)
         {
@@ -482,7 +467,7 @@ public class SolutionBuilder : ITool, IReportLogTail
             var result = await BuildSolutionForPlatformAsync(
                 solutionPlatform.Key,
                 solutionPlatform.Value,
-                logger).ConfigureAwait(false);
+                logger);
 
             if (!result.IsSuccess)
             {
@@ -504,7 +489,7 @@ public class SolutionBuilder : ITool, IReportLogTail
 
             while (streamReader.Peek() >= 0)
             {
-                string? line = await streamReader.ReadLineAsync().ConfigureAwait(false);
+                string? line = await streamReader.ReadLineAsync(_cancellationToken);
 
                 if (string.IsNullOrWhiteSpace(line))
                 {
@@ -543,7 +528,7 @@ public class SolutionBuilder : ITool, IReportLogTail
 
         foreach (FileEntry solutionFile in solutionFiles)
         {
-            List<string> platforms = await GetSolutionPlatformsAsync(solutionFile).ConfigureAwait(false);
+            List<string> platforms = await GetSolutionPlatformsAsync(solutionFile);
 
             solutionPlatforms.Add(solutionFile, platforms);
         }
@@ -626,7 +611,7 @@ public class SolutionBuilder : ITool, IReportLogTail
 
         var combinations = actualPlatforms
             .SelectMany(
-                item => _buildContext.Configurations.Select(config =>
+                item => buildContext.Configurations.Select(config =>
                     new { Platform = item, Configuration = config }))
             .ToList();
 
@@ -650,13 +635,13 @@ public class SolutionBuilder : ITool, IReportLogTail
             }
         }
 
-        foreach (string configuration in _buildContext.Configurations)
+        foreach (string configuration in buildContext.Configurations)
         {
-            _buildContext.CurrentBuildConfiguration = new BuildConfiguration(configuration);
+            buildContext.CurrentBuildConfiguration = new BuildConfiguration(configuration);
 
             var result =
                 await BuildSolutionWithConfigurationAsync(solutionFile, configuration, logger, actualPlatforms)
-                    .ConfigureAwait(false);
+                    ;
 
             if (!result.IsSuccess)
             {
@@ -689,7 +674,7 @@ public class SolutionBuilder : ITool, IReportLogTail
                     solutionFile,
                     configuration,
                     knownPlatform,
-                    logger).ConfigureAwait(false);
+                    logger);
 
             buildStopwatch.Stop();
             if (_debugLoggingEnabled)
@@ -707,7 +692,7 @@ public class SolutionBuilder : ITool, IReportLogTail
             {
                 logger.Error(
                     "Could not build solution file {FullName} with configuration {Configuration} and platform {KnownPlatform}",
-                    _fileSystem.ConvertPathToInternal(solutionFile.FullName),
+                    fileSystem.ConvertPathToInternal(solutionFile.FullName),
                     configuration,
                     knownPlatform);
                 return result;
@@ -729,7 +714,7 @@ public class SolutionBuilder : ITool, IReportLogTail
             return ExitCode.Failure;
         }
 
-        if (!_dotnetMsBuildEnabled && _msBuildExe.HasValue && !_fileSystem.FileExists(_msBuildExe.Value))
+        if (!_dotnetMsBuildEnabled && _msBuildExe.HasValue && !fileSystem.FileExists(_msBuildExe.Value))
         {
             logger.Error("The MSBuild path '{MsBuildExe}' does not exist", _msBuildExe);
             return ExitCode.Failure;
@@ -744,7 +729,7 @@ public class SolutionBuilder : ITool, IReportLogTail
 
         var argList = new List<string>(10)
         {
-            _fileSystem.ConvertPathToInternal(solutionFile.FullName),
+            fileSystem.ConvertPathToInternal(solutionFile.FullName),
             _argHelper.FormatPropertyArg("configuration", configuration),
             _argHelper.FormatPropertyArg("platform", platform),
             _argHelper.FormatArg("verbosity", _verbosity.Level),
@@ -783,12 +768,12 @@ public class SolutionBuilder : ITool, IReportLogTail
 
             argList.Add(_argHelper.FormatPropertyArg("RunCodeAnalysis", "true"));
 
-            if (_ruleset is { } && _fileSystem.FileExists(_ruleset.Value))
+            if (_ruleset is { } && fileSystem.FileExists(_ruleset.Value))
             {
                 logger.Information("Using code analysis ruleset '{Ruleset}'", _ruleset);
 
                 argList.Add(_argHelper.FormatPropertyArg("CodeAnalysisRuleSet",
-                    _fileSystem.ConvertPathToInternal(_ruleset.Value)));
+                    fileSystem.ConvertPathToInternal(_ruleset.Value)));
             }
         }
         else
@@ -842,7 +827,7 @@ public class SolutionBuilder : ITool, IReportLogTail
         var exitCode =
             await
                 ProcessRunner.ExecuteProcessAsync(
-                        _fileSystem.ConvertPathToInternal(exePath),
+                        fileSystem.ConvertPathToInternal(exePath),
                         argList,
                         LogDefault,
                         logger.Error,
@@ -850,12 +835,12 @@ public class SolutionBuilder : ITool, IReportLogTail
                         debugAction: debugAction,
                         cancellationToken: _cancellationToken,
                         verboseAction: verboseAction)
-                    .ConfigureAwait(false);
+                    ;
 
         if (exitCode.IsSuccess)
         {
             exitCode = await PublishProjectsAsync(solutionFile, configuration, logger)
-                .ConfigureAwait(false);
+                ;
         }
         else
         {
@@ -872,7 +857,7 @@ public class SolutionBuilder : ITool, IReportLogTail
 
                 var webAppsExitCode =
                     await BuildWebApplicationsAsync(solutionFile, configuration, platform, logger)
-                        .ConfigureAwait(false);
+                        ;
 
                 exitCode = webAppsExitCode;
             }
@@ -896,7 +881,7 @@ public class SolutionBuilder : ITool, IReportLogTail
 
                 var webAppsExitCode =
                     await PackDotNetProjectsAsync(solutionFile, configuration, logger)
-                        .ConfigureAwait(false);
+                        ;
 
                 exitCode = webAppsExitCode;
             }
@@ -915,7 +900,7 @@ public class SolutionBuilder : ITool, IReportLogTail
 
         if (exitCode.IsSuccess)
         {
-            exitCode = await PublishPdbFilesAsync(configuration, platform).ConfigureAwait(false);
+            exitCode = await PublishPdbFilesAsync(configuration, platform);
         }
         else
         {
@@ -954,7 +939,7 @@ public class SolutionBuilder : ITool, IReportLogTail
 
             var webAppsExitCode =
                 await PublishDotNetProjectsAsync(solutionFile, configuration, logger)
-                    .ConfigureAwait(false);
+                    ;
 
             exitCode = webAppsExitCode;
         }
@@ -1007,7 +992,7 @@ public class SolutionBuilder : ITool, IReportLogTail
                 var tempDirPath =
                     UPath.Combine(Path.GetTempPath().ParseAsPath(),
                         "Arbor.Build-pkg" + DateTime.UtcNow.Ticks);
-                tempDirectory = new DirectoryEntry(_fileSystem, tempDirPath);
+                tempDirectory = new DirectoryEntry(fileSystem, tempDirPath);
                 tempDirectory.EnsureExists();
 
                 packageLookupDirectories.Add(solutionProject.ProjectDirectory);
@@ -1084,10 +1069,10 @@ public class SolutionBuilder : ITool, IReportLogTail
                     }
 
                     var projectExitCode = await ProcessRunner.ExecuteProcessAsync(
-                        _fileSystem.ConvertPathToInternal(_dotNetExePath.Value),
+                        fileSystem.ConvertPathToInternal(_dotNetExePath.Value),
                         args,
                         Log,
-                        cancellationToken: _cancellationToken).ConfigureAwait(false);
+                        cancellationToken: _cancellationToken);
 
                     if (!projectExitCode.IsSuccess)
                     {
@@ -1110,7 +1095,7 @@ public class SolutionBuilder : ITool, IReportLogTail
                         {
                             var targetFilePath = _packagesDirectory.Path / nugetPackage.Name;
 
-                            if (!_fileSystem.FileExists(targetFilePath))
+                            if (!fileSystem.FileExists(targetFilePath))
                             {
                                 nugetPackage.CopyTo(targetFilePath, true);
                             }
@@ -1123,7 +1108,7 @@ public class SolutionBuilder : ITool, IReportLogTail
                         {
                             var targetFile = UPath.Combine(_packagesDirectory.Path, nugetPackage.Name);
 
-                            if (!_fileSystem.FileExists(targetFile))
+                            if (!fileSystem.FileExists(targetFile))
                             {
                                 nugetPackage.CopyTo(targetFile, true);
                             }
@@ -1194,11 +1179,11 @@ public class SolutionBuilder : ITool, IReportLogTail
             EnsureFileDates(solutionProject.ProjectDirectory);
 
             string[] args =
-            {
-                "pack", _fileSystem.ConvertPathToInternal(solutionProject.FullPath.Path), "--configuration",
+            [
+                "pack", fileSystem.ConvertPathToInternal(solutionProject.FullPath.Path), "--configuration",
                 configuration, _argHelper.FormatPropertyArg("VersionPrefix", packageVersion), "--output",
-                _fileSystem.ConvertPathToInternal(_packagesDirectory.Path), "--include-symbols"
-            };
+                fileSystem.ConvertPathToInternal(_packagesDirectory.Path)
+            ];
 
             void Log(string message, string category)
             {
@@ -1216,10 +1201,10 @@ public class SolutionBuilder : ITool, IReportLogTail
             }
 
             var projectExitCode = await ProcessRunner.ExecuteProcessAsync(
-                _fileSystem.ConvertPathToInternal(_dotNetExePath.Value),
+                fileSystem.ConvertPathToInternal(_dotNetExePath.Value),
                 args,
                 Log,
-                cancellationToken: _cancellationToken).ConfigureAwait(false);
+                cancellationToken: _cancellationToken);
 
             if (!projectExitCode.IsSuccess)
             {
@@ -1264,7 +1249,7 @@ public class SolutionBuilder : ITool, IReportLogTail
                 .ToReadOnlyCollection();
 
         DirectoryEntry targetReportDirectory =
-            new DirectoryEntry(_fileSystem, UPath.Combine(_artifactsPath.Path, "CodeAnalysis")).EnsureExists();
+            new DirectoryEntry(fileSystem, UPath.Combine(_artifactsPath.Path, "CodeAnalysis")).EnsureExists();
 
         if (_verboseLoggingEnabled)
         {
@@ -1346,19 +1331,19 @@ public class SolutionBuilder : ITool, IReportLogTail
                 configuration,
                 Platforms.Normalize(platform));
 
-            DirectoryEntry targetDirectory = new DirectoryEntry(_fileSystem, targetDirectoryPath).EnsureExists();
+            DirectoryEntry targetDirectory = new DirectoryEntry(fileSystem, targetDirectoryPath).EnsureExists();
 
             foreach (var pair in pairs)
             {
                 var targetFilePath = UPath.Combine(targetDirectory.FullName, pair.PdbFile.Name);
 
-                if (!_fileSystem.FileExists(targetFilePath))
+                if (!fileSystem.FileExists(targetFilePath))
                 {
                     if (_debugLoggingEnabled)
                     {
                         _logger.Debug("Copying PDB file '{FullName}' to '{TargetFilePath}'",
                             pair.PdbFile.ConvertPathToInternal(),
-                            _fileSystem.ConvertPathToInternal(targetFilePath));
+                            fileSystem.ConvertPathToInternal(targetFilePath));
                     }
 
                     pair.PdbFile.CopyTo(targetFilePath, true);
@@ -1368,7 +1353,7 @@ public class SolutionBuilder : ITool, IReportLogTail
                     if (_debugLoggingEnabled)
                     {
                         _logger.Debug("Target file '{TargetFilePath}' already exists, skipping file",
-                            _fileSystem.ConvertPathToInternal(targetFilePath));
+                            fileSystem.ConvertPathToInternal(targetFilePath));
                     }
                 }
 
@@ -1376,13 +1361,13 @@ public class SolutionBuilder : ITool, IReportLogTail
                 {
                     var targetDllFilePath = UPath.Combine(targetDirectory.FullName, pair.DllFile.Name);
 
-                    if (!_fileSystem.FileExists(targetDllFilePath))
+                    if (!fileSystem.FileExists(targetDllFilePath))
                     {
                         if (_debugLoggingEnabled)
                         {
                             _logger.Debug("Copying DLL file '{FullName}' to '{TargetFilePath}'",
                                 pair.DllFile.ConvertPathToInternal(),
-                                _fileSystem.ConvertPathToInternal(targetFilePath));
+                                fileSystem.ConvertPathToInternal(targetFilePath));
                         }
 
                         pair.DllFile.CopyTo(targetDllFilePath, true);
@@ -1392,7 +1377,7 @@ public class SolutionBuilder : ITool, IReportLogTail
                         if (_debugLoggingEnabled)
                         {
                             _logger.Debug("Target DLL file '{TargetDllFilePath}' already exists, skipping file",
-                                _fileSystem.ConvertPathToInternal(targetDllFilePath));
+                                fileSystem.ConvertPathToInternal(targetDllFilePath));
                         }
                     }
                 }
@@ -1434,7 +1419,7 @@ public class SolutionBuilder : ITool, IReportLogTail
 
         logger.Information("WebApplication projects to build [{Count}]: {Projects}",
             webProjects.Count,
-            string.Join(", ", webProjects.Select(wp => _fileSystem.ConvertPathToInternal(wp.Project.FileName.Path))));
+            string.Join(", ", webProjects.Select(wp => fileSystem.ConvertPathToInternal(wp.Project.FileName.Path))));
 
         var webSolutionProjects = new List<WebSolutionProject>();
 
@@ -1492,7 +1477,7 @@ public class SolutionBuilder : ITool, IReportLogTail
                 Platforms.Normalize(platform));
 
             DirectoryEntry platformDirectory =
-                new DirectoryEntry(_fileSystem, platformDirectoryPath).EnsureExists();
+                new DirectoryEntry(fileSystem, platformDirectoryPath).EnsureExists();
 
             DirectoryEntry siteArtifactDirectory = platformDirectory.CreateSubdirectory(configuration);
 
@@ -1504,7 +1489,7 @@ public class SolutionBuilder : ITool, IReportLogTail
                 logger,
                 solutionProject,
                 platformName,
-                siteArtifactDirectory).ConfigureAwait(false);
+                siteArtifactDirectory);
 
             if (!buildSiteExitCode.IsSuccess)
             {
@@ -1527,7 +1512,7 @@ public class SolutionBuilder : ITool, IReportLogTail
             {
                 _logger.Information("Application metadata is enabled");
                 await CreateApplicationMetadataAsync(siteArtifactDirectory, platformName, configuration)
-                    .ConfigureAwait(false);
+                    ;
             }
             else
             {
@@ -1539,7 +1524,7 @@ public class SolutionBuilder : ITool, IReportLogTail
                 logger.Information("AppData Web Jobs are enabled");
 
                 var exitCode = await CopyKuduWebJobsAsync(logger, solutionProject, siteArtifactDirectory)
-                    .ConfigureAwait(false);
+                    ;
 
                 if (!exitCode.IsSuccess)
                 {
@@ -1564,7 +1549,7 @@ public class SolutionBuilder : ITool, IReportLogTail
                             logger,
                             platformDirectoryPath,
                             solutionProject,
-                            platformName).ConfigureAwait(false);
+                            platformName);
 
                 if (!packageSiteExitCode.IsSuccess)
                 {
@@ -1587,7 +1572,7 @@ public class SolutionBuilder : ITool, IReportLogTail
                     platformDirectoryPath,
                     solutionProject,
                     platformName,
-                    siteArtifactDirectory.FullName).ConfigureAwait(false);
+                    siteArtifactDirectory.FullName);
 
                 if (!packageSiteExitCode.IsSuccess)
                 {
@@ -1660,7 +1645,7 @@ public class SolutionBuilder : ITool, IReportLogTail
 
         const string applicationmetadataJson = "applicationmetadata.json";
 
-        if (_fileSystem.DirectoryExists(UPath.Combine(siteArtifactDirectory.Path, "wwwroot")))
+        if (fileSystem.DirectoryExists(UPath.Combine(siteArtifactDirectory.Path, "wwwroot")))
         {
             applicationMetadataJsonFilePath = UPath.Combine(
                 siteArtifactDirectory.Path,
@@ -1674,9 +1659,9 @@ public class SolutionBuilder : ITool, IReportLogTail
                 applicationmetadataJson);
         }
 
-        new DirectoryEntry(_fileSystem, applicationMetadataJsonFilePath.GetDirectory()).EnsureExists();
+        new DirectoryEntry(fileSystem, applicationMetadataJsonFilePath.GetDirectory()).EnsureExists();
 
-        await using var stream = _fileSystem.OpenFile(applicationMetadataJsonFilePath, FileMode.OpenOrCreate, FileAccess.Write);
+        await using var stream = fileSystem.OpenFile(applicationMetadataJsonFilePath, FileMode.OpenOrCreate, FileAccess.Write);
 
         await stream.WriteAllTextAsync(serialize, cancellationToken: _cancellationToken);
 
@@ -1709,13 +1694,13 @@ public class SolutionBuilder : ITool, IReportLogTail
 
             buildSiteArguments = new List<string>(15)
             {
-                _fileSystem.ConvertPathToInternal(solutionProject.FullPath.Path),
+                fileSystem.ConvertPathToInternal(solutionProject.FullPath.Path),
                 _argHelper.FormatPropertyArg("configuration", configuration),
                 _argHelper.FormatPropertyArg("platform", platformName),
-                _argHelper.FormatPropertyArg("_PackageTempDir", _fileSystem.ConvertPathToInternal(siteArtifactDirectory.FullName)),
+                _argHelper.FormatPropertyArg("_PackageTempDir", fileSystem.ConvertPathToInternal(siteArtifactDirectory.FullName)),
 
                 // ReSharper disable once PossibleNullReferenceException
-                _argHelper.FormatPropertyArg("SolutionDir", _fileSystem.ConvertPathToInternal(solutionFile.Directory.FullName)),
+                _argHelper.FormatPropertyArg("SolutionDir", fileSystem.ConvertPathToInternal(solutionFile.Directory.FullName)),
                 _argHelper.FormatArg("verbosity", _verbosity.Level),
                 _argHelper.FormatPropertyArg("AutoParameterizationWebConfigConnectionStrings", "false")
             };
@@ -1732,10 +1717,10 @@ public class SolutionBuilder : ITool, IReportLogTail
         {
             buildSiteArguments = new List<string>(15)
             {
-                _fileSystem.ConvertPathToInternal(solutionProject.FullPath.Path),
+                fileSystem.ConvertPathToInternal(solutionProject.FullPath.Path),
                 _argHelper.FormatPropertyArg("configuration", configuration),
                 _argHelper.FormatArg("verbosity", _verbosity.Level),
-                _argHelper.FormatPropertyArg("publishdir", _fileSystem.ConvertPathToInternal(siteArtifactDirectory.FullName)),
+                _argHelper.FormatPropertyArg("publishdir", fileSystem.ConvertPathToInternal(siteArtifactDirectory.FullName)),
             };
 
             if (_assemblyVersionPatchingEnabled)
@@ -1784,12 +1769,12 @@ public class SolutionBuilder : ITool, IReportLogTail
         var buildSiteExitCode =
             await
                 ProcessRunner.ExecuteProcessAsync(
-                    _fileSystem.ConvertPathToInternal(exePath),
+                    fileSystem.ConvertPathToInternal(exePath),
                     buildSiteArguments,
                     logger.Information,
                     logger.Error,
                     logger.Information,
-                    cancellationToken: _cancellationToken).ConfigureAwait(false);
+                    cancellationToken: _cancellationToken);
 
         if (buildSiteExitCode.IsSuccess)
         {
@@ -1801,13 +1786,13 @@ public class SolutionBuilder : ITool, IReportLogTail
                 }
 
                 var binDirectory =
-                    new DirectoryEntry(_fileSystem, UPath.Combine(siteArtifactDirectory.FullName, "bin"));
+                    new DirectoryEntry(fileSystem, UPath.Combine(siteArtifactDirectory.FullName, "bin"));
 
                 if (binDirectory.Exists)
                 {
                     if (_debugLoggingEnabled)
                     {
-                        _logger.Debug("The bin directory '{FullName}' does exist", _fileSystem.ConvertPathToInternal(binDirectory.FullName));
+                        _logger.Debug("The bin directory '{FullName}' does exist", fileSystem.ConvertPathToInternal(binDirectory.FullName));
                     }
 
                     RemoveXmlFilesForAssemblies(binDirectory);
@@ -1816,7 +1801,7 @@ public class SolutionBuilder : ITool, IReportLogTail
                 {
                     if (_debugLoggingEnabled)
                     {
-                        _logger.Debug("The bin directory '{FullName}' does not exist", _fileSystem.ConvertPathToInternal(binDirectory.FullName));
+                        _logger.Debug("The bin directory '{FullName}' does not exist", fileSystem.ConvertPathToInternal(binDirectory.FullName));
                     }
                 }
             }
@@ -1884,7 +1869,7 @@ public class SolutionBuilder : ITool, IReportLogTail
 
         string packageId = solutionProject.ProjectName;
 
-        var artifactDirectory = new DirectoryEntry(_fileSystem, siteArtifactDirectory);
+        var artifactDirectory = new DirectoryEntry(fileSystem, siteArtifactDirectory);
 
         var allIncludedFiles =
             artifactDirectory.GetFilesWithWithExclusions(_excludedNuGetWebPackageFiles);
@@ -1896,7 +1881,7 @@ public class SolutionBuilder : ITool, IReportLogTail
             allIncludedFiles,
             "",
             artifactDirectory,
-            runtimeIdentifier: _publishRuntimeIdentifier).ConfigureAwait(false);
+            runtimeIdentifier: _publishRuntimeIdentifier);
 
         if (!exitCode.IsSuccess)
         {
@@ -1968,7 +1953,7 @@ public class SolutionBuilder : ITool, IReportLogTail
                 elements,
                 $".Environment.{environmentName}",
                 rootDirectory,
-                runtimeIdentifier: _publishRuntimeIdentifier).ConfigureAwait(false);
+                runtimeIdentifier: _publishRuntimeIdentifier);
 
             if (!environmentPackageExitCode.IsSuccess)
             {
@@ -2114,9 +2099,9 @@ public class SolutionBuilder : ITool, IReportLogTail
     {
         var packageDirectoryPath = UPath.Combine(platformDirectoryPath, "NuGet");
 
-        DirectoryEntry packageDirectory = new DirectoryEntry(_fileSystem, packageDirectoryPath).EnsureExists();
+        DirectoryEntry packageDirectory = new DirectoryEntry(fileSystem, packageDirectoryPath).EnsureExists();
 
-        var packageConfiguration = _nugetPackager.GetNuGetPackageConfiguration(
+        var packageConfiguration = nugetPackager.GetNuGetPackageConfiguration(
             logger,
             _buildVariables,
             packageDirectory,
@@ -2159,8 +2144,8 @@ public class SolutionBuilder : ITool, IReportLogTail
         string nativePath = contentFilesInfo.ContentFilesFile.Path.WindowsPath();
         string nativeChecksumPath = contentFilesInfo.ChecksumFile.Path.WindowsPath();
 
-        string nativeFullPath = _fileSystem.ConvertPathToInternal(contentFilesInfo.ContentFilesFile.Path);
-        string nativeChecksumFileFullPath = _fileSystem.ConvertPathToInternal(contentFilesInfo.ChecksumFile.Path);
+        string nativeFullPath = fileSystem.ConvertPathToInternal(contentFilesInfo.ContentFilesFile.Path);
+        string nativeChecksumFileFullPath = fileSystem.ConvertPathToInternal(contentFilesInfo.ChecksumFile.Path);
 
         string contentFileListFile =
             $@"<file src=""{nativeFullPath}"" target=""{nativePath[nativeMetadataDirectory.Length..].TrimStart(Path.DirectorySeparatorChar)}"" />";
@@ -2203,7 +2188,7 @@ public class SolutionBuilder : ITool, IReportLogTail
 
         logger.Information("{NuSpec}", nuspecContent);
 
-        DirectoryEntry tempDir = new DirectoryEntry(_fileSystem, UPath.Combine(
+        DirectoryEntry tempDir = new DirectoryEntry(fileSystem, UPath.Combine(
                 Path.GetTempPath().ParseAsPath(),
                 $"{DefaultPaths.TempPathPrefix}_sb_{DateTime.Now.Ticks}"))
             .EnsureExists();
@@ -2212,12 +2197,12 @@ public class SolutionBuilder : ITool, IReportLogTail
 
         await WriteNuSpec(nuspecTempFile, nuspecContent);
 
-        var packageSpecificationPath = new FileEntry(_fileSystem, nuspecTempFile);
-        var exitCode = await _nugetPackager.CreatePackageAsync(
+        var packageSpecificationPath = new FileEntry(fileSystem, nuspecTempFile);
+        var exitCode = await nugetPackager.CreatePackageAsync(
             packageSpecificationPath,
             packageConfiguration,
             true,
-            _cancellationToken).ConfigureAwait(false);
+            _cancellationToken);
 
         packageSpecificationPath.DeleteIfExists();
         contentFilesInfo.ContentFilesFile.Directory.DeleteIfExists();
@@ -2228,11 +2213,11 @@ public class SolutionBuilder : ITool, IReportLogTail
 
     private async Task WriteNuSpec(UPath nuspecTempFile, string nuspecContent)
     {
-        await using var stream = _fileSystem.OpenFile(nuspecTempFile, FileMode.OpenOrCreate, FileAccess.Write);
+        await using var stream = fileSystem.OpenFile(nuspecTempFile, FileMode.OpenOrCreate, FileAccess.Write);
 
         await stream
             .WriteAllTextAsync(nuspecContent, Encoding.UTF8, cancellationToken: _cancellationToken)
-            .ConfigureAwait(false);
+            ;
     }
 
     private void TransformFiles(
@@ -2251,7 +2236,7 @@ public class SolutionBuilder : ITool, IReportLogTail
         var transformationStopwatch = Stopwatch.StartNew();
         var projectDirectoryPath = solutionProject.ProjectDirectory;
 
-        string[] extensions = { ".xml", ".config" };
+        string[] extensions = [".xml", ".config"];
 
         IReadOnlyCollection<FileEntry> files = projectDirectoryPath
             .GetFilesRecursive(extensions)
@@ -2282,11 +2267,11 @@ public class SolutionBuilder : ITool, IReportLogTail
 
         var transformationPairs = files
             .Select(file => new { Original = file, TransformFile = TransformFile(file) })
-            .Where(filePair => _fileSystem.FileExists(filePair.TransformFile))
+            .Where(filePair => fileSystem.FileExists(filePair.TransformFile))
             .ToReadOnlyCollection();
         if (_debugLoggingEnabled)
         {
-            logger.Debug("Found {Length} files with transforms", transformationPairs.Length);
+            logger.Debug("Found {Length} files with transforms", transformationPairs.Count);
         }
 
         foreach (var configurationFile in transformationPairs)
@@ -2300,10 +2285,10 @@ public class SolutionBuilder : ITool, IReportLogTail
 
             using var transformable = new XmlTransformableDocument();
 
-            transformable.Load(_fileSystem.ConvertPathToInternal(configurationFile.Original.Path));
+            transformable.Load(fileSystem.ConvertPathToInternal(configurationFile.Original.Path));
 
             using var transformation =
-                new XmlTransformation(_fileSystem.ConvertPathToInternal(configurationFile.TransformFile));
+                new XmlTransformation(fileSystem.ConvertPathToInternal(configurationFile.TransformFile));
             if (_debugLoggingEnabled)
             {
                 logger.Debug(
@@ -2350,7 +2335,7 @@ public class SolutionBuilder : ITool, IReportLogTail
 
         var appDataPath = UPath.Combine(solutionProject.ProjectDirectory.Path, "App_Data");
 
-        var appDataDirectory = new DirectoryEntry(_fileSystem, appDataPath);
+        var appDataDirectory = new DirectoryEntry(fileSystem, appDataPath);
 
         if (appDataDirectory.Exists)
         {
@@ -2378,7 +2363,7 @@ public class SolutionBuilder : ITool, IReportLogTail
                     "jobs");
 
                 DirectoryEntry artifactJobAppDataDirectory =
-                    new DirectoryEntry(_fileSystem, artifactJobAppDataPath).EnsureExists();
+                    new DirectoryEntry(fileSystem, artifactJobAppDataPath).EnsureExists();
 
                 if (_verboseLoggingEnabled)
                 {
@@ -2401,7 +2386,7 @@ public class SolutionBuilder : ITool, IReportLogTail
                                     .WithIgnoredFileNameParts(ignoredFileNameParts)
                                     .AddExcludedDirectorySegments(_excludedWebJobsDirectorySegments),
                                 _vcsRoot)
-                            .ConfigureAwait(false);
+                            ;
 
                 if (exitCode.IsSuccess)
                 {
@@ -2412,7 +2397,7 @@ public class SolutionBuilder : ITool, IReportLogTail
                             _logger.Debug("Clean bin directory XML files is enabled for WebJobs");
                         }
 
-                        var binDirectory = new DirectoryEntry(_fileSystem,
+                        var binDirectory = new DirectoryEntry(fileSystem,
                             UPath.Combine(artifactJobAppDataDirectory.Path, "bin"));
 
                         if (binDirectory.Exists)
@@ -2491,7 +2476,7 @@ public class SolutionBuilder : ITool, IReportLogTail
         var webDeployPackageDirectoryPath = UPath.Combine(platformDirectoryPath, "WebDeploy");
 
         DirectoryEntry webDeployPackageDirectory =
-            new DirectoryEntry(_fileSystem, webDeployPackageDirectoryPath).EnsureExists();
+            new DirectoryEntry(fileSystem, webDeployPackageDirectoryPath).EnsureExists();
 
         var packagePath = UPath.Combine(
             webDeployPackageDirectory.FullName,
@@ -2499,13 +2484,13 @@ public class SolutionBuilder : ITool, IReportLogTail
 
         var buildSitePackageArguments = new List<string>(20)
         {
-            _fileSystem.ConvertPathToInternal(solutionProject.FullPath.Path),
+            fileSystem.ConvertPathToInternal(solutionProject.FullPath.Path),
             _argHelper.FormatPropertyArg("configuration", configuration),
             _argHelper.FormatPropertyArg("platform", platformName),
 
 // ReSharper disable once PossibleNullReferenceException
             _argHelper.FormatPropertyArg("SolutionDir", solutionFile.Directory.FullName),
-            _argHelper.FormatPropertyArg("PackageLocation", _fileSystem.ConvertPathToInternal(packagePath)),
+            _argHelper.FormatPropertyArg("PackageLocation", fileSystem.ConvertPathToInternal(packagePath)),
             _argHelper.FormatArg("verbosity", _verbosity.Level),
             _argHelper.FormatArg("target", "Package"),
         };
@@ -2541,12 +2526,12 @@ public class SolutionBuilder : ITool, IReportLogTail
         var packageSiteExitCode =
             await
                 ProcessRunner.ExecuteProcessAsync(
-                    _fileSystem.ConvertPathToInternal(exePath),
+                    fileSystem.ConvertPathToInternal(exePath),
                     buildSitePackageArguments,
                     logger.Information,
                     logger.Error,
                     toolAction,
-                    cancellationToken: _cancellationToken).ConfigureAwait(false);
+                    cancellationToken: _cancellationToken);
 
         webDeployStopwatch.Stop();
 
@@ -2568,11 +2553,11 @@ public class SolutionBuilder : ITool, IReportLogTail
             {
                 logger.Debug(
                     "Skipping directory '{FullName}' when searching for solution files because the directory is not allowed, {Item2}",
-                    _fileSystem.ConvertPathToInternal(directoryEntry.Path),
+                    fileSystem.ConvertPathToInternal(directoryEntry.Path),
                     isExcludeListed.Item2);
             }
 
-            return Enumerable.Empty<FileEntry>();
+            return [];
         }
 
         var solutionFiles = directoryEntry.EnumerateFiles("*.sln").ToList();
@@ -2601,7 +2586,7 @@ public class SolutionBuilder : ITool, IReportLogTail
         bool isNotAllowedByAttributes = excludedByAttributes.Length > 0;
 
         return (isNotAllowedByAttributes, isNotAllowedByAttributes
-            ? $"Directory has exclude-listed attributes {string.Join(", ", excludedByAttributes.Select(_ => Enum.GetName(typeof(FileAttributes), _)))}"
+            ? $"Directory has exclude-listed attributes {string.Join(", ", excludedByAttributes.Select(attributes => Enum.GetName(typeof(FileAttributes), attributes)))}"
             : string.Empty);
     }
 
@@ -2622,7 +2607,7 @@ public class SolutionBuilder : ITool, IReportLogTail
 
         foreach (FileEntry dllFile in dllFiles)
         {
-            var xmlFile = new FileEntry(_fileSystem, UPath.Combine(
+            var xmlFile = new FileEntry(fileSystem, UPath.Combine(
                 dllFile.Directory.FullName!,
                 $"{Path.GetFileNameWithoutExtension(dllFile.Name)}.xml"));
 

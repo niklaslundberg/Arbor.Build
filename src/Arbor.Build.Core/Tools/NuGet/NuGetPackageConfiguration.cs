@@ -2,7 +2,6 @@
 using System.IO;
 using Arbor.Build.Core.IO;
 using Arbor.FS;
-using JetBrains.Annotations;
 using NuGet.Versioning;
 using Zio;
 
@@ -14,7 +13,7 @@ public class NuGetPackageConfiguration
         string configuration,
         SemanticVersion version,
         DirectoryEntry packagesDirectory,
-        [NotNull] UPath nugetExePath,
+        UPath nugetExePath,
         string branchName,
         string? suffix = null,
         bool branchNameEnabled = false,
@@ -37,10 +36,7 @@ public class NuGetPackageConfiguration
             throw new ArgumentNullException(nameof(configuration));
         }
 
-        if (packagesDirectory is null)
-        {
-            throw new ArgumentNullException(nameof(packagesDirectory));
-        }
+        ArgumentNullException.ThrowIfNull(packagesDirectory);
 
         if (nugetExePath == UPath.Empty)
         {

@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.GenericExtensions;
 using Arbor.Build.Core.Tools.Cleanup;
 using JetBrains.Annotations;
 using Serilog;
@@ -16,7 +16,7 @@ public class TeamCityVariableProvider : IVariableProvider
 {
     public int Order => VariableProviderOrder.Ignored;
 
-    public Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
+    public Task<IReadOnlyCollection<IVariable>> GetBuildVariablesAsync(
         ILogger? logger,
         IReadOnlyCollection<IVariable> buildVariables,
         CancellationToken cancellationToken)
@@ -40,6 +40,6 @@ public class TeamCityVariableProvider : IVariableProvider
                 isRunningInTeamCity.ToString(CultureInfo.InvariantCulture)));
         }
 
-        return Task.FromResult(variables.ToImmutableArray());
+        return Task.FromResult(variables.ToReadOnlyCollection());
     }
 }

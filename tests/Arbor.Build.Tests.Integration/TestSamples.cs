@@ -5,9 +5,10 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
-using Arbor.Build.Core;
+using Arbor.Build.Core.BuildApp;
 using Arbor.Build.Core.BuildVariables;
-using Arbor.Build.Core.Logging;
+using Arbor.Build.Core.IO;
+using Arbor.Build.Core.Tools.EnvironmentVariables;
 using Arbor.Build.Core.Tools.NuGet;
 using Arbor.Build.Tests.Integration.Tests.MSpec;
 using Arbor.FS;
@@ -21,24 +22,17 @@ using Assert = Xunit.Assert;
 
 namespace Arbor.Build.Tests.Integration;
 
-public sealed class TestSamples : IDisposable
+public sealed class TestSamples(ITestOutputHelper testOutputHelper) : IDisposable
 {
-    readonly ITestOutputHelper _testOutputHelper;
-    readonly IFileSystem _fs;
-
-    public TestSamples(ITestOutputHelper testOutputHelper)
-    {
-        _testOutputHelper = testOutputHelper;
-        _fs = new PhysicalFileSystem();
-    }
+    readonly IFileSystem _fs = new PhysicalFileSystem();
 
     [MemberData(nameof(Data))]
     [Theory]
     public async Task RunBuildOnExampleProject(string directoryName)
     {
-        if (directoryName == "")
+        if (string.IsNullOrWhiteSpace(directoryName))
         {
-            _testOutputHelper.WriteLine($"Skipping sample tests, no samples found starting with _");
+            testOutputHelper.WriteLine("Skipping sample tests, no samples found starting with _");
             return;
         }
 
@@ -46,7 +40,7 @@ public sealed class TestSamples : IDisposable
 
         var sampleDirectory = samplesDirectory.GetDirectories(directoryName).Single();
 
-        _testOutputHelper.WriteLine($"Testing {sampleDirectory.ConvertPathToInternal()}");
+        testOutputHelper.WriteLine($"Testing {sampleDirectory.ConvertPathToInternal()}");
 
         var environmentVariables =
             new FallbackEnvironment(new EnvironmentVariables(), new DefaultEnvironmentVariables());
@@ -63,7 +57,7 @@ public sealed class TestSamples : IDisposable
 
         environmentVariables.SetEnvironmentVariable("AllowDebug", "false");
 
-        using var xunitLogger = _testOutputHelper.CreateTestLogger();
+        await using var xunitLogger = testOutputHelper.CreateTestLogger();
 
         var expectedFiles = await GetExpectedFiles(sampleDirectory);
 
@@ -75,7 +69,7 @@ public sealed class TestSamples : IDisposable
 
         void FindFilePath(LogEvent obj)
         {
-            string? message = obj.RenderMessage();
+            string message = obj.RenderMessage();
 
             if (message.Contains("/mnt/", StringComparison.OrdinalIgnoreCase)
                 || message.Contains("C:/", StringComparison.OrdinalIgnoreCase))
@@ -98,7 +92,7 @@ public sealed class TestSamples : IDisposable
 
         using var buildApplication = new BuildApplication(logger, environmentVariables, SpecialFolders.Default, _fs);
 
-        string[] args = Array.Empty<string>();
+        string[] args = [];
 
         var exitCode = await buildApplication.RunAsync(args);
 
@@ -139,13 +133,13 @@ public sealed class TestSamples : IDisposable
 
         if (!_fs.FileExists(expectedFilesDataPath))
         {
-            return ImmutableArray<UPath>.Empty;
+            return [];
         }
 
         await using var openFile = _fs.OpenFile(expectedFilesDataPath,FileMode.Open,FileAccess.Read);
         var expectedFiles = await openFile.ReadAllLinesAsync();
 
-        return expectedFiles.Select(expectedPath => new UPath(expectedPath)).ToImmutableArray();
+        return [..expectedFiles.Select(expectedPath => new UPath(expectedPath))];
     }
 
     public static IEnumerable<object[]> Data()
@@ -156,12 +150,12 @@ public sealed class TestSamples : IDisposable
 
         foreach (var directoryEntry in samplesDirectories)
         {
-            yield return new object[] {directoryEntry.Name};
+            yield return [directoryEntry.Name];
         }
 
         if (samplesDirectories.Length == 0)
         {
-            yield return new object[] {""};
+            yield return [""];
         }
     }
 

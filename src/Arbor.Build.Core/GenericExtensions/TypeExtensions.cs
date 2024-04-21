@@ -7,21 +7,15 @@ public static class TypeExtensions
 {
     public static bool HasSingleDefaultConstructor(this Type type)
     {
-        if (type == null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
+        ArgumentNullException.ThrowIfNull(type);
 
         return type.GetConstructors().Length == 1 &&
-               type.GetConstructor(Array.Empty<Type>())?.GetParameters().Length == 0;
+               type.GetConstructor([])?.GetParameters().Length == 0;
     }
 
     public static bool IsConcretePublicClassImplementing<T>(this Type type)
     {
-        if (type == null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
+        ArgumentNullException.ThrowIfNull(type);
 
         bool isConcretePublicClassImplementing = type.IsClass && type.IsPublic && typeof(T).IsAssignableFrom(type);
 

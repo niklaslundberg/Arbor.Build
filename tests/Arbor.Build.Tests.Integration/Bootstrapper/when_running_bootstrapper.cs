@@ -1,61 +1,50 @@
-﻿using System;
-using System.IO;
-using Arbor.Build.Core;
+﻿using System.Threading.Tasks;
 using Arbor.Build.Core.Bootstrapper;
+using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.IO;
-using Arbor.FS;
-using Arbor.Processing;
+using Arbor.Build.Tests.Integration.Tests.MSpec;
 using Machine.Specifications;
-using Serilog.Core;
+using Serilog;
+using Xunit;
 using Zio;
 using Zio.FileSystems;
 
 namespace Arbor.Build.Tests.Integration.Bootstrapper;
 
-[Ignore("Not complete")]
-[Subject(typeof(AppBootstrapper))]
-public class when_running_bootstrapper
+public class BootstrapperTests
 {
-    static AppBootstrapper _appBootstrapper;
-
-    static BootstrapStartOptions startOptions;
-    static ExitCode exitCode;
-    static DirectoryEntry baseDirectory;
-    static IFileSystem fs;
-
-    Cleanup after = () =>
+    [Fact]
+    public async Task RunningBootstrapper()
     {
-        try
-        {
-            baseDirectory.DeleteIfExists();
-        }
-        catch (IOException ex)
-        {
-            Console.Error.WriteLine(ex);
-        }
+        using var fs = new PhysicalFileSystem();
 
-        fs.Dispose();
-    };
+        using var tempDirectory = TempDirectory.Create(fs);
 
-    Establish context = () =>
-    {
-        fs = new PhysicalFileSystem();
-        var tempDirectoryPath = UPath.Combine(Path.GetTempPath().ParseAsPath(),
-            $"{DefaultPaths.TempPathPrefix}_Bootstrapper_Test_{Guid.NewGuid()}");
+        await using var logger = new LoggerConfiguration()
+            .WriteTo.Console()
+            .WriteTo.Debug()
+            .MinimumLevel.Debug()
+            .CreateLogger();
 
-        baseDirectory = new DirectoryEntry(fs, tempDirectoryPath).EnsureExists();
-        Console.WriteLine("Temp directory is {0}", baseDirectory.FullName);
+        var sourcePath = new DirectoryEntry(fs,
+            UPath.Combine(VcsTestPathHelper.FindVcsRootPath().Path, "samples", "_NetStandardPackage"));
 
+        using var baseDirectory = TempDirectory.Create(fs);
 
-        startOptions = new BootstrapStartOptions(
-            Array.Empty<string>(),
-            baseDirectory,
+        await DirectoryCopy.CopyAsync(sourcePath, baseDirectory.Directory, pathLookupSpecificationOption: new PathLookupSpecification());
+
+        var startOptions = new BootstrapStartOptions(
+            [],
+            baseDirectory.Directory,
             true,
-            "develop");
-        _appBootstrapper = new AppBootstrapper(Logger.None, EnvironmentVariables.Empty, fs);
-    };
+            "develop",
+            tempDirectory: tempDirectory.Directory);
+        var variables = new EnvironmentVariables();
+        variables.SetEnvironmentVariable(WellKnownVariables.DirectoryCloneEnabled, "true");
+        var appBootstrapper = new AppBootstrapper(logger, variables, fs);
 
-    Because of = () => exitCode = _appBootstrapper.StartAsync(startOptions).Result;
+        var exitCode = await appBootstrapper.StartAsync(startOptions);
 
-    It should_return_success_exit_code = () => exitCode.IsSuccess.ShouldBeTrue();
+        exitCode.Code.ShouldEqual(0);
+    }
 }

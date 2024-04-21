@@ -59,10 +59,7 @@ public class DirectoryDelete
     {
         bool deletedSelf = true;
 
-        if (baseDirectory is null)
-        {
-            throw new ArgumentNullException(nameof(baseDirectory));
-        }
+        ArgumentNullException.ThrowIfNull(baseDirectory);
 
         if (!baseDirectory.Exists)
         {

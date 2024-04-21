@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Linq;
 using Arbor.Build.Core.GenericExtensions;
@@ -9,10 +10,7 @@ public static class VariablePrintExtensions
 {
     public static string Print(this IEnumerable<IVariable> variables)
     {
-        if (variables == null)
-        {
-            throw new ArgumentNullException(nameof(variables));
-        }
+        ArgumentNullException.ThrowIfNull(variables);
 
         IEnumerable<Dictionary<string, string?>> dictionaries =
             variables.Select(
@@ -25,36 +23,41 @@ public static class VariablePrintExtensions
         return dictionaries.DisplayAsTable();
     }
 
-    private static readonly string[] SensitiveValues = { "password", "apikey", "username", "pw", "token", "jwt", "connectionstring" };
+    private static readonly FrozenSet<string> SensitiveValues = new[] { "password", "apikey", "username", "pw", "token", "jwt", "connectionString", "clientSecret" }
+        .ToFrozenSet();
+
+    private static StringComparison _comparisonType;
 
     public static string DisplayPair(this IVariable variable)
     {
-        if (variable == null)
-        {
-            throw new ArgumentNullException(nameof(variable));
-        }
+        ArgumentNullException.ThrowIfNull(variable);
 
         string? value = GetDisplayValue(variable.Key, variable.Value);
 
-        return $"\t{variable.Key}: {value}";
+        return $"{variable.Key}: {value}";
     }
 
-    public static string? GetDisplayValue(this string key, string? value)
+    public static string GetDisplayValue(this string key, string? value)
     {
         if (SensitiveValues.Any(sensitive =>
             {
-                var comparisonType = StringComparison.OrdinalIgnoreCase;
+                _comparisonType = StringComparison.OrdinalIgnoreCase;
 
                 return key
-                    .Replace("-", "", comparisonType)
-                    .Replace("_", "", comparisonType)
-                    .Replace(".", "", comparisonType)
-                    .Contains(sensitive, comparisonType);
+                    .Replace("-", "", _comparisonType)
+                    .Replace("_", "", _comparisonType)
+                    .Replace(".", "", _comparisonType)
+                    .Contains(sensitive, _comparisonType);
             }))
         {
-            value = "*****";
+            return "*****";
         }
 
-        return value;
+        if (string.IsNullOrEmpty(value))
+        {
+            return "<empty>";
+        }
+
+        return $"'{value}'";
     }
 }

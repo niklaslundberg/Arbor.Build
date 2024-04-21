@@ -8,7 +8,7 @@ public sealed class BranchName
     public static readonly BranchName Main = new("main");
     public static readonly BranchName Master = new("master");
     public static readonly BranchName Develop = new("develop");
-    private static readonly string[] InvalidCharacters = { "/", @"\", "\"" };
+    private static readonly string[] InvalidCharacters = ["/", @"\", "\""];
 
     public BranchName(string name)
     {
@@ -27,7 +27,7 @@ public sealed class BranchName
 
     public string Name { get; }
 
-    public string LogicalName => BranchHelper.GetLogicalName(Name).Name;
+    public string LogicalName => Branch.GetLogicalName(Name).Name;
 
     public string FullName => Name;
 

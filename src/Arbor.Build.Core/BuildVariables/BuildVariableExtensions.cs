@@ -9,7 +9,7 @@ namespace Arbor.Build.Core.BuildVariables;
 
 public static class BuildVariableExtensions
 {
-    public static ImmutableArray<string> GetValues(this IReadOnlyCollection<IVariable> variables, string key)
+    public static IReadOnlyCollection<string> GetValues(this IReadOnlyCollection<IVariable> variables, string key)
     {
         string value = variables.GetVariableValueOrDefault(key, "")!;
 

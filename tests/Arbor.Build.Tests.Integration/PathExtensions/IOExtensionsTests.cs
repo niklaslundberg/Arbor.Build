@@ -16,7 +16,7 @@ public class IOExtensionsTests
     {
         foreach (var fileSystem in EnumerateFilesSystem())
         {
-            yield return new object[] {fileSystem};
+            yield return [fileSystem];
         }
     }
 
@@ -50,7 +50,7 @@ public class IOExtensionsTests
 
         foreach (string path in GetPaths())
         {
-            yield return new object[] {path};
+            yield return [path];
         }
 
     }

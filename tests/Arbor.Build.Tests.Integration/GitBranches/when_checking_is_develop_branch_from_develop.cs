@@ -3,7 +3,7 @@ using Machine.Specifications;
 
 namespace Arbor.Build.Tests.Integration.GitBranches;
 
-[Subject(typeof(BranchHelper))]
+[Subject(typeof(Branch))]
 public class when_checking_is_develop_branch_from_develop
 {
     static BranchName branchName;

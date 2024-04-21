@@ -17,18 +17,9 @@ namespace Arbor.Build.Core.Tools.NuGet;
 
 [Priority(820)]
 [UsedImplicitly]
-public class VersionReporter : ITool
+public class VersionReporter(ILogger logger, IFileSystem fileSystem) : ITool
 {
-    private readonly ILogger _logger;
-    private readonly IFileSystem _fileSystem;
-
-    public VersionReporter(ILogger logger, IFileSystem fileSystem)
-    {
-        _logger = logger;
-        _fileSystem = fileSystem;
-    }
-
-    public Task<ExitCode> ExecuteAsync(ILogger logger,
+    public Task<ExitCode> ExecuteAsync(ILogger logger1,
         IReadOnlyCollection<IVariable> buildVariables,
         string[] args,
         CancellationToken cancellationToken)
@@ -38,11 +29,11 @@ public class VersionReporter : ITool
 
         var nuGetPackageFiles = new List<FileEntry>();
 
-        var artifactPackagesDirectory = new DirectoryEntry(_fileSystem, artifacts.Value!.ParseAsPath());
+        var artifactPackagesDirectory = new DirectoryEntry(fileSystem, artifacts.Value!.ParseAsPath());
 
         if (!artifactPackagesDirectory.Exists)
         {
-            logger.Warning("There is no packages folder, skipping standard package upload");
+            logger1.Warning("There is no packages folder, skipping standard package upload");
         }
         else
         {
@@ -69,21 +60,21 @@ public class VersionReporter : ITool
         {
             if (isRunningInTeamCity == true)
             {
-                _logger.Verbose("Setting TeamCity variable env.{Key}",
+                logger.Verbose("Setting TeamCity variable env.{Key}",
                     WellKnownVariables.NuGetPackageVersionResult);
                 string? version = versions.Single();
-                _logger.Information(
+                logger.Information(
                     "##teamcity[setParameter name='env." + WellKnownVariables.NuGetPackageVersionResult +
                     "' value='{Version}']", version);
             }
             else
             {
-                _logger.Verbose("Build is not running i TeamCity, skipping sending version message");
+                logger.Verbose("Build is not running i TeamCity, skipping sending version message");
             }
         }
         else
         {
-            _logger.Debug("Found multiple NuGet package versions {Versions}, could not set nugetPackageVersion", versions);
+            logger.Debug("Found multiple NuGet package versions {Versions}, could not set nugetPackageVersion", versions);
         }
 
         return Task.FromResult(ExitCode.Success);

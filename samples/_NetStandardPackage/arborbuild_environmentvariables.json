@@ -52,6 +52,10 @@
         {
             "key":  "Arbor.Build.ShowDefinedVariablesEnabled",
             "value": true
+        },
+        {
+            "key": "Arbor.Build.Vcs.Branch.Name",
+            "value": "develop"
         }
     ]
 }

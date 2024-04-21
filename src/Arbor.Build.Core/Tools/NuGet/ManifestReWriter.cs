@@ -10,18 +10,14 @@ using Zio;
 
 namespace Arbor.Build.Core.Tools.NuGet;
 
-public class ManifestReWriter
+public class ManifestReWriter(IFileSystem fileSystem)
 {
-    private static readonly char[] Separator = { ' ' };
+    private static readonly char[] Separator = [' '];
 
     private static ISet<string> ParseTags(string tags) =>
         tags.Split(Separator, StringSplitOptions.RemoveEmptyEntries)
             .Select(tag => tag.Trim())
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-    private readonly IFileSystem _fileSystem;
-
-    public ManifestReWriter(IFileSystem fileSystem) => _fileSystem = fileSystem;
 
     public async Task<ManifestReWriteResult> Rewrite(
         FileEntry nuspecFullPath,
@@ -46,7 +42,7 @@ public class ManifestReWriter
 
         if (tags.Count > 0)
         {
-            tempFile = new FileEntry(_fileSystem,
+            tempFile = new FileEntry(fileSystem,
                 UPath.Combine(nuspecFullPath.Directory.Path,
                     $"{nuspecFullPath.Path.GetNameWithoutExtension()}.rewrite.nuspec"));
 

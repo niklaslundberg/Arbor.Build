@@ -5,17 +5,11 @@ using Zio;
 
 namespace Arbor.Build.Core.Tools.NuGet;
 
-public class PackageUploadFilter
+public class PackageUploadFilter(string startsWithExclusions, IFileSystem fileSystem)
 {
-    public ImmutableArray<string> Exclusions { get; }
+    public ImmutableArray<string> Exclusions { get; } = startsWithExclusions.Split(';', StringSplitOptions.RemoveEmptyEntries).ToImmutableArray();
 
-    private readonly StringComparison _stringComparison;
-
-    public PackageUploadFilter(string startsWithExclusions, IFileSystem fileSystem)
-    {
-        _stringComparison = fileSystem.GetPathComparison();
-        Exclusions = startsWithExclusions.Split(';', StringSplitOptions.RemoveEmptyEntries).ToImmutableArray();
-    }
+    private readonly StringComparison _stringComparison = fileSystem.GetPathComparison();
 
 
     public bool UploadEnable(string packageFile) => !Exclusions.Any(exclusion => packageFile.StartsWith(exclusion, _stringComparison));

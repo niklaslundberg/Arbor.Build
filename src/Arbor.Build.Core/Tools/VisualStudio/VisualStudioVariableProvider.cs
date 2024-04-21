@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.GenericExtensions;
 using Arbor.Build.Core.Tools.Cleanup;
 using JetBrains.Annotations;
 using Microsoft.Win32;
@@ -15,16 +15,13 @@ using Zio;
 namespace Arbor.Build.Core.Tools.VisualStudio;
 
 [UsedImplicitly]
-public class VisualStudioVariableProvider : IVariableProvider
+public class VisualStudioVariableProvider(IFileSystem fileSystem) : IVariableProvider
 {
     private bool _allowPreReleaseVersions;
-    private readonly IFileSystem _fileSystem;
-
-    public VisualStudioVariableProvider(IFileSystem fileSystem) => _fileSystem = fileSystem;
 
     public int Order => VariableProviderOrder.Ignored;
 
-    public Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
+    public Task<IReadOnlyCollection<IVariable>> GetBuildVariablesAsync(
         ILogger logger,
         IReadOnlyCollection<IVariable> buildVariables,
         CancellationToken cancellationToken)
@@ -33,7 +30,7 @@ public class VisualStudioVariableProvider : IVariableProvider
                 WellKnownVariables.ExternalTools_VisualStudio_Version,
                 string.Empty)))
         {
-            return Task.FromResult(ImmutableArray<IVariable>.Empty);
+            return Task.FromResult(EnumerableOf<IVariable>.Empty);
         }
 
         _allowPreReleaseVersions =
@@ -75,7 +72,7 @@ public class VisualStudioVariableProvider : IVariableProvider
             new BuildVariable(WellKnownVariables.ExternalTools_VSTest_ExePath, vsTestExePath?.FullName)
         };
 
-        return Task.FromResult(environmentVariables.ToImmutableArray());
+        return Task.FromResult(environmentVariables.ToReadOnlyCollection());
     }
 
     private UPath? GetVSTestExePath(ILogger logger, string registryKeyName, string visualStudioVersion)
@@ -118,7 +115,7 @@ public class VisualStudioVariableProvider : IVariableProvider
                 "TestWindow",
                 "vstest.console.exe");
 
-            if (!_fileSystem.FileExists(exePath))
+            if (!fileSystem.FileExists(exePath))
             {
                 throw new InvalidOperationException($"The file '{exePath}' does not exist");
             }

@@ -8,10 +8,8 @@ public class FunctionVariable : IVariable
 
     public FunctionVariable(string key, Func<string?> getValue)
     {
-        if (string.IsNullOrWhiteSpace(key))
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(getValue);
+        ArgumentException.ThrowIfNullOrWhiteSpace(key);
 
         _getValue = getValue;
 

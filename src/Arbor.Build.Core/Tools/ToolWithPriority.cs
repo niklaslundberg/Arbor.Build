@@ -2,20 +2,13 @@
 
 namespace Arbor.Build.Core.Tools;
 
-public class ToolWithPriority
+public class ToolWithPriority(ITool tool, int priority, bool runAlways)
 {
-    public ToolWithPriority(ITool tool, int priority, bool runAlways)
-    {
-        Tool = tool ?? throw new ArgumentNullException(nameof(tool));
-        Priority = priority;
-        RunAlways = runAlways;
-    }
+    public ITool Tool { get; } = tool ?? throw new ArgumentNullException(nameof(tool));
 
-    public ITool Tool { get; }
+    public int Priority { get; } = priority;
 
-    public int Priority { get; }
-
-    public bool RunAlways { get; }
+    public bool RunAlways { get; } = runAlways;
 
     public override string ToString() => $"{Tool} (priority={Priority}, run always={RunAlways})";
 }

@@ -3,18 +3,12 @@ using System.Collections.Generic;
 
 namespace Arbor.Build.Core;
 
-public abstract class ValueObject<T, TValue> : IEquatable<ValueObject<T, TValue>>
-    where T : ValueObject<T, TValue>, IEquatable<ValueObject<T, TValue>> where TValue : IEquatable<TValue>
+public abstract class ValueObject<T, TValue>(TValue value, IEqualityComparer<TValue>? comparer = default)
+    : IEquatable<ValueObject<T, TValue>>
+    where T : ValueObject<T, TValue>, IEquatable<ValueObject<T, TValue>>
+    where TValue : IEquatable<TValue>
 {
-    private readonly IEqualityComparer<TValue>? _comparer;
-
-    protected ValueObject(TValue value, IEqualityComparer<TValue>? comparer = default)
-    {
-        _comparer = comparer;
-        Value = value;
-    }
-
-    public TValue Value { get; }
+    public TValue Value { get; } = value;
 
 
     public bool Equals(ValueObject<T, TValue>? other)
@@ -34,9 +28,9 @@ public abstract class ValueObject<T, TValue> : IEquatable<ValueObject<T, TValue>
             return true;
         }
 
-        if (_comparer is {})
+        if (comparer is {})
         {
-            return _comparer.Equals(Value, other.Value);
+            return comparer.Equals(Value, other.Value);
         }
 
         return EqualityComparer<TValue>.Default.Equals(Value, other.Value);
@@ -54,9 +48,9 @@ public abstract class ValueObject<T, TValue> : IEquatable<ValueObject<T, TValue>
 
     public override int GetHashCode()
     {
-        if (_comparer is {})
+        if (comparer is {})
         {
-            return _comparer.GetHashCode(Value);
+            return comparer.GetHashCode(Value);
         }
 
         return EqualityComparer<TValue>.Default.GetHashCode(Value);

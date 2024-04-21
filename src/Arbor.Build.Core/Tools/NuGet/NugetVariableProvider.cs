@@ -18,23 +18,15 @@ using Zio;
 namespace Arbor.Build.Core.Tools.NuGet;
 
 [UsedImplicitly]
-public class NugetVariableProvider : IVariableProvider
+public class NugetVariableProvider(IFileSystem fileSystem, BuildContext buildContext) : IVariableProvider
 {
     private CancellationToken _cancellationToken;
-    private readonly IFileSystem _fileSystem;
-    private readonly BuildContext _buildContext;
-
-    public NugetVariableProvider(IFileSystem fileSystem, BuildContext buildContext)
-    {
-        _fileSystem = fileSystem;
-        _buildContext = buildContext;
-    }
 
     private async Task<UPath?> EnsureNuGetExeExistsAsync(ILogger logger, UPath? userSpecifiedNuGetExePath)
     {
         if (userSpecifiedNuGetExePath is {}
             && userSpecifiedNuGetExePath.Value != UPath.Empty
-            && _fileSystem.FileExists(userSpecifiedNuGetExePath.Value))
+            && fileSystem.FileExists(userSpecifiedNuGetExePath.Value))
         {
             return userSpecifiedNuGetExePath.Value;
         }
@@ -46,7 +38,7 @@ public class NugetVariableProvider : IVariableProvider
             NuGetDownloadSettings.Default,
             logger,
             httClient,
-            _cancellationToken).ConfigureAwait(false);
+            _cancellationToken);
 
         if (!nuGetDownloadResult.Succeeded)
         {
@@ -58,7 +50,7 @@ public class NugetVariableProvider : IVariableProvider
 
     public int Order => 3;
 
-    public async Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
+    public async Task<IReadOnlyCollection<IVariable>> GetBuildVariablesAsync(
         ILogger logger,
         IReadOnlyCollection<IVariable> buildVariables,
         CancellationToken cancellationToken)
@@ -69,10 +61,10 @@ public class NugetVariableProvider : IVariableProvider
             WellKnownVariables.ExternalTools_NuGet_ExePath_Custom)?.ParseAsPath();
 
         var nuGetExePath =
-            await EnsureNuGetExeExistsAsync(logger, userSpecifiedNuGetExePath).ConfigureAwait(false);
+            await EnsureNuGetExeExistsAsync(logger, userSpecifiedNuGetExePath);
 
         string path = nuGetExePath.HasValue
-            ? _fileSystem.ConvertPathToInternal(nuGetExePath.Value)
+            ? fileSystem.ConvertPathToInternal(nuGetExePath.Value)
             : "";
 
         var variables = new List<IVariable>
@@ -85,9 +77,9 @@ public class NugetVariableProvider : IVariableProvider
         {
 
             var pathLookupSpecification = new PathLookupSpecification();
-            var packageConfigFiles = _buildContext.SourceRoot
+            var packageConfigFiles = buildContext.SourceRoot
                 .EnumerateFiles("packages.config", SearchOption.AllDirectories).Where(
-                    file => !pathLookupSpecification.IsFileExcluded(file, _buildContext.SourceRoot).Item1).ToArray();
+                    file => !pathLookupSpecification.IsFileExcluded(file, buildContext.SourceRoot).Item1).ToArray();
 
             if (packageConfigFiles.Any())
             {

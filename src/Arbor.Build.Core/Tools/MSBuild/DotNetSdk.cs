@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Immutable;
+using System.Collections.Frozen;
 using System.Linq;
 
 namespace Arbor.Build.Core.Tools.MSBuild;
@@ -11,14 +11,14 @@ public sealed class DotNetSdk : IEquatable<DotNetSdk>
     public static readonly DotNetSdk None = new("N/A");
     public static readonly DotNetSdk Test = new("Microsoft.NET.Test.Sdk");
 
-    private static readonly Lazy<ImmutableArray<DotNetSdk>> LazyAll =
+    private static readonly Lazy<FrozenSet<DotNetSdk>> LazyAll =
         new(() => new[]
         {
             None,
             Dotnet,
             DotnetWeb,
             Test
-        }.ToImmutableArray());
+        }.ToFrozenSet());
 
     private DotNetSdk(string sdkName)
     {
@@ -36,7 +36,7 @@ public sealed class DotNetSdk : IEquatable<DotNetSdk>
 
     public static bool operator !=(DotNetSdk left, DotNetSdk right) => !Equals(left, right);
 
-    public static ImmutableArray<DotNetSdk> All => LazyAll.Value;
+    public static FrozenSet<DotNetSdk> All => LazyAll.Value;
 
     public static DotNetSdk? ParseOrDefault(string? sdkValue)
     {
@@ -55,12 +55,8 @@ public sealed class DotNetSdk : IEquatable<DotNetSdk>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
-        {
-            return true;
-        }
-
-        return string.Equals(SdkName, other.SdkName, StringComparison.InvariantCulture);
+        return ReferenceEquals(this, other)
+               || string.Equals(SdkName, other.SdkName, StringComparison.InvariantCulture);
     }
 
     public override bool Equals(object? obj)

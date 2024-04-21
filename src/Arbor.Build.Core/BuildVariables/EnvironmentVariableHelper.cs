@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
-using Arbor.Exceptions;
+using Arbor.Build.Core.Exceptions;
 using Arbor.FS;
 using Arbor.KVConfiguration.JsonConfiguration;
 using Arbor.KVConfiguration.Schema.Json;
@@ -16,17 +16,18 @@ namespace Arbor.Build.Core.BuildVariables;
 public static class EnvironmentVariableHelper
 {
     public static IReadOnlyCollection<IVariable> GetBuildVariablesFromEnvironmentVariables(
-        ILogger logger,
+        ILogger? logger,
         IEnvironmentVariables environmentVariables,
         List<IVariable>? existingItems = null)
     {
-        logger ??= Logger.None ?? throw new ArgumentNullException(nameof(logger));
-        List<IVariable> existing = existingItems ?? new List<IVariable>();
+        logger ??= Logger.None;
+        List<IVariable> existing = existingItems ?? [];
         var buildVariables = new List<IVariable>();
 
         var variables = environmentVariables.GetVariables()
             .Where(pair => pair.Value is {})
-            .Select(pair => new BuildVariable(pair.Key, pair.Value));
+            .Select(pair => new BuildVariable(pair.Key, pair.Value))
+            .ToList();
 
         var nonExisting = variables
             .Where(bv => !existing.Any(ebv => ebv.Key.Equals(bv.Key, StringComparison.OrdinalIgnoreCase)))
@@ -62,10 +63,7 @@ public static class EnvironmentVariableHelper
         string fileName,
         DirectoryEntry sourceRoot)
     {
-        if (logger == null)
-        {
-            throw new ArgumentNullException(nameof(logger));
-        }
+        ArgumentNullException.ThrowIfNull(logger);
 
         var file = new FileEntry(sourceRoot.FileSystem, sourceRoot.Path / fileName);
 
@@ -76,7 +74,7 @@ public static class EnvironmentVariableHelper
                 file.ConvertPathToInternal(),
                 fileName);
 
-            return ImmutableArray<KeyValue>.Empty;
+            return [];
         }
 
         ConfigurationItems configurationItems;
@@ -90,13 +88,13 @@ public static class EnvironmentVariableHelper
         {
             logger.Error(ex, "Could not parse key value pairs in file '{FullName}'", file.FullName);
 
-            return ImmutableArray<KeyValue>.Empty;
+            return [];
         }
 
         if (configurationItems == null)
         {
             logger.Error("Could not parse key value pairs in file '{FullName}'", file.FullName);
-            return ImmutableArray<KeyValue>.Empty;
+            return [];
         }
 
         logger.Information("Used configuration values from file '{FileName}'", fileName);

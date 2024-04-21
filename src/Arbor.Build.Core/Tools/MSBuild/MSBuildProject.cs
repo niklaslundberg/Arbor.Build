@@ -131,7 +131,7 @@ public class MsBuildProject
                                                                         new MSBuildProperty(p.Name.LocalName,
                                                                             p.Value))
                                                                     .ToImmutableArray()
-                                                                ?? ImmutableArray<MSBuildProperty>.Empty;
+                                                                ?? [];
 
             msbuildPropertyGroups.Add(new MSBuildPropertyGroup(msBuildProperties));
         }
@@ -142,7 +142,7 @@ public class MsBuildProject
             .Elements()
             .FirstOrDefault(e => e.Name.LocalName.Equals("ProjectTypeGuids", StringComparison.Ordinal));
 
-        ImmutableArray<ProjectType> projectTypes = ImmutableArray<ProjectType>.Empty;
+        ImmutableArray<ProjectType> projectTypes = [];
 
         if (projectTypeGuidsElement != null)
         {
@@ -175,7 +175,7 @@ public class MsBuildProject
 
         if (string.IsNullOrWhiteSpace(targetFrameworkValue) && string.IsNullOrWhiteSpace(targetFrameworksValue))
         {
-            targetFrameworks = ImmutableArray<TargetFramework>.Empty;
+            targetFrameworks = [];
         }
         else if (!string.IsNullOrWhiteSpace(targetFrameworksValue))
         {
@@ -203,15 +203,9 @@ public class MsBuildProject
 
     public bool HasPropertyWithValue(string name, string value, StringComparison stringComparison = StringComparison.Ordinal)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
-        if (value == null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
+        ArgumentNullException.ThrowIfNull(value);
 
         return PropertyGroups.Any(propertyGroup => propertyGroup.Properties.Any(property =>
             property.Name.Equals(name, stringComparison) &&
@@ -220,10 +214,7 @@ public class MsBuildProject
 
     public string GetPropertyValue(string name)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
         var msBuildProperties = PropertyGroups
             .SelectMany(propertyGroup =>

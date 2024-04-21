@@ -5,32 +5,8 @@ namespace Arbor.Build.Core.Logging;
 
 public static class LoggerExtensions
 {
-    public static void Log(this ILogger logger, string message, LogEventLevel level)
-    {
-        if (logger is null)
-        {
-            return;
-        }
-
-        switch (level)
-        {
-            case LogEventLevel.Verbose:
-                logger.Verbose("{Message}", message);
-                break;
-            case LogEventLevel.Debug:
-                logger.Debug("{Message}", message);
-                break;
-            case LogEventLevel.Information:
-                logger.Information("{Message}", message);
-                break;
-            case LogEventLevel.Error:
-                logger.Error("{Message}", message);
-                break;
-            case LogEventLevel.Fatal:
-                logger.Fatal("{Message}", message);
-                break;
-        }
-    }
+    public static void Log(this ILogger? logger, string message, LogEventLevel level) =>
+        logger?.Write(level, "{Message}", message);
 
     public static LogEventLevel MostVerboseLoggingCurrentLogLevel(this ILogger logger)
     {

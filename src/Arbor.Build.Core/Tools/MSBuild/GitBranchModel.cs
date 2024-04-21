@@ -2,20 +2,14 @@
 
 namespace Arbor.Build.Core.Tools.MSBuild;
 
-public sealed class GitBranchModel : IEquatable<GitBranchModel>
+public sealed class GitBranchModel(string name, string? alias = null) : IEquatable<GitBranchModel>
 {
     public static readonly GitBranchModel GitFlowBuildOnMain =
         new(nameof(GitFlowBuildOnMain), "GitFlowBuildOnMaster");
 
-    public GitBranchModel(string name, string? alias = null)
-    {
-        Name = name;
-        Alias = alias;
-    }
+    public string Name { get; } = name;
 
-    public string Name { get; }
-
-    public string? Alias { get; }
+    public string? Alias { get; } = alias;
 
     public bool Equals(GitBranchModel? other)
     {

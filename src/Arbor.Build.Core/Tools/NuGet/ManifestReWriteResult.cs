@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Arbor.Defensive.Collections;
+using Arbor.Build.Core.GenericExtensions;
 using Zio;
 
 namespace Arbor.Build.Core.Tools.NuGet;
@@ -14,10 +14,7 @@ public class ManifestReWriteResult
             throw new ArgumentNullException(nameof(usedPrefix));
         }
 
-        if (removeTags == null)
-        {
-            throw new ArgumentNullException(nameof(removeTags));
-        }
+        ArgumentNullException.ThrowIfNull(removeTags);
 
         UsedPrefix = usedPrefix;
         RewrittenNuSpec = rewrittenNuSpec;

@@ -1,4 +1,4 @@
-﻿using Arbor.Defensive.Collections;
+﻿using Arbor.Build.Core.GenericExtensions;
 using FluentAssertions;
 using Xunit;
 
@@ -7,10 +7,8 @@ namespace Arbor.Build.Tests.Integration.Collections;
 public class EnumerableOfTests
 {
     [Fact]
-    public void EnumerableOfClassWith3PublicReadOnlyFieldsShouldList3Items()
-    {
+    public void EnumerableOfClassWith3PublicReadOnlyFieldsShouldList3Items() =>
         EnumerableOf<EnumerableTestClass>.Items.Should().HaveCount(3);
-    }
 
     private class EnumerableTestClass
     {

@@ -7,8 +7,7 @@ public static class DefaultPaths
 {
     public const string TempPathPrefix = "ABX";
 
-    private static readonly Lazy<PathLookupSpecification> PathLookupSpecification =
-        new Lazy<PathLookupSpecification>(Initialize);
+    private static readonly Lazy<PathLookupSpecification> PathLookupSpecification = new(Initialize);
 
     public static PathLookupSpecification DefaultPathLookupSpecification => PathLookupSpecification.Value;
 

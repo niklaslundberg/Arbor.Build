@@ -25,5 +25,5 @@ public class when_running_process_without_logging
                 null,
                 debugAction: null,
                 noWindow: true,
-                cancellationToken: CancellationToken.None).ConfigureAwait(false);
+                cancellationToken: CancellationToken.None);
 }

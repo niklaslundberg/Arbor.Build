@@ -9,22 +9,15 @@ using Zio;
 
 namespace Arbor.Build.Core.Tools.MSBuild;
 
-internal class Solution
+internal class Solution(FileEntry fullPath, ImmutableArray<SolutionProject> projects)
 {
-    public Solution(FileEntry fullPath, ImmutableArray<SolutionProject> projects)
-    {
-        FullPath = fullPath;
-        Projects = projects;
-        Name = fullPath.Name;
-    }
+    public string Name { get; } = fullPath.Name;
 
-    public string Name { get; }
-
-    public FileEntry FullPath { get; }
+    public FileEntry FullPath { get; } = fullPath;
 
     public override string ToString() => Name;
 
-    public ImmutableArray<SolutionProject> Projects { get; }
+    public ImmutableArray<SolutionProject> Projects { get; } = projects;
 
     public static async Task<Solution> LoadFrom(FileEntry solutionFileFullName)
     {

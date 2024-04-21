@@ -12,13 +12,8 @@ namespace Arbor.Build.Core.Tools.NuGet;
 
 public static class NuGetVersionHelper
 {
-    private static readonly List<string> InvalidCharacters = new() { "<", "@", ">", "|", "?", ":", ",", "."
-        , "/"
-        , "\\"
-        , "+"
-        , "="
-
-    };
+    private static readonly List<string> InvalidCharacters =
+        ["<", "@", ">", "|", "?", ":", ",", ".", "/", "\\", "+", "="];
 
     public static string GetVersion(
         string version,
@@ -125,7 +120,7 @@ public static class NuGetVersionHelper
             ? $"{branchSuffixed}+{packageBuildMetadata.TrimStart('+')}"
             : branchSuffixed;
 
-        if (!SemanticVersion.TryParse(withMetadata, out SemanticVersion _))
+        if (!SemanticVersion.TryParse(withMetadata, out _))
         {
             throw new InvalidOperationException($"The NuGet version '{withMetadata}' is not a valid Semver 2.0 version");
         }

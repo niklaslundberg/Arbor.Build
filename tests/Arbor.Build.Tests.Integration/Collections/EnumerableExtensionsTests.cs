@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using Arbor.Defensive.Collections;
+using Arbor.Build.Core.GenericExtensions;
 using FluentAssertions;
 using Xunit;
 
@@ -46,9 +46,6 @@ public class EnumerableExtensionsTests
 
         toReadOnlyCollection.Should().Throw<ArgumentNullException>();
     }
-
-    [Fact]
-    public void ValueToImmutableArrayShouldHave1Element() => 1.ValueToImmutableArray().Should().HaveCount(1);
 
     [Fact]
     public void NotNullShouldFilterOutNulls() =>

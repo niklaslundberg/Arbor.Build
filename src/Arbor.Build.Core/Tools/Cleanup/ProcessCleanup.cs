@@ -7,7 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
-using Arbor.Exceptions;
+using Arbor.Build.Core.Exceptions;
 using Arbor.FS;
 using Arbor.Processing;
 using JetBrains.Annotations;
@@ -18,20 +18,11 @@ namespace Arbor.Build.Core.Tools.Cleanup;
 
 [UsedImplicitly]
 [Priority(int.MaxValue, true)]
-public class ProcessCleanup : ITool
+public class ProcessCleanup(ILogger logger, IFileSystem fileSystem) : ITool
 {
-    private readonly ILogger _logger;
-    private readonly IFileSystem _fileSystem;
-
     private static ImmutableArray<string> ProcessNames { get; } = new string[] {"msbuild.exe", "vbcscompiler.exe", "csc.exe"}.ToImmutableArray();
 
-    public ProcessCleanup(ILogger logger, IFileSystem fileSystem)
-    {
-        _logger = logger;
-        _fileSystem = fileSystem;
-    }
-
-    public async Task<ExitCode> ExecuteAsync(ILogger logger,
+    public async Task<ExitCode> ExecuteAsync(ILogger logger1,
         IReadOnlyCollection<IVariable> buildVariables,
         string[] args,
         CancellationToken cancellationToken)
@@ -52,13 +43,13 @@ public class ProcessCleanup : ITool
             };
 
             var exitCode = await ProcessRunner.ExecuteProcessAsync(
-                    _fileSystem.ConvertPathToInternal(dotNetExe.ParseAsPath()),
+                    fileSystem.ConvertPathToInternal(dotNetExe.ParseAsPath()),
                     shutdownArguments,
                     Log,
                     cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
+                ;
 
-            _logger.Debug("Dotnet build server shutdown exit code {ExitCode}", exitCode.Code);
+            logger.Debug("Dotnet build server shutdown exit code {ExitCode}", exitCode.Code);
         }
 
         StopProcesses();
@@ -79,7 +70,7 @@ public class ProcessCleanup : ITool
         }
         catch (Exception ex) when (!ex.IsFatal())
         {
-            _logger.Warning(ex, "Could not stop all build processes");
+            logger.Warning(ex, "Could not stop all build processes");
         }
     }
 
@@ -104,9 +95,9 @@ public class ProcessCleanup : ITool
         }
         catch (Exception ex) when (!ex.IsFatal())
         {
-            _logger.Warning(ex, "Could not stop process {Process}", process.Id);
+            logger.Warning(ex, "Could not stop process {Process}", process.Id);
         }
     }
 
-    private void Log(string message, string category) => _logger.Debug("{Message}", message);
+    private void Log(string message, string category) => logger.Debug("{Message}", message);
 }

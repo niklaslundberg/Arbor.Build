@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
@@ -34,7 +33,7 @@ public class GitSourceLinkMetadataProviderTests
                 new BuildVariable(WellKnownVariables.SourceRoot, buildDirectory.FullName)
             };
 
-        string[] args = Array.Empty<string>();
+        string[] args = [];
 
         var exitCode = await provider.ExecuteAsync(Logger.None, buildVariables, args, CancellationToken.None);
 

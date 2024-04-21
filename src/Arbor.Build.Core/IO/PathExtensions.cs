@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Arbor.Defensive.Collections;
+using Arbor.Build.Core.GenericExtensions;
 using Arbor.FS;
 using Serilog;
 using Zio;
@@ -17,15 +17,9 @@ public static class PathExtensions
         bool allowNonExistingFiles = false,
         ILogger? logger = null)
     {
-        if (pathLookupSpecification == null)
-        {
-            throw new ArgumentNullException(nameof(pathLookupSpecification));
-        }
+        ArgumentNullException.ThrowIfNull(pathLookupSpecification);
 
-        if (sourceFile is null)
-        {
-            throw new ArgumentNullException(nameof(sourceFile));
-        }
+        ArgumentNullException.ThrowIfNull(sourceFile);
 
         string internalPath = sourceFile.ConvertPathToInternal();
 
@@ -80,15 +74,9 @@ public static class PathExtensions
         DirectoryEntry? rootDir = null,
         ILogger? logger = null)
     {
-        if (pathLookupSpecification == null)
-        {
-            throw new ArgumentNullException(nameof(pathLookupSpecification));
-        }
+        ArgumentNullException.ThrowIfNull(pathLookupSpecification);
 
-        if (sourceDir is null)
-        {
-            throw new ArgumentNullException(nameof(sourceDir));
-        }
+        ArgumentNullException.ThrowIfNull(sourceDir);
 
         string sourceInternalPath = sourceDir.ConvertPathToInternal();
         if (!sourceDir.Exists)

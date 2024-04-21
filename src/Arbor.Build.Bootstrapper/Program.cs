@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
-using Arbor.Build.Core.Logging;
+using Arbor.Build.Core.Tools.EnvironmentVariables;
 using Arbor.FS;
 using Arbor.Processing;
 using Serilog;
@@ -30,7 +30,7 @@ internal static class Program
         _fileSystem = new WindowsFs(_physicalFileSystem);
         var bootstrapper = new Core.Bootstrapper.AppBootstrapper(logger, environmentVariables, fileSystem ?? _fileSystem);
 
-        ExitCode exitCode = await bootstrapper.StartAsync(args).ConfigureAwait(false);
+        ExitCode exitCode = await bootstrapper.StartAsync(args);
 
         if (logger is IDisposable disposable)
         {

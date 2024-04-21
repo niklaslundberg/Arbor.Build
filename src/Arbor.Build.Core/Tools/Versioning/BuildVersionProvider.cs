@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.Exceptions;
+using Arbor.Build.Core.GenericExtensions;
 using Arbor.Build.Core.GenericExtensions.Int;
+using Arbor.Build.Core.Time;
 using Arbor.Build.Core.Tools.Cleanup;
 using Arbor.Build.Core.Tools.MSBuild;
-using Arbor.Exceptions;
 using Arbor.FS;
 using Arbor.KVConfiguration.Core.Extensions.StringExtensions;
 using Arbor.KVConfiguration.Core.Metadata;
@@ -21,20 +22,11 @@ using Zio;
 namespace Arbor.Build.Core.Tools.Versioning;
 
 [UsedImplicitly]
-public class BuildVersionProvider : IVariableProvider
+public class BuildVersionProvider(ITimeService timeService, BuildContext buildContext) : IVariableProvider
 {
-    private readonly ITimeService _timeService;
-    private readonly BuildContext _buildContext;
-
-    public BuildVersionProvider(ITimeService timeService, BuildContext buildContext)
-    {
-        _timeService = timeService;
-        _buildContext = buildContext;
-    }
-
     public int Order => VariableProviderOrder.Ignored;
 
-    public Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
+    public Task<IReadOnlyCollection<IVariable>> GetBuildVariablesAsync(
         ILogger logger,
         IReadOnlyCollection<IVariable> buildVariables,
         CancellationToken cancellationToken)
@@ -46,7 +38,7 @@ public class BuildVersionProvider : IVariableProvider
             .Select(item => (IVariable)new BuildVariable(item.Key, item.Value))
             .ToList();
 
-        return Task.FromResult(environmentVariables.ToImmutableArray());
+        return Task.FromResult(environmentVariables.ToReadOnlyCollection());
     }
 
     private static bool ValidateVersionNumber(KeyValuePair<string, string?> pair)
@@ -78,7 +70,7 @@ public class BuildVersionProvider : IVariableProvider
 
         const string fileName = "version.json";
 
-        var sourceRoot = _buildContext.SourceRoot;
+        var sourceRoot = buildContext.SourceRoot;
 
         var versionFileName = UPath.Combine(sourceRoot.Path, fileName);
 
@@ -91,7 +83,7 @@ public class BuildVersionProvider : IVariableProvider
             try
             {
                 keyValueConfigurationItems =
-                    new JsonFileReader(_buildContext.SourceRoot.FileSystem.ConvertPathToInternal(versionFileName)).ReadConfiguration();
+                    new JsonFileReader(buildContext.SourceRoot.FileSystem.ConvertPathToInternal(versionFileName)).ReadConfiguration();
             }
             catch (Exception ex) when (!ex.IsFatal())
             {
@@ -226,7 +218,7 @@ public class BuildVersionProvider : IVariableProvider
             }
             else if (buildVariables.GetBooleanByKey(WellKnownVariables.BuildNumberAsUnixEpochSecondsEnabled, defaultValue: true))
             {
-                build = (int) _timeService.UtcNow().ToUnixTimeSeconds();
+                build = (int) timeService.UtcNow().ToUnixTimeSeconds();
             }
             else
             {

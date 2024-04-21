@@ -11,13 +11,8 @@ using Zio.FileSystems;
 
 namespace Arbor.Build.Tests.Integration.MSBuild;
 
-public class BuildConfigurationProviderTests
+public class BuildConfigurationProviderTests(ITestOutputHelper testOutputHelper)
 {
-    public BuildConfigurationProviderTests(ITestOutputHelper testOutputHelper) =>
-        _testOutputHelper = testOutputHelper;
-
-    readonly ITestOutputHelper _testOutputHelper;
-
     [Fact]
     public async Task DefaultConfigurationShouldBeDebug()
     {
@@ -31,7 +26,7 @@ public class BuildConfigurationProviderTests
 
         foreach (var variable in variables)
         {
-            _testOutputHelper.WriteLine($"{variable.Key}: {variable.Value}");
+            testOutputHelper.WriteLine($"{variable.Key}: {variable.Value}");
         }
         Assert.Contains(WellKnownConfigurations.Debug, buildContext.Configurations);
     }
@@ -56,7 +51,7 @@ public class BuildConfigurationProviderTests
 
         foreach (var variable in variables)
         {
-            _testOutputHelper.WriteLine($"{variable.Key}: {variable.Value}");
+            testOutputHelper.WriteLine($"{variable.Key}: {variable.Value}");
         }
 
         Assert.Contains(WellKnownConfigurations.Debug, buildContext.Configurations);
@@ -82,7 +77,7 @@ public class BuildConfigurationProviderTests
 
         foreach (var variable in variables)
         {
-            _testOutputHelper.WriteLine($"{variable.Key}: {variable.Value}");
+            testOutputHelper.WriteLine($"{variable.Key}: {variable.Value}");
         }
 
         Assert.Contains("customDefault", buildContext.Configurations);
@@ -108,7 +103,7 @@ public class BuildConfigurationProviderTests
 
         foreach (var variable in variables)
         {
-            _testOutputHelper.WriteLine($"{variable.Key}: {variable.Value}");
+            testOutputHelper.WriteLine($"{variable.Key}: {variable.Value}");
         }
 
         Assert.Contains(WellKnownConfigurations.Release, buildContext.Configurations);

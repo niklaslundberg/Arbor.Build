@@ -13,14 +13,8 @@ namespace Arbor.Build.Tests.Integration.TrxTransform;
 
 public sealed class WhenTransformingTrxToJunit : IDisposable
 {
-    readonly IFileSystem _fileSystem;
-    readonly Logger _logger;
-
-    public WhenTransformingTrxToJunit()
-    {
-        _fileSystem = new PhysicalFileSystem();
-        _logger = new LoggerConfiguration().WriteTo.Debug().MinimumLevel.Verbose().CreateLogger();
-    }
+    readonly IFileSystem _fileSystem = new PhysicalFileSystem();
+    readonly Logger _logger = new LoggerConfiguration().WriteTo.Debug().MinimumLevel.Verbose().CreateLogger();
 
     public void Dispose()
     {

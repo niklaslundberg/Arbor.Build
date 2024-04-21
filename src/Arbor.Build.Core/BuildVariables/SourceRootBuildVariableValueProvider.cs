@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
+using Arbor.Build.Core.GenericExtensions;
 using Arbor.FS;
 using JetBrains.Annotations;
 using Serilog;
@@ -10,16 +10,13 @@ using Zio;
 namespace Arbor.Build.Core.BuildVariables;
 
 [UsedImplicitly]
-public class SourceRootBuildVariableValueProvider : IVariableProvider
+public class SourceRootBuildVariableValueProvider(SourceRootValue? sourceDirectory = null) : IVariableProvider
 {
-    private readonly DirectoryEntry? _sourceDirectory;
-
-    public SourceRootBuildVariableValueProvider(SourceRootValue? sourceDirectory = null) =>
-        _sourceDirectory = sourceDirectory?.SourceRoot;
+    private readonly DirectoryEntry? _sourceDirectory = sourceDirectory?.SourceRoot;
 
     public int Order => int.MinValue;
 
-    public Task<ImmutableArray<IVariable>> GetBuildVariablesAsync(
+    public Task<IReadOnlyCollection<IVariable>> GetBuildVariablesAsync(
         ILogger logger,
         IReadOnlyCollection<IVariable> buildVariables,
         CancellationToken cancellationToken)
@@ -32,6 +29,6 @@ public class SourceRootBuildVariableValueProvider : IVariableProvider
             variables.Add(new BuildVariable(WellKnownVariables.SourceRoot, _sourceDirectory.ConvertPathToInternal()));
         }
 
-        return Task.FromResult(variables.ToImmutableArray());
+        return Task.FromResult(variables.ToReadOnlyCollection());
     }
 }
