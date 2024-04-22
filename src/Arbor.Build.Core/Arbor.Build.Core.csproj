@@ -14,7 +14,7 @@
     <PackageReference Include="Arbor.KVConfiguration.Core" Version="2.6.0" />
     <PackageReference Include="Arbor.Processing" Version="0.6.0" />
     <PackageReference Include="Arbor.Sorbus" Version="4.0.0" />
-    <PackageReference Include="Arbor.Tooler" Version="0.29.0" />
+    <PackageReference Include="Arbor.Tooler" Version="1.0.0" />
     <PackageReference Include="Autofac" Version="8.0.0" />
     <PackageReference Include="JetBrains.Annotations" Version="2023.3.0" />
     <PackageReference Include="Microsoft.Web.Xdt" Version="3.1.0" />
