@@ -10,7 +10,7 @@
     <PackageReference Include="Arbor.Aesculus" Version="3.7.0" />
     <PackageReference Include="Arbor.KVConfiguration.JsonConfiguration" Version="2.6.0" />
     <PackageReference Include="Arbor.KVConfiguration.Schema.Json" Version="2.6.0" />
-    <PackageReference Include="Arbor.KVConfiguration.UserConfiguration" Version="2.6.0" />
+    <PackageReference Include="Arbor.KVConfiguration.UserConfiguration" Version="2.7.0" />
     <PackageReference Include="Arbor.KVConfiguration.Core" Version="2.6.0" />
     <PackageReference Include="Arbor.Processing" Version="0.6.0" />
     <PackageReference Include="Arbor.Sorbus" Version="4.0.0" />
