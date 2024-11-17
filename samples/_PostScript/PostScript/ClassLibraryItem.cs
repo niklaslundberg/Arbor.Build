@@ -1,8 +1,5 @@
-﻿using JetBrains.Annotations;
-
-namespace NetStandardLib
+﻿namespace NetStandardLib
 {
-    [PublicAPI]
     public class ClassLibraryItem
     {
     }
