@@ -29,6 +29,6 @@
     <tags>NoSource</tags>
   </metadata>
   <files>
-    <file src="bin\$configuration$\net6.0\**\*.dll" target="lib\net8.0" exclude="*.xml;cs\*.*;de\*.*;es\*.*;fr\*.*;en\*.*;it\*.*;ja\*.*;ko\*.*;pl\*.*;pt-BR\*.*;ru\*.*;tr\*.*;zh-Hans\*.*;zh-Hant\*.*;runtimes\linux\*.*;runtimes\unix\*.*;runtimes\osx\*.*" />
+    <file src="bin\$configuration$\net8.0\**\*.dll" target="lib\net8.0" exclude="*.xml;cs\*.*;de\*.*;es\*.*;fr\*.*;en\*.*;it\*.*;ja\*.*;ko\*.*;pl\*.*;pt-BR\*.*;ru\*.*;tr\*.*;zh-Hans\*.*;zh-Hant\*.*;runtimes\linux\*.*;runtimes\unix\*.*;runtimes\osx\*.*" />
   </files>
 </package>
