@@ -21,7 +21,7 @@
     <iconUrl>https://nuget.org/Content/Images/packageDefaultIcon-50x50.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <license type="expression">MIT</license>
-    <copyright>Copyright Niklas Lundberg 2014 - 2023</copyright>
+    <copyright>Copyright Niklas Lundberg 2014 - 2024</copyright>
     <dependencies>
 
     </dependencies>

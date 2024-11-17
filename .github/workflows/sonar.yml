@@ -22,11 +22,10 @@ jobs:
     - uses: actions/setup-dotnet@v4
       with:
         dotnet-version: |
-            6.0.x
-            7.0.x
+            8.0.x
     - uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 8.0.x
+        dotnet-version: 9.0.x
         cache: true
         cache-dependency-path: tests/Arbor.Build.Tests.Integration
     - name: Cache SonarCloud packages
