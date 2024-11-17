@@ -1,9 +1,7 @@
-﻿using JetBrains.Annotations;
-
-namespace NetStandardLib
+﻿namespace NetStandardLib
 {
-    [PublicAPI]
-    public class ClassLibraryItem
+    // ReSharper disable once UnusedMember.Global
+    internal class ClassLibraryItem
     {
     }
 }

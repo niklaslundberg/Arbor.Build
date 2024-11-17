@@ -17,6 +17,9 @@ public sealed class TargetFramework : ValueObject<TargetFramework, string>
     public static readonly TargetFramework Net7_0 = new("net7.0");
     public static readonly TargetFramework Net8_0 = new("net8.0");
     public static readonly TargetFramework Net9_0 = new("net9.0");
+    public static readonly TargetFramework Net10_0 = new("net10.0");
+    public static readonly TargetFramework Net11_0 = new("net11.0");
+    public static readonly TargetFramework Net12_0 = new("net12.0");
     public static readonly TargetFramework Empty = new("N/A");
 
     public override string ToString() => Value;

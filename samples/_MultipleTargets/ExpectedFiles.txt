@@ -1,2 +1,2 @@
-MultiTargetLib\bin\Debug\net6.0\MultiTargetLib.dll
+MultiTargetLib\bin\Debug\net8.0\MultiTargetLib.dll
 MultiTargetLib\bin\Debug\netstandard2.0\MultiTargetLib.dll
