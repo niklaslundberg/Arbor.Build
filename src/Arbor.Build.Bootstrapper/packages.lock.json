@@ -4,9 +4,9 @@
     "net8.0": {
       "Arbor.Aesculus": {
         "type": "Direct",
-        "requested": "[3.8.0, )",
-        "resolved": "3.8.0",
-        "contentHash": "MC7wvy74QqGh7xcb9md+qVlmmgTfK0RoMlWeH7OEyuSYYiHiwKwJYsr17NT957n5pZWKnD96OzLA5TZkUcEhJA=="
+        "requested": "[3.8.1, )",
+        "resolved": "3.8.1",
+        "contentHash": "eZZxJj2GsJLx6xEYKld8gjk7MF35cdPpS8KDFAdM1AI6HoDwqoGRAwM36h7j65UPj+u6zJv/FDENJEyKKlIe1Q=="
       },
       "Arbor.Tooler": {
         "type": "Direct",
@@ -818,7 +818,7 @@
       "arbor.build.core": {
         "type": "Project",
         "dependencies": {
-          "Arbor.Aesculus": "[3.8.0, )",
+          "Arbor.Aesculus": "[3.8.1, )",
           "Arbor.FileSystem": "[0.6.0, )",
           "Arbor.KVConfiguration.Core": "[2.8.0, )",
           "Arbor.KVConfiguration.JsonConfiguration": "[2.8.0, )",
@@ -848,9 +848,9 @@
     "net9.0": {
       "Arbor.Aesculus": {
         "type": "Direct",
-        "requested": "[3.8.0, )",
-        "resolved": "3.8.0",
-        "contentHash": "MC7wvy74QqGh7xcb9md+qVlmmgTfK0RoMlWeH7OEyuSYYiHiwKwJYsr17NT957n5pZWKnD96OzLA5TZkUcEhJA=="
+        "requested": "[3.8.1, )",
+        "resolved": "3.8.1",
+        "contentHash": "eZZxJj2GsJLx6xEYKld8gjk7MF35cdPpS8KDFAdM1AI6HoDwqoGRAwM36h7j65UPj+u6zJv/FDENJEyKKlIe1Q=="
       },
       "Arbor.Tooler": {
         "type": "Direct",
@@ -1647,7 +1647,7 @@
       "arbor.build.core": {
         "type": "Project",
         "dependencies": {
-          "Arbor.Aesculus": "[3.8.0, )",
+          "Arbor.Aesculus": "[3.8.1, )",
           "Arbor.FileSystem": "[0.6.0, )",
           "Arbor.KVConfiguration.Core": "[2.8.0, )",
           "Arbor.KVConfiguration.JsonConfiguration": "[2.8.0, )",
