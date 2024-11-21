@@ -83,11 +83,10 @@
       },
       "NCrunch.Framework": {
         "type": "Direct",
-        "requested": "[5.1.0, )",
-        "resolved": "5.1.0",
-        "contentHash": "yyum3qmpgsJsDiB3SnNzlJ0qI2mtMFtJSbPg7nrymxjsQog0Jace831yWqTcBXLuB/kQAfuZs6tdTDvDCzp2mg==",
+        "requested": "[5.11.0, )",
+        "resolved": "5.11.0",
+        "contentHash": "hHs+v04DmUr2ucJu4mt0MCVOmkNnr4RIiakqF7zQ8E+74/MP5E/GhihpiWbzyBgIkvOHgBoVH497L9vWnDZsZA==",
         "dependencies": {
-          "NETStandard.Library": "1.6.1",
           "System.Collections.NonGeneric": "4.3.0"
         }
       },
@@ -192,8 +191,8 @@
       },
       "Arbor.Aesculus": {
         "type": "Transitive",
-        "resolved": "3.8.0",
-        "contentHash": "MC7wvy74QqGh7xcb9md+qVlmmgTfK0RoMlWeH7OEyuSYYiHiwKwJYsr17NT957n5pZWKnD96OzLA5TZkUcEhJA=="
+        "resolved": "3.8.1",
+        "contentHash": "eZZxJj2GsJLx6xEYKld8gjk7MF35cdPpS8KDFAdM1AI6HoDwqoGRAwM36h7j65UPj+u6zJv/FDENJEyKKlIe1Q=="
       },
       "Arbor.FileSystem": {
         "type": "Transitive",
@@ -1870,7 +1869,7 @@
       "arbor.build.core": {
         "type": "Project",
         "dependencies": {
-          "Arbor.Aesculus": "[3.8.0, )",
+          "Arbor.Aesculus": "[3.8.1, )",
           "Arbor.FileSystem": "[0.6.0, )",
           "Arbor.KVConfiguration.Core": "[2.8.0, )",
           "Arbor.KVConfiguration.JsonConfiguration": "[2.8.0, )",
