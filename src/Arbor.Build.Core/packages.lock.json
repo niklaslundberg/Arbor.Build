@@ -4,9 +4,9 @@
     "net8.0": {
       "Arbor.Aesculus": {
         "type": "Direct",
-        "requested": "[3.8.1, )",
-        "resolved": "3.8.1",
-        "contentHash": "eZZxJj2GsJLx6xEYKld8gjk7MF35cdPpS8KDFAdM1AI6HoDwqoGRAwM36h7j65UPj+u6zJv/FDENJEyKKlIe1Q=="
+        "requested": "[3.9.0, )",
+        "resolved": "3.9.0",
+        "contentHash": "LE06rAomvgZ+9iYUjLGCM+n/Xl19kbMzYauWyI5WcVFh7BhkMCmcbQDYFIjVvfeQlrxio8xLAMBO80Dul5h8jQ=="
       },
       "Arbor.FileSystem": {
         "type": "Direct",
@@ -777,9 +777,9 @@
     "net9.0": {
       "Arbor.Aesculus": {
         "type": "Direct",
-        "requested": "[3.8.1, )",
-        "resolved": "3.8.1",
-        "contentHash": "eZZxJj2GsJLx6xEYKld8gjk7MF35cdPpS8KDFAdM1AI6HoDwqoGRAwM36h7j65UPj+u6zJv/FDENJEyKKlIe1Q=="
+        "requested": "[3.9.0, )",
+        "resolved": "3.9.0",
+        "contentHash": "LE06rAomvgZ+9iYUjLGCM+n/Xl19kbMzYauWyI5WcVFh7BhkMCmcbQDYFIjVvfeQlrxio8xLAMBO80Dul5h8jQ=="
       },
       "Arbor.FileSystem": {
         "type": "Direct",
