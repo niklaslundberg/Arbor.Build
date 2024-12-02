@@ -16,11 +16,11 @@
       },
       "FluentAssertions": {
         "type": "Direct",
-        "requested": "[6.12.2, )",
-        "resolved": "6.12.2",
-        "contentHash": "8YE+xJmT8wgzEpFuzJ4S62oFhEL/AKouMz1RWPEMEUhy9H11aRQlGIWcHurH5BEy7tbF6gb0CJrs0wOw/AtDcQ==",
+        "requested": "[7.0.0, )",
+        "resolved": "7.0.0",
+        "contentHash": "mTLbcU991EQ1SEmNbVBaGGGJy0YFzvGd1sYJGNZ07nlPKuyHSn1I22aeKzqQXgEiaKyRO6MSCto9eN9VxMwBdA==",
         "dependencies": {
-          "System.Configuration.ConfigurationManager": "4.4.0"
+          "System.Configuration.ConfigurationManager": "6.0.0"
         }
       },
       "Microsoft.NET.Test.Sdk": {
@@ -64,8 +64,8 @@
       },
       "Arbor.Aesculus": {
         "type": "Transitive",
-        "resolved": "3.8.1",
-        "contentHash": "eZZxJj2GsJLx6xEYKld8gjk7MF35cdPpS8KDFAdM1AI6HoDwqoGRAwM36h7j65UPj+u6zJv/FDENJEyKKlIe1Q=="
+        "resolved": "3.9.0",
+        "contentHash": "LE06rAomvgZ+9iYUjLGCM+n/Xl19kbMzYauWyI5WcVFh7BhkMCmcbQDYFIjVvfeQlrxio8xLAMBO80Dul5h8jQ=="
       },
       "Arbor.FileSystem": {
         "type": "Transitive",
@@ -809,7 +809,7 @@
       "arbor.build.core": {
         "type": "Project",
         "dependencies": {
-          "Arbor.Aesculus": "[3.8.1, )",
+          "Arbor.Aesculus": "[3.9.0, )",
           "Arbor.FileSystem": "[0.6.0, )",
           "Arbor.KVConfiguration.Core": "[2.8.0, )",
           "Arbor.KVConfiguration.JsonConfiguration": "[2.8.0, )",
