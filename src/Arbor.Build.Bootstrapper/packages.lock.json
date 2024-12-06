@@ -250,8 +250,8 @@
       },
       "MSTest.TestFramework": {
         "type": "Transitive",
-        "resolved": "3.6.3",
-        "contentHash": "jockRcUoLJMeHzLqFcMnZBrWy7tS32JP7shlepDDJuf5A6HO2PwAefXzhvprcWNkfpEwmR0KihSO2HRXwNbTng=="
+        "resolved": "3.6.4",
+        "contentHash": "3nV+2CJluKmiJpCSqQfXu5idCq35+vqFywjScyauTIz0Zk7KJw7Qpzv8gtwow0To7pxIlIvwkq9rbMB+V6eOow=="
       },
       "Newtonsoft.Json": {
         "type": "Transitive",
@@ -432,8 +432,8 @@
       },
       "Serilog": {
         "type": "Transitive",
-        "resolved": "4.1.0",
-        "contentHash": "u1aZI8HZ62LWlq5dZLFwm6jMax/sUwnWZSw5lkPsCt518cJBxFKoNmc7oSxe5aA5BgSkzy9rzwFGR/i/acnSPw=="
+        "resolved": "4.2.0",
+        "contentHash": "gmoWVOvKgbME8TYR+gwMf7osROiWAURterc6Rt2dQyX7wtjZYpqFiA/pY6ztjGQKKV62GGCyOcmtP1UKMHgSmA=="
       },
       "Serilog.Sinks.File": {
         "type": "Transitive",
@@ -829,7 +829,7 @@
           "Arbor.Tooler": "[1.1.0, )",
           "Autofac": "[8.1.1, )",
           "JetBrains.Annotations": "[2024.3.0, )",
-          "MSTest.TestFramework": "[3.6.3, )",
+          "MSTest.TestFramework": "[3.6.4, )",
           "Microsoft.Web.Xdt": "[3.1.0, )",
           "Microsoft.Windows.Compatibility": "[9.0.0, )",
           "NUnit": "[4.2.2, )",
@@ -837,7 +837,7 @@
           "NuGet.Packaging": "[6.12.1, )",
           "NuGet.Protocol": "[6.12.1, )",
           "NuGet.Versioning": "[6.12.1, )",
-          "Serilog": "[4.1.0, )",
+          "Serilog": "[4.2.0, )",
           "Serilog.Sinks.Console": "[6.0.0, )",
           "Serilog.Sinks.Seq": "[8.0.0, )",
           "System.Collections.Immutable": "[9.0.0, )",
@@ -1085,8 +1085,8 @@
       },
       "MSTest.TestFramework": {
         "type": "Transitive",
-        "resolved": "3.6.3",
-        "contentHash": "jockRcUoLJMeHzLqFcMnZBrWy7tS32JP7shlepDDJuf5A6HO2PwAefXzhvprcWNkfpEwmR0KihSO2HRXwNbTng=="
+        "resolved": "3.6.4",
+        "contentHash": "3nV+2CJluKmiJpCSqQfXu5idCq35+vqFywjScyauTIz0Zk7KJw7Qpzv8gtwow0To7pxIlIvwkq9rbMB+V6eOow=="
       },
       "Newtonsoft.Json": {
         "type": "Transitive",
@@ -1267,8 +1267,8 @@
       },
       "Serilog": {
         "type": "Transitive",
-        "resolved": "4.1.0",
-        "contentHash": "u1aZI8HZ62LWlq5dZLFwm6jMax/sUwnWZSw5lkPsCt518cJBxFKoNmc7oSxe5aA5BgSkzy9rzwFGR/i/acnSPw=="
+        "resolved": "4.2.0",
+        "contentHash": "gmoWVOvKgbME8TYR+gwMf7osROiWAURterc6Rt2dQyX7wtjZYpqFiA/pY6ztjGQKKV62GGCyOcmtP1UKMHgSmA=="
       },
       "Serilog.Sinks.File": {
         "type": "Transitive",
@@ -1658,7 +1658,7 @@
           "Arbor.Tooler": "[1.1.0, )",
           "Autofac": "[8.1.1, )",
           "JetBrains.Annotations": "[2024.3.0, )",
-          "MSTest.TestFramework": "[3.6.3, )",
+          "MSTest.TestFramework": "[3.6.4, )",
           "Microsoft.Web.Xdt": "[3.1.0, )",
           "Microsoft.Windows.Compatibility": "[9.0.0, )",
           "NUnit": "[4.2.2, )",
@@ -1666,7 +1666,7 @@
           "NuGet.Packaging": "[6.12.1, )",
           "NuGet.Protocol": "[6.12.1, )",
           "NuGet.Versioning": "[6.12.1, )",
-          "Serilog": "[4.1.0, )",
+          "Serilog": "[4.2.0, )",
           "Serilog.Sinks.Console": "[6.0.0, )",
           "Serilog.Sinks.Seq": "[8.0.0, )",
           "System.Collections.Immutable": "[9.0.0, )",
