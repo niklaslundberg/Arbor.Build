@@ -58,14 +58,14 @@
       },
       "xunit.runner.visualstudio": {
         "type": "Direct",
-        "requested": "[2.8.2, )",
-        "resolved": "2.8.2",
-        "contentHash": "vm1tbfXhFmjFMUmS4M0J0ASXz3/U5XvXBa6DOQUL3fEz4Vt6YPhv+ESCarx6M6D+9kJkJYZKCNvJMas1+nVfmQ=="
+        "requested": "[3.0.0, )",
+        "resolved": "3.0.0",
+        "contentHash": "HggUqjQJe8PtDxcP25Q+CnR6Lz4oX3GElhD9V4oU2+75x9HI6A6sxbfKGS4UwU4t4yJaS9fBmAuriz8bQApNjw=="
       },
       "Arbor.Aesculus": {
         "type": "Transitive",
-        "resolved": "3.8.1",
-        "contentHash": "eZZxJj2GsJLx6xEYKld8gjk7MF35cdPpS8KDFAdM1AI6HoDwqoGRAwM36h7j65UPj+u6zJv/FDENJEyKKlIe1Q=="
+        "resolved": "3.9.0",
+        "contentHash": "LE06rAomvgZ+9iYUjLGCM+n/Xl19kbMzYauWyI5WcVFh7BhkMCmcbQDYFIjVvfeQlrxio8xLAMBO80Dul5h8jQ=="
       },
       "Arbor.FileSystem": {
         "type": "Transitive",
@@ -260,8 +260,8 @@
       },
       "MSTest.TestFramework": {
         "type": "Transitive",
-        "resolved": "3.6.3",
-        "contentHash": "jockRcUoLJMeHzLqFcMnZBrWy7tS32JP7shlepDDJuf5A6HO2PwAefXzhvprcWNkfpEwmR0KihSO2HRXwNbTng=="
+        "resolved": "3.6.4",
+        "contentHash": "3nV+2CJluKmiJpCSqQfXu5idCq35+vqFywjScyauTIz0Zk7KJw7Qpzv8gtwow0To7pxIlIvwkq9rbMB+V6eOow=="
       },
       "Newtonsoft.Json": {
         "type": "Transitive",
@@ -317,8 +317,8 @@
       },
       "NUnit": {
         "type": "Transitive",
-        "resolved": "4.2.2",
-        "contentHash": "mon0OPko28yZ/foVXrhiUvq1LReaGsBdziumyyYGxV/pOE4q92fuYeN+AF+gEU5pCjzykcdBt5l7xobTaiBjsg=="
+        "resolved": "4.3.0",
+        "contentHash": "dPClyF8aAmN8w/a7csFXUUbj0sivFVmSfX9CplV+dVeVUqnzoNFsLf7TjAPaxlrwbqHsr+F/pLd7ZEV4Sw9YHg=="
       },
       "runtime.android-arm.runtime.native.System.IO.Ports": {
         "type": "Transitive",
@@ -450,8 +450,8 @@
       },
       "Serilog": {
         "type": "Transitive",
-        "resolved": "4.1.0",
-        "contentHash": "u1aZI8HZ62LWlq5dZLFwm6jMax/sUwnWZSw5lkPsCt518cJBxFKoNmc7oSxe5aA5BgSkzy9rzwFGR/i/acnSPw=="
+        "resolved": "4.2.0",
+        "contentHash": "gmoWVOvKgbME8TYR+gwMf7osROiWAURterc6Rt2dQyX7wtjZYpqFiA/pY6ztjGQKKV62GGCyOcmtP1UKMHgSmA=="
       },
       "Serilog.Sinks.Console": {
         "type": "Transitive",
@@ -809,7 +809,7 @@
       "arbor.build.core": {
         "type": "Project",
         "dependencies": {
-          "Arbor.Aesculus": "[3.8.1, )",
+          "Arbor.Aesculus": "[3.9.0, )",
           "Arbor.FileSystem": "[0.6.0, )",
           "Arbor.KVConfiguration.Core": "[2.8.0, )",
           "Arbor.KVConfiguration.JsonConfiguration": "[2.8.0, )",
@@ -820,15 +820,15 @@
           "Arbor.Tooler": "[1.1.0, )",
           "Autofac": "[8.1.1, )",
           "JetBrains.Annotations": "[2024.3.0, )",
-          "MSTest.TestFramework": "[3.6.3, )",
+          "MSTest.TestFramework": "[3.6.4, )",
           "Microsoft.Web.Xdt": "[3.1.0, )",
           "Microsoft.Windows.Compatibility": "[9.0.0, )",
-          "NUnit": "[4.2.2, )",
+          "NUnit": "[4.3.0, )",
           "Newtonsoft.Json": "[13.0.3, )",
           "NuGet.Packaging": "[6.12.1, )",
           "NuGet.Protocol": "[6.12.1, )",
           "NuGet.Versioning": "[6.12.1, )",
-          "Serilog": "[4.1.0, )",
+          "Serilog": "[4.2.0, )",
           "Serilog.Sinks.Console": "[6.0.0, )",
           "Serilog.Sinks.Seq": "[8.0.0, )",
           "System.Collections.Immutable": "[9.0.0, )",
