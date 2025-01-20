@@ -840,7 +840,7 @@
           "Serilog.Sinks.Console": "[6.0.0, )",
           "Serilog.Sinks.Seq": "[9.0.0, )",
           "System.Collections.Immutable": "[9.0.1, )",
-          "xunit": "[2.9.2, )"
+          "xunit": "[2.9.3, )"
         }
       }
     }

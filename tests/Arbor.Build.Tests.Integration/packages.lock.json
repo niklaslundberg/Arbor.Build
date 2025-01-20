@@ -173,9 +173,9 @@
       },
       "xunit.analyzers": {
         "type": "Direct",
-        "requested": "[1.18.0, )",
-        "resolved": "1.18.0",
-        "contentHash": "OtFMHN8yqIcYP9wcVIgJrq01AfTxijjAqVDy/WeQVSyrDC1RzBWeQPztL49DN2syXRah8TYnfvk035s7L95EZQ=="
+        "requested": "[1.19.0, )",
+        "resolved": "1.19.0",
+        "contentHash": "T2W88QqtsS9nXlxSWAlf1smwovtR1BUSF8+rgy78sVghicnVkGnZ9GHFpS70OD4iNVbd3HPDI+XsvGbbE3nYgQ=="
       },
       "xunit.runner.console": {
         "type": "Direct",
@@ -1900,7 +1900,7 @@
           "Serilog.Sinks.Console": "[6.0.0, )",
           "Serilog.Sinks.Seq": "[9.0.0, )",
           "System.Collections.Immutable": "[9.0.1, )",
-          "xunit": "[2.9.2, )"
+          "xunit": "[2.9.3, )"
         }
       }
     }
