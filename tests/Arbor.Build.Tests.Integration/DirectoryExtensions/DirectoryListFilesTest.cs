@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using Arbor.Build.Core.IO;
 using Arbor.FS;
-using FluentAssertions;
+using Shouldly;
 using Xunit;
 using Zio;
 using Zio.FileSystems;
@@ -46,7 +46,7 @@ public sealed class DirectoryListFilesTest : IDisposable
         {
         }
 
-        subDirectoryA.Parent!.Path.Should().Be(_tempDirectory.Path);
+        subDirectoryA.Parent!.Path.ShouldBe(_tempDirectory.Path);
 
         var files = _tempDirectory.GetFilesWithWithExclusions(new[] {"*.user"})
             .Select(file => file.Path.NormalizePath().FullName)

@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Arbor.Build.Core.Tools.MSBuild;
 using Arbor.FS;
-using FluentAssertions;
+using Shouldly;
 using Xunit;
 using Zio;
 using Zio.FileSystems;
@@ -29,8 +29,8 @@ public class MsBuildProjectTests
 
         var msBuildProject = await MsBuildProject.LoadFrom(file);
 
-        msBuildProject.TargetFramework.Should().Be(TargetFramework.NetStandard2_0);
-        msBuildProject.TargetFrameworks.Length.Should().Be(1);
+        msBuildProject.TargetFramework.ShouldBe(TargetFramework.NetStandard2_0);
+        msBuildProject.TargetFrameworks.ShouldHaveSingleItem();
     }
 
     [Fact]
@@ -53,9 +53,9 @@ public class MsBuildProjectTests
 
         var msBuildProject = await MsBuildProject.LoadFrom(file);
 
-        msBuildProject.TargetFramework.Should().Be(TargetFramework.Empty);
-        msBuildProject.TargetFrameworks.Should().Contain(TargetFramework.NetStandard2_0);
-        msBuildProject.TargetFrameworks.Should().Contain(TargetFramework.Net6_0);
+        msBuildProject.TargetFramework.ShouldBe(TargetFramework.Empty);
+        msBuildProject.TargetFrameworks.ShouldContain(TargetFramework.NetStandard2_0);
+        msBuildProject.TargetFrameworks.ShouldContain(TargetFramework.Net6_0);
     }
 
     [Fact]
@@ -77,8 +77,8 @@ public class MsBuildProjectTests
 
         var msBuildProject = await MsBuildProject.LoadFrom(file);
 
-        msBuildProject.TargetFramework.Should().Be(TargetFramework.Empty);
-        msBuildProject.TargetFrameworks.Should().BeEmpty();
+        msBuildProject.TargetFramework.ShouldBe(TargetFramework.Empty);
+        msBuildProject.TargetFrameworks.ShouldBeEmpty();
     }
 
     [Fact]
@@ -101,9 +101,9 @@ public class MsBuildProjectTests
 
         var msBuildProject = await MsBuildProject.LoadFrom(file);
 
-        msBuildProject.TargetFramework.Should().Be(TargetFramework.Empty);
-        msBuildProject.TargetFrameworks.Should().NotBeEmpty();
-        msBuildProject.TargetFrameworks.Length.Should().Be(2);
+        msBuildProject.TargetFramework.ShouldBe(TargetFramework.Empty);
+        msBuildProject.TargetFrameworks.ShouldNotBeEmpty();
+        msBuildProject.TargetFrameworks.Length.ShouldBe(2);
     }
 
     [Fact]
@@ -112,7 +112,7 @@ public class MsBuildProjectTests
         var a= new TargetFramework("netstandard2.0");
         var b= new TargetFramework("netstandard2.0");
 
-        a.Equals(b).Should().BeTrue();
+        a.Equals(b).ShouldBeTrue();
     }[Fact]
 
     public void EqualsOperatorShouldReturnTrueForSameString()
@@ -120,7 +120,7 @@ public class MsBuildProjectTests
         var a= new TargetFramework("netstandard2.0");
         var b= new TargetFramework("netstandard2.0");
 
-        (a == b).Should().BeTrue();
+        (a == b).ShouldBeTrue();
     }
 
     [Fact]
@@ -129,6 +129,6 @@ public class MsBuildProjectTests
         var a= new TargetFramework("netstandard2.0");
         var b= new TargetFramework("netstandard2.1");
 
-        a.Equals(b).Should().BeFalse();
+        a.Equals(b).ShouldBeFalse();
     }
 }

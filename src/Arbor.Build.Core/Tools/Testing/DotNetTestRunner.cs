@@ -194,8 +194,7 @@ public class DotNetTestRunner(BuildContext buildContext, IFileSystem fileSystem)
             if (buildVariables.GetBooleanByKey(
                     WellKnownVariables.XUnitNetCoreAppV2XmlXsltToJunitEnabled))
             {
-                logger.Verbose(
-                    "Transforming TRX test reports to JUnit format");
+                logger.Verbose("Transforming TRX test reports to JUnit format");
 
                 DirectoryEntry xmlReportDirectory = reportFileEntry.Directory;
 

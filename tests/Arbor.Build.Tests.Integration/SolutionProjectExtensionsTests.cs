@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Arbor.Build.Core.Tools.MSBuild;
 using Arbor.Build.Tests.Integration.Tests.MSpec;
-using FluentAssertions;
+using Machine.Specifications;
 using Xunit;
 using Zio;
 using Zio.FileSystems;
@@ -23,6 +23,6 @@ public class SolutionProjectExtensionsTests
         var project = new SolutionProject(solutionFile, "name", msbuildProject.ProjectDirectory, msbuildProject,
             NetFrameworkGeneration.NetCoreApp);
 
-        project.PublishEnabled().Should().BeFalse();
+        project.PublishEnabled().ShouldBeFalse();
     }
 }

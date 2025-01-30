@@ -4,8 +4,8 @@ using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.Tools.Git;
 using Arbor.FS;
-using FluentAssertions;
 using Serilog.Core;
+using Shouldly;
 using Xunit;
 using Zio;
 using Zio.FileSystems;
@@ -37,9 +37,9 @@ public class GitSourceLinkMetadataProviderTests
 
         var exitCode = await provider.ExecuteAsync(Logger.None, buildVariables, args, CancellationToken.None);
 
-        exitCode.IsSuccess.Should().BeTrue();
+        exitCode.IsSuccess.ShouldBeTrue();
 
-        fs.FileExists(@"c:\build\.git\HEAD".ParseAsPath()).Should().BeTrue();
-        fs.FileExists(@"c:\build\.git\config".ParseAsPath()).Should().BeTrue();
+        fs.FileExists(@"c:\build\.git\HEAD".ParseAsPath()).ShouldBeTrue();
+        fs.FileExists(@"c:\build\.git\config".ParseAsPath()).ShouldBeTrue();
     }
 }

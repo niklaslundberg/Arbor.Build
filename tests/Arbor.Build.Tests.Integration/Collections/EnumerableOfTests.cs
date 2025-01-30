@@ -1,5 +1,5 @@
 ﻿using Arbor.Build.Core.GenericExtensions;
-using FluentAssertions;
+using Machine.Specifications;
 using Xunit;
 
 namespace Arbor.Build.Tests.Integration.Collections;
@@ -8,7 +8,7 @@ public class EnumerableOfTests
 {
     [Fact]
     public void EnumerableOfClassWith3PublicReadOnlyFieldsShouldList3Items() =>
-        EnumerableOf<EnumerableTestClass>.Items.Should().HaveCount(3);
+        EnumerableOf<EnumerableTestClass>.Items.Count.ShouldEqual(3);
 
     private class EnumerableTestClass
     {

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using Arbor.FS;
-using FluentAssertions;
 using Machine.Specifications;
 using Xunit;
 using Zio;
@@ -94,7 +93,7 @@ public class IOExtensionsTests
         fileSystem.CreateDirectory("/mnt/c/temp");
         var file = new FileEntry(fileSystem, "/mnt/c/temp/exampleFile.txt");
 
-        file.DeleteIfExists().Should().BeTrue();
+        file.DeleteIfExists().ShouldBeTrue();
     }
 
 }

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using Arbor.Build.Core.BuildVariables;
-using FluentAssertions;
+using Shouldly;
 using Xunit;
 
 namespace Arbor.Build.Tests.Unit.Variables;
@@ -12,7 +12,7 @@ public class VariableTests
     {
         IVariable variable = new BuildVariable("A", "123");
 
-        variable.ToString().Should().Be("A: '123'");
+        variable.ToString().ShouldBe("A: '123'");
     }
 
     [Theory(DisplayName = "Given that only the key and value are defined, ToString() should only include key")]
@@ -22,7 +22,7 @@ public class VariableTests
     {
         IVariable variable = new BuildVariable("A", value);
 
-        variable.ToString().Should().Be("A: <empty>");
+        variable.ToString().ShouldBe("A: <empty>");
     }
 
     public static IEnumerable<object[]> Secrets() =>
@@ -43,7 +43,7 @@ public class VariableTests
     {
         var buildVariable = new BuildVariable(key, null);
 
-        buildVariable.ToString().Should().Be($"{key}: *****");
+        buildVariable.ToString().ShouldBe($"{key}: *****");
     }
 
     [Theory]
@@ -54,6 +54,6 @@ public class VariableTests
 
         var buildVariable = new BuildVariable(keyUpper, null);
 
-        buildVariable.ToString().Should().Be($"{keyUpper}: *****");
+        buildVariable.ToString().ShouldBe($"{keyUpper}: *****");
     }
 }
