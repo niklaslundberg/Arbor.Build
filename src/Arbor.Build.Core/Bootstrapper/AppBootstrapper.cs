@@ -28,7 +28,7 @@ public class AppBootstrapper(ILogger logger, IEnvironmentVariables environmentVa
 {
     private const string BuildToolPackageName = ArborConstants.ArborBuild;
     private const int MaxBuildTimeInSeconds = 900;
-    private static readonly string Prefix = $"[{ArborConstants.ArborBuild}.{nameof(AppBootstrapper)}] ";
+    private const string Prefix = $"[{ArborConstants.ArborBuild}.{nameof(AppBootstrapper)}] ";
     private bool _directoryCloneEnabled;
 
     private bool _failed;
@@ -230,7 +230,7 @@ public class AppBootstrapper(ILogger logger, IEnvironmentVariables environmentVa
         {
             environmentVariables.SetEnvironmentVariable(
                 WellKnownVariables.AllowPreRelease,
-                _startOptions!.PreReleaseEnabled!.Value.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
+                _startOptions.PreReleaseEnabled!.Value.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
         }
 
         if (!string.IsNullOrWhiteSpace(_startOptions.BranchName))
