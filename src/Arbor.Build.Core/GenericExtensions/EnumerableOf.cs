@@ -15,9 +15,10 @@ public static class EnumerableOf<T> where T : class
     public static IReadOnlyCollection<T> Empty => [];
 
     private static ImmutableArray<T> Initialize() =>
-        typeof(T).GetFields(BindingFlags.Public | BindingFlags.Static)
-            .Where(field => field.IsInitOnly && field.FieldType == typeof(T))
-            .Select(field => field.GetValue(null) as T)
-            .NotNull()
-            .ToImmutableArray();
+        [
+            ..typeof(T).GetFields(BindingFlags.Public | BindingFlags.Static)
+                .Where(field => field.IsInitOnly && field.FieldType == typeof(T))
+                .Select(field => field.GetValue(null) as T)
+                .NotNull()
+        ];
 }

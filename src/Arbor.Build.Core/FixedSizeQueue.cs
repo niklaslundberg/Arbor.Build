@@ -50,7 +50,7 @@ public sealed class FixedSizedQueue<T>
                     return [];
                 }
 
-                return _queue.ToArray().ToImmutableArray();
+                return [.._queue.ToArray()];
             }
         }
     }

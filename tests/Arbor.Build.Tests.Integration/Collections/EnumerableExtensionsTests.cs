@@ -44,9 +44,9 @@ public class EnumerableExtensionsTests
     {
         List<string>? list = null;
 
-        Action toReadOnlyCollection = () => list!.ToReadOnlyCollection();
+        void ReadOnlyCollection() => list!.ToReadOnlyCollection();
 
-        Should.Throw<ArgumentNullException>(toReadOnlyCollection);
+        Should.Throw<ArgumentNullException>(ReadOnlyCollection);
     }
 
     [Fact]

@@ -121,7 +121,7 @@ public class AssemblyInfoPatcher(IFileSystem fileSystem, BuildContext buildConte
             PathLookupSpecification defaultPathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification;
 
             IReadOnlyCollection<AssemblyInfoFile> assemblyFiles = sourceRoot
-                .GetFilesRecursive(new[] { ".cs" }, defaultPathLookupSpecification, sourceRoot)
+                .GetFilesRecursive([".cs"], defaultPathLookupSpecification, sourceRoot)
                 .Where(file => file.Name.Equals(_filePattern, StringComparison.OrdinalIgnoreCase))
                 .Select(file => new AssemblyInfoFile(fileSystem.ConvertPathToInternal(file.FullName)))
                 .ToReadOnlyCollection();

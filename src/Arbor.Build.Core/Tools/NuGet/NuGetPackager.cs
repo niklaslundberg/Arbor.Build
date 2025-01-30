@@ -400,7 +400,6 @@ public class NuGetPackager(
                     verboseAction: logger.Verbose,
                     debugAction: logger.Debug);
 
-
         if (!keepBinaryAndSourcePackagesTogetherEnabled)
         {
             logger.Information(

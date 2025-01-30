@@ -37,10 +37,10 @@ public class NuGetRestorer(IFileSystem fileSystem, BuildContext buildContext) : 
         var nugetExePath =
             buildVariables.GetVariable(WellKnownVariables.ExternalTools_NuGet_ExePath).GetValueOrThrow().ParseAsPath();
 
-        FileEntry[] solutionFiles = buildContext.SourceRoot.GetFiles( "*.sln", SearchOption.AllDirectories).ToArray();
+        FileEntry[] solutionFiles = [.. buildContext.SourceRoot.GetFiles( "*.sln", SearchOption.AllDirectories)];
 
         PathLookupSpecification pathLookupSpecification =
-            DefaultPaths.DefaultPathLookupSpecification.AddExcludedDirectorySegments(new[] { "node_modules" });
+            DefaultPaths.DefaultPathLookupSpecification.AddExcludedDirectorySegments(["node_modules"]);
 
         var excludeListStatus = solutionFiles
             .Select(file => new { File = file, Status = pathLookupSpecification.IsFileExcluded(file, buildContext.SourceRoot) })

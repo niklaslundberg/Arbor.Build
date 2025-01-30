@@ -15,13 +15,12 @@ public static class VariableCompatibility
 
         var replacements = new Dictionary<string, string> { ["."] = "_" };
 
-
         var alreadyDefined = new List<Dictionary<string, string?>>();
         var compatibilities = new List<Dictionary<string, string?>>();
 
         foreach (var replacement in replacements)
         {
-            IVariable[] buildVariableArray = buildVariables.ToArray();
+            IVariable[] buildVariableArray = [.. buildVariables];
 
             foreach (IVariable buildVariable in buildVariableArray)
             {

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Globalization;
 using System.Text;
 using System.Threading;
@@ -194,6 +193,6 @@ public class GitVariableProvider(
             variables.Add(new BuildVariable(WellKnownVariables.RepositoryUrl, repositoryUrl));
         }
 
-        return variables.ToImmutableArray();
+        return [.. variables];
     }
 }

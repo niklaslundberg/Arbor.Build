@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -49,7 +48,7 @@ public class DotNetEnvironmentVariableProvider(IEnvironmentVariables environment
 
             ExitCode exitCode = await Processing.ProcessRunner.ExecuteProcessAsync(
                 fileSystem.ConvertPathToInternal(whereExePath),
-                arguments: new[] { "dotnet.exe" },
+                arguments: ["dotnet.exe"],
                 standardOutLog: (message, _) => sb.Add(message),
                 cancellationToken: cancellationToken);
 
@@ -70,7 +69,6 @@ public class DotNetEnvironmentVariableProvider(IEnvironmentVariables environment
             return [];
         }
 
-        return new IVariable[] { new BuildVariable(WellKnownVariables.DotNetExePath, string.IsNullOrWhiteSpace(dotNetExePath?.FullName) ? "" : fileSystem.ConvertPathToInternal(dotNetExePath.Value)) }
-            .ToImmutableArray();
+        return [new BuildVariable(WellKnownVariables.DotNetExePath, string.IsNullOrWhiteSpace(dotNetExePath?.FullName) ? "" : fileSystem.ConvertPathToInternal(dotNetExePath.Value))];
     }
 }

@@ -37,7 +37,7 @@ internal class Solution(FileEntry fullPath, ImmutableArray<SolutionProject> proj
             }
         }
 
-        return new Solution(solutionFileFullName, projects.ToImmutableArray());
+        return new Solution(solutionFileFullName, [..projects]);
     }
 
     private static async Task<SolutionProject?> GetProject(string line, FileEntry fileEntry)

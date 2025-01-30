@@ -10,7 +10,6 @@ public class GitModelTests
     {
         bool parsed = GitBranchModel.TryParse("GitFlowBuildOnMaster", out var model);
 
-
         Assert.True(parsed);
         Assert.NotNull(model);
     }
@@ -19,7 +18,6 @@ public class GitModelTests
     public void ParseGitFlowMainShouldReturnInstance()
     {
         bool parsed = GitBranchModel.TryParse("GitFlowBuildOnMain", out var model);
-
 
         Assert.True(parsed);
         Assert.NotNull(model);

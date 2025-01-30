@@ -52,7 +52,6 @@ public sealed class GitBranchModel(string name, string? alias = null) : IEquatab
         return false;
     }
 
-
     public override int GetHashCode() => Name.GetHashCode(StringComparison.Ordinal);
 
     public static bool operator ==(GitBranchModel? left, GitBranchModel? right) => Equals(left, right);

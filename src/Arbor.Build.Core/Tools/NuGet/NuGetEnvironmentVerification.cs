@@ -75,7 +75,7 @@ public class NuGetEnvironmentVerification : EnvironmentVerification
 
         try
         {
-            IEnumerable<string> args = new List<string>();
+            IEnumerable<string> args = [];
             ExitCode versionExitCode = await ProcessHelper.ExecuteAsync(_fileSystem.ConvertPathToInternal(nuGetExePath), args, versionLogger)
                 ;
 
@@ -100,7 +100,7 @@ public class NuGetEnvironmentVerification : EnvironmentVerification
 
             if (majorNuGetVersion == '2')
             {
-                IEnumerable<string> updateSelfArgs = new List<string> { "update", "-self" };
+                IEnumerable<string> updateSelfArgs = ["update", "-self"];
                 ExitCode exitCode = await ProcessHelper.ExecuteAsync(_fileSystem.ConvertPathToInternal(nuGetExePath), updateSelfArgs, logger)
                     ;
 

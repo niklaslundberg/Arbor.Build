@@ -64,7 +64,7 @@ public static class DirectoryExtensions
         files.AddRange(subDirectories
             .SelectMany(dir => dir.GetFilesRecursive(usedFileExtensions, usedPathLookupSpecification, rootDir)));
 
-        return files.ToImmutableArray();
+        return [..files];
     }
 
     public static ImmutableArray<FileEntry> GetFilesWithWithExclusions(
@@ -76,7 +76,6 @@ public static class DirectoryExtensions
         ArgumentNullException.ThrowIfNull(excludedPatterns);
 
         var fileSystem = directory.FileSystem;
-
 
         var allFiles = fileSystem
             .EnumerateFileEntries(directory.Path, "*", SearchOption.AllDirectories)
@@ -141,6 +140,6 @@ public static class DirectoryExtensions
             }
         }
 
-        return allIncludedFiles.ToImmutableArray();
+        return [..allIncludedFiles];
     }
 }

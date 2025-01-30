@@ -69,7 +69,6 @@ public static class EnumerableExtensions
             return array.IsDefault ? [] : array;
         }
 
-        return enumerable.ToImmutableArray();
+        return [..enumerable];
     }
-
 }

@@ -24,7 +24,6 @@ public class VersionReporter(ILogger logger, IFileSystem fileSystem) : ITool
         string[] args,
         CancellationToken cancellationToken)
     {
-
         IVariable artifacts = buildVariables.Require(WellKnownVariables.Artifacts).ThrowIfEmptyValue();
 
         var nuGetPackageFiles = new List<FileEntry>();

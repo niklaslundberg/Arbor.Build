@@ -23,7 +23,7 @@ public class MsBuildProject
         ImmutableArray<PackageReferenceElement> packageReferences,
         ImmutableArray<TargetFramework> targetFrameworks)
     {
-        PropertyGroups = propertyGroups.ToImmutableArray();
+        PropertyGroups = [..propertyGroups];
         FileName = fileName;
         ProjectName = projectName;
         ProjectDirectory = projectDirectory;
@@ -76,10 +76,8 @@ public class MsBuildProject
         return false;
     }
 
-
     public static async Task<MsBuildProject> LoadFrom(FileEntry projectFileFullName)
     {
-
         using var fs = projectFileFullName.Open(FileMode.Open, FileAccess.Read);
 
         return await LoadFrom(fs, projectFileFullName);
@@ -146,10 +144,11 @@ public class MsBuildProject
 
         if (projectTypeGuidsElement != null)
         {
-            projectTypes = projectTypeGuidsElement.Value.Split(';')
-                .Select(Guid.Parse)
-                .Select(guid => new ProjectType(guid))
-                .ToImmutableArray();
+            projectTypes = [
+                ..projectTypeGuidsElement.Value.Split(';')
+                    .Select(Guid.Parse)
+                    .Select(guid => new ProjectType(guid))
+            ];
         }
 
         string? sdkValue = project.Attribute("Sdk")?.Value;
@@ -179,14 +178,15 @@ public class MsBuildProject
         }
         else if (!string.IsNullOrWhiteSpace(targetFrameworksValue))
         {
-            targetFrameworks = targetFrameworksValue
-                .Split(';', StringSplitOptions.RemoveEmptyEntries)
-                .Select(t => new TargetFramework(t))
-                .ToImmutableArray();
+            targetFrameworks = [
+                ..targetFrameworksValue
+                    .Split(';', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(t => new TargetFramework(t))
+            ];
         }
         else
         {
-            targetFrameworks = new[]{new TargetFramework(targetFrameworkValue!) }.ToImmutableArray();
+            targetFrameworks = [..new[]{new TargetFramework(targetFrameworkValue!) }];
         }
 
         return Task.FromResult(new MsBuildProject(msbuildPropertyGroups,

@@ -333,7 +333,7 @@ public static partial class WellKnownVariables
                 allVariables.Add(description);
             }
 
-            return allVariables.OrderBy(name => name.InvariantName).ToList();
+            return [.. allVariables.OrderBy(name => name.InvariantName)];
         }
     }
 
@@ -344,14 +344,12 @@ public static partial class WellKnownVariables
             .Where(type => type.IsClass)
             .ToList();
 
-        Type[] asArray = nestedPublicStaticClasses.ToArray();
-
-        foreach (Type nestedPublicStaticClass in asArray)
+        foreach (Type nestedPublicStaticClass in (Type[])[.. nestedPublicStaticClasses])
         {
             nestedPublicStaticClasses.AddRange(GetNestedClassTypes(nestedPublicStaticClass));
         }
 
-        return nestedPublicStaticClasses.ToImmutableArray();
+        return [..nestedPublicStaticClasses];
     }
 
     // ReSharper restore ConvertToConstant.Global

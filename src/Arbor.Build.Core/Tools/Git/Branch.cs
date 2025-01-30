@@ -96,8 +96,7 @@ public static class Branch
 
         if (!string.IsNullOrWhiteSpace(splitCharactersVariable))
         {
-            splitCharacters = splitCharactersVariable.Split([","], StringSplitOptions.RemoveEmptyEntries)
-                .ToList();
+            splitCharacters = [.. splitCharactersVariable.Split([","], StringSplitOptions.RemoveEmptyEntries)];
         }
 
         string? version = branchName.Split(splitCharacters.ToArray(), StringSplitOptions.RemoveEmptyEntries)

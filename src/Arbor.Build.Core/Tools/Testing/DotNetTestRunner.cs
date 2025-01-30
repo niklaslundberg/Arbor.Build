@@ -92,7 +92,7 @@ public class DotNetTestRunner(BuildContext buildContext, IFileSystem fileSystem)
         logger.Debug("Using dotnet.exe in path '{DotNetExePath}'", fileSystem.ConvertPathToInternal(dotNetExePath));
 
         var candidateProjects =
-            buildContext.SourceRoot.GetFilesRecursive(new List<string> {".csproj"},
+            buildContext.SourceRoot.GetFilesRecursive([".csproj"],
                     DefaultPaths.DefaultPathLookupSpecification, buildContext.SourceRoot)
                 .Where(file =>
                     assemblyFilePrefix.Length == 0 || assemblyFilePrefix.Any(prefix =>

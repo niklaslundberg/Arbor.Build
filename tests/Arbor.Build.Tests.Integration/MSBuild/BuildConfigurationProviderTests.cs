@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.Tools.MSBuild;
@@ -21,7 +20,7 @@ public class BuildConfigurationProviderTests(ITestOutputHelper testOutputHelper)
 
         var buildConfigurationProvider = new BuildConfigurationProvider(buildContext);
 
-        var variables = await buildConfigurationProvider.GetBuildVariablesAsync(Logger.None, new List<IVariable>(),
+        var variables = await buildConfigurationProvider.GetBuildVariablesAsync(Logger.None, [],
             CancellationToken.None);
 
         foreach (var variable in variables)
@@ -43,10 +42,10 @@ public class BuildConfigurationProviderTests(ITestOutputHelper testOutputHelper)
 
         var buildConfigurationProvider = new BuildConfigurationProvider(buildContext);
 
-        var variables = await buildConfigurationProvider.GetBuildVariablesAsync(Logger.None, new List<IVariable>()
-            {
+        var variables = await buildConfigurationProvider.GetBuildVariablesAsync(Logger.None,
+            [
                 new BuildVariable(WellKnownVariables.BranchName, branchName)
-            },
+            ],
             CancellationToken.None);
 
         foreach (var variable in variables)
@@ -68,11 +67,11 @@ public class BuildConfigurationProviderTests(ITestOutputHelper testOutputHelper)
 
         var buildConfigurationProvider = new BuildConfigurationProvider(buildContext);
 
-        var variables = await buildConfigurationProvider.GetBuildVariablesAsync(Logger.None, new List<IVariable>()
-            {
+        var variables = await buildConfigurationProvider.GetBuildVariablesAsync(Logger.None,
+            [
                 new BuildVariable(WellKnownVariables.BranchName, branchName),
                 new BuildVariable(WellKnownVariables.FeatureBranchDefaultConfiguration, "customDefault")
-            },
+            ],
             CancellationToken.None);
 
         foreach (var variable in variables)
@@ -95,10 +94,10 @@ public class BuildConfigurationProviderTests(ITestOutputHelper testOutputHelper)
 
         var buildConfigurationProvider = new BuildConfigurationProvider(buildContext);
 
-        var variables = await buildConfigurationProvider.GetBuildVariablesAsync(Logger.None, new List<IVariable>()
-            {
+        var variables = await buildConfigurationProvider.GetBuildVariablesAsync(Logger.None,
+            [
                 new BuildVariable(WellKnownVariables.BranchName, branchName)
-            },
+            ],
             CancellationToken.None);
 
         foreach (var variable in variables)

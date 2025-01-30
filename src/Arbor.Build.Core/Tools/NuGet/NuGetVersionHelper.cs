@@ -125,7 +125,6 @@ public static class NuGetVersionHelper
             throw new InvalidOperationException($"The NuGet version '{withMetadata}' is not a valid Semver 2.0 version");
         }
 
-
         return withMetadata;
     }
 
@@ -148,7 +147,6 @@ public static class NuGetVersionHelper
         return packageVersion;
     }
 
-
     private static string CreateNugetVersionWithBranchName(string baseVersion, BranchName? branch)
     {
         if (branch is null)
@@ -166,7 +164,6 @@ public static class NuGetVersionHelper
         string trimmedName = InvalidCharacters.Aggregate(
             normalizedBranchName,
             (current, invalidCharacter) => current.Replace(invalidCharacter, string.Empty, StringComparison.Ordinal));
-
 
         return $"{baseVersion}.{trimmedName}";
     }

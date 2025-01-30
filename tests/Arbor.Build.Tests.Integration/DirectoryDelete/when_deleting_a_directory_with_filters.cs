@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Arbor.Build.Core.IO;
@@ -58,10 +57,10 @@ public class when_deleting_a_directory_with_filters
         a2.CreateSubdirectory("A21");
         a2.CreateSubdirectory("A22");
 
-        expectedDirectories = new List<string> { "A", "B", "A1", "A12", "B2" }.ToArray();
-        expectedFiles = new List<string> { "app_offline.htm" }.ToArray();
+        expectedDirectories = ["A", "B", "A1", "A12", "B2"];
+        expectedFiles = ["app_offline.htm"];
 
-        directoryDelete = new Core.IO.DirectoryDelete(new[] { "A12" }, expectedFiles, Logger.None);
+        directoryDelete = new Core.IO.DirectoryDelete(["A12"], expectedFiles, Logger.None);
     };
 
     Because of = () => directoryDelete.Delete(tempDir);

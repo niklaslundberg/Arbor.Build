@@ -52,7 +52,6 @@ public class FinWebApplicationProjectTypeId(ITestOutputHelper output)
         using var fs = new PhysicalFileSystem();
         try
         {
-
             tempFile = fs.GetFileEntry(Path.GetTempFileName().ParseAsPath());
             var stream = tempFile.Open(FileMode.Open, FileAccess.Write);
             await stream.WriteAllTextAsync(xml, Encoding.UTF8);

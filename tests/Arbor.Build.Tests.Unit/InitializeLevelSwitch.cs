@@ -50,5 +50,4 @@ public class InitializeLevelSwitch
         Assert.NotNull(loggingLevelSwitch);
         Assert.Equal(LogEventLevel.Debug, loggingLevelSwitch.MinimumLevel);
     }
-
 }

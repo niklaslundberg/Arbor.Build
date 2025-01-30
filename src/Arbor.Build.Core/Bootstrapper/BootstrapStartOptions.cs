@@ -20,7 +20,7 @@ public class BootstrapStartOptions(
 
     public bool? PreReleaseEnabled { get; } = preReleaseEnabled;
 
-    public ImmutableArray<string> Args { get; } = args.ToImmutableArray();
+    public ImmutableArray<string> Args { get; } = [..args];
 
     public DirectoryEntry? BaseDir { get; } = baseDir;
 

@@ -18,7 +18,7 @@ public class when_running_process_without_logging
     static async Task RunAsync() => exitCode =
         await
             Processing.ProcessRunner.ExecuteProcessAsync(@"C:\Windows\System32\PING.EXE",
-                new[] { "127.0.0.1" },
+                ["127.0.0.1"],
                 (s, s1) => { },
                 null,
                 null,

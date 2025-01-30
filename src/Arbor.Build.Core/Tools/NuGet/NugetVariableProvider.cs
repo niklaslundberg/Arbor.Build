@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -75,7 +74,6 @@ public class NugetVariableProvider(IFileSystem fileSystem, BuildContext buildCon
         if (string.IsNullOrWhiteSpace(
                 buildVariables.GetVariableValueOrDefault(WellKnownVariables.NuGetRestoreEnabled, string.Empty)))
         {
-
             var pathLookupSpecification = new PathLookupSpecification();
             var packageConfigFiles = buildContext.SourceRoot
                 .EnumerateFiles("packages.config", SearchOption.AllDirectories).Where(
@@ -87,6 +85,6 @@ public class NugetVariableProvider(IFileSystem fileSystem, BuildContext buildCon
             }
         }
 
-        return variables.ToImmutableArray();
+        return [.. variables];
     }
 }

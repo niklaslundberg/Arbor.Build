@@ -18,11 +18,11 @@ namespace Arbor.Build.Core.Tools.Cleanup;
 
 [UsedImplicitly]
 [Priority(int.MaxValue, true)]
-public class ProcessCleanup(ILogger logger, IFileSystem fileSystem) : ITool
+public class ProcessCleanup(ILogger processLogger, IFileSystem fileSystem) : ITool
 {
-    private static ImmutableArray<string> ProcessNames { get; } = new string[] {"msbuild.exe", "vbcscompiler.exe", "csc.exe"}.ToImmutableArray();
+    private static ImmutableArray<string> ProcessNames { get; } = [..new[] {"msbuild.exe", "vbcscompiler.exe", "csc.exe"}];
 
-    public async Task<ExitCode> ExecuteAsync(ILogger logger1,
+    public async Task<ExitCode> ExecuteAsync(ILogger logger,
         IReadOnlyCollection<IVariable> buildVariables,
         string[] args,
         CancellationToken cancellationToken)
@@ -36,11 +36,11 @@ public class ProcessCleanup(ILogger logger, IFileSystem fileSystem) : ITool
 
         if (!string.IsNullOrWhiteSpace(dotNetExe))
         {
-            IEnumerable<string> shutdownArguments = new List<string>(2)
-            {
+            IEnumerable<string> shutdownArguments =
+            [
                 "build-server",
                 "shutdown"
-            };
+            ];
 
             var exitCode = await ProcessRunner.ExecuteProcessAsync(
                     fileSystem.ConvertPathToInternal(dotNetExe.ParseAsPath()),
@@ -70,7 +70,7 @@ public class ProcessCleanup(ILogger logger, IFileSystem fileSystem) : ITool
         }
         catch (Exception ex) when (!ex.IsFatal())
         {
-            logger.Warning(ex, "Could not stop all build processes");
+            processLogger.Warning(ex, "Could not stop all build processes");
         }
     }
 
@@ -95,9 +95,9 @@ public class ProcessCleanup(ILogger logger, IFileSystem fileSystem) : ITool
         }
         catch (Exception ex) when (!ex.IsFatal())
         {
-            logger.Warning(ex, "Could not stop process {Process}", process.Id);
+            processLogger.Warning(ex, "Could not stop process {Process}", process.Id);
         }
     }
 
-    private void Log(string message, string category) => logger.Debug("{Message}", message);
+    private void Log(string message, string category) => processLogger.Debug("{Message}", message);
 }

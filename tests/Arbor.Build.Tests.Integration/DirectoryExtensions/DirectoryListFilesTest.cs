@@ -48,7 +48,7 @@ public sealed class DirectoryListFilesTest : IDisposable
 
         subDirectoryA.Parent!.Path.ShouldBe(_tempDirectory.Path);
 
-        var files = _tempDirectory.GetFilesWithWithExclusions(new[] {"*.user"})
+        var files = _tempDirectory.GetFilesWithWithExclusions(["*.user"])
             .Select(file => file.Path.NormalizePath().FullName)
             .ToImmutableArray();
 
@@ -72,7 +72,7 @@ public sealed class DirectoryListFilesTest : IDisposable
         {
         }
 
-        var files = _tempDirectory.GetFilesWithWithExclusions(new[] {"bin\\roslyn\\"})
+        var files = _tempDirectory.GetFilesWithWithExclusions(["bin\\roslyn\\"])
             .Select(file => file.Path.NormalizePath().FullName)
             .ToImmutableArray();
 

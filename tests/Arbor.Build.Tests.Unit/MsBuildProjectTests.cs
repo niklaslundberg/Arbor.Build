@@ -18,11 +18,13 @@ public class MsBuildProjectTests
         UPath path = "/test.csproj";
         await using (var stream = fileSystem.CreateFile(path))
         {
-            await stream.WriteAllTextAsync(@"<Project Sdk=""Microsoft.NET.Sdk"">
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-  </PropertyGroup>
-</Project>");
+            await stream.WriteAllTextAsync("""
+                                           <Project Sdk="Microsoft.NET.Sdk">
+                                             <PropertyGroup>
+                                               <TargetFramework>netstandard2.0</TargetFramework>
+                                             </PropertyGroup>
+                                           </Project>
+                                           """);
         }
 
         var file = new FileEntry(fileSystem, path);
@@ -41,13 +43,14 @@ public class MsBuildProjectTests
         UPath path = "/test.csproj";
         await using (var stream = fileSystem.CreateFile(path))
         {
-            await stream.WriteAllTextAsync(@"<Project Sdk=""Microsoft.NET.Sdk"">
-  <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
-  </PropertyGroup>
-</Project>");
+            await stream.WriteAllTextAsync("""
+                                           <Project Sdk="Microsoft.NET.Sdk">
+                                             <PropertyGroup>
+                                               <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
+                                             </PropertyGroup>
+                                           </Project>
+                                           """);
         }
-
 
         var file = new FileEntry(fileSystem, path);
 
@@ -66,11 +69,13 @@ public class MsBuildProjectTests
         UPath path = "/test.csproj";
         await using (var stream = fileSystem.CreateFile(path))
         {
-            await stream.WriteAllTextAsync(@"<Project Sdk=""Microsoft.NET.Sdk"">
-  <PropertyGroup>
+            await stream.WriteAllTextAsync("""
+                                           <Project Sdk="Microsoft.NET.Sdk">
+                                             <PropertyGroup>
 
-  </PropertyGroup>
-</Project>");
+                                             </PropertyGroup>
+                                           </Project>
+                                           """);
         }
 
         var file = new FileEntry(fileSystem, path);
@@ -89,12 +94,14 @@ public class MsBuildProjectTests
         UPath path = "/test.csproj";
         await using (var stream = fileSystem.CreateFile(path))
         {
-            await stream.WriteAllTextAsync(@"<Project Sdk=""Microsoft.NET.Sdk"">
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
-  </PropertyGroup>
-</Project>");
+            await stream.WriteAllTextAsync("""
+                                           <Project Sdk="Microsoft.NET.Sdk">
+                                             <PropertyGroup>
+                                               <TargetFramework>netstandard2.0</TargetFramework>
+                                               <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
+                                             </PropertyGroup>
+                                           </Project>
+                                           """);
         }
 
         var file = new FileEntry(fileSystem, path);

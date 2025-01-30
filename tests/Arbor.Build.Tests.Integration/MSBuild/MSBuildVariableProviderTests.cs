@@ -23,6 +23,5 @@ public class MSBuildVariableProviderTests(ITestOutputHelper output)
             [], CancellationToken.None);
 
         output.WriteLine(string.Join(Environment.NewLine, variables.Select(s => s.Key + " " + s.Value)));
-
     }
 }

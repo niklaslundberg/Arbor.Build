@@ -25,7 +25,6 @@ public class NuSpecHelperTests(ITestOutputHelper output)
 
         var fileName = UPath.Combine(subDirectoryA.FullName, "def.txt");
 
-
         using (fs.CreateFile(fileName))
         {
         }

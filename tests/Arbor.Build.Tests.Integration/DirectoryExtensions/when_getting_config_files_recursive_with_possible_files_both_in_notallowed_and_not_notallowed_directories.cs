@@ -75,7 +75,7 @@ public class
 
     Because of = () =>
     {
-        files = baseDir.GetFilesRecursive(new List<string> { ".config" },
+        files = baseDir.GetFilesRecursive([".config"],
                 DefaultPaths.DefaultPathLookupSpecification,
                 baseDir)
             .Select(s => s.Name)

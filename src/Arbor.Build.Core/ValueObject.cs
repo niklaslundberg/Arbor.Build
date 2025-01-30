@@ -10,7 +10,6 @@ public abstract class ValueObject<T, TValue>(TValue value, IEqualityComparer<TVa
 {
     public TValue Value { get; } = value;
 
-
     public bool Equals(ValueObject<T, TValue>? other)
     {
         if (other is null)

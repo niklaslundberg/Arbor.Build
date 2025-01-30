@@ -11,7 +11,7 @@ namespace Arbor.Build.Tests.Integration.PathExtensions;
 public class when_checking_is_notallowed_for_a_notallowed_file
 {
     static readonly PathLookupSpecification path_lookup_specification =
-        DefaultPaths.DefaultPathLookupSpecification.WithIgnoredFileNameParts(new[] { ".vshost." });
+        DefaultPaths.DefaultPathLookupSpecification.WithIgnoredFileNameParts([".vshost."]);
 
     static bool result;
 
@@ -32,5 +32,6 @@ public class when_checking_is_notallowed_for_a_notallowed_file
     It should_be_true = () => result.ShouldBeTrue();
 
     Cleanup after = () => fs.Dispose();
+
     static IFileSystem fs;
 }

@@ -131,7 +131,7 @@ public static class PathExtensions
         string path = rootDir is null ? sourceDir.FullName : sourceDir.FullName.Replace(rootDir.FullName, string.Empty, StringComparison.OrdinalIgnoreCase);
 
         return path.Split(
-            new[] { UPath.DirectorySeparator },
+            [UPath.DirectorySeparator],
             StringSplitOptions.RemoveEmptyEntries);
     }
     private static bool HasAnyPathSegment(

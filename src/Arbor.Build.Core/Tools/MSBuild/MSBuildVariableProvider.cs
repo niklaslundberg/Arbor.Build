@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -42,7 +41,7 @@ public class MSBuildVariableProvider(
 
             ExitCode versionExitCode = await ProcessHelper.ExecuteAsync(
                 fileSystem.ConvertPathToInternal(vsWherePath),
-                new List<string> { "-prerelease" },
+                ["-prerelease"],
                 cancellationToken: cancellationToken);
 
             var vsWhereArgs = new List<string> { command, component, "-format", "json" };
@@ -62,12 +61,12 @@ public class MSBuildVariableProvider(
             void StandardOutLog(string message, string _) => resultBuilder.Append(message);
 
             ExitCode exitCode = await ProcessRunner.ExecuteProcessAsync(
-                fileSystem.ConvertPathToInternal( vsWherePath),
+                fileSystem.ConvertPathToInternal(vsWherePath),
                 vsWhereArgs,
                 StandardOutLog,
-                cancellationToken: cancellationToken,
+                standardErrorAction: logger.Error,
                 toolAction: logger.Debug,
-                standardErrorAction: logger.Error);
+                cancellationToken: cancellationToken);
 
             if (!exitCode.IsSuccess)
             {
@@ -104,10 +103,11 @@ public class MSBuildVariableProvider(
 
                 if (!allowPreRelease)
                 {
-                    candidates = candidates
-                        .Where(candidate =>
-                            candidate.channelId.IndexOf("preview", StringComparison.OrdinalIgnoreCase) < 0)
-                        .ToImmutableArray();
+                    candidates = [
+                        ..candidates
+                            .Where(candidate =>
+                                candidate.channelId.IndexOf("preview", StringComparison.OrdinalIgnoreCase) < 0)
+                    ];
                 }
 
                 var array = candidates
@@ -139,7 +139,7 @@ public class MSBuildVariableProvider(
                                 fileSystem.ConvertPathToInternal(msbuildCurrentPath))
                         ];
 
-                        return variables.ToImmutableArray();
+                        return [..variables];
                     }
 
                     var msbuild2017Path = UPath.Combine(
@@ -160,7 +160,7 @@ public class MSBuildVariableProvider(
                                 fileSystem.ConvertPathToInternal(msbuild2017Path))
                         ];
 
-                        return variables.ToImmutableArray();
+                        return [..variables];
                     }
 
                     logger.Debug("Could not find VS 2017, 2019 or 2022 MSBuild path for candidate {Candidate}", latest.candidate.installationPath);
@@ -208,7 +208,7 @@ public class MSBuildVariableProvider(
         int currentProcessBits = Environment.Is64BitProcess ? 64 : 32;
         const int registryLookupBits = 32;
         logger.Verbose("Running current process [id {Id}] as a {CurrentProcessBits}-bit process",
-            Process.GetCurrentProcess().Id,
+            Environment.ProcessId,
             currentProcessBits);
 
         var possibleMajorVersions = new List<string>
@@ -219,8 +219,7 @@ public class MSBuildVariableProvider(
                 "12.0.0",
                 "4.0.0"
             }
-            .Select(SemanticVersion.Parse)
-            .ToList();
+            .ConvertAll(SemanticVersion.Parse);
 
         string max = buildVariables.GetVariableValueOrDefault(
             WellKnownVariables.ExternalTools_MSBuild_MaxVersion,
@@ -403,7 +402,7 @@ public class MSBuildVariableProvider(
                     fileSystem.ConvertPathToInternal(fileBasedLookupResultPath.FullName))
             ];
 
-            return variables2.ToImmutableArray();
+            return [.. variables2];
         }
 
         logger.Debug("Could not find MSBuild.exe in any of paths {Paths}", possiblePaths.Select(path => fileSystem.ConvertPathToInternal(path)).ToArray());
@@ -488,6 +487,6 @@ public class MSBuildVariableProvider(
 
 #pragma warning restore CA1416 // Validate platform compatibility
 
-        return variables.ToImmutableArray();
+        return [.. variables];
     }
 }

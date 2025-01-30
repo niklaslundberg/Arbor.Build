@@ -46,18 +46,17 @@ public class NuGetPacker(NuGetPackager nuGetPackager, IFileSystem fileSystem, Bu
                 .Split([","], StringSplitOptions.RemoveEmptyEntries)
                 .SafeToReadOnlyCollection();
 
-        _pathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification.WithIgnoredFileNameParts(new []
-        {
+        _pathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification.WithIgnoredFileNameParts([
             "packages.lock.json",
             "config.user"
-        });
+        ]);
 
-        string? artifacts = buildVariables.Require(WellKnownVariables.Artifacts).GetValueOrThrow();
+        string artifacts = buildVariables.Require(WellKnownVariables.Artifacts).GetValueOrThrow();
         var packagesDirectory = new DirectoryEntry(fileSystem, UPath.Combine(artifacts.ParseAsPath(), "packages"));
 
         DirectoryEntry vcsRootDir = buildContext.SourceRoot;
 
-        var runtimeIdentifier = buildVariables.GetVariableValueOrDefault(WellKnownVariables.PublishRuntimeIdentifier, string.Empty);
+        string? runtimeIdentifier = buildVariables.GetVariableValueOrDefault(WellKnownVariables.PublishRuntimeIdentifier, string.Empty);
 
         NuGetPackageConfiguration? packageConfiguration =
             nuGetPackager.GetNuGetPackageConfiguration(logger, buildVariables, packagesDirectory, vcsRootDir, "", runtimeIdentifier);
@@ -105,7 +104,7 @@ public class NuGetPacker(NuGetPackager nuGetPackager, IFileSystem fileSystem, Bu
         DirectoryEntry packageDirectory)
     {
         var packageSpecifications =
-            vcsRootDir.GetFilesRecursive(new List<string> { ".nuspec" }, _pathLookupSpecification, vcsRootDir)
+            vcsRootDir.GetFilesRecursive([".nuspec"], _pathLookupSpecification, vcsRootDir)
                 .Where(file => file.FullName.IndexOf(packageDirectory.FullName, StringComparison.Ordinal) < 0)
                 .ToList();
 

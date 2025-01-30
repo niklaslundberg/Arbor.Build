@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.Tools.Testing;
@@ -25,11 +24,11 @@ public class when_getting_variables
             WellKnownVariables.ExternalTools_VisualStudio_Version_Allow_PreRelease,
             "true");
 
-        enumerable = provider.GetBuildVariablesAsync(
+        enumerable = [.. provider.GetBuildVariablesAsync(
                 Logger.None,
-                new List<IVariable> { environmentVariable },
+                [environmentVariable],
                 CancellationToken.None)
-            .Result.ToList();
+            .Result];
     };
 
     It should_return_a_list_of_visual_studio_versions = () => enumerable.ShouldNotBeNull();

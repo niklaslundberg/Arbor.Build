@@ -27,7 +27,6 @@ public class IOExtensionsTests
 
     public static IEnumerable<string> GetPaths()
     {
-
         var data = new List<string>
         {
             "/mnt/c/temp/afile.txt",
@@ -46,12 +45,10 @@ public class IOExtensionsTests
 
     public static IEnumerable<object[]> GetPathData()
     {
-
         foreach (string path in GetPaths())
         {
             yield return [path];
         }
-
     }
 
     [MemberData(nameof(GetFileSystems))]
@@ -95,5 +92,4 @@ public class IOExtensionsTests
 
         file.DeleteIfExists().ShouldBeTrue();
     }
-
 }

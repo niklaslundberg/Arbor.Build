@@ -42,7 +42,7 @@ public class SolutionBuilder(
     private readonly List<string> _knownPlatforms = ["x86", "x64", "Any CPU"];
 
     private readonly PathLookupSpecification _pathLookupSpecification =
-        DefaultPaths.DefaultPathLookupSpecification.AddExcludedDirectorySegments(new[] { "node_modules" });
+        DefaultPaths.DefaultPathLookupSpecification.AddExcludedDirectorySegments(["node_modules"]);
 
     private readonly List<string> _platforms = [];
 
@@ -186,10 +186,11 @@ public class SolutionBuilder(
             buildVariables.GetBooleanByKey(
                 WellKnownVariables.CleanBinXmlFilesForAssembliesEnabled);
 
-        _excludedPlatforms = buildVariables
-            .GetVariableValueOrDefault(WellKnownVariables.MSBuildExcludedPlatforms, string.Empty)!
-            .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-            .ToImmutableArray();
+        _excludedPlatforms = [
+            ..buildVariables
+                .GetVariableValueOrDefault(WellKnownVariables.MSBuildExcludedPlatforms, string.Empty)!
+                .Split([','], StringSplitOptions.RemoveEmptyEntries)
+        ];
 
         _cleanWebJobsXmlFilesForAssembliesEnabled =
             buildVariables.GetBooleanByKey(
@@ -438,7 +439,7 @@ public class SolutionBuilder(
 
         foreach (var solutionPlatform in solutionPlatforms)
         {
-            string[] platforms = solutionPlatform.Value.ToArray();
+            string[] platforms = [.. solutionPlatform.Value];
 
             foreach (string platform in platforms)
             {
@@ -586,7 +587,6 @@ public class SolutionBuilder(
             }
         }
     }
-
 
     private async Task<ExitCode> BuildSolutionForPlatformAsync(
         FileEntry solutionFile,
@@ -846,7 +846,6 @@ public class SolutionBuilder(
         {
             logger.Error("Skipping dotnet publish exe projects because solution build failed");
         }
-
 
         if (exitCode.IsSuccess)
         {
@@ -1127,7 +1126,6 @@ public class SolutionBuilder(
             }
         }
 
-
         return ExitCode.Success;
     }
 
@@ -1283,7 +1281,7 @@ public class SolutionBuilder(
         {
             PathLookupSpecification defaultPathLookupSpecification = DefaultPaths.DefaultPathLookupSpecification;
             IEnumerable<string> ignoredDirectorySegments =
-                defaultPathLookupSpecification.IgnoredDirectorySegments.Except(new[] { "bin" });
+                defaultPathLookupSpecification.IgnoredDirectorySegments.Except(["bin"]);
 
             var pathLookupSpecification = new PathLookupSpecification(
                 ignoredDirectorySegments,
@@ -1292,7 +1290,7 @@ public class SolutionBuilder(
                 defaultPathLookupSpecification.IgnoredDirectoryStartsWithPatterns);
 
             IReadOnlyCollection<FileEntry> files = _vcsRoot.GetFilesRecursive(
-                    new[] { ".pdb", ".dll" },
+                    [".pdb", ".dll"],
                     pathLookupSpecification,
                     _vcsRoot)
                 .OrderBy(file => file.FullName)
@@ -1638,7 +1636,7 @@ public class SolutionBuilder(
 
         var configurationItems = new ConfigurationItems(
             "1.0",
-            items.Select(i => new KeyValue(i.Key, i.Value, i.ConfigurationMetadata)).ToImmutableArray());
+            [..items.Select(i => new KeyValue(i.Key, i.Value, i.ConfigurationMetadata))]);
         string serialize = JsonConfigurationSerializer.Serialize(configurationItems);
 
         UPath applicationMetadataJsonFilePath;
