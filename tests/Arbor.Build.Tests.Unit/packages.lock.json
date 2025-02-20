@@ -275,15 +275,15 @@
       },
       "MSTest.Analyzers": {
         "type": "Transitive",
-        "resolved": "3.8.0",
-        "contentHash": "AsA4zzPU2GFW3pMn0bY1/vXhrbRXNzltAU8EhqEit172XU3zazihr5bBPqb5IKVWTlvEIkMCDUoqJKs/IprQZQ=="
+        "resolved": "3.8.2",
+        "contentHash": "ODWteXvnMEgCoZl1vAi2lOFIFFJSZkyQoQB9AFwBEUrzgJpy5J4ml3jLye4n85TA7gd+Qg2eWtqkvyEunB7B0g=="
       },
       "MSTest.TestFramework": {
         "type": "Transitive",
-        "resolved": "3.8.0",
-        "contentHash": "m8M90qrXK3a48+qfe9mgMGls34nqT44pjMy8nIowJa08fYVuCvAfwm416GGpf68AnxGeXCPdeYk2w+yRpCZ5cQ==",
+        "resolved": "3.8.2",
+        "contentHash": "GE6TAA3yC6rYFZcUY7NprA4muVKtTCgoPwFPLu+Q0XgNjcIBa7C1O+hGT23mWwyiAyzVOH6G33pHsJS8mI2hqA==",
         "dependencies": {
-          "MSTest.Analyzers": "3.8.0"
+          "MSTest.Analyzers": "3.8.2"
         }
       },
       "Newtonsoft.Json": {
@@ -843,7 +843,7 @@
           "Arbor.Tooler": "[1.1.0, )",
           "Autofac": "[8.2.0, )",
           "JetBrains.Annotations": "[2024.3.0, )",
-          "MSTest.TestFramework": "[3.8.0, )",
+          "MSTest.TestFramework": "[3.8.2, )",
           "Microsoft.Web.Xdt": "[3.1.0, )",
           "Microsoft.Windows.Compatibility": "[9.0.2, )",
           "NUnit": "[4.3.2, )",
