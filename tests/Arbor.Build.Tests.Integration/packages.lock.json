@@ -543,8 +543,8 @@
       },
       "NuGet.Versioning": {
         "type": "Transitive",
-        "resolved": "6.12.1",
-        "contentHash": "fJ6rFYANDnohFsdpaY79FvrJxI6murmoOxXz6nZlf819F48+IBKMnAIg3oIBRtZq5y498ObMtKnro5IitvizUg=="
+        "resolved": "6.13.2",
+        "contentHash": "pGYNyvCVM+Z9jITTiJiuxFC8oJXFdh2k25ZDV4tSAOSuKyAWvh1VcfJy0WZGWdI6J7Avkbl0qra7XENYFSy4Ng=="
       },
       "NUnit": {
         "type": "Transitive",
@@ -1910,7 +1910,7 @@
           "Newtonsoft.Json": "[13.0.3, )",
           "NuGet.Packaging": "[6.12.1, )",
           "NuGet.Protocol": "[6.12.1, )",
-          "NuGet.Versioning": "[6.12.1, )",
+          "NuGet.Versioning": "[6.13.2, )",
           "Serilog": "[4.2.0, )",
           "Serilog.Sinks.Console": "[6.0.0, )",
           "Serilog.Sinks.Seq": "[9.0.0, )",
