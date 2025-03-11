@@ -22,9 +22,9 @@
       },
       "Machine.Specifications": {
         "type": "Direct",
-        "requested": "[1.1.2, )",
-        "resolved": "1.1.2",
-        "contentHash": "tNAa6YHJ9vyN8veOYLMbda15lvnDBBj/eh79Wi8Oy4ihDTShYu9kPcJw1M59KZRdV7QfhN9aVlmKSbnZkWLmWQ==",
+        "requested": "[1.1.3, )",
+        "resolved": "1.1.3",
+        "contentHash": "m2rn8iZUwf5AF6WJgqkWOuvZ52HfvXyw3QLN/rNyWAOyjGgeGhNdsNbwnm9QanD68KpUeijtGkRQn+d07J4xLQ==",
         "dependencies": {
           "NETStandard.Library": "1.6.0",
           "System.Diagnostics.TextWriterTraceListener": "4.0.0",
