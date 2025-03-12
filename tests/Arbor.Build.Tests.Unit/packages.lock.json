@@ -36,9 +36,9 @@
       },
       "System.Collections.Immutable": {
         "type": "Direct",
-        "requested": "[9.0.2, )",
-        "resolved": "9.0.2",
-        "contentHash": "QKh9+kczG7TQbQZ6tF2S6bK9B8ewHXEkYmMP2iqefzwJEfEkiflheAX6VEaPLJ6Tq9RoKuQ5R3qPYla6wJ6Opg=="
+        "requested": "[9.0.3, )",
+        "resolved": "9.0.3",
+        "contentHash": "CfYi30Pbpw9aGpXVLcoGt+yM0egrE8M1DUOOwdAWOAQ2QZkXkSgjonqZYvtKdxUF1XJaLCp0OdTXueeAeUHSlQ=="
       },
       "xunit": {
         "type": "Direct",
@@ -854,7 +854,7 @@
           "Serilog": "[4.2.0, )",
           "Serilog.Sinks.Console": "[6.0.0, )",
           "Serilog.Sinks.Seq": "[9.0.0, )",
-          "System.Collections.Immutable": "[9.0.2, )",
+          "System.Collections.Immutable": "[9.0.3, )",
           "xunit": "[2.9.3, )"
         }
       }
