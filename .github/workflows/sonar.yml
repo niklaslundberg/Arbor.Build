@@ -29,14 +29,14 @@ jobs:
         cache: true
         cache-dependency-path: tests/Arbor.Build.Tests.Integration
     - name: Cache SonarCloud packages
-      uses: actions/cache@v1
+      uses: actions/cache@v4
       with:
         path: ~\sonar\cache
         key: ${{ runner.os }}-sonar
         restore-keys: ${{ runner.os }}-sonar
     - name: Cache SonarCloud scanner
       id: cache-sonar-scanner
-      uses: actions/cache@v1
+      uses: actions/cache@v4
       with:
         path: .\.sonar\scanner
         key: ${{ runner.os }}-sonar-scanner
