@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Text;
+using System.Threading.Tasks;
 using Arbor.Build.Core.Tools.MSBuild;
 using Arbor.FS;
 using Shouldly;
@@ -24,7 +25,7 @@ public class MsBuildProjectTests
                                                <TargetFramework>netstandard2.0</TargetFramework>
                                              </PropertyGroup>
                                            </Project>
-                                           """);
+                                           """, Encoding.UTF8, cancellationToken: TestContext.Current.CancellationToken);
         }
 
         var file = new FileEntry(fileSystem, path);
@@ -49,7 +50,7 @@ public class MsBuildProjectTests
                                                <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
                                              </PropertyGroup>
                                            </Project>
-                                           """);
+                                           """, Encoding.UTF8, cancellationToken: TestContext.Current.CancellationToken);
         }
 
         var file = new FileEntry(fileSystem, path);
@@ -75,7 +76,7 @@ public class MsBuildProjectTests
 
                                              </PropertyGroup>
                                            </Project>
-                                           """);
+                                           """, Encoding.UTF8, cancellationToken: TestContext.Current.CancellationToken);
         }
 
         var file = new FileEntry(fileSystem, path);
@@ -101,7 +102,7 @@ public class MsBuildProjectTests
                                                <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
                                              </PropertyGroup>
                                            </Project>
-                                           """);
+                                           """, Encoding.UTF8, cancellationToken: TestContext.Current.CancellationToken);
         }
 
         var file = new FileEntry(fileSystem, path);
@@ -116,16 +117,17 @@ public class MsBuildProjectTests
     [Fact]
     public void EqualsShouldReturnTrueForSameString()
     {
-        var a= new TargetFramework("netstandard2.0");
-        var b= new TargetFramework("netstandard2.0");
+        var a = new TargetFramework("netstandard2.0");
+        var b = new TargetFramework("netstandard2.0");
 
         a.Equals(b).ShouldBeTrue();
-    }[Fact]
+    }
+    [Fact]
 
     public void EqualsOperatorShouldReturnTrueForSameString()
     {
-        var a= new TargetFramework("netstandard2.0");
-        var b= new TargetFramework("netstandard2.0");
+        var a = new TargetFramework("netstandard2.0");
+        var b = new TargetFramework("netstandard2.0");
 
         (a == b).ShouldBeTrue();
     }
@@ -133,8 +135,8 @@ public class MsBuildProjectTests
     [Fact]
     public void EqualsShouldNotReturnTrueForDifferentString()
     {
-        var a= new TargetFramework("netstandard2.0");
-        var b= new TargetFramework("netstandard2.1");
+        var a = new TargetFramework("netstandard2.0");
+        var b = new TargetFramework("netstandard2.1");
 
         a.Equals(b).ShouldBeFalse();
     }

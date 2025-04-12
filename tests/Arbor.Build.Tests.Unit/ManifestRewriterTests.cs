@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using Arbor.Build.Core.Tools.NuGet;
 using Arbor.FS;
@@ -109,7 +110,7 @@ public class ManifestRewriterTests
                 tempFile.Directory.EnsureExists();
 
                 await using var stream = tempFile.Open(FileMode.Create, FileAccess.Write);
-                await stream.WriteAllTextAsync(NuSpecNoTags);
+                await stream.WriteAllTextAsync(NuSpecNoTags, Encoding.UTF8, cancellationToken: TestContext.Current.CancellationToken);
 
                 var manifestReWriter = new ManifestReWriter(fileSystem);
 
@@ -134,7 +135,7 @@ public class ManifestRewriterTests
 
         await using (var stream = fileEntry.Open(FileMode.Create, FileAccess.Write))
         {
-            await stream.WriteAllTextAsync(NuSpecNoSourceTags);
+            await stream.WriteAllTextAsync(NuSpecNoSourceTags, Encoding.UTF8, cancellationToken: TestContext.Current.CancellationToken);
         }
 
         var manifestReWriter = new ManifestReWriter(fileSystem);

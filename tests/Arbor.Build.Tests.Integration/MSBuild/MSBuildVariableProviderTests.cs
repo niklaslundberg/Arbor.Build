@@ -7,7 +7,6 @@ using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.MSBuild;
 using Serilog.Core;
 using Xunit;
-using Xunit.Abstractions;
 using Zio.FileSystems;
 
 namespace Arbor.Build.Tests.Integration.MSBuild;

@@ -15,7 +15,6 @@ using Arbor.FS;
 using Serilog;
 using Serilog.Events;
 using Xunit;
-using Xunit.Abstractions;
 using Zio;
 using Zio.FileSystems;
 using Assert = Xunit.Assert;
@@ -57,7 +56,7 @@ public sealed class TestSamples(ITestOutputHelper testOutputHelper) : IDisposabl
 
         environmentVariables.SetEnvironmentVariable("AllowDebug", "false");
 
-        await using var xunitLogger = testOutputHelper.CreateTestLogger();
+        //await using var xunitLogger = testOutputHelper.CreateTestLogger();
 
         var expectedFiles = await GetExpectedFiles(sampleDirectory);
 
@@ -84,7 +83,7 @@ public sealed class TestSamples(ITestOutputHelper testOutputHelper) : IDisposabl
             .CreateLogger();
 
         await using var logger = new LoggerConfiguration()
-            .WriteTo.Logger(xunitLogger)
+            //.WriteTo.Logger(xunitLogger)
             .WriteTo.File(_fs.ConvertPathToInternal(logFile.Path))
             .MinimumLevel.Verbose()
             .WriteTo.Logger(conditionalLogger)

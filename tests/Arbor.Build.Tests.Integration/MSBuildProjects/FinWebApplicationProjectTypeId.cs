@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Arbor.Build.Core.Tools.MSBuild;
 using Arbor.FS;
 using Xunit;
-using Xunit.Abstractions;
 using Zio;
 using Zio.FileSystems;
 
@@ -53,8 +52,8 @@ public class FinWebApplicationProjectTypeId(ITestOutputHelper output)
         try
         {
             tempFile = fs.GetFileEntry(Path.GetTempFileName().ParseAsPath());
-            var stream = tempFile.Open(FileMode.Open, FileAccess.Write);
-            await stream.WriteAllTextAsync(xml, Encoding.UTF8);
+            await using var stream = tempFile.Open(FileMode.Open, FileAccess.Write);
+            await stream.WriteAllTextAsync(xml, Encoding.UTF8, cancellationToken: TestContext.Current.CancellationToken);
 
             var msBuildProject = await MsBuildProject.LoadFrom(tempFile);
 
