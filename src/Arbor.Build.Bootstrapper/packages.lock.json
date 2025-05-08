@@ -139,8 +139,8 @@
       },
       "Autofac": {
         "type": "Transitive",
-        "resolved": "8.2.1",
-        "contentHash": "q5xYBykgdvBlcmrXzHcDWcfeVktGEraluypkC0IRTupfxk+r+z+JcXgKj5kldKGe1fflyW3Ya3y9Soe9J2CqEA==",
+        "resolved": "8.3.0",
+        "contentHash": "0Bv8aSKuK4nQAiDKw3+pIv9hUhbPwS63ql9KhjR6DRgE14UNdXrMqO8YMI0PnffZPyCrMs85lNhZRI4eBgQO4w==",
         "dependencies": {
           "System.Diagnostics.DiagnosticSource": "8.0.1"
         }
@@ -811,7 +811,7 @@
           "Arbor.Processing": "[0.6.0, )",
           "Arbor.Sorbus": "[4.0.0, )",
           "Arbor.Tooler": "[1.1.0, )",
-          "Autofac": "[8.2.1, )",
+          "Autofac": "[8.3.0, )",
           "JetBrains.Annotations": "[2024.3.0, )",
           "MSTest.TestFramework": "[3.8.3, )",
           "Microsoft.Web.Xdt": "[3.1.0, )",
@@ -964,8 +964,8 @@
       },
       "Autofac": {
         "type": "Transitive",
-        "resolved": "8.2.1",
-        "contentHash": "q5xYBykgdvBlcmrXzHcDWcfeVktGEraluypkC0IRTupfxk+r+z+JcXgKj5kldKGe1fflyW3Ya3y9Soe9J2CqEA==",
+        "resolved": "8.3.0",
+        "contentHash": "0Bv8aSKuK4nQAiDKw3+pIv9hUhbPwS63ql9KhjR6DRgE14UNdXrMqO8YMI0PnffZPyCrMs85lNhZRI4eBgQO4w==",
         "dependencies": {
           "System.Diagnostics.DiagnosticSource": "8.0.1"
         }
@@ -1622,7 +1622,7 @@
           "Arbor.Processing": "[0.6.0, )",
           "Arbor.Sorbus": "[4.0.0, )",
           "Arbor.Tooler": "[1.1.0, )",
-          "Autofac": "[8.2.1, )",
+          "Autofac": "[8.3.0, )",
           "JetBrains.Annotations": "[2024.3.0, )",
           "MSTest.TestFramework": "[3.8.3, )",
           "Microsoft.Web.Xdt": "[3.1.0, )",
