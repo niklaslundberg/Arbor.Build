@@ -16,7 +16,7 @@ public class SolutionProjectExtensionsTests
         using var fs = new PhysicalFileSystem();
         var projectFileFullName = fs.GetFileEntry(UPath.Combine(VcsTestPathHelper.FindVcsRootPath().Path, "tests",
             "Arbor.Build.Tests.Integration", "Arbor.Build.Tests.Integration.csproj"));
-        var msbuildProject = await MsBuildProject.LoadFrom(projectFileFullName);
+        var msbuildProject = await MsBuildProject.LoadFrom(projectFileFullName, TestContext.Current.CancellationToken);
 
         var solutionFile = fs.GetFileEntry(UPath.Combine(projectFileFullName.Parent!.Parent!.Parent!.Path, "Arbor.Build.sln"));
 

@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Arbor.FS;
+using Microsoft.VisualStudio.SolutionPersistence.Model;
+using Microsoft.VisualStudio.SolutionPersistence.Serializer;
 using Zio;
 
 namespace Arbor.Build.Core.Tools.MSBuild;
@@ -19,28 +22,67 @@ internal class Solution(FileEntry fullPath, ImmutableArray<SolutionProject> proj
 
     public ImmutableArray<SolutionProject> Projects { get; } = projects;
 
-    public static async Task<Solution> LoadFrom(FileEntry solutionFileFullName)
+    public static async Task<Solution> LoadFrom(FileEntry solutionFileFullName, CancellationToken cancellationToken = default) =>
+        solutionFileFullName.Path.GetExtensionWithDot()?.Equals(".slnx") == true
+            ? await LoadFromSlnx(solutionFileFullName, cancellationToken)
+            : await LoadFromSln(solutionFileFullName, cancellationToken);
+
+    private static async Task<Solution> LoadFromSlnx(FileEntry solutionFileFullName, CancellationToken cancellationToken)
+    {
+        await using var stream = solutionFileFullName.Open(FileMode.Open, FileAccess.Read);
+        var solution = await SolutionSerializers.SlnXml.OpenAsync(stream, cancellationToken);
+
+        var solutionProjects = new List<SolutionProject>();
+
+        foreach (var project in solution.SolutionProjects)
+        {
+            solutionProjects.Add(await GetFromProject(project, solutionFileFullName));
+        }
+
+        return new Solution(solutionFileFullName, [.. solutionProjects]);
+    }
+
+    private static async Task<SolutionProject> GetFromProject(SolutionProjectModel projectModel, FileEntry solutionFileFullName)
+    {
+        var fullPath = solutionFileFullName.Directory.Path / projectModel.FilePath;
+
+        var projectFile = solutionFileFullName.FileSystem.GetFileEntry(fullPath);
+
+        MsBuildProject msBuildProject = await MsBuildProject.LoadFrom(projectFile);
+
+        NetFrameworkGeneration netFrameworkGeneration = await MsBuildProject.IsNetSdkProject(projectFile)
+            ? NetFrameworkGeneration.NetCoreApp
+            : NetFrameworkGeneration.NetFramework;
+
+        return new SolutionProject(projectFile,
+            msBuildProject.ProjectName,
+            msBuildProject.ProjectDirectory,
+            msBuildProject,
+            netFrameworkGeneration);
+    }
+
+    private static async Task<Solution> LoadFromSln(FileEntry solutionFileFullName, CancellationToken cancellationToken)
     {
         var stream = solutionFileFullName.Open(FileMode.Open, FileAccess.Read);
 
-        var lines = await stream.ReadAllLinesAsync();
+        var lines = await stream.ReadAllLinesAsync(cancellationToken: cancellationToken);
 
         var projects = new List<SolutionProject>();
 
         foreach (string line in lines)
         {
-            var project = await GetProject(line, solutionFileFullName);
+            var project = await GetProjectInSln(line, solutionFileFullName, cancellationToken);
 
-            if (project is {})
+            if (project is { })
             {
                 projects.Add(project);
             }
         }
 
-        return new Solution(solutionFileFullName, [..projects]);
+        return new Solution(solutionFileFullName, [.. projects]);
     }
 
-    private static async Task<SolutionProject?> GetProject(string line, FileEntry fileEntry)
+    private static async Task<SolutionProject?> GetProjectInSln(string line, FileEntry fileEntry, CancellationToken cancellationToken)
     {
         //Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NCinema.Web.IisHost", "NCinema.Web.IisHost\NCinema.Web.IisHost.csproj", "{04854B5C-247C-4F59-834D-9ACF5048F29C}"
 
@@ -81,7 +123,7 @@ internal class Solution(FileEntry fullPath, ImmutableArray<SolutionProject> proj
         var projectFullPath = UPath.Combine(fileEntry.Directory.Path, projectFile);
 
         var projectFileFullName = fileEntry.FileSystem.GetFileEntry(projectFullPath);
-        MsBuildProject msBuildProject = await MsBuildProject.LoadFrom(projectFileFullName);
+        MsBuildProject msBuildProject = await MsBuildProject.LoadFrom(projectFileFullName, cancellationToken);
 
         NetFrameworkGeneration netFrameworkGeneration = await MsBuildProject.IsNetSdkProject(projectFileFullName)
             ? NetFrameworkGeneration.NetCoreApp

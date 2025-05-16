@@ -19,6 +19,7 @@ using Arbor.KVConfiguration.Core.Metadata;
 using Arbor.KVConfiguration.Schema.Json;
 using Arbor.Processing;
 using JetBrains.Annotations;
+using Microsoft.VisualStudio.SolutionPersistence.Serializer;
 using Microsoft.Web.XmlTransform;
 using Serilog;
 using Serilog.Core;
@@ -53,7 +54,7 @@ public class SolutionBuilder(
     private bool _applicationMetadataEnabled;
     private bool _applicationMetadataGitBranchEnabled;
     private bool _applicationMetadataGitHashEnabled;
-    private MsBuildArgHelper _argHelper = default!;
+    private MsBuildArgHelper _argHelper = null!;
 
     private DirectoryEntry _artifactsPath = null!;
     private string _assemblyFileVersion = null!;
@@ -479,7 +480,7 @@ public class SolutionBuilder(
         return ExitCode.Success;
     }
 
-    private async Task<List<string>> GetSolutionPlatformsAsync(FileEntry solutionFile)
+    private async Task<IList<string>> GetSolutionPlatformsAsync(FileEntry solutionFile)
     {
         var platforms = new List<string>();
 
@@ -529,12 +530,23 @@ public class SolutionBuilder(
 
         foreach (FileEntry solutionFile in solutionFiles)
         {
-            List<string> platforms = await GetSolutionPlatformsAsync(solutionFile);
+            IList<string> platforms =
+                solutionFile.ExtensionWithDot?.Equals(".slnx") == true
+                    ? await GetSolutionPlatformsForSlnx(solutionFile)
+                : await GetSolutionPlatformsAsync(solutionFile);
 
             solutionPlatforms.Add(solutionFile, platforms);
         }
 
         return solutionPlatforms;
+    }
+
+    private async Task<IList<string>> GetSolutionPlatformsForSlnx(FileEntry solutionFile)
+    {
+        await using var stream = solutionFile.Open(FileMode.Open, FileAccess.Read);
+        var solution = await SolutionSerializers.SlnXml.OpenAsync(stream, _cancellationToken);
+
+        return solution.Platforms.ToList();
     }
 
     private void LogNoSolutionFilesFound(ILogger logger)
@@ -962,7 +974,7 @@ public class SolutionBuilder(
             return ExitCode.Success;
         }
 
-        Solution solution = await Solution.LoadFrom(solutionFile);
+        Solution solution = await Solution.LoadFrom(solutionFile, _cancellationToken);
 
         var publishProjects = solution.Projects
             .Where(project => project.PublishEnabled())
@@ -1162,7 +1174,7 @@ public class SolutionBuilder(
                    && project.Project.HasPropertyWithValue("PackAsTool", "true");
         }
 
-        Solution solution = await Solution.LoadFrom(solutionFile);
+        Solution solution = await Solution.LoadFrom(solutionFile, _cancellationToken);
 
         var exeProjects = solution.Projects.Where(IsPackageProject).ToImmutableArray();
 
@@ -1403,7 +1415,7 @@ public class SolutionBuilder(
         string platform,
         ILogger logger)
     {
-        Solution solution = await Solution.LoadFrom(solutionFile);
+        Solution solution = await Solution.LoadFrom(solutionFile, _cancellationToken);
 
         var webProjects = solution.Projects
             .Where(project => project.Project.ProjectTypes.Any(type => type == ProjectType.Mvc5))
@@ -1636,7 +1648,7 @@ public class SolutionBuilder(
 
         var configurationItems = new ConfigurationItems(
             "1.0",
-            [..items.Select(i => new KeyValue(i.Key, i.Value, i.ConfigurationMetadata))]);
+            [.. items.Select(i => new KeyValue(i.Key, i.Value, i.ConfigurationMetadata))]);
         string serialize = JsonConfigurationSerializer.Serialize(configurationItems);
 
         UPath applicationMetadataJsonFilePath;
@@ -2558,7 +2570,9 @@ public class SolutionBuilder(
             return [];
         }
 
-        var solutionFiles = directoryEntry.EnumerateFiles("*.sln").ToList();
+        var solutionFiles = directoryEntry.EnumerateFiles()
+            .Where(file => MsBuildConstants.SolutionFileSearchPattern.Any(pattern => pattern.Equals(file.Path.GetExtensionWithDot())))
+            .ToList();
 
         foreach (var subDir in directoryEntry.EnumerateDirectories())
         {

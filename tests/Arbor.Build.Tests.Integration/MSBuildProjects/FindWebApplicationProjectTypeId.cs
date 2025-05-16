@@ -10,7 +10,7 @@ using Zio.FileSystems;
 
 namespace Arbor.Build.Tests.Integration.MSBuildProjects;
 
-public class FinWebApplicationProjectTypeId(ITestOutputHelper output)
+public class FindWebApplicationProjectTypeId(ITestOutputHelper output)
 {
     [Fact]
     public async Task ParseWebApplicationCsProjFile()
@@ -55,7 +55,7 @@ public class FinWebApplicationProjectTypeId(ITestOutputHelper output)
             await using var stream = tempFile.Open(FileMode.Open, FileAccess.Write);
             await stream.WriteAllTextAsync(xml, Encoding.UTF8, cancellationToken: TestContext.Current.CancellationToken);
 
-            var msBuildProject = await MsBuildProject.LoadFrom(tempFile);
+            var msBuildProject = await MsBuildProject.LoadFrom(tempFile, TestContext.Current.CancellationToken);
 
             output.WriteLine(msBuildProject.ToString());
 

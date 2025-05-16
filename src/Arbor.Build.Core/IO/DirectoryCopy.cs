@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Arbor.FS;
 using Arbor.Processing;
@@ -16,7 +17,8 @@ public static class DirectoryCopy
         DirectoryEntry targetDir,
         ILogger? optionalLogger = null,
         PathLookupSpecification? pathLookupSpecificationOption = null,
-        DirectoryEntry? rootDir = null)
+        DirectoryEntry? rootDir = null,
+        CancellationToken cancellationToken = default)
     {
         PathLookupSpecification pathLookupSpecification =
             pathLookupSpecificationOption ?? DefaultPaths.DefaultPathLookupSpecification;
@@ -26,7 +28,7 @@ public static class DirectoryCopy
         (bool, string) isNotAllowed = pathLookupSpecification.IsNotAllowed(sourceDirectory, rootDir);
         if (isNotAllowed.Item1)
         {
-            logger?.Debug(
+            logger.Debug(
                 "Directory '{SourceDir}' is not allowed from specification {PathLookupSpecification}, {Item2}",
                 sourceDirectory.ConvertPathToInternal(),
                 pathLookupSpecification,
@@ -79,11 +81,8 @@ public static class DirectoryCopy
 
         foreach (DirectoryEntry directory in sourceDirectory.EnumerateDirectories())
         {
-            ExitCode exitCode = await CopyAsync(
-                directory, new DirectoryEntry(sourceDirectory.FileSystem,
-                    UPath.Combine(targetDir.Path, directory.Name)),
-                pathLookupSpecificationOption: pathLookupSpecification,
-                rootDir: rootDir);
+            ExitCode exitCode = await CopyAsync(directory, new DirectoryEntry(sourceDirectory.FileSystem,
+                    UPath.Combine(targetDir.Path, directory.Name)), pathLookupSpecificationOption: pathLookupSpecification, rootDir: rootDir, cancellationToken: cancellationToken);
 
             if (!exitCode.IsSuccess)
             {

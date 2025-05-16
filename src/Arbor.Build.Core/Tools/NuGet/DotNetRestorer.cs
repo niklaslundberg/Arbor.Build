@@ -48,7 +48,8 @@ public class DotNetRestorer(IFileSystem fileSystem) : ITool
 
         var pathLookupSpecification = new PathLookupSpecification();
         FileEntry[] solutionFiles = rootPath
-            .EnumerateFiles("*.sln", SearchOption.AllDirectories)
+            .EnumerateFiles("*", SearchOption.AllDirectories)
+            .Where(file => MsBuildConstants.SolutionFileSearchPattern.Any(pattern => pattern.Equals(file.Path.GetExtensionWithDot())))
             .Where(file => !pathLookupSpecification.IsFileExcluded(file, rootPath).Item1)
             .ToArray();
 

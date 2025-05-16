@@ -63,7 +63,7 @@ public class AppBootstrapper(ILogger logger, IEnvironmentVariables environmentVa
         return exitCode;
     }
 
-    public async Task<ExitCode> StartAsync(BootstrapStartOptions? startOptions)
+    public async Task<ExitCode> StartAsync(BootstrapStartOptions? startOptions, CancellationToken cancellationToken = default)
     {
         _startOptions = startOptions ?? new BootstrapStartOptions([]);
 

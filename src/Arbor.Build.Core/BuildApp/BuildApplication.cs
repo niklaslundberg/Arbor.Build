@@ -144,7 +144,7 @@ public sealed class BuildApplication : IDisposable
     {
         IReadOnlyCollection<IVariable> buildVariables = await GetBuildVariablesAsync(sourceRoot);
 
-        if (buildVariables.GetBooleanByKey(WellKnownVariables.ShowAvailableVariablesEnabled, true))
+        if (buildVariables.GetBooleanByKey(WellKnownVariables.ShowAvailableVariablesEnabled))
         {
             string variableAsTable = WellKnownVariables.AllVariables
                 .OrderBy(item => item.InvariantName)

@@ -37,7 +37,8 @@ public class NuGetRestorer(IFileSystem fileSystem, BuildContext buildContext) : 
         var nugetExePath =
             buildVariables.GetVariable(WellKnownVariables.ExternalTools_NuGet_ExePath).GetValueOrThrow().ParseAsPath();
 
-        FileEntry[] solutionFiles = [.. buildContext.SourceRoot.GetFiles( "*.sln", SearchOption.AllDirectories)];
+        FileEntry[] solutionFiles = [.. buildContext.SourceRoot.GetFiles("*", SearchOption.AllDirectories)
+            .Where(file => MsBuildConstants.SolutionFileSearchPattern.Any(pattern => pattern.Equals(file.Path.GetExtensionWithDot())))];
 
         PathLookupSpecification pathLookupSpecification =
             DefaultPaths.DefaultPathLookupSpecification.AddExcludedDirectorySegments(["node_modules"]);
@@ -54,6 +55,12 @@ public class NuGetRestorer(IFileSystem fileSystem, BuildContext buildContext) : 
         var excluded = excludeListStatus
             .Where(file => file.Status.Item1)
             .ToArray();
+
+        if (included.Length == 1 && included[0].Path.GetExtensionWithDot() == ".slnx")
+        {
+            logger.Warning("NuGet restorer does not support .slnx files");
+            return ExitCode.Success;
+        }
 
         if (included.Length > 1)
         {

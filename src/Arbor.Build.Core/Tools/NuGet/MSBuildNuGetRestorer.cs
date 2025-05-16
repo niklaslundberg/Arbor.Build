@@ -59,7 +59,9 @@ public class MsBuildNuGetRestorer(IFileSystem fileSystem, BuildContext buildCont
 
         DirectoryEntry rootPath = buildContext.SourceRoot;
 
-        FileEntry[] solutionFiles = rootPath.EnumerateFiles("*.sln", SearchOption.AllDirectories).ToArray();
+        FileEntry[] solutionFiles = rootPath.EnumerateFiles("*", SearchOption.AllDirectories)
+            .Where(file => MsBuildConstants.SolutionFileSearchPattern.Any(pattern => pattern.Equals(file.Path.GetExtensionWithDot())))
+            .ToArray();
 
         PathLookupSpecification pathLookupSpecification =
             DefaultPaths.DefaultPathLookupSpecification.AddExcludedDirectorySegments(["node_modules"]);

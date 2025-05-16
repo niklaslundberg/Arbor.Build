@@ -30,7 +30,7 @@ public class MsBuildProjectTests
 
         var file = new FileEntry(fileSystem, path);
 
-        var msBuildProject = await MsBuildProject.LoadFrom(file);
+        var msBuildProject = await MsBuildProject.LoadFrom(file, TestContext.Current.CancellationToken);
 
         msBuildProject.TargetFramework.ShouldBe(TargetFramework.NetStandard2_0);
         msBuildProject.TargetFrameworks.ShouldHaveSingleItem();
@@ -47,7 +47,7 @@ public class MsBuildProjectTests
             await stream.WriteAllTextAsync("""
                                            <Project Sdk="Microsoft.NET.Sdk">
                                              <PropertyGroup>
-                                               <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
+                                               <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
                                              </PropertyGroup>
                                            </Project>
                                            """, Encoding.UTF8, cancellationToken: TestContext.Current.CancellationToken);
@@ -55,11 +55,11 @@ public class MsBuildProjectTests
 
         var file = new FileEntry(fileSystem, path);
 
-        var msBuildProject = await MsBuildProject.LoadFrom(file);
+        var msBuildProject = await MsBuildProject.LoadFrom(file, TestContext.Current.CancellationToken);
 
         msBuildProject.TargetFramework.ShouldBe(TargetFramework.Empty);
         msBuildProject.TargetFrameworks.ShouldContain(TargetFramework.NetStandard2_0);
-        msBuildProject.TargetFrameworks.ShouldContain(TargetFramework.Net6_0);
+        msBuildProject.TargetFrameworks.ShouldContain(TargetFramework.Net8_0);
     }
 
     [Fact]
@@ -81,7 +81,7 @@ public class MsBuildProjectTests
 
         var file = new FileEntry(fileSystem, path);
 
-        var msBuildProject = await MsBuildProject.LoadFrom(file);
+        var msBuildProject = await MsBuildProject.LoadFrom(file, TestContext.Current.CancellationToken);
 
         msBuildProject.TargetFramework.ShouldBe(TargetFramework.Empty);
         msBuildProject.TargetFrameworks.ShouldBeEmpty();
@@ -99,7 +99,7 @@ public class MsBuildProjectTests
                                            <Project Sdk="Microsoft.NET.Sdk">
                                              <PropertyGroup>
                                                <TargetFramework>netstandard2.0</TargetFramework>
-                                               <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
+                                               <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
                                              </PropertyGroup>
                                            </Project>
                                            """, Encoding.UTF8, cancellationToken: TestContext.Current.CancellationToken);
@@ -107,7 +107,7 @@ public class MsBuildProjectTests
 
         var file = new FileEntry(fileSystem, path);
 
-        var msBuildProject = await MsBuildProject.LoadFrom(file);
+        var msBuildProject = await MsBuildProject.LoadFrom(file, TestContext.Current.CancellationToken);
 
         msBuildProject.TargetFramework.ShouldBe(TargetFramework.Empty);
         msBuildProject.TargetFrameworks.ShouldNotBeEmpty();

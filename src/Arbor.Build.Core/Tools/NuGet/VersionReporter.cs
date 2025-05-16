@@ -17,9 +17,9 @@ namespace Arbor.Build.Core.Tools.NuGet;
 
 [Priority(820)]
 [UsedImplicitly]
-public class VersionReporter(ILogger logger, IFileSystem fileSystem) : ITool
+public class VersionReporter(IFileSystem fileSystem) : ITool
 {
-    public Task<ExitCode> ExecuteAsync(ILogger logger1,
+    public Task<ExitCode> ExecuteAsync(ILogger logger,
         IReadOnlyCollection<IVariable> buildVariables,
         string[] args,
         CancellationToken cancellationToken)
@@ -32,7 +32,7 @@ public class VersionReporter(ILogger logger, IFileSystem fileSystem) : ITool
 
         if (!artifactPackagesDirectory.Exists)
         {
-            logger1.Warning("There is no packages folder, skipping standard package upload");
+            logger.Warning("There is no packages folder, skipping standard package upload");
         }
         else
         {
@@ -71,9 +71,13 @@ public class VersionReporter(ILogger logger, IFileSystem fileSystem) : ITool
                 logger.Verbose("Build is not running i TeamCity, skipping sending version message");
             }
         }
-        else
+        else if (versions.Count > 1)
         {
             logger.Debug("Found multiple NuGet package versions {Versions}, could not set nugetPackageVersion", versions);
+        }
+        else
+        {
+            logger.Debug("Found no NuGet package version, could not set nugetPackageVersion");
         }
 
         return Task.FromResult(ExitCode.Success);

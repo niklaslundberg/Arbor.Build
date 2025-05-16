@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Arbor.Build.Core.IO;
@@ -23,7 +24,7 @@ public class MsBuildProject
         ImmutableArray<PackageReferenceElement> packageReferences,
         ImmutableArray<TargetFramework> targetFrameworks)
     {
-        PropertyGroups = [..propertyGroups];
+        PropertyGroups = [.. propertyGroups];
         FileName = fileName;
         ProjectName = projectName;
         ProjectDirectory = projectDirectory;
@@ -54,7 +55,7 @@ public class MsBuildProject
     public TargetFramework TargetFramework { get; }
     public ImmutableArray<TargetFramework> TargetFrameworks { get; }
 
-    public static async Task<bool> IsNetSdkProject(FileEntry projectFile)
+    public static async Task<bool> IsNetSdkProject(FileEntry projectFile, CancellationToken cancellationToken = default)
     {
         if (projectFile.FullName.IndexOfAny(Path.GetInvalidPathChars()) >= 0)
         {
@@ -68,7 +69,7 @@ public class MsBuildProject
 
         var fs = projectFile.Open(FileMode.Open, FileAccess.Read);
 
-        await foreach (string line in fs.EnumerateLinesAsync())
+        await foreach (string line in fs.EnumerateLinesAsync().WithCancellation(cancellationToken))
         {
             return line.Contains("Microsoft.NET.Sdk", StringComparison.OrdinalIgnoreCase);
         }
@@ -76,18 +77,18 @@ public class MsBuildProject
         return false;
     }
 
-    public static async Task<MsBuildProject> LoadFrom(FileEntry projectFileFullName)
+    public static async Task<MsBuildProject> LoadFrom(FileEntry projectFileFullName, CancellationToken cancellationToken = default)
     {
-        using var fs = projectFileFullName.Open(FileMode.Open, FileAccess.Read);
+        await using var fs = projectFileFullName.Open(FileMode.Open, FileAccess.Read);
 
-        return await LoadFrom(fs, projectFileFullName);
+        return await LoadFrom(fs, projectFileFullName, cancellationToken);
     }
 
-    public static Task<MsBuildProject> LoadFrom(Stream fs, FileEntry projectFileFullName)
+    public static Task<MsBuildProject> LoadFrom(Stream fs, FileEntry projectFileFullName, CancellationToken cancellationToken = default)
     {
         var msbuildPropertyGroups = new List<MSBuildPropertyGroup>();
 
-        Guid? projectId = default;
+        Guid? projectId = null;
 
         var document = XDocument.Load(fs);
 
@@ -186,7 +187,7 @@ public class MsBuildProject
         }
         else
         {
-            targetFrameworks = [..new[]{new TargetFramework(targetFrameworkValue!) }];
+            targetFrameworks = [.. new[] { new TargetFramework(targetFrameworkValue!) }];
         }
 
         return Task.FromResult(new MsBuildProject(msbuildPropertyGroups,
@@ -199,7 +200,7 @@ public class MsBuildProject
             packageReferences, targetFrameworks));
     }
 
-    public override string ToString() => $"{FileName} {nameof(Properties)} [{PropertyGroups.SelectMany(g => g.Properties).Count()}]:{Environment.NewLine}{string.Join(Environment.NewLine, PropertyGroups.SelectMany(g => g.Properties).Select(p => "\t" + p.ToString()))}{Environment.NewLine}{nameof(FileName)}: {FileName}{Environment.NewLine}{nameof(ProjectName)}: {ProjectName}{Environment.NewLine}{nameof(ProjectDirectory)}: {ProjectDirectory}{nameof(ProjectTypes)}: {string.Join(", ", ProjectTypes.Select(t => t.ToString()))},{Environment.NewLine}{nameof(ProjectId)}: {ProjectId}{Environment.NewLine}{nameof(Sdk)}: {Sdk}{Environment.NewLine}{nameof(PackageReferences)} [{PackageReferences.Length}]:{Environment.NewLine} {string.Join(Environment.NewLine, PackageReferences.Select(r => r.ToString()))}";
+    public override string ToString() => $"{FileName} {nameof(Properties)} [{PropertyGroups.SelectMany(g => g.Properties).Count()}]:{Environment.NewLine}{string.Join(Environment.NewLine, PropertyGroups.SelectMany(g => g.Properties).Select(p => $"\t{p}"))}{Environment.NewLine}{nameof(FileName)}: {FileName}{Environment.NewLine}{nameof(ProjectName)}: {ProjectName}{Environment.NewLine}{nameof(ProjectDirectory)}: {ProjectDirectory}{nameof(ProjectTypes)}: {string.Join(", ", ProjectTypes.Select(t => t.ToString()))},{Environment.NewLine}{nameof(ProjectId)}: {ProjectId}{Environment.NewLine}{nameof(Sdk)}: {Sdk}{Environment.NewLine}{nameof(PackageReferences)} [{PackageReferences.Length}]:{Environment.NewLine} {string.Join(Environment.NewLine, PackageReferences.Select(r => r.ToString()))}";
 
     public bool HasPropertyWithValue(string name, string value, StringComparison stringComparison = StringComparison.Ordinal)
     {
