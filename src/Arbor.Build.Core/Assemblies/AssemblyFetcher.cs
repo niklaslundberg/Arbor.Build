@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 
@@ -7,7 +8,9 @@ namespace Arbor.Build.Core.Assemblies;
 
 public static class AssemblyFetcher
 {
-    public static Assembly[] GetFilteredAssemblies()
+    public static readonly ImmutableHashSet<Assembly> FilteredAssemblies = GetAssemblies().ToImmutableHashSet();
+
+    private static Assembly[] GetAssemblies()
     {
         var assemblies = new HashSet<Assembly>
         {

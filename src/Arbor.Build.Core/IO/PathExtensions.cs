@@ -68,6 +68,17 @@ public static class PathExtensions
         return (false, string.Empty);
     }
 
+    public static (bool, string) IsAllowed(
+        this PathLookupSpecification pathLookupSpecification,
+        DirectoryEntry sourceDir,
+        DirectoryEntry? rootDir = null,
+        ILogger? logger = null)
+    {
+        (bool notAllowed, string message) = IsNotAllowed(pathLookupSpecification, sourceDir, rootDir, logger);
+
+        return (!notAllowed, message);
+    }
+
     public static (bool, string) IsNotAllowed(
         this PathLookupSpecification pathLookupSpecification,
         DirectoryEntry sourceDir,
@@ -89,7 +100,8 @@ public static class PathExtensions
         bool hasAnyPathSegment = HasAnyPathSegment(
             sourceDirSegments,
             pathLookupSpecification.IgnoredDirectorySegments,
-            logger);
+            logger,
+            pathLookupSpecification.StringComparison);
 
         if (hasAnyPathSegment)
         {
@@ -100,7 +112,8 @@ public static class PathExtensions
 
         bool hasAnyPathSegmentPart = HasAnyPathSegmentPart(
             sourceDirSegments,
-            pathLookupSpecification.IgnoredDirectorySegmentParts);
+            pathLookupSpecification.IgnoredDirectorySegmentParts,
+            pathLookupSpecification.StringComparison);
 
         if (hasAnyPathSegmentPart)
         {
@@ -137,11 +150,12 @@ public static class PathExtensions
     private static bool HasAnyPathSegment(
         IEnumerable<string> segments,
         IEnumerable<string> patterns,
-        ILogger? logger = null) => segments.Any(segment => HasAnyPathSegment(segment, patterns, logger));
+        ILogger? logger = null,
+        StringComparison stringComparison = StringComparison.OrdinalIgnoreCase) => segments.Any(segment => HasAnyPathSegment(segment, patterns, logger, stringComparison));
 
-    private static bool HasAnyPathSegment(string segment, IEnumerable<string> patterns, ILogger? logger = null) => patterns.Any(pattern =>
+    private static bool HasAnyPathSegment(string segment, IEnumerable<string> patterns, ILogger? logger = null, StringComparison stringComparison = StringComparison.OrdinalIgnoreCase) => patterns.Any(pattern =>
     {
-        bool isMatch = segment.Equals(pattern, StringComparison.OrdinalIgnoreCase);
+        bool isMatch = segment.Equals(pattern, stringComparison);
 
         if (isMatch)
         {
@@ -155,7 +169,7 @@ public static class PathExtensions
 
     private static bool HasAnyPathSegmentStartsWith(string segment, IEnumerable<string> patterns) => patterns.Any(pattern => segment.StartsWith(pattern, StringComparison.OrdinalIgnoreCase));
 
-    private static bool HasAnyPathSegmentPart(IEnumerable<string> segments, IEnumerable<string> patterns) => segments.Any(segment => HasAnyPathSegmentPart(segment, patterns));
+    private static bool HasAnyPathSegmentPart(IEnumerable<string> segments, IEnumerable<string> patterns, StringComparison stringComparison) => segments.Any(segment => HasAnyPathSegmentPart(segment, patterns, stringComparison));
 
-    private static bool HasAnyPathSegmentPart(string segment, IEnumerable<string> patterns) => patterns.Any(pattern => segment.Contains(pattern, StringComparison.OrdinalIgnoreCase));
+    private static bool HasAnyPathSegmentPart(string segment, IEnumerable<string> patterns, StringComparison stringComparison) => patterns.Any(pattern => segment.Contains(pattern, stringComparison));
 }

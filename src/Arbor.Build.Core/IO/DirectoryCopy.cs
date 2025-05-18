@@ -25,14 +25,15 @@ public static class DirectoryCopy
 
         ILogger logger = optionalLogger ?? Logger.None;
 
-        (bool, string) isNotAllowed = pathLookupSpecification.IsNotAllowed(sourceDirectory, rootDir);
-        if (isNotAllowed.Item1)
+        (bool isNotAllowed, string message) = pathLookupSpecification.IsNotAllowed(sourceDirectory, rootDir);
+
+        if (isNotAllowed)
         {
             logger.Debug(
                 "Directory '{SourceDir}' is not allowed from specification {PathLookupSpecification}, {Item2}",
                 sourceDirectory.ConvertPathToInternal(),
                 pathLookupSpecification,
-                isNotAllowed.Item2);
+                message);
             return ExitCode.Success;
         }
 

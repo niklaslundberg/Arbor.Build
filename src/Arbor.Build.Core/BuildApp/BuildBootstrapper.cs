@@ -58,7 +58,7 @@ public static class BuildBootstrapper
 
     private static IModule[] GetModulesFromAssemblies()
     {
-        var assemblies = AssemblyFetcher.GetFilteredAssemblies();
+        var assemblies = AssemblyFetcher.FilteredAssemblies;
 
         return assemblies.SelectMany(assembly =>
                 assembly.GetLoadableTypes()

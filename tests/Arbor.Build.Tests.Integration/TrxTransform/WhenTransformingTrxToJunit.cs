@@ -37,7 +37,7 @@ public sealed class WhenTransformingTrxToJunit : IDisposable
 
             Assert.Equal(ExitCode.Success, exitCode);
         }
-        catch (Exception)
+        catch
         {
             //ignore when recursive
         }

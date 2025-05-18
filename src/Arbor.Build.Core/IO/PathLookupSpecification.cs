@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using Arbor.Build.Core.GenericExtensions;
+using Arbor.KVConfiguration.Core;
 
 namespace Arbor.Build.Core.IO;
 
@@ -9,8 +11,10 @@ public class PathLookupSpecification(
     IEnumerable<string>? ignoredFileStartsWithPatterns = null,
     IEnumerable<string>? ignoredDirectorySegmentParts = null,
     IEnumerable<string>? ignoredDirectoryStartsWithPatterns = null,
-    IEnumerable<string>? ignoredFileNameParts = null)
+    IEnumerable<string>? ignoredFileNameParts = null,
+    StringComparison stringComparison = StringComparison.OrdinalIgnoreCase)
 {
+    public StringComparison StringComparison { get; } = stringComparison;
     public ImmutableArray<string> IgnoredFileStartsWithPatterns { get; } = ignoredFileStartsWithPatterns.SafeToReadOnlyCollection();
 
     public ImmutableArray<string> IgnoredDirectoryStartsWithPatterns { get; } = ignoredDirectoryStartsWithPatterns.SafeToReadOnlyCollection();

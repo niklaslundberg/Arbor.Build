@@ -13,7 +13,7 @@ public class ToolsModule : Module
 {
     protected override void Load(ContainerBuilder builder)
     {
-        Assembly[] assemblies = [.. AssemblyFetcher.GetFilteredAssemblies()];
+        Assembly[] assemblies = [.. AssemblyFetcher.FilteredAssemblies];
 
         builder.RegisterAssemblyTypes(assemblies)
             .Where(type => type.IsConcretePublicClassImplementing<ITool>())
