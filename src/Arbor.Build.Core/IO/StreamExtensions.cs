@@ -7,7 +7,7 @@ namespace Arbor.Build.Core.IO;
 public static class StreamExtensions
 {
     public static async IAsyncEnumerable<string> EnumerateLinesAsync(this Stream stream,
-        Encoding? encoding = default,
+        Encoding? encoding = null,
         bool leaveOpen = false)
     {
         using var streamReader = new StreamReader(stream, encoding ?? Encoding.UTF8, leaveOpen);

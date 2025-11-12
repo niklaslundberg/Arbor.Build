@@ -996,7 +996,7 @@ public class SolutionBuilder(
 
             string packageVersion = NuGetVersionHelper.GetPackageVersion(options);
 
-            DirectoryEntry? tempDirectory = default;
+            DirectoryEntry? tempDirectory = null;
 
             try
             {

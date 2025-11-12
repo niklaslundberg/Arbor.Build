@@ -10,11 +10,9 @@ using Zio;
 
 namespace Arbor.Build.Core.Tools.NuGet;
 
-public class NuSpec
+public class NuSpec(string packageId, SemanticVersion nuGetPackageVersion, string xml)
 {
-    private readonly string _xml;
-
-    public NuSpec(string packageId, SemanticVersion nuGetPackageVersion, FileEntry filePath)
+    public static NuSpec Load(string packageId, SemanticVersion nuGetPackageVersion, FileEntry filePath)
     {
         ArgumentNullException.ThrowIfNull(filePath);
 
@@ -22,9 +20,6 @@ public class NuSpec
         {
             throw new ArgumentException($"The file '{filePath}' does not exist", nameof(filePath));
         }
-
-        Version = nuGetPackageVersion;
-        PackageId = packageId;
 
         using var nuspecStream = filePath.Open(FileMode.Open, FileAccess.Read);
         using TextReader reader = new StreamReader(nuspecStream, Encoding.UTF8);
@@ -40,46 +35,50 @@ public class NuSpec
         metaData.Descendants().Single(item => item.Name.LocalName == "version").Value =
             nuGetPackageVersion.ToNormalizedString();
 
-        _xml = xml.ToString(SaveOptions.None);
+        string xmlAsString = xml.ToString(SaveOptions.None);
+
+        return new NuSpec(packageId, nuGetPackageVersion, xmlAsString);
     }
 
-    public string PackageId { get; }
+    public string PackageId { get; } = packageId;
 
-    public SemanticVersion Version { get; }
+    public SemanticVersion Version { get; } = nuGetPackageVersion;
 
     public static NuSpec Parse(FileEntry nuspecFilePath)
     {
         string id;
-        string version;
+        SemanticVersion semanticVersion;
         using (var nuspecStream = nuspecFilePath.Open(FileMode.Open, FileAccess.Read))
         {
-            using TextReader reader = new StreamReader(nuspecStream, Encoding.UTF8);
-            var document = XDocument.Load(reader);
+            using (TextReader reader = new StreamReader(nuspecStream, Encoding.UTF8))
+            {
+                var document = XDocument.Load(reader);
 
-            var metaData = document.Descendants()
-                .Where(item => item.Name.LocalName == "package")
-                .Descendants()
-                .Where(item => item.Name.LocalName == "metadata")
-                .ToList();
+                var metaData = document.Descendants()
+                    .Where(item => item.Name.LocalName == "package")
+                    .Descendants()
+                    .Where(item => item.Name.LocalName == "metadata")
+                    .ToList();
 
-            id = metaData.Descendants().Single(item => item.Name.LocalName == "id").Value;
-            version = metaData.Descendants().Single(item => item.Name.LocalName == "version").Value;
+                id = metaData.Descendants().Single(item => item.Name.LocalName == "id").Value;
+                string version = metaData.Descendants().Single(item => item.Name.LocalName == "version").Value;
+
+                semanticVersion = SemanticVersion.Parse(version);
+            }
         }
 
-        var semanticVersion = SemanticVersion.Parse(version);
-
-        return new NuSpec(id, semanticVersion, nuspecFilePath);
+        return Load(id, semanticVersion, nuspecFilePath);
     }
 
     public override string ToString()
     {
-        if (!string.IsNullOrWhiteSpace(_xml))
+        if (!string.IsNullOrWhiteSpace(xml))
         {
-            return _xml;
+            return xml;
         }
 
         return base.ToString()!;
     }
 
-    public async Task Save(FileEntry filePath) => await filePath.FileSystem.WriteAllTextAsync(filePath.Path, _xml, Encoding.UTF8);
+    public async Task Save(FileEntry filePath) => await filePath.FileSystem.WriteAllTextAsync(filePath.Path, xml, Encoding.UTF8);
 }

@@ -17,7 +17,7 @@ public static class TypeExtensions
     {
         ArgumentNullException.ThrowIfNull(type);
 
-        bool isConcretePublicClassImplementing = type.IsClass && type.IsPublic && typeof(T).IsAssignableFrom(type);
+        bool isConcretePublicClassImplementing = type is { IsClass: true, IsPublic: true } && typeof(T).IsAssignableFrom(type);
 
         return isConcretePublicClassImplementing;
     }
@@ -29,7 +29,7 @@ public static class TypeExtensions
             throw new ArgumentNullException(nameof(fieldInfo));
         }
 
-        bool isPublicConstant = fieldInfo.IsLiteral && fieldInfo.IsPublic;
+        bool isPublicConstant = fieldInfo is { IsLiteral: true, IsPublic: true };
 
         return isPublicConstant;
     }
@@ -41,7 +41,7 @@ public static class TypeExtensions
             throw new ArgumentNullException(nameof(fieldInfo));
         }
 
-        bool isPublicConstant = fieldInfo.IsStatic && fieldInfo.IsPublic;
+        bool isPublicConstant = fieldInfo is { IsStatic: true, IsPublic: true };
 
         return isPublicConstant;
     }

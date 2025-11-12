@@ -106,7 +106,7 @@ public class NuGetPackager(
                     "NuGet package creation is not supported on 'master' branch. To force NuGet package creation, set environment variable '{NuGetCreatePackagesOnAnyBranchEnabled}' to value 'true'",
                     WellKnownVariables.NuGetCreatePackagesOnAnyBranchEnabled);
 
-                return default;
+                return null;
             }
         }
         else
@@ -219,7 +219,7 @@ public class NuGetPackager(
 
         // ReSharper restore AssignNullToNotNullAttribute
 
-        var nuSpecCopy = new NuSpec(packageId, packageConfiguration.Version, packageSpecificationPath);
+        var nuSpecCopy = NuSpec.Load(packageId, packageConfiguration.Version, packageSpecificationPath);
 
         var nuSpecTempDirectory = UPath.Combine(packageConfiguration.TempPath.Path, "nuspecs");
 

@@ -14,6 +14,7 @@ using Arbor.Build.Tests.Integration.Tests.MSpec;
 using Arbor.FS;
 using Serilog;
 using Serilog.Events;
+using Shouldly;
 using Xunit;
 using Zio;
 using Zio.FileSystems;
@@ -56,8 +57,6 @@ public sealed class TestSamples(ITestOutputHelper testOutputHelper) : IDisposabl
 
         environmentVariables.SetEnvironmentVariable("AllowDebug", "false");
 
-        //await using var xunitLogger = testOutputHelper.CreateTestLogger();
-
         var expectedFiles = await GetExpectedFiles(sampleDirectory);
 
         var logFile = new FileEntry(_fs, sampleDirectory.Path / "build.log");
@@ -95,7 +94,7 @@ public sealed class TestSamples(ITestOutputHelper testOutputHelper) : IDisposabl
 
         var exitCode = await buildApplication.RunAsync(args);
 
-        Assert.Equal(expected: 0, exitCode);
+        exitCode.Code.ShouldBe(0);
 
         Assert.All(expectedFiles, file =>
         {

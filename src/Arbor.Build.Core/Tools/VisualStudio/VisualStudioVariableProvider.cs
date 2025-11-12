@@ -89,12 +89,8 @@ public class VisualStudioVariableProvider(IFileSystem fileSystem) : IVariablePro
         using var vsKey = view32.OpenSubKey(registryKeyName);
         if (vsKey != null)
         {
-            using RegistryKey? versionKey = vsKey.OpenSubKey(visualStudioVersion);
-            if (versionKey == null)
-            {
-                throw new InvalidOperationException(
-                    $"Expected key {vsKey.Name} to contain a subkey with name {visualStudioVersion}");
-            }
+            using RegistryKey? versionKey = vsKey.OpenSubKey(visualStudioVersion) ?? throw new InvalidOperationException(
+                    $"Expected key {vsKey.Name} to contain a sub key with name {visualStudioVersion}");
 
             const string installDirKey = "InstallDir";
             string? installDir = versionKey.GetValue(installDirKey, null)?.ToString();

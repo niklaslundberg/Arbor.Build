@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Arbor.Build.Core;
 
-public abstract class ValueObject<T, TValue>(TValue value, IEqualityComparer<TValue>? comparer = default)
+public abstract class ValueObject<T, TValue>(TValue value, IEqualityComparer<TValue>? comparer = null)
     : IEquatable<ValueObject<T, TValue>>
     where T : ValueObject<T, TValue>, IEquatable<ValueObject<T, TValue>>
     where TValue : IEquatable<TValue>

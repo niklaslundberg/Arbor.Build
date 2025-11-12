@@ -68,7 +68,7 @@ public sealed class BuildApplication : IDisposable
 
         static string GetExecutionTime(ToolResult result1)
         {
-            return result1.ExecutionTime == default
+            return result1.ExecutionTime == TimeSpan.Zero
                 ? "N/A"
                 : ((int)result1.ExecutionTime.TotalMilliseconds).ToString("D",
                     CultureInfo.InvariantCulture) + " ms";
@@ -127,7 +127,7 @@ public sealed class BuildApplication : IDisposable
             tempDirectory,
             pathLookupSpecificationOption: DefaultPaths.DefaultPathLookupSpecification.AddExcludedDirectorySegments(
                 ["paket-files"]),
-            rootDir: baseDir);
+            rootDir: baseDir, cancellationToken: _cancellationToken);
 
         WriteDebug("Starting with debugger attached");
 
