@@ -307,28 +307,28 @@ public static partial class WellKnownVariables
             var fields = classes
                 .Select(@class => @class
                     .GetFields()
-                    .Where(field => field.IsPublicConstantOrStatic()))
+                    .Where(@field => @field.IsPublicConstantOrStatic()))
                 .SelectMany(_ => _)
                 .ToImmutableArray();
 
-            foreach (FieldInfo field in fields)
+            foreach (FieldInfo @field in fields)
             {
-                string? invariantName = (string?)field.GetValue(null);
+                string? invariantName = (string?)@field.GetValue(null);
 
                 if (string.IsNullOrWhiteSpace(invariantName))
                 {
                     continue;
                 }
 
-                var attribute = field.GetCustomAttribute<VariableDescriptionAttribute>();
+                var attribute = @field.GetCustomAttribute<VariableDescriptionAttribute>();
 
                 VariableDescription description = attribute != null
                     ? VariableDescription.Create(
                         invariantName,
                         attribute.Description,
-                        field.Name,
+                        @field.Name,
                         attribute.DefaultValue)
-                    : VariableDescription.Create(field.Name);
+                    : VariableDescription.Create(@field.Name);
 
                 allVariables.Add(description);
             }
