@@ -38,7 +38,7 @@ public class BranchNameVariableProvider(
             WellKnownVariables.BranchName, WellKnownVariables.GitHubBranchName
         };
 
-        string? branchName = default;
+        string? branchName = null;
 
         foreach (string possibleVariable in possibleVariables)
         {

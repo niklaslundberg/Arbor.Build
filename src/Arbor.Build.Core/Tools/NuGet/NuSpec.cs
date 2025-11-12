@@ -49,22 +49,18 @@ public class NuSpec
 
     public static NuSpec Parse(FileEntry nuspecFilePath)
     {
-        string id;
-        string version;
-        using (var nuspecStream = nuspecFilePath.Open(FileMode.Open, FileAccess.Read))
-        {
-            using TextReader reader = new StreamReader(nuspecStream, Encoding.UTF8);
-            var document = XDocument.Load(reader);
+        using var nuspecStream = nuspecFilePath.Open(FileMode.Open, FileAccess.Read);
+        using TextReader reader = new StreamReader(nuspecStream, Encoding.UTF8);
+        var document = XDocument.Load(reader);
 
-            var metaData = document.Descendants()
-                .Where(item => item.Name.LocalName == "package")
-                .Descendants()
-                .Where(item => item.Name.LocalName == "metadata")
-                .ToList();
+        var metaData = document.Descendants()
+            .Where(item => item.Name.LocalName == "package")
+            .Descendants()
+            .Where(item => item.Name.LocalName == "metadata")
+            .ToList();
 
-            id = metaData.Descendants().Single(item => item.Name.LocalName == "id").Value;
-            version = metaData.Descendants().Single(item => item.Name.LocalName == "version").Value;
-        }
+        string id = metaData.Descendants().Single(item => item.Name.LocalName == "id").Value;
+        string version = metaData.Descendants().Single(item => item.Name.LocalName == "version").Value;
 
         var semanticVersion = SemanticVersion.Parse(version);
 

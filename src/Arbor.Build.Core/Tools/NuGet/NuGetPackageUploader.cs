@@ -305,7 +305,7 @@ public class NuGetPackageUploader(IFileSystem fileSystem) : ITool
         string? sourceName,
         string? configFile,
         bool timeoutIncreaseEnabled,
-        PackageUploadFilter? filter = default)
+        PackageUploadFilter? filter = null)
     {
         filter ??= new PackageUploadFilter("", fileSystem);
 
@@ -444,7 +444,7 @@ public class NuGetPackageUploader(IFileSystem fileSystem) : ITool
         return result ? ExitCode.Success : ExitCode.Failure;
     }
 
-    private async Task VerifyPackage(FileEntry nugetPackage)
+    private static async Task VerifyPackage(FileEntry nugetPackage)
     {
         await using var fs = new FileStream(nugetPackage.ConvertPathToInternal(), FileMode.Open, FileAccess.Read);
 

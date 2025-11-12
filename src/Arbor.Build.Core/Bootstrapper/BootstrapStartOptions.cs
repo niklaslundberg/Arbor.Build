@@ -11,9 +11,9 @@ public class BootstrapStartOptions(
     bool? preReleaseEnabled = null,
     string? branchName = null,
     bool downloadOnly = false,
-    string? arborBuildExePath = default,
-    string? nuGetConfig = default,
-    DirectoryEntry? tempDirectory = default )
+    string? arborBuildExePath = null,
+    string? nuGetConfig = null,
+    DirectoryEntry? tempDirectory = null )
 {
     public const string DownloadOnlyCliParameter = "--download-only";
     public const string ArborBuildExeCliParameter = "-arborBuildExe=";

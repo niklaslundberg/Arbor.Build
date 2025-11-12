@@ -123,7 +123,7 @@ public static class BuildVariableExtensions
     public static int GetInt32ByKey(
         this IReadOnlyCollection<IVariable> buildVariables,
         string key,
-        int defaultValue = default,
+        int defaultValue = 0,
         int? minValue = null)
     {
         int? returnValue = null;
@@ -176,7 +176,7 @@ public static class BuildVariableExtensions
 
     public static int IntValueOrDefault(this IEnumerable<KeyValuePair<string, string?>> pairs,
         string key,
-        int defaultValue = default) => int.TryParse(
+        int defaultValue = 0) => int.TryParse(
         pairs.SingleOrDefault(
             pair => pair.Key.Equals(key, StringComparison.Ordinal)).Value,
         out int value)

@@ -31,7 +31,7 @@ public sealed class BranchName
 
     public string FullName => Name;
 
-    public static BranchName? TryParse(string? branchName) => string.IsNullOrWhiteSpace(branchName) ? default : new BranchName(branchName);
+    public static BranchName? TryParse(string? branchName) => string.IsNullOrWhiteSpace(branchName) ? null : new BranchName(branchName);
 
     public override string ToString() => Name;
 

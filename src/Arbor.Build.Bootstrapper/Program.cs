@@ -18,7 +18,7 @@ internal static class Program
 
     private static Task<int> Main(string[] args) => RunAsync(args);
 
-    public static async Task<int> RunAsync(string[] args, IEnvironmentVariables? environmentVariables = default, IFileSystem? fileSystem = default)
+    public static async Task<int> RunAsync(string[] args, IEnvironmentVariables? environmentVariables = null, IFileSystem? fileSystem = null)
     {
         environmentVariables ??= new DefaultEnvironmentVariables();
 

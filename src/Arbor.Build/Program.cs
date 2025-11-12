@@ -21,9 +21,9 @@ internal static class Program
 
     public static async Task<int> RunAsync(
         string[]? args,
-        IEnvironmentVariables? environmentVariables = default,
-        ISpecialFolders? specialFolders = default,
-        IFileSystem? fileSystem = default)
+        IEnvironmentVariables? environmentVariables = null,
+        ISpecialFolders? specialFolders = null,
+        IFileSystem? fileSystem = null)
     {
         args ??= [];
         environmentVariables ??= new DefaultEnvironmentVariables();

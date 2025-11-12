@@ -8,7 +8,7 @@ public static class GitBranchNameExtensions
     {
         if (string.IsNullOrWhiteSpace(potentialBranchName))
         {
-            return default;
+            return null;
         }
 
         string name = potentialBranchName.Trim('#').Trim();
@@ -17,17 +17,17 @@ public static class GitBranchNameExtensions
 
         if (name.Trim().StartsWith("HEAD detached", StringComparison.Ordinal))
         {
-            return default;
+            return null;
         }
 
         if (name.Trim().StartsWith("HEAD (no branch)", StringComparison.Ordinal))
         {
-            return default;
+            return null;
         }
 
         if (name.Trim().Equals("HEAD", StringComparison.Ordinal))
         {
-            return default;
+            return null;
         }
 
         int indexOfBranchSeparator = name.IndexOf("...", StringComparison.OrdinalIgnoreCase);
@@ -44,7 +44,7 @@ public static class GitBranchNameExtensions
 
         if (string.IsNullOrWhiteSpace(name))
         {
-            return default;
+            return null;
         }
 
         return name;

@@ -106,7 +106,7 @@ public class NuGetPackager(
                     "NuGet package creation is not supported on 'master' branch. To force NuGet package creation, set environment variable '{NuGetCreatePackagesOnAnyBranchEnabled}' to value 'true'",
                     WellKnownVariables.NuGetCreatePackagesOnAnyBranchEnabled);
 
-                return default;
+                return null;
             }
         }
         else

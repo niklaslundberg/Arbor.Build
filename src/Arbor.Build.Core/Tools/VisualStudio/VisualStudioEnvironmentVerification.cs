@@ -58,7 +58,7 @@ public class VisualStudioEnvironmentVerification(BuildContext buildContext) : IT
         return Task.FromResult(ExitCode.Success);
     }
 
-    private bool Contains81(FileEntry file)
+    private static bool Contains81(FileEntry file)
     {
         string[] lookupPatterns =
         [

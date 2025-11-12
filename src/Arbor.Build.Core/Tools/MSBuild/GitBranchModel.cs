@@ -32,7 +32,7 @@ public sealed class GitBranchModel(string name, string? alias = null) : IEquatab
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            model = default;
+            model = null;
             return false;
         }
 
@@ -48,7 +48,7 @@ public sealed class GitBranchModel(string name, string? alias = null) : IEquatab
             return true;
         }
 
-        model = default;
+        model = null;
         return false;
     }
 
