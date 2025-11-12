@@ -34,12 +34,6 @@
           "EmptyFiles": "4.4.0"
         }
       },
-      "System.Collections.Immutable": {
-        "type": "Direct",
-        "requested": "[10.0.0, )",
-        "resolved": "10.0.0",
-        "contentHash": "BHo23kBFvTFQa0tuDFXcb3Q8QInjm1Xrq+If/xuV8iMlxOOsylsa6sgRK25n5dlcMk8G2f0O/t5AdjZrdVBOXA=="
-      },
       "xunit.runner.visualstudio": {
         "type": "Direct",
         "requested": "[3.1.0, )",
