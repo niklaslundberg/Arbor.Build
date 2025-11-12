@@ -219,7 +219,7 @@ public class NuGetPackager(
 
         // ReSharper restore AssignNullToNotNullAttribute
 
-        var nuSpecCopy = new NuSpec(packageId, packageConfiguration.Version, packageSpecificationPath);
+        var nuSpecCopy = NuSpec.Load(packageId, packageConfiguration.Version, packageSpecificationPath);
 
         var nuSpecTempDirectory = UPath.Combine(packageConfiguration.TempPath.Path, "nuspecs");
 
