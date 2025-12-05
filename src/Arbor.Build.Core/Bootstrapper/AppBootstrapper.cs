@@ -412,7 +412,7 @@ public class AppBootstrapper(ILogger logger, IEnvironmentVariables environmentVa
 
         if (!string.IsNullOrWhiteSpace(startOptions.BaseDir?.FullName) && startOptions.BaseDir.Exists)
         {
-            logger.Information("Using base directory '{BaseDir}' from start options", startOptions.BaseDir);
+            logger.Information("Using base directory '{BaseDir}' from start options", startOptions.BaseDir.ConvertPathToInternal());
 
             baseDir = startOptions.BaseDir;
         }

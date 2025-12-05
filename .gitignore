@@ -209,3 +209,4 @@ _patchedAssemblyInfos
 **/Backup.*.csproj
 **/*$_.opencover.json
 **/StoredText/**
+**/launchSettings.json

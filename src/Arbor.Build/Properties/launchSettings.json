@@ -1,7 +1,10 @@
 {
   "profiles": {
     "Arbor.Build": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "environmentVariables": {
+        "Arbor.Build.Vcs.Branch.Name": "develop"
+      }
     }
   }
 }
