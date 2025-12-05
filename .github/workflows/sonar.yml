@@ -19,11 +19,7 @@ jobs:
       with:
         java-version: '21' # The OpenJDK version to make available on the path
         distribution: 'microsoft'
-    - uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: |
-            8.0.x
-    - uses: actions/setup-dotnet@v4
+    - uses: actions/setup-dotnet@v5
       with:
         dotnet-version: 10.0.x
         cache: true
