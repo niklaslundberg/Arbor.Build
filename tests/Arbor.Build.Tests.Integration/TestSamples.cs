@@ -25,6 +25,7 @@ namespace Arbor.Build.Tests.Integration;
 public sealed class TestSamples(ITestOutputHelper testOutputHelper) : IDisposable
 {
     readonly IFileSystem _fs = new PhysicalFileSystem();
+    FileEntry _logFile;
 
     [MemberData(nameof(Data))]
     [Theory]
@@ -36,7 +37,7 @@ public sealed class TestSamples(ITestOutputHelper testOutputHelper) : IDisposabl
             return;
         }
 
-        var samplesDirectory = GetSamplesDirectory();
+        var samplesDirectory = GetSamplesDirectory(_fs);
 
         var sampleDirectory = samplesDirectory.GetDirectories(directoryName).Single();
 
@@ -59,9 +60,9 @@ public sealed class TestSamples(ITestOutputHelper testOutputHelper) : IDisposabl
 
         var expectedFiles = await GetExpectedFiles(sampleDirectory);
 
-        var logFile = new FileEntry(_fs, sampleDirectory.Path / "build.log");
+        _logFile = new FileEntry(_fs, sampleDirectory.Path / $"build-{Guid.NewGuid()}.log");
 
-        logFile.DeleteIfExists();
+        _logFile.DeleteIfExists();
 
         var invalidPathMessages = new List<string>();
 
@@ -83,7 +84,7 @@ public sealed class TestSamples(ITestOutputHelper testOutputHelper) : IDisposabl
 
         await using var logger = new LoggerConfiguration()
             //.WriteTo.Logger(xunitLogger)
-            .WriteTo.File(_fs.ConvertPathToInternal(logFile.Path))
+            .WriteTo.File(_fs.ConvertPathToInternal(_logFile.Path))
             .MinimumLevel.Verbose()
             .WriteTo.Logger(conditionalLogger)
             .CreateLogger();
@@ -142,7 +143,8 @@ public sealed class TestSamples(ITestOutputHelper testOutputHelper) : IDisposabl
 
     public static IEnumerable<object[]> Data()
     {
-        var samplesDirectory = GetSamplesDirectory();
+        using var fs = new PhysicalFileSystem();
+        var samplesDirectory = GetSamplesDirectory(fs);
 
         var samplesDirectories = samplesDirectory.EnumerateDirectories("_*").ToImmutableArray();
 
@@ -157,15 +159,16 @@ public sealed class TestSamples(ITestOutputHelper testOutputHelper) : IDisposabl
         }
     }
 
-    static DirectoryEntry GetSamplesDirectory()
+    static DirectoryEntry GetSamplesDirectory(IFileSystem fs)
     {
-#pragma warning disable CA2000 // Dispose objects before losing scope
-        var fs = new PhysicalFileSystem();
-#pragma warning restore CA2000 // Dispose objects before losing scope
         var samples = UPath.Combine(VcsTestPathHelper.FindVcsRootPath().Path, "samples");
 
         return fs.GetDirectoryEntry(samples);
     }
 
-    public void Dispose() => _fs.Dispose();
+    public void Dispose()
+    {
+        _logFile.DeleteIfExists();
+        _fs.Dispose();
+    }
 }

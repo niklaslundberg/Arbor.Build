@@ -604,9 +604,5 @@ public sealed class BuildApplication : IDisposable
         return exitCode;
     }
 
-    public void Dispose()
-    {
-        _container?.Dispose();
-        _fileSystem.Dispose();
-    }
+    public void Dispose() => _container?.Dispose();
 }
