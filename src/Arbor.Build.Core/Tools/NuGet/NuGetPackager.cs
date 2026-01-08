@@ -27,16 +27,15 @@ public class NuGetPackager(
     public const string SnupkgPackageFormat = "snupkg";
 
     public NuGetPackageConfiguration? GetNuGetPackageConfiguration(
-        ILogger logger,
         IReadOnlyCollection<IVariable> buildVariables,
         DirectoryEntry packagesDirectory,
         DirectoryEntry vcsRootDir,
         string packageNameSuffix,
         string? runtimeIdentifier = null)
     {
-        string version = buildVariables.Require(WellKnownVariables.Version).GetValueOrThrow()!;
+        string version = buildVariables.Require(WellKnownVariables.Version).GetValueOrThrow();
 
-        string branchName = buildVariables.Require(WellKnownVariables.BranchLogicalName).GetValueOrThrow()!;
+        string branchName = buildVariables.Require(WellKnownVariables.BranchLogicalName).GetValueOrThrow();
 
         var branch = BranchName.TryParse(branchName);
 
@@ -280,7 +279,6 @@ public class NuGetPackager(
         var result = await ExecuteNuGetPackAsync(
             packageConfiguration.NuGetExePath,
             packageConfiguration.PackagesDirectory,
-            logger,
             nuspec,
             properties,
             nuSpecCopy,
@@ -332,7 +330,6 @@ public class NuGetPackager(
     private async Task<ExitCode> ExecuteNuGetPackAsync(
         UPath nuGetExePath,
         DirectoryEntry packagesDirectoryPath,
-        ILogger logger,
         FileEntry nuSpecFileCopyPath,
         IDictionary<string, string?> properties,
         NuSpec nuSpecCopy,
@@ -347,7 +344,6 @@ public class NuGetPackager(
             removedTags.Any(
                 tag => tag.Equals(WellKnownNuGetTags.NoSource, StringComparison.OrdinalIgnoreCase));
 
-        ExitCode result;
         var arguments = new List<string>
         {
             "pack",
@@ -454,8 +450,6 @@ public class NuGetPackager(
             }
         }
 
-        result = processResult;
-
-        return result;
+        return processResult;
     }
 }

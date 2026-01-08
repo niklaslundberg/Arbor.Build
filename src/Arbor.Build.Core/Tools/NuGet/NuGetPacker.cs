@@ -15,6 +15,12 @@ using Zio;
 
 namespace Arbor.Build.Core.Tools.NuGet;
 
+/// <summary>
+/// Creates NuGet packages based on found .nuspec files
+/// </summary>
+/// <param name="nuGetPackager"></param>
+/// <param name="fileSystem"></param>
+/// <param name="buildContext"></param>
 [Priority(650)]
 [UsedImplicitly]
 public class NuGetPacker(NuGetPackager nuGetPackager, IFileSystem fileSystem, BuildContext buildContext)
@@ -59,7 +65,7 @@ public class NuGetPacker(NuGetPackager nuGetPackager, IFileSystem fileSystem, Bu
         string? runtimeIdentifier = buildVariables.GetVariableValueOrDefault(WellKnownVariables.PublishRuntimeIdentifier, string.Empty);
 
         NuGetPackageConfiguration? packageConfiguration =
-            nuGetPackager.GetNuGetPackageConfiguration(logger, buildVariables, packagesDirectory, vcsRootDir, "", runtimeIdentifier);
+            nuGetPackager.GetNuGetPackageConfiguration(buildVariables, packagesDirectory, vcsRootDir, "", runtimeIdentifier);
 
         if (packageConfiguration is null)
         {
@@ -80,22 +86,14 @@ public class NuGetPacker(NuGetPackager nuGetPackager, IFileSystem fileSystem, Bu
         logger.Information("Found {Count} NuGet specifications to create NuGet packages from",
             packageSpecifications.Count);
 
-        ExitCode result;
-
         int timeoutInSeconds = buildVariables.GetInt32ByKey(WellKnownVariables.NuGetPackageTimeoutInSeconds, defaultValue: 60);
 
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeoutInSeconds));
-        using (CancellationTokenSource.CreateLinkedTokenSource(cancellationToken,cts.Token))
-        {
-            result =
-                await ProcessPackagesAsync(packageSpecifications,
-                        packageConfiguration,
-                        logger,
-                        cancellationToken)
-                    ;
-        }
-
-        return result;
+        using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, cts.Token);
+        return await ProcessPackagesAsync(packageSpecifications,
+            packageConfiguration,
+            logger,
+            linked.Token);
     }
 
     private IReadOnlyCollection<FileEntry> GetPackageSpecifications(

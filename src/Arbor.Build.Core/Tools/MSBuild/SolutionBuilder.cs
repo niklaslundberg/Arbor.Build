@@ -2112,7 +2112,6 @@ public class SolutionBuilder(
         DirectoryEntry packageDirectory = new DirectoryEntry(fileSystem, packageDirectoryPath).EnsureExists();
 
         var packageConfiguration = nugetPackager.GetNuGetPackageConfiguration(
-            logger,
             _buildVariables,
             packageDirectory,
             _vcsRoot,
@@ -2126,15 +2125,11 @@ public class SolutionBuilder(
 
         packageConfiguration.NuGetSymbolPackagesEnabled = false;
 
-        string name = packageId;
-
         string? authors = _buildVariables.GetVariableValueOrDefault(
             WellKnownVariables.NetAssemblyCompany,
             "Undefined");
         string? owners =
             _buildVariables.GetVariableValueOrDefault(WellKnownVariables.NetAssemblyCompany, "Undefined");
-        string description = packageId;
-        string summary = packageId;
         const string language = "en-US";
         const string projectUrl = "http://nuget.org";
         const string iconUrl = "http://nuget.org";
@@ -2158,43 +2153,45 @@ public class SolutionBuilder(
         string nativeChecksumFileFullPath = fileSystem.ConvertPathToInternal(contentFilesInfo.ChecksumFile.Path);
 
         string contentFileListFile =
-            $@"<file src=""{nativeFullPath}"" target=""{nativePath[nativeMetadataDirectory.Length..].TrimStart(Path.DirectorySeparatorChar)}"" />";
+            $"""<file src="{nativeFullPath}" target="{nativePath[nativeMetadataDirectory.Length..].TrimStart(Path.DirectorySeparatorChar)}" />""";
         string checksumFile =
-            $@"<file src=""{nativeChecksumFileFullPath}"" target=""{nativeChecksumPath[nativeMetadataDirectory.Length..].TrimStart(Path.DirectorySeparatorChar)}"" />";
+            $"""<file src="{nativeChecksumFileFullPath}" target="{nativeChecksumPath[nativeMetadataDirectory.Length..].TrimStart(Path.DirectorySeparatorChar)}" />""";
 
-        string nuspecContent = $@"<?xml version=""1.0""?>
-<package>
-    <metadata>
-        <id>{name}</id>
-        <version>{packageConfiguration.Version.ToNormalizedString()}</version>
-        <title>{name}</title>
-        <authors>{authors}</authors>
-        <owners>{owners}</owners>
-        <description>
-            {description}
-        </description>
-        <releaseNotes>
-        </releaseNotes>
-        <summary>
-            {summary}
-        </summary>
-        <language>{language}</language>
-        <projectUrl>{projectUrl}</projectUrl>
-        <iconUrl>{iconUrl}</iconUrl>
-        <requireLicenseAcceptance>{requireLicenseAcceptance}</requireLicenseAcceptance>
-        <copyright>{copyright}</copyright>
-        <dependencies>
+        string nuspecContent = $"""
+                                <?xml version="1.0"?>
+                                <package>
+                                    <metadata>
+                                        <id>{packageId}</id>
+                                        <version>{packageConfiguration.Version.ToNormalizedString()}</version>
+                                        <title>{packageId}</title>
+                                        <authors>{authors}</authors>
+                                        <owners>{owners}</owners>
+                                        <description>
+                                            {packageId}
+                                        </description>
+                                        <releaseNotes>
+                                        </releaseNotes>
+                                        <summary>
+                                            {packageId}
+                                        </summary>
+                                        <language>{language}</language>
+                                        <projectUrl>{projectUrl}</projectUrl>
+                                        <iconUrl>{iconUrl}</iconUrl>
+                                        <requireLicenseAcceptance>{requireLicenseAcceptance}</requireLicenseAcceptance>
+                                        <copyright>{copyright}</copyright>
+                                        <dependencies>
 
-        </dependencies>
-        <references></references>
-        <tags>{tags}</tags>
-    </metadata>
-    <files>
-        {files}
-        {contentFileListFile}
-        {checksumFile}
-    </files>
-</package>";
+                                        </dependencies>
+                                        <references></references>
+                                        <tags>{tags}</tags>
+                                    </metadata>
+                                    <files>
+                                        {files}
+                                        {contentFileListFile}
+                                        {checksumFile}
+                                    </files>
+                                </package>
+                                """;
 
         logger.Information("{NuSpec}", nuspecContent);
 
@@ -2248,20 +2245,21 @@ public class SolutionBuilder(
 
         string[] extensions = [".xml", ".config"];
 
-        IReadOnlyCollection<FileEntry> files = projectDirectoryPath
-            .GetFilesRecursive(extensions)
-            .Where(
-                file =>
-                    !_pathLookupSpecification.IsNotAllowed(file.Directory).Item1
-                    && !_pathLookupSpecification.IsFileExcluded(file, _vcsRoot).Item1)
-            .Where(
-                file =>
-                    extensions.Any(
-                        extension =>
-                            Path.GetExtension(file.Name)
-                                .Equals(extension, StringComparison.OrdinalIgnoreCase))
-                    && !file.Name.Equals("web.config", StringComparison.OrdinalIgnoreCase))
-            .ToImmutableArray();
+        IReadOnlyCollection<FileEntry> files = [
+            ..projectDirectoryPath
+                .GetFilesRecursive(extensions)
+                .Where(
+                    file =>
+                        !_pathLookupSpecification.IsNotAllowed(file.Directory).Item1
+                        && !_pathLookupSpecification.IsFileExcluded(file, _vcsRoot).Item1)
+                .Where(
+                    file =>
+                        extensions.Any(
+                            extension =>
+                                Path.GetExtension(file.Name)
+                                    .Equals(extension, StringComparison.OrdinalIgnoreCase))
+                        && !file.Name.Equals("web.config", StringComparison.OrdinalIgnoreCase))
+        ];
 
         UPath TransformFile(FileEntry file)
         {
@@ -2269,10 +2267,8 @@ public class SolutionBuilder(
             string extension = Path.GetExtension(file.Name);
 
             // ReSharper disable once PossibleNullReferenceException
-            var transformFilePath = UPath.Combine(file.Directory.FullName,
+            return UPath.Combine(file.Directory.FullName,
                 $"{nameWithoutExtension}.{configuration}{extension}");
-
-            return transformFilePath;
         }
 
         var transformationPairs = files
@@ -2395,7 +2391,7 @@ public class SolutionBuilder(
                                 DefaultPaths.DefaultPathLookupSpecification
                                     .WithIgnoredFileNameParts(ignoredFileNameParts)
                                     .AddExcludedDirectorySegments(_excludedWebJobsDirectorySegments),
-                                _vcsRoot)
+                                _vcsRoot, _cancellationToken)
                             ;
 
                 if (exitCode.IsSuccess)

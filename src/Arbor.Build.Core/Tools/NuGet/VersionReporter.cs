@@ -61,7 +61,7 @@ public class VersionReporter(IFileSystem fileSystem) : ITool
             {
                 logger.Verbose("Setting TeamCity variable env.{Key}",
                     WellKnownVariables.NuGetPackageVersionResult);
-                string? version = versions.Single();
+                string version = versions.Single();
                 logger.Information(
                     "##teamcity[setParameter name='env." + WellKnownVariables.NuGetPackageVersionResult +
                     "' value='{Version}']", version);
@@ -73,7 +73,7 @@ public class VersionReporter(IFileSystem fileSystem) : ITool
         }
         else if (versions.Count > 1)
         {
-            logger.Debug("Found multiple NuGet package versions {Versions}, could not set nugetPackageVersion", versions);
+            logger.Debug("Found multiple NuGet package versions {@Versions}, could not set nugetPackageVersion", versions);
         }
         else
         {

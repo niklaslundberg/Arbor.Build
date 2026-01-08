@@ -159,7 +159,7 @@ public class VisualStudioVariableProvider(IFileSystem fileSystem) : IVariablePro
                                 if (Version.TryParse(versionOnly, out version))
                                 {
                                     logger.Debug("Found pre-release Visual Studio version {Version}",
-                                        version!);
+                                        version);
                                 }
                             }
                         }

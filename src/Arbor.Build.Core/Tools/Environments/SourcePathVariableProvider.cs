@@ -62,7 +62,7 @@ public class SourcePathVariableProvider(IFileSystem fileSystem, BuildContext bui
         if (existingToolsDirectory is null || existingToolsDirectory.Value.IsAbsolute)
         {
             var externalToolsRelativeApp =
-                new DirectoryEntry(fileSystem, UPath.Combine(AppContext.BaseDirectory!.ParseAsPath(),
+                new DirectoryEntry(fileSystem, UPath.Combine(AppContext.BaseDirectory.ParseAsPath(),
                     "tools",
                     "external"));
 

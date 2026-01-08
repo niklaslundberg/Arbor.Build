@@ -23,7 +23,7 @@ public class BranchHelperTests
         semanticVersion.ShouldNotBeNull();
 
         semanticVersion!.Major.ShouldEqual(1);
-        semanticVersion!.Minor.ShouldEqual(2);
-        semanticVersion!.Patch.ShouldEqual(3);
+        semanticVersion.Minor.ShouldEqual(2);
+        semanticVersion.Patch.ShouldEqual(3);
     }
 }

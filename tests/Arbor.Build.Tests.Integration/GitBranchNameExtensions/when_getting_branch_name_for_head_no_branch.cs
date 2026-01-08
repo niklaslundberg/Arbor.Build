@@ -12,7 +12,7 @@ public class when_getting_branch_name_for_head_no_branch
 
     Establish context = () => name = "## HEAD (no branch)";
 
-    Because of = () => result = name!.GetBranchName();
+    Because of = () => result = name.GetBranchName();
 
     It should_not_return_a_branch_name = () => result.ShouldBeNull();
 }
