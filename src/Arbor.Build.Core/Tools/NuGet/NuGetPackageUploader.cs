@@ -140,7 +140,8 @@ public class NuGetPackageUploader(IFileSystem fileSystem) : ITool
                 sourceName,
                 configFile,
                 timeoutIncreaseEnabled,
-                filters);
+                filters,
+                cancellationToken);
         }
 
         logger.Information(
@@ -292,8 +293,7 @@ public class NuGetPackageUploader(IFileSystem fileSystem) : ITool
         return exitCode;
     }
 
-    private async Task<ExitCode> UploadNuGetPackagesAsync(
-        ILogger logger,
+    private async Task<ExitCode> UploadNuGetPackagesAsync(ILogger logger,
         DirectoryEntry artifactPackagesDirectory,
         FileEntry nugetExePath,
         string? serverUri,
@@ -305,7 +305,8 @@ public class NuGetPackageUploader(IFileSystem fileSystem) : ITool
         string? sourceName,
         string? configFile,
         bool timeoutIncreaseEnabled,
-        PackageUploadFilter? filter = null)
+        PackageUploadFilter? filter = null,
+        CancellationToken cancellationToken = default)
     {
         filter ??= new PackageUploadFilter("", fileSystem);
 
@@ -396,8 +397,7 @@ public class NuGetPackageUploader(IFileSystem fileSystem) : ITool
             foreach (var nugetPackage in sortedPackages)
             {
                 bool? packageExists =
-                    await CheckPackageExistsAsync(nugetPackage, logger, sourceName)
-                        ;
+                    await CheckPackageExistsAsync(nugetPackage, logger, sourceName, cancellationToken);
 
                 if (!packageExists.HasValue)
                 {
@@ -428,7 +428,7 @@ public class NuGetPackageUploader(IFileSystem fileSystem) : ITool
 
         foreach (var nugetPackage in filtered)
         {
-            await VerifyPackage(nugetPackage);
+            await VerifyPackage(nugetPackage, cancellationToken);
 
             var exitCode = await UploadNugetPackageAsync(
                 nugetExePath,
@@ -451,11 +451,11 @@ public class NuGetPackageUploader(IFileSystem fileSystem) : ITool
         return result ? ExitCode.Success : ExitCode.Failure;
     }
 
-    private static async Task VerifyPackage(FileEntry nugetPackage)
+    private static async Task VerifyPackage(FileEntry nugetPackage, CancellationToken cancellationToken)
     {
         await using var fs = new FileStream(nugetPackage.ConvertPathToInternal(), FileMode.Open, FileAccess.Read);
 
-        using var archive = new ZipArchive(fs);
+        await using var archive = new ZipArchive(fs);
 
         var tempDirectoryPath = Path.GetTempPath().ParseAsPath() / Guid.NewGuid().ToString();
 
@@ -463,7 +463,7 @@ public class NuGetPackageUploader(IFileSystem fileSystem) : ITool
 
         tempDirectory.EnsureExists();
 
-        archive.ExtractToDirectory(tempDirectory.ConvertPathToInternal());
+        await archive.ExtractToDirectoryAsync(tempDirectory.ConvertPathToInternal(), cancellationToken: cancellationToken);
 
         tempDirectory.DeleteIfExists();
     }
@@ -471,7 +471,8 @@ public class NuGetPackageUploader(IFileSystem fileSystem) : ITool
     private static async Task<bool?> CheckPackageExistsAsync(
         FileEntry nugetPackage,
         ILogger logger,
-        string? sourceName)
+        string? sourceName,
+        CancellationToken cancellationToken)
     {
         if (!nugetPackage.Exists)
         {
@@ -486,14 +487,14 @@ public class NuGetPackageUploader(IFileSystem fileSystem) : ITool
 
         await using (var fs = new FileStream(nugetPackage.ConvertPathToInternal(), FileMode.Open, FileAccess.Read))
         {
-            using var archive = new ZipArchive(fs);
+            await using var archive = new ZipArchive(fs);
 
             ZipArchiveEntry? nuspecEntry =
                 archive.Entries.SingleOrDefault(entry =>
                     Path.GetExtension(entry.Name) is { } extension
                     && extension.Equals(".nuspec", StringComparison.OrdinalIgnoreCase));
 
-            if (nuspecEntry == null)
+            if (nuspecEntry is null)
             {
                 throw new InvalidOperationException(
                     string.Format(CultureInfo.InvariantCulture,
@@ -501,7 +502,7 @@ public class NuGetPackageUploader(IFileSystem fileSystem) : ITool
                         nugetPackage.FullName));
             }
 
-            var nuspecReader = new NuspecReader(nuspecEntry.Open());
+            var nuspecReader = new NuspecReader(await nuspecEntry.OpenAsync(cancellationToken));
             NuGetVersion nuGetVersion = nuspecReader.GetVersion();
 
             packageVersion = nuGetVersion.ToNormalizedString();
@@ -519,15 +520,10 @@ public class NuGetPackageUploader(IFileSystem fileSystem) : ITool
 
         bool foundSpecificPackage = allVersions.Contains(expectedVersion);
 
-        if (foundSpecificPackage)
-        {
-            logger.Information("Found existing package id '{ExpectedNameAndVersion}'", expectedNameAndVersion);
-        }
-        else
-        {
-            logger.Information("Could not find existing package id '{ExpectedNameAndVersion}'",
-                expectedNameAndVersion);
-        }
+        logger.Information(
+            foundSpecificPackage
+                ? "Found existing package id '{ExpectedNameAndVersion}'"
+                : "Could not find existing package id '{ExpectedNameAndVersion}'", expectedNameAndVersion);
 
         return foundSpecificPackage;
     }

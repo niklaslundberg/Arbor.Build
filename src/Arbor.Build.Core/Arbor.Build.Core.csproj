@@ -8,18 +8,18 @@
   <ItemGroup>
     <PackageReference Include="Arbor.FileSystem" Version="0.6.0" />
     <PackageReference Include="Arbor.Aesculus" Version="3.9.0" />
-    <PackageReference Include="Arbor.KVConfiguration.JsonConfiguration" Version="2.8.0" />
-    <PackageReference Include="Arbor.KVConfiguration.Schema.Json" Version="2.8.0" />
-    <PackageReference Include="Arbor.KVConfiguration.UserConfiguration" Version="2.8.0" />
-    <PackageReference Include="Arbor.KVConfiguration.Core" Version="2.8.0" />
+    <PackageReference Include="Arbor.KVConfiguration.JsonConfiguration" Version="3.0.0" />
+    <PackageReference Include="Arbor.KVConfiguration.Schema.Json" Version="3.0.0" />
+    <PackageReference Include="Arbor.KVConfiguration.UserConfiguration" Version="3.0.0" />
+    <PackageReference Include="Arbor.KVConfiguration.Core" Version="3.0.0" />
     <PackageReference Include="Arbor.Processing" Version="0.6.0" />
     <PackageReference Include="Arbor.Sorbus" Version="4.0.0" />
-    <PackageReference Include="Arbor.Tooler" Version="1.1.0" />
+    <PackageReference Include="Arbor.Tooler" Version="1.2.0" />
     <PackageReference Include="Autofac" Version="9.0.0" />
     <PackageReference Include="JetBrains.Annotations" Version="2025.2.4" />
     <PackageReference Include="Microsoft.VisualStudio.SolutionPersistence" Version="1.0.52" />
     <PackageReference Include="Microsoft.Web.Xdt" Version="3.2.0" />
-    <PackageReference Include="Microsoft.Windows.Compatibility" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Windows.Compatibility" Version="10.0.1" />
     <PackageReference Include="MSTest.TestFramework" Version="4.0.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="NuGet.Packaging" Version="7.0.1" />
