@@ -374,7 +374,14 @@ public class NuGetPackageUploader(IFileSystem fileSystem) : ITool
                 nuGetPackageFiles.Select(
                     file => $"{fileSystem.ConvertPathToInternal(file.Path)}: {file.Length / 1024.0:F1} KiB"));
 
-        logger.Information("Found {Count} NuGet packages to upload {Files}", nuGetPackageFiles.Count, files);
+        if (nuGetPackageFiles.Count == 1)
+        {
+            logger.Information("Found single NuGet package to upload {File}", files);
+        }
+        else
+        {
+            logger.Information("Found {Count} NuGet packages to upload {Files}", nuGetPackageFiles.Count, files);
+        }
 
         bool result = true;
 
