@@ -210,3 +210,4 @@ _patchedAssemblyInfos
 **/*$_.opencover.json
 **/StoredText/**
 **/launchSettings.json
+.sonarqube/**/*
