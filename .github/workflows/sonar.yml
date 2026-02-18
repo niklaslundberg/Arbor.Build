@@ -32,7 +32,7 @@ jobs:
       run: |
           $ErrorActionPreference = "Stop"
           $PSNativeCommandUseErrorActionPreference = $true
-          dotnet sonarscanner begin /k:"niklaslundberg_Arbor.Build" /o:"niklaslundberg" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" "/d:sonar.cs.opencover.reportsPaths=$($pwd)\Artifacts\TestReports\Coverage\*.opencover.xml" "/d:sonar.cs.vstest.reportsPaths=$($pwd)\Artifacts\TestReports\Tests\*.trx" /d:sonar.scanner.useSonarScannerCLI=false
+          dotnet sonarscanner begin /k:"niklaslundberg_Arbor.Build" /o:"niklaslundberg" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" "/d:sonar.cs.opencover.reportsPaths=$($pwd)\Artifacts\TestReports\Coverage\*.opencover.xml" "/d:sonar.cs.vstest.reportsPaths=$($pwd)\Artifacts\TestReports\Tests\*.trx" /d:sonar.scanner.useSonarScannerCLI=true
           dotnet build Arbor.Build.sln
           Get-ChildItem -Path tests -Recurse -Filter *.csproj | ForEach-Object { $fileName = $_.FullName; $name = $_.Name; dotnet test $fileName /p:CollectCoverage=true /p:CoverletOutputFormat=opencover "/p:CoverletOutput=$($pwd)\Artifacts\TestReports\Coverage\$($name).opencover.xml" --logger "trx;LogFileName=$($pwd)\Artifacts\TestReports\Tests\$($name).trx" }
           dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
