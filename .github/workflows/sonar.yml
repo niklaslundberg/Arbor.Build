@@ -36,4 +36,4 @@ jobs:
           dotnet build Arbor.Build.sln
           Get-ChildItem -Path tests -Recurse -Filter *.csproj | ForEach-Object { $fileName = $_.FullName; $name = $_.Name; dotnet test $fileName /p:CollectCoverage=true /p:CoverletOutputFormat=opencover "/p:CoverletOutput=$($pwd)\Artifacts\TestReports\Coverage\$($name).opencover.xml" --logger "trx;LogFileName=$($pwd)\Artifacts\TestReports\Tests\$($name).trx" }
           Get-ChildItem -Recurse -Directory | select-object FullName
-          dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+          dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.verbose=true
