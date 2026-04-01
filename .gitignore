@@ -27,7 +27,24 @@ src/Arbor.Build.Tests.Integration/xunit_v2.Arbor.Build.Tests.SampleXunitNetCoreA
 **\*.*_copy.nuspec
 *_copy.nuspec
 **\_*\Artifacts\**\*
+# Exclude sample artifacts by default
 samples/_*/**/*.*
+samples/_*/bin/
+samples/_*/obj/
+samples/_*/Artifacts/
+samples/_*/temp/
+samples/_*/**/bin/
+samples/_*/**/obj/
+# Exception: track sample project source files and config
+!samples/_*/*.sln
+!samples/_*/*.slnx
+!samples/_*/*.csproj
+!samples/_*/*.json
+!samples/_*/.gitattributes
+!samples/_*/**/*.cs
+!samples/_*/**/*.csproj
+!samples/_*/**/.gitattributes
+!samples/_*/**/packages.lock.json
 
 
 #################
