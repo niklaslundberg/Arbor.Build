@@ -163,7 +163,7 @@ public sealed class TestBuildContext
 
         // Ensure parent directory exists
         var parentDirectory = fileEntry.Parent;
-        if (!_fileSystem.DirectoryExists(parentDirectory.Path))
+        if (parentDirectory != null && !_fileSystem.DirectoryExists(parentDirectory.Path))
         {
             _fileSystem.CreateDirectory(parentDirectory.Path);
         }
@@ -217,7 +217,7 @@ public sealed class TestBuildContext
         var context = new BuildContext(_fileSystem);
 
         // Set source root if configured
-        if (_sourceRootPath.HasValue && _sourceRoot != null)
+        if (_sourceRootPath.HasValue && _sourceRoot is not null)
         {
             context.SourceRoot = _sourceRoot;
         }
@@ -238,7 +238,7 @@ public sealed class TestBuildContext
         }
 
         // Set current build configuration if specified
-        if (_currentBuildConfiguration != null)
+        if (_currentBuildConfiguration is not null)
         {
             context.CurrentBuildConfiguration = _currentBuildConfiguration;
         }
