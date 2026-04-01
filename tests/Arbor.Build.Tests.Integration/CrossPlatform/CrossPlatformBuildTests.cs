@@ -154,7 +154,9 @@ public sealed class CrossPlatformBuildTests(ITestOutputHelper testOutputHelper) 
         environmentVariables.SetEnvironmentVariable("AllowDebug", "false");
 
         _logFile = new FileEntry(_fs, sampleDirectory.Path / $"build-{Guid.NewGuid()}.log");
-        _logFile.DeleteIfExists();
+
+        // Safely delete existing log file with retry logic
+        TryDeleteLogFileWithRetry(_logFile);
 
         await using var logger = new LoggerConfiguration()
             .WriteTo.File(_fs.ConvertPathToInternal(_logFile.Path))
@@ -166,6 +168,36 @@ public sealed class CrossPlatformBuildTests(ITestOutputHelper testOutputHelper) 
             new BuildApplication(logger, environmentVariables, SpecialFolders.Default, _fs);
 
         return await buildApplication.RunAsync([]);
+    }
+
+    private void TryDeleteLogFileWithRetry(FileEntry logFile, int maxRetries = 3)
+    {
+        if (logFile == null)
+        {
+            return;
+        }
+
+        for (int attempt = 0; attempt < maxRetries; attempt++)
+        {
+            try
+            {
+                if (logFile.Path != UPath.Root && logFile.Path != UPath.Empty && _fs.FileExists(logFile.Path))
+                {
+                    logFile.Delete();
+                }
+                return; // Success
+            }
+            catch (Exception ex) when (attempt < maxRetries - 1)
+            {
+                // Log and retry on transient failures (locked file, etc.)
+                System.Threading.Thread.Sleep(100 * (attempt + 1)); // Exponential backoff
+            }
+            catch
+            {
+                // Final attempt failed - log file cleanup is not critical, continue
+                return;
+            }
+        }
     }
 
     private static bool IsWslAvailable()
@@ -318,20 +350,7 @@ public sealed class CrossPlatformBuildTests(ITestOutputHelper testOutputHelper) 
 
     public void Dispose()
     {
-        try
-        {
-            if (_logFile != null && _logFile.Path != UPath.Root && _logFile.Path != UPath.Empty)
-            {
-                _logFile.DeleteIfExists();
-            }
-        }
-        catch (Exception)
-        {
-            // Log file cleanup is not critical to test execution
-        }
-        finally
-        {
-            _fs?.Dispose();
-        }
+        TryDeleteLogFileWithRetry(_logFile);
+        _fs?.Dispose();
     }
 }
