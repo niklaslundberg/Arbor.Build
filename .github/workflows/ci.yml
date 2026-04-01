@@ -57,10 +57,6 @@ jobs:
   build-linux:
     runs-on: ubuntu-latest
 
-    env:
-      DOTNET_ROOT: ${{ env.DOTNET_ROOT }}
-      DOTNET_ROOT_X64: ${{ env.DOTNET_ROOT_X64 }}
-
     steps:
     - uses: actions/checkout@v4
       with:
