@@ -136,6 +136,15 @@ public class SolutionBuilder(
         }
         else
         {
+            // MSBuild (non-DotNet) is Windows-only
+            if (Environment.OSVersion.Platform != PlatformID.Win32NT)
+            {
+                _logger.Error(
+                    "SolutionBuilder requires MSBuild which is only available on Windows. Enable {Variable} to use .NET Core MSBuild instead",
+                    WellKnownVariables.ExternalTools_MSBuild_DotNetEnabled);
+                return ExitCode.Failure;
+            }
+
             _logger.Information("SolutionBuilder is using .NET Framework MSBuild");
         }
 
