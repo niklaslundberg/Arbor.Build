@@ -10,6 +10,8 @@
     <ResultsDirectory>.\TestResults</ResultsDirectory>
     <!-- Timeout for each test in milliseconds (0 = no timeout) -->
     <TestSessionTimeout>0</TestSessionTimeout>
+    <!-- Enable discovery of all test frameworks -->
+    <DiscoverInternalTests>true</DiscoverInternalTests>
     <!-- Custom test host environment variables for WSL and cross-platform -->
     <EnvironmentVariables>
       <!-- Enable WSL test execution -->
@@ -27,18 +29,13 @@
     <Verbosity>normal</Verbosity>
   </LoggerRunSettings>
 
-  <!-- Test Adapter Paths for discovering test adapters -->
+  <!-- Test Adapter Paths for discovering test adapters from NuGet packages -->
   <TestAdapterPaths>
+    <!-- Discover adapters from all subdirectories -->
     <Directory path="." includeSubDirectories="true" />
   </TestAdapterPaths>
 
-  <!-- NUnit Adapter Settings (if using NUnit) -->
-  <NUnit>
-    <!-- Number of test workers for NUnit -->
-    <NumberOfTestWorkers>-1</NumberOfTestWorkers>
-  </NUnit>
-
-  <!-- xUnit Adapter Settings -->
+  <!-- xUnit v3 Adapter Settings -->
   <xUnit>
     <!-- Set parallel strategy: collections, assemblies, or none -->
     <ParallelizeAssembly>true</ParallelizeAssembly>
@@ -47,8 +44,12 @@
     <MaxParallelThreads>0</MaxParallelThreads>
     <!-- Discover inline test data (theories with InlineData) -->
     <PreEnumerateTheories>false</PreEnumerateTheories>
-    <!-- Optimize for test discovery -->
+    <!-- Enable diagnostic messages for troubleshooting -->
     <InternalDiagnosticMessages>false</InternalDiagnosticMessages>
+    <!-- Enable discovery of all xUnit test types -->
+    <ShadowCopy>false</ShadowCopy>
+    <!-- Use app domains (false for .NET Core) -->
+    <UseAppDomains>false</UseAppDomains>
   </xUnit>
 
   <!-- MSTest Adapter Settings -->
@@ -61,7 +62,27 @@
     <CaptureTraceOutput>true</CaptureTraceOutput>
     <!-- Enable test discovery for all test attributes -->
     <ForcedLegacyMode>false</ForcedLegacyMode>
+    <!-- MapNotExecutedTo: Executed, NotExecuted, NotRunnable, Inconclusive, Unknown -->
+    <MapNotExecutedTo>NotRunnable</MapNotExecutedTo>
+    <!-- Enable discovery of internal test classes -->
+    <EnableBaseClassTestMethodsFromOtherAssemblies>true</EnableBaseClassTestMethodsFromOtherAssemblies>
+    <!-- Test discovery timeout in ms -->
+    <AssemblyResolutionTimeout>10000</AssemblyResolutionTimeout>
   </MSTest>
+
+  <!-- NUnit Adapter Settings (if using NUnit) -->
+  <NUnit>
+    <!-- Number of test workers for NUnit -->
+    <NumberOfTestWorkers>-1</NumberOfTestWorkers>
+    <!-- Use all available processors -->
+    <MaxParallelThreads>0</MaxParallelThreads>
+  </NUnit>
+
+  <!-- Machine.Specifications Adapter Settings -->
+  <MSpec>
+    <!-- Enable parallel execution -->
+    <Parallelize>true</Parallelize>
+  </MSpec>
 
   <!-- Blame Configuration (for diagnosing hung tests) -->
   <InProcDataCollectionRunSettings>
@@ -74,9 +95,25 @@
     </InProcDataCollectors>
   </InProcDataCollectionRunSettings>
 
-  <!-- Enable diagnostic output for troubleshooting -->
-  <LoggerRunSettings>
-    <!-- Set to verbose to troubleshoot test discovery issues -->
-    <Verbosity>normal</Verbosity>
-  </LoggerRunSettings>
+  <!-- Code Coverage Settings (optional) -->
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="Code Coverage" uri="datacollector://Microsoft/CodeCoverage/2.0" enabled="false">
+        <Configuration>
+          <CodeCoverage>
+            <!-- Bit flags: 0 = None, 1 = Calls, 2 = LinesCovered, 4 = LinesNotCovered -->
+            <ModulePaths>
+              <ModulePath>.*</ModulePath>
+            </ModulePaths>
+            <!-- Modules to exclude from code coverage -->
+            <ModuleExclusions>
+              <ModuleExclusion>.*xunit.*</ModuleExclusion>
+              <ModuleExclusion>.*nunit.*</ModuleExclusion>
+              <ModuleExclusion>.*mspec.*</ModuleExclusion>
+            </ModuleExclusions>
+          </CodeCoverage>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
 </RunSettings>
