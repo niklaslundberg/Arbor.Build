@@ -403,8 +403,16 @@ public class AppBootstrapper(ILogger logger, IEnvironmentVariables environmentVa
                 $"Could not download {packageVersion}, verify it exists and that all sources are available");
         }
 
-        return new DirectoryEntry(fileSystem,
+        var resultDirectory = new DirectoryEntry(fileSystem,
             fileSystem.ConvertPathFromInternal(nuGetPackageInstallResult.PackageDirectory.FullName));
+
+        // Ensure executable permissions on Linux/macOS
+        if (Environment.OSVersion.Platform != PlatformID.Win32NT)
+        {
+            EnsureLinuxExecutablePermissions(resultDirectory, logger);
+        }
+
+        return resultDirectory;
     }
 
     private Task<DirectoryEntry> GetBaseDirectoryAsync(BootstrapStartOptions startOptions)
@@ -549,9 +557,75 @@ public class AppBootstrapper(ILogger logger, IEnvironmentVariables environmentVa
             ? single
             : multiple;
 
-        logger.Error(
-            "Expected directory {BuildToolDirectoryPath} to contain exactly one executable file with extensions .exe. {Found}",
-            buildToolDirectoryPath,
-            found);
-    }
-}
+                    logger.Error(
+                        "Expected directory {BuildToolDirectoryPath} to contain exactly one executable file with extensions .exe. {Found}",
+                        buildToolDirectoryPath,
+                        found);
+            }
+
+            private void EnsureLinuxExecutablePermissions(DirectoryEntry packageDirectory, ILogger logger)
+            {
+                try
+                {
+                    // Find all potential executables in the package directory
+                    var executablePatterns = new[] { "Arbor.Build", "Arbor.Build.*" };
+
+                    foreach (var pattern in executablePatterns)
+                    {
+                        var files = packageDirectory.GetFiles(pattern, SearchOption.AllDirectories);
+
+                        foreach (var file in files)
+                        {
+                            // Skip known non-executable files
+                            if (file.Name.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) ||
+                                file.Name.EndsWith(".nupkg", StringComparison.OrdinalIgnoreCase) ||
+                                file.Name.EndsWith(".config", StringComparison.OrdinalIgnoreCase))
+                            {
+                                continue;
+                            }
+
+                            try
+                            {
+                                var filePath = fileSystem.ConvertPathToInternal(file.Path);
+
+                                // Use chmod via Process on Linux/macOS to set executable permissions
+                                var processInfo = new System.Diagnostics.ProcessStartInfo
+                                {
+                                    FileName = "/bin/chmod",
+                                    Arguments = $"+x \"{filePath}\"",
+                                    UseShellExecute = false,
+                                    RedirectStandardError = true,
+                                    RedirectStandardOutput = true
+                                };
+
+                                using (var process = System.Diagnostics.Process.Start(processInfo))
+                                {
+                                    if (process != null)
+                                    {
+                                        process.WaitForExit();
+
+                                        if (process.ExitCode == 0)
+                                        {
+                                            logger.Debug("Set executable permission on '{FilePath}'", filePath);
+                                        }
+                                        else
+                                        {
+                                            var error = process.StandardError.ReadToEnd();
+                                            logger.Warning("Could not set executable permission on '{FilePath}': {Error}", filePath, error);
+                                        }
+                                    }
+                                }
+                            }
+                            catch (Exception ex) when (!ex.IsFatal())
+                            {
+                                logger.Warning(ex, "Could not set executable permission on '{FileName}'", file.Name);
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex) when (!ex.IsFatal())
+                {
+                    logger.Warning(ex, "Could not ensure Linux executable permissions on package directory");
+                }
+            }
+        }
