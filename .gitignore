@@ -37,7 +37,6 @@ samples/_*/**/bin/
 samples/_*/**/obj/
 # Exception: track sample project source files and config
 !samples/_*/*.sln
-!samples/_*/*.slnx
 !samples/_*/*.csproj
 !samples/_*/*.json
 !samples/_*/.gitattributes
