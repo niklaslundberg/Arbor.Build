@@ -16,6 +16,7 @@ using Arbor.Build.Core.GenericExtensions.Int;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.DotNet;
 using Arbor.Build.Core.Tools.NuGet;
+using Arbor.Build.Core.Tools.Platform;
 using Arbor.FS;
 using Arbor.Processing;
 using Arbor.Tooler;
@@ -433,54 +434,58 @@ public class AppBootstrapper(ILogger logger, IEnvironmentVariables environmentVa
 
     private async Task<(UPath?, List<string>)> GetExePath(DirectoryEntry buildToolDirectory, CancellationToken cancellationToken)
     {
-        var buildExeFile = buildToolDirectory.GetFiles("Arbor.Build.exe");
+        // First, try to find the native executable for the current platform
+        string executableName = PlatformHelper.GetExecutableName("Arbor.Build");
+        var buildExeFile = buildToolDirectory.GetFiles(executableName);
 
         if (buildExeFile.Length == 1)
         {
+            logger.Debug("Found native executable: {ExecutableName}", executableName);
             return (buildExeFile.Single().Path, []);
         }
 
+        // Fallback: Look for any Arbor.Build.* file (could be .exe, or no extension on Linux/macOS)
         var arborBuild =
             buildToolDirectory.GetFiles("Arbor.Build.*")
-                .Where(file => !file.Name.Equals("nuget.exe", StringComparison.OrdinalIgnoreCase))
+                .Where(file => !file.Name.Equals("nuget.exe", StringComparison.OrdinalIgnoreCase) &&
+                               !file.Name.Equals("Arbor.Build.dll", StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
-        if (arborBuild.Count != 1)
+        if (arborBuild.Count == 1)
         {
-            PrintInvalidExeFileCount(arborBuild, buildToolDirectory.FullName);
-            return (null, []);
+            var file = arborBuild.Single();
+            logger.Debug("Found Arbor.Build executable: {FileName}", file.Name);
+            return (file.Path, []);
         }
 
-        FileEntry? buildToolExecutable = arborBuild.SingleOrDefault(file => file.ExtensionWithDot?.Equals(".exe", StringComparison.OrdinalIgnoreCase) ?? false);
+        // If no native executable found, try to use .dll with dotnet
+        FileEntry? buildToolDll = buildToolDirectory.GetFiles("Arbor.Build.dll").SingleOrDefault();
 
-        if (buildToolExecutable is {})
+        if (buildToolDll is not null)
         {
-            return (buildToolExecutable.Path, []);
+            logger.Debug("Found Arbor.Build.dll, will invoke via dotnet");
+
+            var variables = await new DotNetEnvironmentVariableProvider(environmentVariables, fileSystem)
+                .GetBuildVariablesAsync(
+                    logger,
+                    [],
+                    cancellationToken);
+
+            string? dotnetExePath = variables.SingleOrDefault(variable =>
+                variable.Key.Equals(WellKnownVariables.DotNetExePath, StringComparison.OrdinalIgnoreCase))?.Value;
+
+            if (string.IsNullOrWhiteSpace(dotnetExePath))
+            {
+                logger.Error("Could not find dotnet executable");
+                return (null, []);
+            }
+
+            return (dotnetExePath, ["--", buildToolDll.ConvertPathToInternal()]);
         }
 
-        FileEntry? buildToolDll = arborBuild.SingleOrDefault(file => file.ExtensionWithDot?.Equals(".dll", StringComparison.OrdinalIgnoreCase) ?? false);
-
-        if (buildToolDll is null)
-        {
-            return (null, []);
-        }
-
-        var variables = await new DotNetEnvironmentVariableProvider(environmentVariables, fileSystem)
-            .GetBuildVariablesAsync(
-                logger,
-                [],
-                cancellationToken);
-
-        string? dotnetExePath = variables.SingleOrDefault(variable =>
-            variable.Key.Equals(WellKnownVariables.DotNetExePath, StringComparison.OrdinalIgnoreCase))?.Value;
-
-        if (string.IsNullOrWhiteSpace(dotnetExePath))
-        {
-            logger.Error("Could not find dotnet.exe");
-            return (null, []);
-        }
-
-        return (dotnetExePath, ["--", buildToolDll.ConvertPathToInternal()]);
+        // No suitable executable or dll found
+        PrintInvalidExeFileCount(arborBuild, buildToolDirectory.FullName);
+        return (null, []);
     }
 
     private async Task<ExitCode> RunBuildToolsAsync(UPath buildDir, DirectoryEntry buildToolDirectory, string? arborBuildExePath)
