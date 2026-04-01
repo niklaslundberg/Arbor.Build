@@ -10,6 +10,15 @@
     <ResultsDirectory>.\TestResults</ResultsDirectory>
     <!-- Timeout for each test in milliseconds (0 = no timeout) -->
     <TestSessionTimeout>0</TestSessionTimeout>
+    <!-- Custom test host environment variables for WSL and cross-platform -->
+    <EnvironmentVariables>
+      <!-- Enable WSL test execution -->
+      <WSL_ENABLED>true</WSL_ENABLED>
+      <WSL_DISTRIBUTION>Ubuntu</WSL_DISTRIBUTION>
+      <!-- .NET configuration for cross-platform testing -->
+      <DOTNET_SKIP_FIRST_TIME_EXPERIENCE>true</DOTNET_SKIP_FIRST_TIME_EXPERIENCE>
+      <DOTNET_CLI_TELEMETRY_OPTOUT>true</DOTNET_CLI_TELEMETRY_OPTOUT>
+    </EnvironmentVariables>
   </RunConfiguration>
 
   <!-- Logger Configuration -->
@@ -17,6 +26,11 @@
     <!-- Verbosity for console logger: quiet, minimal, normal, detailed, verbose -->
     <Verbosity>normal</Verbosity>
   </LoggerRunSettings>
+
+  <!-- Test Adapter Paths for discovering test adapters -->
+  <TestAdapterPaths>
+    <Directory path="." includeSubDirectories="true" />
+  </TestAdapterPaths>
 
   <!-- NUnit Adapter Settings (if using NUnit) -->
   <NUnit>
@@ -31,7 +45,23 @@
     <ParallelizeTestCollections>true</ParallelizeTestCollections>
     <!-- Max degree of parallelism (0 = # of processors) -->
     <MaxParallelThreads>0</MaxParallelThreads>
+    <!-- Discover inline test data (theories with InlineData) -->
+    <PreEnumerateTheories>false</PreEnumerateTheories>
+    <!-- Optimize for test discovery -->
+    <InternalDiagnosticMessages>false</InternalDiagnosticMessages>
   </xUnit>
+
+  <!-- MSTest Adapter Settings -->
+  <MSTest>
+    <!-- Enable parallel test execution -->
+    <Parallelize workers="0" scope="MethodLevel" />
+    <!-- Test isolation: none, method, class, assembly -->
+    <TestIsolation>method</TestIsolation>
+    <!-- Capture trace output -->
+    <CaptureTraceOutput>true</CaptureTraceOutput>
+    <!-- Enable test discovery for all test attributes -->
+    <ForcedLegacyMode>false</ForcedLegacyMode>
+  </MSTest>
 
   <!-- Blame Configuration (for diagnosing hung tests) -->
   <InProcDataCollectionRunSettings>
@@ -44,31 +74,9 @@
     </InProcDataCollectors>
   </InProcDataCollectionRunSettings>
 
-  <!-- WSL Test Host Configuration -->
-  <RunConfiguration>
-    <!-- Custom test host environment variables for WSL -->
-    <EnvironmentVariables>
-      <!-- Set to run in WSL -->
-      <WSL_ENABLED>true</WSL_ENABLED>
-      <WSL_DISTRIBUTION>Ubuntu</WSL_DISTRIBUTION>
-      <!-- .NET configuration for cross-platform testing -->
-      <DOTNET_SKIP_FIRST_TIME_EXPERIENCE>true</DOTNET_SKIP_FIRST_TIME_EXPERIENCE>
-      <DOTNET_CLI_TELEMETRY_OPTOUT>true</DOTNET_CLI_TELEMETRY_OPTOUT>
-    </EnvironmentVariables>
-  </RunConfiguration>
-
-  <!-- Adapter Paths for discovering test adapters -->
-  <AdapterSearchPaths>
-    <Directory path="." includeSubDirectories="true" />
-  </AdapterSearchPaths>
-
-  <!-- MSTest Adapter Settings -->
-  <MSTest>
-    <!-- Enable parallel test execution -->
-    <Parallelize workers="0" scope="MethodLevel" />
-    <!-- Test isolation: none, method, class, assembly -->
-    <TestIsolation>method</TestIsolation>
-    <!-- Capture trace output -->
-    <CaptureTraceOutput>true</CaptureTraceOutput>
-  </MSTest>
+  <!-- Enable diagnostic output for troubleshooting -->
+  <LoggerRunSettings>
+    <!-- Set to verbose to troubleshoot test discovery issues -->
+    <Verbosity>normal</Verbosity>
+  </LoggerRunSettings>
 </RunSettings>
