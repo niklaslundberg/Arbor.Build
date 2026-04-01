@@ -6,6 +6,7 @@ src/*.ide
 build/**/*
 !build/*.sh
 !build/*.bat
+!build/*.ps1
 build/nuget.exe
 AppPackages
 *.css
