@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <!-- Test Execution Settings -->
+  <RunConfiguration>
+    <!-- Number of processors to use when running tests in parallel -->
+    <MaxCpuCount>0</MaxCpuCount>
+    <!-- Disable in-process parallelization if you want to run tests sequentially -->
+    <DisableParallelization>false</DisableParallelization>
+    <!-- Set the base directory for test execution -->
+    <ResultsDirectory>.\TestResults</ResultsDirectory>
+    <!-- Timeout for each test in milliseconds (0 = no timeout) -->
+    <TestSessionTimeout>0</TestSessionTimeout>
+  </RunConfiguration>
+
+  <!-- Logger Configuration -->
+  <LoggerRunSettings>
+    <!-- Verbosity for console logger: quiet, minimal, normal, detailed, verbose -->
+    <Verbosity>normal</Verbosity>
+  </LoggerRunSettings>
+
+  <!-- NUnit Adapter Settings (if using NUnit) -->
+  <NUnit>
+    <!-- Number of test workers for NUnit -->
+    <NumberOfTestWorkers>-1</NumberOfTestWorkers>
+  </NUnit>
+
+  <!-- xUnit Adapter Settings -->
+  <xUnit>
+    <!-- Set parallel strategy: collections, assemblies, or none -->
+    <ParallelizeAssembly>true</ParallelizeAssembly>
+    <ParallelizeTestCollections>true</ParallelizeTestCollections>
+    <!-- Max degree of parallelism (0 = # of processors) -->
+    <MaxParallelThreads>0</MaxParallelThreads>
+  </xUnit>
+
+  <!-- Blame Configuration (for diagnosing hung tests) -->
+  <InProcDataCollectionRunSettings>
+    <InProcDataCollectors>
+      <InProcDataCollector friendlyName="blame" enabled="false">
+        <Configuration>
+          <CollectDump processName="testhost" />
+        </Configuration>
+      </InProcDataCollector>
+    </InProcDataCollectors>
+  </InProcDataCollectionRunSettings>
+
+  <!-- WSL Test Host Configuration -->
+  <RunConfiguration>
+    <!-- Custom test host environment variables for WSL -->
+    <EnvironmentVariables>
+      <!-- Set to run in WSL -->
+      <WSL_ENABLED>true</WSL_ENABLED>
+      <WSL_DISTRIBUTION>Ubuntu</WSL_DISTRIBUTION>
+      <!-- .NET configuration for cross-platform testing -->
+      <DOTNET_SKIP_FIRST_TIME_EXPERIENCE>true</DOTNET_SKIP_FIRST_TIME_EXPERIENCE>
+      <DOTNET_CLI_TELEMETRY_OPTOUT>true</DOTNET_CLI_TELEMETRY_OPTOUT>
+    </EnvironmentVariables>
+  </RunConfiguration>
+
+  <!-- Adapter Paths for discovering test adapters -->
+  <AdapterSearchPaths>
+    <Directory path="." includeSubDirectories="true" />
+  </AdapterSearchPaths>
+
+  <!-- MSTest Adapter Settings -->
+  <MSTest>
+    <!-- Enable parallel test execution -->
+    <Parallelize workers="0" scope="MethodLevel" />
+    <!-- Test isolation: none, method, class, assembly -->
+    <TestIsolation>method</TestIsolation>
+    <!-- Capture trace output -->
+    <CaptureTraceOutput>true</CaptureTraceOutput>
+  </MSTest>
+</RunSettings>
