@@ -318,7 +318,20 @@ public sealed class CrossPlatformBuildTests(ITestOutputHelper testOutputHelper) 
 
     public void Dispose()
     {
-        _logFile.DeleteIfExists();
-        _fs.Dispose();
+        try
+        {
+            if (_logFile.Path != UPath.Root && _logFile.Path != UPath.Empty)
+            {
+                _logFile.DeleteIfExists();
+            }
+        }
+        catch (Exception)
+        {
+            // Log file cleanup is not critical to test execution
+        }
+        finally
+        {
+            _fs.Dispose();
+        }
     }
 }
