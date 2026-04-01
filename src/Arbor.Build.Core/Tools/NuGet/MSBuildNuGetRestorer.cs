@@ -103,7 +103,11 @@ public class MsBuildNuGetRestorer(IFileSystem fileSystem, BuildContext buildCont
                     excluded.Select(excludedItem => $"{excludedItem.File.ConvertPathToInternal()} ({excludedItem.Status.Item2})")));
         }
 
-        var solutionFile = included.Single();
+        // Prefer .sln over .slnx for MSBuild compatibility
+        // .slnx is modern Visual Studio format but may not be supported by all MSBuild versions
+        var solutionFile = included
+            .OrderBy(f => f.Path.GetExtensionWithDot().Equals(".slnx", System.StringComparison.OrdinalIgnoreCase) ? 1 : 0)
+            .First();
 
         string? runtimeIdentifier =
             buildVariables.GetVariableValueOrDefault(WellKnownVariables.PublishRuntimeIdentifier);
