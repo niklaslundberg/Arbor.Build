@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.Tools.Cleanup;
+using Arbor.Build.Core.Tools.Platform;
 using Arbor.FS;
 using Arbor.Processing;
 using JetBrains.Annotations;
@@ -34,14 +35,32 @@ public class DotNetEnvironmentVariableProvider(IEnvironmentVariables environment
 
         if (string.IsNullOrWhiteSpace(dotNetExePath?.FullName))
         {
-            var sb = new List<string>(10);
+            dotNetExePath = await FindDotNetExecutableAsync(logger, cancellationToken);
+        }
+        else if (!fileSystem.FileExists(dotNetExePath.Value))
+        {
+            logger.Warning(
+                "The specified path to dotnet executable from variable '{DotNetExePath}' is set to '{DotNetExePath1}' but the file does not exist",
+                WellKnownVariables.DotNetExePath,
+                fileSystem.ConvertPathToInternal(dotNetExePath.Value));
+            return [];
+        }
 
+        return [new BuildVariable(WellKnownVariables.DotNetExePath, string.IsNullOrWhiteSpace(dotNetExePath?.FullName) ? "" : fileSystem.ConvertPathToInternal(dotNetExePath.Value))];
+    }
+
+    private async Task<UPath?> FindDotNetExecutableAsync(ILogger logger, CancellationToken cancellationToken)
+    {
+        var sb = new List<string>(10);
+
+        if (PlatformHelper.IsWindows)
+        {
             var winDir = environmentVariables.GetEnvironmentVariable("WINDIR")?.ParseAsPath();
 
             if (winDir is null)
             {
                 logger.Warning("Error finding Windows directory");
-                return [];
+                return await TryFindInPathAsync(logger, cancellationToken);
             }
 
             var whereExePath = UPath.Combine(winDir.Value, "System32", "where.exe");
@@ -54,21 +73,78 @@ public class DotNetEnvironmentVariableProvider(IEnvironmentVariables environment
 
             if (!exitCode.IsSuccess)
             {
-                logger.Error("Failed to find dotnet.exe with where.exe");
+                logger.Warning("Failed to find dotnet.exe with where.exe");
+                return await TryFindInPathAsync(logger, cancellationToken);
             }
 
-            dotNetExePath =
-                sb.FirstOrDefault(item => item.EndsWith("dotnet.exe", StringComparison.OrdinalIgnoreCase))?.Trim().ParseAsPath();
+            return sb.FirstOrDefault(item => item.EndsWith("dotnet.exe", StringComparison.OrdinalIgnoreCase))?.Trim().ParseAsPath();
         }
-        else if (!fileSystem.FileExists(dotNetExePath.Value))
+        else if (PlatformHelper.IsLinux || PlatformHelper.IsMacOS)
         {
-            logger.Warning(
-                "The specified path to dotnet.exe is from variable '{DotNetExePath}' is set to '{DotNetExePath1}' but the file does not exist",
-                WellKnownVariables.DotNetExePath,
-                fileSystem.ConvertPathToInternal(dotNetExePath.Value));
-            return [];
+            ExitCode exitCode = await Processing.ProcessRunner.ExecuteProcessAsync(
+                "/usr/bin/which",
+                arguments: ["dotnet"],
+                standardOutLog: (message, _) => sb.Add(message),
+                cancellationToken: cancellationToken);
+
+            if (!exitCode.IsSuccess)
+            {
+                logger.Warning("Failed to find dotnet with which command");
+                return TryFindInCommonLocations(logger);
+            }
+
+            var dotnetPath = sb.FirstOrDefault()?.Trim();
+            return string.IsNullOrWhiteSpace(dotnetPath) ? null : dotnetPath.ParseAsPath();
         }
 
-        return [new BuildVariable(WellKnownVariables.DotNetExePath, string.IsNullOrWhiteSpace(dotNetExePath?.FullName) ? "" : fileSystem.ConvertPathToInternal(dotNetExePath.Value))];
+        return null;
+    }
+
+    private async Task<UPath?> TryFindInPathAsync(ILogger logger, CancellationToken cancellationToken)
+    {
+        var pathVariable = environmentVariables.GetEnvironmentVariable("PATH");
+        if (string.IsNullOrWhiteSpace(pathVariable))
+        {
+            return null;
+        }
+
+        var pathSeparator = PlatformHelper.IsWindows ? ';' : ':';
+        var paths = pathVariable.Split(pathSeparator, StringSplitOptions.RemoveEmptyEntries);
+        var dotnetExeName = PlatformHelper.GetExecutableName("dotnet");
+
+        foreach (var path in paths)
+        {
+            var dotnetPath = UPath.Combine(path.ParseAsPath(), dotnetExeName);
+            if (fileSystem.FileExists(dotnetPath))
+            {
+                logger.Debug("Found dotnet executable in PATH at '{DotnetPath}'", fileSystem.ConvertPathToInternal(dotnetPath));
+                return dotnetPath;
+            }
+        }
+
+        return null;
+    }
+
+    private UPath? TryFindInCommonLocations(ILogger logger)
+    {
+        var commonLocations = new[]
+        {
+            "/usr/bin/dotnet",
+            "/usr/local/bin/dotnet",
+            "/usr/share/dotnet/dotnet",
+            "/opt/dotnet/dotnet"
+        };
+
+        foreach (var location in commonLocations)
+        {
+            var dotnetPath = location.ParseAsPath();
+            if (fileSystem.FileExists(dotnetPath))
+            {
+                logger.Debug("Found dotnet executable at '{DotnetPath}'", location);
+                return dotnetPath;
+            }
+        }
+
+        return null;
     }
 }

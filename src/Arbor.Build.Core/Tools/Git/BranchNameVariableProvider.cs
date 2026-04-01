@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Arbor.Aesculus.Core;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.Tools.Cleanup;
+using Arbor.Build.Core.Tools.Platform;
 using Arbor.Processing;
 using JetBrains.Annotations;
 using Serilog;
@@ -125,7 +126,7 @@ public class BranchNameVariableProvider(
                     {
                         var directory = pathLine.Split('=').Last().Replace("\"", string.Empty, StringComparison.Ordinal).ParseAsPath();
 
-                        var gitPath = UPath.Combine(directory, "bin", "git.exe");
+                        var gitPath = UPath.Combine(directory, "bin", PlatformHelper.GetExecutableName("git"));
 
                         if (fileSystem.FileExists(gitPath))
                         {

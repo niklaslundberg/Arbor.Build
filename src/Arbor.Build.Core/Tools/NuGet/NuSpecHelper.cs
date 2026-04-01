@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using Arbor.FS;
 using Serilog;
 using Zio;
@@ -28,7 +29,7 @@ public static class NuSpecHelper
 
         string targetFilePath = fileName.FullName[baseDirLength..].Replace('/', '\\');
 
-        string fileNamePath = fileName.Path.WindowsPath();
+        string fileNamePath = fileName.FileSystem.ConvertPathToInternal(fileName.Path);
 
         string fileItem = $@"<file src=""{fileNamePath}"" target=""Content\{targetFilePath}"" />";
 

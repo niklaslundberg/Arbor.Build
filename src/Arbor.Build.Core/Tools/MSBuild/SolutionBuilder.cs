@@ -924,8 +924,10 @@ public class SolutionBuilder(
     private UPath AdjustBuildArgs(List<string> argList)
     {
         bool dotnetMsBuildEnabled = _dotnetMsBuildEnabled || (_msBuildExe.HasValue &&
-                                                              _msBuildExe.Value.FullName.EndsWith("dotnet.exe",
-                                                                  StringComparison.OrdinalIgnoreCase));
+                                                              (_msBuildExe.Value.FullName.EndsWith("dotnet.exe",
+                                                                  StringComparison.OrdinalIgnoreCase)
+                                                              || _msBuildExe.Value.FullName.EndsWith("/dotnet",
+                                                                  StringComparison.OrdinalIgnoreCase)));
 
         if (dotnetMsBuildEnabled
             && argList.Count > 0
@@ -2144,13 +2146,13 @@ public class SolutionBuilder(
 
         FileListWithChecksumFile contentFilesInfo = await ChecksumHelper.CreateFileListForDirectory(baseDirectory);
 
-        string nativeMetadataDirectory = contentFilesInfo.ContentFilesFile.Directory.Path.WindowsPath();
+        string nativeMetadataDirectory = fileSystem.ConvertPathToInternal(contentFilesInfo.ContentFilesFile.Directory.Path);
 
-        string nativePath = contentFilesInfo.ContentFilesFile.Path.WindowsPath();
-        string nativeChecksumPath = contentFilesInfo.ChecksumFile.Path.WindowsPath();
+        string nativePath = fileSystem.ConvertPathToInternal(contentFilesInfo.ContentFilesFile.Path);
+        string nativeChecksumPath = fileSystem.ConvertPathToInternal(contentFilesInfo.ChecksumFile.Path);
 
-        string nativeFullPath = fileSystem.ConvertPathToInternal(contentFilesInfo.ContentFilesFile.Path);
-        string nativeChecksumFileFullPath = fileSystem.ConvertPathToInternal(contentFilesInfo.ChecksumFile.Path);
+        string nativeFullPath = nativePath;
+        string nativeChecksumFileFullPath = nativeChecksumPath;
 
         string contentFileListFile =
             $"""<file src="{nativeFullPath}" target="{nativePath[nativeMetadataDirectory.Length..].TrimStart(Path.DirectorySeparatorChar)}" />""";

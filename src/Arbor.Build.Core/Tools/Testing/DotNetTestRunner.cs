@@ -81,7 +81,7 @@ public class DotNetTestRunner(BuildContext buildContext, IFileSystem fileSystem)
         if (string.IsNullOrWhiteSpace(dotNetExePathValue))
         {
             logger.Error(
-                "Path to 'dotnet.exe' has not been specified, set variable '{DotNetExePath}' or ensure the dotnet.exe is installed in its standard location",
+                "Path to dotnet executable has not been specified, set variable '{DotNetExePath}' or ensure dotnet is installed in its standard location",
                 WellKnownVariables.DotNetExePath);
 
             return ExitCode.Failure;

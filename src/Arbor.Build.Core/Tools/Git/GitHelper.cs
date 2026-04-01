@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.Tools.Platform;
 using Arbor.FS;
 using Serilog;
 using Zio;
@@ -14,31 +15,34 @@ public class GitHelper(IFileSystem fileSystem)
     {
         ArgumentNullException.ThrowIfNull(logger);
 
-        var gitExeLocations = new List<UPath>
+        var gitExeLocations = new List<UPath>();
+
+        if (PlatformHelper.IsWindows)
         {
-            UPath.Combine(
+            gitExeLocations.Add(UPath.Combine(
                 specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86).ParseAsPath(),
                 "Git",
                 "bin",
-                "git.exe"),
-            UPath.Combine(
-                specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86).ParseAsPath(),
-                "Git",
-                "bin",
-                "git.exe")
-        };
+                "git.exe"));
 
-        var programFilesX64 = environmentVariables.GetEnvironmentVariable("ProgramW6432")?.ParseAsPath();
+            var programFilesX64 = environmentVariables.GetEnvironmentVariable("ProgramW6432")?.ParseAsPath();
 
-        if (programFilesX64.HasValue)
+            if (programFilesX64.HasValue)
+            {
+                var programFilesX64FullPath = UPath.Combine(
+                    programFilesX64.Value,
+                    "Git",
+                    "bin",
+                    "git.exe");
+
+                gitExeLocations.Insert(0, programFilesX64FullPath);
+            }
+        }
+        else if (PlatformHelper.IsLinux || PlatformHelper.IsMacOS)
         {
-            var programFilesX64FullPath = UPath.Combine(
-                programFilesX64.Value,
-                "Git",
-                "bin",
-                "git.exe");
-
-            gitExeLocations.Insert(0, programFilesX64FullPath);
+            gitExeLocations.Add("/usr/bin/git".ParseAsPath());
+            gitExeLocations.Add("/usr/local/bin/git".ParseAsPath());
+            gitExeLocations.Add("/bin/git".ParseAsPath());
         }
 
         var exePath = gitExeLocations.FirstOrDefault(

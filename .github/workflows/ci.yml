@@ -3,24 +3,35 @@ name: CI
 on: [push]
 
 jobs:
-  build:
-
+  build-windows:
     runs-on: windows-2025-vs2026
 
     steps:
     - uses: actions/checkout@v4
       with:
-        fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-    - uses: actions/setup-dotnet@v4
+        fetch-depth: 0
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 10.0.x
         cache: true
         cache-dependency-path: tests/Arbor.Build.Tests.Integration
-    - name: install-tools
+
+    - name: Verify .NET installation
+      shell: pwsh
+      run: |
+        dotnet --version
+        dotnet --list-runtimes
+        dotnet --list-sdks
+
+    - name: Install global tools
+      shell: pwsh
       run: |
         dotnet tool install --global Arbor.Tooler.GlobalTool --version "*-*"
         dotnet tool install --global Arbor.Build.Bootstrapper --version "*-*"
-    - name: build
+
+    - name: Build with Arbor.Build
       shell: cmd
       env:
         Arbor.Build.NuGet.PackageUpload.Server.ApiKey: ${{ secrets.myget }}
@@ -28,4 +39,72 @@ jobs:
         Arbor.Build.NuGet.PackageUpload.Enabled: "true"
         Arbor.Build.NuGet.PackageUpload.ForceUploadEnabled: "true"
       run: |
-        build\build.bat
+        call build\build.bat
+
+    - name: Run all tests (including cross-platform validation)
+      shell: pwsh
+      run: |
+        dotnet test --logger "console;verbosity=detailed" --no-build
+
+    - name: Upload build artifacts (Windows)
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: artifacts-windows
+        path: artifacts/
+        retention-days: 7
+
+  build-linux:
+    runs-on: ubuntu-latest
+
+    env:
+      DOTNET_ROOT: ${{ env.DOTNET_ROOT }}
+      DOTNET_ROOT_X64: ${{ env.DOTNET_ROOT_X64 }}
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.0.x
+        cache: true
+        cache-dependency-path: tests/Arbor.Build.Tests.Integration
+
+    - name: Verify .NET installation
+      shell: bash
+      run: |
+        dotnet --version
+        dotnet --list-runtimes
+        dotnet --list-sdks
+
+    - name: Install global tools
+      shell: bash
+      run: |
+        dotnet tool install --global Arbor.Tooler.GlobalTool --version "*-*"
+        dotnet tool install --global Arbor.Build.Bootstrapper --version "*-*"
+
+    - name: Build with Arbor.Build
+      shell: bash
+      env:
+        Arbor__Build__Version: "1.0.0"
+        Arbor__Build__ExternalTools_MSBuild_DotNetEnabled: "true"
+        Arbor__Build__SourceRoot: "."
+        Arbor__Build__Artifacts: "./artifacts"
+      run: |
+        dotnet arbor-build
+
+    - name: Run cross-platform tests
+      shell: bash
+      run: |
+        dotnet test --filter "FullyQualifiedName~CrossPlatform" --logger "console;verbosity=detailed" --no-build
+
+    - name: Upload build artifacts (Linux)
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: artifacts-linux
+        path: artifacts/
+        retention-days: 7

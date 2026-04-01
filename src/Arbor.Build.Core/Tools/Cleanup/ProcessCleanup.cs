@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
@@ -20,7 +21,9 @@ namespace Arbor.Build.Core.Tools.Cleanup;
 [Priority(int.MaxValue, true)]
 public class ProcessCleanup(ILogger processLogger, IFileSystem fileSystem) : ITool
 {
-    private static ImmutableArray<string> ProcessNames { get; } = [..new[] {"msbuild.exe", "vbcscompiler.exe", "csc.exe"}];
+    private static ImmutableArray<string> ProcessNames { get; } = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+        ? [..new[] {"msbuild.exe", "vbcscompiler.exe", "csc.exe"}]
+        : [..new[] {"msbuild", "vbcscompiler", "csc"}];
 
     public async Task<ExitCode> ExecuteAsync(ILogger logger,
         IReadOnlyCollection<IVariable> buildVariables,

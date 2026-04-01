@@ -6,6 +6,7 @@ using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.GenericExtensions;
 using Arbor.Build.Core.Tools.Cleanup;
 using Arbor.Build.Core.Tools.NuGet;
+using Arbor.Build.Core.Tools.Platform;
 using Arbor.FS;
 using JetBrains.Annotations;
 using NuGet.Versioning;
@@ -34,19 +35,43 @@ public class DotNetSdkVariableProvider(IEnvironmentVariables environmentVariable
             return Task.FromResult(EnumerableOf<IVariable>.Empty);
         }
 
-        var programFilesX64 = environmentVariables.GetEnvironmentVariable("ProgramW6432")?.ParseAsPath();
+        UPath? sdkBasePath = null;
 
-        if (programFilesX64 is null)
+        if (PlatformHelper.IsWindows)
+        {
+            var programFilesX64 = environmentVariables.GetEnvironmentVariable("ProgramW6432")?.ParseAsPath();
+
+            if (programFilesX64.HasValue)
+            {
+                sdkBasePath = UPath.Combine(programFilesX64.Value, "dotnet", "sdk");
+            }
+        }
+        else if (PlatformHelper.IsLinux || PlatformHelper.IsMacOS)
+        {
+            var commonLocations = new[]
+            {
+                "/usr/share/dotnet/sdk",
+                "/usr/local/share/dotnet/sdk",
+                "/opt/dotnet/sdk"
+            };
+
+            foreach (var location in commonLocations)
+            {
+                var locationPath = location.ParseAsPath();
+                if (fileSystem.DirectoryExists(locationPath))
+                {
+                    sdkBasePath = locationPath;
+                    break;
+                }
+            }
+        }
+
+        if (!sdkBasePath.HasValue)
         {
             return Task.FromResult(EnumerableOf<IVariable>.Empty);
         }
 
-        var programFilesX64FullPath = UPath.Combine(
-            programFilesX64.Value,
-            "dotnet",
-            "sdk");
-
-        var directoryEntry = new DirectoryEntry(fileSystem, programFilesX64FullPath);
+        var directoryEntry = new DirectoryEntry(fileSystem, sdkBasePath.Value);
 
         if (directoryEntry.Exists)
         {
