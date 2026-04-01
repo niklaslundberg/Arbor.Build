@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -8,6 +9,7 @@ using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Logging;
 using Arbor.Build.Core.ProcessUtils;
 using Arbor.Build.Core.Tools.MSBuild;
+using Arbor.Build.Core.Tools.Platform;
 using Arbor.FS;
 using Arbor.Processing;
 using JetBrains.Annotations;
@@ -41,8 +43,22 @@ public class MsBuildNuGetRestorer(IFileSystem fileSystem, BuildContext buildCont
         string[] args,
         CancellationToken cancellationToken)
     {
+        // Skip on non-Windows platforms - MSBuild is Windows-only
+        if (Environment.OSVersion.Platform != PlatformID.Win32NT)
+        {
+            logger.Debug(
+                "{Tool} is skipped on non-Windows platform ({Platform}). Use DotNetRestorer instead",
+                nameof(MsBuildNuGetRestorer),
+                Environment.OSVersion.Platform);
+            return ExitCode.Success;
+        }
+
         if (buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_MSBuild_DotNetEnabled))
         {
+            logger.Debug(
+                "{Tool} is skipped because {Variable} is enabled (use dotnet restore instead)",
+                nameof(MsBuildNuGetRestorer),
+                WellKnownVariables.ExternalTools_MSBuild_DotNetEnabled);
             return ExitCode.Success;
         }
 
