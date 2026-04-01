@@ -2,7 +2,10 @@
 ## Arbor
 #################
 src/*.ide
-build
+# Allow build scripts but ignore build artifacts
+build/**/*
+!build/*.sh
+!build/*.bat
 build/nuget.exe
 AppPackages
 *.css

@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+set -e
+
+# Set default values for Arbor.Build configuration
+export Arbor__Build__Bootstrapper__AllowPrerelease="${Arbor__Build__Bootstrapper__AllowPrerelease:-true}"
+export Arbor__Build__Build__Bootstrapper__AllowPrerelease="${Arbor__Build__Build__Bootstrapper__AllowPrerelease:-true}"
+export Arbor__Build__Configuration="release"
+export Arbor__Build__PublishDotNetExecutableProjects="true"
+export Arbor__Build__NuGet__PackageUpload__PackageExcludeStartsWithPatterns="Arbor.Build.Sample"
+export Arbor__Build__Vcs__Branch__BranchModel="GitFlowBuildOnMain"
+export Arbor__Build__Tools__External__MSpec__Enabled="true"
+export Arbor__Build__NuGet__Package__Artifacts__Suffix="build"
+export Arbor__Build__NuGet__Package__Artifacts__Suffix__Enabled="true"
+export Arbor__Build__NuGet__Package__Artifacts__BuildNumber__Enabled=""
+export Arbor__Build__Log__Level="Debug"
+export Arbor__Build__Vcs__Branch__Name="${GITHUB_REF:-}"
+export Arbor__Build__Vcs__Branch__Name__Version__OverrideEnabled="true"
+export Arbor__Build__VariableOverrideEnabled="true"
+export Arbor__Build__Artifacts__CleanupBeforeBuildEnabled="true"
+export Arbor__Build__Tools__External__LibZ__Enabled="true"
+
+# Linux-specific runtime identifier
+export Arbor__Build__PublishRuntimeIdentifier="linux-x64"
+export Arbor__Build__NuGet__ReinstallArborPackageEnabled="true"
+export Arbor__Build__NuGet__VersionUpdateEnabled="false"
+export Arbor__Build__Artifacts__PdbArtifacts__Enabled="true"
+export Arbor__Build__NuGet__Package__CreateNuGetWebPackages__Enabled="false"
+export Arbor__Build__NuGet__Package__Symbols__Enabled="true"
+
+export Arbor__Build__NetAssembly__MetadataEnabled="true"
+export Arbor__Build__NetAssembly__Description="A convention-based build tool"
+export Arbor__Build__NetAssembly__Company="Niklas Lundberg"
+export Arbor__Build__NetAssembly__Copyright="© Niklas Lundberg 2014-2025"
+export Arbor__Build__NetAssembly__Trademark="Arbor.Build TM"
+export Arbor__Build__NetAssembly__Product="Arbor.Build"
+export Arbor__Build__Tools__External__MSBuild__Verbosity="minimal"
+export Arbor__Build__NuGet__Package__AllowManifestReWriteEnabled="true"
+export Arbor__Build__WebDeploy__PreCompilation__Enabled="false"
+export Arbor__Build__Cleanup__KillProcessesAfterBuild__Enabled="true"
+export Arbor__Build__Tools__External__NUnit__Enabled="false"
+export Arbor__Build__NuGet__Package__ExcludesCommaSeparated="Arbor.Build.Bootstrapper.nuspec"
+export Arbor__Build__Tools__External__MSBuild__CodeAnalysis__Enabled="false"
+export Arbor__Build__BuildNumber__UnixEpochSecondsEnabled="true"
+export Arbor__Build__NuGet__NuGetWebPackage__ExcludedPatterns="Arbor.Build.Samples"
+export Arbor__Build__NuGet__PackageUpload__PackageExcludeStartsWithPatterns="dotnet-"
+
+# Run the build using Arbor.Build.Bootstrapper
+echo "Starting Arbor.Build on Linux..."
+dotnet arbor-build
