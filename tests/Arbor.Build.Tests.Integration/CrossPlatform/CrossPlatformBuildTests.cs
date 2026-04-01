@@ -35,6 +35,24 @@ public sealed class CrossPlatformBuildTests(ITestOutputHelper testOutputHelper) 
 
         var exitCode = await RunBuildOnDirectoryAsync(sampleDirectory);
 
+        if (exitCode.Code != 0)
+        {
+            // Print log file contents for diagnostics
+            try
+            {
+                if (_logFile != null && _fs.FileExists(_logFile.Path))
+                {
+                    var logContent = System.IO.File.ReadAllText(_fs.ConvertPathToInternal(_logFile.Path));
+                    testOutputHelper.WriteLine("Build log:");
+                    testOutputHelper.WriteLine(logContent);
+                }
+            }
+            catch
+            {
+                // Log file not available - continue with test failure
+            }
+        }
+
         exitCode.Code.ShouldBe(0, "Build should succeed on current platform");
 
         var expectedPackagePath = sampleDirectory.Path / "Artifacts" / "packages" / "CrossPlatformLib.1.0.0-build.1.nupkg";
