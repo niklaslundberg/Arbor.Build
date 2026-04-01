@@ -320,7 +320,7 @@ public sealed class CrossPlatformBuildTests(ITestOutputHelper testOutputHelper) 
     {
         try
         {
-            if (_logFile.Path != UPath.Root && _logFile.Path != UPath.Empty)
+            if (_logFile != null && _logFile.Path != UPath.Root && _logFile.Path != UPath.Empty)
             {
                 _logFile.DeleteIfExists();
             }
@@ -331,7 +331,7 @@ public sealed class CrossPlatformBuildTests(ITestOutputHelper testOutputHelper) 
         }
         finally
         {
-            _fs.Dispose();
+            _fs?.Dispose();
         }
     }
 }

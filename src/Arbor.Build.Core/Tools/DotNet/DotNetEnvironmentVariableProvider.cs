@@ -94,7 +94,7 @@ public class DotNetEnvironmentVariableProvider(IEnvironmentVariables environment
             }
 
             var dotnetPath = sb.FirstOrDefault()?.Trim();
-            return string.IsNullOrWhiteSpace(dotnetPath) ? null : dotnetPath.ParseAsPath();
+            return !string.IsNullOrWhiteSpace(dotnetPath) ? dotnetPath.ParseAsPath() : null;
         }
 
         return null;
