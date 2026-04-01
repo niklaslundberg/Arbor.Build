@@ -6,6 +6,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageId>CrossPlatformLib</PackageId>
+    <Title>CrossPlatformLib</Title>
+    <Description>A sample cross-platform library for Arbor.Build</Description>
+    <Authors>Arbor.Build Contributors</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
 </Project>
