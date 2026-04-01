@@ -187,7 +187,7 @@ public sealed class CrossPlatformBuildTests(ITestOutputHelper testOutputHelper) 
                 }
                 return; // Success
             }
-            catch (Exception ex) when (attempt < maxRetries - 1)
+            catch (Exception) when (attempt < maxRetries - 1)
             {
                 // Log and retry on transient failures (locked file, etc.)
                 System.Threading.Thread.Sleep(100 * (attempt + 1)); // Exponential backoff
