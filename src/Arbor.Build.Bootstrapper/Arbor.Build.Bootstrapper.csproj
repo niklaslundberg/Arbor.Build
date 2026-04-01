@@ -9,14 +9,16 @@
     <AssemblyName>dotnet-arbor-build</AssemblyName>
     <StartupObject />
     <FileVersion>$(Version)</FileVersion>
-    <RuntimeIdentifier Condition="'${Configuration}' == 'release'">win-x64</RuntimeIdentifier>
+    <!-- Support multiple runtime identifiers for cross-platform releases -->
+    <!-- Format: "win-x64;linux-x64;osx-x64" to create platform-specific packages -->
+    <RuntimeIdentifiers Condition="'$(Configuration)' == 'release'">win-x64;linux-x64;osx-x64</RuntimeIdentifiers>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Arbor.Aesculus" Version="3.9.0" />
     <PackageReference Include="Arbor.Tooler" Version="1.2.0" />
     <PackageReference Include="JetBrains.Annotations" Version="2025.2.4" />
-    <PackageReference Include="Microsoft.Win32.Primitives" Version="4.3.0" Condition="'${RuntimeIdentifier}' == 'win-x64'" />
+    <PackageReference Include="Microsoft.Win32.Primitives" Version="4.3.0" Condition="'$(RuntimeIdentifier)' == 'win-x64' OR '$(RuntimeIdentifiers)' != ''" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.201">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
