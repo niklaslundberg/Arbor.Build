@@ -452,24 +452,10 @@ public class AppBootstrapper(ILogger logger, IEnvironmentVariables environmentVa
             return (buildExeFile.Single().Path, []);
         }
 
-        // Fallback: Look for any Arbor.Build.* file (could be .exe, or no extension on Linux/macOS)
-        var arborBuild =
-            buildToolDirectory.GetFiles("Arbor.Build.*")
-                .Where(file => !file.Name.Equals("nuget.exe", StringComparison.OrdinalIgnoreCase) &&
-                               !file.Name.Equals("Arbor.Build.dll", StringComparison.OrdinalIgnoreCase))
-                .ToList();
-
-        if (arborBuild.Count == 1)
-        {
-            var file = arborBuild.Single();
-            logger.Debug("Found Arbor.Build executable: {FileName}", file.Name);
-            return (file.Path, []);
-        }
-
         // If no native executable found, try to use .dll with dotnet
         FileEntry? buildToolDll = buildToolDirectory.GetFiles("Arbor.Build.dll").SingleOrDefault();
 
-        if (buildToolDll is not null)
+        if (buildToolDll is { })
         {
             logger.Debug("Found Arbor.Build.dll, will invoke via dotnet");
 
@@ -491,8 +477,6 @@ public class AppBootstrapper(ILogger logger, IEnvironmentVariables environmentVa
             return (dotnetExePath, ["--", buildToolDll.ConvertPathToInternal()]);
         }
 
-        // No suitable executable or dll found
-        PrintInvalidExeFileCount(arborBuild, buildToolDirectory.FullName);
         return (null, []);
     }
 

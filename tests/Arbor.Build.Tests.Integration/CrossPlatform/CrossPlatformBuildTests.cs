@@ -296,7 +296,7 @@ public sealed class CrossPlatformBuildTests(ITestOutputHelper testOutputHelper) 
 
         process.OutputDataReceived += (_, e) =>
         {
-            if (e.Data is not null)
+            if (e.Data is { })
             {
                 outputLines.Add(e.Data);
             }
@@ -304,7 +304,7 @@ public sealed class CrossPlatformBuildTests(ITestOutputHelper testOutputHelper) 
 
         process.ErrorDataReceived += (_, e) =>
         {
-            if (e.Data is not null)
+            if (e.Data is { })
             {
                 errorLines.Add(e.Data);
             }
@@ -357,7 +357,7 @@ public sealed class CrossPlatformBuildTests(ITestOutputHelper testOutputHelper) 
     {
         string normalized = windowsPath.Replace('\\', '/');
 
-        if (normalized.Length >= 2 && normalized[1] == ':')
+        if (normalized is [_, ':', ..])
         {
             char driveLetter = char.ToLowerInvariant(normalized[0]);
             return $"/mnt/{driveLetter}{normalized[2..]}";

@@ -31,7 +31,7 @@ public static class ToolFinder
 
                 int priority = priorityAttribute?.Priority ?? int.MaxValue;
 
-                bool runAlways = priorityAttribute != null && priorityAttribute.RunAlways;
+                bool runAlways = priorityAttribute is { RunAlways: true };
 
                 return new ToolWithPriority(tool, priority, runAlways);
             })

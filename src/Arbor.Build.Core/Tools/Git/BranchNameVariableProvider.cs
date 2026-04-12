@@ -92,7 +92,7 @@ public class BranchNameVariableProvider(
             }
         }
 
-        return variables.Select(pair => (IVariable)new BuildVariable(pair.Key, pair.Value)).ToImmutableArray();
+        return [..variables.Select(pair => (IVariable)new BuildVariable(pair.Key, pair.Value))];
     }
 
     private async Task<Tuple<int, string>> GetBranchNameByAskingGitExeAsync()

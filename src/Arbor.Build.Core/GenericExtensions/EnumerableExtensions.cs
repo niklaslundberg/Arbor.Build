@@ -10,17 +10,12 @@ public static class EnumerableExtensions
     {
         ArgumentNullException.ThrowIfNull(enumerable);
 
-        if (enumerable is ImmutableArray<T> array)
+        return enumerable switch
         {
-            return array.IsDefault ? [] : array;
-        }
-
-        if (enumerable is List<T> list)
-        {
-            return list;
-        }
-
-        return enumerable.ToImmutableArray();
+            ImmutableArray<T> array => array.IsDefault ? [] : array,
+            List<T> list => list,
+            _ => [..enumerable]
+        };
     }
     public static IEnumerable<T> NotNull<T>(this IEnumerable<T?> items) where T : class
     {
@@ -38,7 +33,7 @@ public static class EnumerableExtensions
     {
         foreach (var item in items)
         {
-            if (item.Item1 is { } && item.Item2 is { } && item.Item3 is { })
+            if (item is { Item1: { }, Item2: { }, Item3: { } })
             {
                 yield return (item.Item1, item.Item2, item.Item3);
             }
@@ -50,7 +45,7 @@ public static class EnumerableExtensions
     {
         foreach (var item in items)
         {
-            if (item.Item1 is { } && item.Item2 is { })
+            if (item is { Item1: { }, Item2: { } })
             {
                 yield return (item.Item1, item.Item2);
             }

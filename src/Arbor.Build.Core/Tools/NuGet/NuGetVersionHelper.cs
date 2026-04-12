@@ -52,7 +52,7 @@ public static class NuGetVersionHelper
         var settings = nugetVersioningSettings ?? NuGetVersioningSettings.Default;
 
         int usePadding =
-            settings.SemVerVersion == 1 && settings.MaxZeroPaddingLength > 0
+            settings is { SemVerVersion: 1, MaxZeroPaddingLength: > 0 }
                 ? settings.MaxZeroPaddingLength
                 : 0;
 

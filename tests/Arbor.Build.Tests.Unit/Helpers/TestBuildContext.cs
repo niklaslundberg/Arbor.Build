@@ -217,7 +217,7 @@ public sealed class TestBuildContext
         var context = new BuildContext(_fileSystem);
 
         // Set source root if configured
-        if (_sourceRootPath.HasValue && _sourceRoot is not null)
+        if (_sourceRootPath.HasValue && _sourceRoot is { })
         {
             context.SourceRoot = _sourceRoot;
         }
@@ -238,7 +238,7 @@ public sealed class TestBuildContext
         }
 
         // Set current build configuration if specified
-        if (_currentBuildConfiguration is not null)
+        if (_currentBuildConfiguration is { })
         {
             context.CurrentBuildConfiguration = _currentBuildConfiguration;
         }

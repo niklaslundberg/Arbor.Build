@@ -13,8 +13,7 @@ public static class BuildVariableExtensions
     {
         string value = variables.GetVariableValueOrDefault(key, "")!;
 
-        return value.Split(';', StringSplitOptions.RemoveEmptyEntries).Select(item => item.Trim())
-            .ToImmutableArray();
+        return [..value.Split(';', StringSplitOptions.RemoveEmptyEntries).Select(item => item.Trim())];
     }
 
     public static bool HasKey(

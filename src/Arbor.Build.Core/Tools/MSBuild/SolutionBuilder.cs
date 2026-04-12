@@ -321,7 +321,7 @@ public class SolutionBuilder(
 
         _assemblyFileVersion = buildVariables.Require(WellKnownVariables.NetAssemblyFileVersion).Value!;
         _assemblyVersion = buildVariables.Require(WellKnownVariables.NetAssemblyVersion).Value!;
-        if (buildVariables.GetInt32ByKey(WellKnownVariables.ExternalTools_MSBuild_CpuCount) is { } cpuCount && cpuCount > 0)
+        if (buildVariables.GetInt32ByKey(WellKnownVariables.ExternalTools_MSBuild_CpuCount) is { } cpuCount and > 0)
         {
             _processorCount = cpuCount;
         }
@@ -1378,7 +1378,7 @@ public class SolutionBuilder(
                     }
                 }
 
-                if (pair.DllFile is not null)
+                if (pair.DllFile is { })
                 {
                     var targetDllFilePath = UPath.Combine(targetDirectory.FullName, pair.DllFile.Name);
 
@@ -1664,20 +1664,20 @@ public class SolutionBuilder(
 
         UPath applicationMetadataJsonFilePath;
 
-        const string applicationmetadataJson = "applicationmetadata.json";
+        const string applicationMetadataJsonFileName = "applicationmetadata.json";
 
         if (fileSystem.DirectoryExists(UPath.Combine(siteArtifactDirectory.Path, "wwwroot")))
         {
             applicationMetadataJsonFilePath = UPath.Combine(
                 siteArtifactDirectory.Path,
                 "wwwroot",
-                applicationmetadataJson);
+                applicationMetadataJsonFileName);
         }
         else
         {
             applicationMetadataJsonFilePath = UPath.Combine(
                 siteArtifactDirectory.Path,
-                applicationmetadataJson);
+                applicationMetadataJsonFileName);
         }
 
         new DirectoryEntry(fileSystem, applicationMetadataJsonFilePath.GetDirectory()).EnsureExists();
@@ -2518,7 +2518,7 @@ public class SolutionBuilder(
             buildSitePackageArguments.Add(_argHelper.FormatPropertyArg("FileVersion", _assemblyFileVersion));
         }
 
-        if (_processorCount.HasValue && _processorCount.Value >= 1)
+        if (_processorCount is >= 1)
         {
             buildSitePackageArguments.Add(
                 $"/maxcpucount:{_processorCount.Value.ToString(CultureInfo.InvariantCulture)}");
