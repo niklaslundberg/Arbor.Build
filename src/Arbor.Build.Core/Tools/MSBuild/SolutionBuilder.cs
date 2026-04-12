@@ -860,8 +860,7 @@ public class SolutionBuilder(
 
         if (exitCode.IsSuccess)
         {
-            exitCode = await PublishProjectsAsync(solutionFile, configuration, logger)
-                ;
+            exitCode = await PublishProjectsAsync(solutionFile, configuration, logger);
         }
         else
         {
@@ -959,9 +958,7 @@ public class SolutionBuilder(
             _logger.Information("Dotnet publish is enabled, key {Key}",
                 WellKnownVariables.DotNetPublishExeProjectsEnabled);
 
-            var webAppsExitCode =
-                await PublishDotNetProjectsAsync(solutionFile, configuration, logger)
-                    ;
+            var webAppsExitCode = await PublishDotNetProjectsAsync(solutionFile, configuration, logger);
 
             exitCode = webAppsExitCode;
         }
@@ -1544,8 +1541,7 @@ public class SolutionBuilder(
             {
                 logger.Information("AppData Web Jobs are enabled");
 
-                var exitCode = await CopyKuduWebJobsAsync(logger, solutionProject, siteArtifactDirectory)
-                    ;
+                var exitCode = await CopyKuduWebJobsAsync(logger, solutionProject, siteArtifactDirectory);
 
                 if (!exitCode.IsSuccess)
                 {
@@ -2130,6 +2126,11 @@ public class SolutionBuilder(
             runtimeIdentifier);
 
         if (packageConfiguration is null)
+        {
+            return ExitCode.Success;
+        }
+
+        if (packageId == "Arbor.Build" && runtimeIdentifier != "win-x64")
         {
             return ExitCode.Success;
         }

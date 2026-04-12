@@ -80,7 +80,7 @@ jobs:
       shell: bash
       run: |
         dotnet tool install --global Arbor.Tooler.GlobalTool --version "*-*"
-        dotnet tool install --global Arbor.Build.Bootstrapper --version "*-*"
+        dotnet tool install --global Arbor.Build.Tool --version "*-*"
 
     - name: Build with Arbor.Build
       shell: bash

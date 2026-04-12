@@ -29,7 +29,7 @@ public static class NuSpecHelper
 
         string fileNamePath = fileName.FileSystem.ConvertPathToInternal(fileName.Path);
 
-        string fileItem = $@"<file src=""{fileNamePath}"" target=""Content\{targetFilePath}"" />";
+        string fileItem = $"""<file src="{fileNamePath}" target="Content\{targetFilePath}" />""";
 
         return fileItem.Replace("\\\\", "\\", StringComparison.Ordinal);
     }

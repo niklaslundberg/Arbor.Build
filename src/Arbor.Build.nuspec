@@ -29,7 +29,6 @@
     <tags>build tools convention NoSource</tags>
   </metadata>
   <files>
-    <!-- Include cross-platform published binaries for Windows, Linux, and macOS -->
     <file src="Arbor.Build\bin\$configuration$\net10.0\$runtimeIdentifier$\publish\**\*.*" target="" exclude="*.xml;cs\*.*;de\*.*;es\*.*;fr\*.*;en\*.*;it\*.*;ja\*.*;ko\*.*;pl\*.*;pt-BR\*.*;ru\*.*;tr\*.*;zh-Hans\*.*;zh-Hant\*.*" />
   </files>
 </package>
