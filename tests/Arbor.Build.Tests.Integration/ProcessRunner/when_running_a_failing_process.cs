@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using Arbor.Build.Core.IO;
+using Arbor.Build.Core.Tools.Testing;
 using Arbor.FS;
 using Arbor.Processing;
 using Machine.Specifications;
@@ -13,7 +14,7 @@ using Zio.FileSystems;
 namespace Arbor.Build.Tests.Integration.ProcessRunner;
 
 [Subject(typeof(Processing.ProcessRunner))]
-[Tags(Core.Tools.Testing.MSpecInternalConstants.RecursiveArborXTest)]
+[Tags(TestFilterHelper.RecursiveCategoryName)]
 public class when_running_a_failing_process
 {
     static UPath testPath;

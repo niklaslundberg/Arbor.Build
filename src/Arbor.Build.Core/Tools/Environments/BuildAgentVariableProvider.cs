@@ -14,6 +14,14 @@ namespace Arbor.Build.Core.Tools.Environments;
 [UsedImplicitly]
 public class BuildAgentVariableProvider : IVariableProvider
 {
+    private static readonly HashSet<string> BuildAgentEnvironmentVariables =
+    [
+        WellKnownVariables.ExternalTools_Hudson_HudsonHome,
+        WellKnownVariables.ExternalTools_Jenkins_JenkinsHome,
+        WellKnownVariables.ExternalTools_GitHubActions,
+        WellKnownVariables.ExternalTools_TeamCity_TeamCityVersion
+    ];
+
     public int Order => VariableProviderOrder.Default;
 
     public Task<IReadOnlyCollection<IVariable>> GetBuildVariablesAsync(
@@ -22,14 +30,6 @@ public class BuildAgentVariableProvider : IVariableProvider
         CancellationToken cancellationToken)
     {
         bool isBuildAgentValue;
-
-        var buildAgentEnvironmentVariables = new List<string>
-        {
-            WellKnownVariables.ExternalTools_Hudson_HudsonHome,
-            WellKnownVariables.ExternalTools_Jenkins_JenkinsHome,
-            WellKnownVariables.ExternalTools_GitHubActions,
-            WellKnownVariables.ExternalTools_TeamCity_TeamCityVersion
-        };
 
         bool isBuildAgent = buildVariables.GetBooleanByKey(WellKnownVariables.IsRunningOnBuildAgent);
 
@@ -40,7 +40,7 @@ public class BuildAgentVariableProvider : IVariableProvider
         else
         {
             isBuildAgentValue =
-                buildAgentEnvironmentVariables.Any(
+                BuildAgentEnvironmentVariables.Any(
                     buildAgent => buildVariables.GetOptionalBooleanByKey(buildAgent) == true);
         }
 

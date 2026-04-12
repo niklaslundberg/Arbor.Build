@@ -104,7 +104,7 @@ public sealed class TestBuildContext
             throw new ArgumentException("Configurations cannot be null or empty.", nameof(configurations));
         }
 
-        foreach (var config in configurations)
+        foreach (string config in configurations)
         {
             WithConfiguration(config);
         }
@@ -225,7 +225,7 @@ public sealed class TestBuildContext
         // Add configurations
         if (_configurations.Count > 0)
         {
-            foreach (var config in _configurations)
+            foreach (string config in _configurations)
             {
                 context.Configurations.Add(config);
             }

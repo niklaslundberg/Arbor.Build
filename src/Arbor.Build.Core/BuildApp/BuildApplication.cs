@@ -273,7 +273,7 @@ public sealed class BuildApplication : IDisposable
 
         if (result != 0)
         {
-            foreach (var (toolResultValue, reportLogTail) in toolResults
+            foreach ((ToolResult toolResultValue, IReportLogTail? reportLogTail) in toolResults
                          .Where(tool => tool.ResultType == ToolResultType.Failed)
                          .Select(toolResult => (Result: toolResult, LogTail: toolResult.ToolWithPriority.Tool as IReportLogTail))
                          .Where(item => item.LogTail is { }))

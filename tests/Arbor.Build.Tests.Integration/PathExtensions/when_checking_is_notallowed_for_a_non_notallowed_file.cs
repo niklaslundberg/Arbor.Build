@@ -10,7 +10,7 @@ using Zio.FileSystems;
 
 namespace Arbor.Build.Tests.Integration.PathExtensions;
 
-[Tags(MSpecInternalConstants.RecursiveArborXTest)]
+[Tags(TestFilterHelper.RecursiveCategoryName)]
 public class when_checking_is_notallowed_for_a_non_notallowed_file
 {
     static readonly PathLookupSpecification path_lookup_specification =

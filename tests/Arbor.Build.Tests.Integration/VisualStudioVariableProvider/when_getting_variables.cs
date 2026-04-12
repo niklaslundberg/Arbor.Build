@@ -8,7 +8,7 @@ using Zio.FileSystems;
 
 namespace Arbor.Build.Tests.Integration.VisualStudioVariableProvider;
 
-[Tags(MSpecInternalConstants.RecursiveArborXTest)]
+[Tags(TestFilterHelper.RecursiveCategoryName)]
 [Subject(typeof(Core.Tools.VisualStudio.VisualStudioVariableProvider))]
 public class when_getting_variables
 {

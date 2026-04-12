@@ -7,6 +7,8 @@ namespace Arbor.Build.Core.Tools.Testing;
 
 public static class TestFilterHelper
 {
+    public const string RecursiveCategoryName = "ArborBuildRecursive";
+    
     public static ImmutableArray<string> AssemblyFilePrefixes(this IReadOnlyCollection<IVariable> buildVariables) =>
         [
             ..(buildVariables ?? throw new ArgumentNullException(nameof(buildVariables))).GetVariableValueOrDefault(

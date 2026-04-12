@@ -93,7 +93,7 @@ public class DotNetEnvironmentVariableProvider(IEnvironmentVariables environment
                 return TryFindInCommonLocations(logger);
             }
 
-            var dotnetPath = sb.FirstOrDefault()?.Trim();
+            string? dotnetPath = sb.FirstOrDefault()?.Trim();
             if (!string.IsNullOrWhiteSpace(dotnetPath))
             {
                 return dotnetPath!.ParseAsPath();
@@ -106,17 +106,17 @@ public class DotNetEnvironmentVariableProvider(IEnvironmentVariables environment
 
     private async Task<UPath?> TryFindInPathAsync(ILogger logger, CancellationToken cancellationToken)
     {
-        var pathVariable = environmentVariables.GetEnvironmentVariable("PATH");
+        string? pathVariable = environmentVariables.GetEnvironmentVariable("PATH");
         if (string.IsNullOrWhiteSpace(pathVariable))
         {
             return null;
         }
 
-        var pathSeparator = PlatformHelper.IsWindows ? ';' : ':';
-        var paths = pathVariable.Split(pathSeparator, StringSplitOptions.RemoveEmptyEntries);
-        var dotnetExeName = PlatformHelper.GetExecutableName("dotnet");
+        char pathSeparator = PlatformHelper.IsWindows ? ';' : ':';
+        string[] paths = pathVariable.Split(pathSeparator, StringSplitOptions.RemoveEmptyEntries);
+        string dotnetExeName = PlatformHelper.GetExecutableName("dotnet");
 
-        foreach (var path in paths)
+        foreach (string path in paths)
         {
             var dotnetPath = UPath.Combine(path.ParseAsPath(), dotnetExeName);
             if (fileSystem.FileExists(dotnetPath))
@@ -131,7 +131,7 @@ public class DotNetEnvironmentVariableProvider(IEnvironmentVariables environment
 
     private UPath? TryFindInCommonLocations(ILogger logger)
     {
-        var commonLocations = new[]
+        string[] commonLocations = new[]
         {
             "/usr/bin/dotnet",
             "/usr/local/bin/dotnet",
@@ -139,7 +139,7 @@ public class DotNetEnvironmentVariableProvider(IEnvironmentVariables environment
             "/opt/dotnet/dotnet"
         };
 
-        foreach (var location in commonLocations)
+        foreach (string location in commonLocations)
         {
             var dotnetPath = location.ParseAsPath();
             if (fileSystem.FileExists(dotnetPath))

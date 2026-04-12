@@ -48,14 +48,14 @@ public class DotNetSdkVariableProvider(IEnvironmentVariables environmentVariable
         }
         else if (PlatformHelper.IsLinux || PlatformHelper.IsMacOS)
         {
-            var commonLocations = new[]
+            string[] commonLocations = new[]
             {
                 "/usr/share/dotnet/sdk",
                 "/usr/local/share/dotnet/sdk",
                 "/opt/dotnet/sdk"
             };
 
-            foreach (var location in commonLocations)
+            foreach (string location in commonLocations)
             {
                 var locationPath = location.ParseAsPath();
                 if (fileSystem.DirectoryExists(locationPath))
@@ -85,7 +85,7 @@ public class DotNetSdkVariableProvider(IEnvironmentVariables environmentVariable
 
             if (semanticVersions.Length > 0)
             {
-                var (directory, _, _) = semanticVersions.MaxBy(tuple => tuple.Version);
+                (DirectoryEntry? directory, _, _) = semanticVersions.MaxBy(tuple => tuple.Version);
 
                 var sdksPath = UPath.Combine(directory.Path, "sdks");
 

@@ -3,9 +3,9 @@ using System.Threading.Tasks;
 using Arbor.Build.Core.Bootstrapper;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.IO;
+using Arbor.Build.Core.Tools.Testing;
 using Arbor.Build.Tests.Integration.Tests.MSpec;
 using Machine.Specifications;
-using NUnit.Framework.Internal;
 using Serilog;
 using Xunit;
 using Zio;
@@ -15,7 +15,8 @@ namespace Arbor.Build.Tests.Integration.Bootstrapper;
 
 public class BootstrapperTests(ITestOutputHelper testOutputHelper)
 {
-    [Fact]
+    [Trait("Category", TestFilterHelper.RecursiveCategoryName)]
+    [Fact(Skip = "Recursive test, run manually")]
     public async Task RunningBootstrapper()
     {
         using var fs = new PhysicalFileSystem();

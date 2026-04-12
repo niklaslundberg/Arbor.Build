@@ -16,7 +16,7 @@ using Zio.FileSystems;
 namespace Arbor.Build.Tests.Integration.ProcessRunner;
 
 [Subject(typeof(Processing.ProcessRunner))]
-[Tags(MSpecInternalConstants.RecursiveArborXTest)]
+[Tags(TestFilterHelper.RecursiveCategoryName)]
 public class when_running_a_process_longer_than_timeout
 {
     static UPath testPath;

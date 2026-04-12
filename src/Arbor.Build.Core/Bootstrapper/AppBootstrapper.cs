@@ -502,7 +502,7 @@ public class AppBootstrapper(ILogger logger, IEnvironmentVariables environmentVa
         UPath? exePath = arborBuildExePath is {} value ? value : (UPath?) null;
         if (string.IsNullOrWhiteSpace(arborBuildExePath))
         {
-            var (defaultExePath, args) = await GetExePath(buildToolDirectory, cancellationTokenSource.Token);
+            (UPath? defaultExePath, List<string> args) = await GetExePath(buildToolDirectory, cancellationTokenSource.Token);
 
             arguments.AddRange(args);
             exePath = defaultExePath;
@@ -552,9 +552,9 @@ public class AppBootstrapper(ILogger logger, IEnvironmentVariables environmentVa
                 try
                 {
                     // Find all potential executables in the package directory
-                    var executablePatterns = new[] { "Arbor.Build", "Arbor.Build.*" };
+                    string[] executablePatterns = new[] { "Arbor.Build", "Arbor.Build.*" };
 
-                    foreach (var pattern in executablePatterns)
+                    foreach (string pattern in executablePatterns)
                     {
                         var files = packageDirectory.GetFiles(pattern, SearchOption.AllDirectories);
 
@@ -570,7 +570,7 @@ public class AppBootstrapper(ILogger logger, IEnvironmentVariables environmentVa
 
                             try
                             {
-                                var filePath = fileSystem.ConvertPathToInternal(file.Path);
+                                string filePath = fileSystem.ConvertPathToInternal(file.Path);
 
                                 // Use chmod via Process on Linux/macOS to set executable permissions
                                 var processInfo = new System.Diagnostics.ProcessStartInfo
@@ -594,7 +594,7 @@ public class AppBootstrapper(ILogger logger, IEnvironmentVariables environmentVa
                                         }
                                         else
                                         {
-                                            var error = process.StandardError.ReadToEnd();
+                                            string error = process.StandardError.ReadToEnd();
                                             logger.Warning("Could not set executable permission on '{FilePath}': {Error}", filePath, error);
                                         }
                                     }

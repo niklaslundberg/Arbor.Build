@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using Arbor.Build.Core.IO;
+using Arbor.Build.Core.Tools.Testing;
 using Arbor.FS;
 using Machine.Specifications;
 using Serilog.Core;
@@ -11,7 +12,7 @@ using Zio.FileSystems;
 namespace Arbor.Build.Tests.Integration.DirectoryDelete;
 
 [Subject(typeof(Core.IO.DirectoryDelete))]
-[Tags(Core.Tools.Testing.MSpecInternalConstants.RecursiveArborXTest)]
+[Tags(TestFilterHelper.RecursiveCategoryName)]
 public class when_deleting_a_directory_with_filters
 {
     static DirectoryEntry tempDir;

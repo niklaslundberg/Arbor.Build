@@ -1,5 +1,6 @@
 using System.IO;
 using Arbor.Build.Core.IO;
+using Arbor.Build.Core.Tools.Testing;
 using Machine.Specifications;
 using Serilog.Core;
 using Zio;
@@ -7,7 +8,7 @@ using Zio.FileSystems;
 
 namespace Arbor.Build.Tests.Integration.PathExtensions;
 
-[Tags(Core.Tools.Testing.MSpecInternalConstants.RecursiveArborXTest)]
+[Tags(TestFilterHelper.RecursiveCategoryName)]
 public class when_checking_is_notallowed_for_a_notallowed_file
 {
     static readonly PathLookupSpecification path_lookup_specification =

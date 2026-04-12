@@ -1,5 +1,4 @@
 using Xunit;
-using Arbor.Build.Core.Tools.MSBuild;
 using Arbor.Build.Tests.Unit.Helpers;
 using Zio;
 

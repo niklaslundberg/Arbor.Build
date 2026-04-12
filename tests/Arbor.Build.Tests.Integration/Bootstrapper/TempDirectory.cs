@@ -5,7 +5,7 @@ using Zio;
 
 namespace Arbor.Build.Tests.Integration.Bootstrapper
 {
-    public class TempDirectory : IDisposable
+    public sealed class TempDirectory : IDisposable
     {
         public DirectoryEntry Directory { get; }
 

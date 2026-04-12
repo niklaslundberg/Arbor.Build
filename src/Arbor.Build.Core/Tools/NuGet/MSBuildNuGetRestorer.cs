@@ -44,7 +44,7 @@ public class MsBuildNuGetRestorer(IFileSystem fileSystem, BuildContext buildCont
         CancellationToken cancellationToken)
     {
         // Skip on non-Windows platforms - MSBuild is Windows-only
-        if (Environment.OSVersion.Platform != PlatformID.Win32NT)
+        if (!PlatformHelper.IsWindows)
         {
             logger.Debug(
                 "{Tool} is skipped on non-Windows platform ({Platform}). Use DotNetRestorer instead",
@@ -122,7 +122,7 @@ public class MsBuildNuGetRestorer(IFileSystem fileSystem, BuildContext buildCont
         // Prefer .sln over .slnx for MSBuild compatibility
         // .slnx is modern Visual Studio format but may not be supported by all MSBuild versions
         var solutionFile = included
-            .OrderBy(f => f.Path.GetExtensionWithDot().Equals(".slnx", System.StringComparison.OrdinalIgnoreCase) ? 1 : 0)
+            .OrderBy(f => f.Path.GetExtensionWithDot()?.Equals(".slnx", System.StringComparison.OrdinalIgnoreCase) == true ? 1 : 0)
             .First();
 
         string? runtimeIdentifier =
@@ -136,34 +136,30 @@ public class MsBuildNuGetRestorer(IFileSystem fileSystem, BuildContext buildCont
             logger.Debug("Restoring using runtime identifiers {Identifiers}", runtimeIdentifier);
         }
 
-        ExitCode exitCode;
-
         List<(string Message, LogEventLevel Level)> allMessages = [];
         List<(string Message, LogEventLevel Level)> defaultMessages = [];
 
-        using (Logger processLogger = CreateProcessLogger(logger, allMessages, defaultMessages))
+        await using Logger processLogger = CreateProcessLogger(logger, allMessages, defaultMessages);
+        var exitCode = await ProcessHelper.ExecuteAsync(
+            fileSystem.ConvertPathToInternal(msbuildExePath),
+            arguments,
+            processLogger,
+            cancellationToken: cancellationToken);
+
+        if (!exitCode.IsSuccess)
         {
-            exitCode = await ProcessHelper.ExecuteAsync(
-                fileSystem.ConvertPathToInternal(msbuildExePath),
-                arguments,
-                processLogger,
-                cancellationToken: cancellationToken);
-
-            if (!exitCode.IsSuccess)
+            foreach ((string message, LogEventLevel level) in allMessages)
             {
-                foreach ((string message, LogEventLevel level) in allMessages)
-                {
-                    logger.Log(message, level);
-                }
-
-                logger.Error("Failed to restore NuGet packages via MSBuild");
+                logger.Log(message, level);
             }
-            else
+
+            logger.Error("Failed to restore NuGet packages via MSBuild");
+        }
+        else
+        {
+            foreach ((string message, LogEventLevel level) in defaultMessages)
             {
-                foreach ((string message, LogEventLevel level) in defaultMessages)
-                {
-                    logger.Log(message, level);
-                }
+                logger.Log(message, level);
             }
         }
 

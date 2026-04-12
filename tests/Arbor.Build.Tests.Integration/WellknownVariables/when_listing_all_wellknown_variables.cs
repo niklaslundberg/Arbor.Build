@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.Tools.Testing;
 using Machine.Specifications;
 
 namespace Arbor.Build.Tests.Integration.WellknownVariables;
 
-[Tags(Core.Tools.Testing.MSpecInternalConstants.RecursiveArborXTest)]
+[Tags(TestFilterHelper.RecursiveCategoryName)]
 public class when_listing_all_wellknown_variables
 {
     static IReadOnlyCollection<VariableDescription> readOnlyCollection;

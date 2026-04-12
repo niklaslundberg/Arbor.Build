@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,6 +8,7 @@ using Arbor.Build.Core.BuildApp;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.EnvironmentVariables;
+using Arbor.Build.Core.Tools.Testing;
 using Arbor.Build.Tests.Integration.Tests.MSpec;
 using Arbor.FS;
 using Arbor.Processing;
@@ -22,10 +22,11 @@ namespace Arbor.Build.Tests.Integration.CrossPlatform;
 
 public sealed class CrossPlatformBuildTests(ITestOutputHelper testOutputHelper) : IDisposable
 {
-    private readonly IFileSystem _fs = new PhysicalFileSystem();
-    private FileEntry _logFile;
+    private readonly PhysicalFileSystem _fs = new();
+    private FileEntry? _logFile;
 
-    [Fact]
+    [Trait("Category", TestFilterHelper.RecursiveCategoryName)]
+    [Fact(Skip = "Recursive")]
     public async Task BuildCrossPlatformSampleOnCurrentPlatform()
     {
         var sampleDirectory = GetCrossPlatformSampleDirectory();
@@ -40,9 +41,9 @@ public sealed class CrossPlatformBuildTests(ITestOutputHelper testOutputHelper) 
             // Print log file contents for diagnostics
             try
             {
-                if (_logFile != null && _fs.FileExists(_logFile.Path))
+                if (_logFile is { } && _fs.FileExists(_logFile.Path))
                 {
-                    var logContent = System.IO.File.ReadAllText(_fs.ConvertPathToInternal(_logFile.Path));
+                    string logContent = await System.IO.File.ReadAllTextAsync(_fs.ConvertPathToInternal(_logFile.Path), TestContext.Current.CancellationToken);
                     testOutputHelper.WriteLine("Build log:");
                     testOutputHelper.WriteLine(logContent);
                 }
@@ -89,7 +90,7 @@ public sealed class CrossPlatformBuildTests(ITestOutputHelper testOutputHelper) 
 
         testOutputHelper.WriteLine($"Building in WSL at: {samplePath}");
 
-        var (exitCode, output) = await RunInWslAsync(
+        (int exitCode, string output) = await RunInWslAsync(
             $"cd \"{samplePath}\" && dotnet build CrossPlatformLib.slnx -c Release",
             TimeSpan.FromMinutes(5));
 
@@ -139,11 +140,11 @@ public sealed class CrossPlatformBuildTests(ITestOutputHelper testOutputHelper) 
         string samplePath = $"{wslPath}/samples/_CrossPlatformLib";
 
         // Build on Windows
-        var windowsExitCode = await RunDotNetBuildAsync(
+        int windowsExitCode = await RunDotNetBuildAsync(
             _fs.ConvertPathToInternal(vcsRoot.Path / "samples" / "_CrossPlatformLib" / "CrossPlatformLib.slnx"));
 
         // Build in WSL
-        var (linuxExitCode, linuxOutput) = await RunInWslAsync(
+        (int linuxExitCode, string linuxOutput) = await RunInWslAsync(
             $"cd \"{samplePath}\" && dotnet build CrossPlatformLib.slnx -c Debug",
             TimeSpan.FromMinutes(5));
 
@@ -188,9 +189,9 @@ public sealed class CrossPlatformBuildTests(ITestOutputHelper testOutputHelper) 
         return await buildApplication.RunAsync([]);
     }
 
-    private void TryDeleteLogFileWithRetry(FileEntry logFile, int maxRetries = 3)
+    private void TryDeleteLogFileWithRetry(FileEntry? logFile, int maxRetries = 3)
     {
-        if (logFile == null)
+        if (logFile is null)
         {
             return;
         }
@@ -208,7 +209,7 @@ public sealed class CrossPlatformBuildTests(ITestOutputHelper testOutputHelper) 
             catch (Exception) when (attempt < maxRetries - 1)
             {
                 // Log and retry on transient failures (locked file, etc.)
-                System.Threading.Thread.Sleep(100 * (attempt + 1)); // Exponential backoff
+                Thread.Sleep(100 * (attempt + 1)); // Exponential backoff
             }
             catch
             {
@@ -369,6 +370,6 @@ public sealed class CrossPlatformBuildTests(ITestOutputHelper testOutputHelper) 
     public void Dispose()
     {
         TryDeleteLogFileWithRetry(_logFile);
-        _fs?.Dispose();
+        _fs.Dispose();
     }
 }
