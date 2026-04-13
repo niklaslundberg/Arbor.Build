@@ -159,7 +159,7 @@ public class DotNetTestRunner(BuildContext buildContext, IFileSystem fileSystem)
             arguments.Add($"TestCategory!={TestFilterHelper.RecursiveCategoryName}");
 
             arguments.Add("--blame-hang-timeout");
-            arguments.Add("300000");
+            arguments.Add("30s");
 
             var result = await ProcessRunner.ExecuteProcessAsync(
                 fileSystem.ConvertPathToInternal(dotNetExePath),
