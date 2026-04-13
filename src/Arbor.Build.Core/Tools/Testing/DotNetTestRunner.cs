@@ -130,6 +130,10 @@ public class DotNetTestRunner(BuildContext buildContext, IFileSystem fileSystem)
 
         foreach (var testProject in testProjectFiles)
         {
+            using var testCancellationSource = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+            using var linkedToken =
+                CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, testCancellationSource.Token);
+
             var directoryEntry = testProject;
             string xmlReportName = $"dotnet.{directoryEntry.Name}.trx";
 
@@ -167,7 +171,7 @@ public class DotNetTestRunner(BuildContext buildContext, IFileSystem fileSystem)
                 logger.Information,
                 logger.Error,
                 logger.Information,
-                cancellationToken: cancellationToken);
+                cancellationToken: linkedToken.Token);
 
             if (!result.IsSuccess)
             {

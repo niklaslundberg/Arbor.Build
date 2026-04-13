@@ -22,8 +22,8 @@ namespace Arbor.Build.Core.Tools.Cleanup;
 public class ProcessCleanup(ILogger processLogger, IFileSystem fileSystem) : ITool
 {
     private static ImmutableArray<string> ProcessNames { get; } = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-        ? [..new[] {"msbuild.exe", "vbcscompiler.exe", "csc.exe"}]
-        : [..new[] {"msbuild", "vbcscompiler", "csc"}];
+        ? ["msbuild.exe", "vbcscompiler.exe", "csc.exe"]
+        : ["msbuild", "vbcscompiler", "csc"];
 
     public async Task<ExitCode> ExecuteAsync(ILogger logger,
         IReadOnlyCollection<IVariable> buildVariables,
@@ -64,9 +64,7 @@ public class ProcessCleanup(ILogger processLogger, IFileSystem fileSystem) : ITo
     {
         try
         {
-            var processes = Process.GetProcesses();
-
-            foreach (var process in processes)
+            foreach (var process in Process.GetProcesses())
             {
                 TryStopProcess(process);
             }
@@ -76,7 +74,7 @@ public class ProcessCleanup(ILogger processLogger, IFileSystem fileSystem) : ITo
             processLogger.Warning(ex, "Could not stop all build processes");
         }
     }
-
+    
     private void TryStopProcess(Process process)
     {
         try
@@ -102,5 +100,5 @@ public class ProcessCleanup(ILogger processLogger, IFileSystem fileSystem) : ITo
         }
     }
 
-    private void Log(string message, string category) => processLogger.Debug("{Message}", message);
+    private void Log(string message, string? category) => processLogger.Debug("{Message}", message);
 }
