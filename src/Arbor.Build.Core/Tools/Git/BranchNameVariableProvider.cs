@@ -123,7 +123,7 @@ public class BranchNameVariableProvider(
 
                     if (!string.IsNullOrWhiteSpace(pathLine))
                     {
-                        var directory = pathLine.Split('=').Last().Replace("\"", string.Empty, StringComparison.Ordinal).ParseAsPath();
+                        var directory = pathLine.Split('=')[^1].Replace("\"", string.Empty, StringComparison.Ordinal).ParseAsPath();
 
                         var gitPath = UPath.Combine(directory, "bin", PlatformHelper.GetExecutableName("git"));
 

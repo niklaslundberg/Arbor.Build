@@ -15,7 +15,7 @@ namespace Arbor.Build.Core.Tools.Environments;
 [UsedImplicitly]
 public class SourcePathVariableProvider(IFileSystem fileSystem, BuildContext buildContext) : IVariableProvider
 {
-    public int Order { get; } = -2;
+    public int Order => -2;
 
     public Task<IReadOnlyCollection<IVariable>> GetBuildVariablesAsync(
         ILogger logger,
@@ -59,7 +59,7 @@ public class SourcePathVariableProvider(IFileSystem fileSystem, BuildContext bui
                 WellKnownVariables.TempDirectory,
                 fileSystem.ConvertPathToInternal(tempPath.Path)));
 
-        if (existingToolsDirectory is null || existingToolsDirectory.Value.IsAbsolute)
+        if (existingToolsDirectory?.IsAbsolute != false)
         {
             var externalToolsRelativeApp =
                 new DirectoryEntry(fileSystem, UPath.Combine(AppContext.BaseDirectory.ParseAsPath(),

@@ -9,14 +9,14 @@ namespace Arbor.Build.Core.Tools.Git;
 
 public static class Branch
 {
-    private static readonly FrozenSet<string> _nonFeatureBranchNames = new[] {
+    private static readonly FrozenSet<string> NonFeatureBranchNames = new[] {
         "dev", BranchName.Develop.LogicalName, BranchName.Master.LogicalName, BranchName.Main.LogicalName,
         "release", "hotfix"
     }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
-    private static readonly FrozenSet<string> _developBranchNames = new[] { BranchName.Develop.LogicalName, "dev" }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
+    private static readonly FrozenSet<string> DevelopBranchNames = new[] { BranchName.Develop.LogicalName, "dev" }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
-    private static readonly FrozenSet<string> _productionBranches = new[]
+    private static readonly FrozenSet<string> ProductionBranches = new[]
     {
         BranchName.Master.LogicalName, BranchName.Main.LogicalName, "release", "hotfix"
     }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
@@ -25,7 +25,7 @@ public static class Branch
     {
         ArgumentNullException.ThrowIfNull(branchName);
 
-        bool isAStandardBranch = _nonFeatureBranchNames.Any(name =>
+        bool isAStandardBranch = NonFeatureBranchNames.Any(name =>
             branchName.LogicalName.StartsWith(name, StringComparison.OrdinalIgnoreCase));
 
         return !isAStandardBranch;
@@ -35,7 +35,7 @@ public static class Branch
     {
         ArgumentNullException.ThrowIfNull(branchName);
 
-        return _developBranchNames.Any(name =>
+        return DevelopBranchNames.Any(name =>
             branchName.LogicalName.StartsWith(name, StringComparison.OrdinalIgnoreCase));
     }
 
@@ -43,7 +43,7 @@ public static class Branch
     {
         ArgumentNullException.ThrowIfNull(branchName);
 
-        return _productionBranches.Any(productionBranch =>
+        return ProductionBranches.Any(productionBranch =>
             branchName.LogicalName.StartsWith(productionBranch, StringComparison.OrdinalIgnoreCase));
     }
 

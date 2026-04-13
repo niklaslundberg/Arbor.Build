@@ -826,7 +826,7 @@ public class SolutionBuilder(
             _verboseLoggingEnabled ? logger.Verbose : (CategoryLog?)null;
         var debugAction = _verboseLoggingEnabled ? logger.Debug : (CategoryLog?)null;
 
-        void LogDefault(string message, string category)
+        void LogDefault(string message, string? category)
         {
             if (message.Trim().Contains("): warning ", StringComparison.OrdinalIgnoreCase))
             {
@@ -853,9 +853,9 @@ public class SolutionBuilder(
                         LogDefault,
                         logger.Error,
                         debugAction,
+                        verboseAction: verboseAction,
                         debugAction: debugAction,
-                        cancellationToken: _cancellationToken,
-                        verboseAction: verboseAction)
+                        cancellationToken: _cancellationToken)
                     ;
 
         if (exitCode.IsSuccess)
@@ -1072,7 +1072,7 @@ public class SolutionBuilder(
                     args.Add("-f");
                     args.Add(targetFramework.Value);
 
-                    void Log(string message, string category)
+                    void Log(string message, string? category)
                     {
                         if (message.Trim().Contains("): warning ", StringComparison.OrdinalIgnoreCase))
                         {
@@ -1203,7 +1203,7 @@ public class SolutionBuilder(
                 fileSystem.ConvertPathToInternal(_packagesDirectory.Path)
             ];
 
-            void Log(string message, string category)
+            void Log(string message, string? category)
             {
                 if (message.Trim().Contains("): warning ", StringComparison.OrdinalIgnoreCase))
                 {

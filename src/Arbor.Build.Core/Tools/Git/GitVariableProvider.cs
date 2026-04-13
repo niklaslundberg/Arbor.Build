@@ -23,7 +23,7 @@ public class GitVariableProvider(
     GitHelper gitHelper)
     : IVariableProvider
 {
-    public int Order { get; } = -1;
+    public int Order => -1;
 
     public async Task<IReadOnlyCollection<IVariable>> GetBuildVariablesAsync(
         ILogger? logger,
