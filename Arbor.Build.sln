@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.4.11626.88 stable
+VisualStudioVersion = 18.4.11626.88
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arbor.Build.Bootstrapper", "src\Arbor.Build.Bootstrapper\Arbor.Build.Bootstrapper.csproj", "{9AA52382-A7B1-407B-AE0E-9B04EFDFAC43}"
 EndProject
@@ -13,7 +13,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_Solution Items", "_Solutio
 		.editorconfig = .editorconfig
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
-		src\Arbor.Build.nuspec = src\Arbor.Build.nuspec
 		build\build-wsl.sh = build\build-wsl.sh
 		build\build.bat = build\build.bat
 		build\build.sh = build\build.sh

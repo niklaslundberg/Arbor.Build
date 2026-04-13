@@ -18,10 +18,8 @@ public sealed class TestBuildContext
     private readonly List<string> _configurations = [];
     private BuildConfiguration? _currentBuildConfiguration;
 
-    private TestBuildContext(IFileSystem fileSystem)
-    {
+    private TestBuildContext(IFileSystem fileSystem) =>
         _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
-    }
 
     /// <summary>
     /// Creates a new test build context with an in-memory file system.
@@ -163,7 +161,7 @@ public sealed class TestBuildContext
 
         // Ensure parent directory exists
         var parentDirectory = fileEntry.Parent;
-        if (parentDirectory != null && !_fileSystem.DirectoryExists(parentDirectory.Path))
+        if (parentDirectory is { } && !_fileSystem.DirectoryExists(parentDirectory.Path))
         {
             _fileSystem.CreateDirectory(parentDirectory.Path);
         }

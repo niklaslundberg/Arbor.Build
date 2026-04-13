@@ -58,9 +58,9 @@
       },
       "Arbor.Processing": {
         "type": "Direct",
-        "requested": "[0.6.0, )",
-        "resolved": "0.6.0",
-        "contentHash": "KcuciNAfg/ArkDdcM1hHMeIprKwQjdHWV6zXBFAqmKDxGB9rdDHk9a1jHTVQ5r7y5gxAowCUGLgEcfheKItoig=="
+        "requested": "[1.0.0-build.1775045275, )",
+        "resolved": "1.0.0-build.1775045275",
+        "contentHash": "oP/x9KmM5i/mIxxCFHSSx/DM1dVg4YmX6CUAuTE1zT+CIAh8TyAICd+vKeL8/Mpt9wOVBxW9Vi8VZBBcy9Y98A=="
       },
       "Arbor.Sorbus": {
         "type": "Direct",
