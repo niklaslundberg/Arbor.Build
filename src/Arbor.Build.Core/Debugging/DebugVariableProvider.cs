@@ -67,8 +67,6 @@ public class DebugVariableProvider(IEnvironmentVariables variables) : IVariableP
         };
 
         return Task.FromResult<IReadOnlyCollection<IVariable>>(
-            environmentVariables
-                .Select(pair => (IVariable)new BuildVariable(pair.Key, pair.Value))
-                .ToList());
+            [.. environmentVariables.Select(IVariable (pair) => new BuildVariable(pair.Key, pair.Value))]);
     }
 }

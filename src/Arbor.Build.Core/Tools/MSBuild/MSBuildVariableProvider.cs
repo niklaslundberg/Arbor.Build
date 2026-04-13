@@ -9,6 +9,7 @@ using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.GenericExtensions;
 using Arbor.Build.Core.ProcessUtils;
 using Arbor.Build.Core.Tools.Cleanup;
+using Arbor.Build.Core.Tools.Platform;
 using Arbor.FS;
 using Arbor.Processing;
 using JetBrains.Annotations;
@@ -27,6 +28,18 @@ public class MSBuildVariableProvider(
     IFileSystem fileSystem)
     : IVariableProvider
 {
+    private static readonly List<SemanticVersion> PossibleMajorVersions = new List<string>
+        {
+            "18.0.0",
+            "17.0.0",
+            "16.0.0",
+            "15.0.0",
+            "14.0.0",
+            "12.0.0",
+            "4.0.0"
+        }
+        .ConvertAll(SemanticVersion.Parse);
+
     private async Task<ImmutableArray<IVariable>> TryGetWithVsWhereAsync(
         UPath vsWherePath,
         string command,
@@ -58,7 +71,7 @@ public class MSBuildVariableProvider(
 
             var resultBuilder = new StringBuilder();
 
-            void StandardOutLog(string message, string _) => resultBuilder.Append(message);
+            void StandardOutLog(string message, string? _) => resultBuilder.Append(message);
 
             ExitCode exitCode = await ProcessRunner.ExecuteProcessAsync(
                 fileSystem.ConvertPathToInternal(vsWherePath),
@@ -188,7 +201,7 @@ public class MSBuildVariableProvider(
     {
 #pragma warning disable CA1416 // Validate platform compatibility
 
-        if (Environment.OSVersion.Platform != PlatformID.Win32NT)
+        if (!PlatformHelper.IsWindows)
         {
             return [];
         }
@@ -211,26 +224,13 @@ public class MSBuildVariableProvider(
             Environment.ProcessId,
             currentProcessBits);
 
-        var possibleMajorVersions = new List<string>
-            {
-                "16.0.0",
-                "15.0.0",
-                "14.0.0",
-                "12.0.0",
-                "4.0.0"
-            }
-            .ConvertAll(SemanticVersion.Parse);
-
         string max = buildVariables.GetVariableValueOrDefault(
             WellKnownVariables.ExternalTools_MSBuild_MaxVersion,
-            "16.99.0")!;
+            "18.99.0")!;
 
-        SemanticVersion[] toRemove = possibleMajorVersions.Where(version => version > SemanticVersion.Parse(max))
-            .ToArray();
-
-        foreach (SemanticVersion semVersion in toRemove)
+        foreach (SemanticVersion semVersion in (SemanticVersion[])[.. PossibleMajorVersions.Where(version => version > SemanticVersion.Parse(max))])
         {
-            possibleMajorVersions.Remove(semVersion);
+            PossibleMajorVersions.Remove(semVersion);
         }
 
         var vsWherePath = UPath.Combine(
@@ -277,6 +277,15 @@ public class MSBuildVariableProvider(
                 "Current",
                 "bin",
                 "MSBuild.exe"),
+            UPath.Combine(
+                specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFiles).ParseAsPath(),
+                "Microsoft Visual Studio",
+                "2026",
+                "Enterprise",
+                "MSBuild",
+                "Current",
+                "bin",
+                "MSBuild.exe"),
 
             UPath.Combine(
                 specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFiles).ParseAsPath(),
@@ -291,7 +300,27 @@ public class MSBuildVariableProvider(
             UPath.Combine(
                 specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFiles).ParseAsPath(),
                 "Microsoft Visual Studio",
+                "2026",
+                "Professional",
+                "MSBuild",
+                "Current",
+                "bin",
+                "MSBuild.exe"),
+
+            UPath.Combine(
+                specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFiles).ParseAsPath(),
+                "Microsoft Visual Studio",
                 "2022",
+                "Community",
+                "MSBuild",
+                "Current",
+                "bin",
+                "MSBuild.exe"),
+
+            UPath.Combine(
+                specialFolders.GetFolderPath(Environment.SpecialFolder.ProgramFiles).ParseAsPath(),
+                "Microsoft Visual Studio",
+                "2026",
                 "Community",
                 "MSBuild",
                 "Current",
@@ -409,7 +438,7 @@ public class MSBuildVariableProvider(
 
         string? foundPath = null;
 
-        foreach (SemanticVersion possibleVersion in possibleMajorVersions)
+        foreach (SemanticVersion possibleVersion in PossibleMajorVersions)
         {
             for (int i = 99; i >= 0; i--)
             {
