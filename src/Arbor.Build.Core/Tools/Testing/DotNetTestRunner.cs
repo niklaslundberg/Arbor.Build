@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Arbor.Build.Core.BuildVariables;
-using Arbor.Build.Core.Debugging;
 using Arbor.Build.Core.GenericExtensions;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Tools.MSBuild;
@@ -155,9 +154,12 @@ public class DotNetTestRunner(BuildContext buildContext, IFileSystem fileSystem)
                 arguments.Add(
                     $"--logger:trx;LogFileName={fileSystem.ConvertPathToInternal(reportFileEntry.FullName)}");
             }
-            
+
             arguments.Add("--filter");
             arguments.Add($"TestCategory!={TestFilterHelper.RecursiveCategoryName}");
+
+            arguments.Add("--blame-hang-timeout");
+            arguments.Add("300000");
 
             var result = await ProcessRunner.ExecuteProcessAsync(
                 fileSystem.ConvertPathToInternal(dotNetExePath),
