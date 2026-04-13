@@ -4,7 +4,6 @@ using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.Logging;
 using Arbor.Build.Core.Tools.EnvironmentVariables;
-using Arbor.FS;
 using Arbor.Processing;
 using Serilog;
 using Zio;
@@ -15,7 +14,7 @@ namespace Arbor.Build;
 internal static class Program
 {
     private static BuildApplication? _app;
-    private static WindowsFs? _fileSystem;
+    private static PhysicalFileSystem? _fileSystem;
 
     private static Task<int> Main(string[] args) => RunAsync(args);
 
@@ -34,7 +33,7 @@ internal static class Program
         Log.Logger = logger;
 
         using var physicalFileSystem = new PhysicalFileSystem();
-        using (_fileSystem = new WindowsFs(physicalFileSystem))
+        using (_fileSystem = physicalFileSystem)
         {
             _app = new BuildApplication(logger, environmentVariables, specialFolders, fileSystem ?? _fileSystem);
 
