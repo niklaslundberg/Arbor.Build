@@ -333,6 +333,8 @@ public class DotNetTestRunner(BuildContext buildContext, IFileSystem fileSystem)
                 }
 
                 arguments.Add("--filter");
+                // TestFilterHelper.RecursiveCategoryName ("ArborBuildRecursive") marks tests excluded from the
+                // regular build pass to avoid triggering recursive builds; this second pass runs them explicitly.
                 arguments.Add($"TestCategory=={TestFilterHelper.RecursiveCategoryName}");
 
                 arguments.Add("--blame-hang-timeout");
