@@ -65,6 +65,12 @@ public sealed class CrossPlatformBuildTests(ITestOutputHelper testOutputHelper) 
     [Fact]
     public async Task BuildCrossPlatformSampleInWsl()
     {
+        if (Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == "true")
+        {
+            testOutputHelper.WriteLine("Skipping WSL test in GitHub Actions");
+            return;
+        }
+
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             testOutputHelper.WriteLine("Skipping WSL test on non-Windows platform");
@@ -122,6 +128,12 @@ public sealed class CrossPlatformBuildTests(ITestOutputHelper testOutputHelper) 
     [Fact]
     public async Task DotNetBuildProducesIdenticalOutputAcrossPlatforms()
     {
+        if (Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == "true")
+        {
+            testOutputHelper.WriteLine("Skipping cross-platform comparison test in GitHub Actions");
+            return;
+        }
+
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             testOutputHelper.WriteLine("Skipping cross-platform comparison test on non-Windows platform");
