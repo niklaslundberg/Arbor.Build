@@ -139,9 +139,9 @@ public sealed class CrossPlatformBuildTests(ITestOutputHelper testOutputHelper) 
             {
                 Directory.Delete(tempDirectory, true);
             }
-            catch
+            catch (Exception ex)
             {
-                // Ignore cleanup issues for temporary test directories
+                testOutputHelper.WriteLine($"Could not delete temporary directory {tempDirectory}: {ex}");
             }
         }
     }
