@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildApp;
@@ -223,7 +224,7 @@ public sealed class CrossPlatformBuildTests(ITestOutputHelper testOutputHelper) 
     {
         try
         {
-            var outputBuilder = new System.Text.StringBuilder();
+            var outputBuilder = new StringBuilder();
 
             using var process = new Process();
             process.StartInfo = new ProcessStartInfo
