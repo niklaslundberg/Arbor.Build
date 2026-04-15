@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -60,6 +62,88 @@ public sealed class CrossPlatformBuildTests(ITestOutputHelper testOutputHelper) 
 
         _fs.FileExists(expectedPackagePath)
             .ShouldBeTrue($"Expected NuGet package at {_fs.ConvertPathToInternal(expectedPackagePath)}");
+    }
+
+    [Fact]
+    public async Task LinuxBuildCreatesGlobalToolPackageAndCanInvokeArborBuild()
+    {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            testOutputHelper.WriteLine("Skipping Linux global tool test on non-Linux platform");
+            return;
+        }
+
+        var vcsRoot = VcsTestPathHelper.FindVcsRootPath();
+        string repositoryRoot = _fs.ConvertPathToInternal(vcsRoot.Path);
+        string packageOutputDirectory = Path.Combine(repositoryRoot, "artifacts", "packages");
+        if (!Directory.Exists(packageOutputDirectory))
+        {
+            packageOutputDirectory = Path.Combine(repositoryRoot, "Artifacts", "packages");
+        }
+
+        var packageFiles = Directory.Exists(packageOutputDirectory)
+            ? Directory.GetFiles(packageOutputDirectory, "Arbor.Build.Tool.*.nupkg", SearchOption.TopDirectoryOnly)
+            : [];
+
+        packageFiles.Length.ShouldBeGreaterThan(0,
+            $"Expected Arbor.Build.Tool package in {packageOutputDirectory}. Run build first, for example with build/build.sh.");
+
+        string packagePath = packageFiles
+            .OrderByDescending(File.GetLastWriteTimeUtc)
+            .First();
+        string packageFileNameWithoutExtension = Path.GetFileNameWithoutExtension(packagePath);
+        const string packagePrefix = "Arbor.Build.Tool.";
+        packageFileNameWithoutExtension.StartsWith(packagePrefix, StringComparison.Ordinal).ShouldBeTrue(
+            $"Package file name should start with {packagePrefix}");
+
+        string version = packageFileNameWithoutExtension[packagePrefix.Length..];
+
+        string tempDirectory = Path.Combine(Path.GetTempPath(), $"arbor-build-tool-test-{Guid.NewGuid():N}");
+        string toolHomeDirectory = Path.Combine(tempDirectory, "home");
+
+        Directory.CreateDirectory(toolHomeDirectory);
+
+        try
+        {
+            string existingPath = Environment.GetEnvironmentVariable("PATH") ?? string.Empty;
+            var toolEnvironment = new Dictionary<string, string?>
+            {
+                ["HOME"] = toolHomeDirectory,
+                ["DOTNET_CLI_HOME"] = toolHomeDirectory,
+                ["PATH"] = $"{Path.Combine(toolHomeDirectory, ".dotnet", "tools")}:{existingPath}"
+            };
+
+            (int installExitCode, string installOutput) = await RunProcessAsync(
+                "dotnet",
+                $"tool install --global Arbor.Build.Tool --version {version} --add-source \"{packageOutputDirectory}\" --ignore-failed-sources --prerelease",
+                repositoryRoot,
+                toolEnvironment,
+                TimeSpan.FromMinutes(5));
+
+            testOutputHelper.WriteLine(installOutput);
+            installExitCode.ShouldBe(0, $"dotnet tool install should succeed. Output:{Environment.NewLine}{installOutput}");
+
+            (int invokeExitCode, string invokeOutput) = await RunProcessAsync(
+                "dotnet",
+                "arbor-build --help",
+                repositoryRoot,
+                toolEnvironment,
+                TimeSpan.FromMinutes(2));
+
+            testOutputHelper.WriteLine(invokeOutput);
+            invokeExitCode.ShouldBe(0, $"dotnet arbor-build --help should succeed. Output:{Environment.NewLine}{invokeOutput}");
+        }
+        finally
+        {
+            try
+            {
+                Directory.Delete(tempDirectory, true);
+            }
+            catch
+            {
+                // Ignore cleanup issues for temporary test directories
+            }
+        }
     }
 
     [Fact]
@@ -364,6 +448,76 @@ public sealed class CrossPlatformBuildTests(ITestOutputHelper testOutputHelper) 
         await process.WaitForExitAsync();
 
         return process.ExitCode;
+    }
+
+    private static async Task<(int ExitCode, string Output)> RunProcessAsync(string fileName,
+        string arguments,
+        string? workingDirectory = null,
+        IDictionary<string, string?>? environmentVariables = null,
+        TimeSpan? timeout = null)
+    {
+        using var process = new Process();
+
+        process.StartInfo = new ProcessStartInfo
+        {
+            FileName = fileName,
+            Arguments = arguments,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true
+        };
+
+        if (!string.IsNullOrWhiteSpace(workingDirectory))
+        {
+            process.StartInfo.WorkingDirectory = workingDirectory;
+        }
+
+        if (environmentVariables is { })
+        {
+            foreach (KeyValuePair<string, string?> environmentVariable in environmentVariables)
+            {
+                process.StartInfo.Environment[environmentVariable.Key] = environmentVariable.Value ?? string.Empty;
+            }
+        }
+
+        var outputLines = new List<string>();
+        var errorLines = new List<string>();
+
+        process.OutputDataReceived += (_, e) =>
+        {
+            if (e.Data is { })
+            {
+                outputLines.Add(e.Data);
+            }
+        };
+
+        process.ErrorDataReceived += (_, e) =>
+        {
+            if (e.Data is { })
+            {
+                errorLines.Add(e.Data);
+            }
+        };
+
+        process.Start();
+        process.BeginOutputReadLine();
+        process.BeginErrorReadLine();
+
+        using var cts = new CancellationTokenSource(timeout ?? TimeSpan.FromMinutes(5));
+
+        try
+        {
+            await process.WaitForExitAsync(cts.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            process.Kill(true);
+            return (-1, "Process timed out");
+        }
+
+        string combinedOutput = string.Join(Environment.NewLine, [..outputLines, ..errorLines]);
+        return (process.ExitCode, combinedOutput);
     }
 
     private static string ConvertToWslPath(string windowsPath)
