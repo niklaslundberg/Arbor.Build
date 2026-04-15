@@ -8,6 +8,7 @@ build/**/*
 !build/*.bat
 !build/*.ps1
 build/nuget.exe
+.nuget/nuget.exe
 AppPackages
 *.css
 *.map
