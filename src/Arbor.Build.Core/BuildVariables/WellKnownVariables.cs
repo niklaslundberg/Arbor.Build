@@ -237,6 +237,10 @@ public static partial class WellKnownVariables
     public const string XUnitNetCoreAppXmlEnabled =
         "Arbor.Build.Tools.External.Xunit.NetCoreApp.Xml.Enabled";
 
+    [VariableDescription("Enable running integration tests (ArborBuildRecursive category) in DotNetTestRunner")]
+    public const string DotNetTestRunnerIntegrationTestsEnabled =
+        "Arbor.Build.Tools.External.DotNetTest.IntegrationTests.Enabled";
+
     [VariableDescription("Log level")]
     public const string LogLevel = "Arbor.Build.Log.Level";
 

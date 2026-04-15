@@ -292,6 +292,75 @@ public class DotNetTestRunner(BuildContext buildContext, IFileSystem fileSystem)
             }
         }
 
+        bool integrationTestsEnabled =
+            buildVariables.GetBooleanByKey(WellKnownVariables.DotNetTestRunnerIntegrationTestsEnabled);
+
+        if (integrationTestsEnabled)
+        {
+            logger.Information(
+                "Integration test run is enabled, defined in key '{Key}'",
+                WellKnownVariables.DotNetTestRunnerIntegrationTestsEnabled);
+
+            foreach (var testProject in testProjectFiles)
+            {
+                using var testCancellationSource = new CancellationTokenSource(TimeSpan.FromMinutes(30));
+                using var linkedToken =
+                    CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, testCancellationSource.Token);
+
+                var directoryEntry = testProject;
+                string xmlReportName = $"dotnet.integration.{directoryEntry.Name}.trx";
+
+                var arguments = new List<string> {"test", fileSystem.ConvertPathToInternal(testProject.Path)};
+
+                if (!configuration.Equals(AnyConfiguration, StringComparison.OrdinalIgnoreCase))
+                {
+                    arguments.Add("--configuration");
+                    arguments.Add(configuration);
+                }
+
+                bool xmlEnabled =
+                    buildVariables.GetBooleanByKey(WellKnownVariables.XUnitNetCoreAppXmlEnabled, true);
+
+                var reportFile = UPath.Combine(reportPath.Value!.ParseAsPath(), "dotnet", xmlReportName);
+
+                var reportFileEntry = new FileEntry(fileSystem, reportFile);
+                reportFileEntry.Directory.EnsureExists();
+
+                if (xmlEnabled)
+                {
+                    arguments.Add(
+                        $"--logger:trx;LogFileName={fileSystem.ConvertPathToInternal(reportFileEntry.FullName)}");
+                }
+
+                arguments.Add("--filter");
+                // TestFilterHelper.RecursiveCategoryName ("ArborBuildRecursive") marks tests excluded from the
+                // regular build pass to avoid triggering recursive builds; this second pass runs them explicitly.
+                arguments.Add($"TestCategory=={TestFilterHelper.RecursiveCategoryName}");
+
+                arguments.Add("--blame-hang-timeout");
+                arguments.Add("5m");
+
+                var result = await ProcessRunner.ExecuteProcessAsync(
+                    fileSystem.ConvertPathToInternal(dotNetExePath),
+                    arguments,
+                    logger.Information,
+                    logger.Error,
+                    logger.Information,
+                    cancellationToken: linkedToken.Token);
+
+                if (!result.IsSuccess)
+                {
+                    exitCode = result;
+                }
+            }
+        }
+        else
+        {
+            logger.Verbose(
+                "Integration test run is disabled, set variable '{Key}' to true to enable",
+                WellKnownVariables.DotNetTestRunnerIntegrationTestsEnabled);
+        }
+
         return exitCode;
     }
 
