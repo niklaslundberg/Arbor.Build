@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildApp;
@@ -223,7 +224,10 @@ public sealed class CrossPlatformBuildTests(ITestOutputHelper testOutputHelper) 
     {
         try
         {
-            using var process = Process.Start(new ProcessStartInfo
+            var outputBuilder = new StringBuilder();
+
+            using var process = new Process();
+            process.StartInfo = new ProcessStartInfo
             {
                 FileName = "wsl",
                 Arguments = "--list --quiet",
@@ -231,17 +235,30 @@ public sealed class CrossPlatformBuildTests(ITestOutputHelper testOutputHelper) 
                 RedirectStandardError = true,
                 UseShellExecute = false,
                 CreateNoWindow = true
-            });
+            };
 
-            if (process is null)
+            process.OutputDataReceived += (_, e) =>
             {
+                if (e.Data is not null)
+                {
+                    outputBuilder.AppendLine(e.Data);
+                }
+            };
+
+            process.Start();
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+
+            if (!process.WaitForExit(10_000))
+            {
+                try { process.Kill(true); } catch { }
                 return false;
             }
 
-            process.WaitForExit(10_000);
+            // Ensure all async output handlers have completed
+            process.WaitForExit();
 
-            string output = process.StandardOutput.ReadToEnd().Trim();
-            return process.ExitCode == 0 && !string.IsNullOrWhiteSpace(output);
+            return process.ExitCode == 0 && !string.IsNullOrWhiteSpace(outputBuilder.ToString().Trim());
         }
         catch
         {
@@ -253,7 +270,8 @@ public sealed class CrossPlatformBuildTests(ITestOutputHelper testOutputHelper) 
     {
         try
         {
-            using var process = Process.Start(new ProcessStartInfo
+            using var process = new Process();
+            process.StartInfo = new ProcessStartInfo
             {
                 FileName = "wsl",
                 Arguments = "dotnet --version",
@@ -261,14 +279,20 @@ public sealed class CrossPlatformBuildTests(ITestOutputHelper testOutputHelper) 
                 RedirectStandardError = true,
                 UseShellExecute = false,
                 CreateNoWindow = true
-            });
+            };
 
-            if (process is null)
+            process.Start();
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+
+            if (!process.WaitForExit(30_000))
             {
+                try { process.Kill(true); } catch { }
                 return false;
             }
 
-            process.WaitForExit(30_000);
+            // Ensure all async output handlers have completed
+            process.WaitForExit();
 
             return process.ExitCode == 0;
         }
