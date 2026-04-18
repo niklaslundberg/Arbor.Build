@@ -46,4 +46,4 @@ export Arbor__Build__NuGet__PackageUpload__PackageExcludeStartsWithPatterns="dot
 
 # Run the build using Arbor.Build.Bootstrapper
 echo "Starting Arbor.Build on Linux..."
-dotnet arbor-build
+arbor-build
