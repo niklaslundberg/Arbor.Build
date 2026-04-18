@@ -122,81 +122,16 @@ jobs:
         dotnet test --filter "FullyQualifiedName~CrossPlatform" --logger "console;verbosity=detailed" --no-build --configfile .github/nuget.config
 
     - name: Compare Arbor.Build.Tool packages (Windows vs Linux)
-      shell: bash
+      shell: pwsh
       run: |
-        mkdir -p artifacts/package-comparison
-        WINDOWS_TOOL_PACKAGE=$(find artifacts-windows -type f -name 'Arbor.Build.Tool.*.nupkg' | sort | tail -n 1)
-        LINUX_TOOL_PACKAGE=$(find artifacts -type f -name 'Arbor.Build.Tool.*.nupkg' | sort | tail -n 1)
-        if [ -z "${WINDOWS_TOOL_PACKAGE}" ] || [ -z "${LINUX_TOOL_PACKAGE}" ]; then
-          echo "Could not find both Windows and Linux Arbor.Build.Tool packages for comparison" > artifacts/package-comparison/arbor-build-tool-package-comparison.md
-          echo "Windows package: ${WINDOWS_TOOL_PACKAGE}" >> artifacts/package-comparison/arbor-build-tool-package-comparison.md
-          echo "Linux package: ${LINUX_TOOL_PACKAGE}" >> artifacts/package-comparison/arbor-build-tool-package-comparison.md
-          exit 1
-        fi
-        export WINDOWS_TOOL_PACKAGE
-        export LINUX_TOOL_PACKAGE
-        python - <<'PY'
-        import hashlib
-        import os
-        import zipfile
+        $windowsPackage = Get-ChildItem -Path 'artifacts-windows' -Filter 'Arbor.Build.Tool.*.nupkg' -File -Recurse | Sort-Object FullName | Select-Object -Last 1
+        $linuxPackage = Get-ChildItem -Path 'artifacts' -Filter 'Arbor.Build.Tool.*.nupkg' -File -Recurse | Sort-Object FullName | Select-Object -Last 1
+        $reportPath = 'artifacts/package-comparison/arbor-build-tool-package-comparison.md'
 
-        windows_package = os.environ["WINDOWS_TOOL_PACKAGE"]
-        linux_package = os.environ["LINUX_TOOL_PACKAGE"]
-        report_path = "artifacts/package-comparison/arbor-build-tool-package-comparison.md"
+        $windowsPath = $windowsPackage?.FullName
+        $linuxPath = $linuxPackage?.FullName
 
-        def read_zip(path):
-            with zipfile.ZipFile(path, "r") as z:
-                entries = {}
-                for info in z.infolist():
-                    if info.is_dir():
-                        continue
-                    entries[info.filename] = hashlib.sha256(z.read(info.filename)).hexdigest()
-                return entries
-
-        windows_entries = read_zip(windows_package)
-        linux_entries = read_zip(linux_package)
-
-        windows_only = sorted(set(windows_entries) - set(linux_entries))
-        linux_only = sorted(set(linux_entries) - set(windows_entries))
-        changed = sorted(
-            name for name in (set(windows_entries) & set(linux_entries))
-            if windows_entries[name] != linux_entries[name]
-        )
-
-        equivalent = not windows_only and not linux_only and not changed
-
-        with open(report_path, "w", encoding="utf-8") as f:
-            f.write("# Arbor.Build.Tool package comparison (Windows vs Linux)\n\n")
-            f.write(f"- Windows package: `{windows_package}`\n")
-            f.write(f"- Linux package: `{linux_package}`\n")
-            f.write(f"- Equivalent package contents: `{'yes' if equivalent else 'no'}`\n\n")
-            if equivalent:
-                f.write("Packages contain the same files with identical content hashes.\n")
-            else:
-                if windows_only:
-                    f.write("## Files only in Windows package\n")
-                    for item in windows_only:
-                        f.write(f"- `{item}`\n")
-                    f.write("\n")
-                if linux_only:
-                    f.write("## Files only in Linux package\n")
-                    for item in linux_only:
-                        f.write(f"- `{item}`\n")
-                    f.write("\n")
-                if changed:
-                    f.write("## Files with different content\n")
-                    for item in changed:
-                        f.write(
-                            f"- `{item}`\n"
-                            f"  - Windows SHA256: `{windows_entries[item]}`\n"
-                            f"  - Linux SHA256: `{linux_entries[item]}`\n"
-                        )
-                    f.write("\n")
-
-        print(f"Wrote comparison report to {report_path}")
-        if not equivalent:
-            raise SystemExit(1)
-        PY
+        ./.github/scripts/Compare-ArborBuildToolPackages.ps1 -WindowsPackagePath $windowsPath -LinuxPackagePath $linuxPath -ReportPath $reportPath
 
     - name: Upload build artifacts (Linux)
       if: always()
