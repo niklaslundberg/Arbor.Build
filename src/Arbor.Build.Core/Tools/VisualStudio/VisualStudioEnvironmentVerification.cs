@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
@@ -23,6 +24,12 @@ public class VisualStudioEnvironmentVerification(BuildContext buildContext) : IT
         string[] args,
         CancellationToken cancellationToken)
     {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            logger.Debug("Skipping {Tool} on non-Windows platform", nameof(VisualStudioEnvironmentVerification));
+            return Task.FromResult(ExitCode.Success);
+        }
+
         var rootDir = buildContext.SourceRoot;
 
         string visualStudioVersion =
