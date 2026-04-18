@@ -43,6 +43,8 @@ jobs:
         Arbor.Build.NuGet.PackageUpload.Server.Uri: "https://www.myget.org/F/arbor/api/v2/package"
         Arbor.Build.NuGet.PackageUpload.Enabled: "true"
         Arbor.Build.NuGet.PackageUpload.ForceUploadEnabled: "true"
+        Arbor.Build.Tools.External.MSBuild.DeterministicBuild.Enabled: "true"
+        Arbor.Build.BuildNumber.UnixEpochSecondsEnabled: "false"
       run: |
         call build\build.bat
 
@@ -60,12 +62,20 @@ jobs:
         retention-days: 7
 
   build-linux:
+    needs:
+    - build-windows
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
+
+    - name: Download Windows artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: artifacts-windows
+        path: artifacts-windows
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
@@ -85,22 +95,108 @@ jobs:
       shell: bash
       run: |
         dotnet tool install --global Arbor.Tooler.GlobalTool --version "*-*"
-        dotnet tool install --global Arbor.Build.Tool --version "*-*"
+        WINDOWS_TOOL_PACKAGE=$(find artifacts-windows -type f -name 'Arbor.Build.Tool.*.nupkg' | sort | tail -n 1)
+        if [ -z "${WINDOWS_TOOL_PACKAGE}" ]; then
+          echo "No Windows Arbor.Build.Tool package found in downloaded artifacts"
+          exit 1
+        fi
+        WINDOWS_TOOL_VERSION=$(basename "${WINDOWS_TOOL_PACKAGE}" | sed -E 's/^Arbor\.Build\.Tool\.(.+)\.nupkg$/\1/')
+        echo "ARBOR_BUILD_TOOL_VERSION=${WINDOWS_TOOL_VERSION}" >> "${GITHUB_ENV}"
+        dotnet tool install --global Arbor.Build.Tool --version "${WINDOWS_TOOL_VERSION}" --add-source "$(dirname "${WINDOWS_TOOL_PACKAGE}")" --ignore-failed-sources --prerelease
 
     - name: Build with Arbor.Build
       shell: bash
       env:
-        Arbor__Build__Version: "1.0.0"
+        Arbor__Build__Version: "${{ env.ARBOR_BUILD_TOOL_VERSION }}"
         Arbor__Build__ExternalTools_MSBuild_DotNetEnabled: "true"
+        Arbor__Build__Tools__External__MSBuild__DeterministicBuild__Enabled: "true"
+        Arbor__Build__BuildNumber__UnixEpochSecondsEnabled: "false"
         Arbor__Build__SourceRoot: "."
         Arbor__Build__Artifacts: "./artifacts"
       run: |
-        dotnet arbor-build
+        arbor-build
 
     - name: Run cross-platform tests
       shell: bash
       run: |
         dotnet test --filter "FullyQualifiedName~CrossPlatform" --logger "console;verbosity=detailed" --no-build
+
+    - name: Compare Arbor.Build.Tool packages (Windows vs Linux)
+      shell: bash
+      run: |
+        mkdir -p artifacts/package-comparison
+        WINDOWS_TOOL_PACKAGE=$(find artifacts-windows -type f -name 'Arbor.Build.Tool.*.nupkg' | sort | tail -n 1)
+        LINUX_TOOL_PACKAGE=$(find artifacts Artifacts -type f -name 'Arbor.Build.Tool.*.nupkg' 2>/dev/null | sort | tail -n 1)
+        if [ -z "${WINDOWS_TOOL_PACKAGE}" ] || [ -z "${LINUX_TOOL_PACKAGE}" ]; then
+          echo "Could not find both Windows and Linux Arbor.Build.Tool packages for comparison" > artifacts/package-comparison/arbor-build-tool-package-comparison.md
+          echo "Windows package: ${WINDOWS_TOOL_PACKAGE}" >> artifacts/package-comparison/arbor-build-tool-package-comparison.md
+          echo "Linux package: ${LINUX_TOOL_PACKAGE}" >> artifacts/package-comparison/arbor-build-tool-package-comparison.md
+          exit 1
+        fi
+        export WINDOWS_TOOL_PACKAGE
+        export LINUX_TOOL_PACKAGE
+        python - <<'PY'
+        import hashlib
+        import os
+        import zipfile
+
+        windows_package = os.environ["WINDOWS_TOOL_PACKAGE"]
+        linux_package = os.environ["LINUX_TOOL_PACKAGE"]
+        report_path = "artifacts/package-comparison/arbor-build-tool-package-comparison.md"
+
+        def read_zip(path):
+            with zipfile.ZipFile(path, "r") as z:
+                entries = {}
+                for info in z.infolist():
+                    if info.is_dir():
+                        continue
+                    entries[info.filename] = hashlib.sha256(z.read(info.filename)).hexdigest()
+                return entries
+
+        windows_entries = read_zip(windows_package)
+        linux_entries = read_zip(linux_package)
+
+        windows_only = sorted(set(windows_entries) - set(linux_entries))
+        linux_only = sorted(set(linux_entries) - set(windows_entries))
+        changed = sorted(
+            name for name in (set(windows_entries) & set(linux_entries))
+            if windows_entries[name] != linux_entries[name]
+        )
+
+        equivalent = not windows_only and not linux_only and not changed
+
+        with open(report_path, "w", encoding="utf-8") as f:
+            f.write("# Arbor.Build.Tool package comparison (Windows vs Linux)\n\n")
+            f.write(f"- Windows package: `{windows_package}`\n")
+            f.write(f"- Linux package: `{linux_package}`\n")
+            f.write(f"- Equivalent package contents: `{'yes' if equivalent else 'no'}`\n\n")
+            if equivalent:
+                f.write("Packages contain the same files with identical content hashes.\n")
+            else:
+                if windows_only:
+                    f.write("## Files only in Windows package\n")
+                    for item in windows_only:
+                        f.write(f"- `{item}`\n")
+                    f.write("\n")
+                if linux_only:
+                    f.write("## Files only in Linux package\n")
+                    for item in linux_only:
+                        f.write(f"- `{item}`\n")
+                    f.write("\n")
+                if changed:
+                    f.write("## Files with different content\n")
+                    for item in changed:
+                        f.write(
+                            f"- `{item}`\n"
+                            f"  - Windows SHA256: `{windows_entries[item]}`\n"
+                            f"  - Linux SHA256: `{linux_entries[item]}`\n"
+                        )
+                    f.write("\n")
+
+        print(f"Wrote comparison report to {report_path}")
+        if not equivalent:
+            raise SystemExit(1)
+        PY
 
     - name: Upload build artifacts (Linux)
       if: always()

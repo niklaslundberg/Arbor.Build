@@ -34,7 +34,7 @@ SET Arbor.Build.NuGet.Package.Symbols.Enabled=true
 SET Arbor.Build.NetAssembly.MetadataEnabled=true
 SET Arbor.Build.NetAssembly.Description=A convention-based build tool
 SET Arbor.Build.NetAssembly.Company=Niklas Lundberg
-SET Arbor.Build.NetAssembly.Copyright=© Niklas Lundberg 2014-2026
+SET Arbor.Build.NetAssembly.Copyright=ï¿½ Niklas Lundberg 2014-2026
 SET Arbor.Build.NetAssembly.Trademark=Arbor.Build TM
 SET Arbor.Build.NetAssembly.Product=Arbor.Build
 SET Arbor.Build.Tools.External.MSBuild.Verbosity=minimal
@@ -44,7 +44,9 @@ SET Arbor.Build.Cleanup.KillProcessesAfterBuild.Enabled=true
 SET Arbor.Build.Tools.External.NUnit.Enabled=false
 SET Arbor.Build.NuGet.Package.ExcludesCommaSeparated=Arbor.Build.Bootstrapper.nuspec
 SET Arbor.Build.Tools.External.MSBuild.CodeAnalysis.Enabled=false
-SET Arbor.Build.BuildNumber.UnixEpochSecondsEnabled=true
+IF "%Arbor.Build.BuildNumber.UnixEpochSecondsEnabled%" == "" (
+    SET Arbor.Build.BuildNumber.UnixEpochSecondsEnabled=true
+)
 SET Arbor.Build.NuGet.NuGetWebPackage.ExcludedPatterns=Arbor.Build.Samples
 SET Arbor.Build.NuGet.PackageUpload.PackageExcludeStartsWithPatterns=dotnet-
 

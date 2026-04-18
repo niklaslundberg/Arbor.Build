@@ -124,14 +124,14 @@ public sealed class CrossPlatformBuildTests(ITestOutputHelper testOutputHelper) 
             installExitCode.ShouldBe(0, $"dotnet tool install should succeed. Output:{Environment.NewLine}{installOutput}");
 
             (int invokeExitCode, string invokeOutput) = await RunProcessAsync(
-                "dotnet",
-                "arbor-build --help",
+                "arbor-build",
+                "--help",
                 repositoryRoot,
                 toolEnvironment,
                 TimeSpan.FromMinutes(2));
 
             testOutputHelper.WriteLine(invokeOutput);
-            invokeExitCode.ShouldBe(0, $"dotnet arbor-build --help should succeed. Output:{Environment.NewLine}{invokeOutput}");
+            invokeExitCode.ShouldBe(0, $"arbor-build --help should succeed. Output:{Environment.NewLine}{invokeOutput}");
         }
         finally
         {
