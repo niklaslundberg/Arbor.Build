@@ -46,4 +46,6 @@ export Arbor__Build__NuGet__PackageUpload__PackageExcludeStartsWithPatterns="dot
 
 # Run the build using Arbor.Build.Bootstrapper
 echo "Starting Arbor.Build on Linux..."
-arbor-build
+env "Arbor.Build.Tools.External.MSBuild.DotNet.Enabled=true" \
+    "Arbor.Build.Vcs.Branch.Name=${GITHUB_REF:-}" \
+    arbor-build

@@ -132,12 +132,12 @@ jobs:
     - name: Build with Arbor.Build
       shell: bash
       env:
-        Arbor__Build__Version: "${{ env.ARBOR_BUILD_TOOL_VERSION }}"
-        Arbor__Build__ExternalTools_MSBuild_DotNetEnabled: "true"
-        Arbor__Build__Tools__External__MSBuild__DeterministicBuild__Enabled: "true"
-        Arbor__Build__BuildNumber__UnixEpochSecondsEnabled: "false"
-        Arbor__Build__SourceRoot: "."
-        Arbor__Build__Artifacts: "./artifacts"
+        Arbor.Build.Version: "${{ env.ARBOR_BUILD_TOOL_VERSION }}"
+        Arbor.Build.Tools.External.MSBuild.DotNet.Enabled: "true"
+        Arbor.Build.Tools.External.MSBuild.DeterministicBuild.Enabled: "true"
+        Arbor.Build.BuildNumber.UnixEpochSecondsEnabled: "false"
+        SourceRoot: "."
+        Arbor.Build.Artifacts: "./artifacts"
         Arbor.Build.Vcs.Branch.Name: "${{ github.ref }}"
       run: |
         arbor-build
