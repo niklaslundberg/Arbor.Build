@@ -28,19 +28,21 @@ public class when_checking_file_is_notallowed_without_root_dir
     Establish context = () =>
     {
         fs = new PhysicalFileSystem();
-        var rootPath = @"C:\Temp\root\afolder".ParseAsPath();
-        root = new DirectoryEntry(fs,rootPath).EnsureExists();
+        // Use a "temp" segment so DefaultPathLookupSpecification excludes it (without root)
+        var basePath = UPath.Combine(Path.GetTempPath().ParseAsPath(), "temp", $"root_{System.Guid.NewGuid():N}");
+        var rootPath = UPath.Combine(basePath, "afolder");
+        root = new DirectoryEntry(fs, rootPath).EnsureExists();
 
         rootParent = root.Parent!;
 
-        using (fs.OpenFile(@"C:\Temp\root\afile.txt".ParseAsPath(), FileMode.Create,FileAccess.Write))
+        using (fs.OpenFile(UPath.Combine(basePath, "afile.txt"), FileMode.Create, FileAccess.Write))
         {
         }
 
         specification = DefaultPaths.DefaultPathLookupSpecification;
     };
 
-    Because of = () => isNotAllowed = specification.IsFileExcluded(fs.GetFileEntry( @"C:\Temp\root\afile.txt".ParseAsPath())).Item1;
+    Because of = () => isNotAllowed = specification.IsFileExcluded(fs.GetFileEntry(UPath.Combine(rootParent.Path, "afile.txt"))).Item1;
 
     It should_return_true = () => isNotAllowed.ShouldBeTrue();
 }

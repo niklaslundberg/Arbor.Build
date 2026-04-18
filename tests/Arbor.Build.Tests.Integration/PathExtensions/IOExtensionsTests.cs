@@ -87,9 +87,11 @@ public class IOExtensionsTests
     [MemberData(nameof(GetFileSystems))]
     public void DeleteFileIfExistsShouldNotThrowIfNotExists(IFileSystem fileSystem)
     {
-        fileSystem.CreateDirectory("/mnt/c/temp");
-        var file = new FileEntry(fileSystem, "/mnt/c/temp/exampleFile.txt");
+        var tempDir = UPath.Combine(Path.GetTempPath().ParseAsPath(), $"ABX_{Guid.NewGuid():N}");
+        fileSystem.CreateDirectory(tempDir);
+        var file = new FileEntry(fileSystem, UPath.Combine(tempDir, "exampleFile.txt"));
 
         file.DeleteIfExists().ShouldBeTrue();
+        fileSystem.DeleteDirectory(tempDir, true);
     }
 }
