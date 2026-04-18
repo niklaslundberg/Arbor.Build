@@ -89,6 +89,11 @@ public class BranchNameVariableProvider(
                     branchName,
                     WellKnownVariables.BranchName);
             }
+
+            if (!buildVariables.HasKey(WellKnownVariables.BranchName))
+            {
+                variables.Add(WellKnownVariables.BranchName, branchName);
+            }
         }
 
         return [..variables.Select(pair => (IVariable)new BuildVariable(pair.Key, pair.Value))];
