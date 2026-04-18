@@ -33,8 +33,8 @@ jobs:
     - name: Install global tools
       shell: pwsh
       run: |
-        dotnet tool install --global Arbor.Tooler.GlobalTool --version "*-*"
-        dotnet tool install --global Arbor.Build.Bootstrapper --version "*-*"
+        dotnet tool install --global Arbor.Tooler.GlobalTool --version "*-*" --configfile .github/nuget.config
+        dotnet tool install --global Arbor.Build.Bootstrapper --version "*-*" --configfile .github/nuget.config
 
     - name: Build with Arbor.Build
       shell: cmd
@@ -51,7 +51,7 @@ jobs:
     - name: Run all tests (including cross-platform validation)
       shell: pwsh
       run: |
-        dotnet test --logger "console;verbosity=detailed" --no-build
+        dotnet test --logger "console;verbosity=detailed" --no-build --configfile .github/nuget.config
 
     - name: Upload build artifacts (Windows)
       if: always()
@@ -94,7 +94,7 @@ jobs:
     - name: Install global tools
       shell: bash
       run: |
-        dotnet tool install --global Arbor.Tooler.GlobalTool --version "*-*"
+        dotnet tool install --global Arbor.Tooler.GlobalTool --version "*-*" --configfile .github/nuget.config
         WINDOWS_TOOL_PACKAGE=$(find artifacts-windows -type f -name 'Arbor.Build.Tool.*.nupkg' | sort | tail -n 1)
         if [ -z "${WINDOWS_TOOL_PACKAGE}" ]; then
           echo "No Windows Arbor.Build.Tool package found in downloaded artifacts"
@@ -119,7 +119,7 @@ jobs:
     - name: Run cross-platform tests
       shell: bash
       run: |
-        dotnet test --filter "FullyQualifiedName~CrossPlatform" --logger "console;verbosity=detailed" --no-build
+        dotnet test --filter "FullyQualifiedName~CrossPlatform" --logger "console;verbosity=detailed" --no-build --configfile .github/nuget.config
 
     - name: Compare Arbor.Build.Tool packages (Windows vs Linux)
       shell: bash
