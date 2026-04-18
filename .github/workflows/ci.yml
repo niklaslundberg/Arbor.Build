@@ -251,11 +251,18 @@ jobs:
     - name: Compare Arbor.Build.Tool packages (Windows vs Linux)
       shell: pwsh
       run: |
+        Set-StrictMode -Version Latest
+        $ErrorActionPreference = 'Stop'
+
         $reportPath = 'artifacts/package-comparison/arbor-build-tool-package-comparison.md'
         ./.github/scripts/Compare-ArborBuildToolPackages.ps1 `
             -WindowsPackagePath '${{ env.WINDOWS_NUPKG_PATH }}' `
             -LinuxPackagePath   '${{ env.LINUX_NUPKG_PATH }}'   `
             -ReportPath $reportPath
+
+        if ($env:GITHUB_STEP_SUMMARY -and (Test-Path -LiteralPath $reportPath)) {
+            Get-Content -LiteralPath $reportPath | Add-Content -Path $env:GITHUB_STEP_SUMMARY
+        }
 
     - name: Upload comparison report
       if: always()
