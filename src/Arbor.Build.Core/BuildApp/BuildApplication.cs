@@ -315,7 +315,10 @@ public sealed class BuildApplication : IDisposable
         _ = _environmentVariables.GetEnvironmentVariable(WellKnownVariables.VariableFileSourceEnabled)
             .TryParseBool(out bool enabled, defaultValue: true);
 
-        UPath? sourceRootPath = _environmentVariables.GetEnvironmentVariable(WellKnownVariables.SourceRoot)?.ParseAsPath();
+        string? sourceRootEnvValue = _environmentVariables.GetEnvironmentVariable(WellKnownVariables.SourceRoot);
+        UPath? sourceRootPath = sourceRootEnvValue is not null
+            ? (UPath?)Path.GetFullPath(sourceRootEnvValue).ParseAsPath()
+            : null;
 
         if (sourceRoot is null && sourceRootPath is null)
         {

@@ -136,8 +136,6 @@ jobs:
         Arbor.Build.Tools.External.MSBuild.DotNet.Enabled: "true"
         Arbor.Build.Tools.External.MSBuild.DeterministicBuild.Enabled: "true"
         Arbor.Build.BuildNumber.UnixEpochSecondsEnabled: "false"
-        SourceRoot: "."
-        Arbor.Build.Artifacts: "./artifacts"
         Arbor.Build.Vcs.Branch.Name: "${{ github.ref }}"
       run: |
         arbor-build
