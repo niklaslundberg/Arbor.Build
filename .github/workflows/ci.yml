@@ -33,49 +33,43 @@ jobs:
       run: dotnet test tests/Arbor.Build.Tests.Unit --no-build --configuration Debug --logger "console;verbosity=normal"
 
     - name: Validate comparison script with mock packages
-      shell: bash
+      shell: pwsh
       run: |
-        TESTDIR=$(mktemp -d)
-        export TESTDIR
-        mkdir -p "$TESTDIR/win" "$TESTDIR/linux"
+        $testDir = Join-Path ([System.IO.Path]::GetTempPath()) "compare-test-$([System.Guid]::NewGuid())"
+        $winDir   = Join-Path $testDir 'win'
+        $linuxDir = Join-Path $testDir 'linux'
 
-        # Create two minimal .nupkg zip files (identical content) using Python
-        python3 - <<'PYEOF'
-import zipfile, os
-testdir = os.environ['TESTDIR']
-for folder in ['win', 'linux']:
-    path = os.path.join(testdir, folder, 'Arbor.Build.Tool.1.0.0-test.nupkg')
-    with zipfile.ZipFile(path, 'w') as zf:
-        zf.writestr('lib/Arbor.Build.Tool.dll', 'mock content')
-PYEOF
+        ./.github/scripts/New-MockNupkgFiles.ps1 `
+            -WindowsOutputDirectory $winDir `
+            -LinuxOutputDirectory   $linuxDir
 
-        WIN_PKG=$(find "$TESTDIR/win"   -type f -name 'Arbor.Build.Tool.*.nupkg' | sort | tail -n 1)
-        LINUX_PKG=$(find "$TESTDIR/linux" -type f -name 'Arbor.Build.Tool.*.nupkg' | sort | tail -n 1)
+        $winPkg   = Get-ChildItem -Path $winDir   -Filter 'Arbor.Build.Tool.*.nupkg' -File | Select-Object -First 1 -ExpandProperty FullName
+        $linuxPkg = Get-ChildItem -Path $linuxDir -Filter 'Arbor.Build.Tool.*.nupkg' -File | Select-Object -First 1 -ExpandProperty FullName
 
-        echo "Win pkg  : $WIN_PKG"
-        echo "Linux pkg: $LINUX_PKG"
+        Write-Host "Win pkg  : $winPkg"
+        Write-Host "Linux pkg: $linuxPkg"
 
-        if [ -z "$WIN_PKG" ] || [ -z "$LINUX_PKG" ]; then
-          echo "ERROR: Package discovery failed in validate step"
-          exit 1
-        fi
+        if (-not $winPkg -or -not $linuxPkg) {
+            Write-Error "Package discovery failed in validate step"
+            exit 1
+        }
 
-        REPORT="$TESTDIR/report.md"
-        pwsh -NonInteractive -File ./.github/scripts/Compare-ArborBuildToolPackages.ps1 \
-          -WindowsPackagePath "$WIN_PKG" \
-          -LinuxPackagePath "$LINUX_PKG" \
-          -ReportPath "$REPORT"
+        $report = Join-Path $testDir 'report.md'
+        ./.github/scripts/Compare-ArborBuildToolPackages.ps1 `
+            -WindowsPackagePath $winPkg `
+            -LinuxPackagePath   $linuxPkg `
+            -ReportPath         $report
 
-        if [ $? -ne 0 ]; then
-          echo "ERROR: Comparison script failed"
-          exit 1
-        fi
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "Comparison script failed with exit code $LASTEXITCODE"
+            exit 1
+        }
 
-        echo "--- Report ---"
-        cat "$REPORT"
+        Write-Host "--- Report ---"
+        Get-Content $report | Write-Host
 
-        echo "Comparison script validation passed"
-        rm -rf "$TESTDIR"
+        Write-Host "Comparison script validation passed"
+        Remove-Item -Recurse -Force $testDir
 
   build-windows:
     needs: validate
