@@ -51,7 +51,7 @@ jobs:
     - name: Run all tests (including cross-platform validation)
       shell: pwsh
       run: |
-        dotnet test --logger "console;verbosity=detailed" --no-build --configfile .github/nuget.config
+        dotnet test --logger "console;verbosity=detailed" --no-build
 
     - name: Upload build artifacts (Windows)
       if: always()
@@ -119,19 +119,7 @@ jobs:
     - name: Run cross-platform tests
       shell: bash
       run: |
-        dotnet test --filter "FullyQualifiedName~CrossPlatform" --logger "console;verbosity=detailed" --no-build --configfile .github/nuget.config
-
-    - name: Compare Arbor.Build.Tool packages (Windows vs Linux)
-      shell: pwsh
-      run: |
-        $windowsPackage = Get-ChildItem -Path 'artifacts-windows' -Filter 'Arbor.Build.Tool.*.nupkg' -File -Recurse | Sort-Object FullName | Select-Object -Last 1
-        $linuxPackage = Get-ChildItem -Path 'artifacts' -Filter 'Arbor.Build.Tool.*.nupkg' -File -Recurse | Sort-Object FullName | Select-Object -Last 1
-        $reportPath = 'artifacts/package-comparison/arbor-build-tool-package-comparison.md'
-
-        $windowsPath = $windowsPackage?.FullName
-        $linuxPath = $linuxPackage?.FullName
-
-        ./.github/scripts/Compare-ArborBuildToolPackages.ps1 -WindowsPackagePath $windowsPath -LinuxPackagePath $linuxPath -ReportPath $reportPath
+        dotnet test --filter "FullyQualifiedName~CrossPlatform" --logger "console;verbosity=detailed" --no-build
 
     - name: Upload build artifacts (Linux)
       if: always()
@@ -139,4 +127,45 @@ jobs:
       with:
         name: artifacts-linux
         path: artifacts/
+        retention-days: 7
+
+  compare-packages:
+    needs:
+    - build-windows
+    - build-linux
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Download Windows artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: artifacts-windows
+        path: artifacts-windows
+
+    - name: Download Linux artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: artifacts-linux
+        path: artifacts-linux
+
+    - name: Compare Arbor.Build.Tool packages (Windows vs Linux)
+      shell: pwsh
+      run: |
+        $windowsPackage = Get-ChildItem -Path 'artifacts-windows' -Filter 'Arbor.Build.Tool.*.nupkg' -File -Recurse | Sort-Object FullName | Select-Object -Last 1
+        $linuxPackage = Get-ChildItem -Path 'artifacts-linux' -Filter 'Arbor.Build.Tool.*.nupkg' -File -Recurse | Sort-Object FullName | Select-Object -Last 1
+        $reportPath = 'artifacts/package-comparison/arbor-build-tool-package-comparison.md'
+
+        $windowsPath = $windowsPackage?.FullName
+        $linuxPath = $linuxPackage?.FullName
+
+        ./.github/scripts/Compare-ArborBuildToolPackages.ps1 -WindowsPackagePath $windowsPath -LinuxPackagePath $linuxPath -ReportPath $reportPath
+
+    - name: Upload comparison report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: package-comparison
+        path: artifacts/package-comparison/
         retention-days: 7
