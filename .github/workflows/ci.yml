@@ -8,7 +8,32 @@ permissions:
   contents: read
 
 jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.0.x
+        cache: true
+        cache-dependency-path: tests/Arbor.Build.Tests.Unit
+
+    - name: Restore
+      run: dotnet restore --configfile .github/nuget.config
+
+    - name: Build (compile check)
+      run: dotnet build --no-restore --configuration Debug
+
+    - name: Run unit tests
+      run: dotnet test tests/Arbor.Build.Tests.Unit --no-build --configuration Debug --logger "console;verbosity=normal"
+
   build-windows:
+    needs: validate
     runs-on: windows-2025-vs2026
 
     steps:
@@ -113,6 +138,7 @@ jobs:
         Arbor__Build__BuildNumber__UnixEpochSecondsEnabled: "false"
         Arbor__Build__SourceRoot: "."
         Arbor__Build__Artifacts: "./artifacts"
+        Arbor.Build.Vcs.Branch.Name: "${{ github.ref }}"
       run: |
         arbor-build
 
