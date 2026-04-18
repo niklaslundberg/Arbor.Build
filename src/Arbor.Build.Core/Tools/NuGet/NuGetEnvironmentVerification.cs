@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.ProcessUtils;
 using Arbor.Build.Core.Tools.EnvironmentVariables;
+using Arbor.Build.Core.Tools.Platform;
 using Arbor.FS;
 using Arbor.Processing;
 using JetBrains.Annotations;
@@ -23,6 +24,16 @@ public class NuGetEnvironmentVerification : EnvironmentVerification
     {
         _fileSystem = fileSystem;
         RequiredValues.Add(WellKnownVariables.ExternalTools_NuGet_ExePath);
+    }
+
+    protected override bool Enabled(IReadOnlyCollection<IVariable> buildVariables)
+    {
+        if (!PlatformHelper.IsWindows)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     protected override async Task<bool> PostVariableVerificationAsync(

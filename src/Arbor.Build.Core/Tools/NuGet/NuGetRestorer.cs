@@ -7,6 +7,7 @@ using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.IO;
 using Arbor.Build.Core.ProcessUtils;
 using Arbor.Build.Core.Tools.MSBuild;
+using Arbor.Build.Core.Tools.Platform;
 using Arbor.FS;
 using Arbor.Processing;
 using JetBrains.Annotations;
@@ -25,6 +26,14 @@ public class NuGetRestorer(IFileSystem fileSystem, BuildContext buildContext) : 
         string[] args,
         CancellationToken cancellationToken)
     {
+        if (!PlatformHelper.IsWindows)
+        {
+            logger.Debug(
+                "{Tool} is skipped on non-Windows platform. Use DotNetRestorer instead",
+                nameof(NuGetRestorer));
+            return ExitCode.Success;
+        }
+
         bool enabled = buildVariables.GetBooleanByKey(
             WellKnownVariables.NuGetRestoreEnabled);
 
