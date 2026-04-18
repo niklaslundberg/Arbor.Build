@@ -51,7 +51,7 @@ public class when_running_a_process_longer_than_timeout
         {
             const string shellContent = "#!/bin/sh\nsleep 10\nexit 2\n";
             string physicalPath = fs.ConvertPathToInternal(testPath);
-            System.IO.File.WriteAllText(physicalPath, shellContent);
+            System.IO.File.WriteAllText(physicalPath, shellContent, new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
             File.SetUnixFileMode(physicalPath,
                 UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
         }
