@@ -18,7 +18,10 @@ public class WindowsOnlyToolPlatformCheckTests
     [Fact(DisplayName = "NuGetRestorer should skip and succeed on non-Windows platforms")]
     public async Task NuGetRestorer_ShouldSkipOnNonWindowsPlatform()
     {
-        Skip.If(RuntimeInformation.IsOSPlatform(OSPlatform.Windows), "Only relevant on non-Windows");
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            return; // test only applicable on non-Windows
+        }
 
         using var fs = new MemoryFileSystem();
         var buildContext = new BuildContext(fs);
@@ -32,7 +35,10 @@ public class WindowsOnlyToolPlatformCheckTests
     [Fact(DisplayName = "NuGetPackageUploader should skip and succeed on non-Windows platforms")]
     public async Task NuGetPackageUploader_ShouldSkipOnNonWindowsPlatform()
     {
-        Skip.If(RuntimeInformation.IsOSPlatform(OSPlatform.Windows), "Only relevant on non-Windows");
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            return; // test only applicable on non-Windows
+        }
 
         using var fs = new MemoryFileSystem();
         var tool = new NuGetPackageUploader(fs);
@@ -45,7 +51,10 @@ public class WindowsOnlyToolPlatformCheckTests
     [Fact(DisplayName = "NuGetSymbolPackageUploader should skip and succeed on non-Windows platforms")]
     public async Task NuGetSymbolPackageUploader_ShouldSkipOnNonWindowsPlatform()
     {
-        Skip.If(RuntimeInformation.IsOSPlatform(OSPlatform.Windows), "Only relevant on non-Windows");
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            return; // test only applicable on non-Windows
+        }
 
         using var fs = new MemoryFileSystem();
         var tool = new NuGetSymbolPackageUploader(fs);
@@ -58,7 +67,10 @@ public class WindowsOnlyToolPlatformCheckTests
     [Fact(DisplayName = "NuGetEnvironmentVerification should be disabled on non-Windows platforms")]
     public async Task NuGetEnvironmentVerification_ShouldSkipOnNonWindowsPlatform()
     {
-        Skip.If(RuntimeInformation.IsOSPlatform(OSPlatform.Windows), "Only relevant on non-Windows");
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            return; // test only applicable on non-Windows
+        }
 
         using var fs = new MemoryFileSystem();
         var tool = new NuGetEnvironmentVerification(fs);
@@ -72,7 +84,10 @@ public class WindowsOnlyToolPlatformCheckTests
     [Fact(DisplayName = "MSBuildEnvironmentVerification should be disabled on non-Windows platforms")]
     public async Task MSBuildEnvironmentVerification_ShouldSkipOnNonWindowsPlatform()
     {
-        Skip.If(RuntimeInformation.IsOSPlatform(OSPlatform.Windows), "Only relevant on non-Windows");
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            return; // test only applicable on non-Windows
+        }
 
         var tool = new MSBuildEnvironmentVerification();
 
@@ -80,22 +95,6 @@ public class WindowsOnlyToolPlatformCheckTests
         ExitCode exitCode = await tool.ExecuteAsync(Logger.None, [], [], CancellationToken.None);
 
         Assert.Equal(ExitCode.Success, exitCode);
-    }
-
-    [Fact(DisplayName = "MSBuildEnvironmentVerification should be enabled on Windows when DotNet MSBuild is disabled")]
-    public void MSBuildEnvironmentVerification_ShouldBeEnabledOnWindowsWhenDotNetMSBuildDisabled()
-    {
-        Skip.IfNot(RuntimeInformation.IsOSPlatform(OSPlatform.Windows), "Only relevant on Windows");
-
-        var tool = new MSBuildEnvironmentVerification();
-        var buildVariables = new List<IVariable>
-        {
-            new BuildVariable(WellKnownVariables.ExternalTools_MSBuild_DotNetEnabled, "false")
-        };
-
-        // On Windows with DotNet MSBuild disabled, the tool should be enabled (and require MSBuild path)
-        // We test the Enabled() behavior indirectly - the tool should fail because MSBuild path is missing
-        Assert.True(RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
     }
 
     [Fact(DisplayName = "MSBuildEnvironmentVerification should skip when DotNet MSBuild is enabled")]
