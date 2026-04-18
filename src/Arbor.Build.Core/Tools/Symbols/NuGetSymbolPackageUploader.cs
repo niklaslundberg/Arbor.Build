@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
+using Arbor.Build.Core.Tools.Platform;
 using Arbor.FS;
 using Arbor.Processing;
 using JetBrains.Annotations;
@@ -25,6 +26,14 @@ public class NuGetSymbolPackageUploader(IFileSystem fileSystem) : ITool
         string[] args,
         CancellationToken cancellationToken)
     {
+        if (!PlatformHelper.IsWindows)
+        {
+            logger.Debug(
+                "{Tool} is skipped on non-Windows platform",
+                nameof(NuGetSymbolPackageUploader));
+            return Task.FromResult(ExitCode.Success);
+        }
+
         bool enabled = buildVariables.GetBooleanByKey(
             WellKnownVariables.ExternalTools_SymbolServer_Enabled);
 

@@ -31,6 +31,12 @@ public sealed class TestSamples(ITestOutputHelper testOutputHelper) : IDisposabl
     [Theory]
     public async Task RunBuildOnExampleProject(string directoryName)
     {
+        if (!System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows))
+        {
+            testOutputHelper.WriteLine($"Skipping {directoryName}: sample project builds require Windows build tools");
+            return;
+        }
+
         // Skip _CrossPlatformLib sample test - under development for cross-platform support
         if (directoryName == "_CrossPlatformLib")
         {

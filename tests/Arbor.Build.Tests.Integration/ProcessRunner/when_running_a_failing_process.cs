@@ -31,14 +31,23 @@ public class when_running_a_failing_process
     Establish context = () =>
     {
         fs = new PhysicalFileSystem();
-        testPath = UPath.Combine(Path.GetTempPath().ParseAsPath(), $"{DefaultPaths.TempPathPrefix}Test_fail.tmp.bat");
-        const string batchContent = @"@ECHO OFF
-EXIT /b 3
-";
+        string extension = OperatingSystem.IsWindows() ? ".bat" : ".sh";
+        testPath = UPath.Combine(Path.GetTempPath().ParseAsPath(), $"{DefaultPaths.TempPathPrefix}Test_fail.tmp{extension}");
 
-        using var stream = fs.OpenFile(testPath, FileMode.Create, FileAccess.Write);
-
-        stream.WriteAllTextAsync(batchContent).Wait();
+        if (OperatingSystem.IsWindows())
+        {
+            const string batchContent = "@ECHO OFF\r\nEXIT /b 3\r\n";
+            using var stream = fs.OpenFile(testPath, FileMode.Create, FileAccess.Write);
+            stream.WriteAllTextAsync(batchContent).Wait();
+        }
+        else
+        {
+            const string shellContent = "#!/bin/sh\nexit 3\n";
+            string physicalPath = fs.ConvertPathToInternal(testPath);
+            System.IO.File.WriteAllText(physicalPath, shellContent, new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+            File.SetUnixFileMode(physicalPath,
+                UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+        }
     };
 
     Because of = () => RunAsync().Wait();

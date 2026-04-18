@@ -36,19 +36,25 @@ public class when_running_a_process_longer_than_timeout
     Establish context = () =>
     {
         fs = new PhysicalFileSystem();
-        testPath = UPath.Combine(Path.GetTempPath().ParseAsPath(), $"{DefaultPaths.TempPathPrefix}_Test_timeout.tmp.bat");
+        string extension = OperatingSystem.IsWindows() ? ".bat" : ".sh";
+        testPath = UPath.Combine(Path.GetTempPath().ParseAsPath(), $"{DefaultPaths.TempPathPrefix}_Test_timeout.tmp{extension}");
 
-        logFile = new FileEntry(fs, @"C:\Temp\test.log".ParseAsPath());
+        logFile = new FileEntry(fs, UPath.Combine(Path.GetTempPath().ParseAsPath(), "ABX_test.log"));
 
-        string batchContent = $@"@ECHO OFF
-ECHO Waiting for 10 seconds
-ping 127.0.0.1 -r 9
-ECHO After batch file timeout
-ECHO 123 > {logFile}
-EXIT /b 2
-";
-        using var stream = fs.OpenFile(testPath, FileMode.Create, FileAccess.Write);
-        stream.WriteAllTextAsync(batchContent, Encoding.Default).Wait();
+        if (OperatingSystem.IsWindows())
+        {
+            string batchContent = $"@ECHO OFF\r\nECHO Waiting for 10 seconds\r\nping 127.0.0.1 -r 9\r\nECHO After batch file timeout\r\nECHO 123 > {logFile}\r\nEXIT /b 2\r\n";
+            using var stream = fs.OpenFile(testPath, FileMode.Create, FileAccess.Write);
+            stream.WriteAllTextAsync(batchContent, Encoding.Default).Wait();
+        }
+        else
+        {
+            const string shellContent = "#!/bin/sh\nsleep 10\nexit 2\n";
+            string physicalPath = fs.ConvertPathToInternal(testPath);
+            System.IO.File.WriteAllText(physicalPath, shellContent, new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+            File.SetUnixFileMode(physicalPath,
+                UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+        }
     };
 
     Because of = () => RunAsync().Wait();

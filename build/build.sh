@@ -40,10 +40,12 @@ export Arbor__Build__Cleanup__KillProcessesAfterBuild__Enabled="true"
 export Arbor__Build__Tools__External__NUnit__Enabled="false"
 export Arbor__Build__NuGet__Package__ExcludesCommaSeparated="Arbor.Build.Bootstrapper.nuspec"
 export Arbor__Build__Tools__External__MSBuild__CodeAnalysis__Enabled="false"
-export Arbor__Build__BuildNumber__UnixEpochSecondsEnabled="true"
+export Arbor__Build__BuildNumber__UnixEpochSecondsEnabled="${Arbor__Build__BuildNumber__UnixEpochSecondsEnabled:-true}"
 export Arbor__Build__NuGet__NuGetWebPackage__ExcludedPatterns="Arbor.Build.Samples"
 export Arbor__Build__NuGet__PackageUpload__PackageExcludeStartsWithPatterns="dotnet-"
 
 # Run the build using Arbor.Build.Bootstrapper
 echo "Starting Arbor.Build on Linux..."
-arbor-build
+env "Arbor.Build.Tools.External.MSBuild.DotNet.Enabled=true" \
+    "Arbor.Build.Vcs.Branch.Name=${GITHUB_REF:-}" \
+    arbor-build

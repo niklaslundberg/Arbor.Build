@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Arbor.Processing;
@@ -15,15 +16,35 @@ public class when_running_process_without_logging
 
     It should_return_exit_code_0 = () => { exitCode.ShouldEqual(ExitCode.Success); };
 
-    static async Task RunAsync() => exitCode =
-        await
-            Processing.ProcessRunner.ExecuteProcessAsync(@"C:\Windows\System32\PING.EXE",
-                ["127.0.0.1"],
-                (s, s1) => { },
-                null,
-                null,
-                null,
-                debugAction: null,
-                noWindow: true,
-                cancellationToken: CancellationToken.None);
+    static async Task RunAsync()
+    {
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            exitCode =
+                await
+                    Processing.ProcessRunner.ExecuteProcessAsync(@"C:\Windows\System32\PING.EXE",
+                        ["127.0.0.1"],
+                        (s, s1) => { },
+                        null,
+                        null,
+                        null,
+                        debugAction: null,
+                        noWindow: true,
+                        cancellationToken: CancellationToken.None);
+        }
+        else
+        {
+            exitCode =
+                await
+                    Processing.ProcessRunner.ExecuteProcessAsync("/bin/sh",
+                        ["-c", "exit 0"],
+                        (s, s1) => { },
+                        null,
+                        null,
+                        null,
+                        debugAction: null,
+                        noWindow: true,
+                        cancellationToken: CancellationToken.None);
+        }
+    }
 }

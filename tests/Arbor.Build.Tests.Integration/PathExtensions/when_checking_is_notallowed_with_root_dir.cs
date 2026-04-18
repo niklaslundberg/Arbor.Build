@@ -1,3 +1,4 @@
+using System.IO;
 using Arbor.Build.Core.IO;
 using Arbor.FS;
 using Machine.Specifications;
@@ -21,14 +22,15 @@ public class when_checking_is_notallowed_with_root_dir
     Establish context = () =>
     {
         fs = new PhysicalFileSystem();
-        var rootPath = @"C:\Temp\root".ParseAsPath();
-        var aPath = @"C:\Temp\root\afolder".ParseAsPath();
+        var basePath = UPath.Combine(Path.GetTempPath().ParseAsPath(), $"ABX_{System.Guid.NewGuid():N}");
+        var rootPath = UPath.Combine(basePath, "root");
+        var aPath = UPath.Combine(basePath, "root", "afolder");
         fs.CreateDirectory(aPath);
 
         tempDir = new DirectoryEntry(fs, aPath);
         specification = DefaultPaths.DefaultPathLookupSpecification;
         rootDir = new DirectoryEntry(fs, rootPath);
-        sourceDir = fs.GetDirectoryEntry(@"C:\Temp\root\afolder".ParseAsPath());
+        sourceDir = fs.GetDirectoryEntry(aPath);
     };
 
     Because of = () =>

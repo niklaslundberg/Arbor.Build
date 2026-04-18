@@ -27,7 +27,7 @@ public class when_checking_file_is_notallowed_in_artifacts_directory
     Establish context = () =>
     {
         fs = new PhysicalFileSystem();
-        var rootPath = $@"C:\Temp\root-{Guid.NewGuid()}".ParseAsPath();
+        var rootPath = UPath.Combine(Path.GetTempPath().ParseAsPath(), $"ABX_root_{Guid.NewGuid():N}");
         fs.CreateDirectory(rootPath);
         root = fs.GetDirectoryEntry(rootPath);
 
@@ -41,7 +41,7 @@ public class when_checking_file_is_notallowed_in_artifacts_directory
 
     Because of =
         () => isNotAllowed = specification
-            .IsFileExcluded(fs.GetFileEntry(UPath.Combine(root.Path, @"artifacts\afile.txt")), root).Item1;
+            .IsFileExcluded(fs.GetFileEntry(UPath.Combine(root.Path, "artifacts", "afile.txt")), root).Item1;
 
     It should_return_false = () => isNotAllowed.ShouldBeTrue();
 }

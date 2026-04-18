@@ -8,7 +8,69 @@ permissions:
   contents: read
 
 jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.0.x
+        cache: true
+        cache-dependency-path: tests/Arbor.Build.Tests.Unit
+
+    - name: Restore
+      run: dotnet restore --configfile .github/nuget.config
+
+    - name: Build (compile check)
+      run: dotnet build --no-restore --configuration Debug
+
+    - name: Run unit tests
+      run: dotnet test tests/Arbor.Build.Tests.Unit --no-build --configuration Debug --logger "console;verbosity=normal"
+
+    - name: Validate comparison script with mock packages
+      shell: pwsh
+      run: |
+        Set-StrictMode -Version Latest
+        $ErrorActionPreference = 'Stop'
+
+        $testDir = Join-Path ([System.IO.Path]::GetTempPath()) "compare-test-$([System.Guid]::NewGuid())"
+        $winDir   = Join-Path $testDir 'win'
+        $linuxDir = Join-Path $testDir 'linux'
+
+        ./.github/scripts/New-MockNupkgFiles.ps1 `
+            -WindowsOutputDirectory $winDir `
+            -LinuxOutputDirectory   $linuxDir
+
+        $winPkg   = Get-ChildItem -Path $winDir   -Filter 'Arbor.Build.Tool.*.nupkg' -File | Select-Object -First 1 -ExpandProperty FullName
+        $linuxPkg = Get-ChildItem -Path $linuxDir -Filter 'Arbor.Build.Tool.*.nupkg' -File | Select-Object -First 1 -ExpandProperty FullName
+
+        Write-Host "Win pkg  : $winPkg"
+        Write-Host "Linux pkg: $linuxPkg"
+
+        if (-not $winPkg -or -not $linuxPkg) {
+            Write-Error "Package discovery failed in validate step"
+            exit 1
+        }
+
+        $report = Join-Path $testDir 'report.md'
+        ./.github/scripts/Compare-ArborBuildToolPackages.ps1 `
+            -WindowsPackagePath $winPkg `
+            -LinuxPackagePath   $linuxPkg `
+            -ReportPath         $report
+
+        Write-Host "--- Report ---"
+        Get-Content $report | Write-Host
+
+        Write-Host "Comparison script validation passed"
+        Remove-Item -Recurse -Force $testDir
+
   build-windows:
+    needs: validate
     runs-on: windows-2025-vs2026
 
     steps:
@@ -33,8 +95,8 @@ jobs:
     - name: Install global tools
       shell: pwsh
       run: |
-        dotnet tool install --global Arbor.Tooler.GlobalTool --version "*-*"
-        dotnet tool install --global Arbor.Build.Bootstrapper --version "*-*"
+        dotnet tool install --global Arbor.Tooler.GlobalTool --version "*-*" --configfile .github/nuget.config
+        dotnet tool install --global Arbor.Build.Bootstrapper --version "*-*" --configfile .github/nuget.config
 
     - name: Build with Arbor.Build
       shell: cmd
@@ -43,6 +105,8 @@ jobs:
         Arbor.Build.NuGet.PackageUpload.Server.Uri: "https://www.myget.org/F/arbor/api/v2/package"
         Arbor.Build.NuGet.PackageUpload.Enabled: "true"
         Arbor.Build.NuGet.PackageUpload.ForceUploadEnabled: "true"
+        Arbor.Build.Tools.External.MSBuild.DeterministicBuild.Enabled: "true"
+        Arbor.Build.BuildNumber.UnixEpochSecondsEnabled: "false"
       run: |
         call build\build.bat
 
@@ -60,12 +124,20 @@ jobs:
         retention-days: 7
 
   build-linux:
+    needs:
+    - build-windows
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
+
+    - name: Download Windows artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: artifacts-windows
+        path: artifacts-windows
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
@@ -84,23 +156,39 @@ jobs:
     - name: Install global tools
       shell: bash
       run: |
-        dotnet tool install --global Arbor.Tooler.GlobalTool --version "*-*"
-        dotnet tool install --global Arbor.Build.Tool --version "*-*"
+        dotnet tool install --global Arbor.Tooler.GlobalTool --version "*-*" --configfile .github/nuget.config
+        WINDOWS_TOOL_PACKAGE=$(find artifacts-windows -type f -name 'Arbor.Build.Tool.*.nupkg' | sort | tail -n 1)
+        if [ -z "${WINDOWS_TOOL_PACKAGE}" ]; then
+          echo "No Windows Arbor.Build.Tool package found in downloaded artifacts"
+          exit 1
+        fi
+        WINDOWS_TOOL_VERSION=$(basename "${WINDOWS_TOOL_PACKAGE}" | sed -E 's/^Arbor\.Build\.Tool\.(.+)\.nupkg$/\1/')
+        echo "ARBOR_BUILD_TOOL_VERSION=${WINDOWS_TOOL_VERSION}" >> "${GITHUB_ENV}"
+        dotnet tool install --global Arbor.Build.Tool --version "${WINDOWS_TOOL_VERSION}" --add-source "$(dirname "${WINDOWS_TOOL_PACKAGE}")" --ignore-failed-sources
 
     - name: Build with Arbor.Build
       shell: bash
       env:
-        Arbor__Build__Version: "1.0.0"
-        Arbor__Build__ExternalTools_MSBuild_DotNetEnabled: "true"
-        Arbor__Build__SourceRoot: "."
-        Arbor__Build__Artifacts: "./artifacts"
+        Arbor.Build.Version: "${{ env.ARBOR_BUILD_TOOL_VERSION }}"
+        Arbor.Build.Tools.External.MSBuild.DotNet.Enabled: "true"
+        Arbor.Build.Tools.External.MSBuild.DeterministicBuild.Enabled: "true"
+        Arbor.Build.BuildNumber.UnixEpochSecondsEnabled: "false"
+        Arbor.Build.Vcs.Branch.Name: "${{ github.ref }}"
       run: |
-        dotnet arbor-build
+        arbor-build
 
     - name: Run cross-platform tests
       shell: bash
       run: |
         dotnet test --filter "FullyQualifiedName~CrossPlatform" --logger "console;verbosity=detailed" --no-build
+
+    - name: Normalize artifacts directory (Linux is case-sensitive)
+      if: always()
+      shell: bash
+      run: |
+        if [ -d Artifacts ] && [ ! -d artifacts ]; then
+          mv Artifacts artifacts
+        fi
 
     - name: Upload build artifacts (Linux)
       if: always()
@@ -108,4 +196,78 @@ jobs:
       with:
         name: artifacts-linux
         path: artifacts/
+        retention-days: 7
+
+  compare-packages:
+    needs:
+    - build-windows
+    - build-linux
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Download Windows artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: artifacts-windows
+        path: artifacts-windows
+
+    - name: Download Linux artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: artifacts-linux
+        path: artifacts-linux
+
+    - name: Locate packages for comparison
+      shell: bash
+      run: |
+        echo "=== Files in artifacts-windows ==="
+        find artifacts-windows -type f | sort
+
+        echo ""
+        echo "=== Files in artifacts-linux ==="
+        find artifacts-linux -type f | sort
+
+        WINDOWS_PKG=$(find artifacts-windows -type f -name 'Arbor.Build.Tool.*.nupkg' | sort | tail -n 1)
+        LINUX_PKG=$(find artifacts-linux  -type f -name 'Arbor.Build.Tool.*.nupkg' | sort | tail -n 1)
+
+        echo ""
+        echo "Windows package: ${WINDOWS_PKG}"
+        echo "Linux  package : ${LINUX_PKG}"
+
+        if [ -z "${WINDOWS_PKG}" ]; then
+          echo "ERROR: No Arbor.Build.Tool.*.nupkg found in artifacts-windows"
+          exit 1
+        fi
+        if [ -z "${LINUX_PKG}" ]; then
+          echo "ERROR: No Arbor.Build.Tool.*.nupkg found in artifacts-linux"
+          exit 1
+        fi
+
+        echo "WINDOWS_NUPKG_PATH=${WINDOWS_PKG}" >> "${GITHUB_ENV}"
+        echo "LINUX_NUPKG_PATH=${LINUX_PKG}"    >> "${GITHUB_ENV}"
+
+    - name: Compare Arbor.Build.Tool packages (Windows vs Linux)
+      shell: pwsh
+      run: |
+        Set-StrictMode -Version Latest
+        $ErrorActionPreference = 'Stop'
+
+        $reportPath = 'artifacts/package-comparison/arbor-build-tool-package-comparison.md'
+        ./.github/scripts/Compare-ArborBuildToolPackages.ps1 `
+            -WindowsPackagePath '${{ env.WINDOWS_NUPKG_PATH }}' `
+            -LinuxPackagePath   '${{ env.LINUX_NUPKG_PATH }}'   `
+            -ReportPath $reportPath
+
+        if ($env:GITHUB_STEP_SUMMARY -and (Test-Path -LiteralPath $reportPath)) {
+            Get-Content -LiteralPath $reportPath | Add-Content -Path $env:GITHUB_STEP_SUMMARY
+        }
+
+    - name: Upload comparison report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: package-comparison
+        path: artifacts/package-comparison/
         retention-days: 7

@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Arbor.Build.Core.BuildVariables;
 using Arbor.Build.Core.GenericExtensions;
 using Arbor.Build.Core.Tools.Git;
+using Arbor.Build.Core.Tools.Platform;
 using Arbor.FS;
 using Arbor.Processing;
 using Arbor.Tooler;
@@ -32,6 +33,14 @@ public class NuGetPackageUploader(IFileSystem fileSystem) : ITool
         string[] args,
         CancellationToken cancellationToken)
     {
+        if (!PlatformHelper.IsWindows)
+        {
+            logger.Debug(
+                "{Tool} is skipped on non-Windows platform",
+                nameof(NuGetPackageUploader));
+            return Task.FromResult(ExitCode.Success);
+        }
+
         bool enabled = buildVariables.GetBooleanByKey(WellKnownVariables.ExternalTools_NuGetServer_Enabled);
         bool websitePackagesUploadEnabled =
             buildVariables.GetBooleanByKey(
