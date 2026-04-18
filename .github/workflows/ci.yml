@@ -35,6 +35,9 @@ jobs:
     - name: Validate comparison script with mock packages
       shell: pwsh
       run: |
+        Set-StrictMode -Version Latest
+        $ErrorActionPreference = 'Stop'
+
         $testDir = Join-Path ([System.IO.Path]::GetTempPath()) "compare-test-$([System.Guid]::NewGuid())"
         $winDir   = Join-Path $testDir 'win'
         $linuxDir = Join-Path $testDir 'linux'
@@ -59,11 +62,6 @@ jobs:
             -WindowsPackagePath $winPkg `
             -LinuxPackagePath   $linuxPkg `
             -ReportPath         $report
-
-        if ($LASTEXITCODE -ne 0) {
-            Write-Error "Comparison script failed with exit code $LASTEXITCODE"
-            exit 1
-        }
 
         Write-Host "--- Report ---"
         Get-Content $report | Write-Host
