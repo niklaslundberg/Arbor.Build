@@ -126,7 +126,7 @@ jobs:
       run: |
         mkdir -p artifacts/package-comparison
         WINDOWS_TOOL_PACKAGE=$(find artifacts-windows -type f -name 'Arbor.Build.Tool.*.nupkg' | sort | tail -n 1)
-        LINUX_TOOL_PACKAGE=$(find artifacts Artifacts -type f -name 'Arbor.Build.Tool.*.nupkg' 2>/dev/null | sort | tail -n 1)
+        LINUX_TOOL_PACKAGE=$(find artifacts -type f -name 'Arbor.Build.Tool.*.nupkg' | sort | tail -n 1)
         if [ -z "${WINDOWS_TOOL_PACKAGE}" ] || [ -z "${LINUX_TOOL_PACKAGE}" ]; then
           echo "Could not find both Windows and Linux Arbor.Build.Tool packages for comparison" > artifacts/package-comparison/arbor-build-tool-package-comparison.md
           echo "Windows package: ${WINDOWS_TOOL_PACKAGE}" >> artifacts/package-comparison/arbor-build-tool-package-comparison.md
