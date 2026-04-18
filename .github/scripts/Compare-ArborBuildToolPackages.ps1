@@ -97,9 +97,9 @@ $equivalent = -not $windowsOnly -and -not $linuxOnly -and -not $changed
 $reportLines = @(
     '# Arbor.Build.Tool package comparison (Windows vs Linux)'
     ''
-    "- Windows package: `$WindowsPackagePath`"
-    "- Linux package: `$LinuxPackagePath`"
-    "- Equivalent package contents: `$(if ($equivalent) { 'yes' } else { 'no' })`"
+    "- Windows package: ``$WindowsPackagePath``"
+    "- Linux package: ``$LinuxPackagePath``"
+    "- Equivalent package contents: ``$(if ($equivalent) { 'yes' } else { 'no' })``"
     ''
 )
 
@@ -109,22 +109,22 @@ if ($equivalent) {
 else {
     if ($windowsOnly) {
         $reportLines += '## Files only in Windows package'
-        $reportLines += ($windowsOnly | ForEach-Object { "- `$_`" })
+        $reportLines += ($windowsOnly | ForEach-Object { "- ``$_``" })
         $reportLines += ''
     }
 
     if ($linuxOnly) {
         $reportLines += '## Files only in Linux package'
-        $reportLines += ($linuxOnly | ForEach-Object { "- `$_`" })
+        $reportLines += ($linuxOnly | ForEach-Object { "- ``$_``" })
         $reportLines += ''
     }
 
     if ($changed) {
         $reportLines += '## Files with different content'
         foreach ($item in $changed) {
-            $reportLines += "- `$item`"
-            $reportLines += "  - Windows SHA256: `${windowsEntries[$item]}`"
-            $reportLines += "  - Linux SHA256: `${linuxEntries[$item]}`"
+            $reportLines += "- ``$item``"
+            $reportLines += "  - Windows SHA256: ``$($windowsEntries[$item])``"
+            $reportLines += "  - Linux SHA256: ``$($linuxEntries[$item])``"
         }
         $reportLines += ''
     }

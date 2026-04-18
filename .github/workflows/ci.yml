@@ -32,6 +32,45 @@ jobs:
     - name: Run unit tests
       run: dotnet test tests/Arbor.Build.Tests.Unit --no-build --configuration Debug --logger "console;verbosity=normal"
 
+    - name: Validate comparison script with mock packages
+      shell: pwsh
+      run: |
+        $tmp = [System.IO.Path]::GetTempPath()
+        $testDir = Join-Path $tmp "compare-test-$(New-Guid)"
+        New-Item -ItemType Directory -Path $testDir | Out-Null
+
+        # Create two minimal .nupkg (zip) files with identical content
+        Add-Type -AssemblyName System.IO.Compression.FileSystem
+        foreach ($name in @('win.nupkg', 'linux.nupkg')) {
+            $zip = [System.IO.Compression.ZipFile]::Open(
+                (Join-Path $testDir $name),
+                [System.IO.Compression.ZipArchiveMode]::Create)
+            try {
+                $entry = $zip.CreateEntry('lib/Arbor.Build.Tool.dll')
+                $writer = [System.IO.StreamWriter]::new($entry.Open())
+                try { $writer.Write('mock content') } finally { $writer.Dispose() }
+            } finally { $zip.Dispose() }
+        }
+
+        $report = Join-Path $testDir 'report.md'
+        pwsh -NonInteractive -File ./.github/scripts/Compare-ArborBuildToolPackages.ps1 `
+            -WindowsPackagePath (Join-Path $testDir 'win.nupkg') `
+            -LinuxPackagePath   (Join-Path $testDir 'linux.nupkg') `
+            -ReportPath $report
+
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "Comparison script failed with exit code $LASTEXITCODE"
+            exit 1
+        }
+
+        if (-not (Test-Path $report)) {
+            Write-Error "Comparison script did not produce a report"
+            exit 1
+        }
+
+        Write-Host "Comparison script validation passed"
+        Remove-Item -Recurse -Force $testDir
+
   build-windows:
     needs: validate
     runs-on: windows-2025-vs2026
