@@ -145,6 +145,14 @@ jobs:
       run: |
         dotnet test --filter "FullyQualifiedName~CrossPlatform" --logger "console;verbosity=detailed" --no-build
 
+    - name: Normalize artifacts directory (Linux is case-sensitive)
+      if: always()
+      shell: bash
+      run: |
+        if [ -d Artifacts ] && [ ! -d artifacts ]; then
+          mv Artifacts artifacts
+        fi
+
     - name: Upload build artifacts (Linux)
       if: always()
       uses: actions/upload-artifact@v4
