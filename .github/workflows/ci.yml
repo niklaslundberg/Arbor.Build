@@ -102,7 +102,7 @@ jobs:
         fi
         WINDOWS_TOOL_VERSION=$(basename "${WINDOWS_TOOL_PACKAGE}" | sed -E 's/^Arbor\.Build\.Tool\.(.+)\.nupkg$/\1/')
         echo "ARBOR_BUILD_TOOL_VERSION=${WINDOWS_TOOL_VERSION}" >> "${GITHUB_ENV}"
-        dotnet tool install --global Arbor.Build.Tool --version "${WINDOWS_TOOL_VERSION}" --add-source "$(dirname "${WINDOWS_TOOL_PACKAGE}")" --ignore-failed-sources --prerelease
+        dotnet tool install --global Arbor.Build.Tool --version "${WINDOWS_TOOL_VERSION}" --add-source "$(dirname "${WINDOWS_TOOL_PACKAGE}")" --ignore-failed-sources
 
     - name: Build with Arbor.Build
       shell: bash
