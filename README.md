@@ -50,7 +50,42 @@ It extracts the NuGet package and invokes the build application.
 * NuGet publishing
 * Symbols publishing
 
-## License
+## Contributing and dog-fooding
+
+> **Before committing any change, always run Arbor.Build on itself to verify the build still works end-to-end.**
+
+Arbor.Build is designed to build itself (dog-fooding). The local dev scripts in `build/` run the tool directly from source using `dotnet run`, so no global tool installation is required.
+
+### Linux / macOS
+
+```bash
+./build/build-local.sh
+```
+
+This script restores and compiles the solution, then runs `src/Arbor.Build` directly via `dotnet run` with `Arbor.Build.NuGet.PackageUpload.Enabled=false` so no packages are uploaded.
+
+### Windows
+
+```cmd
+build\build-local.bat
+```
+
+Same approach — builds from source and runs without uploading packages.
+
+### CI scripts (require the global tool to be installed)
+
+The scripts `build/build.sh` and `build/build.bat` are used by the CI pipeline. They call the installed `arbor-build` global tool. Use the local variants above during development.
+
+### Running tests
+
+After making changes, run the unit and integration tests:
+
+```bash
+dotnet test tests/Arbor.Build.Tests.Unit --configuration Debug
+dotnet test tests/Arbor.Build.Tests.Integration --configuration Debug
+```
+
+
 
 This code uses the MIT license http://opensource.org/licenses/MIT, see [License.txt](License.txt)
 
@@ -105,7 +140,7 @@ Find latest version of MSBuild installed on the current machine by looking at re
 
 ### Solution builder
 
-Arbor.Build will scan for Visual Studio solution files .sln and build the solution with all configuration and platform combinations defined in the solution file.
+Arbor.Build will scan for Visual Studio solution files (.sln and .slnx) and build the solution with all configuration and platform combinations defined in the solution file.
 
 ## NuGet
 

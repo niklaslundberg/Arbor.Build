@@ -10,39 +10,39 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="coverlet.collector" Version="10.0.0">
+    <PackageReference Include="coverlet.collector">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="coverlet.msbuild" Version="10.0.0">
+    <PackageReference Include="coverlet.msbuild">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="JetBrains.Annotations" Version="2025.2.4" />
-    <PackageReference Include="Machine.Specifications" Version="1.1.3" />
-    <PackageReference Include="Machine.Specifications.Runner.VisualStudio" Version="2.10.2" />
-    <PackageReference Include="Machine.Specifications.Should" Version="1.0.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="5.3.0">
+    <PackageReference Include="JetBrains.Annotations" />
+    <PackageReference Include="Machine.Specifications" />
+    <PackageReference Include="Machine.Specifications.Runner.VisualStudio" />
+    <PackageReference Include="Machine.Specifications.Should" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.4.0" />
-    <PackageReference Include="NCrunch.Framework" Version="5.11.0" />
-    <PackageReference Include="Serilog" Version="4.3.1" />
-    <PackageReference Include="Serilog.Sinks.Debug" Version="3.0.0" />
-    <PackageReference Include="Shouldly" Version="4.3.0" />
-    <PackageReference Include="System.Security.Cryptography.Xml" Version="10.0.6" />
-    <PackageReference Include="xunit.v3" Version="3.2.2" />
-    <PackageReference Include="xunit.analyzers" Version="1.27.0">
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="NCrunch.Framework" />
+    <PackageReference Include="Serilog" />
+    <PackageReference Include="Serilog.Sinks.Debug" />
+    <PackageReference Include="Shouldly" />
+    <PackageReference Include="System.Security.Cryptography.Xml" />
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="xunit.analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
+    <PackageReference Include="xunit.runner.visualstudio">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Meziantou.Xunit.v3.ParallelTestFramework" Version="1.0.6" />
-    <PackageReference Include="Microsoft.Win32.Primitives" Version="4.3.0" Condition="'${Configuration}' == 'release'" />
+    <PackageReference Include="Meziantou.Xunit.v3.ParallelTestFramework" />
+    <PackageReference Include="Microsoft.Win32.Primitives" Condition="'${Configuration}' == 'release'" />
   </ItemGroup>
 
   <ItemGroup>

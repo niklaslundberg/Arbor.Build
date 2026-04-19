@@ -15,17 +15,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Arbor.Aesculus" Version="3.9.0" />
-    <PackageReference Include="Arbor.Tooler" Version="1.2.0" />
-    <PackageReference Include="JetBrains.Annotations" Version="2025.2.4" />
-    <PackageReference Include="Microsoft.Win32.Primitives" Version="4.3.0" Condition="'$(RuntimeIdentifier)' == 'win-x64'" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.202">
+    <PackageReference Include="Arbor.Aesculus" />
+    <PackageReference Include="Arbor.Tooler" />
+    <PackageReference Include="JetBrains.Annotations" />
+    <PackageReference Include="Microsoft.Win32.Primitives" Condition="'$(RuntimeIdentifier)' == 'win-x64'" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="NuGet.Protocol" Version="7.3.1" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
-    <PackageReference Include="System.Security.Cryptography.Xml" Version="10.0.6" />
+    <PackageReference Include="NuGet.Protocol" />
+    <PackageReference Include="Serilog.Sinks.Console" />
+    <PackageReference Include="System.Security.Cryptography.Xml" />
   </ItemGroup>
 
   <ItemGroup>

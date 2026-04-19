@@ -34,7 +34,7 @@ jobs:
           $PSNativeCommandUseErrorActionPreference = $true
           if ([string]::IsNullOrWhiteSpace($env:SONAR_TOKEN)) { throw "SONAR_TOKEN is empty or not configured" }
           dotnet-sonarscanner begin /k:"niklaslundberg_Arbor.Build" /o:"niklaslundberg" /d:sonar.token="$env:SONAR_TOKEN" "/d:sonar.cs.opencover.reportsPaths=$($pwd)\Artifacts\TestReports\Coverage\*.opencover.xml" "/d:sonar.cs.vstest.reportsPaths=$($pwd)\Artifacts\TestReports\Tests\*.trx" /d:sonar.verbose=true
-          dotnet build Arbor.Build.sln
+          dotnet build Arbor.Build.slnx
           Get-ChildItem -Path tests -Recurse -Filter *.csproj | ForEach-Object { $fileName = $_.FullName; $name = $_.Name; dotnet test $fileName /p:CollectCoverage=true /p:CoverletOutputFormat=opencover "/p:CoverletOutput=$($pwd)\Artifacts\TestReports\Coverage\$($name).opencover.xml" --logger "trx;LogFileName=$($pwd)\Artifacts\TestReports\Tests\$($name).trx" }
           Get-ChildItem -Recurse -Directory | select-object FullName
           dotnet-sonarscanner end /d:sonar.token="$env:SONAR_TOKEN" /d:sonar.verbose=true
