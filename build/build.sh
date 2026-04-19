@@ -46,6 +46,13 @@ export Arbor__Build__NuGet__PackageUpload__PackageExcludeStartsWithPatterns="dot
 
 # Run the build using Arbor.Build.Bootstrapper
 echo "Starting Arbor.Build on Linux..."
-env "Arbor.Build.Tools.External.MSBuild.DotNet.Enabled=true" \
-    "Arbor.Build.Vcs.Branch.Name=${GITHUB_REF:-}" \
-    arbor-build
+
+if command -v arbor-build >/dev/null 2>&1; then
+    env "Arbor.Build.Tools.External.MSBuild.DotNet.Enabled=true" \
+        "Arbor.Build.Vcs.Branch.Name=${GITHUB_REF:-}" \
+        arbor-build
+else
+    echo "arbor-build command not found. Falling back to dotnet restore/build for CI analyzers."
+    dotnet restore Arbor.Build.slnx --configfile .github/nuget.config
+    dotnet build Arbor.Build.slnx --no-restore --configuration Debug
+fi
