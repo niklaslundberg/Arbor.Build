@@ -18,7 +18,7 @@ public class SolutionProjectExtensionsTests
             "Arbor.Build.Tests.Integration", "Arbor.Build.Tests.Integration.csproj"));
         var msbuildProject = await MsBuildProject.LoadFrom(projectFileFullName, TestContext.Current.CancellationToken);
 
-        var solutionFile = fs.GetFileEntry(UPath.Combine(projectFileFullName.Parent!.Parent!.Parent!.Path, "Arbor.Build.sln"));
+        var solutionFile = fs.GetFileEntry(UPath.Combine(projectFileFullName.Parent!.Parent!.Parent!.Path, "Arbor.Build.slnx"));
 
         var project = new SolutionProject(solutionFile, "name", msbuildProject.ProjectDirectory, msbuildProject,
             NetFrameworkGeneration.NetCoreApp);

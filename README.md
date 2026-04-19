@@ -105,7 +105,7 @@ Find latest version of MSBuild installed on the current machine by looking at re
 
 ### Solution builder
 
-Arbor.Build will scan for Visual Studio solution files .sln and build the solution with all configuration and platform combinations defined in the solution file.
+Arbor.Build will scan for Visual Studio solution files (.sln and .slnx) and build the solution with all configuration and platform combinations defined in the solution file.
 
 ## NuGet
 
