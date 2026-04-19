@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "dependencies": {
     "net10.0": {
       "Arbor.Aesculus": {
@@ -621,9 +621,10 @@
         "contentHash": "nQIasVqMZc+tMB+CDj5dzd9QlVJSx1V7KEEoHQQpifrO5ug2r1LEGKkgK7g22tNFKRVIZ97nH698bedTSUavNw=="
       },
       "Zio": {
-        "type": "Transitive",
-        "resolved": "0.19.2",
-        "contentHash": "3SArsp3QZH9b3qmkfmSp0IlYF9954YEPWbSBaemTcf/iYBrce3qI3fLzHGHkuVyy3Cd5QYNdyPIl/S8HXKHWtg=="
+        "type": "CentralTransitive",
+        "requested": "[0.22.2, )",
+        "resolved": "0.22.2",
+        "contentHash": "+IVbcp3EY45ugzV5dyX9PC1uneEDITLgItt2fa9IZiM3Fs4Cu7Y6ZDNt3LEep+irV5XNLpHS2QDs9bURb8ZZFA=="
       }
     }
   }
