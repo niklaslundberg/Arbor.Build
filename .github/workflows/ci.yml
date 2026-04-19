@@ -29,8 +29,27 @@ jobs:
     - name: Build (compile check)
       run: dotnet build --no-restore --configuration Debug
 
-    - name: Run unit tests
-      run: dotnet test tests/Arbor.Build.Tests.Unit --no-build --configuration Debug --logger "console;verbosity=normal"
+    - name: Run unit tests with coverage
+      shell: bash
+      run: |
+        REPORT_ROOT="${GITHUB_WORKSPACE}/artifacts/TestReports"
+        mkdir -p "${REPORT_ROOT}/Tests" "${REPORT_ROOT}/Coverage"
+        dotnet test tests/Arbor.Build.Tests.Unit \
+          --no-build \
+          --configuration Debug \
+          --logger "console;verbosity=normal" \
+          --logger "trx;LogFileName=${REPORT_ROOT}/Tests/Arbor.Build.Tests.Unit.trx" \
+          /p:CollectCoverage=true \
+          /p:CoverletOutputFormat=opencover \
+          /p:CoverletOutput=${REPORT_ROOT}/Coverage/Arbor.Build.Tests.Unit.opencover.xml
+
+    - name: Upload unit test reports and coverage
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-reports-validate
+        path: artifacts/TestReports/
+        retention-days: 7
 
     - name: Validate comparison script with mock packages
       shell: pwsh
@@ -101,6 +120,7 @@ jobs:
     - name: Build with Arbor.Build
       shell: cmd
       env:
+        Version.Build: "${{ github.run_number }}"
         Arbor.Build.NuGet.PackageUpload.Server.ApiKey: ${{ secrets.myget }}
         Arbor.Build.NuGet.PackageUpload.Server.Uri: "https://www.myget.org/F/arbor/api/v2/package"
         Arbor.Build.NuGet.PackageUpload.Enabled: "true"
@@ -169,6 +189,7 @@ jobs:
     - name: Build with Arbor.Build
       shell: bash
       env:
+        Version.Build: "${{ github.run_number }}"
         Arbor.Build.Version: "${{ env.ARBOR_BUILD_TOOL_VERSION }}"
         Arbor.Build.Tools.External.MSBuild.DotNet.Enabled: "true"
         Arbor.Build.Tools.External.MSBuild.DeterministicBuild.Enabled: "true"

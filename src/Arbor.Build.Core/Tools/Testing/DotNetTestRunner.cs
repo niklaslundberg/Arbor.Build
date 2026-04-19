@@ -46,6 +46,9 @@ public class DotNetTestRunner(BuildContext buildContext, IFileSystem fileSystem)
             WellKnownVariables.XUnitNetCoreAppV2Enabled);
 
         IVariable reportPath = buildVariables.Require(WellKnownVariables.ReportPath).ThrowIfEmptyValue();
+        var testReportPath = reportPath.Value!.ParseAsPath();
+        bool codeCoverageEnabled =
+            buildVariables.GetBooleanByKey(WellKnownVariables.DotNetTestRunnerCodeCoverageEnabled, true);
 
         bool? runTestsInReleaseConfiguration =
             buildVariables.GetOptionalBooleanByKey(
@@ -148,7 +151,7 @@ public class DotNetTestRunner(BuildContext buildContext, IFileSystem fileSystem)
             bool xmlEnabled =
                 buildVariables.GetBooleanByKey(WellKnownVariables.XUnitNetCoreAppXmlEnabled, true);
 
-            var reportFile = UPath.Combine(reportPath.Value!.ParseAsPath(), "dotnet", xmlReportName);
+            var reportFile = UPath.Combine(testReportPath, "dotnet", xmlReportName);
 
             var reportFileEntry = new FileEntry(fileSystem, reportFile);
             reportFileEntry.Directory.EnsureExists();
@@ -158,6 +161,13 @@ public class DotNetTestRunner(BuildContext buildContext, IFileSystem fileSystem)
                 arguments.Add(
                     $"--logger:trx;LogFileName={fileSystem.ConvertPathToInternal(reportFileEntry.FullName)}");
             }
+
+            AddCodeCoverageArguments(
+                arguments,
+                codeCoverageEnabled,
+                fileSystem,
+                testReportPath,
+                $"dotnet.{directoryEntry.Name}.opencover.xml");
 
             arguments.Add("--filter");
             arguments.Add($"TestCategory!={TestFilterHelper.RecursiveCategoryName}");
@@ -321,7 +331,7 @@ public class DotNetTestRunner(BuildContext buildContext, IFileSystem fileSystem)
                 bool xmlEnabled =
                     buildVariables.GetBooleanByKey(WellKnownVariables.XUnitNetCoreAppXmlEnabled, true);
 
-                var reportFile = UPath.Combine(reportPath.Value!.ParseAsPath(), "dotnet", xmlReportName);
+                var reportFile = UPath.Combine(testReportPath, "dotnet", xmlReportName);
 
                 var reportFileEntry = new FileEntry(fileSystem, reportFile);
                 reportFileEntry.Directory.EnsureExists();
@@ -331,6 +341,13 @@ public class DotNetTestRunner(BuildContext buildContext, IFileSystem fileSystem)
                     arguments.Add(
                         $"--logger:trx;LogFileName={fileSystem.ConvertPathToInternal(reportFileEntry.FullName)}");
                 }
+
+                AddCodeCoverageArguments(
+                    arguments,
+                    codeCoverageEnabled,
+                    fileSystem,
+                    testReportPath,
+                    $"dotnet.integration.{directoryEntry.Name}.opencover.xml");
 
                 arguments.Add("--filter");
                 // TestFilterHelper.RecursiveCategoryName ("ArborBuildRecursive") marks tests excluded from the
@@ -362,6 +379,27 @@ public class DotNetTestRunner(BuildContext buildContext, IFileSystem fileSystem)
         }
 
         return exitCode;
+    }
+
+    internal static void AddCodeCoverageArguments(
+        List<string> arguments,
+        bool codeCoverageEnabled,
+        IFileSystem fileSystem,
+        UPath testReportPath,
+        string reportName)
+    {
+        if (!codeCoverageEnabled)
+        {
+            return;
+        }
+
+        var coveragePath = UPath.Combine(testReportPath, "Coverage", reportName);
+        var coverageReportFile = new FileEntry(fileSystem, coveragePath);
+        coverageReportFile.Directory.EnsureExists();
+
+        arguments.Add("/p:CollectCoverage=true");
+        arguments.Add("/p:CoverletOutputFormat=opencover");
+        arguments.Add($"/p:CoverletOutput={fileSystem.ConvertPathToInternal(coverageReportFile.FullName)}");
     }
 
     private static ExitCode AnalyzeXml(FileEntry reportFileEntry, Action<string>? logger)

@@ -241,6 +241,10 @@ public static partial class WellKnownVariables
     public const string DotNetTestRunnerIntegrationTestsEnabled =
         "Arbor.Build.Tools.External.DotNetTest.IntegrationTests.Enabled";
 
+    [VariableDescription("Enable code coverage collection in DotNetTestRunner", "true")]
+    public const string DotNetTestRunnerCodeCoverageEnabled =
+        "Arbor.Build.Tools.External.DotNetTest.CodeCoverage.Enabled";
+
     [VariableDescription("Log level")]
     public const string LogLevel = "Arbor.Build.Log.Level";
 
