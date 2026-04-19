@@ -120,6 +120,7 @@ jobs:
     - name: Build with Arbor.Build
       shell: cmd
       env:
+        Version.Build: "${{ github.run_number }}"
         Arbor.Build.NuGet.PackageUpload.Server.ApiKey: ${{ secrets.myget }}
         Arbor.Build.NuGet.PackageUpload.Server.Uri: "https://www.myget.org/F/arbor/api/v2/package"
         Arbor.Build.NuGet.PackageUpload.Enabled: "true"
@@ -188,6 +189,7 @@ jobs:
     - name: Build with Arbor.Build
       shell: bash
       env:
+        Version.Build: "${{ github.run_number }}"
         Arbor.Build.Version: "${{ env.ARBOR_BUILD_TOOL_VERSION }}"
         Arbor.Build.Tools.External.MSBuild.DotNet.Enabled: "true"
         Arbor.Build.Tools.External.MSBuild.DeterministicBuild.Enabled: "true"
