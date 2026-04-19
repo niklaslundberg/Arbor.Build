@@ -16,6 +16,8 @@
     <File Path=".gitignore" />
     <File Path="build/build-wsl.sh" />
     <File Path="build/build.bat" />
+    <File Path="build/build-local.bat" />
+    <File Path="build/build-local.sh" />
     <File Path="build/build.sh" />
     <File Path="build/run-in-wsl.sh" />
     <File Path="build/Test-ExplorerReset.ps1" />

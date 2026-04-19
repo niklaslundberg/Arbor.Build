@@ -11,8 +11,4 @@
     <Nullable>enable</Nullable>
     <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
   </PropertyGroup>
-
-  <PropertyGroup Condition="$([System.String]::Copy('$(MSBuildProjectDirectory)').Contains('/samples/_')) Or $([System.String]::Copy('$(MSBuildProjectDirectory)').Contains('\samples\_'))">
-    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
-  </PropertyGroup>
 </Project>

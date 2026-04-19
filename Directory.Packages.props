@@ -1,5 +1,9 @@
 <Project>
-  <PropertyGroup>
+  <!-- Enable central package management only for projects that are not standalone sample projects.
+       Note: This condition must live here (not in Directory.Build.props) because Directory.Packages.props
+       is imported *after* Directory.Build.props in the MSBuild evaluation order, so only conditions
+       placed here take effect for the ManagePackageVersionsCentrally property. -->
+  <PropertyGroup Condition="!$([System.String]::Copy('$(MSBuildProjectDirectory)').Contains('/samples/_')) And !$([System.String]::Copy('$(MSBuildProjectDirectory)').Contains('\samples\_'))">
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
