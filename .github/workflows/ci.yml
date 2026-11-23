@@ -12,14 +12,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
       with:
         fetch-depth: 0
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v6
       with:
-        dotnet-version: 10.0.x
+        dotnet-version: 11.0.x
         cache: true
         cache-dependency-path: tests/Arbor.Build.Tests.Unit
 
@@ -45,7 +45,7 @@ jobs:
 
     - name: Upload unit test reports and coverage
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: test-reports-validate
         path: artifacts/TestReports/
@@ -93,14 +93,14 @@ jobs:
     runs-on: windows-2025-vs2026
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
       with:
         fetch-depth: 0
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v6
       with:
-        dotnet-version: 10.0.x
+        dotnet-version: 11.0.x
         cache: true
         cache-dependency-path: tests/Arbor.Build.Tests.Integration
 
@@ -137,7 +137,7 @@ jobs:
 
     - name: Upload build artifacts (Windows)
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: artifacts-windows
         path: artifacts/
@@ -149,20 +149,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
       with:
         fetch-depth: 0
 
     - name: Download Windows artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: artifacts-windows
         path: artifacts-windows
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v6
       with:
-        dotnet-version: 10.0.x
+        dotnet-version: 11.0.x
         cache: true
         cache-dependency-path: tests/Arbor.Build.Tests.Integration
 
@@ -213,7 +213,7 @@ jobs:
 
     - name: Upload build artifacts (Linux)
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: artifacts-linux
         path: artifacts/
@@ -226,16 +226,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Download Windows artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: artifacts-windows
         path: artifacts-windows
 
     - name: Download Linux artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: artifacts-linux
         path: artifacts-linux
@@ -287,7 +287,7 @@ jobs:
 
     - name: Upload comparison report
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: package-comparison
         path: artifacts/package-comparison/
